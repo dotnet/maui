@@ -85,10 +85,8 @@ namespace Microsoft.Maui.Platform
 			platformControl.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
-		internal static void UpdateTextHtml(this TextBlock platformControl, ILabel label)
+		internal static void UpdateTextHtml(this TextBlock platformControl, ILabel label, string text)
 		{
-			var text = label.Text ?? string.Empty;
-
 			// Just in case we are not given text with elements.
 			var modifiedText = string.Format("<div>{0}</div>", text);
 			modifiedText = Regex.Replace(modifiedText, "<br>", "<br></br>", RegexOptions.IgnoreCase);

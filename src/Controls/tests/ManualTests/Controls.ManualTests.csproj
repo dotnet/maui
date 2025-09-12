@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+    <!-- Uncomment the below line to use the .NET MAUI NuGet packages instead of the complete .NET MAUI source for building this project -->
+    <!-- <UseMaui>true</UseMaui> -->
+    <!-- Uncomment the below line to use the specified .NET MAUI version instead of the version provided by the installed workload -->
+    <!-- <MauiVersion>9.0.100</MauiVersion> -->
+    <!-- Uncomment the below lines to use the specified (default new .NET MAUI app) platforms instead of a variable value from externally -->
+    <!-- <MauiManualTestsPlatforms>net9.0-android;net9.0-ios;net9.0-maccatalyst</MauiManualTestsPlatforms> -->
+    <!-- <MauiManualTestsPlatforms Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MauiManualTestsPlatforms);net9.0-windows10.0.19041.0</MauiManualTestsPlatforms>-->
+    <TargetFrameworks>$(MauiManualTestsPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiManualTestsPreviousPlatforms)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+		<RootNamespace>Microsoft.Maui.ManualTests</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+
+		<!-- Display name -->
+		<ApplicationTitle>Microsoft.Maui.ManualTests</ApplicationTitle>
+
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.Microsoft.Maui.ManualTests</ApplicationId>
+
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+		<WindowsPackageType>None</WindowsPackageType>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
+  
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS0618;CS0672;MVVMTK0045</NoWarn>
+  </PropertyGroup>
+  
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+  </ItemGroup>
+  
+	<ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+  
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+  
+</Project>

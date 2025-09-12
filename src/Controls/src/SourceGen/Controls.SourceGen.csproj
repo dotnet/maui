@@ -88,7 +88,7 @@
       <_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
       <_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
   </Target>
 
 </Project>
