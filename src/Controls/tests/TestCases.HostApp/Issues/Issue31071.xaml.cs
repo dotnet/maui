@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 31071, ".NET MAUI set AppShell custom FlyoutIcon display problem",
+	[Issue(IssueTracker.Github, 31071, "CollectionView2 (CollectionViewHandler2) much more slow than CV1 on updating columns count at runtime",
 		PlatformAffected.iOS)]
 	public partial class Issue31071 : ContentPage
 	{
