@@ -72,7 +72,6 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
   
   - name: androidPoolLinux
     type: object
@@ -89,7 +88,6 @@ parameters:
       vmImage: $(iosTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
   
   - name: windowsBuildPool
     type: object
@@ -109,23 +107,6 @@ parameters:
       name: Azure Pipelines
       vmImage: macOS-14
 
-  - name: androidCompatibilityPool
-    type: object
-    default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
-
-  - name: iosCompatibilityPool
-    type: object
-    default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
 
 resources:
   repositories:
@@ -150,11 +131,11 @@ stages:
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ 'latest' ]
+        iosVersions: [ 'simulator-18.4' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ else }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ 'latest' ]
+        iosVersions: [ 'simulator-18.4' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
