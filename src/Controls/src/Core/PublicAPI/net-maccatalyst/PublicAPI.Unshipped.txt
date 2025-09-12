@@ -26,6 +26,9 @@ Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css
 *REMOVED*Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 *REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.ClickedEventArgs(Microsoft.Maui.Controls.ButtonsMask buttons, object commandParameter) -> void
 *REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.Parameter.get -> object
+*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.INavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
+*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.NavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Platform.NavigationPageExtensions.UpdateIsNavigationBarTranslucent(this UIKit.UINavigationController platformView, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
