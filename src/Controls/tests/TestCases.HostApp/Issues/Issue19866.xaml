@@ -5,16 +5,23 @@
              Title="Issue 19866 - iOS CollectionView ScrollsToTop">
     <StackLayout>
         <Label AutomationId="InstructionsLabel" 
-               Text="To test: 1) Scroll down in the CollectionView below 2) Tap the iOS status bar 3) Verify the CollectionView scrolls to the top" 
+               Text="To test status bar tap: 1) Scroll down in the CollectionView below 2) Tap the iOS status bar 3) Verify the CollectionView scrolls to the top" 
                Padding="10" 
                BackgroundColor="LightYellow"
                FontSize="16" />
+        
+        <Button x:Name="ScrollToTopButton"
+                AutomationId="ScrollToTopButton"
+                Text="Scroll to Top (Programmatic Test)"
+                Clicked="OnScrollToTopClicked"
+                BackgroundColor="LightBlue"
+                Margin="10" />
         
         <CollectionView x:Name="TestCollectionView" 
                         AutomationId="TestCollectionView"
                         ItemsSource="{Binding Items}"
                         BackgroundColor="LightGray"
-                        HeightRequest="500">
+                        HeightRequest="400">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="15" BackgroundColor="White" Margin="5">
@@ -22,14 +29,19 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Row="0" Text="{Binding Title}" FontSize="18" FontAttributes="Bold" TextColor="Blue" />
+                        <Label Grid.Row="0" 
+                               Text="{Binding Title}" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="Blue"
+                               AutomationId="{Binding AutomationId}" />
                         <Label Grid.Row="1" Text="{Binding Description}" FontSize="14" TextColor="Gray" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
         
-        <Label Text="Note: Scroll behavior only works on actual iOS devices, not simulators or other platforms."
+        <Label Text="Note: Status bar tap behavior only works on actual iOS devices, not simulators or other platforms."
                Padding="10"
                FontSize="12"
                TextColor="Red" />

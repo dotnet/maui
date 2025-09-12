@@ -19,11 +19,21 @@ namespace Maui.Controls.Sample.Issues
 				Items.Add(new TestItem
 				{
 					Title = $"Item {i}",
-					Description = $"This is item number {i}. Scroll down to test the scroll to top functionality by tapping the status bar."
+					Description = $"This is item number {i}. Scroll down to test the scroll to top functionality by tapping the status bar.",
+					AutomationId = $"Item_{i}"
 				});
 			}
 			
 			BindingContext = this;
+		}
+
+		private void OnScrollToTopClicked(object sender, System.EventArgs e)
+		{
+			// Programmatically scroll to the top to test scroll functionality
+			if (Items.Count > 0)
+			{
+				TestCollectionView.ScrollTo(Items[0], position: ScrollToPosition.Start, animate: true);
+			}
 		}
 	}
 
@@ -31,5 +41,6 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public string Title { get; set; }
 		public string Description { get; set; }
+		public string AutomationId { get; set; }
 	}
 }
