@@ -11,7 +11,134 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
+	internal struct LayoutCacheKey : IEquatable<LayoutCacheKey>
+	{
+		public readonly bool IsGrouped;
+		public readonly bool HasGroupHeader;
+		public readonly bool HasGroupFooter;
+		public readonly bool HasHeader;
+		public readonly bool HasFooter;
+		public readonly ItemsLayoutOrientation Orientation;
+		public readonly int Span;
+		public readonly double VerticalItemSpacing;
+		public readonly double HorizontalItemSpacing;
+		public readonly double ItemSpacing;
+		public readonly Type LayoutType;
+		public readonly ItemSizingStrategy SizingStrategy;
+		public readonly SnapPointsType SnapType;
+		public readonly SnapPointsAlignment SnapAlignment;
+
+		public LayoutCacheKey(ItemsView itemsView)
+		{
+			var itemsLayout = (itemsView as StructuredItemsView)?.ItemsLayout;
+			var sizingStrategy = (itemsView as StructuredItemsView)?.ItemSizingStrategy ??
+			                     ItemSizingStrategy.MeasureFirstItem;
+
+			LayoutType = itemsLayout?.GetType();
+			SizingStrategy = sizingStrategy;
+
+			if (itemsLayout is GridItemsLayout gridLayout)
+			{
+				Orientation = gridLayout.Orientation;
+				Span = gridLayout.Span;
+				VerticalItemSpacing = gridLayout.VerticalItemSpacing;
+				HorizontalItemSpacing = gridLayout.HorizontalItemSpacing;
+				ItemSpacing = 0;
+				SnapType = gridLayout.SnapPointsType;
+				SnapAlignment = gridLayout.SnapPointsAlignment;
+			}
+			else if (itemsLayout is LinearItemsLayout linearLayout)
+			{
+				Orientation = linearLayout.Orientation;
+				Span = 1;
+				VerticalItemSpacing = 0;
+				HorizontalItemSpacing = 0;
+				ItemSpacing = linearLayout.ItemSpacing;
+				SnapType = linearLayout.SnapPointsType;
+				SnapAlignment = linearLayout.SnapPointsAlignment;
+			}
+			else
+			{
+				Orientation = ItemsLayoutOrientation.Vertical;
+				Span = 1;
+				VerticalItemSpacing = 0;
+				HorizontalItemSpacing = 0;
+				ItemSpacing = 0;
+				SnapType = SnapPointsType.None;
+				SnapAlignment = SnapPointsAlignment.Start;
+			}
+
+			if (itemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+			{
+				IsGrouped = true;
+				HasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;
+				HasGroupFooter = groupableItemsView.GroupFooterTemplate is not null;
+			}
+			else
+			{
+				IsGrouped = false;
+				HasGroupHeader = false;
+				HasGroupFooter = false;
+			}
+
+			if (itemsView is StructuredItemsView structuredItemsView)
+			{
+				HasHeader = structuredItemsView.Header is not null || structuredItemsView.HeaderTemplate is not null;
+				HasFooter = structuredItemsView.Footer is not null || structuredItemsView.FooterTemplate is not null;
+			}
+			else
+			{
+				HasHeader = false;
+				HasFooter = false;
+			}
+		}
+
+		public bool Equals(LayoutCacheKey other)
+		{
+			return IsGrouped == other.IsGrouped &&
+			       HasGroupHeader == other.HasGroupHeader &&
+			       HasGroupFooter == other.HasGroupFooter &&
+			       HasHeader == other.HasHeader &&
+			       HasFooter == other.HasFooter &&
+			       Orientation == other.Orientation &&
+			       Span == other.Span &&
+			       Math.Abs(VerticalItemSpacing - other.VerticalItemSpacing) < double.Epsilon &&
+			       Math.Abs(HorizontalItemSpacing - other.HorizontalItemSpacing) < double.Epsilon &&
+			       Math.Abs(ItemSpacing - other.ItemSpacing) < double.Epsilon &&
+			       LayoutType == other.LayoutType &&
+			       SizingStrategy == other.SizingStrategy &&
+			       SnapType == other.SnapType &&
+			       SnapAlignment == other.SnapAlignment;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is LayoutCacheKey other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			var hash = new HashCode();
+			hash.Add(IsGrouped);
+			hash.Add(HasGroupHeader);
+			hash.Add(HasGroupFooter);
+			hash.Add(HasHeader);
+			hash.Add(HasFooter);
+			hash.Add(Orientation);
+			hash.Add(Span);
+			hash.Add(VerticalItemSpacing);
+			hash.Add(HorizontalItemSpacing);
+			hash.Add(ItemSpacing);
+			hash.Add(LayoutType);
+			hash.Add(SizingStrategy);
+			hash.Add(SnapType);
+			hash.Add(SnapAlignment);
+			return hash.ToHashCode();
+		}
+	}
+
+	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView>
+		where TItemsView : ItemsView
 	{
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
@@ -26,7 +153,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static PropertyMapper<TItemsView, ItemsViewHandler2<TItemsView>> ItemsViewMapper = new(ViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
-			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
+			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] =
+				MapHorizontalScrollBarVisibility,
 			[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,
 			[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
 			[Controls.ItemsView.EmptyViewProperty.PropertyName] = MapEmptyView,
@@ -37,11 +165,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		};
 
 		UICollectionViewLayout _layout;
-
+		LayoutCacheKey _lastLayoutKey;
+		
 		protected override void DisconnectHandler(UIView platformView)
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
+			_lastLayoutKey = default;
 			Controller?.DisposeItemsSource();
 			base.DisconnectHandler(platformView);
 		}
@@ -66,11 +196,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected abstract UICollectionViewLayout SelectLayout();
 
-		protected abstract ItemsViewController2<TItemsView> CreateController(TItemsView newElement, UICollectionViewLayout layout);
+		protected abstract ItemsViewController2<TItemsView> CreateController(TItemsView newElement,
+			UICollectionViewLayout layout);
 
 		protected override UIView CreatePlatformView()
 		{
-			var controllerView = Controller?.View ?? throw new InvalidOperationException("ItemsViewController2's view should not be null at this point.");
+			var controllerView = Controller?.View ??
+			                     throw new InvalidOperationException(
+				                     "ItemsViewController2's view should not be null at this point.");
 			return controllerView;
 		}
 
@@ -82,12 +215,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.Controller?.CollectionView?.UpdateHorizontalScrollBarVisibility(itemsView.HorizontalScrollBarVisibility);
+			handler.Controller?.CollectionView?.UpdateHorizontalScrollBarVisibility(itemsView
+				.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.Controller?.CollectionView?.UpdateVerticalScrollBarVisibility(itemsView.VerticalScrollBarVisibility);
+			handler.Controller?.CollectionView?.UpdateVerticalScrollBarVisibility(itemsView
+				.VerticalScrollBarVisibility);
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -120,10 +255,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// TODO: Fix handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
 		}
 
-		//TODO: this is being called 2 times on startup, one from OnCreatePlatformView and otehr from the mapper for the layout
+		//TODO: this is being called 2 times on startup, one from OnCreatePlatformView and other from the mapper for the layout
 		protected virtual void UpdateLayout()
 		{
-			_layout = SelectLayout();
+			var currentKey = new LayoutCacheKey(ItemsView);
+
+			// Only recreate layout if something has changed
+			if (!currentKey.Equals(_lastLayoutKey) || _layout is null)
+			{
+				_layout = SelectLayout();
+				_lastLayoutKey = currentKey;
+			}
+			
 			Controller?.UpdateLayout(_layout);
 		}
 
@@ -137,7 +280,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, UICollectionViewScrollDirection.Vertical);
+				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition,
+					UICollectionViewScrollDirection.Vertical);
 
 				Controller.CollectionView.ScrollToItem(indexPath,
 					position, args.IsAnimated);
@@ -198,8 +342,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			IView virtualView = VirtualView;
 
-			width = ViewHandlerExtensions.ResolveConstraints(width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			width = ViewHandlerExtensions.ResolveConstraints(width, virtualView.Width, virtualView.MinimumWidth,
+				virtualView.MaximumWidth);
+			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight,
+				virtualView.MaximumHeight);
 
 			return new Size(width, height);
 		}
