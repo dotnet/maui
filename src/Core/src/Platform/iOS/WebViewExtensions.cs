@@ -64,6 +64,25 @@ namespace Microsoft.Maui.Platform
 			webView.CanGoForward = platformWebView.CanGoForward;
 		}
 
+		internal static void UpdateFlowDirectionForScrollView(this UIKit.UIScrollView scrollView, IView view)
+		{
+			scrollView.UpdateFlowDirection(view);
+
+			// On macOS, we need to refresh the scroll indicators when flow direction changes
+			// But only for runtime changes, not during initial load
+			if (OperatingSystem.IsMacCatalyst() && view.IsLoadedOnPlatform())
+			{
+				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
+				bool showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
+
+				scrollView.ShowsVerticalScrollIndicator = false;
+				scrollView.ShowsHorizontalScrollIndicator = false;
+
+				scrollView.ShowsVerticalScrollIndicator = showsVertical;
+				scrollView.ShowsHorizontalScrollIndicator = showsHorizontal;
+			}
+		}
+
 		public static void Eval(this WKWebView platformWebView, IWebView webView, string script)
 		{
 			platformWebView.EvaluateJavaScriptAsync(script);
