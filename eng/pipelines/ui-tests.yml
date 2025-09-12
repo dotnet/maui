@@ -85,6 +85,7 @@ parameters:
       vmImage: $(iosTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
+        - macOS.Architecture -equals x64
   
   - name: windowsBuildPool
     type: object
