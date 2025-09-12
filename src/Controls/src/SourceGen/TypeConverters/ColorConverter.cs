@@ -70,6 +70,9 @@ internal class ColorConverter : ISGTypeConverter
 				if (funcValues.Count == funcName?.Length)
 					return $"global::Microsoft.Maui.Graphics.Color.Parse(\"{value}\")";
 			}
+
+			// As a last resort, try Color.Parse() for any other valid color formats
+			return $"global::Microsoft.Maui.Graphics.Color.Parse(\"{value}\")";
 		}
 
 		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
