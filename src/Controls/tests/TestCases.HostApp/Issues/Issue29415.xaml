@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.Issues.Issue29415">
+    <Grid Padding="10"
+          RowDefinitions="Auto,*,*">
+        <VerticalStackLayout
+            Grid.Row="0"
+            Padding="10">
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="ItemsUpdatingKeepItemsInView"
+                             Content="KeepItemsInView"
+                             FontSize="10"
+                             GroupName="ItemsUpdatingScrollModeGroup"
+                             CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                             AutomationId="ItemsUpdatingKeepItemsInView"/>
+                <RadioButton x:Name="ItemsUpdatingKeepLastItemInView"
+                             Content="KeepLastItemInView"
+                             FontSize="10"
+                             GroupName="ItemsUpdatingScrollModeGroup"
+                             CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                             AutomationId="ItemsUpdatingKeepLastItemInView"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="10"
+                                   Margin="0,5,0,0">
+                <RadioButton x:Name="ItemsUpdatingKeepScrollOffset"
+                             Content="KeepScrollOffset"
+                             FontSize="10"
+                             GroupName="ItemsUpdatingScrollModeGroup"
+                             CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                             AutomationId="ItemsUpdatingKeepScrollOffset"/>
+                <Button Text="Add"
+                        Clicked="Button_Clicked"
+                        Command="{Binding AddItemCommand}"
+                        WidthRequest="120"
+                        AutomationId="AddButton"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <local:CarouselView2 Grid.Row="1"
+                             x:Name="carouselView"
+                             HorizontalScrollBarVisibility="Never"
+                             IndicatorView="{x:Reference indicatorView}">
+            <local:CarouselView2.ItemTemplate>
+                <DataTemplate>
+                    <Border>
+                        <Label Text="{Binding .}"
+                               AutomationId="{Binding .}"
+                               HorizontalTextAlignment="Center"
+                               VerticalOptions="Center"/>
+                    </Border>
+                </DataTemplate>
+            </local:CarouselView2.ItemTemplate>
+        </local:CarouselView2>
+
+        <IndicatorView
+            x:Name="indicatorView"
+            Grid.Row="2"
+            HorizontalOptions="Center"
+            VerticalOptions="End"
+            Margin="0,0,0,20"
+            IndicatorColor="LightGray"
+            SelectedIndicatorColor="DarkGray"
+            IndicatorSize="12"/>
+    </Grid>
+</ContentPage>
