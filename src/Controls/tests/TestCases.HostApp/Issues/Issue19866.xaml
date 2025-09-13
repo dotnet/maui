@@ -5,23 +5,15 @@
              Title="Issue 19866 - iOS CollectionView ScrollsToTop">
     <StackLayout>
         <Label AutomationId="InstructionsLabel" 
-               Text="To test status bar tap: 1) Scroll down in the CollectionView below 2) Tap the iOS status bar 3) Verify the CollectionView scrolls to the top" 
+               Text="iOS CollectionView with ScrollsToTop functionality enabled. Scroll down and tap the status bar to scroll back to top." 
                Padding="10" 
                BackgroundColor="LightYellow"
                FontSize="16" />
         
-        <Button x:Name="ScrollToTopButton"
-                AutomationId="ScrollToTopButton"
-                Text="Scroll to Top (Programmatic Test)"
-                Clicked="OnScrollToTopClicked"
-                BackgroundColor="LightBlue"
-                Margin="10" />
-        
         <CollectionView x:Name="TestCollectionView" 
                         AutomationId="TestCollectionView"
                         ItemsSource="{Binding Items}"
-                        BackgroundColor="LightGray"
-                        HeightRequest="400">
+                        BackgroundColor="LightGray">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="15" BackgroundColor="White" Margin="5">
@@ -40,10 +32,5 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        
-        <Label Text="Note: Status bar tap behavior only works on actual iOS devices, not simulators or other platforms."
-               Padding="10"
-               FontSize="12"
-               TextColor="Red" />
     </StackLayout>
 </ContentPage>

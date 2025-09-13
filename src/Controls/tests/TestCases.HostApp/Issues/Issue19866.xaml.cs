@@ -26,15 +26,6 @@ namespace Maui.Controls.Sample.Issues
 			
 			BindingContext = this;
 		}
-
-		private void OnScrollToTopClicked(object sender, System.EventArgs e)
-		{
-			// Programmatically scroll to the top to test scroll functionality
-			if (Items.Count > 0)
-			{
-				TestCollectionView.ScrollTo(Items[0], position: ScrollToPosition.Start, animate: true);
-			}
-		}
 	}
 
 	public class TestItem

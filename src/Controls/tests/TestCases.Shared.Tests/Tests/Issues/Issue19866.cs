@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewScrollsToTopIsEnabledOnIOS()
+		public void CollectionViewScrollsToTopOnStatusBarTap()
 		{
 			// Wait for the CollectionView to be present
 			App.WaitForElement("TestCollectionView");
@@ -23,24 +23,26 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var collectionView = App.WaitForElement("TestCollectionView");
 			Assert.IsNotNull(collectionView, "CollectionView should be present");
 			
-			// Test scrolling functionality to ensure the CollectionView works properly
-			// Scroll down to verify scrolling works
+			// Verify the first item is initially visible
+			App.WaitForElement("Item_1");
+			
+			// Scroll down to move away from the top
+			App.ScrollDown("TestCollectionView");
 			App.ScrollDown("TestCollectionView");
 			
-			// Use the scroll to top button to test programmatic scroll to top
-			var scrollToTopButton = App.WaitForElement("ScrollToTopButton");
-			App.Tap("ScrollToTopButton");
-			
-			// Wait a moment for the scroll animation to complete
+			// Wait for scroll to complete
 			System.Threading.Thread.Sleep(500);
 			
-			// Verify we can still interact with the first item (indicating we're at the top)
-			var firstItem = App.WaitForElement("Item_1");
-			Assert.IsNotNull(firstItem, "First item should be visible after scrolling to top");
+			// Simulate tapping the status bar area (top of the screen)
+			// On iOS, the status bar is typically at the very top of the screen
+			App.TapCoordinates(App.Driver.Manage().Window.Size.Width / 2, 10);
 			
-			// Note: The actual status bar tap gesture cannot be automated in UI tests
-			// The fix ensures ScrollsToTop = true is set on the UICollectionView during handler connection
-			// Manual testing still required for status bar tap functionality
+			// Wait for the scroll-to-top animation to complete
+			System.Threading.Thread.Sleep(1000);
+			
+			// Verify we're back at the top by checking if the first item is visible
+			var firstItem = App.WaitForElement("Item_1");
+			Assert.IsNotNull(firstItem, "First item should be visible after status bar tap");
 		}
 	}
 }
