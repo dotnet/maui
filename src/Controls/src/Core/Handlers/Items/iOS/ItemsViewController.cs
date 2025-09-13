@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					foreach (var child in ItemsView.LogicalChildrenInternal)
 					{
-						if (child is VisualElement ve && ve.Handler.PlatformView is UIView view)
+						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 						{
 							view.UpdateFlowDirection(ve);
 						}
