@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Does Not Leak"
 #if IOS || MACCATALYST
 		, Skip = "failing on dnceng"
-#endif		
+#endif
 		)]
 		public async Task DoesNotLeak()
 		{
