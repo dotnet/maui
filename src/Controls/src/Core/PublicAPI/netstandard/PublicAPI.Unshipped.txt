@@ -31,6 +31,7 @@ Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
 override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
 ~Microsoft.Maui.Controls.CheckBox.Command.set -> void
 ~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object

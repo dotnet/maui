@@ -13,4 +13,9 @@
 	{
 		PathF InnerPathForBounds(Rect bounds, float strokeThickness);
 	}
+
+	internal interface IVersionedShape : IShape
+	{
+		int Version { get; }
+	}
 }

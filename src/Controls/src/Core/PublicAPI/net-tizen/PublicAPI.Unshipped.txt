@@ -5,6 +5,7 @@ const Microsoft.Maui.Controls.BrushTypeConverter.LinearGradient = "linear-gradie
 const Microsoft.Maui.Controls.BrushTypeConverter.RadialGradient = "radial-gradient" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Rgb = "rgb" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Rgba = "rgba" -> string!
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
 override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
