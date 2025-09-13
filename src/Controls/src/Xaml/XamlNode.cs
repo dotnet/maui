@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	}
 
 	static class XmlNameExtensions
-	{ 
+	{
 		public static bool TryGetValue(this Dictionary<XmlName, INode> properties, string name, out INode node, out XmlName xmlName)
 		{
 			xmlName = new XmlName("", name);

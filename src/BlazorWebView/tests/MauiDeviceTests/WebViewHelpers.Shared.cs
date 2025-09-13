@@ -41,6 +41,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		/// <param name="webView">The WKWebView instance</param>
 		/// <param name="asyncFunctionBody">The body of the async function (without function wrapper)</param>
 		/// <returns>The result stored in controlDiv after the async operation completes</returns>
+		[RequiresUnreferencedCode()]
 		public static async Task<T?> ExecuteAsyncScriptAndWaitForResult<T>(PlatformWebView webView, string asyncFunctionBody)
 		{
 			// Inject script that executes the async function and stores result in controlDiv

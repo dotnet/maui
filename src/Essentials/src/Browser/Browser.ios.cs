@@ -41,8 +41,7 @@ namespace Microsoft.Maui.ApplicationModel
 			if (options.PreferredControlColor != null)
 				sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
 
-			if (sfViewController.PopoverPresentationController != null)
-				sfViewController.PopoverPresentationController.SourceView = vc.View!;
+			sfViewController.PopoverPresentationController?.SourceView = vc.View!;
 
 			if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
 				sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
