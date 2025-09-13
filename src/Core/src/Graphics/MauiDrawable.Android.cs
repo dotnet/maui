@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Graphics
 		GPaint? _background;
 		GPaint? _stroke;
 		IShape? _shape;
+		int _shapeVersion;
 		double _strokeWidth;
 		float _strokeMiterLimit;
 		Join? _strokeLineJoin;
@@ -158,9 +159,24 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderShape(IShape? shape)
 		{
-			if (_shape == shape)
+			// Border's shape is allowed to be a BindableObject so it can change even without changing instance
+			// and trigger a shape update, so even if the instance is the same we need to update the shape unless
+			// it implements our internal IVersionedShape and the version hasn't changed
+			// (this is an internal optimization to avoid unnecessary updates)
+			if (shape is IVersionedShape versionedShape)
 			{
-				return;
+				if (shape == _shape && _shapeVersion == versionedShape.Version)
+				{
+					return;
+				}
+
+				_shapeVersion = versionedShape.Version;
+			}
+			else
+			{
+				// When not versioned, we have no way to know if something changed,
+				// so we just assume it did at cost of performance.
+				_shapeVersion = 0;
 			}
 
 			_shape = shape;
