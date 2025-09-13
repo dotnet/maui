@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using System.Linq;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("Sample Page"));
 		}
 
-// BackButtonTitle does not applicable for Android and Windows Platforms
+		// BackButtonTitle does not applicable for Android and Windows Platforms
 #if TEST_FAILS_ON_IOS && TESTS_FAIL_ON_MACCATALYST// Issue Link: https://github.com/dotnet/maui/issues/31539
 #if IOS || MACCATALYST
 		[Test,Order(19)]
