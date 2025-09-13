@@ -13,11 +13,11 @@ namespace Microsoft.Maui.Controls.SourceGen;
 internal struct CompiledBindingMarkup
 {
 	private readonly SourceGenContext _context;
-	private readonly IElementNode _node;
+	private readonly ElementNode _node;
 	private readonly string _path;
 	private readonly LocalVariable _bindingExtension;
 
-	public CompiledBindingMarkup(IElementNode node, string path, LocalVariable bindingExtension, SourceGenContext context)
+	public CompiledBindingMarkup(ElementNode node, string path, LocalVariable bindingExtension, SourceGenContext context)
 	{
 		_context = context;
 		_node = node;

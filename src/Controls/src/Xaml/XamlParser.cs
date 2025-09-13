@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			ParseXamlElementFor(rootNode, reader);
 		}
 
-		static void ParseXamlElementFor(IElementNode node, XmlReader reader)
+		static void ParseXamlElementFor(ElementNode node, XmlReader reader)
 		{
 			Debug.Assert(reader.NodeType == XmlNodeType.Element);
 
@@ -174,10 +174,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 						node = new ElementNode(new XmlType(elementNsUri, elementName, typeArguments), elementNsUri,
 							reader as IXmlNamespaceResolver, elementXmlInfo.LineNumber, elementXmlInfo.LinePosition);
-						((IElementNode)node).Properties.AddRange(attributes);
+						((ElementNode)node).Properties.AddRange(attributes);
 						(node.IgnorablePrefixes ?? (node.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 
-						ParseXamlElementFor((IElementNode)node, reader);
+						ParseXamlElementFor((ElementNode)node, reader);
 						nodes.Add(node);
 						if (isEmpty || nested)
 							return node;

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 internal class KnownMarkups
 {
-	public static bool ProvideValueForStaticExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForStaticExtension(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.ObjectType;
 		if (!markupNode.Properties.TryGetValue(new XmlName("", "Member"), out INode ntype)
@@ -70,7 +70,7 @@ internal class KnownMarkups
 		return false;
 	}
 
-	public static bool ProvideValueForTypeExtension(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForTypeExtension(ElementNode node, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("System.Type")!;
 		if (!node.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode) &&
@@ -107,7 +107,7 @@ internal class KnownMarkups
 		return true;
 	}
 
-	public static bool ProvideValueForSetter(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForSetter(ElementNode node, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
 
@@ -141,7 +141,7 @@ internal class KnownMarkups
 		return false;
 	}
 
-	public static bool ProvideValueForDynamicResourceExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
 		string? key = null;
@@ -156,7 +156,7 @@ internal class KnownMarkups
 		return true;
 	}
 
-	internal static bool ProvideValueForStyleSheetExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForStyleSheetExtension(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.StyleSheets.StyleSheet")!;
 
@@ -205,17 +205,17 @@ internal class KnownMarkups
 		}
 	}
 
-	internal static bool ProvideValueForTemplateBindingExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		return ProvideValueForBindingExtension(markupNode, context, isTemplateBinding: true, out returnType, out value);
 	}
 
-	internal static bool ProvideValueForBindingExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForBindingExtension(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		return ProvideValueForBindingExtension(markupNode, context, isTemplateBinding: false, out returnType, out value);
 	}
 
-	private static bool ProvideValueForBindingExtension(IElementNode markupNode, SourceGenContext context, bool isTemplateBinding, out ITypeSymbol? returnType, out string value)
+	private static bool ProvideValueForBindingExtension(ElementNode markupNode, SourceGenContext context, bool isTemplateBinding, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 
@@ -269,7 +269,7 @@ internal class KnownMarkups
 			return true;
 		}
 
-		static string GetBindingPath(IElementNode node)
+		static string GetBindingPath(ElementNode node)
 		{
 			if (node.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
 				&& pathNode is ValueNode { Value: string pathValue })
@@ -289,7 +289,7 @@ internal class KnownMarkups
 			}
 		}
 
-		static bool TryGetXDataType(IElementNode node, SourceGenContext context, out ITypeSymbol? dataTypeSymbol)
+		static bool TryGetXDataType(ElementNode node, SourceGenContext context, out ITypeSymbol? dataTypeSymbol)
 		{
 			dataTypeSymbol = null;
 
@@ -384,7 +384,7 @@ internal class KnownMarkups
 			return true;
 		}
 
-		static bool TryFindXDataTypeNode(IElementNode elementNode, SourceGenContext context, out INode? dataTypeNode, out bool isInOuterScope)
+		static bool TryFindXDataTypeNode(ElementNode elementNode, SourceGenContext context, out INode? dataTypeNode, out bool isInOuterScope)
 		{
 			isInOuterScope = false;
 			dataTypeNode = null;
@@ -394,13 +394,13 @@ internal class KnownMarkups
 			// - x:DataType on the binding itself
 			// - SKIP looking for x:DataType on the parent
 			// - continue looking for x:DataType on the parent's parent...
-			IElementNode? skipNode = null;
+			ElementNode? skipNode = null;
 			if (IsBindingContextBinding(elementNode))
 			{
 				skipNode = GetParent(elementNode);
 			}
 
-			IElementNode? node = elementNode;
+			ElementNode? node = elementNode;
 			while (node is not null)
 			{
 				if (node != skipNode && node.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
@@ -426,9 +426,9 @@ internal class KnownMarkups
 			return false;
 		}
 
-		static bool DoesNotInheritDataType(IElementNode node, SourceGenContext context)
+		static bool DoesNotInheritDataType(ElementNode node, SourceGenContext context)
 		{
-			return GetParent(node) is IElementNode parentNode
+			return GetParent(node) is ElementNode parentNode
 				&& parentNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out INamedTypeSymbol? parentTypeSymbol)
 				&& parentTypeSymbol is not null
 				&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
@@ -436,27 +436,27 @@ internal class KnownMarkups
 				&& propertySymbol.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "global::Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
 		}
 
-		static IElementNode? GetParent(IElementNode node)
+		static ElementNode? GetParent(ElementNode node)
 		{
 			return node switch
 			{
-				{ Parent: ListNode { Parent: IElementNode parentNode } } => parentNode,
-				{ Parent: IElementNode parentNode } => parentNode,
+				{ Parent: ListNode { Parent: ElementNode parentNode } } => parentNode,
+				{ Parent: ElementNode parentNode } => parentNode,
 				_ => null,
 			};
 		}
 
-		static bool IsBindingContextBinding(IElementNode node)
+		static bool IsBindingContextBinding(ElementNode node)
 		{
 			// looking for BindingContext="{Binding ...}"
-			return GetParent(node) is IElementNode parentNode
+			return GetParent(node) is ElementNode parentNode
 				&& node.TryGetPropertyName(parentNode, out var propertyName)
 				&& propertyName.NamespaceURI == ""
 				&& propertyName.LocalName == "BindingContext";
 		}
 	}
 
-	internal static bool ProvideValueForReferenceExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		// should be possible to return the right value, as soon as we no longer use the namescope
 		returnType = context.Compilation.ObjectType;
@@ -480,7 +480,7 @@ internal class KnownMarkups
 				value = $"{namescope.namesInScope[name!].Name}";
 				return true;
 			}
-			node = node.Parent as IElementNode;
+			node = node.Parent as ElementNode;
 		}
 
 		//TODO report diagnostic
@@ -490,7 +490,7 @@ internal class KnownMarkups
 	}
 
 	//all of this could/should be better, but is already slightly better than XamlC
-	internal static bool ProvideValueForStaticResourceExtension(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, SourceGenContext context, out ITypeSymbol? returnType, out string value)
 	{
 		// If the resource is defined locally, we can return the value directly
 		var eNode = (node as ElementNode)!;
@@ -556,7 +556,7 @@ internal class KnownMarkups
 		return false;
 	}
 
-	static IElementNode? GetResourceNode(ElementNode en, SourceGenContext context, string key)
+	static ElementNode? GetResourceNode(ElementNode en, SourceGenContext context, string key)
 	{
 		var n = en;
 		while (n != null)
@@ -567,43 +567,43 @@ internal class KnownMarkups
 				continue;
 			}
 			//single resource in <Resources>
-			if (resourcesNode is IElementNode irn
+			if (resourcesNode is ElementNode irn
 				&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
 				&& context.Variables.ContainsKey(irn)
 				&& xKeyNode is ValueNode xKeyValueNode
 				&& xKeyValueNode.Value as string == key)
 			{
-				return irn as IElementNode;
+				return irn as ElementNode;
 			}
 			//multiple resources in <Resources>
 			else if (resourcesNode is ListNode lr)
 			{
 				foreach (var rn in lr.CollectionItems)
 				{
-					if (rn is IElementNode irn2
+					if (rn is ElementNode irn2
 						&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
 						&& context.Variables.ContainsKey(irn2)
 						&& xKeyNode2 is ValueNode xKeyValueNode2
 						&& xKeyValueNode2.Value as string == key)
 					{
-						return irn2 as IElementNode;
+						return irn2 as ElementNode;
 					}
 				}
 			}
 			//explicit ResourceDictionary in Resources
-			else if (resourcesNode is IElementNode resourceDictionary
+			else if (resourcesNode is ElementNode resourceDictionary
 					&& resourceDictionary.XmlType.Name == "ResourceDictionary")
 			{
 				foreach (var rn in resourceDictionary.CollectionItems)
 				{
-					if (rn is IElementNode irn3
+					if (rn is ElementNode irn3
 						&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 						&& irn3.XmlType.Name != "OnPlatform"
 						&& context.Variables.ContainsKey(irn3)
 						&& xKeyNode3 is ValueNode xKeyValueNode3
 						&& xKeyValueNode3.Value as string == key)
 					{
-						return irn3 as IElementNode;
+						return irn3 as ElementNode;
 					}
 				}
 			}
