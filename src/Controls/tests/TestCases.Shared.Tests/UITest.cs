@@ -232,9 +232,14 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
 							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
 
-						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						if (deviceApiLevel == 36)
 						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+							environmentName = "android-notch-36";
+						}
+
+						if (!((deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420) || (deviceApiLevel == 36 && deviceScreenSize == "1080x2424" && deviceScreenDensity == 420)))
+						{
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
@@ -298,7 +303,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => 60,
+					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -317,7 +322,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
