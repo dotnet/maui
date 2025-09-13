@@ -21,6 +21,15 @@ Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersis
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
 Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
 Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.Maui.PlatformViewGroup
+override Microsoft.Maui.PlatformViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformViewGroup.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformViewGroup.ThresholdType.get -> System.Type!
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle, int defStyleRes) -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.set -> void
