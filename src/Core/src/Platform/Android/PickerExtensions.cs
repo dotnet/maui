@@ -57,8 +57,7 @@ namespace Microsoft.Maui.Platform
 			// Propagate the MauiPicker LayoutDirection to the AlertDialog
 			var dv = alertDialog.Window?.DecorView;
 
-			if (dv is not null)
-				dv.LayoutDirection = platformLayoutDirection;
+			dv?.LayoutDirection = platformLayoutDirection;
 
 			var lv = alertDialog?.ListView;
 

@@ -58,7 +58,8 @@ namespace Microsoft.Maui.Controls
 				SetActive(currentOrientation.IsLandscape());
 			else if (Orientation.IsPortrait())
 				SetActive(currentOrientation.IsPortrait());
-			else SetActive(false);
+			else
+				SetActive(false);
 		}
 	}
 }

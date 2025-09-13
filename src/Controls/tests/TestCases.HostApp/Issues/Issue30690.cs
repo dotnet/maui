@@ -77,7 +77,7 @@ public class Issue30690 : TestContentPage
 			Children =
 			{
 				_statusLabel,
-				
+
 				new Button()
 				{
 					AutomationId = "ToggleIsRefreshEnabled",

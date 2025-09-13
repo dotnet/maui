@@ -58,10 +58,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			set
 			{
 				_drawable = value;
-				if (_renderer != null)
-				{
-					_renderer.Drawable = _drawable;
-				}
+				_renderer?.Drawable = _drawable;
 			}
 		}
 
