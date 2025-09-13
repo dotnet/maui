@@ -5,17 +5,13 @@ import android.content.res.Resources;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathEffect;
-import android.graphics.RadialGradient;
 import android.graphics.Rect;
-import android.graphics.Shader;
 import android.graphics.drawable.PaintDrawable;
 import android.graphics.drawable.shapes.Shape;
 import android.graphics.drawable.shapes.RectShape;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 

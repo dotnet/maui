@@ -97,7 +97,8 @@ public class PlatformDrawableStyle {
             paint.setShader(null);
             paint.setColor(solidColor);
         } else if (paintType == PlatformPaintType.LINEAR || paintType == PlatformPaintType.RADIAL) {
-            paint.setColor(Color.TRANSPARENT);
+            // Reset the color to its default value so that a shader can be applied on top of it
+            paint.setColor(Color.BLACK);
             paint.setShader(getShader(width, height));
         } else if (fallbackStyle != null) {
             fallbackStyle.applyStyle(paint, width, height, null);
