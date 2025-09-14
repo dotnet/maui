@@ -122,7 +122,7 @@ public partial class TestPage
 #line 8 "{{testXamlFilePath}}"
 		setter.Value = "Pink";
 #line default
-		var setter2 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Color.Parse("Pink")};
+		var setter2 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter2!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter2!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
 #line 8 "{{testXamlFilePath}}"
