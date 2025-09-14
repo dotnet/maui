@@ -9,19 +9,19 @@ namespace Maui.Controls.Sample.Issues;
 
 public partial class Issue20870 : ContentPage
 {
-	private readonly Button[] _buttons;
-
 	public Issue20870()
 	{
 		InitializeComponent();
 		BindingContext = this;
-
-		_buttons = [ButtonSingleTap, ButtonDoubleTap, ButtonSingleAndDoubleTap, ButtonDoubleAndSingleTap];
 	}
 
-	private void Clear_Clicked(object sender, System.EventArgs e)
+	// NOTE: Using Labels for gesture recognizer tests (instead of Buttons) to avoid
+	// platform-specific wrapper/container views on iOS/macOS that can interfere with
+	// hit testing and double-tap routing. This keeps gesture routing consistent across
+	// platforms for the purpose of these cross-platform UITests.
+	private void Clear_Tapped(object? sender, TappedEventArgs e)
 	{
-		Results.Text = "";
+		Results.Text = string.Empty;
 	}
 
 	private void OnTap(object? sender, TappedEventArgs e)

@@ -10,35 +10,35 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <FlexLayout Grid.Row="0" Direction="Row" Wrap="Wrap" JustifyContent="SpaceAround" AlignItems="Center" Margin="10">
-            <Button x:Name="ButtonSingleTap" AutomationId="ButtonSingleTap" Text="SingleTap" FontSize="16" TextColor="Red" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
-                <Button.GestureRecognizers>
+    <FlexLayout Grid.Row="0" Direction="Row" Wrap="Wrap" JustifyContent="SpaceAround" AlignItems="Center" Margin="10" MinimumHeightRequest="80">
+            <!-- Using Labels instead of Buttons for gesture tests to avoid platform-specific container wrapping (iOS/macOS) affecting double-tap routing. -->
+            <Label x:Name="ButtonSingleTap" AutomationId="ButtonSingleTap" Text="SingleTap" FontSize="20" TextColor="Red" VerticalOptions="Center">
+                <Label.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTap"/>
-                </Button.GestureRecognizers>
-            </Button>
-            <Button x:Name="ButtonDoubleTap" AutomationId="ButtonDoubleTap" Text="DoubleTap" FontSize="16" TextColor="Green" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
-                <Button.GestureRecognizers>
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="ButtonDoubleTap" AutomationId="ButtonDoubleTap" Text="DoubleTap" FontSize="20" TextColor="Green" VerticalOptions="Center">
+                <Label.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
-                </Button.GestureRecognizers>
-            </Button>
-            <Button x:Name="ButtonSingleAndDoubleTap" AutomationId="ButtonSingleAndDoubleTap" Text="Single+Double" FontSize="16" TextColor="Blue" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
-                <Button.GestureRecognizers>
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="ButtonSingleAndDoubleTap" AutomationId="ButtonSingleAndDoubleTap" Text="SingleAndDoubleTap" FontSize="20" TextColor="Blue" VerticalOptions="Center">
+                <Label.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTap"/>
                     <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
-                </Button.GestureRecognizers>
-            </Button>
-            <Button x:Name="ButtonDoubleAndSingleTap" AutomationId="ButtonDoubleAndSingleTap" Text="Double+Single" FontSize="16" TextColor="Purple" Margin="5" MinimumWidthRequest="140" HeightRequest="50">
-                <Button.GestureRecognizers>
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="ButtonDoubleAndSingleTap" AutomationId="ButtonDoubleAndSingleTap" Text="DoubleAndSingleTap" FontSize="20" TextColor="Purple" VerticalOptions="Center">
+                <Label.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
                     <TapGestureRecognizer Tapped="OnTap"/>
-                </Button.GestureRecognizers>
-            </Button>
-            <Button x:Name="Clear" AutomationId="Clear" Text="Clear" FontSize="16" Clicked="Clear_Clicked" Margin="5" MinimumWidthRequest="100" HeightRequest="50"/>
-
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="Clear" AutomationId="Clear" Text="Clear" FontSize="20" TextColor="Black" VerticalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="Clear_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
         </FlexLayout>
 
         <ScrollView Grid.Row="1">

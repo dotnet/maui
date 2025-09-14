@@ -665,14 +665,7 @@ namespace Microsoft.Maui.Controls.Platform
 						_proxy ??= new ShouldReceiveTouchProxy(this);
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
 
-						// When handler uses a container (e.g., ButtonHandler) the actual interactive
-						// control is the first subview (UIButton). Attach there so the gesture fires.
-						if (PlatformView.Subviews?.Length > 0
-							&& PlatformView.Subviews[0] is PlatformView inner
-							&& inner is UIButton)
-							inner.AddGestureRecognizer(nativeRecognizer);
-						else
-							PlatformView.AddGestureRecognizer(nativeRecognizer);
+						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
 					}
 				}
