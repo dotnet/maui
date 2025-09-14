@@ -63,18 +63,22 @@ namespace Microsoft.Maui.Handlers
 			// Compute a possible size without mutating platform properties during measure.
 			var possibleSize = base.GetDesiredSize(widthConstraint, heightConstraint);
 
-			// For AspectFit + non-Fill alignment, don't exceed intrinsic bitmap size so alignment works.
-			if (VirtualView.Aspect == Aspect.AspectFit
-				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill
-				&& VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+			// For AspectFit we want each non-Fill axis (independently) to not exceed intrinsic bitmap size
+			// so that alignment (Center, Start, End) has space to operate. A Fill axis should remain
+			// unconstrained here and rely on layout constraints.
+			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
 				var imageSize = GetImageSize();
-				if (imageSize.Width > 0 && imageSize.Height > 0)
-				{
-					return new Graphics.Size(
-						Math.Min(possibleSize.Width, imageSize.Width),
-						Math.Min(possibleSize.Height, imageSize.Height));
-				}
+				double w = possibleSize.Width;
+				double h = possibleSize.Height;
+
+				if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill && imageSize.Width > 0)
+					w = Math.Min(w, imageSize.Width);
+
+				if (VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill && imageSize.Height > 0)
+					h = Math.Min(h, imageSize.Height);
+
+				return new Graphics.Size(w, h);
 			}
 
 			return possibleSize;
@@ -196,22 +200,26 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView is null || VirtualView is null)
 				return;
 
-			bool isAspectFitNonFill = VirtualView.Aspect == Aspect.AspectFit
-				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill
-				&& VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill;
-
-			if (isAspectFitNonFill)
+			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
 				var sz = GetImageSize();
-				if (sz.Width > 0 && sz.Height > 0)
-				{
-					PlatformView.MaxWidth = sz.Width;
-					PlatformView.MaxHeight = sz.Height;
-					return;
-				}
+
+				// Width: cap to intrinsic only if horizontal alignment isn't Fill
+				if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill && sz.Width > 0)
+					PlatformView.MaxWidth = Math.Min(sz.Width, VirtualView.MaximumWidth);
+				else
+					PlatformView.MaxWidth = VirtualView.MaximumWidth;
+
+				// Height: cap to intrinsic only if vertical alignment isn't Fill
+				if (VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill && sz.Height > 0)
+					PlatformView.MaxHeight = Math.Min(sz.Height, VirtualView.MaximumHeight);
+				else
+					PlatformView.MaxHeight = VirtualView.MaximumHeight;
+
+				return;
 			}
 
-			// Otherwise mirror the view's declared maximums
+			// Non AspectFit: mirror the view's declared maximums
 			PlatformView.MaxWidth = VirtualView.MaximumWidth;
 			PlatformView.MaxHeight = VirtualView.MaximumHeight;
 		}
