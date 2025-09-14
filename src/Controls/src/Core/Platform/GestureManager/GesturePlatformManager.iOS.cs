@@ -986,19 +986,16 @@ namespace Microsoft.Maui.Controls.Platform
 									null,
 									ButtonsMask.Secondary);
 
-								// Delay releasing slightly to allow any Pressed handlers to run first
-								Task.Delay(1).ContinueWith(_ =>
+								// Immediately send pointer released event
+								if (_gestureManager.Target is GesturePlatformManager gt
+									&& _recognizer.Target is PointerGestureRecognizer pgr2
+									&& gt._handler?.VirtualView is View view2)
 								{
-									if (_gestureManager.Target is GesturePlatformManager gt
-										&& _recognizer.Target is PointerGestureRecognizer pgr2
-										&& gt._handler?.VirtualView is View view2)
-									{
-										view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
-											(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
-											null,
-											ButtonsMask.Secondary));
-									}
-								});
+									view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
+										(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
+										null,
+										ButtonsMask.Secondary));
+								}
 						}
 					}
 					
