@@ -176,7 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.NotNull(cell);
-		
+
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST

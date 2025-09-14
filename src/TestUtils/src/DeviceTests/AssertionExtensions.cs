@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 				var taskCollect = reference.WaitForCollect();
 				try
 				{
-					await AssertEventuallyAsync(async ()=> await taskCollect);
+					await AssertEventuallyAsync(async () => await taskCollect);
 				}
 				catch (XunitException)
 				{
