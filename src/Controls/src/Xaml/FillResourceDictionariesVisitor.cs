@@ -78,8 +78,8 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			if (!(node is ElementNode))
 				return false;
-			if (parentNode is ElementNode
-				&& Context.Types.TryGetValue((ElementNode)parentNode, out var parentType)
+			if (parentNode is ElementNode parentElementNode
+				&& Context.Types.TryGetValue(parentElementNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
 				&& !((ElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				return true;
