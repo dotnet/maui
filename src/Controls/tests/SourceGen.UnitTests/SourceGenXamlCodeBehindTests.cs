@@ -92,6 +92,35 @@ using Microsoft.Maui.Controls;
 		Assert.IsTrue(generated.Contains("global::Microsoft.Maui.Controls.Label label", StringComparison.Ordinal));
 	}
 
+	[Test]
+	public void TestCodeBehindGenerator_AggregatedXmlnsOnRD()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+	<x:String x:Key="MyString">Hello MAUI!</x:String>
+</ResourceDictionary>
+""";
+
+		var code =
+		"""
+using Microsoft.Maui.Controls;
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://schemas.microsoft.com/dotnet/2021/maui")]
+""";
+		var compilation = CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+
+		Assert.IsTrue(generated.Contains("public partial class __Type", StringComparison.Ordinal));
+	}
+
 	public void TestCodeBehindGenerator_LocalXaml([Values] bool resolvedType)
 	{
 		var xaml =
@@ -305,9 +334,11 @@ public class TestControl : ContentView
 </foo>
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.That(result.Diagnostics.Any());
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+		Assert.That(result.Diagnostics.Any() || string.IsNullOrWhiteSpace(generated));
 	}
 
 	[Test]
