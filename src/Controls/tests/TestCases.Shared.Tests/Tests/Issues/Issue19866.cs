@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			
 			// Verify the CollectionView is present and contains items
 			var collectionView = App.WaitForElement("TestCollectionView");
-			Assert.IsNotNull(collectionView, "CollectionView should be present");
+			ClassicAssert.IsNotNull(collectionView, "CollectionView should be present");
 			
 			// Verify the first item is initially visible
 			App.WaitForElement("Item_1");
@@ -35,14 +36,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			
 			// Simulate tapping the status bar area (top of the screen)
 			// On iOS, the status bar is typically at the very top of the screen
-			App.TapCoordinates(App.Driver.Manage().Window.Size.Width / 2, 10);
+			App.TapCoordinates(200, 10);
 			
 			// Wait for the scroll-to-top animation to complete
 			System.Threading.Thread.Sleep(1000);
 			
 			// Verify we're back at the top by checking if the first item is visible
 			var firstItem = App.WaitForElement("Item_1");
-			Assert.IsNotNull(firstItem, "First item should be visible after status bar tap");
+			ClassicAssert.IsNotNull(firstItem, "First item should be visible after status bar tap");
 		}
 	}
 }
