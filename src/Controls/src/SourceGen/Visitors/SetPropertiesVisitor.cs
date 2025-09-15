@@ -474,14 +474,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (node is ValueNode valueNode)
 		{
-			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem.RelativePath) : PrePost.NoBlock())
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
 				var valueString = valueNode.ConvertTo(property, context, parentVar);
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = {valueString};");
 			}
 		}
 		else if (node is ElementNode elementNode)
-			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem.RelativePath) : PrePost.NoBlock())
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{context.Variables[elementNode].Name};");
 	}
 
@@ -610,7 +610,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (HasDoubleImplicitConversion(context.Variables[valueNode].Type, itemType, context, out var conv))
 			cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 
-		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem.RelativePath) : PrePost.NoBlock())
+		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
 			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{context.Variables[valueNode].Name});");
 	}
 

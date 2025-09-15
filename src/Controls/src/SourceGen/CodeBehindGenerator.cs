@@ -96,12 +96,11 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		initContext.RegisterSourceOutput(xamlSourceProviderForCB, static (sourceProductionContext, provider) =>
 		{
 			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
-			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
 			try
 			{
 				var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext.ReportDiagnostic, sourceProductionContext.CancellationToken, xmlnsCache, typeCache);
-				sourceProductionContext.AddSource(fileName, code);
+				sourceProductionContext.AddSource(GetHintName(xamlItem?.ProjectItem, "sg"), code);
 			}
 			catch (Exception e)
 			{
@@ -115,7 +114,10 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		{
 			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
 
-			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.xsg.cs".Replace(Path.DirectorySeparatorChar, '_');
+			if (xamlItem?.ProjectItem?.RelativePath is not string relativePath)
+			{
+				throw new InvalidOperationException("Xaml item or target path is null");
+			}
 
 			if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
 				return;
@@ -125,7 +127,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 				if (xamlItem != null && xamlItem.Exception != null)
 				{
 					var lineInfo = xamlItem.Exception is XamlParseException xpe ? xpe.XmlInfo : new XmlLineInfo();
-					var location = LocationCreate(fileName, lineInfo, string.Empty);
+					var location = LocationCreate(relativePath, lineInfo, string.Empty);
 					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
 				}
 				return;
@@ -137,14 +139,13 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					return;
 
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
-				sourceProductionContext.AddSource(fileName, code);
+				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
 			}
 			catch (Exception e)
 			{
 				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
 			}
-
 		});
 
 		// Register the CSS pipeline
@@ -182,6 +183,19 @@ $"""
 			if (!string.IsNullOrEmpty(source))
 				sourceProductionContext.AddSource("Global.Xmlns.cs", SourceText.From(source!, Encoding.UTF8));
 		});
+	}
+
+	private static string GetHintName(ProjectItem? projectItem, string suffix)
+	{
+		if (projectItem?.RelativePath is not string relativePath)
+		{
+			throw new InvalidOperationException("Project item or target path is null");
+		}
+
+		var prefix = Path.GetDirectoryName(relativePath).Replace(Path.DirectorySeparatorChar, '_').Replace(':', '_');
+		var fileNameNoExtension = Path.GetFileNameWithoutExtension(relativePath);
+		var kind = projectItem.Kind.ToLowerInvariant() ?? "unknown-kind";
+		return $"{prefix}{fileNameNoExtension}.{kind}.{suffix}.cs";
 	}
 
 	private static string? GenerateGlobalXmlns(SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache)

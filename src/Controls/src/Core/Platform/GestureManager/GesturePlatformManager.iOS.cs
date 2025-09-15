@@ -664,6 +664,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						_proxy ??= new ShouldReceiveTouchProxy(this);
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
+
 						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
 					}

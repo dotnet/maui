@@ -86,6 +86,7 @@ parameters:
     name: $(windowsTestsVmPool)
     vmImage: $(windowsTestsVmImage)
 
+
 - name: targetFrameworkVersions
   type: object
   default:

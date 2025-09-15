@@ -24,7 +24,7 @@
       "rollForward": false
     },
     "microsoft.dotnet.xharness.cli": {
-      "version": "10.0.0-prerelease.25375.1",
+      "version": "10.0.0-prerelease.25427.1",
       "commands": [
         "xharness"
       ],

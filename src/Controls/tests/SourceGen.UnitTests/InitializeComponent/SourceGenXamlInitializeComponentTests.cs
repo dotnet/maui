@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,7 +18,9 @@ public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 	{
 		var compilation = CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
-		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml, TargetFramework: targetFramework, NoWarn: noWarn));
+		var workingDirectory = Environment.CurrentDirectory;
+		var xamlFile = new AdditionalXamlFile(Path.Combine(workingDirectory, "Test.xaml"), xaml, RelativePath: "Test.xaml", TargetFramework: targetFramework, NoWarn: noWarn);
+		var result = RunGenerator<CodeBehindGenerator>(compilation, xamlFile);
 		var generated = result.Results.SingleOrDefault().GeneratedSources.SingleOrDefault(gs => gs.HintName.EndsWith(".xsg.cs")).SourceText?.ToString();
 
 		return (result, generated);

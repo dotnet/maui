@@ -36,6 +36,13 @@ namespace Microsoft.Maui.Platform
 		double _lastMeasureWidth = double.NaN;
 
 		/// <summary>
+		/// Cached measured cross-platform size from the last measure operation tight to <see cref="_lastMeasureWidth"/> and <see cref="_lastMeasureHeight"/>.
+		/// Used to avoid redundant measure calls when constraints haven't changed.
+		/// NaN indicates no previous measure has been performed.
+		/// </summary>
+		Size? _lastMeasuredSize;
+
+		/// <summary>
 		/// Current safe area padding values (top, left, bottom, right) in device-independent units.
 		/// These values represent the insets needed to avoid system UI elements like status bars,
 		/// navigation bars, and home indicators.
@@ -348,15 +355,34 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the cached measure is still valid, false otherwise</returns>
 		protected bool IsMeasureValid(double widthConstraint, double heightConstraint)
 		{
-			return !HasFixedConstraints
-				&& widthConstraint == _lastMeasureWidth
+			return widthConstraint == _lastMeasureWidth
 				&& heightConstraint == _lastMeasureHeight;
 		}
 
+		/// <summary>
+		/// Caches the measure constraints and the resulting measured size from the last measure operation.
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint used.</param>
+		/// <param name="heightConstraint">The height constraint used.</param>
+		[Obsolete("Use CacheMeasureConstraints(double widthConstraint, double heightConstraint, Size measuredSize) instead.")]
 		protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
 		{
 			_lastMeasureWidth = widthConstraint;
 			_lastMeasureHeight = heightConstraint;
+			_lastMeasuredSize = null;
+		}
+
+		/// <summary>
+		/// Caches the measure constraints and the resulting measured size from the last measure operation.
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint used.</param>
+		/// <param name="heightConstraint">The height constraint used.</param>
+		/// <param name="measuredSize">The resulting measured cross-platform size.</param>
+		protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint, Size measuredSize)
+		{
+			_lastMeasureWidth = widthConstraint;
+			_lastMeasureHeight = heightConstraint;
+			_lastMeasuredSize = measuredSize;
 		}
 
 		/// <summary>
@@ -366,7 +392,7 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the view has been measured, false otherwise</returns>
 		bool HasBeenMeasured()
 		{
-			return !double.IsNaN(_lastMeasureWidth) && !double.IsNaN(_lastMeasureHeight);
+			return _lastMeasuredSize.HasValue;
 		}
 
 		/// <summary>
@@ -378,6 +404,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_lastMeasureWidth = double.NaN;
 			_lastMeasureHeight = double.NaN;
+			_lastMeasuredSize = null;
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -446,9 +473,14 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = (double)size.Width;
 			var heightConstraint = (double)size.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
+			if (IsMeasureValid(widthConstraint, heightConstraint) && _lastMeasuredSize is { } crossPlatformSize)
+			{
+				return crossPlatformSize.ToCGSize();
+			}
 
-			CacheMeasureConstraints(widthConstraint, heightConstraint);
+			crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+			CacheMeasureConstraints(widthConstraint, heightConstraint, crossPlatformSize);
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -499,11 +531,16 @@ namespace Microsoft.Maui.Platform
 			// imposed by the parent (i.e. scroll view) with the current bounds, except when our bounds are fixed by constraints.
 			// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 			// the window); there's no guarantee that SizeThatFits has been called in that case.
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView() ||
-				!HasBeenMeasured() && HasFixedConstraints)
+			var needsMeasure = HasFixedConstraints switch
 			{
-				CrossPlatformMeasure(widthConstraint, heightConstraint);
-				CacheMeasureConstraints(widthConstraint, heightConstraint);
+				true => !HasBeenMeasured() || !this.IsFinalMeasureHandledBySuperView(),
+				false => !IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView()
+			};
+
+			if (needsMeasure)
+			{
+				var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
+				CacheMeasureConstraints(widthConstraint, heightConstraint, crossPlatformSize);
 			}
 
 			CrossPlatformArrange(bounds);
