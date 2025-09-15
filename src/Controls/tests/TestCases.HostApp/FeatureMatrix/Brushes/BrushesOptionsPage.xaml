@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.BrushesOptionsPage"
+             Title="BrushesOptionsPage"
+             x:DataType="local:BrushesViewModel"
+             x:Name="RootPage"
+             AutomationId="RootPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="OnMainClicked"
+                           x:Name="ApplyToolbarItem"
+                           AutomationId="ApplyToolbarItem"/>
+       </ContentPage.ToolbarItems>
+       <StackLayout Padding="20"
+                    Spacing="15"
+                    x:Name="RootLayout"
+                    AutomationId="RootLayout">
+              <Label Text="Brush Options"
+                     FontSize="20"
+                     HorizontalOptions="Center"
+                     x:Name="TitleLabel"
+                     AutomationId="TitleLabel"/>
+              <Label Text="Background Brush Type:"
+                     x:Name="BackgroundBrushTypeLabel"
+                     AutomationId="BackgroundBrushTypeLabel"/>
+              <HorizontalStackLayout x:Name="BrushTypeGroup"
+                                     AutomationId="BrushTypeGroup">
+                     <RadioButton Content="None"
+                                  GroupName="BrushType"
+                                  Value="None"
+                                  IsChecked="True"
+                                  CheckedChanged="OnBrushTypeChanged"
+                                  x:Name="NoneRadio"
+                                  AutomationId="NoneRadio"/>
+                     <RadioButton Content="Solid"
+                                  GroupName="BrushType"
+                                  Value="Solid"
+                                  CheckedChanged="OnBrushTypeChanged"
+                                  x:Name="SolidRadio"
+                                  AutomationId="SolidRadio"/>
+                     <RadioButton Content="Linear"
+                                  GroupName="BrushType"
+                                  Value="Linear"
+                                  CheckedChanged="OnBrushTypeChanged"
+                                  x:Name="LinearRadio"
+                                  AutomationId="LinearRadio"/>
+                     <RadioButton Content="Radial"
+                                  GroupName="BrushType"
+                                  Value="Radial"
+                                  CheckedChanged="OnBrushTypeChanged"
+                                  x:Name="RadialRadio"
+                                  AutomationId="RadialRadio"/>
+
+              </HorizontalStackLayout>
+              <!-- Shadow toggle -->
+              <Label Text="Shadow Type:"
+                     x:Name="ShadowTypeLabel"
+                     AutomationId="ShadowTypeLabel"/>
+              <HorizontalStackLayout x:Name="ShadowTypeGroup"
+                                     AutomationId="ShadowTypeGroup">
+                     <RadioButton Content="None"
+                                  GroupName="ShadowType"
+                                  IsChecked="True"
+                                  CheckedChanged="OnShadowTypeChanged"
+                                  x:Name="ShadowNoneRadio"
+                                  AutomationId="ShadowNoneRadio"/>
+                     <RadioButton Content="Solid"
+                                  GroupName="ShadowType"
+                                  CheckedChanged="OnShadowTypeChanged"
+                                  x:Name="ShadowSolidRadio"
+                                  AutomationId="ShadowSolidRadio"/>
+                     <RadioButton Content="Linear"
+                                  GroupName="ShadowType"
+                                  CheckedChanged="OnShadowTypeChanged"
+                                  x:Name="ShadowLinearRadio"
+                                  AutomationId="ShadowLinearRadio"/>
+                     <RadioButton Content="Radial"
+                                  GroupName="ShadowType"
+                                  CheckedChanged="OnShadowTypeChanged"
+                                  x:Name="ShadowRadialRadio"
+                                  AutomationId="ShadowRadialRadio"/>
+              </HorizontalStackLayout>
+
+              <Label Text="Stroke Type:"
+                     x:Name="StrokeTypeLabel"
+                     AutomationId="StrokeTypeLabel"/>
+              <HorizontalStackLayout x:Name="StrokeTypeGroup"
+                                     AutomationId="StrokeTypeGroup">
+                     <RadioButton Content="None"
+                                  GroupName="StrokeType"
+                                  IsChecked="True"
+                                  CheckedChanged="OnStrokeTypeChanged"
+                                  x:Name="StrokeNoneRadio"
+                                  AutomationId="StrokeNoneRadio"/>
+                     <RadioButton Content="Solid"
+                                  GroupName="StrokeType"
+                                  CheckedChanged="OnStrokeTypeChanged"
+                                  x:Name="StrokeSolidRadio"
+                                  AutomationId="StrokeSolidRadio"/>
+                     <RadioButton Content="Linear"
+                                  GroupName="StrokeType"
+                                  CheckedChanged="OnStrokeTypeChanged"
+                                  x:Name="StrokeLinearRadio"
+                                  AutomationId="StrokeLinearRadio"/>
+                     <RadioButton Content="Radial"
+                                  GroupName="StrokeType"
+                                  CheckedChanged="OnStrokeTypeChanged"
+                                  x:Name="StrokeRadialRadio"
+                                  AutomationId="StrokeRadialRadio"/>
+              </HorizontalStackLayout>
+              <Label Text="Adjust Opacity:"
+                     x:Name="OpacityLabel"
+                     AutomationId="OpacityLabel"/>
+              <Slider Minimum="0"
+                      Maximum="1"
+                      Value="{Binding BrushOpacity}"
+                      x:Name="OpacitySlider"
+                      AutomationId="OpacitySlider"/>
+       
+              <Label Text="Alternate Background Variants:"
+                     x:Name="AltVariantsLabel"
+                     AutomationId="AltVariantsLabel"/>
+              <HorizontalStackLayout x:Name="AltVariantsGroup"
+                                     AutomationId="AltVariantsGroup"
+                                     Spacing="10">
+                     <Button Text="Alt Solid"
+                             Command="{Binding ApplyAltSolidBrushCommand}"
+                             x:Name="AltSolidButton"
+                             AutomationId="AltSolidButton"/>
+                     <Button Text="Alt Linear"
+                             Command="{Binding ApplyAltLinearBrushCommand}"
+                             x:Name="AltLinearButton"
+                             AutomationId="AltLinearButton"/>
+                     <Button Text="Alt Radial"
+                             Command="{Binding ApplyAltRadialBrushCommand}"
+                             x:Name="AltRadialButton"
+                             AutomationId="AltRadialButton"/>
+              </HorizontalStackLayout>
+       </StackLayout>
+</ContentPage>
