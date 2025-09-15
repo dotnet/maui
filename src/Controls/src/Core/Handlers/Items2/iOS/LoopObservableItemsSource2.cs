@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return base.CreateIndexesFrom(startIndex, count);
 			}
+			var collectionView = CollectionView;
+			if (collectionView is null || count < 0)
+			{
+				return Array.Empty<NSIndexPath>();
+			}
+
 			if (ItemCount == 0)
 			{
 				count += 2;
