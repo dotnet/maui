@@ -100,7 +100,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			TableView.AccessibilityIdentifier = "FlyoutNavigationMenu";
 			TableView.AccessibilityValue = "Navigation flyout";
 
-			// Don't be an accessibility element itself to avoid "table" announcement
 			TableView.IsAccessibilityElement = false;
 			TableView.AccessibilityElementsHidden = false;
 
