@@ -18,29 +18,25 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Activity platformView)
 		{
 			base.ConnectHandler(platformView);
-			ConfigureTranslucentSystemBars(PlatformView);
+			if (OperatingSystem.IsAndroidVersionAtLeast(36))
+			{
+				//Edge to Edge enabled for Android API 36+
+				ConfigureTranslucentSystemBars(PlatformView);
+			}
 			UpdateVirtualViewFrame(platformView);
 		}
 
 		static void ConfigureTranslucentSystemBars(Activity activity)
 		{
 			var window = activity.Window;
-			if (window == null)
-				return;
-
-			// Enable edge-to-edge by making content draw behind system bars
-			WindowCompat.SetDecorFitsSystemWindows(window, false);
-
-			// Make both status bar and navigation bar translucent
-			if (OperatingSystem.IsAndroidVersionAtLeast(21))
+			if (window is null)
 			{
-				window.SetStatusBarColor(AColor.Transparent);
-				window.SetNavigationBarColor(AColor.Transparent);
+				return;
 			}
 
 			// Set appropriate system bar appearance for readability
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
-			if (windowInsetsController != null)
+			if (windowInsetsController is not null)
 			{
 				// Automatically adjust icon/text colors based on app theme
 				var configuration = activity.Resources?.Configuration;
