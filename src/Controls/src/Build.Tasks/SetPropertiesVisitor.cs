@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public bool IsResourceDictionary(ElementNode node)
 		{
-			var parentVar = Context.Variables[(ElementNode)node];
+			var parentVar = Context.Variables[node];
 			return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
 				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
 		}
