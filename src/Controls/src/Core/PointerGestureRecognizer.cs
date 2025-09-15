@@ -95,6 +95,21 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Raised when the pointer that has previous initiated a press is released within the view.
 		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// <b>Secondary / Right Button behavior (iOS &amp; Mac Catalyst):</b> When <see cref="Buttons"/> is set to include
+		/// <see cref="ButtonsMask.Secondary"/> on iOS or Mac Catalyst, a secondary pointer press is simulated using an internal
+		/// ("fake") context menu gesture – the same approach used by <see cref="TapGestureRecognizer"/>. Because UIKit does not
+		/// expose a stable API for tracking a continuous right-button (secondary) down state, the framework will raise
+		/// <see cref="PointerPressed"/> followed immediately by <see cref="PointerReleased"/> for a secondary click. There is no
+		/// intermediate prolonged pressed state for secondary button interactions on these platforms.
+		/// </para>
+		/// <para>
+		/// If you need to distinguish a primary press/release sequence from a secondary one, inspect <see cref="PointerEventArgs.Button"/>
+		/// in the event handlers. Do not rely on timing (e.g., expecting a noticeable delay between pressed and released) for secondary
+		/// interactions on iOS/Mac Catalyst as both events may fire in immediate succession.
+		/// </para>
+		/// </remarks>
 		public event EventHandler<PointerEventArgs>? PointerReleased;
 
 		/// <summary>
@@ -172,6 +187,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Identifies the PointerReleasedCommand bindable property.
 		/// </summary>
+		/// <remarks>
+		/// See the remarks on <see cref="PointerReleased"/> for platform-specific behavior when handling secondary (right) button
+		/// interactions. Command handlers may receive a release immediately after a press for secondary clicks on iOS/Mac Catalyst.
+		/// </remarks>
 		public ICommand PointerReleasedCommand
 		{
 			get { return (ICommand)GetValue(PointerReleasedCommandProperty); }
