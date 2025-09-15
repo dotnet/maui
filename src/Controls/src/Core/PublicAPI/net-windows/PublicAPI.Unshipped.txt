@@ -6,6 +6,7 @@
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
 *REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
 *REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter.AcceleratorTypeConverter() -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 Microsoft.Maui.Controls.Border.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.Controls.Border.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
