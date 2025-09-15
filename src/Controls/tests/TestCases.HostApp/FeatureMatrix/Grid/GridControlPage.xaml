@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.GridControlMainPage"
+             x:DataType="local:GridViewModel"
+             Title="Grid Feature Matrix"
+             BackgroundColor="Lavender">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid x:Name="MainGrid"
+      RowSpacing="{Binding RowSpacing}"
+      ColumnSpacing="{Binding ColumnSpacing}"
+      Padding="{Binding Padding}"
+      RowDefinitions="{Binding RowDefinitions}"
+      ColumnDefinitions="{Binding ColumnDefinitions}"
+      IsVisible="{Binding IsVisible}"
+      FlowDirection="{Binding FlowDirection}"
+      BackgroundColor="{Binding BackgroundColor}"
+      HorizontalOptions="{Binding HorizontalOptions}"
+      VerticalOptions="{Binding VerticalOptions}"
+      HeightRequest="400"
+      WidthRequest="350"
+      AutomationId="MainGrid"> 
+</Grid>
+</ContentPage>

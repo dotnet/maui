@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.GridOptionsPage"
+             x:DataType="local:GridViewModel"
+             Title="Grid Options">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid Padding="16"
+             RowSpacing="3"
+             ColumnSpacing="10">
+              <Grid.RowDefinitions>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <!-- 1st row: Row and Column -->
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0">
+                     <Label Text="Rows:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding Row}"
+                            Placeholder="Number of rows"
+                            AutomationId="RowEntry"/>
+              </StackLayout>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="1">
+                     <Label Text="Columns:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding Column}"
+                            Placeholder="Number of columns"
+                            AutomationId="ColumnEntry"/>
+              </StackLayout>
+
+              <!-- 2nd row: RowValue and ColumnValue -->
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                     <Label Text="Row Value:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding RowDefinitionValue}"
+                            Placeholder="e.g. 1"
+                            AutomationId="RowDefinitionValueEntry"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1">
+                     <Label Text="Column Value:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding ColumnDefinitionValue}"
+                            Placeholder="e.g. 1"
+                            AutomationId="ColumnDefinitionValueEntry"/>
+              </StackLayout>
+
+              <!-- 3rd row: RowSpan and ColumnSpan -->
+              <StackLayout Grid.Row="2"
+                           Grid.Column="0">
+                     <Label Text="RowSpan:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding MainContentRowSpan}"
+                            Placeholder="RowSpan"
+                            AutomationId="MainContentRowSpanEntry"/>
+              </StackLayout>
+              <StackLayout Grid.Row="2"
+                           Grid.Column="1">
+                     <Label Text="ColumnSpan:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding MainContentColumnSpan}"
+                            Placeholder="ColSpan"
+                            AutomationId="MainContentColumnSpanEntry"/>
+              </StackLayout>
+
+              <!-- RowSpacing and ColumnSpacing row -->
+              <StackLayout Grid.Row="3"
+                           Grid.Column="0">
+                     <Label Text="RowSpacing:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding RowSpacing}"
+                            Placeholder="RowSpacing"
+                            AutomationId="RowSpacingEntry"/>
+              </StackLayout>
+              <StackLayout Grid.Row="3"
+                           Grid.Column="1">
+                     <Label Text="ColumnSpacing:"
+                            FontAttributes="Bold"/>
+                     <Entry Text="{Binding ColumnSpacing}"
+                            Placeholder="ColumnSpacing"
+                            AutomationId="ColumnSpacingEntry"/>
+              </StackLayout>
+
+              <!-- 4th row: Padding and Background Color -->
+              <StackLayout Grid.Row="4"
+                           Grid.Column="0">
+                     <Label Text="Padding:"
+                            FontAttributes="Bold"/>
+                     <Entry x:Name="PaddingEntry"
+                            Placeholder="e.g. 10,5,10,5"
+                            TextChanged="OnPaddingChanged"
+                            AutomationId="PaddingEntry"/>
+              </StackLayout>
+              <StackLayout Grid.Row="4"
+                           Grid.Column="1">
+                     <Label Text="Background Color:"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="12">
+                            <Button Text="Red"
+                                    BackgroundColor="Red"
+                                    TextColor="White"
+                                    Clicked="OnBackgroundColorChanged"
+                                    AutomationId="ColorRed"/>
+                            <Button Text="Gray"
+                                    BackgroundColor="Gray"
+                                    TextColor="White"
+                                    Clicked="OnBackgroundColorChanged"
+                                    AutomationId="ColorGray"/>
+                     </HorizontalStackLayout>
+              </StackLayout>
+
+              <StackLayout Grid.Row="5"
+                           Grid.ColumnSpan="2">
+                     <Label Text="Row Type:"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="16">
+                            <RadioButton Content="Star"
+                                         IsChecked="True"
+                                         GroupName="RowType"
+                                         CheckedChanged="OnRowTypeChanged"
+                                         AutomationId="RowStarRadio"/>
+                            <RadioButton Content="Absolute"
+                                         GroupName="RowType"
+                                         CheckedChanged="OnRowTypeChanged"
+                                         AutomationId="RowAbsoluteRadio"/>
+                            <RadioButton Content="Auto"
+                                         GroupName="RowType"
+                                         CheckedChanged="OnRowTypeChanged"
+                                         AutomationId="RowAutoRadio"/>
+                     </HorizontalStackLayout>
+              </StackLayout>
+
+              <StackLayout Grid.Row="6"
+                           Grid.ColumnSpan="2">
+                     <Label Text="Column Type:"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="16">
+
+                            <RadioButton Content="Star"
+                                         IsChecked="True"
+                                         GroupName="ColumnType"
+                                         CheckedChanged="OnColumnTypeChanged"
+                                         AutomationId="ColumnStarRadio"/>
+                            <RadioButton Content="Absolute"
+                                         GroupName="ColumnType"
+                                         CheckedChanged="OnColumnTypeChanged"
+                                         AutomationId="ColumnAbsoluteRadio"/>
+                            <RadioButton Content="Auto"
+                                         GroupName="ColumnType"
+                                         CheckedChanged="OnColumnTypeChanged"
+                                         AutomationId="ColumnAutoRadio"/>
+                     </HorizontalStackLayout>
+              </StackLayout>
+
+              <!-- 7th row: HorizontalOptions -->
+              <StackLayout Grid.Row="7"
+                           Grid.ColumnSpan="2">
+                     <Label Text="HorizontalOptions:"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="12">
+                            <Button Text="Fill"
+                                    Clicked="OnHorizontalOptionClicked"
+                                    AutomationId="HorizontalFill"/>
+                            <Button Text="Start"
+                                    Clicked="OnHorizontalOptionClicked"
+                                    AutomationId="HorizontalStart"/>
+                            <Button Text="Center"
+                                    Clicked="OnHorizontalOptionClicked"
+                                    AutomationId="HorizontalCenter"/>
+                            <Button Text="End"
+                                    Clicked="OnHorizontalOptionClicked"
+                                    AutomationId="HorizontalEnd"/>
+                     </HorizontalStackLayout>
+              </StackLayout>
+
+              <!-- 8th row: VerticalOptions -->
+              <StackLayout Grid.Row="8"
+                           Grid.ColumnSpan="2">
+                     <Label Text="VerticalOptions:"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="12">
+                            <Button Text="Fill"
+                                    Clicked="OnVerticalOptionClicked"
+                                    AutomationId="VerticalFill"/>
+                            <Button Text="Start"
+                                    Clicked="OnVerticalOptionClicked"
+                                    AutomationId="VerticalStart"/>
+                            <Button Text="Center"
+                                    Clicked="OnVerticalOptionClicked"
+                                    AutomationId="VerticalCenter"/>
+                            <Button Text="End"
+                                    Clicked="OnVerticalOptionClicked"
+                                    AutomationId="VerticalEnd"/>
+                     </HorizontalStackLayout>
+              </StackLayout>
+
+              <!-- 9th row: IsVisible and FlowDirection -->
+              <StackLayout Grid.Row="9"
+                           Grid.ColumnSpan="2"
+                           Spacing="10"
+                           Orientation="Horizontal">
+
+                     <!-- IsVisible -->
+                     <HorizontalStackLayout>
+                            <Label Text="IsVisible:"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"/>
+                            <CheckBox x:Name="IsVisibleCheckBox"
+                                      IsChecked="True"
+                                      CheckedChanged="OnIsVisibleCheckedChanged"
+                                      AutomationId="IsVisibleCheckBox"/>
+                     </HorizontalStackLayout>
+
+                     <!-- FlowDirection -->
+                     <HorizontalStackLayout>
+                            <Label Text="Flow Direction:"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"/>
+                            <CheckBox x:Name="FlowDirectionCheckBox"
+                                      IsChecked="False"
+                                      CheckedChanged="OnFlowDirectionChanged"
+                                      AutomationId="FlowDirectionCheckBox"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Nested Grid -->
+                     <HorizontalStackLayout>
+                            <Label Text="Nested Grid:"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"/>
+                            <CheckBox x:Name="NestedGridCheckBox"
+                                      IsChecked="False"
+                                      CheckedChanged="OnNestedGridChanged"
+                                      AutomationId="NestedGridCheckBox"/>
+                     </HorizontalStackLayout>
+              </StackLayout>
+       </Grid>
+</ContentPage>
