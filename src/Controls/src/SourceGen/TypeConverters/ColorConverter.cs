@@ -62,8 +62,15 @@ internal class ColorConverter : ISGTypeConverter
 			// Check for HEX Color string
 			if (RxColorHex.Value.IsMatch(value))
 			{
+				// Validate input is safe for code generation
+				if (!StringHelpers.IsSafeForCodeGeneration(value))
+				{
+					context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+					return "default";
+				}
+				
 				var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
-				return $"{colorType.ToFQDisplayString()}.FromArgb(\"{value}\")";
+				return $"{colorType.ToFQDisplayString()}.FromArgb({StringHelpers.EscapeStringLiteral(value)})";
 			}
 
 			var match = RxFuncExpr.Value.Match(value);
@@ -76,14 +83,28 @@ internal class ColorConverter : ISGTypeConverter
 				// ie: argb() needs 4 parameters:
 				if (funcValues.Count == funcName?.Length)
 				{
+					// Validate input is safe for code generation
+					if (!StringHelpers.IsSafeForCodeGeneration(value))
+					{
+						context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+						return "default";
+					}
+					
 					var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
-					return $"{colorType.ToFQDisplayString()}.Parse(\"{value}\")";
+					return $"{colorType.ToFQDisplayString()}.Parse({StringHelpers.EscapeStringLiteral(value)})";
 				}
 			}
 
 			// As a last resort, try Color.Parse() for any other valid color formats
+			// Validate input is safe for code generation
+			if (!StringHelpers.IsSafeForCodeGeneration(value))
+			{
+				context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+				return "default";
+			}
+			
 			var colorType2 = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
-			return $"{colorType2.ToFQDisplayString()}.Parse(\"{value}\")";
+			return $"{colorType2.ToFQDisplayString()}.Parse({StringHelpers.EscapeStringLiteral(value)})";
 		}
 
 		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);

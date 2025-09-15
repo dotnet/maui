@@ -18,10 +18,34 @@ internal class ListStringConverter : ISGTypeConverter
 		{
 			value = value.Trim();
 
+			// Validate input is safe for code generation
+			if (!StringHelpers.IsSafeForCodeGeneration(value))
+			{
+				context.ReportConversionFailed(xmlLineInfo, value, Descriptors.ListStringConversionFailed);
+				return "default";
+			}
+
 			var listStringType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.List`1")!;
 			var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
 			var constructedListType = listStringType.Construct(stringType);
-			return $"new {constructedListType.ToFQDisplayString()} {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
+			
+			// Split and escape each string element individually
+			var elements = value.Split([','], StringSplitOptions.RemoveEmptyEntries)
+							   .Select(v => {
+								   var trimmed = v.Trim();
+								   if (!StringHelpers.IsSafeForCodeGeneration(trimmed))
+									   return null; // Mark as invalid
+								   return StringHelpers.EscapeStringLiteral(trimmed);
+							   });
+			
+			// Check if any element was invalid
+			if (elements.Any(e => e == null))
+			{
+				context.ReportConversionFailed(xmlLineInfo, value, Descriptors.ListStringConversionFailed);
+				return "default";
+			}
+			
+			return $"new {constructedListType.ToFQDisplayString()} {{ {string.Join(", ", elements)} }}";
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ListStringConversionFailed);
