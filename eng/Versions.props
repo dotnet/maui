@@ -208,7 +208,7 @@
     <DotNetVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$(VersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc|alpha).\d+`))</DotNetVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>10.0.100-rc.1</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>10.0.100-rc.1</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_185PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
