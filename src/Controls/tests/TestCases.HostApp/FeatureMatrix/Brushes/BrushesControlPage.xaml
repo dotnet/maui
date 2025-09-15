@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.BrushesControlMainPage"
+             Title="BrushesControlPage"
+             x:DataType="local:BrushesViewModel">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                Clicked="OnOptionsClicked"/>
+    </ContentPage.ToolbarItems>
+    <StackLayout Padding="20"
+            Spacing="15">
+        <Label Text="Brushes Control Test"
+                FontSize="20"
+                HorizontalOptions="Center"/>
+
+        <!-- Target control -->
+        <Border
+            WidthRequest="200"
+            HeightRequest="200"
+            StrokeThickness="4"
+            Stroke="{Binding StrokeBrush}"
+            Background="{Binding BrushTarget}"
+            Opacity="{Binding BrushOpacity}"
+            StrokeShape="RoundRectangle 30"
+            Shadow="{Binding ShadowBrush}">
+            <Label Text="Sample"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+        </Border>
+        <Label Text="Opacity:"/>
+        <Label Text="{Binding BrushOpacity, StringFormat='{}{0:F2}'}"/>
+
+    </StackLayout>
+</ContentPage>
