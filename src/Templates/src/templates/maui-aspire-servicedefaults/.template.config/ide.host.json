@@ -1,0 +1,14 @@
+{
+  "symbolsUI": {
+    "Framework": {
+      "description": "The target framework for the project.",
+      "displayName": "Framework",
+      "isVisible": "false"
+    },
+    "skipRestore": {
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "displayName": "Skip restore",
+      "isVisible": "false"
+    }
+  }
+}

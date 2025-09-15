@@ -357,4 +357,33 @@ public class SimpleTemplateTest : BaseTemplateTests
 			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
 		}
 	}
+
+	[Test]
+	[TestCase("SentenceStudio.ServiceDefaults")]
+	[TestCase("MyApp.ServiceDefaults")]
+	[TestCase("ServiceDefaults")]
+	public void AspireServiceDefaultsTemplateUsesCorrectProjectName(string projectName)
+	{
+		var projectDir = Path.Combine(TestDirectory, projectName);
+		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+
+		Assert.IsTrue(DotnetInternal.New("maui-aspire-servicedefaults", projectDir),
+			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
+
+		// Verify the project file has the correct name
+		Assert.IsTrue(File.Exists(expectedProjectFile),
+			$"Project file should be named {projectName}.csproj, but {expectedProjectFile} does not exist.");
+
+		// Verify the project builds successfully
+		Assert.IsTrue(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps),
+			$"Project {expectedProjectFile} failed to build. Check test output/attachments for errors.");
+
+		// Verify namespace is correctly set in Extensions.cs
+		var extensionsFile = Path.Combine(projectDir, "Extensions.cs");
+		Assert.IsTrue(File.Exists(extensionsFile), "Extensions.cs should exist.");
+		
+		var extensionsContent = File.ReadAllText(extensionsFile);
+		Assert.IsTrue(extensionsContent.Contains($"namespace {projectName};", StringComparison.Ordinal),
+			$"Extensions.cs should contain correct namespace '{projectName}', but content was: {extensionsContent}");
+	}
 }

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "MAUI", "Aspire", "Service", "Library" ],
+  "identity": "Microsoft.Maui.AspireServiceDefaults.CSharp.DOTNET_TFM_VERSION_VALUE",
+  "groupIdentity": "Microsoft.Maui.AspireServiceDefaults",
+  "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
+  "name": ".NET MAUI for .NET Aspire Service Defaults",
+  "description": "A project for creating service defaults for .NET Aspire applications in .NET MAUI",
+  "shortName": "maui-aspire-servicedefaults",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "MauiApp.ServiceDefaults",
+  "primaryOutputs": [
+    {
+      "path": "MauiApp.ServiceDefaults.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ],
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+    }
+  ],
+  "preferNameDirectory": true,
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "DOTNET_TFM_VALUE",
+          "description": "Target DOTNET_TFM_VALUE"
+        }
+      ],
+      "replaces": "DOTNET_TFM",
+      "defaultValue": "DOTNET_TFM_VALUE"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "defaultName": "ServiceDefaults"
+}
