@@ -21,14 +21,6 @@ interface IValueNode : INode
 {
 }
 
-// interface IElementNode : INode, IListNode
-// {
-// 	Dictionary<XmlName, INode> Properties { get; }
-// 	List<XmlName> SkipProperties { get; }
-// 	NameScopeRef NameScopeRef { get; }
-// 	XmlType XmlType { get; }
-// 	string NamespaceURI { get; }
-// }
 
 interface IListNode : INode
 {
