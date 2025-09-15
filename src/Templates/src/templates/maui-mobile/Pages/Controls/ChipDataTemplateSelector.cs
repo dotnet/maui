@@ -4,8 +4,8 @@ namespace MauiApp._1.Pages.Controls;
 
 public class ChipDataTemplateSelector : DataTemplateSelector
 {
-	public DataTemplate SelectedTagTemplate { get; set; }
-	public DataTemplate NormalTagTemplate { get; set; }
+	public DataTemplate? SelectedTagTemplate { get; set; }
+	public DataTemplate? NormalTagTemplate { get; set; }
 
 	protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 	{
