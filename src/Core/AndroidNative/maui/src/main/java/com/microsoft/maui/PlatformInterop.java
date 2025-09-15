@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
@@ -53,6 +54,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import microsoft.maui.R;
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.MauiTarget;
@@ -66,12 +68,70 @@ import java.util.List;
 
 public class PlatformInterop {
 
+    @IdRes private static final int SIZE_CONSTRAINT_TAG = R.id.maui_view_size_constraint_tag;
+
+    public static void setSizeConstraint(View view, int layoutConstraint) {
+        view.setTag(SIZE_CONSTRAINT_TAG, layoutConstraint);
+    }
+
+    public static int getSizeConstraint(View view) {
+        Object tag = view.getTag(SIZE_CONSTRAINT_TAG);
+        return tag != null && tag instanceof Integer ? (Integer)tag : 0;
+    }
+
+    private static boolean doRequestLayoutIfNeeded(View view) {
+        if (!view.isInLayout()) {
+            if (!view.isAttachedToWindow()) {
+                view.requestLayout();
+                return true;
+            }
+
+            view.forceLayout();
+
+            while (true) {
+                ViewParent parent = view.getParent();
+                if (parent == null) {
+                    break;
+                }
+
+                if (!(parent instanceof View)) {
+                    // This is 100% a RootViewImpl so we need to use requestLayout to schedule a layout pass
+                    parent.requestLayout();
+                    break;
+                }
+
+                view = (View) parent;
+                if (view.isLayoutRequested()) {
+                    // This view is already requesting layout, so we can stop here
+                    break;
+                }
+
+                if (!view.isAttachedToWindow()) {
+                    view.requestLayout();
+                    break;
+                }
+
+                if (getSizeConstraint(view) == 3) {
+                    // We reached a fixed-size ancestor, invalidate and stop here
+                    // `forceLayout` does NOT trigger a layout pass, so we need to enqueue a quick layout pass
+                    FixedLayoutScheduler.scheduleLayoutPass(view);
+                    break;
+                }
+
+                // This is a non-fixed-size ancestor, so we need to propagate the layout request
+                view.forceLayout();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public static void requestLayoutIfNeeded(View view) {
-        
         // If the view isn't currently in the layout process, then we simply request
         // that layout happen next time around
-        if (!view.isInLayout())	{
-            view.requestLayout();
+        if (!doRequestLayoutIfNeeded(view)) {
             return;
         }
         
@@ -88,9 +148,7 @@ public class PlatformInterop {
         */
 
         Runnable runnable = () -> { 
-            if (!view.isInLayout())	{
-                view.requestLayout();
-            }
+            doRequestLayoutIfNeeded(view);
         };
         
         view.post(runnable);

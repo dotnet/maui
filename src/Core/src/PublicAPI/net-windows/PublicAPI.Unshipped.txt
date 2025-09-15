@@ -3,6 +3,7 @@ Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.IView.SizeConstraint.get -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
@@ -57,6 +58,11 @@ Microsoft.Maui.Platform.MauiSlider
 Microsoft.Maui.Platform.MauiSlider.MauiSlider() -> void
 ~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.get -> Microsoft.UI.Xaml.Media.ImageSource
 ~Microsoft.Maui.Platform.MauiSlider.ThumbImageSource.set -> void
+Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.Fixed = Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed | Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.None = 0 -> Microsoft.Maui.Primitives.SizeConstraint
+Microsoft.Maui.Primitives.SizeConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Primitives.SizeConstraint
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaEdges.Equals(Microsoft.Maui.SafeAreaEdges other) -> bool

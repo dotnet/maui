@@ -60,6 +60,11 @@ namespace Microsoft.Maui
 		Visibility Visibility { get; }
 
 		/// <summary>
+		/// Gets a value that indicates if the view is constrained to a fixed size in either or both the horizontal and vertical directions.
+		/// </summary>
+		SizeConstraint SizeConstraint { get; }
+
+		/// <summary>
 		/// Gets the opacity value applied to the view when it is rendered.
 		/// </summary>
 		double Opacity { get; }

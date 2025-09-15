@@ -5,6 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+
+import com.microsoft.maui.PlatformInterop;
 
 public abstract class PlatformContentViewGroup extends ViewGroup {
 

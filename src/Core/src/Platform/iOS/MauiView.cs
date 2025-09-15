@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using ObjCRuntime;
 using UIKit;
 
@@ -98,9 +99,9 @@ namespace Microsoft.Maui.Platform
 
 		/// <summary>
 		/// Determines if this view has fixed constraints that prevent it from changing size.
-		/// Views with fixed constraints don't need to propagate measure invalidations to ancestors.
+		/// Views with fixed constraints can act as root views regarding measure/layout pass.
 		/// </summary>
-		bool HasFixedConstraints => CrossPlatformLayout is IConstrainedView { HasFixedConstraints: true };
+		bool HasFixedConstraints => this.GetSizeConstraint() == SizeConstraint.Fixed;
 
 		/// <summary>
 		/// Determines if this view should respond to safe area changes.
@@ -625,22 +626,6 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = true;
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
-
-			// If we're propagating, we can stop at the first view with fixed constraints
-			if (isPropagating && HasFixedConstraints)
-			{
-				// We're stopping propagation here, but we have to account for the wrapper view
-				// which needs to be invalidated for consistency too.
-				if (Superview is WrapperView wrapper)
-				{
-					wrapper.SetNeedsLayout();
-				}
-
-				return false;
-			}
-
-			// If we're not propagating, then this view is the one triggering the invalidation
-			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
 			return true;
 		}
 

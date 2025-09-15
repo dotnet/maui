@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new SizeRequest(bestFitSize, minimum);
 		}
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
 			AbsoluteLayoutFlags layoutFlags = GetLayoutFlags(view);
 
@@ -119,31 +120,31 @@ namespace Microsoft.Maui.Controls.Compatibility
 					view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
 					return Constraint;
 
-				return LayoutConstraint.None;
+				return SizeConstraint.None;
 			}
 
-			var result = LayoutConstraint.None;
+			var result = SizeConstraint.None;
 			Rect layoutBounds = GetLayoutBounds(view);
 			if ((layoutFlags & AbsoluteLayoutFlags.HeightProportional) != 0)
 			{
 				bool widthLocked = layoutBounds.Width != AutoSize;
-				result = Constraint & LayoutConstraint.VerticallyFixed;
+				result = Constraint & SizeConstraint.VerticallyFixed;
 				if (widthLocked)
-					result |= LayoutConstraint.HorizontallyFixed;
+					result |= SizeConstraint.HorizontallyFixed;
 			}
 			else if ((layoutFlags & AbsoluteLayoutFlags.WidthProportional) != 0)
 			{
 				bool heightLocked = layoutBounds.Height != AutoSize;
-				result = Constraint & LayoutConstraint.HorizontallyFixed;
+				result = Constraint & SizeConstraint.HorizontallyFixed;
 				if (heightLocked)
-					result |= LayoutConstraint.VerticallyFixed;
+					result |= SizeConstraint.VerticallyFixed;
 			}
 			else
 			{
 				if (layoutBounds.Width != AutoSize)
-					result |= LayoutConstraint.HorizontallyFixed;
+					result |= SizeConstraint.HorizontallyFixed;
 				if (layoutBounds.Height != AutoSize)
-					result |= LayoutConstraint.VerticallyFixed;
+					result |= SizeConstraint.VerticallyFixed;
 			}
 
 			return result;

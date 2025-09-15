@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -358,18 +359,18 @@ namespace Microsoft.Maui.Controls
 			UpdateRowColumnBindingContexts();
 		}
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
-			var result = LayoutConstraint.None;
+			var result = SizeConstraint.None;
 
 			if (view.VerticalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedHeightDefinition(view))
 			{
-				result |= LayoutConstraint.VerticallyFixed;
+				result |= SizeConstraint.VerticallyFixed;
 			}
 
 			if (view.HorizontalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedWidthDefinition(view))
 			{
-				result |= LayoutConstraint.HorizontallyFixed;
+				result |= SizeConstraint.HorizontallyFixed;
 			}
 
 			return result;
@@ -377,7 +378,7 @@ namespace Microsoft.Maui.Controls
 
 		bool ViewHasFixedHeightDefinition(BindableObject view)
 		{
-			var gridHasFixedHeight = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
+			var gridHasFixedHeight = (Constraint & SizeConstraint.VerticallyFixed) != 0;
 
 			var row = GetRow(view);
 			var rowSpan = GetRowSpan(view);
@@ -407,7 +408,7 @@ namespace Microsoft.Maui.Controls
 
 		bool ViewHasFixedWidthDefinition(BindableObject view)
 		{
-			var gridHasFixedWidth = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
+			var gridHasFixedWidth = (Constraint & SizeConstraint.HorizontallyFixed) != 0;
 
 			var col = GetColumn(view);
 			var colSpan = GetColumnSpan(view);

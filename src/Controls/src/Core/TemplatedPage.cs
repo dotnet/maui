@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -23,16 +24,16 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
 			LayoutOptions vOptions = view.VerticalOptions;
 			LayoutOptions hOptions = view.HorizontalOptions;
 
-			var result = LayoutConstraint.None;
+			var result = SizeConstraint.None;
 			if (vOptions.Alignment == LayoutAlignment.Fill)
-				result |= LayoutConstraint.VerticallyFixed;
+				result |= SizeConstraint.VerticallyFixed;
 			if (hOptions.Alignment == LayoutAlignment.Fill)
-				result |= LayoutConstraint.HorizontallyFixed;
+				result |= SizeConstraint.HorizontallyFixed;
 
 			return result;
 		}

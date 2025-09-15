@@ -359,6 +359,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateSizeConstraint(this AView platformView, SizeConstraint constraint)
+		{
+			PlatformInterop.SetSizeConstraint(platformView, (int)constraint);
+		}
+
 		public static void InvalidateMeasure(this AView platformView, IView view)
 		{
 			PlatformInterop.RequestLayoutIfNeeded(platformView);

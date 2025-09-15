@@ -1,6 +1,7 @@
 #nullable disable
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -37,28 +38,28 @@ namespace Microsoft.Maui.Controls
 			return new StackLayoutManager(this);
 		}
 
-		protected override LayoutConstraint ComputeConstraintForView(View view)
+		protected override SizeConstraint ComputeConstraintForView(View view)
 		{
 			if (Orientation == StackOrientation.Horizontal)
 			{
-				if ((Constraint & LayoutConstraint.VerticallyFixed) != 0 && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
+				if ((Constraint & SizeConstraint.VerticallyFixed) != 0 && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
 				{
-					return LayoutConstraint.VerticallyFixed;
+					return SizeConstraint.VerticallyFixed;
 				}
 				else
 				{
-					return LayoutConstraint.None;
+					return SizeConstraint.None;
 				}
 			}
 			else
 			{
-				if ((Constraint & LayoutConstraint.HorizontallyFixed) != 0 && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+				if ((Constraint & SizeConstraint.HorizontallyFixed) != 0 && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
 				{
-					return LayoutConstraint.HorizontallyFixed;
+					return SizeConstraint.HorizontallyFixed;
 				}
 				else
 				{
-					return LayoutConstraint.None;
+					return SizeConstraint.None;
 				}
 			}
 		}

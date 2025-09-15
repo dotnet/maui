@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -468,7 +469,7 @@ namespace Microsoft.Maui.Controls
 			base.SetupContent(content, index);
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (content is ViewCell viewCell && viewCell.View != null && HasUnevenRows)
-				viewCell.View.ComputedConstraint = LayoutConstraint.None;
+				viewCell.View.ComputedConstraint = SizeConstraint.None;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			if (content != null)

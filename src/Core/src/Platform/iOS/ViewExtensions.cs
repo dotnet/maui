@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
 
@@ -273,6 +275,23 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
+		
+		static readonly NSString SizeConstraintKey = new("MauiSizeConstraint");
+
+		internal static void UpdateSizeConstraint(this UIView platformView, SizeConstraint constraint)
+		{
+			AssociatedObject.Set(platformView, SizeConstraintKey, new NSNumber((int)constraint));
+		}
+
+		internal static SizeConstraint GetSizeConstraint(this UIView platformView)
+		{
+			if (AssociatedObject.Get(platformView, SizeConstraintKey) is not NSNumber number)
+			{
+				return SizeConstraint.None;
+			}
+
+			return (SizeConstraint)number.Int32Value;
+		}
 
 		/// <summary>
 		/// Invalidates the measure of the view and all its ancestors through <see cref="UIView.SetNeedsLayout"/> propagation.
@@ -282,10 +301,21 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			InvalidateMeasure(platformView);
+			if (PlatformInvalidateMeasure(platformView))
+			{
+				platformView.InvalidateAncestorsMeasures();
+			}
 		}
 
 		internal static void InvalidateMeasure(this UIView platformView)
+		{
+			if (PlatformInvalidateMeasure(platformView))
+			{
+				platformView.InvalidateAncestorsMeasures();
+			}
+		}
+
+		static bool PlatformInvalidateMeasure(UIView platformView)
 		{
 			var propagate = true;
 
@@ -298,10 +328,7 @@ namespace Microsoft.Maui.Platform
 				platformView.SetNeedsLayout();
 			}
 
-			if (propagate)
-			{
-				platformView.InvalidateAncestorsMeasures();
-			}
+			return propagate;
 		}
 
 		internal static void InvalidateAncestorsMeasures(this UIView child)
@@ -337,10 +364,14 @@ namespace Microsoft.Maui.Platform
 				{
 					superview.SetNeedsLayout();
 				}
+				
+				// We're not going to propagate invalidation through fixed-size containers
+				propagate &= GetSizeConstraint(superview) != SizeConstraint.Fixed;
 
 				if (!propagate)
 				{
 					// We've been asked to stop propagation, so let's stop here
+
 					return;
 				}
 

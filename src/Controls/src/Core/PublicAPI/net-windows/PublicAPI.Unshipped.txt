@@ -102,11 +102,6 @@ Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
 Microsoft.Maui.Controls.Layout.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.Controls.Layout.SafeAreaEdges.set -> void
-Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed | Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
-Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
 *REMOVED*Microsoft.Maui.Controls.MessagingCenter
 *REMOVED*Microsoft.Maui.Controls.MessagingCenter.MessagingCenter() -> void
 ~Microsoft.Maui.Controls.NavigatedFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
@@ -277,12 +272,12 @@ override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.CanConv
 override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
-~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
+~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 ~override Microsoft.Maui.Controls.Compatibility.Layout.OnChildAdded(Microsoft.Maui.Controls.Element child) -> void
 ~override Microsoft.Maui.Controls.Compatibility.Layout.OnChildRemoved(Microsoft.Maui.Controls.Element child, int oldLogicalIndex) -> void
-~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
-~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
+~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 override Microsoft.Maui.Controls.ContentPresenter.InvalidateLayout() -> void
 override Microsoft.Maui.Controls.ContentPresenter.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.ContentPresenter.OnChildMeasureInvalidated() -> void
@@ -306,12 +301,12 @@ override Microsoft.Maui.Controls.FontSizeConverter.CanConvertFrom(System.Compone
 override Microsoft.Maui.Controls.FontSizeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.FontSizeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.FontSizeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-~override Microsoft.Maui.Controls.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.HorizontalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 override Microsoft.Maui.Controls.ImageSourceConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.ImageSourceConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ImageSourceConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -340,7 +335,7 @@ override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.CanConvert
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.ScrollView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 override Microsoft.Maui.Controls.ScrollView.InvalidateLayout() -> void
 override Microsoft.Maui.Controls.ScrollView.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.ScrollView.OnChildMeasureInvalidated() -> void
@@ -371,9 +366,9 @@ override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.CanConvertFrom(Sy
 override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.Shapes.TransformTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-~override Microsoft.Maui.Controls.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
-~override Microsoft.Maui.Controls.TemplatedPage.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
-~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
+~override Microsoft.Maui.Controls.TemplatedPage.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
+~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 override Microsoft.Maui.Controls.TemplatedView.InvalidateLayout() -> void
 override Microsoft.Maui.Controls.TemplatedView.OnChildMeasureInvalidated() -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
@@ -392,7 +387,7 @@ override Microsoft.Maui.Controls.UriTypeConverter.CanConvertFrom(System.Componen
 override Microsoft.Maui.Controls.UriTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.UriTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.UriTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -496,4 +491,4 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Primitives.SizeConstraint
