@@ -5,6 +5,8 @@ public class Issue31551 : ContentPage
 {
 	CollectionView _collectionView;
 	public List<Issue31551AnimalGroup> Animals { get; set; } = new List<Issue31551AnimalGroup>();
+	const int VALID_ITEM_INDEX = 1;
+	const int INVALID_GROUP_INDEX = 10;
 	public Issue31551()
 	{
 		CreateAnimalsCollection();
@@ -92,7 +94,7 @@ public class Issue31551 : ContentPage
 
 	private void ScrollButton_Clicked(object sender, EventArgs e)
 	{
-		_collectionView.ScrollTo(1, 10, ScrollToPosition.Start, true);
+		_collectionView.ScrollTo(VALID_ITEM_INDEX, INVALID_GROUP_INDEX, ScrollToPosition.Start, true);
 	}
 }
 

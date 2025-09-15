@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
-			// uint can only store non-negative whole numbers
+			// The uint cast is being used as an optimization to handle both negative numbers and out-of-bounds indices in a single comparison
 			if ((uint) groupIndex >= (uint) _groups.Count)
 			{
 				System.Diagnostics.Debug.WriteLine($"Invalid Group index: {groupIndex}, Group count: {_groups.Count}");
