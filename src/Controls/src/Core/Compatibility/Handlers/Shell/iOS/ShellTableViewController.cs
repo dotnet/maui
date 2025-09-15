@@ -92,10 +92,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-#pragma warning disable CS0618 // Type or member is obsolete
+			TableView.AccessibilityTraits = UIAccessibilityTrait.None;
+
+			// Set flyout-specific accessibility properties
+			TableView.AccessibilityLabel = "Flyout";
+			TableView.AccessibilityHint = "Navigation flyout menu";
+			TableView.AccessibilityIdentifier = "FlyoutNavigationMenu";
+			TableView.AccessibilityValue = "Navigation flyout";
+
+			// Don't be an accessibility element itself to avoid "table" announcement
+			TableView.IsAccessibilityElement = false;
+			TableView.AccessibilityElementsHidden = false;
+
 			TableView.Source = _source;
 #pragma warning restore CS0618 // Type or member is obsolete
 			ShellFlyoutContentManager.ViewDidLoad();
+		}
+
+		public override void LoadView()
+		{
+			base.LoadView();
+			View = new AccessibilityNeutralTableView();
+		}
+
+		internal class AccessibilityNeutralTableView : UITableView,IUIAccessibilityContainer
+		{
+			public AccessibilityNeutralTableView()
+			{
+				this.SetAccessibilityContainerType(UIAccessibilityContainerType.None);
+			}
 		}
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
