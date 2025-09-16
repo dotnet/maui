@@ -17,9 +17,9 @@
 
         <!-- Target control -->
         <Border
-            WidthRequest="200"
-            HeightRequest="200"
-            StrokeThickness="4"
+            WidthRequest="300"
+            HeightRequest="300"
+            StrokeThickness="20"
             Stroke="{Binding StrokeBrush}"
             Background="{Binding BrushTarget}"
             Opacity="{Binding BrushOpacity}"
@@ -29,8 +29,5 @@
                     HorizontalOptions="Center"
                     VerticalOptions="Center"/>
         </Border>
-        <Label Text="Opacity:"/>
-        <Label Text="{Binding BrushOpacity, StringFormat='{}{0:F2}'}"/>
-
     </StackLayout>
 </ContentPage>
