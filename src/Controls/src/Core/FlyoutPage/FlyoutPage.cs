@@ -54,19 +54,7 @@ namespace Microsoft.Maui.Controls
 
 				var previousDetail = _detail;
 
-				// Get the actual pages for navigation events (unwrap NavigationPages)
-				var destinationPage =
-					value is NavigationPage destinationNavPage ? destinationNavPage.CurrentPage : value;
-				var previousPage = previousDetail is NavigationPage previousNavPage
-					? previousNavPage.CurrentPage
-					: previousDetail;
-
-				// Send NavigatingFrom event to the previous detail (if any)
-				if (previousDetail is not null)
-				{
-					previousDetail.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage,
-						NavigationType.Replace));
-				}
+				previousDetail?.SendNavigatingFrom(new NavigatingFromEventArgs(destinationPage: value, navigationType: NavigationType.Replace));
 
 				// Update the detail property
 				OnPropertyChanging();
@@ -87,10 +75,10 @@ namespace Microsoft.Maui.Controls
 				if (previousDetail is not null)
 				{
 					previousDetail.SendNavigatedFrom(
-						new NavigatedFromEventArgs(destinationPage, NavigationType.Replace));
+						new NavigatedFromEventArgs(destinationPage: value, NavigationType.Replace));
 				}
 
-				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
+				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));
 			}
 		}
 
