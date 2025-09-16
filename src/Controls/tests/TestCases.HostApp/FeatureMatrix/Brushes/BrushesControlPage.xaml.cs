@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample
 
 	public partial class BrushesControlMainPage : ContentPage
 	{
-		readonly BrushesViewModel _viewModel;
+		private BrushesViewModel _viewModel;
 
 		public BrushesControlMainPage(BrushesViewModel viewModel)
 		{
@@ -24,10 +24,7 @@ namespace Maui.Controls.Sample
 
 		private async void OnOptionsClicked(object sender, EventArgs e)
 		{
-			_viewModel.BrushOpacity = 1;
-			_viewModel.HasBrush.ToString();
-			_viewModel.BrushTarget.ToString();
-
+			BindingContext = _viewModel = new BrushesViewModel();
 			await Navigation.PushAsync(new BrushesOptionsPage(_viewModel));
 		}
 	}
