@@ -94,11 +94,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			TableView.AccessibilityTraits = UIAccessibilityTrait.None;
 
-			// Set flyout-specific accessibility properties
-			TableView.AccessibilityLabel = "Flyout";
-			TableView.AccessibilityHint = "Navigation flyout menu";
+			TableView.AccessibilityLabel = "Navigation Flyout Menu";
+			TableView.AccessibilityValue = "Expanded";
+			TableView.AccessibilityHint = "Swipe right to navigate to menu items.";
 			TableView.AccessibilityIdentifier = "FlyoutNavigationMenu";
-			TableView.AccessibilityValue = "Navigation flyout";
 
 			TableView.IsAccessibilityElement = false;
 			TableView.AccessibilityElementsHidden = false;
