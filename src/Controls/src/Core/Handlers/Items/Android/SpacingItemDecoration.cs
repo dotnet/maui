@@ -64,73 +64,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsLayout = itemsLayout;
 		}
 
-		public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
-		{
-			base.GetItemOffsets(outRect, view, parent, state);
-			int position = parent.GetChildAdapterPosition(view);
-			int itemCount = state.ItemCount;
-			outRect.Left = HorizontalOffset;
-			outRect.Right = HorizontalOffset;
-			outRect.Bottom = VerticalOffset;
-			outRect.Top = VerticalOffset;
+        public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
+        {
+            base.GetItemOffsets(outRect, view, parent, state);
 
+            int position = parent.GetChildAdapterPosition(view);
+            if (position == RecyclerView.NoPosition)
+                return;
 
-			if (_itemsLayout is GridItemsLayout gridItemsLayout)
-			{
-				if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-				{
-					int row = position / _span;
-					int totalRows = (int)Math.Ceiling((double)itemCount / _span);
+            int itemCount = state.ItemCount;
 
-					if (row == 0)
-					{
-						outRect.Top = 0;
-					}
-					else if (row == totalRows - 1)
-					{
-						outRect.Bottom = 0;
-					}
-				}
-				else
-				{
-					int column = position / _span;
-					int totalColumns = (int)Math.Ceiling((double)itemCount / _span);
+            outRect.Left = HorizontalOffset;
+            outRect.Right = HorizontalOffset;
+            outRect.Bottom = VerticalOffset;
+            outRect.Top = VerticalOffset;
 
-					if (position < _span)
-					{
-						outRect.Left = 0;
-					}
-					else if (column == totalColumns - 1)
-					{
-						outRect.Right = 0;
-					}
-				}
-			}
-			else if (_itemsLayout is LinearItemsLayout linearItemsLayout)
-			{
-				if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-				{
-					if (position == 0)
-					{
-						outRect.Top = 0;
-					}
-					else if (position == itemCount - 1)
-					{
-						outRect.Bottom = 0;
-					}
-				}
-				else
-				{
-					if (position == 0)
-					{
-						outRect.Left = 0;
-					}
-					else if (position == itemCount - 1)
-					{
-						outRect.Right = 0;
-					}
-				}
-			}
-		}
+            if (_itemsLayout is GridItemsLayout gridItemsLayout)
+            {
+                int rowIndex, colIndex, totalRows, totalCols;
+
+                if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+                {
+                    rowIndex = position / _span;
+                    totalRows = (itemCount + _span - 1) / _span;
+
+                    if (rowIndex == 0)
+                        outRect.Top = 0;
+                    else if (rowIndex == totalRows - 1)
+                        outRect.Bottom = 0;
+                }
+                else
+                {
+                    colIndex = position / _span;
+                    totalCols = (itemCount + _span - 1) / _span;
+
+                    if (colIndex == 0)
+                        outRect.Left = 0;
+                    else if (colIndex == totalCols - 1)
+                        outRect.Right = 0;
+                }
+            }
+            else if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+            {
+                if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+                {
+                    if (position == 0)
+                        outRect.Top = 0;
+                    else if (position == itemCount - 1)
+                        outRect.Bottom = 0;
+                }
+                else
+                {
+                    if (position == 0)
+                        outRect.Left = 0;
+                    else if (position == itemCount - 1)
+                        outRect.Right = 0;
+                }
+            }
+        }
 	}
 }
