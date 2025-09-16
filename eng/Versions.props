@@ -52,7 +52,7 @@
     <MicrosoftExtensionsPrimitivesVersion>10.0.0-rc.2.25461.112</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-rc.2.25461.112</MicrosoftExtensionsHostingAbstractionsVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-ci.main.309</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-ci.main.313</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
@@ -208,7 +208,7 @@
     <DotNetVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$(VersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc|alpha).\d+`))</DotNetVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>10.0.100-rc.1</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>10.0.100-rc.1</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_185PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
