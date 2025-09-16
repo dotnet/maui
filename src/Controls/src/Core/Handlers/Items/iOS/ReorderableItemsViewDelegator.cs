@@ -36,7 +36,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var emptyGroupTarget = FindFirstEmptyGroup(itemsSource, totalSections);
 				if (emptyGroupTarget != null)
 				{
-					System.Diagnostics.Debug.WriteLine("Detected potential drop into empty section {0} (iOS reverted to original {1})", emptyGroupTarget.Section, originalIndexPath);
 					return emptyGroupTarget;
 				}
 			}
@@ -49,29 +48,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (targetGroupItemCount == 0)
 			{
-				System.Diagnostics.Debug.WriteLine("Accepting drop into empty section {0}", proposedIndexPath.Section);
 				return NSIndexPath.FromRowSection(0, proposedIndexPath.Section);
 			}
 
-			// Handle dropping past last item in current section
 			if (proposedIndexPath.Row >= targetGroupItemCount)
 			{
-				// Check if we should redirect to next empty group
 				if (proposedIndexPath.Section < totalSections - 1)
 				{
 					var nextSectionItemCount = itemsSource.ItemCountInGroup(proposedIndexPath.Section + 1);
 					if (nextSectionItemCount == 0)
 					{
-						System.Diagnostics.Debug.WriteLine("Redirecting to next empty section {0}", proposedIndexPath.Section + 1);
 						return NSIndexPath.FromRowSection(0, proposedIndexPath.Section + 1);
 					}
 				}
 
-				// Clamp to last valid position in current section
 				return NSIndexPath.FromRowSection(targetGroupItemCount, proposedIndexPath.Section);
 			}
 
-			// Proposed position is valid
 			return proposedIndexPath;
 		}
 
