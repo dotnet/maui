@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls
 				e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
 				e.PropertyName == nameof(ItemsLayout.SnapPointsType))
 			{
-				Handler?.Invoke(nameof(Controls.CarouselView.ItemsLayout.PropertyChanged), e);
+				Handler?.Invoke("ItemsLayoutProperties", e);
 			}
 		}
 

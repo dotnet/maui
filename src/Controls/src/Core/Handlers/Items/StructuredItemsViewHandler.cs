@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		//TODO Make this public in .NET10
 		internal static CommandMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewCommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
+			["ItemsLayoutProperties"] = MapItemsLayoutPropertyChanged
 		};
 
 	}
