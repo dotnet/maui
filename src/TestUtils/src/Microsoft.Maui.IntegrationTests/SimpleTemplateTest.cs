@@ -331,7 +331,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, DotNetCurrent, additionalDotNetNewParams: $"-n \"{projectName}\""),
+		Assert.IsTrue(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\""),
 			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
 		// Verify the project file was created with the correct name (this was the bug)
