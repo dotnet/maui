@@ -27,10 +27,9 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					//Device.GetNamedSize(namedSize, targetObject.GetType())
 					yield return Instruction.Create(OpCodes.Ldc_I4, (int)namedSize);
-					var parent = node.Parent as IElementNode;
-					if (parent != null && context.Variables.ContainsKey(parent))
+					if (node.Parent is ElementNode parent && context.Variables.TryGetValue(parent, out VariableDefinition parentvalue))
 					{
-						yield return Instruction.Create(OpCodes.Ldloc, context.Variables[parent]);
+						yield return Instruction.Create(OpCodes.Ldloc, parentvalue);
 						yield return Instruction.Create(OpCodes.Callvirt, module.ImportMethodReference(
 							context.Cache,
 							module.TypeSystem.Object,
