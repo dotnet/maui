@@ -17,26 +17,73 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override NSIndexPath GetTargetIndexPathForMove(UICollectionView collectionView, NSIndexPath originalIndexPath, NSIndexPath proposedIndexPath)
 		{
-			NSIndexPath targetIndexPath;
-
 			var itemsView = ViewController?.ItemsView;
-			if (itemsView?.IsGrouped == true)
+
+			if (itemsView?.IsGrouped != true)
+				return proposedIndexPath;
+
+			if (originalIndexPath.Section != proposedIndexPath.Section && !itemsView.CanMixGroups)
+				return originalIndexPath;
+
+			var itemsSource = ViewController?.ItemsSource;
+			if (itemsSource == null)
+				return proposedIndexPath;
+
+			var totalSections = itemsSource.GroupCount;
+
+			if (originalIndexPath.Equals(proposedIndexPath) && itemsView.CanMixGroups)
 			{
-				if (originalIndexPath.Section == proposedIndexPath.Section || itemsView.CanMixGroups)
+				var emptyGroupTarget = FindFirstEmptyGroup(itemsSource, totalSections);
+				if (emptyGroupTarget != null)
 				{
-					targetIndexPath = proposedIndexPath;
+					System.Diagnostics.Debug.WriteLine("Detected potential drop into empty section {0} (iOS reverted to original {1})", emptyGroupTarget.Section, originalIndexPath);
+					return emptyGroupTarget;
 				}
-				else
-				{
-					targetIndexPath = originalIndexPath;
-				}
-			}
-			else
-			{
-				targetIndexPath = proposedIndexPath;
 			}
 
-			return targetIndexPath;
+
+			if (proposedIndexPath.Section >= totalSections)
+				return originalIndexPath;
+
+			var targetGroupItemCount = itemsSource.ItemCountInGroup(proposedIndexPath.Section);
+
+			if (targetGroupItemCount == 0)
+			{
+				System.Diagnostics.Debug.WriteLine("Accepting drop into empty section {0}", proposedIndexPath.Section);
+				return NSIndexPath.FromRowSection(0, proposedIndexPath.Section);
+			}
+
+			// Handle dropping past last item in current section
+			if (proposedIndexPath.Row >= targetGroupItemCount)
+			{
+				// Check if we should redirect to next empty group
+				if (proposedIndexPath.Section < totalSections - 1)
+				{
+					var nextSectionItemCount = itemsSource.ItemCountInGroup(proposedIndexPath.Section + 1);
+					if (nextSectionItemCount == 0)
+					{
+						System.Diagnostics.Debug.WriteLine("Redirecting to next empty section {0}", proposedIndexPath.Section + 1);
+						return NSIndexPath.FromRowSection(0, proposedIndexPath.Section + 1);
+					}
+				}
+
+				// Clamp to last valid position in current section
+				return NSIndexPath.FromRowSection(targetGroupItemCount, proposedIndexPath.Section);
+			}
+
+			// Proposed position is valid
+			return proposedIndexPath;
+		}
+
+		private NSIndexPath FindFirstEmptyGroup(IItemsViewSource itemsSource, int totalSections)
+		{
+			for (int section = 0; section < totalSections; section++)
+			{
+				var sectionItemCount = itemsSource.ItemCountInGroup(section);
+				if (sectionItemCount == 0)
+					return NSIndexPath.FromRowSection(0, section);
+			}
+			return null;
 		}
 	}
 }
