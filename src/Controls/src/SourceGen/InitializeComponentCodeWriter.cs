@@ -60,7 +60,8 @@ static class InitializeComponentCodeWriter
 				ITypeSymbol xamlResIdAttr = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute")!;
 				INamedTypeSymbol? GetTypeForResourcePath(string resourcePath, IAssemblySymbol assembly)
 				{
-					var attr = assembly.GetAttributes(xamlResIdAttr).FirstOrDefault(attr => (string)attr.ConstructorArguments[1].Value! == resourcePath);
+					//XRID use paths with forward slashes. we can't change that it's used by HR
+					var attr = assembly.GetAttributes(xamlResIdAttr).FirstOrDefault(attr => ((string)attr.ConstructorArguments[1].Value!).Replace('/', Path.DirectorySeparatorChar) == resourcePath);
 					return attr?.ConstructorArguments[2].Value as INamedTypeSymbol;
 				}
 
