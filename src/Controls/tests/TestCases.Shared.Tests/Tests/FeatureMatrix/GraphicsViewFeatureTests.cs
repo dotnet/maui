@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class GraphicsViewFeatureTests : UITest
+public class GraphicsViewFeatureTests : _GalleryUITest
 {
 	public const string GraphicsViewFeatureMatrix = "GraphicsView Feature Matrix";
+
+	public override string GalleryPageName => GraphicsViewFeatureMatrix;
 
 	public GraphicsViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(GraphicsViewFeatureMatrix);
 	}
 
 	public void VerifyShapeScreenshot()

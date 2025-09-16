@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ImageFeatureTests : UITest
+public class ImageFeatureTests : _GalleryUITest
 {
 	public const string ImageFeatureMatrix = "Image Feature Matrix";
 	public const string Options = "Options";
@@ -24,16 +24,11 @@ public class ImageFeatureTests : UITest
 	public const string IsAnimationTrue = "IsAnimationTrue";
 	public const string IsAnimationFalse = "IsAnimationFalse";
 
+	public override string GalleryPageName => ImageFeatureMatrix;
 
 	public ImageFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ImageFeatureMatrix);
 	}
 
 	[Test]

@@ -65,6 +65,12 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
 			}
 
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			if(args is not null && args.Count > 0)
+			{
+				options.AddAdditionalAppiumOption("environment", args);
+			}
+
 			options.AddAdditionalAppiumOption("showServerLogs", true);
 			return options;
 		}

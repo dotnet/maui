@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public const string RadioButtonGallery = "RadioButton Gallery";
 
+		public override string GalleryPageName => RadioButtonGallery;
+
 		public RadioButtonUITests(TestDevice device)
 			: base(device)
 		{

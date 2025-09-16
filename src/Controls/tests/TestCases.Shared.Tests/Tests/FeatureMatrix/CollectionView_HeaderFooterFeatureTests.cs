@@ -3,7 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
-public class CollectionView_HeaderFooterFeatureTests : UITest
+public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 {
 	public const string HeaderFooterFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -28,16 +28,11 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	public const string GroupHeaderTemplateGrid = "GroupHeaderTemplateGrid";
 	public const string GroupFooterTemplateGrid = "GroupFooterTemplateGrid";
 
+	public override string GalleryPageName => HeaderFooterFeatureMatrix;
 
 	public CollectionView_HeaderFooterFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(HeaderFooterFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504

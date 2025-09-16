@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class CollectionView_SelectionFeatureTests : UITest
+public class CollectionView_SelectionFeatureTests : _GalleryUITest
 {
 	public const string SelectionFeatureMatrix = "CollectionView Feature Matrix";
 	public const string ItemsSourceGroupedList = "ItemsSourceGroupedList";
@@ -27,15 +27,12 @@ public class CollectionView_SelectionFeatureTests : UITest
 	public const string CurrentSelectionTextLabel = "CurrentSelectionTextLabel";
 	public const string PreviousSelectionTextLabel = "PreviousSelectionTextLabel";
 	public const string SelectionChangedEventCountLabel = "SelectionChangedEventCountLabel";
+
+	public override string GalleryPageName => SelectionFeatureMatrix;
+
 	public CollectionView_SelectionFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(SelectionFeatureMatrix);
 	}
 
 	[Test, Order(1)]

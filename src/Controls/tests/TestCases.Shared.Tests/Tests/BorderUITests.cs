@@ -8,6 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string BorderGallery = "Border Gallery";
 
+		public override string GalleryPageName => BorderGallery;
+
 		public BorderUITests(TestDevice device)
 			: base(device)
 		{

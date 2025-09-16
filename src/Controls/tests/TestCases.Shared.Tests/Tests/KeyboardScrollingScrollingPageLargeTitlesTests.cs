@@ -7,6 +7,9 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class KeyboardScrollingScrollingPageLargeTitlesTests : CoreGalleryBasePageTest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - Scrolling Page / Large Titles";
+
+		public override string GalleryPageName => KeyboardScrollingGallery;
+
 		public KeyboardScrollingScrollingPageLargeTitlesTests(TestDevice device)
 			: base(device)
 		{

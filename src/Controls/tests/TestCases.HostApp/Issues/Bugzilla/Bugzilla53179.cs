@@ -22,7 +22,7 @@
 
 				public TestPage(int index)
 				{
-					nextBtn = new Button { AutomationId = "Next Page", Text = "Next Page" };
+					nextBtn = new Button { AutomationId = $"Next Page {index}", Text = $"Next Page {index}" };
 					rmBtn = new Button { AutomationId = "Remove previous pages", Text = "Remove previous pages" };
 					popBtn = new Button { AutomationId = "Back", Text = "Back" };
 

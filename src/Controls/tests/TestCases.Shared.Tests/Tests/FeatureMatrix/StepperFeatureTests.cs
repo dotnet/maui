@@ -5,19 +5,15 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Stepper)]
-public class StepperFeatureTests : UITest
+public class StepperFeatureTests : _GalleryUITest
 {
 	public const string StepperFeatureMatrix = "Stepper Feature Matrix";
+
+	public override string GalleryPageName => StepperFeatureMatrix;
 
 	public StepperFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(StepperFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -106,42 +102,42 @@ public class StepperFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
 // Related Issue Link : https://github.com/dotnet/maui/issues/12243
-        [Test]
-        public void Stepper_SetValueBelowMinimum()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-            App.WaitForElement("MinimumEntry");
-            App.ClearText("MinimumEntry");
-            App.EnterText("MinimumEntry", "10");
-            App.PressEnter();
-            App.ClearText("ValueEntry");
-            App.EnterText("ValueEntry", "5");
-            App.PressEnter();
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElement("Options");
-            Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("10.00"));
-        }
+		[Test]
+		public void Stepper_SetValueBelowMinimum()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("MinimumEntry");
+			App.ClearText("MinimumEntry");
+			App.EnterText("MinimumEntry", "10");
+			App.PressEnter();
+			App.ClearText("ValueEntry");
+			App.EnterText("ValueEntry", "5");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Options");
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("10.00"));
+		}
 
-        [Test]
-        public void Stepper_MinimumExceedsMaximum_SetsMinimumToMaximum()
-        {
-            App.WaitForElement("Options");
-            App.Tap("Options");
-            App.WaitForElement("MinimumEntry");
-            App.ClearText("MinimumEntry");
-            App.EnterText("MinimumEntry", "50");
-            App.PressEnter();
-            App.ClearText("MaximumEntry");
-            App.EnterText("MaximumEntry", "25");
-            App.PressEnter();
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            App.WaitForElement("Options");
-            Assert.That(App.FindElement("MinimumLabel").GetText(), Is.EqualTo("50.00"));
-            Assert.That(App.FindElement("MaximumLabel").GetText(), Is.EqualTo("50.00"));
-        }
+		[Test]
+		public void Stepper_MinimumExceedsMaximum_SetsMinimumToMaximum()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("MinimumEntry");
+			App.ClearText("MinimumEntry");
+			App.EnterText("MinimumEntry", "50");
+			App.PressEnter();
+			App.ClearText("MaximumEntry");
+			App.EnterText("MaximumEntry", "25");
+			App.PressEnter();
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Options");
+			Assert.That(App.FindElement("MinimumLabel").GetText(), Is.EqualTo("50.00"));
+			Assert.That(App.FindElement("MaximumLabel").GetText(), Is.EqualTo("50.00"));
+		}
 #endif
 
 	[Test]

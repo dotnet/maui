@@ -7,6 +7,10 @@ namespace Microsoft.Maui.TestCases.Tests
 	[Category(UITestCategories.Image)]
 	public class ImageLoadingGalleryTests : CoreGalleryBasePageTest
 	{
+
+		const string ImageLoadingGallery = "Image Loading Gallery";
+
+		public override string GalleryPageName => ImageLoadingGallery;
 		public ImageLoadingGalleryTests(TestDevice device)
 			: base(device)
 		{
@@ -14,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery("Image Loading Gallery");
+			App.NavigateToGallery(ImageLoadingGallery);
 		}
 
 		[Test]
