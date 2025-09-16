@@ -66,8 +66,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("IsVisibleFalseRadio");
-		App.Tap("IsVisibleFalseRadio");
+		App.WaitForElement("IsVisibleCheckBox");
+		App.Tap("IsVisibleCheckBox");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -75,12 +75,12 @@ public class GridFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
-	public void Grid_FlowDirection()
+	public void VerifyGrid_FlowDirection()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("FlowDirectionRTL");
-		App.Tap("FlowDirectionRTL");
+		App.WaitForElement("FlowDirectionCheckBox");
+		App.Tap("FlowDirectionCheckBox");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -88,7 +88,7 @@ public class GridFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
-	public void Grid_BackgroundColor()
+	public void VerifyGrid_BackgroundColor()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
@@ -147,8 +147,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("NestedGridCheckbox");
-		App.Tap("NestedGridCheckbox");
+		App.WaitForElement("NestedGridCheckBox");
+		App.Tap("NestedGridCheckBox");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -189,8 +189,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("HorizontalOptionsStart");
-		App.Tap("HorizontalOptionsStart");
+		App.WaitForElement("HorizontalStart");
+		App.Tap("HorizontalStart");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -202,8 +202,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("HorizontalOptionsCenter");
-		App.Tap("HorizontalOptionsCenter");
+		App.WaitForElement("HorizontalCenter");
+		App.Tap("HorizontalCenter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -215,8 +215,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("HorizontalOptionsEnd");
-		App.Tap("HorizontalOptionsEnd");
+		App.WaitForElement("HorizontalEnd");
+		App.Tap("HorizontalEnd");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -228,8 +228,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("VerticalOptionsStart");
-		App.Tap("VerticalOptionsStart");
+		App.WaitForElement("VerticalStart");
+		App.Tap("VerticalStart");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -241,8 +241,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("VerticalOptionsCenter");
-		App.Tap("VerticalOptionsCenter");
+		App.WaitForElement("VerticalCenter");
+		App.Tap("VerticalCenter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -254,8 +254,8 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("VerticalOptionsEnd");
-		App.Tap("VerticalOptionsEnd");
+		App.WaitForElement("VerticalEnd");
+		App.Tap("VerticalEnd");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -267,10 +267,10 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("VerticalOptionsStart");
-		App.Tap("VerticalOptionsStart");
-		App.WaitForElement("HorizontalOptionsStart");
-		App.Tap("HorizontalOptionsStart");
+		App.WaitForElement("VerticalStart");
+		App.Tap("VerticalStart");
+		App.WaitForElement("HorizontalStart");
+		App.Tap("HorizontalStart");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -282,10 +282,10 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("VerticalOptionsCenter");
-		App.Tap("VerticalOptionsCenter");
-		App.WaitForElement("HorizontalOptionsCenter");
-		App.Tap("HorizontalOptionsCenter");
+		App.WaitForElement("VerticalCenter");
+		App.Tap("VerticalCenter");
+		App.WaitForElement("HorizontalCenter");
+		App.Tap("HorizontalCenter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -297,10 +297,10 @@ public class GridFeatureTests : UITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("VerticalOptionsEnd");
-		App.Tap("VerticalOptionsEnd");
-		App.WaitForElement("HorizontalOptionsEnd");
-		App.Tap("HorizontalOptionsEnd");
+		App.WaitForElement("VerticalEnd");
+		App.Tap("VerticalEnd");
+		App.WaitForElement("HorizontalEnd");
+		App.Tap("HorizontalEnd");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -318,10 +318,10 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(ColumnDefinitionValueEntry);
 		App.ClearText(ColumnDefinitionValueEntry);
 		App.EnterText(ColumnDefinitionValueEntry, "100");
-		App.WaitForElement("ColumnTypeAbsolute");
-		App.Tap("ColumnTypeAbsolute");
-		App.WaitForElement("RowTypeAbsolute");
-		App.Tap("RowTypeAbsolute");
+		App.WaitForElement("ColumnAbsoluteRadio");
+		App.Tap("ColumnAbsoluteRadio");
+		App.WaitForElement("RowAbsoluteRadio");
+		App.Tap("RowAbsoluteRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -377,8 +377,8 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(RowSpacingEntry);
 		App.ClearText(RowSpacingEntry);
 		App.EnterText(RowSpacingEntry, "20");
-		App.WaitForElement("ColumnTypeStar");
-		App.Tap("ColumnTypeStar");
+		App.WaitForElement("ColumnStarRadio");
+		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -396,8 +396,8 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(ColumnSpacingEntry);
 		App.ClearText(ColumnSpacingEntry);
 		App.EnterText(ColumnSpacingEntry, "20");
-		App.WaitForElement("ColumnTypeStar");
-		App.Tap("ColumnTypeStar");
+		App.WaitForElement("ColumnStarRadio");
+		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -415,8 +415,8 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(ColumnSpacingEntry);
 		App.ClearText(ColumnSpacingEntry);
 		App.EnterText(ColumnSpacingEntry, "20");
-		App.WaitForElement("ColumnTypeStar");
-		App.Tap("ColumnTypeStar");
+		App.WaitForElement("ColumnStarRadio");
+		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -434,8 +434,8 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(RowSpacingEntry);
 		App.ClearText(RowSpacingEntry);
 		App.EnterText(RowSpacingEntry, "20");
-		App.WaitForElement("ColumnTypeStar");
-		App.Tap("ColumnTypeStar");
+		App.WaitForElement("ColumnStarRadio");
+		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -453,8 +453,8 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(RowSpacingEntry);
 		App.ClearText(RowSpacingEntry);
 		App.EnterText(RowSpacingEntry, "20");
-		App.WaitForElement("ColumnTypeStar");
-		App.Tap("ColumnTypeStar");
+		App.WaitForElement("ColumnStarRadio");
+		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -472,8 +472,8 @@ public class GridFeatureTests : UITest
 		App.WaitForElement(ColumnSpacingEntry);
 		App.ClearText(ColumnSpacingEntry);
 		App.EnterText(ColumnSpacingEntry, "20");
-		App.WaitForElement("ColumnTypeStar");
-		App.Tap("ColumnTypeStar");
+		App.WaitForElement("ColumnStarRadio");
+		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();

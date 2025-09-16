@@ -33,7 +33,6 @@
                      <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
 
-              <!-- 1st row: Row and Column -->
               <StackLayout Grid.Row="0"
                            Grid.Column="0">
                      <Label Text="Rows:"
@@ -51,7 +50,6 @@
                             AutomationId="ColumnEntry"/>
               </StackLayout>
 
-              <!-- 2nd row: RowValue and ColumnValue -->
               <StackLayout Grid.Row="1"
                            Grid.Column="0">
                      <Label Text="Row Value:"
@@ -69,7 +67,6 @@
                             AutomationId="ColumnDefinitionValueEntry"/>
               </StackLayout>
 
-              <!-- 3rd row: RowSpan and ColumnSpan -->
               <StackLayout Grid.Row="2"
                            Grid.Column="0">
                      <Label Text="RowSpan:"
@@ -87,7 +84,6 @@
                             AutomationId="MainContentColumnSpanEntry"/>
               </StackLayout>
 
-              <!-- RowSpacing and ColumnSpacing row -->
               <StackLayout Grid.Row="3"
                            Grid.Column="0">
                      <Label Text="RowSpacing:"
@@ -105,7 +101,6 @@
                             AutomationId="ColumnSpacingEntry"/>
               </StackLayout>
 
-              <!-- 4th row: Padding and Background Color -->
               <StackLayout Grid.Row="4"
                            Grid.Column="0">
                      <Label Text="Padding:"
@@ -176,7 +171,6 @@
                      </HorizontalStackLayout>
               </StackLayout>
 
-              <!-- 7th row: HorizontalOptions -->
               <StackLayout Grid.Row="7"
                            Grid.ColumnSpan="2">
                      <Label Text="HorizontalOptions:"
@@ -197,7 +191,6 @@
                      </HorizontalStackLayout>
               </StackLayout>
 
-              <!-- 8th row: VerticalOptions -->
               <StackLayout Grid.Row="8"
                            Grid.ColumnSpan="2">
                      <Label Text="VerticalOptions:"
@@ -218,13 +211,11 @@
                      </HorizontalStackLayout>
               </StackLayout>
 
-              <!-- 9th row: IsVisible and FlowDirection -->
               <StackLayout Grid.Row="9"
                            Grid.ColumnSpan="2"
                            Spacing="10"
                            Orientation="Horizontal">
 
-                     <!-- IsVisible -->
                      <HorizontalStackLayout>
                             <Label Text="IsVisible:"
                                    FontAttributes="Bold"
@@ -235,7 +226,6 @@
                                       AutomationId="IsVisibleCheckBox"/>
                      </HorizontalStackLayout>
 
-                     <!-- FlowDirection -->
                      <HorizontalStackLayout>
                             <Label Text="Flow Direction:"
                                    FontAttributes="Bold"

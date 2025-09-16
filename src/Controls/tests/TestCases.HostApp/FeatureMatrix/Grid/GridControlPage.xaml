@@ -6,25 +6,25 @@
              x:DataType="local:GridViewModel"
              Title="Grid Feature Matrix"
              BackgroundColor="Lavender">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Options"
-                     Clicked="NavigateToOptionsPage_Clicked"
-                     AutomationId="Options"/>
-    </ContentPage.ToolbarItems>
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+                 Clicked="NavigateToOptionsPage_Clicked"
+                 AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
 
-    <Grid x:Name="MainGrid"
-      RowSpacing="{Binding RowSpacing}"
-      ColumnSpacing="{Binding ColumnSpacing}"
-      Padding="{Binding Padding}"
-      RowDefinitions="{Binding RowDefinitions}"
-      ColumnDefinitions="{Binding ColumnDefinitions}"
-      IsVisible="{Binding IsVisible}"
-      FlowDirection="{Binding FlowDirection}"
-      BackgroundColor="{Binding BackgroundColor}"
-      HorizontalOptions="{Binding HorizontalOptions}"
-      VerticalOptions="{Binding VerticalOptions}"
-      HeightRequest="400"
-      WidthRequest="350"
-      AutomationId="MainGrid"> 
-</Grid>
+  <Grid x:Name="MainGrid"
+        RowSpacing="{Binding RowSpacing}"
+        ColumnSpacing="{Binding ColumnSpacing}"
+        Padding="{Binding Padding}"
+        RowDefinitions="{Binding RowDefinitions}"
+        ColumnDefinitions="{Binding ColumnDefinitions}"
+        IsVisible="{Binding IsVisible}"
+        FlowDirection="{Binding FlowDirection}"
+        BackgroundColor="{Binding BackgroundColor}"
+        HorizontalOptions="{Binding HorizontalOptions}"
+        VerticalOptions="{Binding VerticalOptions}"
+        HeightRequest="400"
+        WidthRequest="350"
+        AutomationId="MainGrid">
+  </Grid>
 </ContentPage>

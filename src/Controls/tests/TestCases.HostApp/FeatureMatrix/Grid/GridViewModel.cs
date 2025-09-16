@@ -176,7 +176,7 @@ public class GridViewModel : INotifyPropertyChanged
         }
     }
 
-     private bool _showNestedGrid;
+    private bool _showNestedGrid;
     public bool ShowNestedGrid
     {
         get => _showNestedGrid;
@@ -232,9 +232,34 @@ public class GridViewModel : INotifyPropertyChanged
         }
     }
 
+    public string RowDefinitionValue
+    {
+        get => _rowDefinitionValue;
+        set
+        {
+            if (_rowDefinitionValue != value)
+            {
+                _rowDefinitionValue = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(RowDefinitions));
+            }
+        }
+    }
     
-    public string RowDefinitionValue { get => _rowDefinitionValue; set { if (_rowDefinitionValue != value) { _rowDefinitionValue = value; OnPropertyChanged(); OnPropertyChanged(nameof(RowDefinitions)); } } }
-    public string ColumnDefinitionValue { get => _columnDefinitionValue; set { if (_columnDefinitionValue != value) { _columnDefinitionValue = value; OnPropertyChanged(); OnPropertyChanged(nameof(ColumnDefinitions)); } } }
+    public string ColumnDefinitionValue
+    {
+        get => _columnDefinitionValue;
+        set
+        {
+            if (_columnDefinitionValue != value)
+            {
+                _columnDefinitionValue = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ColumnDefinitions));
+            }
+        }
+    }
+
     public RowDefinitionCollection RowDefinitions
     {
         get

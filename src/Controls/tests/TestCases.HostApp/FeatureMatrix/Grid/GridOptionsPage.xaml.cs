@@ -16,8 +16,6 @@ public partial class GridOptionsPage : ContentPage
 
     private void ApplyButton_Clicked(object sender, EventArgs e)
     {
-        // OnPropertyChanged(nameof(_viewModel.RowDefinitions));
-        // OnPropertyChanged(nameof(_viewModel.ColumnDefinitions));
         Navigation.PopAsync();
     }
 
@@ -108,7 +106,7 @@ public partial class GridOptionsPage : ContentPage
     private void OnRowTypeChanged(object sender, CheckedChangedEventArgs e)
     {
         if (!e.Value)
-            return; // only act when checked
+            return;
 
         if (BindingContext is GridViewModel vm && sender is RadioButton radio)
         {
@@ -128,31 +126,26 @@ public partial class GridOptionsPage : ContentPage
     }
 
     private void OnIsVisibleCheckedChanged(object sender, CheckedChangedEventArgs e)
-{
-    if (BindingContext is GridViewModel vm)
     {
-        vm.IsVisible = e.Value; // true = checked, false = unchecked
+        if (BindingContext is GridViewModel vm)
+        {
+            vm.IsVisible = e.Value;
+        }
     }
-}
 
-private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
-{
-    if (BindingContext is GridViewModel vm)
+    private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
     {
-        // If checked → RTL, otherwise → LTR
-        vm.FlowDirection = e.Value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        if (BindingContext is GridViewModel vm)
+        {
+            vm.FlowDirection = e.Value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        }
     }
-}
 
-private void OnNestedGridChanged(object sender, CheckedChangedEventArgs e)
-{
-    if (BindingContext is GridViewModel vm)
+    private void OnNestedGridChanged(object sender, CheckedChangedEventArgs e)
     {
-        vm.ShowNestedGrid = e.Value; // true = show, false = hide
+        if (BindingContext is GridViewModel vm)
+        {
+            vm.ShowNestedGrid = e.Value;
+        }
     }
-}
-
-
-   
-
 }
