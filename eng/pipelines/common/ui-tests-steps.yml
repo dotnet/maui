@@ -172,6 +172,8 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    ${{ if ne(parameters.deviceType, '') }}:
+      ANDROID_TEST_SKIN: ${{ parameters.deviceType }}
 
 - bash: |
     cat ${BASH_SOURCE[0]}
