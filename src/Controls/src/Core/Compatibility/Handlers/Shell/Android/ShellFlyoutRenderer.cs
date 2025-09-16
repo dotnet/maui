@@ -409,7 +409,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.OnLayout(changed, left, top, right, bottom);
 
 			var destination = Context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
-			Shell.Frame = destination;
+			if (Shell.Frame != destination)
+				Shell.Frame = destination;
 		}
 
 		internal void Disconnect()
