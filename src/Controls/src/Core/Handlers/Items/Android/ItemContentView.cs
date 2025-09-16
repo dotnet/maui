@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// Determines if this ItemContentView is being used for header or footer content
 		/// by checking if the contained View is the same as the ItemsView's Header or Footer
 		/// </summary>
-		private bool IsHeaderOrFooterContent()
+		bool IsHeaderOrFooterContent()
 		{
 			if (View == null)
 				return false;
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// <summary>
 		/// Finds the parent StructuredItemsView by traversing the logical parent chain
 		/// </summary>
-		private StructuredItemsView FindParentItemsView()
+		StructuredItemsView FindParentItemsView()
 		{
 			var current = View?.Parent;
 			while (current != null)
