@@ -18,11 +18,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		}
 
+#if !ANDROID
 		//TODO Make this public in .NET10
 		internal ItemsViewHandler(PropertyMapper mapper = null, CommandMapper commandMapper = null) : base(mapper ?? ItemsViewMapper,commandMapper)
 		{
 
 		}
+#endif
 
 		public static PropertyMapper<TItemsView, ItemsViewHandler<TItemsView>> ItemsViewMapper = new(ViewMapper)
 		{

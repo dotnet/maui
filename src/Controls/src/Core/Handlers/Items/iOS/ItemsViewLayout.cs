@@ -84,12 +84,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool FlipsHorizontallyInOppositeLayoutDirection => true;
 
 		//TODO: Remove this in .NET 10
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-		}
-
-		//TODO: Remove this in .NET 10
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
 

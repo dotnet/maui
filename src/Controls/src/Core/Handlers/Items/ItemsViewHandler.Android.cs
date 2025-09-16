@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, RecyclerView> where TItemsView : ItemsView
 	{
+		protected ItemsViewHandler(PropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
+		{
+		}
 
 		protected abstract IItemsLayout GetItemsLayout();
 
