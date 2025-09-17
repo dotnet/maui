@@ -53,9 +53,9 @@ static class CodeBehindCodeWriter
 
 		var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem!.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
-		if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+		if (projItem.ManifestResourceName != null && projItem.RelativePath != null)
 		{
-			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.RelativePath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
 		}
 
 		if (XamlResourceIdOnly)
