@@ -23,6 +23,7 @@ public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
             <x:Int32>32</x:Int32>
         </x:Array>
     </ContentPage.Resources>
+	<Label Text="{Binding Path=., Converter={StaticResource reverseConverter}}" x:DataType="x:String"/>
 </ContentPage>
 """;
 
