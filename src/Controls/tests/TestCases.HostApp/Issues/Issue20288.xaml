@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20288"
+             Title="Issue 20288">
+    <ScrollView>
+        <StackLayout Padding="20">
+            <Label x:Name="InstructionLabel" 
+                   Text="This test validates that WebView.EvaluateJavaScriptAsync works correctly on iOS for various JavaScript result types." 
+                   Margin="0,0,0,20" />
+            
+            <WebView x:Name="TestWebView" 
+                     HeightRequest="300"
+                     Source="https://httpbin.org/html" />
+            
+            <Button x:Name="TestStringButton" 
+                    Text="Test String Result" 
+                    Clicked="OnTestStringClicked" 
+                    AutomationId="TestStringButton" />
+            <Label x:Name="StringResult" 
+                   Text="String result will appear here" 
+                   AutomationId="StringResult" />
+            
+            <Button x:Name="TestNumberButton" 
+                    Text="Test Number Result" 
+                    Clicked="OnTestNumberClicked"
+                    AutomationId="TestNumberButton" />
+            <Label x:Name="NumberResult" 
+                   Text="Number result will appear here"
+                   AutomationId="NumberResult" />
+            
+            <Button x:Name="TestBooleanButton" 
+                    Text="Test Boolean Result" 
+                    Clicked="OnTestBooleanClicked"
+                    AutomationId="TestBooleanButton" />
+            <Label x:Name="BooleanResult" 
+                   Text="Boolean result will appear here"
+                   AutomationId="BooleanResult" />
+            
+            <Button x:Name="TestNullButton" 
+                    Text="Test Null Result" 
+                    Clicked="OnTestNullClicked"
+                    AutomationId="TestNullButton" />
+            <Label x:Name="NullResult" 
+                   Text="Null result will appear here"
+                   AutomationId="NullResult" />
+            
+            <Button x:Name="TestObjectButton" 
+                    Text="Test Object Result" 
+                    Clicked="OnTestObjectClicked"
+                    AutomationId="TestObjectButton" />
+            <Label x:Name="ObjectResult" 
+                   Text="Object result will appear here"
+                   AutomationId="ObjectResult" />
+                   
+            <Button x:Name="TestInnerHTMLButton" 
+                    Text="Test innerHTML (Real World Case)" 
+                    Clicked="OnTestInnerHTMLClicked"
+                    AutomationId="TestInnerHTMLButton" />
+            <Label x:Name="InnerHTMLResult" 
+                   Text="innerHTML result will appear here"
+                   AutomationId="InnerHTMLResult" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
