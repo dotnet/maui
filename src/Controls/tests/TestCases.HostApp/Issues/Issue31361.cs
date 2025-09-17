@@ -20,6 +20,8 @@ public class Issue31361 : ContentPage
 		{
 			ItemsSource = carouselItems,
 			AutomationId = "carouselview",
+			HeightRequest = 300,
+			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var grid = new Grid
@@ -49,9 +51,27 @@ public class Issue31361 : ContentPage
 			Padding = new Thickness(20),
 		};
 
+		var orientationButton = new Button
+		{
+			Text = "Change Orientation",
+			AutomationId = "orientationButton",
+			HorizontalOptions = LayoutOptions.Center,
+			Margin = new Thickness(20)
+		};
+
+		orientationButton.Clicked += (s, e) =>
+		{
+			carouselView.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+			contentLabel.Text = "The content is not scrollable";
+		};
+
 		carouselView.Scrolled += (s, e) =>
 		{
 			if (e.VerticalDelta != 0)
+			{
+				contentLabel.Text = "The content is scrollable";
+			}
+			else if (e.HorizontalDelta != 0)
 			{
 				contentLabel.Text = "The content is scrollable";
 			}
@@ -59,6 +79,7 @@ public class Issue31361 : ContentPage
 
 		verticalStackLayout.Children.Add(contentLabel);
 		verticalStackLayout.Children.Add(carouselView);
+		verticalStackLayout.Children.Add(orientationButton);
 		Content = verticalStackLayout;
 	}
 }
