@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
-			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged());
+			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged(),
+			coerceValue: (b,  o) => o ?? b);
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
@@ -212,6 +213,9 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() =>
 				new PlatformConfigurationRegistry<RadioButton>(this));
+
+			//initialize Value to prevent null value
+			Value = this;
 		}
 
 		/// <inheritdoc/>
@@ -433,12 +437,17 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !object.Equals(Value, args.Value) || !MatchesScope(args))
+			if (string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !MatchesScope(args))
 			{
 				return;
 			}
 
-			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			var isValueMatching = object.Equals(Value, args.Value);
+
+			if (IsChecked != isValueMatching)
+			{
+				SetValue(IsCheckedProperty, isValueMatching, specificity: SetterSpecificity.FromHandler);
+			}
 		}
 
 		static View BuildDefaultTemplate()
