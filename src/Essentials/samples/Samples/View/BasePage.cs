@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
@@ -53,6 +54,7 @@ namespace Samples.View
 			return DisplayAlertAsync(Title, message, "OK");
 		}
 
+		[RequiresUnreferencedCode("Dynamic type loading is used for navigation based on naming conventions. Make sure all page types are preserved.")]
 		Task OnNavigate(BaseViewModel vm, bool showModal)
 		{
 			var name = vm.GetType().Name;
