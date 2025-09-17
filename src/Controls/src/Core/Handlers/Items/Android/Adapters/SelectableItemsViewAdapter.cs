@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			_selectedSet.Clear();
-			
+
 			switch (selectableItemsView.SelectionMode)
 			{
 				case SelectionMode.None:
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						ClearPlatformSelection();
 						return;
 					}
-					
+
 					_selectedSet.UnionWith(selectedItems);
 					break;
 

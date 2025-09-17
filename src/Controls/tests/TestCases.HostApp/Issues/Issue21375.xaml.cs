@@ -97,9 +97,9 @@ public partial class Issue21375 : ContentPage
 	}
 
 	void ClearSelection(object sender, EventArgs e)
-{
-    collectionView.SelectedItem = null;
-}
+	{
+		collectionView.SelectedItem = null;
+	}
 
 	public class Item
 	{
