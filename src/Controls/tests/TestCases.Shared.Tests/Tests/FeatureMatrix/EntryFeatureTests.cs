@@ -230,6 +230,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -244,6 +245,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -278,6 +280,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -294,6 +297,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -312,6 +316,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -330,6 +335,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -349,6 +355,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -368,6 +375,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -384,6 +392,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -399,6 +408,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -416,6 +426,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -455,6 +466,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -517,6 +529,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -532,6 +545,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -548,6 +562,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -565,7 +580,7 @@ public class EntryFeatureTests : UITest
 		App.EnterText("FontSizeEntry", "20");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		ClearEntryFocusOnWindows();
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -846,6 +861,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -863,6 +879,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -927,6 +944,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -1025,6 +1043,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -1042,6 +1061,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -1077,6 +1097,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -1110,6 +1131,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -1150,12 +1172,12 @@ public class EntryFeatureTests : UITest
 
 	/// <summary>
 	/// On Windows, to hide the cursor in the Entry control, we need to focus out of the Entry.
-	/// This method taps on coordinates (10,10) to achieve that.
+	/// This method taps on coordinates (50,50) to achieve that.
 	/// </summary>
-	void ClearEntryFocusOnWindows()
+	void ClearEntryFocusIfItIsWindowsPlatform()
 	{
 #if WINDOWS
-		App.TapCoordinates(10, 10); // To focus out of the Entry and hide the cursor
+		App.TapCoordinates(50, 50); // To focus out of the Entry and hide the cursor
 #endif
 	}
 }
