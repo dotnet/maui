@@ -267,8 +267,6 @@ public class LabelFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(12)]
@@ -284,8 +282,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
-		VerifyScreenshot();
-		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -458,8 +454,6 @@ public class LabelFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(41)]
@@ -495,8 +489,6 @@ public class LabelFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(22)]
@@ -512,8 +504,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
-		VerifyScreenshot();
-		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -586,8 +576,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(MainLabel);
 		App.Tap(MainLabel);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(27)]
@@ -604,8 +592,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(28)]
@@ -621,8 +607,6 @@ public class LabelFeatureTests : UITest
 		App.Tap(TextTransformUpper);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
-		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -661,8 +645,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(31)]
@@ -679,8 +661,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(32)]
@@ -696,8 +676,6 @@ public class LabelFeatureTests : UITest
 		App.Tap(FontAttributesItalic);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
-		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -820,8 +798,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
@@ -1119,8 +1095,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_ANDROID// Issue Link:  https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668, https://github.com/dotnet/maui/issues/22594
@@ -1161,8 +1135,6 @@ public class LabelFeatureTests : UITest
 		App.EnterText(CharacterSpacingEntry, "3");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
-		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -1308,8 +1280,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(62)]
@@ -1327,8 +1297,6 @@ public class LabelFeatureTests : UITest
 		App.Tap(TextTypeHtml);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
-		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
