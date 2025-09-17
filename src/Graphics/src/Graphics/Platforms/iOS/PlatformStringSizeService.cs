@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreGraphics;
+using CoreText;
 using Foundation;
 using UIKit;
 
@@ -10,19 +11,26 @@ namespace Microsoft.Maui.Graphics.Platform
 		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return new SizeF();
+			}
 
-			var nsString = new NSString(value);
-			var uiFont = font?.ToPlatformFont(fontSize) ?? FontExtensions.GetDefaultPlatformFont();
+			var attributes = new CTStringAttributes();
+			attributes.Font = font?.ToCTFont(fontSize) ?? FontExtensions.GetDefaultCTFont(fontSize);
 
-			CGSize size = nsString.GetBoundingRect(
-				CGSize.Empty,
-				NSStringDrawingOptions.UsesLineFragmentOrigin,
-				new UIStringAttributes { Font = uiFont },
-				null).Size;
+			var attributedString = new NSAttributedString(value, attributes);
+			var framesetter = new CTFramesetter(attributedString);
 
-			uiFont.Dispose();
-			return new SizeF((float)size.Width, (float)size.Height);
+			// Get suggested frame size with unlimited constraints
+			var measuredSize = framesetter.SuggestFrameSize(
+				new NSRange(0, 0),
+				null,
+				new CGSize(float.MaxValue, float.MaxValue),
+				out _);
+
+			framesetter.Dispose();
+			attributedString.Dispose();
+			return new SizeF((float)measuredSize.Width, (float)measuredSize.Height);
 		}
 	}
 }
