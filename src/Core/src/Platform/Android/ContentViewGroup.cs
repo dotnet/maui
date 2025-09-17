@@ -46,7 +46,16 @@ namespace Microsoft.Maui.Platform
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+
+			if (this.Parent is not MauiScrollView)
+			{
+				GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+			}
+			else
+			{
+				// If we're inside a ScrollView, we don't need to set the global listener
+				// ScrollViews handle their own insets
+			}
 		}
 
 		protected override void OnDetachedFromWindow()
