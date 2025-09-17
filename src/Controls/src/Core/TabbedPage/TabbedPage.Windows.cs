@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls
 				items.SyncItems(view.Children,
 					(vm, page) =>
 					{
-						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+						SetIcon(handler, vm, page);
 						vm.Content = page.Title;
 						vm.Data = page;
 						vm.SelectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
@@ -365,5 +365,26 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+		private static void SetIcon(ITabbedViewHandler handler, NavigationViewItemViewModel vm, Page page)
+		{
+			var mauiContext = handler.MauiContext;
+			var iconSource = page.IconImageSource;
+
+			if (iconSource is IStreamImageSource streamIconSource)
+			{
+				streamIconSource.LoadImage(mauiContext!, result =>
+				{
+					var imageSource = result?.Value;
+					var iis = new ImageIconSource() { ImageSource = imageSource };
+					var icon = iis?.CreateIconElement();
+					vm.Icon = icon;
+				});
+			}
+			else
+			{
+				vm.Icon = iconSource?.ToIconSource(mauiContext!)?.CreateIconElement();
+			}
+		}
+
 	}
 }
