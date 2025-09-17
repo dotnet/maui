@@ -10,8 +10,7 @@
                    Margin="0,0,0,20" />
             
             <WebView x:Name="TestWebView" 
-                     HeightRequest="300"
-                     Source="https://httpbin.org/html" />
+                     HeightRequest="300" />
             
             <Button x:Name="TestStringButton" 
                     Text="Test String Result" 

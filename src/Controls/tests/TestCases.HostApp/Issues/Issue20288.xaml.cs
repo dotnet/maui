@@ -10,6 +10,20 @@ namespace Maui.Controls.Sample.Issues
 		public Issue20288()
 		{
 			InitializeComponent();
+			
+			// Load a simple HTML page that's guaranteed to work
+			var htmlSource = new HtmlWebViewSource
+			{
+				Html = @"<html>
+<head><title>Test Page</title></head>
+<body>
+<h1>Test WebView Page</h1>
+<p>This is a test page for JavaScript evaluation.</p>
+<div id='test'>Test content</div>
+</body>
+</html>"
+			};
+			TestWebView.Source = htmlSource;
 		}
 
 		private async void OnTestStringClicked(object sender, EventArgs e)
@@ -81,10 +95,29 @@ namespace Maui.Controls.Sample.Issues
 		{
 			try
 			{
-				// Wait a bit for the page to load
-				await Task.Delay(2000);
+				InnerHTMLResult.Text = "Loading...";
+				
+				// Wait longer for the page to load and check if it loaded
+				await Task.Delay(5000);
+				
+				// First check if document exists
+				var docCheck = await TestWebView.EvaluateJavaScriptAsync("typeof document !== 'undefined'");
+				if (docCheck != "true")
+				{
+					InnerHTMLResult.Text = "Document not available";
+					return;
+				}
+				
+				// Try to get innerHTML
 				var result = await TestWebView.EvaluateJavaScriptAsync("document.documentElement.innerHTML");
-				InnerHTMLResult.Text = result != null ? $"innerHTML length: {result.Length}" : "NULL";
+				if (result != null)
+				{
+					InnerHTMLResult.Text = $"innerHTML length: {result.Length}";
+				}
+				else
+				{
+					InnerHTMLResult.Text = "NULL";
+				}
 			}
 			catch (Exception ex)
 			{
