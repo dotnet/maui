@@ -77,8 +77,11 @@ public class Issue28986 : _IssuesUITest
 		// 2. Set to None and verify position changes
 		App.Tap("GridResetNoneButton");
 		var nonePosition = App.WaitForElement("ContentGrid").GetRect();
+#if ANDROID
 		// Status bar height can vary based on device and OS version, so we only validate Y=0 for None on Android 13+ API 30.
-		if (OperatingSystem.IsAndroidVersionAtLeast(36))
+		var apiLevel = App.GetDeviceApiLevel();
+		if (apiLevel > 36) // Android 13+
+#endif
 		{
 			var noneSettings = App.FindElement("CurrentSettings").GetText();
 			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));

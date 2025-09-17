@@ -7,14 +7,15 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener
+	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener, ICrossPlatformLayoutBacking, IHandleWindowInsets
 	{
 		View? _content;
-
+		readonly Context _context;
 		MauiHorizontalScrollView? _hScrollView;
 		bool _isBidirectional;
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
@@ -30,22 +31,92 @@ namespace Microsoft.Maui.Platform
 
 		public MauiScrollView(Context context) : base(context)
 		{
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, context);
+			_context = context;
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, context);
+			_context = context;
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, context);
+			_context = context;
 		}
 
 		protected MauiScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+			var context = Context;
+			ArgumentNullException.ThrowIfNull(context);
+			_context = context;
 		}
+		public ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get; set;
+		}
+
+		public override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+		}
+
+		#region IHandleWindowInsets Implementation
+
+		(int left, int top, int right, int bottom) _originalPadding;
+		bool _hasStoredOriginalPadding;
+
+
+		/// <summary>
+		/// Updates safe area configuration and triggers window insets re-application if needed.
+		/// Call this when safe area edge configuration changes.
+		/// </summary>
+		internal void InvalidateWindowInsets()
+		{
+			// Reset descendants and request fresh insets to avoid double padding
+			GlobalWindowInsetListenerExtensions.ResetDescendantsAndRequestInsets(this, _context);
+		}
+
+		public WindowInsetsCompat? HandleWindowInsets(View view, WindowInsetsCompat insets)
+		{
+			// If we don't have a cross platform layout or insets are null just return
+			if (CrossPlatformLayout is null || insets is null)
+			{
+				return insets;
+			}
+
+			if (!_hasStoredOriginalPadding)
+			{
+				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
+				_hasStoredOriginalPadding = true;
+			}
+
+			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
+
+
+			// Apply processed safe area padding directly to the scroll view so that child content
+			// can layout edge-to-edge inside it without needing its own inset listener
+			SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
+
+			return WindowInsetsCompat.Consumed; // We handled them, prevent further propagation
+
+		}
+
+		public void ResetWindowInsets(View view)
+		{
+			if (_hasStoredOriginalPadding)
+			{
+				SetPadding(_originalPadding.left, _originalPadding.top, _originalPadding.right, _originalPadding.bottom);
+			}
+		}
+
+		#endregion
 
 		public void SetHorizontalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
