@@ -77,4 +77,3 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string SafeAreaEdges = "SafeAreaEdges";
 	}
 }
-
