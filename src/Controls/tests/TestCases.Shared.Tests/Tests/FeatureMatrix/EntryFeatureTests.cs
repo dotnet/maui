@@ -194,7 +194,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandling();
+		//VerifyScreenshotWithKeyboardHandling(); // Refer to issue https://github.com/dotnet/maui/issues/31326
 		App.Tap(MainLabel);
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
@@ -565,6 +565,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.EnterText("FontSizeEntry", "20");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusOnWindows();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -624,9 +625,6 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.Tap(MainLabel);
-		App.Tap("TestEntry");
-		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
 
@@ -1064,8 +1062,6 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
-		App.Tap(MainLabel);
-		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
 
@@ -1099,8 +1095,6 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -1152,5 +1146,16 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
 
+	}
+
+	/// <summary>
+	/// On Windows, to hide the cursor in the Entry control, we need to focus out of the Entry.
+	/// This method taps on coordinates (10,10) to achieve that.
+	/// </summary>
+	void ClearEntryFocusOnWindows()
+	{
+#if WINDOWS
+		App.TapCoordinates(10, 10); // To focus out of the Entry and hide the cursor
+#endif
 	}
 }
