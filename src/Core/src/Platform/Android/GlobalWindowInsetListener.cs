@@ -43,13 +43,6 @@ namespace Microsoft.Maui.Platform
             var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
             var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
-
-            if (v is MauiScrollView)
-            {
-                v.SetPadding(leftInset, topInset, rightInset, bottomInset);
-                return WindowInsetsCompat.Consumed;
-            }
-
             // Handle special cases
             var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
             var hasNavigationBar = (appBarLayout?.GetChildAt(0) as MaterialToolbar)?.LayoutParameters?.Height > 0;
@@ -137,13 +130,18 @@ namespace Microsoft.Maui.Platform
         static bool IsDescendantOf(AView? child, AView parent)
         {
             if (child is null || parent is null)
+            {
                 return false;
+            }
 
             var currentParent = child.Parent;
             while (currentParent is not null)
             {
                 if (currentParent == parent)
+                {
                     return true;
+                }
+
                 currentParent = currentParent.Parent;
             }
             return false;
