@@ -366,6 +366,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			SetPosition(targetPosition);
 			SetCurrentItem(targetPosition);
+
+			if (e.Action == NotifyCollectionChangedAction.Remove)
+			{
+				//Since we can be removing the item that is already created next to the current item we need to update the visible cells
+				if (ItemsView.Loop)
+				{
+					CollectionView.ReloadItems(new NSIndexPath[] { GetScrollToIndexPath(targetPosition) });
+				}
+			}
+
+			ScrollToPosition(targetPosition, targetPosition, false, true);
+
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
@@ -796,7 +808,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var incrementAbs = Math.Abs(increment);
 
 			int goToPosition;
-			if (diffToStart < incrementAbs)
+			if (diffToStart <= incrementAbs)
 			{
 				goToPosition = centerIndexPath.Row - diffToStart;
 			}
@@ -897,7 +909,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int GetCorrectedIndex(int indexToCorrect)
 		{
 			var itemsCount = GetItemsSourceCount();
-			if ((indexToCorrect < itemsCount && indexToCorrect >= 0) || itemsCount == 0)
+			if (itemsCount == 0)
+			{
+				return 0;
+			}
+
+			if (indexToCorrect < itemsCount && indexToCorrect >= 0)
 			{
 				return indexToCorrect;
 			}
