@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Maui.Diagnostics;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Handlers
@@ -135,8 +136,13 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
-		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
-			handler.SourceLoader.UpdateImageSourceAsync();
+		public static async Task MapSourceAsync(IImageHandler handler, IImage image)
+		{
+			using var instrumentation =
+				DiagnosticInstrumentation.StartImageLoading(handler.VirtualView);
+			
+			await handler.SourceLoader.UpdateImageSourceAsync();
+		}
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
