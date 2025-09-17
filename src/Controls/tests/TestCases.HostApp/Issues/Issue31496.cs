@@ -7,6 +7,8 @@ public class Issue31496 : ContentPage
 {
 	AbsoluteLayout absoluteLayout;
 	BoxView boxView;
+	Button changeBoundsButton;
+	Button resetBoundsButton;
 	readonly Rect defaultBounds = new Rect(0, 0, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize);
 
 	public Issue31496()
@@ -30,7 +32,7 @@ public class Issue31496 : ContentPage
 		AbsoluteLayout.SetLayoutBounds(boxView, new Rect(0, 0, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
 		AbsoluteLayout.SetLayoutFlags(boxView, AbsoluteLayoutFlags.None);
 
-		var changeBoundsButton = new Button
+		changeBoundsButton = new Button
 		{
 			Text = "Change Bounds",
 			AutomationId = "Issue31496ChangeBoundsButton"
@@ -39,7 +41,7 @@ public class Issue31496 : ContentPage
 		AbsoluteLayout.SetLayoutFlags(changeBoundsButton, AbsoluteLayoutFlags.PositionProportional);
 		changeBoundsButton.Clicked += OnChangeBoundsClicked;
 
-		var resetBoundsButton = new Button
+		resetBoundsButton = new Button
 		{
 			Text = "Reset Bounds",
 			AutomationId = "Issue31496ResetButton"
