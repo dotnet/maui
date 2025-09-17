@@ -199,8 +199,41 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
 			}
 
+			SetHeaderContentInset();
 			UpdateHeaderMaximumSize(ScrollView?.ContentOffset.Y);
 			LayoutParallax();
+		}
+
+
+		internal void SetHeaderContentInset()
+		{
+			if (ScrollView is null)
+				return;
+
+			var offset = ScrollView.ContentInset.Top;
+
+			if (HeaderView is not null)
+			{
+				if (double.IsNaN(MeasuredHeaderViewHeightWithNoMargin))
+				{
+					return;
+				}
+
+				// We take the measured header height without margin, since the margin is already accounted for in the positioning of the scroll view itself.
+				ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
+			}
+			else
+			{
+				ScrollView.ContentInset = new UIEdgeInsets(UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top, 0, 0, 0);
+			}
+
+			offset -= ScrollView.ContentInset.Top;
+
+			var yContentOffset = ScrollView.ContentOffset.Y;
+			ScrollView.ContentOffset =
+				new CGPoint(ScrollView.ContentOffset.X, yContentOffset + offset);
+
+			UpdateVerticalScrollMode();
 		}
 
 		public void UpdateVerticalScrollMode()
@@ -286,7 +319,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (HeaderView is not null)
 			{
-				contentYOffset += HeaderView.Frame.Height;
+				if (ScrollView is null)
+				{
+					// The margin is already managed by MAUI's layout system, so we don't need to add it here and we just offset the content by the header's height.				
+					contentYOffset += HeaderView.Frame.Height;
+				}
+				else
+				{
+					// For ScrollView, we need to consider the margin, but we should not consider the header height, since it should overlap with the scroll view. 
+					// The content inset is already managed by SetHeaderContentInset.
+					contentYOffset += HeaderView.View.Margin.VerticalThickness;
+				}
 			}
 
 			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight);
@@ -313,6 +356,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(Shell.FlyoutHeaderBehaviorProperty))
 			{
+				SetHeaderContentInset();
 				LayoutParallax();
 			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
