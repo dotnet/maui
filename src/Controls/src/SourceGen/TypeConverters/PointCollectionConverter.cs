@@ -11,7 +11,7 @@ internal class PointCollectionConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "PointCollection", "Microsoft.Maui.Controls.PointCollection" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

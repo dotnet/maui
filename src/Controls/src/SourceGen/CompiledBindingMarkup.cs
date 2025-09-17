@@ -15,9 +15,9 @@ internal struct CompiledBindingMarkup
 	private readonly SourceGenContext _context;
 	private readonly ElementNode _node;
 	private readonly string _path;
-	private readonly LocalVariable _bindingExtension;
+	private readonly ILocalVariable _bindingExtension;
 
-	public CompiledBindingMarkup(ElementNode node, string path, LocalVariable bindingExtension, SourceGenContext context)
+	public CompiledBindingMarkup(ElementNode node, string path, ILocalVariable bindingExtension, SourceGenContext context)
 	{
 		_context = context;
 		_node = node;
@@ -56,7 +56,7 @@ internal struct CompiledBindingMarkup
 			IsPublic: false,
 			RequiresAllUnsafeGetters: true);
 
-		LocalVariable extVariable;
+		ILocalVariable extVariable;
 		if (!_context.Variables.TryGetValue(_node, out extVariable))
 		{
 			throw new Exception("BindingExtension not found"); // TODO report diagnostic

@@ -12,7 +12,7 @@ internal class FlexBasisConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "FlexBasis", "Microsoft.Maui.Layouts.FlexBasis" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

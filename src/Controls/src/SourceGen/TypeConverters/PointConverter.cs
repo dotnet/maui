@@ -11,7 +11,7 @@ internal class PointConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "Point", "Microsoft.Maui.Graphics.Point" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here

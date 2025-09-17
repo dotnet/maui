@@ -9,7 +9,7 @@ internal class RowDefinitionCollectionConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "RowDefinitionCollection", "Microsoft.Maui.Controls.RowDefinitionCollection" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

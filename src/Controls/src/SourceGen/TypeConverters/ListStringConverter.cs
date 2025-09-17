@@ -11,7 +11,7 @@ internal class ListStringConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "List<string>", "System.Collections.Generic.List<string>", "System.Collections.Generic.IList`1[System.String]", "IList<string>" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

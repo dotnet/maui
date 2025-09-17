@@ -12,7 +12,7 @@ internal class RDSourceConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "ResourceDictionary", "Microsoft.Maui.Controls.ResourceDictionary", "System.Uri" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		if (parentVar == null) //should never happen
 			throw new ArgumentException("parentVar is null");

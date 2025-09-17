@@ -10,7 +10,7 @@ internal class FlowDirectionConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "FlowDirection", "Microsoft.Maui.FlowDirection" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value))

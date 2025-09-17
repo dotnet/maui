@@ -21,7 +21,7 @@ internal class StrokeShapeConverter : ISGTypeConverter
 
 	public IEnumerable<string> SupportedTypes => new[] { "Shape", "Microsoft.Maui.Controls.Shapes.Shape" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

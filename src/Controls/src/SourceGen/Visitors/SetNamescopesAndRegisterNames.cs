@@ -43,14 +43,14 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		LocalVariable namescope;
-		IDictionary<string, LocalVariable> namesInNamescope;
+		ILocalVariable namescope;
+		IDictionary<string, ILocalVariable> namesInNamescope;
 		var setNameScope = false;
 
 		if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node))
 		{
 			namescope = CreateNamescope();
-			namesInNamescope = new Dictionary<string, LocalVariable>();
+			namesInNamescope = new Dictionary<string, ILocalVariable>();
 			setNameScope = true;
 		}
 		else
@@ -82,7 +82,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 			{
 				Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
 			}
-		Context.Scopes[node] = new(namescope, new Dictionary<string, LocalVariable>());
+		Context.Scopes[node] = new(namescope, new Dictionary<string, ILocalVariable>());
 	}
 
 	public void Visit(ListNode node, INode parentNode)
@@ -100,7 +100,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	static bool IsXNameProperty(ValueNode node, INode parentNode)
 		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
 
-	LocalVariable GetOrCreateNameScope(ElementNode node)
+	ILocalVariable GetOrCreateNameScope(ElementNode node)
 	{
 		var namescope = NamingHelpers.CreateUniqueVariableName(Context, Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
@@ -113,7 +113,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-	LocalVariable CreateNamescope()
+	ILocalVariable CreateNamescope()
 	{
 		var namescope = NamingHelpers.CreateUniqueVariableName(Context, Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
@@ -123,7 +123,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-	void SetStyleId(string str, LocalVariable element)
+	void SetStyleId(string str, ILocalVariable element)
 	{
 		if (!element.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, Context))
 			return;

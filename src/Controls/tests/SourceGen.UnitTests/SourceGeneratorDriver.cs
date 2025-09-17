@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, bool TreeOrder = false);
 
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
@@ -157,7 +157,7 @@ public static class SourceGeneratorDriver
 					"build_property.EnableMauiXamlDiagnostics" => "true",
 					"build_property.MauiXamlLineInfo" => "enable",
 					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
-
+					"build_metadata.additionalfiles.TreeOrder" => _additionalFile.TreeOrder.ToString(),
 					_ => null
 				};
 

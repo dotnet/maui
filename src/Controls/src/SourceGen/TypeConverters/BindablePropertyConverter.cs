@@ -8,7 +8,7 @@ internal class BindablePropertyConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "BindableProperty", "Microsoft.Maui.Controls.BindableProperty" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var parts = value.Split(['.']);
 

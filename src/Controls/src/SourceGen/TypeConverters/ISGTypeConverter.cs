@@ -18,7 +18,7 @@ internal interface ISGTypeConverter
 	/// <param name="context">The source generation context</param>
 	/// <param name="parentVar">Optional parent variable context</param>
 	/// <returns>Generated C# code string, or "default" if conversion fails</returns>
-	string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
+	string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null);
 
 	/// <summary>
 	/// Gets the type names this converter can handle (for registration/lookup).

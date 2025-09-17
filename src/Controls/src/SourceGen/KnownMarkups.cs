@@ -219,7 +219,7 @@ internal class KnownMarkups
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 
-		if (!context.Variables.TryGetValue(markupNode, out LocalVariable extVariable))
+		if (!context.Variables.TryGetValue(markupNode, out ILocalVariable extVariable))
 		{
 			throw new Exception(); //FIXME report diagnostic
 		}
@@ -519,7 +519,7 @@ internal class KnownMarkups
 		//if the resource is a string, try to convert it
 		if (resource.CollectionItems.Count == 1 && resource.CollectionItems[0] is ValueNode vn && vn.Value is string)
 		{
-			if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out LocalVariable parentVar))
+			if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalVariable parentVar))
 			{
 				var localName = propertyName.LocalName;
 				var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);

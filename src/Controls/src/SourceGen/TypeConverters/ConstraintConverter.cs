@@ -11,7 +11,7 @@ internal class ConstraintConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "Constraint", "Microsoft.Maui.Controls.Compatibility.Constraint" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalVariable? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here

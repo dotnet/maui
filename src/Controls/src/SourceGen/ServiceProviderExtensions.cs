@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class ServiceProviderExtensions
 {
-	public static LocalVariable GetOrCreateServiceProvider(this INode node, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<ITypeSymbol>? requiredServices)
+	public static ILocalVariable GetOrCreateServiceProvider(this INode node, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<ITypeSymbol>? requiredServices)
 	{
 		IFieldSymbol? bpFieldSymbol = null;
 		IPropertySymbol? propertySymbol = null;
@@ -86,7 +86,7 @@ static class ServiceProviderExtensions
 		}
 	}
 
-	static IEnumerable<LocalVariable> ParentObjects(this INode node, SourceGenContext context)
+	static IEnumerable<ILocalVariable> ParentObjects(this INode node, SourceGenContext context)
 	{
 		var currentCtx = context;
 		while (currentCtx != null)
