@@ -30,14 +30,17 @@ namespace Microsoft.Maui.Platform
 
 		public MauiScrollView(Context context) : base(context)
 		{
+			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, context);
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
+			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, context);
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
+			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, context);
 		}
 
 		protected MauiScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -444,7 +447,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 	}
-
+	
 	internal interface IScrollBarView
 	{
 		bool ScrollBarsInitialized { get; set; }
