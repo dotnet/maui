@@ -47,14 +47,11 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnAttachedToWindow();
 
-			if (this.Parent is not MauiScrollView)
+			// If we're inside a ScrollView, we don't need to set the global listener
+			// ScrollViews handle their own insets
+			if (Parent is not MauiScrollView)
 			{
 				GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
-			}
-			else
-			{
-				// If we're inside a ScrollView, we don't need to set the global listener
-				// ScrollViews handle their own insets
 			}
 		}
 
@@ -189,8 +186,8 @@ namespace Microsoft.Maui.Platform
 
 		#region IHandleWindowInsets Implementation
 
-		private (int left, int top, int right, int bottom) _originalPadding;
-		private bool _hasStoredOriginalPadding;
+		(int left, int top, int right, int bottom) _originalPadding;
+		bool _hasStoredOriginalPadding;
 
 
 		/// <summary>
@@ -208,13 +205,6 @@ namespace Microsoft.Maui.Platform
 			if (CrossPlatformLayout is null || insets is null)
 			{
 				return insets;
-			}
-
-			if (IsScrollViewDescendant())
-			{
-				// For ScrollView descendants, consume insets without applying padding
-				// This prevents double application of safe area insets
-				return WindowInsetsCompat.Consumed;
 			}
 
 			if (!_hasStoredOriginalPadding)
@@ -239,12 +229,6 @@ namespace Microsoft.Maui.Platform
 
 		public void ResetWindowInsets(View view)
 		{
-			// Check if this ContentViewGroup is a descendant of a ScrollView
-			if (IsScrollViewDescendant())
-			{
-				// For ScrollView descendants, don't reset padding since we didn't apply any
-				return;
-			}
 
 			if (_hasStoredOriginalPadding)
 			{
@@ -253,11 +237,5 @@ namespace Microsoft.Maui.Platform
 		}
 
 		#endregion
-
-		bool IsScrollViewDescendant()
-		{
-			// Check if this ContentViewGroup is a descendant of a ScrollView
-			return this.FindParent(parent => parent is MauiScrollView) is not null;
-		}
 	}
 }

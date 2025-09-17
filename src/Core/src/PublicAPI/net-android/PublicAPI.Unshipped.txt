@@ -72,6 +72,10 @@ Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Androi
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.get -> bool
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
+Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.set -> void
+Microsoft.Maui.Platform.MauiScrollView.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
+Microsoft.Maui.Platform.MauiScrollView.ResetWindowInsets(Android.Views.View! view) -> void
 Microsoft.Maui.Platform.MauiShapeableImageView
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
@@ -205,6 +209,7 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyDown(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
@@ -225,6 +230,8 @@ override Microsoft.Maui.Platform.MauiHorizontalScrollView.OnTouchEvent(Android.V
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiScrollView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiScrollView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiShapeableImageView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void

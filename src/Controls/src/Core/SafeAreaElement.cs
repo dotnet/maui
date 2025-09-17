@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		/// The backing store for the <see cref="ISafeAreaElement.SafeAreaEdges" /> bindable property.
 		/// </summary>
 		public static readonly BindableProperty SafeAreaEdgesProperty =
-			BindableProperty.Create("SafeAreaEdges", typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
+			BindableProperty.Create(nameof(ISafeAreaElement.SafeAreaEdges), typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
 									propertyChanged: OnSafeAreaEdgesChanged,
 									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
 		static void OnSafeAreaEdgesChanged(BindableObject bindable, object oldValue, object newValue)
@@ -22,22 +22,6 @@ namespace Microsoft.Maui.Controls
 			if (bindable is IView view)
 			{
 				view.InvalidateMeasure();
-
-#if ANDROID
-				// On Android, request layout does not call OnApplyWindowInsets. so we manually call it.
-				if (bindable is Element element && element.Handler is IElementHandler handler)
-				{
-					var platformView = handler.PlatformView;
-					if (platformView is Microsoft.Maui.Platform.ContentViewGroup contentViewGroup)
-					{
-						contentViewGroup.InvalidateWindowInsets();
-					}
-					else if (platformView is Microsoft.Maui.Platform.LayoutViewGroup layoutViewGroup)
-					{
-						layoutViewGroup.InvalidateWindowInsets();
-					}
-				}
-#endif
 			}
 		}
 
