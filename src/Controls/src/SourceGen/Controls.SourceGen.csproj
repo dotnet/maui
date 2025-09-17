@@ -60,6 +60,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" />
+    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
 
   <ItemGroup>
