@@ -178,5 +178,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}
+
 	}
 }
