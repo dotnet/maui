@@ -5,7 +5,8 @@
              Title="LayoutOptionsPage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Apply"
-                     Clicked="ApplyButton_Clicked"/>
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
     </ContentPage.ToolbarItems>
 
     <Grid Padding="10"
