@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 			// This matches the behavior that would come from JSON.stringify() on the web side
 			try
 			{
-				var jsonData = NSJSONSerialization.Serialize(result, NSJsonWritingOptions.PrettyPrinted, out var error);
+				var jsonData = NSJsonSerialization.Serialize(result, NSJsonWritingOptions.PrettyPrinted, out var error);
 				if (error == null && jsonData != null)
 				{
 					var jsonString = NSString.FromData(jsonData, NSStringEncoding.UTF8);
