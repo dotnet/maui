@@ -12,6 +12,7 @@ var projectMappings = new Dictionary<string, string>
     ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
     ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
     ["Controls.TestCases.HostApp"] = "Controls.TestCases.HostApp",
+    ["HostApp"] = "Controls.TestCases.HostApp",
 };
 
 string TARGET = Argument("target", "Test");
@@ -71,7 +72,7 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
 
     if (!applications.Any())
     {
-        throw new Exception($"No application was found in the specified directories.");
+        throw new Exception($"No application was found in the specified directories. Searched in original bin directory: {binDir.FullPath} and artifact directories for project mappings.");
     }
 
     return applications;
@@ -79,11 +80,15 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
 
 IEnumerable<string> SearchInArtifacts(DirectoryPath originalBinDir, string project, string config, string tfm, string rid, bool isAndroid, string artifactsDir)
 {
+    Information($"SearchInArtifacts Running");
+
     foreach (var entry in projectMappings)
     {
         if (project.Contains(entry.Key))
         {
             var binDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}/{rid}"));
+            Information($"Searching for applications in artifact directory: {binDir.FullPath}");
+            
             IEnumerable<string> applications;
 
             if (isAndroid)
@@ -117,10 +122,15 @@ IEnumerable<string> SearchInArtifacts(DirectoryPath originalBinDir, string proje
             {
                 return applications;
             }
+            else
+            {
+                Information($"No applications found in artifact directory: {binDir.FullPath}");
+            }
         }
     }
 
     // Return empty if no applications found in any artifact directories
+    Information("No applications found in any artifact directories");
     return Enumerable.Empty<string>();
 }
 
