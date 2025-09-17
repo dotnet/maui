@@ -23,7 +23,7 @@ internal class ColorConverter : ISGTypeConverter
 			return $"new {colorType.ToFQDisplayString()}({FormatInvariant(color.Red)}f, {FormatInvariant(color.Green)}f, {FormatInvariant(color.Blue)}f, {FormatInvariant(color.Alpha)}f) /* {value} */";
 		}
 
-		context.ReportConversionFailed(node, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed((IXmlLineInfo)node, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }
