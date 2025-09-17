@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// for example
 				// e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				// Even if AcceptedOperation is already set to Copy it will cause the copy animation
-				// to remain even after the the dragged element has left
+				// to remain even after the dragged element has left
 				if (!dragEventArgs.PlatformArgs?.Handled ?? true && operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
@@ -245,21 +245,18 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
-				var view = Element as View;
-
-				if (!rec.CanDrag || view is null)
+				if (!rec.CanDrag || Element is not View view)
 				{
 					e.Cancel = true;
 					return;
 				}
 
-				var handler = sender as IViewHandler;
 				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e), new PlatformDragStartingEventArgs(sender, e));
 
 				e.Data.Properties[_doNotUsePropertyString] = args.Data;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && handler != null)
+				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && sender is IViewHandler handler)
 #pragma warning restore CS0618 // Type or member is obsolete
 				{
 					if (handler?.PlatformView is UI.Xaml.Controls.Image nativeImage &&
@@ -493,8 +490,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_isPinching = true;
-
 			if (e.OriginalSource is UIElement container)
 			{
 				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
@@ -525,13 +520,13 @@ namespace Microsoft.Maui.Controls.Platform
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Clear();
 		}
 
 		void OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 		{
-			var view = Element as View;
-
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -543,40 +538,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
 
+			_isPinching = true;
 			_wasPinchGestureStartedSent = false;
 			_wasPanGestureStartedSent = false;
 		}
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
-
 			SwipeComplete(false);
 			PinchComplete(false);
 			PanComplete(false);
+
+			_fingers.Clear();
 		}
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
+			SwipeComplete(true);
+
 			if (!_isPanning)
 			{
-				uint id = e.Pointer.PointerId;
-				if (_fingers.Contains(id))
-					_fingers.Remove(id);
+				_fingers.Remove(e.Pointer.PointerId);
 			}
-
-			SwipeComplete(true);
-			PinchComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -590,15 +578,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
-
 			SwipeComplete(true);
-			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Remove(e.Pointer.PointerId);
 		}
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -700,8 +683,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -815,8 +797,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnTap(object sender, RoutedEventArgs e)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -912,8 +893,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SwipeComplete(bool success)
 		{
-			var view = Element as View;
-			if (view == null || !_isSwiping)
+			if (Element is not View view || !_isSwiping)
 			{
 				return;
 			}
@@ -931,8 +911,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PanComplete(bool success)
 		{
-			var view = Element as View;
-			if (view == null || !_isPanning)
+			if (Element is not View view || !_isPanning)
 			{
 				return;
 			}
@@ -955,8 +934,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PinchComplete(bool success)
 		{
-			var view = Element as View;
-			if (view is null || !_isPinching)
+			if (Element is not View view || !_isPinching)
 			{
 				return;
 			}

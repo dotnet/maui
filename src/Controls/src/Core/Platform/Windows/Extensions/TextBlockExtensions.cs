@@ -24,22 +24,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this TextBlock platformControl, Label label)
 		{
+			string text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
+
 			switch (label.TextType)
 			{
 				case TextType.Html:
-					platformControl.UpdateTextHtml(label);
+					platformControl.UpdateTextHtml(label, text);
 					break;
 
 				default:
 					if (label.FormattedText != null)
+					{
 						platformControl.UpdateInlines(label);
+					}
 					else
 					{
 						if (platformControl.TextHighlighters.Count > 0)
 						{
 							platformControl.TextHighlighters.Clear();
 						}
-						platformControl.Text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
+						platformControl.Text = text;
 					}
 					break;
 			}

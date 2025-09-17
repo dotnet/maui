@@ -6,7 +6,8 @@
     <ContentPage.Content>
         <Grid RowDefinitions="Auto,100,*,Auto">
             <Label Text="Scroll down until the refresh icon is fully visible, and then scroll all the way back up. The refresh icon should no longer be visible and a refresh should not get triggered." />
-            <RefreshView x:Name="refreshView" Grid.Row="2">
+            <Label Grid.Row="1" AutomationId="RefreshStatusLabel" Text="RefreshView Not Triggered" x:Name="refreshStatusLabel"/>
+            <RefreshView x:Name="refreshView" Grid.Row="2" Refreshing="OnRefreshViewRefreshing">
                 <ScrollView>
                     <VerticalStackLayout x:Name="vsl">
                         <BindableLayout.ItemTemplate>

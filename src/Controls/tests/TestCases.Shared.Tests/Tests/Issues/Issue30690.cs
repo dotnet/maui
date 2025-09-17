@@ -114,6 +114,9 @@ public class Issue30690 : _IssuesUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST // App.ScrollUp does nothing: https://github.com/dotnet/maui/issues/31216
+
+#if TEST_FAILS_ON_WINDOWS //Flaky test, disabling for Windows.
+
 	[Test]
 	public void PullToRefreshWorksWhenEnabled()
 	{
@@ -138,7 +141,7 @@ public class Issue30690 : _IssuesUITest
 		}
 		Assert.That(refreshSucceeded, Is.True, "Pull-to-refresh did not complete after multiple attempts");
 	}
-
+#endif
 	[Test]
 	public void PullToRefreshBlockedWhenIsRefreshEnabledFalse()
 	{

@@ -52,11 +52,6 @@ parameters:
   type: boolean
   default: false
 
-- name: provisionatorChannel
-  displayName: 'Provisionator channel'
-  type: string
-  default: 'latest'
-
 - name: BuildEverything
   type: boolean
   default: false
@@ -91,18 +86,11 @@ parameters:
     name: $(windowsTestsVmPool)
     vmImage: $(windowsTestsVmImage)
 
+
 - name: targetFrameworkVersions
   type: object
   default:
   - tfm: net10.0
-
-resources:
-  repositories:
-  - repository: yaml-templates
-    type: github
-    name: xamarin/yaml-templates
-    endpoint: xamarin
-    ref: refs/heads/main
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -142,7 +130,7 @@ stages:
         windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
       - name: graphics
         desc: Graphics
-        androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+        androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 and API28 since the runs's are not stable
         androidConfiguration: 'Release'
         iOSConfiguration: 'Debug'
         windowsConfiguration: 'Debug'

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+             Title="Issue23563"
+             x:Class="Maui.Controls.Sample.Issues.Issue23563">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Menu option 1"
+                 Priority="2"
+                 Order="Secondary"/>
+    <ToolbarItem Text="Menu option 2"
+                 Priority="3"
+                 Order="Secondary"/>
+    <ToolbarItem Text="Menu option 3"
+                 Priority="4"
+                 Order="Secondary"/>
+  </ContentPage.ToolbarItems>
+  <Label AutomationId="Label"
+      Text="Hello, Maui!"/>
+</ContentPage>
+  

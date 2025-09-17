@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = true;
 				_lastAppTheme = newTheme;
 
+				OnPropertyChanged(nameof(UserAppTheme));
 				OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, newTheme)]);
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
-				OnPropertyChanged(nameof(UserAppTheme));
 			}
 			finally
 			{

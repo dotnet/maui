@@ -10,7 +10,8 @@ parameters:
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
-  agentPoolAccessToken: ''
+  BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
+  RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -75,7 +76,8 @@ stages:
                 runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
-  - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
+  - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
       dependsOn: []
@@ -142,7 +144,6 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
   
@@ -222,7 +223,6 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
@@ -259,7 +259,6 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
@@ -297,13 +296,13 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: "CarouselView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
+  - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot
@@ -341,7 +340,6 @@ stages:
                         ${{ if ne(version, 'latest') }}:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
                         skipProvisioning: ${{ parameters.skipProvisioning }}
@@ -374,7 +372,6 @@ stages:
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -407,6 +404,5 @@ stages:
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
