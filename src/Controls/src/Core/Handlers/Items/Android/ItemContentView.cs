@@ -41,32 +41,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool DispatchTouchEvent(MotionEvent e)
 		{
-			if (!IsHeaderOrFooterContent())
+			if (IsHeaderOrFooterContent())
 			{
-				return base.DispatchTouchEvent(e);
+
+				if (e.Action == MotionEventActions.Up || e.Action == MotionEventActions.Cancel)
+				{
+					Parent?.RequestDisallowInterceptTouchEvent(false);
+				}
 			}
 
-			bool result = base.DispatchTouchEvent(e);
-
-			if (e.Action == MotionEventActions.Up || e.Action == MotionEventActions.Cancel)
-			{
-				Parent?.RequestDisallowInterceptTouchEvent(false);
-			}
-
-			return result;
+			return base.DispatchTouchEvent(e);
 		}
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
-			if (!IsHeaderOrFooterContent())
+			if (IsHeaderOrFooterContent())
 			{
-				return base.OnInterceptTouchEvent(ev);
-			}
-
-			if (ev.Action == MotionEventActions.Down)
-			{
-				Parent?.RequestDisallowInterceptTouchEvent(true);
-				return false;
+				if (ev.Action == MotionEventActions.Down)
+				{
+					Parent?.RequestDisallowInterceptTouchEvent(true);
+					return false;
+				}
 			}
 
 			return base.OnInterceptTouchEvent(ev);
@@ -79,7 +74,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool IsHeaderOrFooterContent()
 		{
 			if (View == null)
+			{
 				return false;
+			}
 
 			// Find the parent ItemsView by traversing up the view hierarchy
 			var itemsView = FindParentItemsView();
@@ -102,7 +99,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			while (current != null)
 			{
 				if (current is StructuredItemsView itemsView)
+				{
 					return itemsView;
+				}
+
 				current = current.Parent;
 			}
 			return null;
