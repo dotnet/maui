@@ -14,10 +14,9 @@ public class Issue31534 : _IssuesUITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyScrollViewHeightWhenAppClose()
 	{
-		App.WaitForElement("MauiButton");
-		App.Tap("MauiButton");
-		App.Tap("MauiButton");
-		App.Tap("MauiButton");
-		App.WaitForElement("MauiButton");
+		App.WaitForElement("HeightLabel");
+		var scrollViewHeight = App.FindElement("HeightLabel").GetText();
+		App.CloseApp();
+	    Assert.That(App.FindElement("HeightLabel").GetText(), Is.EqualTo(scrollViewHeight));
 	}
 }
