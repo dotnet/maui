@@ -4,61 +4,86 @@
              x:Class="Maui.Controls.Sample.Issues.Issue20288"
              Title="Issue 20288">
     <ScrollView>
-        <StackLayout Padding="20">
+        <StackLayout Padding="10" Spacing="5">
             <Label x:Name="InstructionLabel" 
-                   Text="This test validates that WebView.EvaluateJavaScriptAsync works correctly on iOS for various JavaScript result types." 
-                   Margin="0,0,0,20" />
+                   Text="WebView.EvaluateJavaScriptAsync test for iOS" 
+                   FontSize="14"
+                   Margin="0,0,0,10" />
             
             <WebView x:Name="TestWebView" 
-                     HeightRequest="300" />
+                     HeightRequest="150" />
             
             <Button x:Name="TestStringButton" 
                     Text="Test String Result" 
                     Clicked="OnTestStringClicked" 
-                    AutomationId="TestStringButton" />
+                    AutomationId="TestStringButton"
+                    FontSize="12"
+                    HeightRequest="40" />
             <Label x:Name="StringResult" 
                    Text="String result will appear here" 
-                   AutomationId="StringResult" />
+                   AutomationId="StringResult"
+                   FontSize="11"
+                   Margin="0,0,0,5" />
             
             <Button x:Name="TestNumberButton" 
                     Text="Test Number Result" 
                     Clicked="OnTestNumberClicked"
-                    AutomationId="TestNumberButton" />
+                    AutomationId="TestNumberButton"
+                    FontSize="12"
+                    HeightRequest="40" />
             <Label x:Name="NumberResult" 
                    Text="Number result will appear here"
-                   AutomationId="NumberResult" />
+                   AutomationId="NumberResult"
+                   FontSize="11"
+                   Margin="0,0,0,5" />
             
             <Button x:Name="TestBooleanButton" 
                     Text="Test Boolean Result" 
                     Clicked="OnTestBooleanClicked"
-                    AutomationId="TestBooleanButton" />
+                    AutomationId="TestBooleanButton"
+                    FontSize="12"
+                    HeightRequest="40" />
             <Label x:Name="BooleanResult" 
                    Text="Boolean result will appear here"
-                   AutomationId="BooleanResult" />
+                   AutomationId="BooleanResult"
+                   FontSize="11"
+                   Margin="0,0,0,5" />
             
             <Button x:Name="TestNullButton" 
                     Text="Test Null Result" 
                     Clicked="OnTestNullClicked"
-                    AutomationId="TestNullButton" />
+                    AutomationId="TestNullButton"
+                    FontSize="12"
+                    HeightRequest="40" />
             <Label x:Name="NullResult" 
                    Text="Null result will appear here"
-                   AutomationId="NullResult" />
+                   AutomationId="NullResult"
+                   FontSize="11"
+                   Margin="0,0,0,5" />
             
             <Button x:Name="TestObjectButton" 
                     Text="Test Object Result" 
                     Clicked="OnTestObjectClicked"
-                    AutomationId="TestObjectButton" />
+                    AutomationId="TestObjectButton"
+                    FontSize="12"
+                    HeightRequest="40" />
             <Label x:Name="ObjectResult" 
                    Text="Object result will appear here"
-                   AutomationId="ObjectResult" />
+                   AutomationId="ObjectResult"
+                   FontSize="11"
+                   Margin="0,0,0,5" />
                    
             <Button x:Name="TestInnerHTMLButton" 
                     Text="Test innerHTML (Real World Case)" 
                     Clicked="OnTestInnerHTMLClicked"
-                    AutomationId="TestInnerHTMLButton" />
+                    AutomationId="TestInnerHTMLButton"
+                    FontSize="12"
+                    HeightRequest="40" />
             <Label x:Name="InnerHTMLResult" 
                    Text="innerHTML result will appear here"
-                   AutomationId="InnerHTMLResult" />
+                   AutomationId="InnerHTMLResult"
+                   FontSize="11"
+                   Margin="0,0,0,20" />
         </StackLayout>
     </ScrollView>
 </ContentPage>

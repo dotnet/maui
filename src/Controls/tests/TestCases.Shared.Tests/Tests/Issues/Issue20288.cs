@@ -54,6 +54,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(objectResult, Does.Not.Contain("NULL"), "Object evaluation should not return NULL");
 
 			// Test innerHTML (Real World Case) - this was the original failing case
+			// Scroll to ensure the button is visible on small screens
+			App.ScrollTo("TestInnerHTMLButton");
+			App.WaitForElement("TestInnerHTMLButton");
 			App.Tap("TestInnerHTMLButton");
 			
 			// Wait for loading to start
