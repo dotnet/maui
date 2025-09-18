@@ -138,5 +138,12 @@ public partial class EntryControlMainPage : ContentPage
 		scope.UnregisterName("FocusedLabel");
 		scope.UnregisterName("UnfocusedLabel");
 		InitializeComponent();
+
+		// Reattach the PropertyChanged event handler after reinitialization
+		EntryControl.PropertyChanged += UpdateEntryControl;
+
+		// Update the entry fields to reflect current values
+		CursorPositionEntry.Text = EntryControl.CursorPosition.ToString();
+		SelectionLengthEntry.Text = EntryControl.SelectionLength.ToString();
 	}
 }
