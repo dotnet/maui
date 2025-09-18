@@ -266,6 +266,7 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -282,6 +283,7 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -488,6 +490,7 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
