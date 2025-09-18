@@ -44,6 +44,7 @@ namespace Maui.Controls.Sample.Issues
 			lstView = new ListView()
 			{
 				IsGroupingEnabled = true,
+				VerticalScrollBarVisibility = ScrollBarVisibility.Never,
 				HasUnevenRows = true,
 				ItemTemplate = new DataTemplate(typeof(MyViewCell)),
 				GroupHeaderTemplate = new DataTemplate(typeof(MyHeaderViewCell)),
