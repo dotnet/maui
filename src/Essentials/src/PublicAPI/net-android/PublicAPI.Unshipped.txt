@@ -1,1 +1,3 @@
-#nullable enable
+﻿#nullable enable
+~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
