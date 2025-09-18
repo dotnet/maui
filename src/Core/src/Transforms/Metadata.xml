@@ -17,7 +17,10 @@
   <!-- Internal methods & constructors -->
   <attr path="//class[@name='PlatformAppCompatTextView']/method" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformAppCompatTextView']/constructor" name="visibility">internal</attr>
-  <attr path="//class[@name='PlatformWrapperView']/method[@name='updateShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformWrapperView']/method[@name='setLinearGradientShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformWrapperView']/method[@name='setNoShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformWrapperView']/method[@name='setRadialGradientShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformWrapperView']/method[@name='setSolidShadow']" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformDrawable']/method" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformDrawable']/constructor" name="visibility">public</attr>
 
