@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Graphics
 				return new Color(red, green, blue, alpha);
 			}
 
-			return new Color(0, 0, 0, 1);
+			return FromRgba(0f, 0f, 0f, 1f);
 		}
 
 		public static Color FromArgb(string colorAsHex) => FromArgb(colorAsHex != null ? colorAsHex.AsSpan() : default);
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Graphics
 				return new Color(red, green, blue, alpha);
 			}
 
-			return new Color(0, 0, 0, 1);
+			return FromRgba(0f, 0f, 0f, 1f);
 		}
 
 		public static Color FromHsla(float h, float s, float l, float a = 1)
