@@ -12,143 +12,231 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	/// <summary>
-	/// Cache key for UICollectionViewLayout instances to avoid recreating layouts unnecessarily.
-	/// </summary>
-	[StructLayout(LayoutKind.Auto)]
-	internal readonly struct LayoutCacheKey : IEquatable<LayoutCacheKey>
+// Pack 5 boolean fields into a single byte using bit flags
+// Used to reduce struct size as much as possible.
+[Flags]
+internal enum LayoutFlags : byte
+{
+    None = 0,
+    IsGrouped = 1,
+    HasGroupHeader = 2,
+    HasGroupFooter = 4,
+    HasHeader = 8,
+    HasFooter = 16
+}
+
+/// <summary>
+/// Cache key for UICollectionViewLayout instances to avoid recreating layouts unnecessarily.
+/// </summary>
+internal readonly struct LayoutCacheKey : IEquatable<LayoutCacheKey>
+{
+    public readonly LayoutFlags Flags;
+	
+    public readonly byte Orientation;
+    public readonly byte SizingStrategy;
+    public readonly byte SnapType;
+    public readonly byte SnapAlignment;
+	
+    public readonly short Span;
+	
+    public readonly double VerticalItemSpacing;
+    public readonly double HorizontalItemSpacing;
+    public readonly double ItemSpacing;
+	
+    public readonly int LayoutTypeHash;
+	
+    public readonly int HeaderTemplateHashCode;
+    public readonly int FooterTemplateHashCode;
+    public readonly int ItemTemplateHashCode;
+    public readonly int GroupHeaderTemplateHashCode;
+    public readonly int GroupFooterTemplateHashCode;
+    public readonly int HeaderHashCode;
+    public readonly int FooterHashCode;
+	
+    public bool IsGrouped => (Flags & LayoutFlags.IsGrouped) != 0;
+    public bool HasGroupHeader => (Flags & LayoutFlags.HasGroupHeader) != 0;
+    public bool HasGroupFooter => (Flags & LayoutFlags.HasGroupFooter) != 0;
+    public bool HasHeader => (Flags & LayoutFlags.HasHeader) != 0;
+    public bool HasFooter => (Flags & LayoutFlags.HasFooter) != 0;
+
+    public LayoutCacheKey(ItemsView itemsView)
     {
-	    // Pack 5 boolean fields into a single byte using bit flags
-	    // Used to reduce struct size as much as possible.
-        [Flags]
-        enum LayoutFlags : byte
+        var itemsLayout = (itemsView as StructuredItemsView)?.ItemsLayout;
+        var sizingStrategy = (itemsView as StructuredItemsView)?.ItemSizingStrategy ?? ItemSizingStrategy.MeasureFirstItem;
+        
+        LayoutFlags flags = LayoutFlags.None;
+        
+        LayoutTypeHash = itemsLayout?.GetType().GetHashCode() ?? 0;
+        SizingStrategy = (byte)sizingStrategy;
+
+        if (itemsLayout is GridItemsLayout gridLayout)
         {
-            None = 0,
-            IsGrouped = 1,
-            HasGroupHeader = 2,
-            HasGroupFooter = 4,
-            HasHeader = 8,
-            HasFooter = 16
+            Orientation = (byte)gridLayout.Orientation;
+            Span = (short)Math.Min(gridLayout.Span, short.MaxValue);
+            VerticalItemSpacing = gridLayout.VerticalItemSpacing;
+            HorizontalItemSpacing = gridLayout.HorizontalItemSpacing;
+            ItemSpacing = 0;
+            SnapType = (byte)gridLayout.SnapPointsType;
+            SnapAlignment = (byte)gridLayout.SnapPointsAlignment;
+        }
+        else if (itemsLayout is LinearItemsLayout linearLayout)
+        {
+            Orientation = (byte)linearLayout.Orientation;
+            Span = 1;
+            VerticalItemSpacing = 0;
+            HorizontalItemSpacing = 0;
+            ItemSpacing = linearLayout.ItemSpacing;
+            SnapType = (byte)linearLayout.SnapPointsType;
+            SnapAlignment = (byte)linearLayout.SnapPointsAlignment;
+        }
+        else
+        {
+            Orientation = (byte)ItemsLayoutOrientation.Vertical;
+            Span = 1;
+            VerticalItemSpacing = 0;
+            HorizontalItemSpacing = 0;
+            ItemSpacing = 0;
+            SnapType = (byte)SnapPointsType.None;
+            SnapAlignment = (byte)SnapPointsAlignment.Start;
         }
 
-        readonly LayoutFlags _flags;
-        
-        public readonly ItemsLayoutOrientation Orientation;
-        public readonly int Span;
-        public readonly double VerticalItemSpacing;
-        public readonly double HorizontalItemSpacing;
-        public readonly double ItemSpacing;
-        public readonly Type LayoutType;
-        public readonly ItemSizingStrategy SizingStrategy;
-        public readonly SnapPointsType SnapType;
-        public readonly SnapPointsAlignment SnapAlignment;
-        
-        public bool IsGrouped => (_flags & LayoutFlags.IsGrouped) != 0;
-        public bool HasGroupHeader => (_flags & LayoutFlags.HasGroupHeader) != 0;
-        public bool HasGroupFooter => (_flags & LayoutFlags.HasGroupFooter) != 0;
-        public bool HasHeader => (_flags & LayoutFlags.HasHeader) != 0;
-        public bool HasFooter => (_flags & LayoutFlags.HasFooter) != 0;
-
-        public LayoutCacheKey(ItemsView itemsView)
+        // Handle grouping
+        if (itemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
         {
-            var itemsLayout = (itemsView as StructuredItemsView)?.ItemsLayout;
-            var sizingStrategy = (itemsView as StructuredItemsView)?.ItemSizingStrategy ??
-                                 ItemSizingStrategy.MeasureFirstItem;
-
-            LayoutType = itemsLayout?.GetType();
-            SizingStrategy = sizingStrategy;
-
-            if (itemsLayout is GridItemsLayout gridLayout)
+            flags |= LayoutFlags.IsGrouped;
+            
+            if (groupableItemsView.GroupHeaderTemplate is not null)
             {
-                Orientation = gridLayout.Orientation;
-                Span = gridLayout.Span;
-                VerticalItemSpacing = gridLayout.VerticalItemSpacing;
-                HorizontalItemSpacing = gridLayout.HorizontalItemSpacing;
-                ItemSpacing = 0;
-                SnapType = gridLayout.SnapPointsType;
-                SnapAlignment = gridLayout.SnapPointsAlignment;
-            }
-            else if (itemsLayout is LinearItemsLayout linearLayout)
-            {
-                Orientation = linearLayout.Orientation;
-                Span = 1;
-                VerticalItemSpacing = 0;
-                HorizontalItemSpacing = 0;
-                ItemSpacing = linearLayout.ItemSpacing;
-                SnapType = linearLayout.SnapPointsType;
-                SnapAlignment = linearLayout.SnapPointsAlignment;
+                flags |= LayoutFlags.HasGroupHeader;
+                GroupHeaderTemplateHashCode = groupableItemsView.GroupHeaderTemplate.GetHashCode();
             }
             else
             {
-                Orientation = ItemsLayoutOrientation.Vertical;
-                Span = 1;
-                VerticalItemSpacing = 0;
-                HorizontalItemSpacing = 0;
-                ItemSpacing = 0;
-                SnapType = SnapPointsType.None;
-                SnapAlignment = SnapPointsAlignment.Start;
+                GroupHeaderTemplateHashCode = 0;
             }
             
-            LayoutFlags flags = LayoutFlags.None;
+            if (groupableItemsView.GroupFooterTemplate is not null)
+            {
+                flags |= LayoutFlags.HasGroupFooter;
+                GroupFooterTemplateHashCode = groupableItemsView.GroupFooterTemplate.GetHashCode();
+            }
+            else
+            {
+                GroupFooterTemplateHashCode = 0;
+            }
+        }
+        else
+        {
+            GroupHeaderTemplateHashCode = 0;
+            GroupFooterTemplateHashCode = 0;
+        }
+
+        // Handle headers/footers
+        if (itemsView is StructuredItemsView structuredItemsView)
+        {
+            if (structuredItemsView.Header is not null || structuredItemsView.HeaderTemplate is not null)
+            {
+                flags |= LayoutFlags.HasHeader;
+                HeaderTemplateHashCode = structuredItemsView.HeaderTemplate?.GetHashCode() ?? 0;
+                HeaderHashCode = structuredItemsView.Header?.GetHashCode() ?? 0;
+            }
+            else
+            {
+                HeaderTemplateHashCode = 0;
+                HeaderHashCode = 0;
+            }
             
-            if (itemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+            if (structuredItemsView.Footer is not null || structuredItemsView.FooterTemplate is not null)
             {
-                flags |= LayoutFlags.IsGrouped;
-                if (groupableItemsView.GroupHeaderTemplate is not null)
-                    flags |= LayoutFlags.HasGroupHeader;
-                if (groupableItemsView.GroupFooterTemplate is not null)
-                    flags |= LayoutFlags.HasGroupFooter;
+                flags |= LayoutFlags.HasFooter;
+                FooterTemplateHashCode = structuredItemsView.FooterTemplate?.GetHashCode() ?? 0;
+                FooterHashCode = structuredItemsView.Footer?.GetHashCode() ?? 0;
             }
-
-            if (itemsView is StructuredItemsView structuredItemsView)
+            else
             {
-                if (structuredItemsView.Header is not null || structuredItemsView.HeaderTemplate is not null)
-                    flags |= LayoutFlags.HasHeader;
-                if (structuredItemsView.Footer is not null || structuredItemsView.FooterTemplate is not null)
-                    flags |= LayoutFlags.HasFooter;
+                FooterTemplateHashCode = 0;
+                FooterHashCode = 0;
             }
-
-            _flags = flags;
         }
-
-        public bool Equals(LayoutCacheKey other)
+        else
         {
-            return _flags == other._flags &&
-                   Orientation == other.Orientation &&
-                   Span == other.Span &&
-                   Math.Abs(VerticalItemSpacing - other.VerticalItemSpacing) < double.Epsilon &&
-                   Math.Abs(HorizontalItemSpacing - other.HorizontalItemSpacing) < double.Epsilon &&
-                   Math.Abs(ItemSpacing - other.ItemSpacing) < double.Epsilon &&
-                   LayoutType == other.LayoutType &&
-                   SizingStrategy == other.SizingStrategy &&
-                   SnapType == other.SnapType &&
-                   SnapAlignment == other.SnapAlignment;
+            HeaderTemplateHashCode = 0;
+            FooterTemplateHashCode = 0;
+            HeaderHashCode = 0;
+            FooterHashCode = 0;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is LayoutCacheKey other && Equals(other);
-        }
+        // Track item template changes
+        ItemTemplateHashCode = itemsView.ItemTemplate?.GetHashCode() ?? 0;
 
-        public override int GetHashCode()
-        {
-	        var hash = new HashCode();
-	        hash.Add(_flags);
-	        hash.Add(Orientation);
-	        hash.Add(Span);
-	        hash.Add(Math.Round(VerticalItemSpacing, 6));
-	        hash.Add(Math.Round(HorizontalItemSpacing, 6));
-	        hash.Add(Math.Round(ItemSpacing, 6));
-	        hash.Add(LayoutType?.GetHashCode() ?? 0);
-	        hash.Add(SizingStrategy);
-	        hash.Add(SnapType);
-	        hash.Add(SnapAlignment);
-	        return hash.ToHashCode();
-        }
+        Flags = flags;
     }
 
-	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView>
-		where TItemsView : ItemsView
+    public bool Equals(LayoutCacheKey other)
+    {
+        // Compare the most likely to differ fields first
+        return LayoutTypeHash == other.LayoutTypeHash &&
+               ItemTemplateHashCode == other.ItemTemplateHashCode &&
+               Flags == other.Flags &&
+               Orientation == other.Orientation &&
+               SizingStrategy == other.SizingStrategy &&
+               Span == other.Span &&
+               SnapType == other.SnapType &&
+               SnapAlignment == other.SnapAlignment &&
+               // Use bitwise comparison for doubles to avoid epsilon issues in hash contexts
+               VerticalItemSpacing.Equals(other.VerticalItemSpacing) &&
+               HorizontalItemSpacing.Equals(other.HorizontalItemSpacing) &&
+               ItemSpacing.Equals(other.ItemSpacing) &&
+               HeaderTemplateHashCode == other.HeaderTemplateHashCode &&
+               FooterTemplateHashCode == other.FooterTemplateHashCode &&
+               GroupHeaderTemplateHashCode == other.GroupHeaderTemplateHashCode &&
+               GroupFooterTemplateHashCode == other.GroupFooterTemplateHashCode &&
+               HeaderHashCode == other.HeaderHashCode &&
+               FooterHashCode == other.FooterHashCode;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is LayoutCacheKey other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        // Combine most discriminating values first
+        var hashLayout = HashCode.Combine(
+            LayoutTypeHash,
+            ItemTemplateHashCode,
+            (int)Flags,
+            Orientation | (SizingStrategy << 8) | (Span << 16) // Pack small values
+        );
+        
+        var hashItemSpacing = HashCode.Combine(
+            VerticalItemSpacing.GetHashCode(),
+            HorizontalItemSpacing.GetHashCode(),
+            ItemSpacing.GetHashCode(),
+            HeaderTemplateHashCode
+        );
+        
+        var hashHeaderFooter = HashCode.Combine(
+            FooterTemplateHashCode,
+            GroupHeaderTemplateHashCode,
+            GroupFooterTemplateHashCode,
+            HeaderHashCode,
+            FooterHashCode
+        );
+
+        return HashCode.Combine(hashLayout, hashItemSpacing, hashHeaderFooter);
+    }
+	
+    public override string ToString()
+    {
+        return $"LayoutCacheKey(Flags: {Flags}, Orientation: {(ItemsLayoutOrientation)Orientation}, " +
+               $"Span: {Span}, Strategy: {(ItemSizingStrategy)SizingStrategy})";
+    }
+}
+
+public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView>
+	where TItemsView : ItemsView
 	{
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
