@@ -214,7 +214,6 @@ public class MapViewModel : INotifyPropertyChanged
 
     public ICommand MapClickedCommand
     {
-
         get => _mapClickedCommand;
         set
         {
