@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui
 {
@@ -119,21 +120,5 @@ namespace Microsoft.Maui
 		/// <param name="right">The second GridLength to compare.</param>
 		/// <returns><see langword="true"/> if the two GridLengths differ; otherwise, <see langword="false"/>.</returns>
 		public static bool operator !=(GridLength left, GridLength right) => !(left == right);
-
-		private sealed class GridLengthTypeConverter : TypeConverter
-		{
-			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
-				=> sourceType == typeof(double);
-
-			public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
-				=> value switch
-				{
-					double d => (GridLength)d,
-					_ => throw new NotSupportedException(),
-				};
-
-			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType) => throw new NotSupportedException();
-		}
 	}
 }

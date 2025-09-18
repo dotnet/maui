@@ -74,6 +74,8 @@ class XamlCache
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignSelfTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexWrapTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexWrap>) },
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexBasisTypeConverter")), typeof(FlexBasisTypeConverter) },
+		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "GridLengthTypeConverter")), typeof(Microsoft.Maui.Controls.XamlC.GridLengthTypeConverter) },
+
 	};
 
 	// State used by SetPropertiesVisitor
