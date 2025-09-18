@@ -833,11 +833,12 @@ namespace Microsoft.Maui.Controls
 
 			PresentedPageDisappearing();
 			_navStack.Remove(page);
-			PresentedPageAppearing();
 
 			InvokeNavigationRequest(args);
 			if (args.Task != null)
 				await args.Task;
+
+			PresentedPageAppearing();
 
 			if (_handlerBasedNavigationCompletionSource?.Task != null)
 				await _handlerBasedNavigationCompletionSource.Task;
