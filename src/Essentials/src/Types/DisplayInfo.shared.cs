@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Devices
 			Height.Equals(other.Height) &&
 			Density.Equals(other.Density) &&
 			Orientation.Equals(other.Orientation) &&
-			Rotation.Equals(other.Rotation);
+			Rotation.Equals(other.Rotation) &&
+			RefreshRate.Equals(other.RefreshRate);
 
 		/// <summary>
 		/// Gets the hash code for this display info instance.
