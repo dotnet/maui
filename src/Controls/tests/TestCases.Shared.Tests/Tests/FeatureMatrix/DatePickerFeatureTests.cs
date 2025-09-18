@@ -5,18 +5,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class DatePickerFeatureTests : UITest
+public class DatePickerFeatureTests : _GalleryUITest
 {
 	public const string DatePickerFeatureMatrix = "Date Picker Feature Matrix";
 
+	public override string GalleryPageName => DatePickerFeatureMatrix;
+
 	public DatePickerFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(DatePickerFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS //Issue Link: https://github.com/dotnet/maui/issues/30736, https://github.com/dotnet/maui/issues/31167
