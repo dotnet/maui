@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void IsSwipeEnabledShouldWork()
 		{
 			App.WaitForElement("Item1");
-			App.ScrollRight("CarouselView", swipePercentage: 1);
+			App.ScrollRight("CarouselView", swipePercentage: 0.8);
 			App.WaitForElement("Item2");
 			App.Tap("Switch");
-			App.ScrollRight("CarouselView");
+			App.ScrollRight("CarouselView", swipePercentage: 0.8);
 			App.WaitForElement("Item2");
 		}
 	}
