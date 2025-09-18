@@ -52,6 +52,8 @@
     <Compile Include="..\..\..\Core\src\Services\Crc64HashAlgorithm.cs">
       <Link>Crc64HashAlgorithm.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\Graphics\src\Graphics\ColorUtils.cs" Link="ColorUtils.cs" />
+    <Compile Include="..\..\..\Graphics\src\Graphics\NumericExtensions.cs" Link="NumericExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,7 +62,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" />
-    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
 
   <ItemGroup>

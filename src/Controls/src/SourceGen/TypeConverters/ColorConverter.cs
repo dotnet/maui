@@ -17,13 +17,27 @@ internal class ColorConverter : ISGTypeConverter
 
 	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
-		if (Color.TryParse(value, out var color))
+		if (ColorUtils.TryParse(value, out float red, out float green, out float blue, out float alpha))
 		{
 			var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
-			return $"new {colorType.ToFQDisplayString()}({FormatInvariant(color.Red)}f, {FormatInvariant(color.Green)}f, {FormatInvariant(color.Blue)}f, {FormatInvariant(color.Alpha)}f) /* {value} */";
+			return $"new {colorType.ToFQDisplayString()}({FormatInvariant(red)}f, {FormatInvariant(green)}f, {FormatInvariant(blue)}f, {FormatInvariant(alpha)}f) /* {value} */";
+		}
+
+		if (GetNamedColorField(value) is IFieldSymbol colorsField)
+		{
+			return $"{colorsField.ContainingType.ToFQDisplayString()}.{colorsField.Name}";
 		}
 
 		context.ReportConversionFailed((IXmlLineInfo)node, value, toType, Descriptors.ConversionFailed);
 		return "default";
+
+		IFieldSymbol? GetNamedColorField(string name)
+		{
+			return context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Colors")
+				?.GetMembers()
+				.OfType<IFieldSymbol>()
+				.Where(f => f.IsStatic && f.IsReadOnly && f.Type.ToFQDisplayString() == "global::Microsoft.Maui.Graphics.Color")
+				.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+		}
 	}
 }
