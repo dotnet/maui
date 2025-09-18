@@ -15,7 +15,15 @@ internal static class ColorUtils
 
 		if (value[0] == '#')
 		{
-			return TryParseHex(value, out red, out green, out blue, out alpha);
+			try
+			{
+				(red, green, blue, alpha) = FromArgb(value);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		if (value.StartsWith("rgba".AsSpan(), StringComparison.OrdinalIgnoreCase))
@@ -164,187 +172,6 @@ internal static class ColorUtils
 	}
 
 	/// <summary>
-	/// Attempts to parse a hex color string (with or without #).
-	/// Supports formats: #RGB, #ARGB, #RRGGBB, #AARRGGBB
-	/// Uses ARGB format for 4-digit and 8-digit hex values.
-	/// </summary>
-	/// <param name="colorAsHex">The hex color string</param>
-	/// <param name="red">The red component (0.0-1.0)</param>
-	/// <param name="green">The green component (0.0-1.0)</param>
-	/// <param name="blue">The blue component (0.0-1.0)</param>
-	/// <param name="alpha">The alpha component (0.0-1.0)</param>
-	/// <returns>True if parsing succeeded, false otherwise</returns>
-	public static bool TryParseHex(ReadOnlySpan<char> colorAsHex, out float red, out float green, out float blue, out float alpha)
-	{
-		red = green = blue = 0;
-		alpha = 1;
-
-		if (colorAsHex.IsEmpty)
-			return false;
-
-		//Skip # if present
-		if (colorAsHex[0] == '#')
-			colorAsHex = colorAsHex.Slice(1);
-
-		try
-		{
-			return TryParseArgbHex(colorAsHex, out red, out green, out blue, out alpha);
-		}
-		catch
-		{
-			return false;
-		}
-	}
-
-	/// <summary>
-	/// Attempts to parse a hex color string in RGBA format (with or without #).
-	/// Supports formats: #RGB, #RGBA, #RRGGBB, #RRGGBBAA  
-	/// Uses RGBA format for 4-digit and 8-digit hex values.
-	/// </summary>
-	/// <param name="colorAsHex">The hex color string</param>
-	/// <param name="red">The red component (0.0-1.0)</param>
-	/// <param name="green">The green component (0.0-1.0)</param>
-	/// <param name="blue">The blue component (0.0-1.0)</param>
-	/// <param name="alpha">The alpha component (0.0-1.0)</param>
-	/// <returns>True if parsing succeeded, false otherwise</returns>
-	public static bool TryParseRgbaHexFormat(ReadOnlySpan<char> colorAsHex, out float red, out float green, out float blue, out float alpha)
-	{
-		red = green = blue = 0;
-		alpha = 1;
-
-		if (colorAsHex.IsEmpty)
-			return false;
-
-		//Skip # if present
-		if (colorAsHex[0] == '#')
-			colorAsHex = colorAsHex.Slice(1);
-
-		try
-		{
-			return TryParseRgbaHex(colorAsHex, out red, out green, out blue, out alpha);
-		}
-		catch
-		{
-			return false;
-		}
-	}
-
-	/// <summary>
-	/// Parses hex color in ARGB format (#ARGB, #AARRGGBB)
-	/// </summary>
-	private static bool TryParseArgbHex(ReadOnlySpan<char> colorAsHex, out float red, out float green, out float blue, out float alpha)
-	{
-		int r = 0, g = 0, b = 0, a = 255;
-
-		if (colorAsHex.Length == 6)
-		{
-			//#RRGGBB
-			r = ParseInt(colorAsHex.Slice(0, 2));
-			g = ParseInt(colorAsHex.Slice(2, 2));
-			b = ParseInt(colorAsHex.Slice(4, 2));
-		}
-		else if (colorAsHex.Length == 3)
-		{
-			//#RGB
-			Span<char> temp = stackalloc char[2];
-			temp[0] = temp[1] = colorAsHex[0];
-			r = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[1];
-			g = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[2];
-			b = ParseInt(temp);
-		}
-		else if (colorAsHex.Length == 4)
-		{
-			//#ARGB
-			Span<char> temp = stackalloc char[2];
-			temp[0] = temp[1] = colorAsHex[0];
-			a = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[1];
-			r = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[2];
-			g = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[3];
-			b = ParseInt(temp);
-		}
-		else if (colorAsHex.Length == 8)
-		{
-			//#AARRGGBB
-			a = ParseInt(colorAsHex.Slice(0, 2));
-			r = ParseInt(colorAsHex.Slice(2, 2));
-			g = ParseInt(colorAsHex.Slice(4, 2));
-			b = ParseInt(colorAsHex.Slice(6, 2));
-		}
-		else
-		{
-			red = green = blue = alpha = 0;
-			return false;
-		}
-
-		red = (r / 255f).Clamp(0, 1);
-		green = (g / 255f).Clamp(0, 1);
-		blue = (b / 255f).Clamp(0, 1);
-		alpha = (a / 255f).Clamp(0, 1);
-		return true;
-	}
-
-	/// <summary>
-	/// Parses hex color in RGBA format (#RGBA, #RRGGBBAA)
-	/// For 3-digit and 6-digit (no alpha), delegates to ARGB parsing since they're identical
-	/// </summary>
-	private static bool TryParseRgbaHex(ReadOnlySpan<char> colorAsHex, out float red, out float green, out float blue, out float alpha)
-	{
-		if (colorAsHex.Length == 3 || colorAsHex.Length == 6)
-		{
-			// For 3-digit and 6-digit hex, RGBA and ARGB are the same since there's no alpha
-			return TryParseArgbHex(colorAsHex, out red, out green, out blue, out alpha);
-		}
-
-		int r = 0, g = 0, b = 0, a = 255;
-
-		if (colorAsHex.Length == 4)
-		{
-			//#RGBA
-			Span<char> temp = stackalloc char[2];
-			temp[0] = temp[1] = colorAsHex[0];
-			r = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[1];
-			g = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[2];
-			b = ParseInt(temp);
-
-			temp[0] = temp[1] = colorAsHex[3];
-			a = ParseInt(temp);
-		}
-		else if (colorAsHex.Length == 8)
-		{
-			//#RRGGBBAA
-			r = ParseInt(colorAsHex.Slice(0, 2));
-			g = ParseInt(colorAsHex.Slice(2, 2));
-			b = ParseInt(colorAsHex.Slice(4, 2));
-			a = ParseInt(colorAsHex.Slice(6, 2));
-		}
-		else
-		{
-			red = green = blue = alpha = 0;
-			return false;
-		}
-
-		red = (r / 255f).Clamp(0, 1);
-		green = (g / 255f).Clamp(0, 1);
-		blue = (b / 255f).Clamp(0, 1);
-		alpha = (a / 255f).Clamp(0, 1);
-		return true;
-	}
-
-	/// <summary>
 	/// Converts HSL values to RGB.
 	/// </summary>
 	/// <param name="hue">Hue (0.0-1.0)</param>
@@ -362,7 +189,7 @@ internal static class ColorUtils
 		{
 			return (luminosity, luminosity, luminosity);
 		}
-		
+
 		float temp2 = luminosity <= 0.5f ? luminosity * (1.0f + saturation) : luminosity + saturation - luminosity * saturation;
 		float temp1 = 2.0f * luminosity - temp2;
 
@@ -387,6 +214,115 @@ internal static class ColorUtils
 		return (clr[0], clr[1], clr[2]);
 	}
 
+	public static (float red, float green, float blue, float alpha) FromRgba(ReadOnlySpan<char> colorAsHex)
+	{
+		int red = 0;
+		int green = 0;
+		int blue = 0;
+		int alpha = 255;
+
+		if (!colorAsHex.IsEmpty)
+		{
+			//Skip # if present
+			if (colorAsHex[0] == '#')
+				colorAsHex = colorAsHex.Slice(1);
+
+			if (colorAsHex.Length == 6 || colorAsHex.Length == 3)
+			{
+				//#RRGGBB or #RGB - since there is no A, use FromArgb
+
+				return FromArgb(colorAsHex);
+			}
+			else if (colorAsHex.Length == 4)
+			{
+				//#RGBA
+				Span<char> temp = stackalloc char[2];
+				temp[0] = temp[1] = colorAsHex[0];
+				red = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[1];
+				green = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[2];
+				blue = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[3];
+				alpha = ParseInt(temp);
+			}
+			else if (colorAsHex.Length == 8)
+			{
+				//#RRGGBBAA
+				red = ParseInt(colorAsHex.Slice(0, 2));
+				green = ParseInt(colorAsHex.Slice(2, 2));
+				blue = ParseInt(colorAsHex.Slice(4, 2));
+				alpha = ParseInt(colorAsHex.Slice(6, 2));
+			}
+		}
+
+		return (red / 255f, green / 255f, blue / 255f, alpha / 255f);
+	}
+
+	public static (float red, float green, float blue, float alpha) FromArgb(ReadOnlySpan<char> colorAsHex)
+	{
+		int red = 0;
+		int green = 0;
+		int blue = 0;
+		int alpha = 255;
+
+		if (!colorAsHex.IsEmpty)
+		{
+			//Skip # if present
+			if (colorAsHex[0] == '#')
+				colorAsHex = colorAsHex.Slice(1);
+
+			if (colorAsHex.Length == 6)
+			{
+				//#RRGGBB
+				red = ParseInt(colorAsHex.Slice(0, 2));
+				green = ParseInt(colorAsHex.Slice(2, 2));
+				blue = ParseInt(colorAsHex.Slice(4, 2));
+			}
+			else if (colorAsHex.Length == 3)
+			{
+				//#RGB
+				Span<char> temp = stackalloc char[2];
+				temp[0] = temp[1] = colorAsHex[0];
+				red = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[1];
+				green = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[2];
+				blue = ParseInt(temp);
+			}
+			else if (colorAsHex.Length == 4)
+			{
+				//#ARGB
+				Span<char> temp = stackalloc char[2];
+				temp[0] = temp[1] = colorAsHex[0];
+				alpha = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[1];
+				red = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[2];
+				green = ParseInt(temp);
+
+				temp[0] = temp[1] = colorAsHex[3];
+				blue = ParseInt(temp);
+			}
+			else if (colorAsHex.Length == 8)
+			{
+				//#AARRGGBB
+				alpha = ParseInt(colorAsHex.Slice(0, 2));
+				red = ParseInt(colorAsHex.Slice(2, 2));
+				green = ParseInt(colorAsHex.Slice(4, 2));
+				blue = ParseInt(colorAsHex.Slice(6, 2));
+			}
+		}
+
+		return (red / 255f, green / 255f, blue / 255f, alpha / 255f);
+	}
 	/// <summary>
 	/// Converts HSV values to RGB.
 	/// </summary>

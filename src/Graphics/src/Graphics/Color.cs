@@ -339,35 +339,27 @@ namespace Microsoft.Maui.Graphics
 
 		static Color FromRgba(ReadOnlySpan<char> colorAsHex)
 		{
-			if (ColorUtils.TryParseRgbaHexFormat(colorAsHex, out float red, out float green, out float blue, out float alpha))
-			{
-				return new Color(red, green, blue, alpha);
-			}
-
-			return FromRgba(0f, 0f, 0f, 1f);
+			var (r, g, b, a) = ColorUtils.FromRgba(colorAsHex);
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromArgb(string colorAsHex) => FromArgb(colorAsHex != null ? colorAsHex.AsSpan() : default);
 
 		static Color FromArgb(ReadOnlySpan<char> colorAsHex)
 		{
-			if (ColorUtils.TryParseHex(colorAsHex, out float red, out float green, out float blue, out float alpha))
-			{
-				return new Color(red, green, blue, alpha);
-			}
-
-			return FromRgba(0f, 0f, 0f, 1f);
+			var (r, g, b, a) = ColorUtils.FromArgb(colorAsHex);
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromHsla(float h, float s, float l, float a = 1)
 		{
-			(float r, float g, float b) = ColorUtils.ConvertHslToRgb(h, s, l);
+			var (r, g, b) = ColorUtils.ConvertHslToRgb(h, s, l);
 			return new Color(r, g, b, a);
 		}
 
 		public static Color FromHsla(double h, double s, double l, double a = 1)
 		{
-			(float r, float g, float b) = ColorUtils.ConvertHslToRgb((float)h, (float)s, (float)l);
+			var (r, g, b) = ColorUtils.ConvertHslToRgb((float)h, (float)s, (float)l);
 			return new Color(r, g, b, (float)a);
 		}
 
