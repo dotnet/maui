@@ -1,7 +1,7 @@
-﻿@*#if (IndividualLocalAuth && !UseWebAssembly)
+@*#if (IndividualLocalAuth && !UseWebAssembly)
 @using MauiApp.1.Components.Account.Shared
 ##endif*@
-<Router AppAssembly="typeof(Layout.MainLayout).Assembly">
+<Router AppAssembly="typeof(Layout.MainLayout).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         @*#if (IndividualLocalAuth)
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
