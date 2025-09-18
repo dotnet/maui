@@ -10,6 +10,8 @@ public class LabelUITests : _ViewUITests
 {
 	const string LabelGallery = "Label Gallery";
 
+	public override string GalleryPageName => LabelGallery;
+
 	public LabelUITests(TestDevice device)
 		: base(device)
 	{

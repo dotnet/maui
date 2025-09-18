@@ -3,7 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
-public class CollectionView_GroupingFeatureTests : UITest
+public class CollectionView_GroupingFeatureTests : _GalleryUITest
 {
 	public const string GroupingFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -19,15 +19,11 @@ public class CollectionView_GroupingFeatureTests : UITest
 	public const string ItemsLayoutHorizontalGrid = "ItemsLayoutHorizontalGrid";
 	public const string ItemsLayoutVerticalGrid = "ItemsLayoutVerticalGrid";
 
+	public override string GalleryPageName => GroupingFeatureMatrix;
 
 	public CollectionView_GroupingFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(GroupingFeatureMatrix);
 	}
 
 	[Test, Order(1)]
