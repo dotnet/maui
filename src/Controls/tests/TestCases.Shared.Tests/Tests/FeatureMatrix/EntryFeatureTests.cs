@@ -517,7 +517,7 @@ public class EntryFeatureTests : UITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(13)]
 	public void VerifyHorizontalTextAlignmentWhenVerticalTextAlignmentSet()
 	{
 		App.WaitForElement("Options");
@@ -530,8 +530,6 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		ClearEntryFocusIfItIsWindowsPlatform();
-		VerifyScreenshot(cropBottom: CropBottomValue);
-		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -745,8 +743,6 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-		App.Tap(MainLabel);
 		App.Tap("TestEntry");
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("3"));
 	}
@@ -981,7 +977,7 @@ public class EntryFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(14)]
 	public void VerifyPlaceholderWithShadow()
 	{
 		App.WaitForElement("Options");
@@ -999,7 +995,7 @@ public class EntryFeatureTests : UITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(10)]
 	public void VerifyPlaceholderWithClearButtonVisible()
 	{
 		App.WaitForElement("Options");
@@ -1013,7 +1009,7 @@ public class EntryFeatureTests : UITest
 		VerifyScreenshotWithKeyboardHandling("PlaceholderWithClearButtonVisible");
 	}
 
-	[Test]
+	[Test, Order(12)]
 	public void VerifyPlaceholderWithPasswordTrue()
 	{
 		App.WaitForElement("Options");
@@ -1031,7 +1027,7 @@ public class EntryFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(8)]
 	public void VerifyPlaceholderWithHorizontalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -1049,7 +1045,7 @@ public class EntryFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(9)]
 	public void VerifyPlaceholderWithVerticalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -1068,7 +1064,7 @@ public class EntryFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
-	[Test]
+	[Test, Order(11)]
 	public void VerifyPlaceholderWithCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -1085,7 +1081,7 @@ public class EntryFeatureTests : UITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(7)]
 	public void VerifyPlaceholderWithFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -1103,7 +1099,7 @@ public class EntryFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(6)]
 	public void VerifyPlaceholderWithFontSize()
 	{
 		App.WaitForElement("Options");
@@ -1119,7 +1115,7 @@ public class EntryFeatureTests : UITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(5)]
 	public void VerifyPlaceholderWithFontAttributes()
 	{
 		App.WaitForElement("Options");
