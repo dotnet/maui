@@ -35,6 +35,11 @@
           Text="Invoke Async JS"
           Clicked="InvokeAsyncJSMethodButton_Clicked" />
 
+        <Button
+          Margin="10"
+          Text="Test Source Property"
+          Clicked="TestSourceButton_Clicked" />
+
       </VerticalStackLayout>
 
       <HybridWebView
