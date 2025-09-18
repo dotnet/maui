@@ -463,26 +463,6 @@ public class PlatformInterop {
     }
 
     /**
-     * Sets many values at once on a Paint object
-     * @param paint
-     * @param strokeWidth
-     * @param strokeJoin
-     * @param strokeCap
-     * @param strokeMiter
-     * @param pathEffect
-     */
-    public static void setPaintValues(Paint paint, float strokeWidth, Paint.Join strokeJoin, Paint.Cap strokeCap, float strokeMiter, PathEffect pathEffect)
-    {
-        paint.setStrokeWidth(strokeWidth);
-        paint.setStrokeJoin(strokeJoin);
-        paint.setStrokeCap(strokeCap);
-        paint.setStrokeMiter(strokeMiter);
-        if (pathEffect != null) {
-            paint.setPathEffect(pathEffect);
-        }
-    }
-
-    /**
      * Sets the maxLength of an EditText
      * @param editText
      * @param maxLength

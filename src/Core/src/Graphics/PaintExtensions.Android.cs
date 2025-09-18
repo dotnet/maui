@@ -77,21 +77,6 @@ namespace Microsoft.Maui.Graphics
 			return drawable;
 		}
 
-		internal static bool IsSolid(this AColor color)
-		{
-			return color.A is 1;
-		}
-
-		internal static bool IsSolid(this SolidPaint paint)
-		{
-			return !paint.IsNullOrEmpty() && paint.Color.Alpha == 1;
-		}
-
-		internal static bool IsSolid(this GradientPaint paint)
-		{
-			return !paint.IsNullOrEmpty() && paint.GradientStops.All(s => s.Color?.Alpha == 1);
-		}
-
 		internal static bool IsValid(this GradientPaint? gradientPaint) =>
 			gradientPaint?.GradientStops?.Length > 0;
 

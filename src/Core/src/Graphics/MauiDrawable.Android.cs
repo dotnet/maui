@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Graphics
 			
 			if (solidPaint.Color is { } color)
 			{
-				SetBackgroundColor(PlatformPaintType.Solid, solidPaint.IsSolid(), color.ToPlatform());
+				SetSolidBackground(color.ToPlatform());
 			}
 			else
 			{
@@ -112,11 +112,9 @@ namespace Microsoft.Maui.Graphics
 
 			_background = linearGradientPaint;
 			
-			var isSolid = linearGradientPaint.IsSolid();
 			var gradientData = linearGradientPaint.GetGradientData(1.0f);
 			
-			SetBackgroundStyle(PlatformPaintType.Linear, isSolid, gradientData.Colors, gradientData.Offsets,
-				[gradientData.X1, gradientData.Y1, gradientData.X2, gradientData.Y2]);
+			SetLinearGradientBackground(gradientData.X1, gradientData.Y1, gradientData.X2, gradientData.Y2, gradientData.Colors, gradientData.Offsets);
 		}
 
 		public void SetBackground(RadialGradientPaint radialGradientPaint)
@@ -127,12 +125,10 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			_background = radialGradientPaint;
-			
-			var isSolid = radialGradientPaint.IsSolid();
+
 			var gradientData = radialGradientPaint.GetGradientData(1.0f);
 
-			SetBackgroundStyle(PlatformPaintType.Radial, isSolid, gradientData.Colors, gradientData.Offsets,
-				[gradientData.CenterX, gradientData.CenterY, gradientData.Radius]);
+			SetRadialGradientBackground(gradientData.CenterX, gradientData.CenterY, gradientData.Radius, gradientData.Colors, gradientData.Offsets);
 		}
 
 		public void SetBackground(ImagePaint imagePaint)
@@ -154,7 +150,7 @@ namespace Microsoft.Maui.Graphics
 
 			_background = null;
 
-			SetBackgroundColor(PlatformPaintType.None, false, 0);
+			SetNoBackground();
 		}
 
 		public void SetBorderShape(IShape? shape)
@@ -234,7 +230,7 @@ namespace Microsoft.Maui.Graphics
 			
 			if (solidPaint.Color is { } color)
 			{
-				SetBorderColor(PlatformPaintType.Solid, solidPaint.IsSolid(), color.ToPlatform());
+				SetSolidBorder(color.ToPlatform());
 			}
 			else
 			{
@@ -251,11 +247,9 @@ namespace Microsoft.Maui.Graphics
 			
 			_stroke = linearGradientPaint;
 			
-			var isSolid = linearGradientPaint.IsSolid();
 			var gradientData = linearGradientPaint.GetGradientData(1.0f);
 			
-			SetBorderStyle(PlatformPaintType.Linear, isSolid, gradientData.Colors, gradientData.Offsets,
-				[gradientData.X1, gradientData.Y1, gradientData.X2, gradientData.Y2]);
+			SetLinearGradientBorder(gradientData.X1, gradientData.Y1, gradientData.X2, gradientData.Y2, gradientData.Colors, gradientData.Offsets);
 		}
 
 		public void SetBorderBrush(RadialGradientPaint radialGradientPaint)
@@ -266,12 +260,10 @@ namespace Microsoft.Maui.Graphics
 			}
 			
 			_stroke = radialGradientPaint;
-			
-			var isSolid = radialGradientPaint.IsSolid();
+
 			var gradientData = radialGradientPaint.GetGradientData(1.0f);
 
-			SetBorderStyle(PlatformPaintType.Radial, isSolid, gradientData.Colors, gradientData.Offsets,
-				[gradientData.CenterX, gradientData.CenterY, gradientData.Radius]);
+			SetRadialGradientBorder(gradientData.CenterX, gradientData.CenterY, gradientData.Radius, gradientData.Colors, gradientData.Offsets);
 		}
 
 		public void SetEmptyBorderBrush()
@@ -283,7 +275,7 @@ namespace Microsoft.Maui.Graphics
 			
 			_stroke = null;
 
-			SetBorderColor(PlatformPaintType.None, false, 0);
+			SetNoBorder();
 		}
 
 		public void SetBorderBrush(ImagePaint imagePaint)

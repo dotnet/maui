@@ -13,6 +13,7 @@ import android.util.TypedValue;
 public class PlatformDrawableStyle {
     // Style properties
     private boolean isSolid;
+    private boolean isSolidInvalidated = true;
     private int paintType = PlatformPaintType.NONE;
     private int solidColor;
     private int[] gradientColors;
@@ -31,101 +32,125 @@ public class PlatformDrawableStyle {
 
     // Getters and setters
     public boolean getIsSolid() {
-        return isSolid;
+        if (this.isSolidInvalidated) {
+            this.isSolid = computeIsSolid();
+            this.isSolidInvalidated = false;
+        }
+
+        return this.isSolid;
     }
+
+    private boolean computeIsSolid() {
+        if (this.gradientColors != null) {
+            for (int i = 0; i < this.gradientColors.length; i++) {
+                if (Color.alpha(this.gradientColors[i]) != 255) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        if (this.paintType == PlatformPaintType.NONE) {
+            if (this.hasNoneColor < 0) {
+                applyTheme();
+            }
+
+            if (this.hasNoneColor == 1) {
+                return Color.alpha(this.noneColor) == 255;
+            }
+
+            // None means no background, so that's = to transparent
+            return false;
+        }
+
+        return Color.alpha(this.solidColor) == 255;
+    } 
 
     public int getPaintType() {
-        return paintType;
-    }
-
-    public int getSolidColor() {
-        return solidColor;
-    }
-
-    public float[] getGradientBounds() {
-        return gradientBounds;
+        return this.paintType;
     }
 
     private Shader getShader(int width, int height) {
-        if (paintType == PlatformPaintType.NONE || paintType == PlatformPaintType.SOLID) {
+        if (this.paintType == PlatformPaintType.NONE || this.paintType == PlatformPaintType.SOLID) {
             return null;
         }
 
-        if (width != shaderWidth || height != shaderHeight) {
-            shaderWidth = width;
-            shaderHeight = height;
-            shader = null;
+        if (width != this.shaderWidth || height != this.shaderHeight) {
+            this.shaderWidth = width;
+            this.shaderHeight = height;
+            this.shader = null;
         }
 
-        if (shader == null) {
-            if (paintType == PlatformPaintType.LINEAR) {
-                shader = new LinearGradient(
-                    gradientBounds[0] * width, gradientBounds[1] * height,  // Start point
-                    gradientBounds[2] * width, gradientBounds[3] * height,  // End point
-                    gradientColors,
-                    gradientPositions,
+        if (this.shader == null) {
+            if (this.paintType == PlatformPaintType.LINEAR) {
+                this.shader = new LinearGradient(
+                    this.gradientBounds[0] * width, this.gradientBounds[1] * height,  // Start point
+                    this.gradientBounds[2] * width, this.gradientBounds[3] * height,  // End point
+                    this.gradientColors,
+                    this.gradientPositions,
                     Shader.TileMode.CLAMP
                 );
             }
-            else if (paintType == PlatformPaintType.RADIAL) {
-                shader = new RadialGradient(
-                    gradientBounds[0] * width, gradientBounds[1] * height,  // Center point
-                    gradientBounds[2] * Math.max(width, height),            // Radius
-                    gradientColors,
-                    gradientPositions,
+            else if (this.paintType == PlatformPaintType.RADIAL) {
+                this.shader = new RadialGradient(
+                    this.gradientBounds[0] * width, this.gradientBounds[1] * height,  // Center point
+                    this.gradientBounds[2] * Math.max(width, height),            // Radius
+                    this.gradientColors,
+                    this.gradientPositions,
                     Shader.TileMode.CLAMP
                 );
             }
         }
 
-        return shader;
+        return this.shader;
     }
 
     // Convenience method to apply all style properties at once
-    public void setStyle(int paintType, boolean isSolid, int solidColor, int[] colors, float[] positions, float[] bounds) {
+    public void setStyle(int paintType, int solidColor, int[] colors, float[] positions, float[] bounds) {
         this.paintType = paintType;
-        this.isSolid = isSolid;
         this.solidColor = solidColor;
         this.gradientColors = colors;
         this.gradientPositions = positions;
         this.gradientBounds = bounds;
         this.shader = null; // Reset shader when style changes
+        this.isSolidInvalidated = true; // isSolid needs to be re-evaluated
     }
 
     public void applyStyle(Paint paint, int width, int height, PlatformDrawableStyle fallbackStyle) {
-        if (paintType == PlatformPaintType.SOLID) {
+        if (this.paintType == PlatformPaintType.SOLID) {
             paint.setShader(null);
-            paint.setColor(solidColor);
-        } else if (paintType == PlatformPaintType.LINEAR || paintType == PlatformPaintType.RADIAL) {
+            paint.setColor(this.solidColor);
+        } else if (this.paintType == PlatformPaintType.LINEAR || this.paintType == PlatformPaintType.RADIAL) {
             // Reset the color to its default value so that a shader can be applied on top of it
             paint.setColor(Color.BLACK);
             paint.setShader(getShader(width, height));
         } else if (fallbackStyle != null) {
             fallbackStyle.applyStyle(paint, width, height, null);
         } else {
-            if (hasNoneColor < 0) {
-                applyTheme(context.getTheme());
+            if (this.hasNoneColor < 0) {
+                applyTheme();
             }
 
             paint.setShader(null);
 
-            if (hasNoneColor > 0) {
-                paint.setColor(noneColor);
+            if (this.hasNoneColor > 0) {
+                paint.setColor(this.noneColor);
             } else {
                 paint.setColor(Color.TRANSPARENT);
             }
         }
     }
 
-    private void applyTheme(Resources.Theme theme) {
+    private void applyTheme() {
         TypedValue value = new TypedValue();
-        if (theme.resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
-            hasNoneColor = 1;
-            noneColor = value.data;
+        if (this.context != null && this.context.getTheme().resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
+            this.hasNoneColor = 1;
+            this.noneColor = value.data;
         }
 
-        hasNoneColor = 0;
-        noneColor = 0;
+        this.hasNoneColor = 0;
+        this.noneColor = 0;
     }
 
     private static boolean isColorType(TypedValue value)
