@@ -36,7 +36,7 @@ internal class ColorConverter : ISGTypeConverter
 			return context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Colors")
 				?.GetMembers()
 				.OfType<IFieldSymbol>()
-				.Where(f => f.IsStatic && f.IsReadOnly && f.Type.ToFQDisplayString() == "global::Microsoft.Maui.Graphics.Color")
+				.Where(f => f.IsPublic() && f.IsStatic && f.IsReadOnly && f.Type.ToFQDisplayString() == "global::Microsoft.Maui.Graphics.Color")
 				.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
 		}
 	}
