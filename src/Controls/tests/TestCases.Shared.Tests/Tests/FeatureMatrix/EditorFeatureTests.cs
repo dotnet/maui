@@ -5,9 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Editor)]
-public class EditorFeatureTests : UITest
+public class EditorFeatureTests : _GalleryUITest
 {
 	public const string EditorFeatureMatrix = "Editor Feature Matrix";
+
+	public override string GalleryPageName => EditorFeatureMatrix;
 
 #if IOS
 	private const int CropBottomValue = 1550;
@@ -22,12 +24,6 @@ public class EditorFeatureTests : UITest
 	public EditorFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(EditorFeatureMatrix);
 	}
 
 	[Test, Order(0)]

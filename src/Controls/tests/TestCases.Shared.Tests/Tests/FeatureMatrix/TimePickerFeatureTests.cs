@@ -6,16 +6,13 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class TimePickerFeatureTests : UITest
+public class TimePickerFeatureTests : _GalleryUITest
 {
 	public const string TimePickerFeatureMatrix = "Time Picker Feature Matrix";
+	public override string GalleryPageName => TimePickerFeatureMatrix;
+
 	public TimePickerFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(TimePickerFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30837
