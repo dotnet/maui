@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue30536"
+             Title="Issue 30536 - PointerGestureRecognizer Multi-Window Test">
+    <VerticalStackLayout Spacing="20" Padding="20">
+        
+        <!-- Instructions -->
+        <Label Text="Test for PointerGestureRecognizer with Multiple Windows" 
+               FontSize="18" 
+               FontAttributes="Bold"/>
+        
+        <Label Text="1. Hover over the grid below - it should turn red&#x0a;2. Click 'Open Second Window'&#x0a;3. Minimize the second window&#x0a;4. Hover over the grid - it should NOT flicker/blink" 
+               AutomationId="InstructionsLabel"/>
+
+        <!-- Button to open second window -->
+        <Button Text="Open Second Window" 
+                AutomationId="OpenWindowButton" 
+                Clicked="OnOpenWindowClicked"/>
+
+        <!-- Button to close second window -->
+        <Button Text="Close Second Window" 
+                AutomationId="CloseWindowButton" 
+                Clicked="OnCloseWindowClicked"/>
+
+        <!-- Test Grid with PointerGestureRecognizer -->
+        <Grid HeightRequest="200" 
+              WidthRequest="300"
+              BackgroundColor="LightBlue"
+              AutomationId="TestGrid">
+            <Grid.GestureRecognizers>
+                <PointerGestureRecognizer PointerEntered="OnPointerEntered"
+                                        PointerExited="OnPointerExited"/>
+            </Grid.GestureRecognizers>
+            
+            <Label Text="Hover Test Area"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+        </Grid>
+
+        <!-- Status indicators -->
+        <Label x:Name="StatusLabel"
+               Text="Ready"
+               AutomationId="StatusLabel"
+               FontSize="14"/>
+               
+        <Label x:Name="EventCountLabel"
+               Text="Pointer Events: 0 Enter, 0 Exit"
+               AutomationId="EventCountLabel"
+               FontSize="12"/>
+               
+        <Label x:Name="WindowCountLabel"
+               Text="Windows Open: 1"
+               AutomationId="WindowCountLabel"
+               FontSize="12"/>
+
+    </VerticalStackLayout>
+</ContentPage>

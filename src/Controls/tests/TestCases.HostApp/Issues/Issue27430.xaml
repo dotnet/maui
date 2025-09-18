@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue27430"
+             Title="Issue 27430 - False positives of PointerGestureRecognizer">
+    <VerticalStackLayout Spacing="20" Padding="20">
+        
+        <!-- Instructions -->
+        <Label Text="False positives of PointerGestureRecognizer Test" 
+               FontSize="18" 
+               FontAttributes="Bold"/>
+        
+        <Label Text="1. Hover over the grid - it should turn red without blinking&#x0a;2. Click 'Open Second Window'&#x0a;3. Minimize the second window&#x0a;4. Hover over the grid - it should NOT blink red/blue rapidly" 
+               AutomationId="InstructionsLabel"/>
+
+        <!-- Button to open second window -->
+        <Button Text="Open Second Window" 
+                AutomationId="OpenWindowButton" 
+                Clicked="OnOpenWindowClicked"/>
+
+        <!-- Test Grid with PointerGestureRecognizer that changes color -->
+        <Grid HeightRequest="200" 
+              WidthRequest="300"
+              BackgroundColor="LightBlue"
+              AutomationId="TestGrid"
+              x:Name="TestGrid">
+            <Grid.GestureRecognizers>
+                <PointerGestureRecognizer PointerEntered="OnPointerEntered"
+                                        PointerExited="OnPointerExited"/>
+            </Grid.GestureRecognizers>
+            
+            <Label Text="Hover to change color"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+        </Grid>
+
+        <!-- Event tracking for detecting rapid fire events -->
+        <Label x:Name="EventCountLabel"
+               Text="Events: 0 Enter, 0 Exit"
+               AutomationId="EventCountLabel"
+               FontSize="12"/>
+               
+        <Label x:Name="LastEventLabel"
+               Text="Last Event: None"
+               AutomationId="LastEventLabel"
+               FontSize="12"/>
+
+    </VerticalStackLayout>
+</ContentPage>
