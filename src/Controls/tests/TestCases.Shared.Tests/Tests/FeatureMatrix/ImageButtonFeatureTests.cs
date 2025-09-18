@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ImageButtonFeatureTests : UITest
+public class ImageButtonFeatureTests : _GalleryUITest
 {
 	public const string ImageButtonFeatureMatrix = "ImageButton Feature Matrix";
 	public const string Options = "Options";
@@ -28,16 +28,11 @@ public class ImageButtonFeatureTests : UITest
 	public const string IsEnabledFalse = "IsEnabledFalse";
 	public const string PaddingEntry = "PaddingEntry";
 
+	public override string GalleryPageName => ImageButtonFeatureMatrix;
 
 	public ImageButtonFeatureTests(TestDevice device)
 	: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ImageButtonFeatureMatrix);
 	}
 
 	[Test, Order(1)]

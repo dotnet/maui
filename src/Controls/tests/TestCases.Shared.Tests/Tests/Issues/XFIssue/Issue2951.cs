@@ -24,14 +24,15 @@ public class Issue2951 : _IssuesUITest
 		var buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
 		buttonToClick.Click();
 
-		Assert.That(buttonToClick.GetText(), Is.EqualTo("B"));
+		var updatedButton = App.FindElements("btnChangeStatus").ElementAt(1);
+		Assert.That(updatedButton.GetText(), Is.EqualTo("B"));
 
-		buttonToClick.Click();
+		updatedButton.Click();
 		var updatedButtonCount = App.FindElements("btnChangeStatus").Count();
 		Assert.That(updatedButtonCount, Is.EqualTo(2));
 
-		buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
-		buttonToClick.Click();
+		var newSecondButton = App.FindElements("btnChangeStatus").ElementAt(1);
+		newSecondButton.Click();
 
 		// Use VerifyScreenshot to ensure the button background color has been updated properly
 		// This screenshot is captured to visually confirm that the background color has changed as expected
