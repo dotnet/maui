@@ -137,6 +137,19 @@ namespace Microsoft.Maui.Maps.Platform
 			if (elements == null)
 				return;
 
+			// Clear MapElementId on all map elements before removing native elements
+			// This prevents issues when the same elements are re-added later
+			if (Handler?.VirtualView?.Elements != null)
+			{
+				foreach (var element in Handler.VirtualView.Elements)
+				{
+					if (element is IMapElement mapElement)
+					{
+						mapElement.MapElementId = null;
+					}
+				}
+			}
+
 			foreach (IMKOverlay overlay in elements)
 			{
 				RemoveOverlay(overlay);
