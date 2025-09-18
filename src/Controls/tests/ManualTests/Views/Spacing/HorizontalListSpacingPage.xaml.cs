@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class HorizontalListSpacingPage : ContentPage
-    {
-        public HorizontalListSpacingPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class HorizontalListSpacingPage : ContentPage
+	{
+		public HorizontalListSpacingPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

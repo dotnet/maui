@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class HorizontalListPage : ContentPage
-    {
-        public HorizontalListPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class HorizontalListPage : ContentPage
+	{
+		public HorizontalListPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

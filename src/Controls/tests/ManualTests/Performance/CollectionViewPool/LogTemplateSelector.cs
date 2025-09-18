@@ -14,11 +14,11 @@ namespace PoolMathApp.Xaml
 
 		public LogTemplateSelector()
 		{
-				TestLogTemplate = new DataTemplate(typeof(TestLogTimelineView));
-				NoteLogTemplate = new DataTemplate(typeof(NoteLogTimelineView));
-				ChemicalLogTemplate = new DataTemplate(typeof(ChemicalLogTimelineView));
-				MaintenanceLogTemplate = new DataTemplate(typeof(MaintenanceLogTimelineView));
-				CostLogTemplate = new DataTemplate(typeof(CostLogTimelineView));
+			TestLogTemplate = new DataTemplate(typeof(TestLogTimelineView));
+			NoteLogTemplate = new DataTemplate(typeof(NoteLogTimelineView));
+			ChemicalLogTemplate = new DataTemplate(typeof(ChemicalLogTimelineView));
+			MaintenanceLogTemplate = new DataTemplate(typeof(MaintenanceLogTimelineView));
+			CostLogTemplate = new DataTemplate(typeof(CostLogTimelineView));
 		}
 
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)

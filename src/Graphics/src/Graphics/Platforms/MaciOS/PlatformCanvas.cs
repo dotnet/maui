@@ -718,8 +718,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void FillWithPattern(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
-			var baseColorspace = _getColorspace?.Invoke();
-			var colorspace = CGColorSpace.CreatePattern(baseColorspace);
+			var colorspace = CGColorSpace.CreatePattern(null);
 			_context.SetFillColorSpace(colorspace);
 
 			_fillPatternRect.X = 0;

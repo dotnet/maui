@@ -16,10 +16,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("entry");
 			Thread.Sleep(1000);
 #if ANDROID
-			if (App.IsKeyboardShown())
+			if (App.WaitForKeyboardToShow())
 				App.DismissKeyboard();
 #endif
+
+#if IOS
+			VerifyScreenshot(cropBottom: 1080);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 	}

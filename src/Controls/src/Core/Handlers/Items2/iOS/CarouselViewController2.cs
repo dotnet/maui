@@ -504,6 +504,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (!ItemsView.IsVisible)
+			{
+				// If the CarouselView is not visible we don't want to set the initial position
+				// since it will be set when the CarouselView becomes visible
+				return;
+			}
+
 			if (ItemsSource is null)
 			{
 				return;

@@ -2,12 +2,12 @@ using Microsoft.Maui.ManualTests.ViewModels;
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListBorderPage : ContentPage
-    {
-        public VerticalListBorderPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class VerticalListBorderPage : ContentPage
+	{
+		public VerticalListBorderPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

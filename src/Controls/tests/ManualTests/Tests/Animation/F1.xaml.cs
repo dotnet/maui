@@ -12,10 +12,10 @@ public partial class F1 : ContentPage
 	{
 		InitializeComponent();
 
-        Appearing += async (sender, args) =>
-        {
-            await Label1.FadeTo(1, 120000);
-            Label2.IsVisible = true;
-        };
-    }
+		Appearing += async (sender, args) =>
+		{
+			await Label1.FadeTo(1, 120000);
+			Label2.IsVisible = true;
+		};
+	}
 }

@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListSinglePreSelectionPage : ContentPage
-    {
-        public VerticalListSinglePreSelectionPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class VerticalListSinglePreSelectionPage : ContentPage
+	{
+		public VerticalListSinglePreSelectionPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

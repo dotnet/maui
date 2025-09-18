@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListSelectionColorPage : ContentPage
-    {
-        public VerticalListSelectionColorPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class VerticalListSelectionColorPage : ContentPage
+	{
+		public VerticalListSelectionColorPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

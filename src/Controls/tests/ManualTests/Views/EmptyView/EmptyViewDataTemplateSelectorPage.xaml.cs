@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class EmptyViewDataTemplateSelectorPage : ContentPage
-    {
-        public EmptyViewDataTemplateSelectorPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class EmptyViewDataTemplateSelectorPage : ContentPage
+	{
+		public EmptyViewDataTemplateSelectorPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }
