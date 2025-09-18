@@ -7,6 +7,7 @@ using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
+using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -216,5 +217,73 @@ internal static class GlobalWindowInsetListenerExtensions
 
         // Request fresh insets to be applied
         ViewCompat.RequestApplyInsets(view);
+    }
+
+    /// <summary>
+    /// Checks if a view intersects with system bars (status bar, navigation bar, or display cutouts).
+    /// </summary>
+    /// <param name="view">The view to check for system bar intersection</param>
+    /// <param name="insets">The window insets containing system bar information</param>
+    /// <returns>True if the view intersects with any system bar, false otherwise</returns>
+    public static bool IntersectsWithSystemBars(AView view, WindowInsetsCompat? insets)
+    {
+        if (view is null)
+        {
+            return false;
+        }
+
+        if (insets is null)
+        {
+            return false;
+        }
+
+        if (!insets.HasInsets)
+        {
+            return false;
+        }
+
+
+        // Check if view has been laid out yet
+        if (view.Width == 0 || view.Height == 0)
+        {
+            // View hasn't been laid out yet, assume intersection for safety
+            // This ensures safe area padding is applied during initial layout
+            return true;
+        }
+
+        var displayCutout = insets.DisplayCutout;
+
+        if (displayCutout is null)
+        {
+            return false;
+        }
+
+        var displayCutoutBoundingRect = displayCutout.BoundingRects;
+
+        if (displayCutoutBoundingRect is null || !displayCutoutBoundingRect.Any())
+        {
+            return false;
+        }
+
+        // Get view's position on screen
+        var viewLocation = new int[2];
+        view.GetLocationOnScreen(viewLocation);
+        var viewRect = new ARect(
+            viewLocation[0],
+            viewLocation[1],
+            viewLocation[0] + view.Width,
+            viewLocation[1] + view.Height
+        );
+
+
+        foreach (var rect in displayCutoutBoundingRect)
+        {
+            if (ARect.Intersects(viewRect, rect))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
