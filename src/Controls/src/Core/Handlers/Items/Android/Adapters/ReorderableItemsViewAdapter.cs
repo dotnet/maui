@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (itemsView.ItemsSource is IList list)
 			{
+				// Adjust positions to account for header offset in adapter vs data source
 				var fromPositionInSource = itemsSource.HasHeader ? fromPosition - 1 : fromPosition;
 				var toPositionInSource = itemsSource.HasHeader ? toPosition - 1 : toPosition;
 				var fromItem = list[fromPositionInSource];
