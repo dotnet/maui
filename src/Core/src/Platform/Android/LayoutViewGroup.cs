@@ -186,13 +186,24 @@ namespace Microsoft.Maui.Platform
 
 			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
 
-			// Apply all insets to content view group
-			SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
+			var intersectsWithSystemBars = GlobalWindowInsetListenerExtensions.IntersectsWithSystemBars(view, insets);
 
-			if (processedInsets.Top > 0 || processedInsets.Bottom > 0 || processedInsets.Left > 0 || processedInsets.Right > 0)
+			//if (intersectsWithSystemBars)
 			{
-				// Consume all insets since we handled them
-				return WindowInsetsCompat.Consumed;
+				var pixelsLeft = (int)_context.ToPixels(processedInsets.Left);
+				var pixelsTop = (int)_context.ToPixels(processedInsets.Top);
+				var pixelsRight = (int)_context.ToPixels(processedInsets.Right);
+				var pixelsBottom = (int)_context.ToPixels(processedInsets.Bottom);
+
+
+				// Apply all insets to content view group
+				SetPadding(pixelsLeft, pixelsTop, pixelsRight, pixelsBottom);
+
+				if (processedInsets.Top > 0 || processedInsets.Bottom > 0 || processedInsets.Left > 0 || processedInsets.Right > 0)
+				{
+					// Consume all insets since we handled them
+					return WindowInsetsCompat.Consumed;
+				}
 			}
 
 			return insets;
