@@ -408,7 +408,7 @@ internal static class LayoutFactory2
 	{
 		try
 		{
-			if (indexPath is null || collectionView is null)
+			if (indexPath is null || collectionView is null || collectionView.Handle == IntPtr.Zero || collectionView.Superview is null)
 			{
 				return false;
 			}
