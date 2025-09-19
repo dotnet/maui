@@ -7835,6 +7835,7 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.
 override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidDisappear(bool animated) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidLayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidLoad() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
