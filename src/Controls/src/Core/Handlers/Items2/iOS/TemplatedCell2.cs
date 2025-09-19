@@ -100,6 +100,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (!cached.IsZero)
 						{
 							_measuredSize = cached;
+							// If the platform childs measure has been invalidated, it's going to still want to
+							// participate in the measure lifecycle in order to update its internal book keeping.
+							virtualView.Measure(constraints.Width, cached.Height);
 						}
 						else
 						{
