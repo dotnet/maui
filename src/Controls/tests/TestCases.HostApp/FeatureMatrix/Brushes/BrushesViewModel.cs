@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 namespace Maui.Controls.Sample;
+
 public class BrushesViewModel : INotifyPropertyChanged
 {
 	private Brush brushTarget = new SolidColorBrush(Colors.Transparent);
@@ -32,7 +33,17 @@ public class BrushesViewModel : INotifyPropertyChanged
 	public ICommand ApplyAltSolidBrushCommand { get; }
 	public ICommand ApplyAltLinearBrushCommand { get; }
 	public ICommand ApplyAltRadialBrushCommand { get; }
+	public ICommand CompareBrushesCommand { get; }
+
+	private string selectedColorName1;
+	private string selectedColorName2;
+	private string compareResult;
+
+	public string SelectedColorName1 { get => selectedColorName1; set { if (selectedColorName1 == value) return; selectedColorName1 = value; OnPropertyChanged(); } }
+	public string SelectedColorName2 { get => selectedColorName2; set { if (selectedColorName2 == value) return; selectedColorName2 = value; OnPropertyChanged(); } }
+	public string CompareResult { get => compareResult; private set { if (compareResult == value) return; compareResult = value; OnPropertyChanged(); } }
 	public event PropertyChangedEventHandler PropertyChanged;
+
 	public Brush BrushTarget
 	{
 		get => brushTarget;
@@ -95,7 +106,7 @@ public class BrushesViewModel : INotifyPropertyChanged
 
 		ApplySolidBrushCommand = new Command(() =>
 		{
-			BrushTarget = BuildSolid(Colors.Red);
+			BrushTarget = BuildSolid(Colors.LightSalmon);
 		});
 
 		ApplyLinearGradientCommand = new Command(() =>
@@ -105,8 +116,8 @@ public class BrushesViewModel : INotifyPropertyChanged
 			BrushTarget = BuildLinear(
 				new GradientStopCollection
 				{
-					new GradientStop(Colors.Blue, 0.0f),
-					new GradientStop(Colors.Green, 1.0f)
+					new GradientStop(Colors.SkyBlue, 0.0f),
+					new GradientStop(Colors.LightGreen, 1.0f)
 				},
 				start,
 				end);
@@ -123,8 +134,8 @@ public class BrushesViewModel : INotifyPropertyChanged
 			BrushTarget = BuildRadial(
 				new GradientStopCollection
 				{
-					new GradientStop(Colors.Purple, 0.1f),
-					new GradientStop(Colors.Pink, 1.0f)
+					new GradientStop(Colors.MediumPurple, 0.1f),
+					new GradientStop(Colors.LightPink, 1.0f)
 				},
 				center,
 				radius);
@@ -136,45 +147,71 @@ public class BrushesViewModel : INotifyPropertyChanged
 		ApplyNullBrushCommand = new Command(() => BrushTarget = null);
 
 		ApplySolidShadowCommand = new Command(() =>
-		{
-			ShadowBrush = BuildShadow(BuildSolid(Colors.DarkGray));
-		});
+{
+	ShadowBrush = new Shadow
+	{
+		Brush = BuildSolid(Colors.DarkRed),
+		Radius = 40,
+		Opacity = 1.0f,
+		Offset = new Point(0, 6)
+	};
+});
 
 		ApplyLinearShadowCommand = new Command(() =>
 		{
 			var start = new Point(0, 0);
 			var end = new Point(1, 0);
-			ShadowBrush = BuildShadow(BuildLinear(
+
+			var linear = BuildLinear(
 				new GradientStopCollection
 				{
-					new GradientStop(Colors.Orange, 0.45f),
-					new GradientStop(Colors.Red, 0.55f)
+			new GradientStop(Colors.DarkOrange, 0.45f),
+			new GradientStop(Colors.DarkRed, 0.55f)
 				},
 				start,
-				end));
+				end);
+
+			ShadowBrush = new Shadow
+			{
+				Brush = linear,
+				Radius = 40,
+				Opacity = 1.0f,
+				Offset = new Point(0, 6)
+			};
+
 			LinearStartX = start.X;
 			LinearStartY = start.Y;
 			LinearEndX = end.X;
 			LinearEndY = end.Y;
 		});
 
+
 		ApplyRadialShadowCommand = new Command(() =>
-		{
-			var center = new Point(0.5, 0.5);
-			var radius = 0.5;
-			ShadowBrush = BuildShadow(BuildRadial(
-				new GradientStopCollection
+			{
+				var center = new Point(0.1, 0.5);
+				var radius = 1.0;
+
+				var stops = new GradientStopCollection
 				{
-					new GradientStop(new Color(0.2235f, 1.0f, 0.0784f), 0.0f),
-					new GradientStop(new Color(0.196f, 0.8039f, 0.196f), 0.55f),
-					new GradientStop(new Color(0.0f, 0.3922f, 0.0f), 1.0f)
-				},
-				center,
-				radius));
-			RadialCenterX = center.X;
-			RadialCenterY = center.Y;
-			RadialRadius = radius;
-		});
+				new GradientStop(Colors.Black.WithAlpha(1.0f), 0.0f),
+				new GradientStop(Colors.Black.WithAlpha(0.9f), 0.45f),
+				new GradientStop(Colors.Black.WithAlpha(0.85f), 1.0f)
+				};
+
+				var radial = BuildRadial(stops, center, radius);
+
+				ShadowBrush = new Shadow
+				{
+					Brush = radial,
+					Radius = 40,
+					Opacity = 1.0f,
+					Offset = new Point(0, 6)
+				};
+
+				RadialCenterX = center.X;
+				RadialCenterY = center.Y;
+				RadialRadius = radius;
+			});
 
 		ApplySolidStrokeCommand = new Command(() =>
 		{
@@ -200,7 +237,7 @@ public class BrushesViewModel : INotifyPropertyChanged
 
 		ApplyRadialStrokeCommand = new Command(() =>
 		{
-			var center = new Point(0.5, 0.5);
+			var center = new Point(0.1, 0.5);
 			var radius = 0.5;
 			StrokeBrush = BuildRadial(
 				new GradientStopCollection
@@ -218,7 +255,7 @@ public class BrushesViewModel : INotifyPropertyChanged
 		ApplyNullStrokeCommand = new Command(() => StrokeBrush = null);
 		ApplyAltSolidBrushCommand = new Command(() =>
 		{
-			BrushTarget = BuildSolid(Colors.CornflowerBlue);
+			BrushTarget = BuildSolid(Colors.LightSteelBlue);
 		});
 
 		ApplyAltLinearBrushCommand = new Command(() =>
@@ -228,9 +265,8 @@ public class BrushesViewModel : INotifyPropertyChanged
 			BrushTarget = BuildLinear(
 				new GradientStopCollection
 				{
-					new GradientStop(Colors.DarkBlue, 0.0f),
-					new GradientStop(Colors.DodgerBlue, 0.35f),
-					new GradientStop(Colors.LightSkyBlue, 0.7f),
+					new GradientStop(Colors.LightSkyBlue, 0.35f),
+					new GradientStop(Colors.SkyBlue, 0.7f),
 					new GradientStop(Colors.AliceBlue, 1.0f)
 				},
 				start,
@@ -248,15 +284,28 @@ public class BrushesViewModel : INotifyPropertyChanged
 			BrushTarget = BuildRadial(
 				new GradientStopCollection
 				{
-					new GradientStop(Colors.LightCyan, 0.0f),
-					new GradientStop(Colors.DeepSkyBlue, 0.5f),
-					new GradientStop(Colors.MidnightBlue, 1.0f)
+					new GradientStop(Colors.AliceBlue, 0.0f),
+					new GradientStop(Colors.LightSkyBlue, 0.5f),
+					new GradientStop(Colors.SkyBlue, 1.0f)
 				},
 				center,
 				radius);
 			RadialCenterX = center.X;
 			RadialCenterY = center.Y;
 			RadialRadius = radius;
+		});
+
+		CompareBrushesCommand = new Command(() =>
+		{
+			var brush1 = BuildSolid(ColorFromName(SelectedColorName1) ?? Colors.Transparent) as Brush;
+			var brush2 = BuildSolid(ColorFromName(SelectedColorName2) ?? Colors.Transparent) as Brush;
+			bool equal = AreBrushesEqual(brush1, brush2);
+			int hash1 = GetBrushHashCode(brush1);
+			int hash2 = GetBrushHashCode(brush2);
+			bool equalHash = hash1 == hash2;
+			CompareResult = equal && equalHash
+				? $"True"
+				: $"False";
 		});
 	}
 
@@ -282,11 +331,11 @@ public class BrushesViewModel : INotifyPropertyChanged
 
 		if (ShadowBrush?.Brush is LinearGradientBrush shlgb)
 		{
-			ShadowBrush = BuildShadow(BuildLinear(shlgb.GradientStops, new Point(LinearStartX, LinearStartY), new Point(LinearEndX, LinearEndY)));
+			ShadowBrush = RebuildShadow(BuildLinear(shlgb.GradientStops, new Point(LinearStartX, LinearStartY), new Point(LinearEndX, LinearEndY)));
 		}
 		else if (ShadowBrush?.Brush is RadialGradientBrush shrgb)
 		{
-			ShadowBrush = BuildShadow(BuildRadial(shrgb.GradientStops, new Point(RadialCenterX, RadialCenterY), RadialRadius));
+			ShadowBrush = RebuildShadow(BuildRadial(shrgb.GradientStops, new Point(RadialCenterX, RadialCenterY), RadialRadius));
 		}
 	}
 
@@ -317,13 +366,6 @@ public class BrushesViewModel : INotifyPropertyChanged
 			StrokeBrush = new SolidColorBrush(Colors.Transparent);
 			ShadowBrush = BuildShadow(new SolidColorBrush(Colors.Transparent));
 		}
-		else
-		{
-			if (StrokeBrush == null || Microsoft.Maui.Controls.Brush.IsNullOrEmpty(StrokeBrush))
-				StrokeBrush = BrushTarget;
-			if (ShadowBrush == null)
-				ShadowBrush = BuildShadow(new SolidColorBrush(Colors.Black));
-		}
 	}
 
 	SolidColorBrush BuildSolid(Color color) => new(color.WithAlpha((float)brushOpacity));
@@ -341,16 +383,118 @@ public class BrushesViewModel : INotifyPropertyChanged
 		var newStops = new GradientStopCollection();
 		foreach (var gs in stops)
 			newStops.Add(new GradientStop(gs.Color.WithAlpha((float)brushOpacity), gs.Offset));
-		return new RadialGradientBrush(newStops, center, (float)radius);
+		var r = Math.Clamp(radius, 0.0, 1.0);
+		return new RadialGradientBrush(newStops, center, (float)r);
 	}
 
 	Shadow BuildShadow(Brush source) => new Shadow
 	{
 		Brush = source,
-		Radius = 20,
+		Radius = 50,
 		Opacity = 0.8f,
 		Offset = new Point(10, 10)
 	};
+
+	Shadow RebuildShadow(Brush brush) =>
+		new Shadow
+		{
+			Brush = brush,
+			Radius = ShadowBrush?.Radius ?? 40,
+			Opacity = ShadowBrush?.Opacity ?? 1.0f,
+			Offset = ShadowBrush?.Offset ?? new Point(0, 6)
+		};
+
+	bool AreBrushesEqual(Brush a, Brush b)
+	{
+		if (ReferenceEquals(a, b))
+			return true;
+		if (a == null || b == null)
+			return false;
+		if (a.GetType() != b.GetType())
+			return false;
+
+		if (a is SolidColorBrush sa && b is SolidColorBrush sb)
+			return sa.Color == sb.Color;
+
+		if (a is LinearGradientBrush la && b is LinearGradientBrush lb)
+		{
+			if (!la.StartPoint.Equals(lb.StartPoint) || !la.EndPoint.Equals(lb.EndPoint))
+				return false;
+			var s1 = la.GradientStops;
+			var s2 = lb.GradientStops;
+			if (s1.Count != s2.Count)
+				return false;
+			for (int i = 0; i < s1.Count; i++)
+				if (!s1[i].Equals(s2[i]))
+					return false;
+			return true;
+		}
+
+		if (a is RadialGradientBrush ra && b is RadialGradientBrush rb)
+		{
+			if (!ra.Center.Equals(rb.Center))
+				return false;
+			if (Math.Abs(ra.Radius - rb.Radius) > 1e-6)
+				return false;
+			var s1 = ra.GradientStops;
+			var s2 = rb.GradientStops;
+			if (s1.Count != s2.Count)
+				return false;
+			for (int i = 0; i < s1.Count; i++)
+				if (!s1[i].Equals(s2[i]))
+					return false;
+			return true;
+		}
+
+		return a.Equals(b);
+	}
+
+	int GetBrushHashCode(Brush b)
+	{
+		if (b == null)
+			return 0;
+		unchecked
+		{
+			int hash = 17;
+			hash = hash * 31 + b.GetType().GetHashCode();
+			if (b is SolidColorBrush scb)
+				hash = hash * 31 + (scb.Color.GetHashCode());
+			else if (b is LinearGradientBrush lgb)
+			{
+				hash = hash * 31 + lgb.StartPoint.GetHashCode();
+				hash = hash * 31 + lgb.EndPoint.GetHashCode();
+				foreach (var gs in lgb.GradientStops)
+					hash = hash * 31 + (gs?.GetHashCode() ?? 0);
+			}
+			else if (b is RadialGradientBrush rgb)
+			{
+				hash = hash * 31 + rgb.Center.GetHashCode();
+				hash = hash * 31 + rgb.Radius.GetHashCode();
+				foreach (var gs in rgb.GradientStops)
+					hash = hash * 31 + (gs?.GetHashCode() ?? 0);
+			}
+			else
+				hash = hash * 31 + b.GetHashCode();
+			return hash;
+		}
+	}
+
+	Color ColorFromName(string name)
+	{
+		if (string.IsNullOrEmpty(name))
+			return Colors.Transparent;
+		switch (name.Trim().ToLowerInvariant())
+		{
+			case "red":
+				return Colors.Red;
+			case "green":
+				return Colors.Green;
+			case "blue":
+				return Colors.Blue;
+			default:
+				return Colors.Transparent;
+		}
+	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{

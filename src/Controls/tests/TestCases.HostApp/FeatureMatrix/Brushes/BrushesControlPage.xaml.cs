@@ -22,6 +22,14 @@ namespace Maui.Controls.Sample
 			BindingContext = _viewModel = viewModel;
 		}
 
+		private void OnCompareClicked(object sender, EventArgs e)
+		{
+			if (BindingContext is BrushesViewModel vm)
+			{
+				vm.CompareBrushesCommand?.Execute(null);
+			}
+		}
+
 		private async void OnOptionsClicked(object sender, EventArgs e)
 		{
 			BindingContext = _viewModel = new BrushesViewModel();
