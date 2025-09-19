@@ -100,8 +100,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (!cached.IsZero)
 						{
 							_measuredSize = cached;
-							// If the platform childs measure has been invalidated, it's going to still want to
-							// participate in the measure lifecycle in order to update its internal book keeping.
+							// Even when we have a cached measurement for the first item (due to ItemSizingStrategy.MeasureFirstItem),
+							// we still need to call Measure on the virtualView. This is because the iOS platform's layout system
+							// relies on each cell participating in the measure lifecycle to update its internal state and bookkeeping,
+							// such as invalidating layout caches or triggering layout events. Skipping this call can result in
+							// inconsistent layout behavior or stale measurement data, especially after an invalidation. This situation
+							// typically occurs when the CollectionView is using MeasureFirstItem sizing strategy and the platform
+							// expects every cell to go through the measure process, even if the size is reused.
 							virtualView.Measure(cached.Width, cached.Height);
 						}
 						else
