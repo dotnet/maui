@@ -58,6 +58,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		internal void UpdateSelectionMode()
+		{
+			// Update click listeners for all currently visible ViewHolders when SelectionMode changes
+			bool selectionEnabled = ItemsView.SelectionMode is not SelectionMode.None;
+			for (int i = 0; i < _currentViewHolders.Count; i++)
+			{
+				_currentViewHolders[i].UpdateClickListener(selectionEnabled);
+			}
+		}
+
 		internal void MarkPlatformSelection(object selectedItem)
 		{
 			if (selectedItem == null)
@@ -110,6 +120,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override bool IsSelectionEnabled(ViewGroup parent, int viewType) 
 		{
+			if (ItemsView == null)
+			{
+				return false;
+			}
 			// Disable click listeners when SelectionMode is None to prevent TalkBack from announcing items as clickable
 			return ItemsView.SelectionMode != SelectionMode.None;
 		}

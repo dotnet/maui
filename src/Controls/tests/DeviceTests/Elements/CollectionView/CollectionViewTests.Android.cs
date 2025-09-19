@@ -174,6 +174,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(hasClickListeners, "Items should not have click listeners when SelectionMode is None");
 		}
 
+		[Fact(DisplayName = "CollectionView SelectionMode changes at runtime")]
+		public void SelectionModeChangesAtRuntime()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.Single // Start with Single
+			};
+
+			var handler = CreateHandler<CollectionViewHandler>(collectionView);
+			var recyclerView = handler.PlatformView;
+
+			// Force layout to create view holders
+			recyclerView.Measure(
+				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost),
+				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost));
+			recyclerView.Layout(0, 0, 500, 500);
+
+			// Check first item's view holder
+			var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+			Assert.NotNull(viewHolder);
+
+			// With SelectionMode.Single, it should have a listener
+			Assert.True(viewHolder.ItemView.HasOnClickListeners, "Items should have click listeners when SelectionMode is Single");
+
+			// Now change the SelectionMode to None
+			collectionView.SelectionMode = SelectionMode.None;
+
+			// The listener should now be gone
+			Assert.False(viewHolder.ItemView.HasOnClickListeners, "Items should not have click listeners after changing SelectionMode to None");
+		}
+
 		class MockCollectionChangedNotifier : ICollectionChangedNotifier
 		{
 			public int InsertCount;
