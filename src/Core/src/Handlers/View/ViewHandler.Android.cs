@@ -257,18 +257,22 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
 			if (handler.MauiContext?.Context == null || handler.PlatformView is not PlatformView platformView)
+			{
 				return;
+			}
 
-			platformView.ResetDescendantsAndRequestInsets(handler.MauiContext.Context);
 			switch (platformView)
 			{
-				case Microsoft.Maui.Platform.ContentViewGroup cvg:
+				case ContentViewGroup cvg:
+					cvg.InvalidateWindowInsets();
 					cvg.MarkSafeAreaEdgeConfigurationChanged();
 					break;
-				case Microsoft.Maui.Platform.LayoutViewGroup lvg:
+				case LayoutViewGroup lvg:
+					lvg.InvalidateWindowInsets();
 					lvg.MarkSafeAreaEdgeConfigurationChanged();
 					break;
-				case Microsoft.Maui.Platform.MauiScrollView msv:
+				case MauiScrollView msv:
+					msv.InvalidateWindowInsets();
 					msv.MarkSafeAreaEdgeConfigurationChanged();
 					break;
 			}
