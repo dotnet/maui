@@ -1,4 +1,4 @@
-#if MACCATALYST // Focus propagated for IOS and mac only.
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS // Focus propagated for IOS and mac only. IOS does not have Tab key support.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,18 +23,9 @@ public class Issue28945 : _IssuesUITest
 	public void MauiViewShouldPropagateFocus()
 	{
 		App.WaitForElement("Issue28945_ContentView");
-		if (App is not AppiumApp app)
-		{
-			return;
-		}
-
-		// https://developer.apple.com/documentation/xctest/xcuikeyboardkey?language=objc
-		string[] keys = ["XCUIKeyboardKeyTab"]; // Tab Key
-
-		app.Driver.ExecuteScript("macos: keys", new Dictionary<string, object>
-		{
-			{ "keys", keys },
-		});
+		
+		// Send Tab key to trigger focus
+		App.SendTabKey();
 
 		// Verify that the content view is focused
 		var focusText = App.WaitForElement(statusLabelId).GetText();
