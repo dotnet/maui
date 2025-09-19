@@ -99,10 +99,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
-
-			// Apply processed safe area padding directly to the scroll view so that child content
-			// can layout edge-to-edge inside it without needing its own inset listener
-			SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
+			if (GlobalWindowInsetListenerExtensions.IntersectsWithSystemBars(view, insets))
+			{
+				// Apply processed safe area padding directly to the scroll view so that child content
+				// can layout edge-to-edge inside it without needing its own inset listener
+				SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
+			}
 
 			return WindowInsetsCompat.Consumed; // We handled them, prevent further propagation
 
