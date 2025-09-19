@@ -477,6 +477,7 @@ public class TabbedPageManager
 			child.IgnoresContainerArea = child is NavigationPage;
 	}
 
+	[Obsolete]
 	internal void UpdateOffscreenPageLimit()
 	{
 		_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();

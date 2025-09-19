@@ -9,6 +9,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using static Android.Content.Res.Resources;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
+using AAttribute = Android.Resource.Attribute;
 
 namespace Microsoft.Maui.Platform
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Platform
 					editText.SetHintTextColor(c);
 				}
 			}
-			else if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorHint, out var color))
+			else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorHint, out var color))
 			{
 				editText.SetHintTextColor(color);
 
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateTextColor(this SearchView searchView, ITextStyle entry)
 		{
-			if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorPrimary, out var color) &&
+			if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color) &&
 				searchView.GetFirstChildOfType<EditText>() is EditText editText)
 			{
 				if (entry.TextColor is null)
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Platform
 				{
 					if (searchBar.CancelButtonColor is not null)
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorPrimary, out var color))
+					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
 						drawable.SetColorFilter(color, FilterMode.SrcIn);
 				}
 			}
@@ -230,8 +231,8 @@ namespace Microsoft.Maui.Platform
 			if (searchView.Context?.Theme is not Theme theme)
 				return false;
 
-			int[] s_disabledState = [-Android.Resource.Attribute.StateEnabled];
-			int[] s_enabledState = [Android.Resource.Attribute.StateEnabled];
+			int[] s_disabledState = [-AAttribute.StateEnabled];
+			int[] s_enabledState = [AAttribute.StateEnabled];
 
 			using var ta = theme.ObtainStyledAttributes([attribute]);
 			var cs = ta.GetColorStateList(0);
