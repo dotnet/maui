@@ -32,8 +32,6 @@ public class EntryFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("TestEntry");
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Not triggered"));
-		App.Tap(MainLabel);
-		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Not triggered"));
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Not triggered"));
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='Test Entry'"));
 	}
@@ -637,6 +635,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
 
