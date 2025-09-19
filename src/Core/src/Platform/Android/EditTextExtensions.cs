@@ -223,6 +223,18 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateClearButtonColor(this EditText editText, Graphics.Color textColor, Drawable? clearButtonDrawable)
+		{
+			if (textColor is not null)
+			{
+				clearButtonDrawable?.SetColorFilter(textColor.ToPlatform(), FilterMode.SrcIn);
+			}
+			else
+			{
+				clearButtonDrawable?.ClearColorFilter();
+			}
+		}
+
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToPlatform();

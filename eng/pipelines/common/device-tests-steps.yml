@@ -171,7 +171,7 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: '$(TestResultsDirectory)/**/TestResults*(-*).xml'
+      testResultsFiles: '$(TestResultsDirectory)/**/*Results*(-*).xml'
       testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
 # Publish the job artifacts

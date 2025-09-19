@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource);
+			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource?.GetType());
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 	}

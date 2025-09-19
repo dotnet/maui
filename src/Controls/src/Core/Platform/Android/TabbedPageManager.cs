@@ -330,6 +330,162 @@ public class TabbedPageManager
 			{
 				SetupBottomNavigationView();
 				bottomNavigationView.SetOnItemSelectedListener(_listeners);
+				TabLayout tabs = _tabLayout;
+
+				NotifyDataSetChanged();
+				if (Element.Children.Count == 0)
+				{
+					tabs.RemoveAllTabs();
+					tabs.SetupWithViewPager(null);
+					_tabLayoutMediator?.Detach();
+					_tabLayoutMediator = null;
+				}
+				else
+				{
+					if (_tabLayoutMediator == null)
+					{
+						_tabLayoutMediator = new TabLayoutMediator(tabs, _viewPager, _listeners);
+						_tabLayoutMediator.Attach();
+					}
+
+					UpdateTabIcons();
+#pragma warning disable CS0618 // Type or member is obsolete
+					tabs.AddOnTabSelectedListener(_listeners);
+#pragma warning restore CS0618 // Type or member is obsolete
+				}
+
+				UpdateIgnoreContainerAreas();
+			}
+		}
+
+		void NotifyDataSetChanged()
+		{
+			var adapter = _viewPager?.Adapter;
+			if (adapter is not null)
+			{
+				var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
+
+				// If the modification to the backing collection has changed the position of the current item
+				// then we need to update the viewpager so it remains selected
+				if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Children.Count && currentIndex >= 0)
+					_viewPager.SetCurrentItem(currentIndex, false);
+
+				adapter.NotifyDataSetChanged();
+			}
+		}
+
+		void TabSelected(TabLayout.Tab tab)
+		{
+			if (Element == null)
+				return;
+
+			int selectedIndex = tab.Position;
+			if (Element.Children.Count > selectedIndex && selectedIndex >= 0)
+				Element.CurrentPage = Element.Children[selectedIndex];
+
+			SetIconColorFilter(Element.CurrentPage, tab, true);
+		}
+
+		void TeardownPage(Page page)
+		{
+			page.PropertyChanged -= OnPagePropertyChanged;
+		}
+
+		void SetupPage(Page page)
+		{
+			page.PropertyChanged += OnPagePropertyChanged;
+		}
+
+		void Reset()
+		{
+			foreach (var page in Element.Children)
+				SetupPage(page);
+		}
+
+		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
+				var page = (Page)sender;
+				var index = Element.Children.IndexOf(page);
+
+				if (IsBottomTabPlacement)
+				{
+					IMenuItem tab = _bottomNavigationView.Menu.GetItem(index);
+					tab.SetTitle(page.Title);
+				}
+				else
+				{
+					TabLayout.Tab tab = _tabLayout.GetTabAt(index);
+					tab.SetText(page.Title);
+				}
+			}
+			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+			{
+				var page = (Page)sender;
+				var index = Element.Children.IndexOf(page);
+				if (IsBottomTabPlacement)
+				{
+					var menuItem = _bottomNavigationView.Menu.GetItem(index);
+					page.IconImageSource.LoadImage(
+						_context,
+						result =>
+						{
+							menuItem.SetIcon(result.Value);
+						});
+					SetupBottomNavigationViewIconColor(page, menuItem, index);
+				}
+				else
+				{
+					TabLayout.Tab tab = _tabLayout.GetTabAt(index);
+					SetTabIconImageSource(page, tab);
+				}
+			}
+		}
+
+		internal void ScrollToCurrentPage()
+		{
+			if (Element.CurrentPage == null)
+				return;
+
+			// TODO MAUI
+			//if (Platform != null)
+			//{
+			//	Platform.NavAnimationInProgress = true;
+			//}
+
+			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), Element.OnThisPlatform().IsSmoothScrollEnabled());
+
+			//if (Platform != null)
+			//{
+			//	Platform.NavAnimationInProgress = false;
+			//}
+		}
+
+		void UpdateIgnoreContainerAreas()
+		{
+			foreach (IPageController child in Element.Children)
+				child.IgnoresContainerArea = child is NavigationPage;
+		}
+
+		internal void UpdateOffscreenPageLimit()
+		{
+			_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
+		}
+
+		internal void UpdateSwipePaging()
+		{
+			_viewPager.UserInputEnabled = Element.OnThisPlatform().IsSwipePagingEnabled();
+		}
+
+		List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
+		{
+			var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
+
+			for (int i = 0; i < Element.Children.Count; i++)
+			{
+				var item = Element.Children[i];
+				items.Add((item.Title, item.IconImageSource, item.IsEnabled));
 			}
 
 			UpdateIgnoreContainerAreas();
