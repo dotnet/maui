@@ -18,15 +18,17 @@ namespace Microsoft.Maui.Controls
 			[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type type,
 			Type[] supportedVisuals)
 		{
-			Type = type;
+			_type = type;
 			SupportedVisuals = supportedVisuals ?? new[] { typeof(VisualMarker.DefaultVisual) };
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='SupportedVisuals']/Docs/*" />
 		public Type[] SupportedVisuals { get; }
 
+		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)]
+		Type _type;
 		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='Type']/Docs/*" />
 		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)]
-		public Type Type { get; }
+		public Type Type => _type;
 	}
 }
