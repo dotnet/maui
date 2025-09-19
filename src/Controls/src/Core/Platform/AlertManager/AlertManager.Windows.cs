@@ -53,6 +53,11 @@ namespace Microsoft.Maui.Controls.Platform
 					VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto
 				};
 
+				if (PlatformView.Content is FrameworkElement windowContent)
+				{
+					alertDialog.RequestedTheme = windowContent.RequestedTheme;
+				}
+
 				if (arguments.FlowDirection == FlowDirection.RightToLeft)
 				{
 					alertDialog.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
@@ -109,6 +114,11 @@ namespace Microsoft.Maui.Controls.Platform
 					InputScope = arguments.Keyboard.ToInputScope(),
 					DefaultButton = ContentDialogButton.Primary
 				};
+
+				if (PlatformView.Content is FrameworkElement windowContent)
+				{
+					promptDialog.RequestedTheme = windowContent.RequestedTheme;
+				}
 
 				if (arguments.Cancel != null)
 					promptDialog.SecondaryButtonText = arguments.Cancel;

@@ -42,7 +42,13 @@ namespace Microsoft.Maui
 
 			var newLength = currLength + addLength - remLength;
 
-			return newLength <= textInput.MaxLength;
+			var shouldChange = newLength <= textInput.MaxLength;
+
+			// cut text when user is pasting a text longer that maxlength
+			if(!shouldChange && !string.IsNullOrWhiteSpace(replacementString) && replacementString!.Length >= textInput.MaxLength)
+				textInput.Text = replacementString!.Substring(0, textInput.MaxLength);
+
+			return shouldChange;
 		}
 #endif
 
