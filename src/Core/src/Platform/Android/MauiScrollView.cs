@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _defaultHorizontalScrollVisibility;
 		ScrollBarVisibility _defaultVerticalScrollVisibility;
 		ScrollBarVisibility _horizontalScrollVisibility;
+		bool _didSafeAreaEdgeConfigurationChange;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -99,13 +100,9 @@ namespace Microsoft.Maui.Platform
 
 			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
 
-			if (GlobalWindowInsetListenerExtensions.IntersectsWithSystemBars(view, insets))
-			{
-				// Apply processed safe area padding directly to the scroll view so that child content
-				// can layout edge-to-edge inside it without needing its own inset listener
-				SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
-
-			}
+			// Apply processed safe area padding directly to the scroll view so that child content
+			// can layout edge-to-edge inside it without needing its own inset listener
+			SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
 
 			return WindowInsetsCompat.Consumed; // We handled them, prevent further propagation
 
@@ -310,6 +307,21 @@ namespace Microsoft.Maui.Platform
 				hScrollViewHeight = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
 				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
+
+			if (_didSafeAreaEdgeConfigurationChange)
+			{
+				InvalidateWindowInsets();
+				_didSafeAreaEdgeConfigurationChange = false;
+			}
+		}
+
+		/// <summary>
+		/// Marks that the SafeAreaEdges configuration changed so we re-request window insets next layout.
+		/// </summary>
+		internal void MarkSafeAreaEdgeConfigurationChanged()
+		{
+			_didSafeAreaEdgeConfigurationChange = true;
+			RequestLayout();
 		}
 
 		public void ScrollTo(int x, int y, bool instant, Action finished)
@@ -521,7 +533,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 	}
-	
+
 	internal interface IScrollBarView
 	{
 		bool ScrollBarsInitialized { get; set; }
