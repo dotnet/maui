@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_didSSafeAreaEdgeConfigurationChange)
 			{
-				InvalidateWindowInsets();
+				ViewCompat.RequestApplyInsets(this);
 				_didSSafeAreaEdgeConfigurationChange = false;
 			}
 		}
