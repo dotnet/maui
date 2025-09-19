@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged(),
-			coerceValue: (b,  o) => o ?? b);
+			coerceValue: (b, o) => o ?? b);
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
