@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 				return _firstItemMeasuredSize;
 			}
-			return _firstItemMeasuredSize;
+			return CGSize.Empty;
 		}
 
 
