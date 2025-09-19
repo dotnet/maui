@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		//TODO Make this public in .NET10
 		internal static CommandMapper<CollectionView, CollectionViewHandler2> CommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
+			["ItemsLayoutProperties"] = MapItemsLayoutPropertyChanged
 		};
 	}
 

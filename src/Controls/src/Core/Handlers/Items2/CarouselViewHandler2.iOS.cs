@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		//TODO Make this public in .NET10
 		internal static CommandMapper<CarouselView, CarouselViewHandler2> CommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(Controls.CarouselView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
+			["ItemsLayoutProperties"] = MapItemsLayoutPropertyChanged
 		};
 	}
 
