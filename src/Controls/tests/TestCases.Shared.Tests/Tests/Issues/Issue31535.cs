@@ -12,12 +12,14 @@ public class Issue31535 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CarouselView)]
-    public void CarouselView2ShouldNotCrashOnRemoveLastItem()
+    public void CarouselView2ShouldNotCrashOnRemovingItems()
     {
-        App.WaitForElement("RemoveLastItemButton");
-        App.Tap("RemoveLastItemButton");
-        //remove last one remaining item
-        App.Tap("RemoveLastItemButton");
+        App.WaitForElement("AddSingleItemButton");
+        App.Tap("AddSingleItemButton");
+        //remove one single item, crash should not occured
+        App.Tap("RemoveSingleItemButton");
+        App.Tap("AddMultipleItemsButton");
+        App.Tap("RemoveAllItemsButton");
         App.WaitForElement("TestCarouselView");
     }
 }

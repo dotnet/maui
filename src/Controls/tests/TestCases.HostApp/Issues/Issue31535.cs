@@ -17,12 +17,8 @@ public class Issue31535 : ContentPage
     }
     public Issue31535()
     {
-        // Initialize items
-        Items = new ObservableCollection<string>
-        {
-            "Item 1",
-            "Item 2",
-        };
+        // Start with empty collection to test all scenarios
+        Items = new ObservableCollection<string>();
 
         // Create CarouselView
         var carousel = new CarouselView2
@@ -48,25 +44,86 @@ public class Issue31535 : ContentPage
             })
         };
 
-        // Create Button
-        var button = new Button
+        // Create Buttons for testing different scenarios
+        var addSingleItemButton = new Button
         {
-            AutomationId = "RemoveLastItemButton",
-            Text = "Remove last item"
+            AutomationId = "AddSingleItemButton",
+            Text = "Add Single Item"
         };
 
-        button.Clicked += (s, e) =>
+        var removeSingleItemButton = new Button
+        {
+            AutomationId = "RemoveSingleItemButton",
+            Text = "Remove Single Item"
+        };
+
+        var addMultipleItemsButton = new Button
+        {
+            AutomationId = "AddMultipleItemsButton",
+            Text = "Add Multiple Items"
+        };
+
+        var removeAllItemsButton = new Button
+        {
+            AutomationId = "RemoveAllItemsButton",
+            Text = "Remove All Items"
+        };
+
+        var itemCountLabel = new Label
+        {
+            Text = $"Items Count: {Items.Count}",
+            HorizontalOptions = LayoutOptions.Center
+        };
+
+        // Event handlers
+        addSingleItemButton.Clicked += (s, e) =>
+        {
+            Items.Add($"Item {Items.Count + 1}");
+            itemCountLabel.Text = $"Items Count: {Items.Count}";
+        };
+
+        removeSingleItemButton.Clicked += (s, e) =>
         {
             if (Items.Count > 0)
+            {
                 Items.RemoveAt(Items.Count - 1);
+                itemCountLabel.Text = $"Items Count: {Items.Count}";
+            }
+        };
+
+        addMultipleItemsButton.Clicked += (s, e) =>
+        {
+            var currentCount = Items.Count;
+            Items.Add($"Item {currentCount + 1}");
+            Items.Add($"Item {currentCount + 2}");
+            Items.Add($"Item {currentCount + 3}");
+            itemCountLabel.Text = $"Items Count: {Items.Count}";
+        };
+
+        removeAllItemsButton.Clicked += (s, e) =>
+        {
+            Items.Clear();
+            itemCountLabel.Text = $"Items Count: {Items.Count}";
         };
 
         Content = new VerticalStackLayout
         {
+            Spacing = 10,
+            Padding = 20,
             Children =
             {
+                new Label
+                {
+                    Text = "CarouselView2 Loop=false Test",
+                    FontSize = 18,
+                    HorizontalOptions = LayoutOptions.Center
+                },
+                itemCountLabel,
                 carousel,
-                button
+                addSingleItemButton,
+                removeSingleItemButton,
+                addMultipleItemsButton,
+                removeAllItemsButton
             }
         };
         BindingContext = this;
