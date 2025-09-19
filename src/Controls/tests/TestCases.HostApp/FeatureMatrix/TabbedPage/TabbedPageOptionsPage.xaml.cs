@@ -130,10 +130,10 @@ public partial class TabbedPageOptionsPage : ContentPage
 			};
 			image.SetBinding(Image.SourceProperty, "ImageUrl");
 
-			var page = new ContentPage
+			var contentPage = new ContentPage
 			{
 				AutomationId = "ContentPageOne",
-				IconImageSource = "coffee.png",
+				IconImageSource = "bank.png",
 				Content = new StackLayout
 				{
 					Padding = new Thickness(5, 25),
@@ -151,8 +151,8 @@ public partial class TabbedPageOptionsPage : ContentPage
 					}
 				}
 			};
-			page.SetBinding(ContentPage.TitleProperty, new Binding("Name"));
-			return page;
+			contentPage.SetBinding(ContentPage.TitleProperty, new Binding("Name"));
+			return contentPage;
 		});
 	}
 
@@ -163,8 +163,8 @@ public partial class TabbedPageOptionsPage : ContentPage
 			var image = new Image
 			{
 				HorizontalOptions = LayoutOptions.Center,
-				WidthRequest = 200,
-				HeightRequest = 200
+				WidthRequest = 140,
+				HeightRequest = 140
 			};
 			image.SetBinding(Image.SourceProperty, "ImageUrl");
 
@@ -178,13 +178,94 @@ public partial class TabbedPageOptionsPage : ContentPage
 			label.SetBinding(Label.AutomationIdProperty, "Id");
 			label.SetBinding(Label.TextProperty, "Name");
 
-			var page = new ContentPage
+			var addButton = new Button
+			{
+				AutomationId = "AddTabButton",
+				Text = "Add Tab",
+				BackgroundColor = Colors.LightGreen,
+				HeightRequest = 50
+			};
+			addButton.Clicked += (s, e) =>
+			{
+				if (((Button)s).BindingContext is TabbedPageItemSource item)
+				{
+					var count = _viewModel.ItemsSource.Count + 1;
+
+					_viewModel.ItemsSource.Add(new TabbedPageItemSource
+					{
+						Name = $"Tab {count}",
+						Id = $"Tab{count}Label",
+						ImageUrl = "dotnet_bot.png"
+					});
+				}
+			};
+
+			var removeButton = new Button
+			{
+				AutomationId = "RemoveTabButton",
+				Text = "Remove Tab",
+				BackgroundColor = Colors.Tomato,
+				HeightRequest = 50
+			};
+			removeButton.Clicked += (s, e) =>
+			{
+				if (((Button)s).BindingContext is TabbedPageItemSource item)
+				{
+					if (_viewModel.ItemsSource.Any())
+						_viewModel.ItemsSource.RemoveAt(_viewModel.ItemsSource.Count - 1);
+				}
+			};
+
+			var insertTabAtButton = new Button
+			{
+				AutomationId = "InsertTabAtButton",
+				Text = "Insert Tab",
+				BackgroundColor = Colors.LightBlue,
+				HeightRequest = 50
+			};
+			insertTabAtButton.Clicked += (s, e) =>
+			{
+				if (((Button)s).BindingContext is TabbedPageItemSource item)
+				{
+					var count = _viewModel.ItemsSource.Count + 1;
+
+					_viewModel.ItemsSource.Insert(1, new TabbedPageItemSource
+					{
+						Name = $"NEW TAB",
+						Id = "NewTabLabel",
+						ImageUrl = "dotnet_bot.png"
+					});
+				}
+			};
+
+			var verticalStack = new VerticalStackLayout
+			{
+				Spacing = 10,
+				HorizontalOptions = LayoutOptions.Center,
+				Children =
+				{
+					 new HorizontalStackLayout
+					{
+						Spacing = 1,
+						Children =
+						{
+							addButton,
+							removeButton
+						}
+					},
+					insertTabAtButton
+				}
+			};
+
+			var contentPage = new ContentPage
 			{
 				AutomationId = "ContentPageTwo",
 				IconImageSource = "fruitsicon.png",
-				Content = new StackLayout
+				Content = new VerticalStackLayout
 				{
 					Padding = new Thickness(5, 25),
+					Spacing = 40,
+					HorizontalOptions = LayoutOptions.Center,
 					Children =
 					{
 						new Label
@@ -194,19 +275,37 @@ public partial class TabbedPageOptionsPage : ContentPage
 							FontSize = 18,
 							HorizontalOptions = LayoutOptions.Center
 						},
+
 						new HorizontalStackLayout
 						{
+							VerticalOptions = LayoutOptions.Center,
+							Spacing=1,
 							Children =
 							{
 								image,
-								label
+								label,
+								verticalStack
 							}
 						}
 					}
 				}
 			};
-			page.SetBinding(ContentPage.TitleProperty, new Binding("Name"));
-			return page;
+			contentPage.SetBinding(ContentPage.TitleProperty, new Binding("Name"));
+
+			var changeIconButton = new Button
+			{
+				AutomationId = "ChangeIconButton",
+				Text = "Change Icon Image",
+				BackgroundColor = Colors.Orange,
+				HeightRequest = 50
+			};
+			changeIconButton.Clicked += (s, e) =>
+			{
+				contentPage.IconImageSource = "star_flyout.png";
+			};
+
+			verticalStack.Children.Add(changeIconButton);
+			return contentPage;
 		});
 	}
 

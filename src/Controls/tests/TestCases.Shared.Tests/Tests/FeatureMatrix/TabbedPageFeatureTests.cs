@@ -330,17 +330,114 @@ public class TabbedPageFeatureTests : UITest
 	{
 		App.WaitForElement("Tab1Label");
 		App.Tap("Tab1Label");
+#if IOS || MACCATALYST
 		App.WaitForElement("More");
 		App.Tap("More");
+#endif
 		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_1");
 		App.WaitForElement("TAB 6");
 		App.Tap("TAB 6");
 		App.WaitForElement("Tab6Label");
 		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
 	}
-#endif
 
 	[Test, Order(21)]
+	[Category(UITestCategories.TabbedPage)]
+	public void TabbedPage_AddTab_Verify()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TemplateTwoButton");
+		App.Tap("TemplateTwoButton");
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+		App.WaitForElement("AddTabButton");
+		App.Tap("AddTabButton");
+		App.WaitForElement("AddTabButton");
+		App.Tap("AddTabButton");
+		App.WaitForElement("Tab1Label");
+#if IOS || MACCATALYST
+		App.WaitForElement("More");
+		App.Tap("More");
+#endif
+		App.WaitForElement("TAB 7");
+		App.Tap("TAB 7");
+		App.WaitForElement("Tab7Label");
+		App.WaitForElement("TAB 7");
+		App.Tap("TAB 7");
+		App.WaitForElement("Tab7Label");
+	}
+#endif
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14572
+
+	[Test, Order(22)]
+	[Category(UITestCategories.TabbedPage)]
+	public void TabbedPage_RemoveTab_Verify()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TemplateTwoButton");
+		App.Tap("TemplateTwoButton");
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+#if ANDROID
+		for (int i = 0; i < 2; i++)
+		{
+			App.WaitForElement("RemoveTabButton");
+			App.Tap("RemoveTabButton");
+		}
+#else
+		for (int i = 0; i < 7; i++)
+		{
+			App.WaitForElement("RemoveTabButton");
+			App.Tap("RemoveTabButton");
+		}
+#endif
+		App.WaitForElement("Tab1Label");
+		App.WaitForNoElement("TAB 4");
+	}
+
+	[Test, Order(23)]
+	[Category(UITestCategories.TabbedPage)]
+	public void TabbedPage_InsertTabAt_Verify()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TemplateTwoButton");
+		App.Tap("TemplateTwoButton");
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+		App.WaitForElement("RemoveTabButton");
+		App.Tap("RemoveTabButton");
+		App.WaitForElement("RemoveTabButton");
+		App.Tap("RemoveTabButton");
+		App.WaitForElement("InsertTabAtButton");
+		App.Tap("InsertTabAtButton");
+		App.WaitForElement("NEW TAB");
+		App.Tap("NEW TAB");
+		App.WaitForElement("NewTabLabel");
+		VerifyScreenshot();
+	}
+#endif
+
+	[Test, Order(23)]
+	[Category(UITestCategories.TabbedPage)]
+	public void TabbedPage_IconImageSource_Change_Verify()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TemplateTwoButton");
+		App.Tap("TemplateTwoButton");
+		App.WaitForElement("ApplyButton");
+		App.Tap("ApplyButton");
+		App.WaitForElement("ChangeIconButton");
+		App.Tap("ChangeIconButton");
+		App.WaitForElement("Tab1Label");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(24)]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_IsEnabled_Verify()
 	{
