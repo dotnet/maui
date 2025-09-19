@@ -56,10 +56,10 @@
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet100_185PackageVersion>18.5.10849-net10-rc.2</MicrosoftMacCatalystSdknet100_185PackageVersion>
-    <MicrosoftmacOSSdknet100_155PackageVersion>15.5.10849-net10-rc.2</MicrosoftmacOSSdknet100_155PackageVersion>
-    <MicrosoftiOSSdknet100_185PackageVersion>18.5.10849-net10-rc.2</MicrosoftiOSSdknet100_185PackageVersion>
-    <MicrosofttvOSSdknet100_185PackageVersion>18.5.10849-net10-rc.2</MicrosofttvOSSdknet100_185PackageVersion>
+    <MicrosoftMacCatalystSdknet100_185PackageVersion>18.5.10892-net10-rc.2</MicrosoftMacCatalystSdknet100_185PackageVersion>
+    <MicrosoftmacOSSdknet100_155PackageVersion>15.5.10892-net10-rc.2</MicrosoftmacOSSdknet100_155PackageVersion>
+    <MicrosoftiOSSdknet100_185PackageVersion>18.5.10892-net10-rc.2</MicrosoftiOSSdknet100_185PackageVersion>
+    <MicrosofttvOSSdknet100_185PackageVersion>18.5.10892-net10-rc.2</MicrosofttvOSSdknet100_185PackageVersion>
     <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
     <MicrosoftMacCatalystSdknet90_185PackageVersion>18.5.9227</MicrosoftMacCatalystSdknet90_185PackageVersion>
     <MicrosoftmacOSSdknet90_155PackageVersion>15.5.9227</MicrosoftmacOSSdknet90_155PackageVersion>
@@ -209,7 +209,7 @@
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>10.0.100-rc.1</DotNetMaciOSManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_185PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet100_155PackageVersion)</MicrosoftmacOSSdkPackageVersion>
