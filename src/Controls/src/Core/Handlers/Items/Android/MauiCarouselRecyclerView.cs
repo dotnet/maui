@@ -562,6 +562,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ScrollToItemPosition(int position, bool shouldAnimate)
 		{
+			if (position < 0 || position >= (ItemsViewAdapter?.ItemsSource?.Count ?? 0))
+				return;
+
 			// Disable animation during collection changes to prevent cascading scroll events
 			var animate = shouldAnimate && !_isInternalPositionUpdate;
 			ItemsView.ScrollTo(position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);

@@ -91,7 +91,7 @@ public class Issue29529 : ContentPage
 
 		var insertButton = new Button
 		{
-			Text = "Insert item at index 0",
+			Text = "Insert item at index 6",
 			AutomationId = "InsertButton",
 			Margin = new Thickness(20),
 		};
