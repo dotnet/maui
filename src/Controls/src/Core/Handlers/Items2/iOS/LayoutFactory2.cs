@@ -343,7 +343,7 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
+				var page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
