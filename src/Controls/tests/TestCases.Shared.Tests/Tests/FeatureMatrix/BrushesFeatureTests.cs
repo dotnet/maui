@@ -351,6 +351,9 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("BackgroundSolidColor");
 		App.WaitForElement("ShadowSolidColor");
 		App.Tap("ShadowSolidColor");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Brushes Control Test");
 		VerifyBrushesScreenshot();
 	}
 
