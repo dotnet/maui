@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
+		bool _didSSafeAreaEdgeConfigurationChange;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
@@ -137,6 +138,23 @@ namespace Microsoft.Maui.Platform
 				Math.Max(0, destination.Height - paddingTop - paddingBottom));
 
 			CrossPlatformArrange(destination);
+
+			if (_didSSafeAreaEdgeConfigurationChange)
+			{
+				InvalidateWindowInsets();
+				_didSSafeAreaEdgeConfigurationChange = false;
+			}
+		}
+
+		/// <summary>
+		/// Marks that the SafeAreaEdges configuration for this view (or its associated virtual view)
+		/// has changed and that window insets should be re-applied on the next layout pass.
+		/// </summary>
+		internal void MarkSafeAreaEdgeConfigurationChanged()
+		{
+			_didSSafeAreaEdgeConfigurationChange = true;
+			// Ensure a layout pass so that OnLayout will trigger InvalidateWindowInsets
+			RequestLayout();
 		}
 
 		internal IBorderStroke? Clip
@@ -215,25 +233,21 @@ namespace Microsoft.Maui.Platform
 
 			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
 
-			var intersectsWithSystemBars = GlobalWindowInsetListenerExtensions.IntersectsWithSystemBars(view, insets);
+			var pixelLeft = (int)_context.ToPixels(processedInsets.Left);
+			var pixelTop = (int)_context.ToPixels(processedInsets.Top);
+			var pixelRight = (int)_context.ToPixels(processedInsets.Right);
+			var pixelBottom = (int)_context.ToPixels(processedInsets.Bottom);
 
-			//if (intersectsWithSystemBars)
+
+			// Apply all insets to content view group
+			SetPadding(pixelLeft, pixelTop, pixelRight, pixelBottom);
+
+			if (processedInsets.Top > 0 || processedInsets.Bottom > 0 || processedInsets.Left > 0 || processedInsets.Right > 0)
 			{
-				var pixelLeft = (int)_context.ToPixels(processedInsets.Left);
-				var pixelTop = (int)_context.ToPixels(processedInsets.Top);
-				var pixelRight = (int)_context.ToPixels(processedInsets.Right);
-				var pixelBottom = (int)_context.ToPixels(processedInsets.Bottom);
-
-
-				// Apply all insets to content view group
-				SetPadding(pixelLeft, pixelTop, pixelRight, pixelBottom);
-
-				if (processedInsets.Top > 0 || processedInsets.Bottom > 0 || processedInsets.Left > 0 || processedInsets.Right > 0)
-				{
-					// Consume all insets since we handled them
-					return WindowInsetsCompat.Consumed;
-				}
+				// Consume all insets since we handled them
+				return WindowInsetsCompat.Consumed;
 			}
+
 
 			return insets;
 		}
