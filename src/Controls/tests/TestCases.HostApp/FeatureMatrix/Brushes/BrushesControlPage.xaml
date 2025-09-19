@@ -7,27 +7,56 @@
              x:DataType="local:BrushesViewModel">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
-                Clicked="OnOptionsClicked"/>
+                     Clicked="OnOptionsClicked"/>
     </ContentPage.ToolbarItems>
-    <StackLayout Padding="20"
-            Spacing="15">
-        <Label Text="Brushes Control Test"
-                FontSize="20"
-                HorizontalOptions="Center"/>
+    <VerticalStackLayout Padding="20"
+                         Spacing="15">
+        <StackLayout>
+            <Label Text="Brushes Control Test"
+                   FontSize="20"
+                   HorizontalOptions="Center"/>
 
-        <!-- Target control -->
-        <Border
-            WidthRequest="300"
-            HeightRequest="300"
-            StrokeThickness="20"
-            Stroke="{Binding StrokeBrush}"
-            Background="{Binding BrushTarget}"
-            Opacity="{Binding BrushOpacity}"
-            StrokeShape="RoundRectangle 30"
-            Shadow="{Binding ShadowBrush}">
-            <Label Text="Sample"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"/>
-        </Border>
-    </StackLayout>
+            <Border
+                WidthRequest="300"
+                HeightRequest="300"
+                StrokeThickness="30"
+                Stroke="{Binding StrokeBrush}"
+                Background="{Binding BrushTarget}"
+                Opacity="{Binding BrushOpacity}"
+                StrokeShape="RoundRectangle 30"
+                Shadow="{Binding ShadowBrush}">
+                <Label Text="Sample"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+            </Border>
+        </StackLayout>
+        <BoxView HeightRequest="150"/>
+        <StackLayout>
+            <HorizontalStackLayout Spacing="10"
+                                   VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                <Label Text="Color 1:"
+                       VerticalOptions="Center"/>
+                <Label Text="{Binding SelectedColorName1}"
+                       VerticalOptions="Center"
+                       AutomationId="Color1"/>
+                <Label Text="Color 2:"
+                       VerticalOptions="Center"/>
+                <Label Text="{Binding SelectedColorName2}"
+                       VerticalOptions="Center"
+                       AutomationId="Color2"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="10"
+                                   VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                <Label Text="Result:"
+                       VerticalOptions="Center"/>
+                <Label Text="{Binding CompareResult}"
+                       VerticalOptions="Center"
+                       AutomationId="CompareResultLabel"/>
+            </HorizontalStackLayout>
+            <Button Text="Compare Brushes"
+                        Clicked="OnCompareClicked"/>
+        </StackLayout>
+    </VerticalStackLayout>
 </ContentPage>

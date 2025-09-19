@@ -43,6 +43,30 @@ namespace Maui.Controls.Sample
 			}
 		}
 
+		public void OnColor1Changed(object sender, CheckedChangedEventArgs e)
+		{
+			if (!e.Value)
+				return;
+			if (BindingContext is not BrushesViewModel vm)
+				return;
+			if (sender is RadioButton rb && rb.Content is string color)
+			{
+				vm.SelectedColorName1 = color;
+			}
+		}
+
+		public void OnColor2Changed(object sender, CheckedChangedEventArgs e)
+		{
+			if (!e.Value)
+				return;
+			if (BindingContext is not BrushesViewModel vm)
+				return;
+			if (sender is RadioButton rb && rb.Content is string color)
+			{
+				vm.SelectedColorName2 = color;
+			}
+		}
+
 		void OnShadowTypeChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (!e.Value)

@@ -12,10 +12,10 @@
                            x:Name="ApplyToolbarItem"
                            AutomationId="ApplyToolbarItem"/>
        </ContentPage.ToolbarItems>
-       <StackLayout Padding="2"
-                    Spacing="1"
-                    x:Name="RootLayout"
-                    AutomationId="RootLayout">
+       <VerticalStackLayout Padding="2"
+                            Spacing="1"
+                            x:Name="RootLayout"
+                            AutomationId="RootLayout">
               <Label Text="Background Brush Type:"
                      x:Name="BackgroundBrushTypeLabel"
                      AutomationId="BackgroundBrushTypeLabel"/>
@@ -110,8 +110,8 @@
                             AutomationId="OpacityLabel"
                             VerticalOptions="Center"/>
                      <Entry Text="{Binding BrushOpacity, Mode=TwoWay}"
-                                   x:Name="OpacityEntry"
-                                   AutomationId="OpacityEntry"/>
+                            x:Name="OpacityEntry"
+                            AutomationId="OpacityEntry"/>
               </HorizontalStackLayout>
 
               <Label Text="Alternate Background Variants:"
@@ -135,76 +135,108 @@
               </HorizontalStackLayout>
 
               <Label Text="Linear Start (X,Y)"
-                            x:Name="LinearStartLabel"
-                            AutomationId="LinearStartLabel"/>
+                     x:Name="LinearStartLabel"
+                     AutomationId="LinearStartLabel"/>
               <HorizontalStackLayout Spacing="10">
                      <HorizontalStackLayout>
                             <Label Text="X"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding LinearStartX, Mode=TwoWay}"
-                                          x:Name="LinearStartXEntry"
-                                          AutomationId="LinearStartXEntry"/>
+                                   x:Name="LinearStartXEntry"
+                                   AutomationId="LinearStartXEntry"/>
                      </HorizontalStackLayout>
                      <HorizontalStackLayout>
                             <Label Text="Y"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding LinearStartY, Mode=TwoWay}"
-                                          x:Name="LinearStartYEntry"
-                                          AutomationId="LinearStartYEntry"/>
+                                   x:Name="LinearStartYEntry"
+                                   AutomationId="LinearStartYEntry"/>
                      </HorizontalStackLayout>
               </HorizontalStackLayout>
               <Label Text="Linear End (X,Y)"
-                            x:Name="LinearEndLabel"
-                            AutomationId="LinearEndLabel"/>
+                     x:Name="LinearEndLabel"
+                     AutomationId="LinearEndLabel"/>
               <HorizontalStackLayout Spacing="10">
                      <HorizontalStackLayout>
                             <Label Text="X"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding LinearEndX, Mode=TwoWay}"
-                                          x:Name="LinearEndXEntry"
-                                          AutomationId="LinearEndXEntry"/>
+                                   x:Name="LinearEndXEntry"
+                                   AutomationId="LinearEndXEntry"/>
                      </HorizontalStackLayout>
                      <HorizontalStackLayout>
                             <Label Text="Y"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding LinearEndY, Mode=TwoWay}"
-                                          x:Name="LinearEndYEntry"
-                                          AutomationId="LinearEndYEntry"/>
+                                   x:Name="LinearEndYEntry"
+                                   AutomationId="LinearEndYEntry"/>
                      </HorizontalStackLayout>
               </HorizontalStackLayout>
 
               <Label Text="Radial Center (X,Y) and Radius"
-                            x:Name="RadialLabel"
-                            AutomationId="RadialLabel"/>
+                     x:Name="RadialLabel"
+                     AutomationId="RadialLabel"/>
               <HorizontalStackLayout Spacing="10">
                      <HorizontalStackLayout>
                             <Label Text="Center X"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding RadialCenterX, Mode=TwoWay}"
-                                          x:Name="RadialCenterXEntry"
-                                          AutomationId="RadialCenterXEntry"/>
+                                   x:Name="RadialCenterXEntry"
+                                   AutomationId="RadialCenterXEntry"/>
                      </HorizontalStackLayout>
                      <HorizontalStackLayout>
                             <Label Text="Center Y"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding RadialCenterY, Mode=TwoWay}"
-                                          x:Name="RadialCenterYEntry"
-                                          AutomationId="RadialCenterYEntry"/>
+                                   x:Name="RadialCenterYEntry"
+                                   AutomationId="RadialCenterYEntry"/>
                      </HorizontalStackLayout>
                      <HorizontalStackLayout>
                             <Label Text="Radius"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center"/>
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                             <Entry Text="{Binding RadialRadius, Mode=TwoWay}"
-                                          x:Name="RadialRadiusEntry"
-                                          AutomationId="RadialRadiusEntry"/>
+                                   x:Name="RadialRadiusEntry"
+                                   AutomationId="RadialRadiusEntry"/>
                      </HorizontalStackLayout>
               </HorizontalStackLayout>
-       </StackLayout>
+              <!-- Color 1 RadioButton Group -->
+              <Label Text="Color 1"/>
+              <HorizontalStackLayout>
+                     <RadioButton GroupName="Color1Group"
+                                  Content="Red"
+                                  CheckedChanged="OnColor1Changed"
+                                  AutomationId="Color1Red"/>
+                     <RadioButton GroupName="Color1Group"
+                                  Content="Green"
+                                  CheckedChanged="OnColor1Changed"
+                                  AutomationId="Color1Green"/>
+                     <RadioButton GroupName="Color1Group"
+                                  Content="Blue"
+                                  CheckedChanged="OnColor1Changed"
+                                  AutomationId="Color1Blue"/>
+              </HorizontalStackLayout>
+              <!-- Color 2 RadioButton Group -->
+              <Label Text="Color 2"/>
+              <HorizontalStackLayout>
+                     <RadioButton GroupName="Color2Group"
+                                  Content="Red"
+                                  CheckedChanged="OnColor2Changed"
+                                  AutomationId="Color2Red"/>
+                     <RadioButton GroupName="Color2Group"
+                                  Content="Green"
+                                  CheckedChanged="OnColor2Changed"
+                                  AutomationId="Color2Green"/>
+                     <RadioButton GroupName="Color2Group"
+                                  Content="Blue"
+                                  CheckedChanged="OnColor2Changed"
+                                  AutomationId="Color2Blue"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
 </ContentPage>
