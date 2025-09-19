@@ -14,14 +14,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _isSelected;
 		Drawable _selectedDrawable;
 		Drawable _selectableItemDrawable;
-		readonly bool _isSelectionEnabled;
+		bool _isSelectionEnabled;
 
 		protected SelectableViewHolder(global::Android.Views.View itemView, bool isSelectionEnabled = true) : base(itemView)
 		{
-			if (isSelectionEnabled)
-				itemView.SetOnClickListener(this);
+			UpdateClickListener(isSelectionEnabled);
+		}
 
-			_isSelectionEnabled = isSelectionEnabled;
+		internal void UpdateClickListener(bool enableSelection)
+		{
+			_isSelectionEnabled = enableSelection;
+
+			if (enableSelection && !ItemView.HasOnClickListeners)
+			{
+				ItemView.SetOnClickListener(this);
+			}
+			else
+			{
+				ItemView.SetOnClickListener(null);
+			}
+
+			ItemView.Clickable = enableSelection;
 		}
 
 		public bool IsSelected

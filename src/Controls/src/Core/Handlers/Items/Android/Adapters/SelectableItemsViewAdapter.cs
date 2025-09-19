@@ -149,6 +149,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override bool IsSelectionEnabled(ViewGroup parent, int viewType) 
 		{
+			if (ItemsView == null)
+			{
+				return false;
+			}
 			// Disable click listeners when SelectionMode is None to prevent TalkBack from announcing items as clickable
 			return ItemsView.SelectionMode != SelectionMode.None;
 		}
