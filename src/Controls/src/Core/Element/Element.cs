@@ -518,8 +518,27 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
-		/// <returns>The element that has the specified name.</returns>
+		/// <returns>The element that has the specified name, or <see langword="null"/> if no element with the specified name is found.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
+		/// <remarks>
+		/// <para>
+		/// This method searches for named elements within the current namescope. The search scope is determined by
+		/// traversing up the visual tree from the current element until a namescope is found. Typically, each
+		/// page, content view, or data template defines its own namescope.
+		/// </para>
+		/// <para>
+		/// The search is limited to elements that have been registered in the same namescope, which includes:
+		/// </para>
+		/// <list type="bullet">
+		/// <item><description>Elements with x:Name attributes defined in XAML within the same namescope</description></item>
+		/// <item><description>Elements manually registered using <see cref="INameScope.RegisterName(string, object)"/></description></item>
+		/// <item><description>Child elements and their descendants within the same namescope boundary</description></item>
+		/// </list>
+		/// <para>
+		/// Elements in different namescopes (such as different pages or data templates) are not accessible
+		/// from each other through this method.
+		/// </para>
+		/// </remarks>
 		public object FindByName(string name)
 		{
 			if (!RuntimeFeature.AreNamescopesSupported)

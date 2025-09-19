@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0612 // Type or member is obsolete
 			_systemResources = new Lazy<IResourceDictionary?>(() =>
 			{
-				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
+				var systemResources = DependencyService.Get<ISystemResourcesProvider>()?.GetSystemResources();
 				if (systemResources is not null)
 				{
 					systemResources.ValuesChanged += OnParentResourcesChanged;

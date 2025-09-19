@@ -160,29 +160,27 @@ namespace Microsoft.Maui.DeviceTests
 			var labels = new List<WeakReference>();
 			VerticalCell cell = null;
 
+			var bindingContext = "foo";
+			var collectionView = new MyUserControl
 			{
-				var bindingContext = "foo";
-				var collectionView = new MyUserControl
-				{
-					Labels = labels
-				};
-				collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
+				Labels = labels
+			};
+			collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
 
-				var handler = await CreateHandlerAsync(collectionView);
+			var handler = await CreateHandlerAsync(collectionView);
 
-				await InvokeOnMainThreadAsync(() =>
-				{
-					cell = new VerticalCell(CGRect.Empty);
-					cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-				});
+			await InvokeOnMainThreadAsync(() =>
+			{
+				cell = new VerticalCell(CGRect.Empty);
+				cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
+			});
 
-				Assert.NotNull(cell);
-			}
+			Assert.NotNull(cell);
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
-			await AssertionExtensions.WaitForGC(labels.ToArray());
+			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
 		}
 

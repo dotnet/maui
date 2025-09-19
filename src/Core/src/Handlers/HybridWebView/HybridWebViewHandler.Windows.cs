@@ -100,6 +100,12 @@ namespace Microsoft.Maui.Handlers
 			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
+		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
+		{
+			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
+			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
+		}
+
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			var url = eventArgs.Request.Uri;
