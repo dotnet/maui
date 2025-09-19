@@ -11,8 +11,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
-		readonly ItemsLayout _itemsLayout;
-		bool _disposed;
+
+		readonly WeakReference<ItemsLayout> _itemsLayout;
+
+		ItemsLayout ItemsLayout
+		{
+			get
+			{
+				_itemsLayout.TryGetTarget(out var itemsLayout);
+				return itemsLayout;
+			}
+			set
+			{
+				_itemsLayout.SetTarget(value);
+			}
+		}
+
 		bool _adjustContentOffset;
 		CGSize _adjustmentSize0;
 		CGSize _adjustmentSize1;
@@ -45,8 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemSizingStrategy = itemSizingStrategy;
 
-			_itemsLayout = itemsLayout;
-			_itemsLayout.PropertyChanged += LayoutOnPropertyChanged;
+			_itemsLayout = new(itemsLayout);
 
 			var scrollDirection = itemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
 				? UICollectionViewScrollDirection.Horizontal
@@ -70,38 +83,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool FlipsHorizontallyInOppositeLayoutDirection => true;
 
-		protected override void Dispose(bool disposing)
-		{
-			if (_disposed)
-			{
-				return;
-			}
-
-			_disposed = true;
-
-			if (disposing)
-			{
-				if (_itemsLayout != null)
-				{
-					_itemsLayout.PropertyChanged -= LayoutOnPropertyChanged;
-				}
-			}
-
-			base.Dispose(disposing);
-		}
-
-		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
-		{
-			HandlePropertyChanged(propertyChanged);
-		}
-
+		//TODO: Remove this in .NET 10
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
-				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
-			{
-				UpdateItemSpacing();
-			}
+
 		}
 
 		internal virtual bool UpdateConstraints(CGSize size, bool forceUpdate = false)
@@ -141,7 +126,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return UIEdgeInsets.Zero;
 			}
 
-			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			if (ItemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
@@ -150,7 +135,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing), 0);
 			}
-			else if (_itemsLayout is LinearItemsLayout listViewLayout)
+			else if (ItemsLayout is LinearItemsLayout listViewLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
@@ -174,12 +159,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
-			if (_itemsLayout is LinearItemsLayout listViewLayout)
+			if (ItemsLayout is LinearItemsLayout listViewLayout)
 			{
 				return (nfloat)listViewLayout.ItemSpacing;
 			}
 
-			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			if (ItemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
@@ -301,7 +286,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
-			var snapPointsType = _itemsLayout.SnapPointsType;
+			var itemsLayout = ItemsLayout;
+			var snapPointsType = itemsLayout.SnapPointsType;
 
 			if (snapPointsType == SnapPointsType.None)
 			{
@@ -309,7 +295,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.TargetContentOffset(proposedContentOffset, scrollingVelocity);
 			}
 
-			var alignment = _itemsLayout.SnapPointsAlignment;
+			var alignment = itemsLayout.SnapPointsAlignment;
 
 			if (snapPointsType == SnapPointsType.MandatorySingle)
 			{
@@ -384,7 +370,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Figure out the step size when jumping to the "next" element 
 			var span = 1;
-			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			if (ItemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				span = gridItemsLayout.Span;
 			}
@@ -398,7 +384,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateItemSpacing()
 		{
-			if (_itemsLayout == null)
+			if (ItemsLayout == null)
 			{
 				return;
 			}
@@ -498,7 +484,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ForceScrollToLastItem(CollectionView, _itemsLayout);
+				ForceScrollToLastItem(CollectionView, ItemsLayout);
 			}
 		}
 

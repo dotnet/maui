@@ -88,5 +88,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return size;
 		}
+
+		static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		{
+
+		}
 	}
 }
