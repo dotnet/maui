@@ -188,3 +188,116 @@ These tests can be run using the Test Explorer in VS, or from the command line w
 ```bash
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
+
+## Running Device Tests on Helix
+
+.NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
+
+### Overview
+
+Device tests can be run on the following platforms via Helix:
+
+
+The device test projects include:
+- `Controls.DeviceTests` - UI control tests
+- `Core.DeviceTests` - Core framework tests  
+- `Graphics.DeviceTests` - Graphics and drawing tests
+- `Essentials.DeviceTests` - Platform API tests
+- `MauiBlazorWebView.DeviceTests` - Blazor WebView tests
+
+
+### Available Helix Queues
+
+Check available queues at [helix.dot.net](https://helix.dot.net). The current configuration uses:
+
+- **iOS**: `osx.15.arm64.Open`
+- **Mac Catalyst**: `osx.15.arm64.Open`  
+- **Android**: `ubuntu.2204.amd64.android.33.open`
+
+### Running Device Tests Locally
+
+#### Step 1: Build Build Tasks
+First, restore tools and build the required MSBuild tasks:
+
+```bash
+# Restore dotnet tools
+dotnet tool restore
+
+# Build the Build tasks (required)
+./build.sh -restore -build -configuration Release -projects './Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog -warnAsError false
+```
+
+#### Step 2: Build Device Tests
+Build the device test projects:
+
+```bash
+# Build device tests for all platforms
+./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
+```
+
+#### Step 3: Send to Helix
+Submit the tests to Helix for execution:
+
+```bash
+# Send to Helix for Android
+./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix.binlog -verbosity:diag
+
+# Send to Helix for iOS  
+./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=ios /bl:sendhelix.binlog -verbosity:diag
+
+# Send to Helix for Mac Catalyst
+./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=maccatalyst /bl:sendhelix.binlog -verbosity:diag
+```
+
+### Windows Commands
+
+For Windows development, use the corresponding `.cmd` files:
+
+```cmd
+REM Build Build tasks
+.\build.cmd -restore -build -configuration Release -projects ".\Microsoft.Maui.BuildTasks.slnf" /bl:BuildBuildTasks.binlog -warnAsError false
+
+REM Build device tests
+.\build.cmd -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
+
+REM Send to Helix (Android example)
+.\eng\common\msbuild.cmd .\eng\helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix.binlog -verbosity:diag
+```
+
+### Configuration Details
+
+The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
+
+- **Timeouts**: 2-hour work item timeout, 1-hour test timeout
+- **Test Discovery**: Automatically discovers test bundles for each scenario
+- **Platform Targeting**: Specific target frameworks per platform
+- **Queue Selection**: Platform-appropriate Helix queues
+- **XHarness Integration**: Uses XHarness for device orchestration
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Build failures**: Ensure you've built the BuildTasks first
+2. **Missing devices**: Check queue availability at [helix.dot.net](https://helix.dot.net)  
+3. **Authentication**: For CI scenarios, ensure proper Azure DevOps access tokens
+4. **Timeouts**: Tests have generous timeouts but may need adjustment for complex scenarios
+
+#### Logging and Diagnostics
+
+- Use `/bl:filename.binlog` for detailed MSBuild logs
+- Add `-verbosity:diag` for maximum diagnostic output
+- Check Helix job results at the provided URL after submission
+
+### CI Integration
+
+The device tests are integrated into the CI pipeline via:
+- `eng/pipelines/common/stage-device-tests.yml` - Pipeline template
+- `eng/test-configuration.json` - Test retry configuration
+- Automatic execution on PR builds for qualifying changes
+
+### Additional Resources
+
+- [XHarness on Helix Documentation](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/tools/xharness-runner/Readme.md#android-apk-payloads)
+- [Helix Documentation](https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.Helix)
+- [Example Helix Run](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1115383&view=results)

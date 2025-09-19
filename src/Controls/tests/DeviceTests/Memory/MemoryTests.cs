@@ -555,27 +555,26 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		var references = new List<WeakReference>();
 
+
+		var page = new ContentPage();
+		var window = new Window(page);
+		await CreateHandlerAndAddToWindow(window, async () =>
 		{
-			var page = new ContentPage();
-			var window = new Window(page);
-			await CreateHandlerAndAddToWindow(window, async () =>
+			await OnLoadedAsync(page);
+			references.Add(new(window));
+			references.Add(new(window.Handler));
+
+			// NOTE: the PlatformView in this case remains alive in the test application:
+			// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
+			//references.Add(new(window.Handler.PlatformView));
+
+			if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
 			{
-				await OnLoadedAsync(page);
-				references.Add(new(window));
-				references.Add(new(window.Handler));
+				app.SetWindow(null);
+			}
+		});
 
-				// NOTE: the PlatformView in this case remains alive in the test application:
-				// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
-				//references.Add(new(window.Handler.PlatformView));
-
-				if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
-				{
-					app.SetWindow(null);
-				}
-			});
-		}
-
-		await AssertionExtensions.WaitForGC(references.ToArray());
+		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
 	[Fact("VisualDiagnosticsOverlay Does Not Leak"
@@ -591,22 +590,20 @@ public class MemoryTests : ControlsHandlerTestBase
 		var overlay = new VisualDiagnosticsOverlay(window);
 		var references = new List<WeakReference>();
 
+		await InvokeOnMainThreadAsync(async () =>
 		{
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var page = new ContentPage();
-				window.Content = page;
-				await CreateHandlerAsync(page);
-				overlay.Initialize();
-				references.Add(new(page));
-				references.Add(new(page.Handler));
-				references.Add(new(page.Handler.PlatformView));
+			var page = new ContentPage();
+			window.Content = page;
+			await CreateHandlerAsync(page);
+			overlay.Initialize();
+			references.Add(new(page));
+			references.Add(new(page.Handler));
+			references.Add(new(page.Handler.PlatformView));
 
-				window.Content = null;
-			});
-		}
+			window.Content = null;
+		});
 
-		await AssertionExtensions.WaitForGC(references.ToArray());
+		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
 #if IOS
