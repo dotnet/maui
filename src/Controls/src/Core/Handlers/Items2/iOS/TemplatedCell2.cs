@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					if (PlatformHandler?.VirtualView is View view && view.Parent is CollectionView itemsView && itemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+					if (ShouldUseCachedFirstItemSize(out var itemsView))
 					{
 						// Always get the cached first item size from the CollectionView
 						var cached = CollectionViewMeasurementCache.GetFirstItemMeasuredSize(itemsView);
@@ -112,7 +112,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					else
 					{
 						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
-
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
@@ -140,6 +139,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
 				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
 			return constraints;
+		}
+
+		/// <summary>
+		/// Determines whether the cached first item size should be used for measurement optimization.
+		/// </summary>
+		/// <param name="itemsView">The CollectionView if optimization should be used, null otherwise.</param>
+		/// <returns>True if cached first item size should be used, false otherwise.</returns>
+		private bool ShouldUseCachedFirstItemSize(out CollectionView itemsView)
+		{
+			itemsView = null;
+
+			if (PlatformHandler?.VirtualView is View view &&
+				view.Parent is CollectionView collectionView &&
+				collectionView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				itemsView = collectionView;
+				return true;
+			}
+
+			return false;
 		}
 
 		public override void LayoutSubviews()
