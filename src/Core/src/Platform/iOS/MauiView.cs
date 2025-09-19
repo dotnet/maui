@@ -308,12 +308,6 @@ namespace Microsoft.Maui.Platform
 						// If keyboard is visible and intersects with window
 						if (!keyboardIntersection.IsEmpty)
 						{
-							// Calculate keyboard height in the window's coordinate system
-							var keyboardHeight = keyboardIntersection.Height;
-
-							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
-
-							// Bottom edge is most commonly affected by keyboard
 							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
 
 							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
