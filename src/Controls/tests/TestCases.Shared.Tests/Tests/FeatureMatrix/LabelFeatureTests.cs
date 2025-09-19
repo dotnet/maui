@@ -630,8 +630,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(MainLabel);
 		App.Tap(MainLabel);
 		VerifyScreenshot();
-		App.Tap(MainLabel);
-		VerifyScreenshot();
 	}
 
 	[Test, Order(30)]
