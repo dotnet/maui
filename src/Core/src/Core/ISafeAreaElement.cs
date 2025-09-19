@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Microsoft.Maui;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	internal interface ISafeAreaElement
