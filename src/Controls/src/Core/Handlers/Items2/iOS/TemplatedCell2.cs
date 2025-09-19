@@ -103,10 +103,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							// Even when we have a cached measurement for the first item (due to ItemSizingStrategy.MeasureFirstItem),
 							// we still need to call Measure on the virtualView. This is because the iOS platform's layout system
 							// relies on each cell participating in the measure lifecycle to update its internal state and bookkeeping,
-							// such as invalidating layout caches or triggering layout events. Skipping this call can result in
-							// inconsistent layout behavior or stale measurement data, especially after an invalidation. This situation
-							// typically occurs when the CollectionView is using MeasureFirstItem sizing strategy and the platform
-							// expects every cell to go through the measure process, even if the size is reused.
+							// such as invalidating layout caches or triggering layout events.
+							// especially when templated views have explicit HeightRequest which won't arrange correctly otherwise.
 							virtualView.Measure(cached.Width, cached.Height);
 						}
 						else
