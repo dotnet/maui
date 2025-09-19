@@ -11,7 +11,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : ViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public class LayoutViewGroup : PlatformViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
