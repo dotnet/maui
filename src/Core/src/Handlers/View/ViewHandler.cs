@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
 
-#if ANDROID
+#if ANDROID || IOS
 				[nameof(ISafeAreaElement.SafeAreaEdges)] = MapSafeAreaEdges
 #endif
 			};

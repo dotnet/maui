@@ -14,16 +14,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty SafeAreaEdgesProperty =
 			BindableProperty.Create(nameof(ISafeAreaElement.SafeAreaEdges), typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
-									propertyChanged: OnSafeAreaEdgesChanged,
 									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
-		static void OnSafeAreaEdgesChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			// Centralized implementation - invalidate measure to trigger layout recalculation
-			if (bindable is IView view)
-			{
-				view.InvalidateMeasure();
-			}
-		}
 
 		static object SafeAreaEdgesDefaultValueCreator(BindableObject bindable)
 			=> ((ISafeAreaElement)bindable).SafeAreaEdgesDefaultValueCreator();
