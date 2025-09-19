@@ -5,9 +5,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ScrollViewFeatureTests : UITest
+public class ScrollViewFeatureTests : _GalleryUITest
 {
 	public const string ScrollViewFeatureMatrix = "ScrollView Feature Matrix";
+	override public string GalleryPageName => ScrollViewFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string ContentLabel = "ContentLabel";
@@ -37,12 +38,6 @@ public class ScrollViewFeatureTests : UITest
 	public ScrollViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]

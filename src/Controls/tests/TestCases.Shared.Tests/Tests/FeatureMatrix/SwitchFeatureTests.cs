@@ -5,19 +5,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class SwitchFeatureTests : UITest
+public class SwitchFeatureTests : _GalleryUITest
 {
 	public const string SwitchFeatureMatrix = "Switch Feature Matrix";
+
+	public override string GalleryPageName => SwitchFeatureMatrix;
 
 	public SwitchFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(SwitchFeatureMatrix);
 	}
 
 	[Test, Order(1)]
