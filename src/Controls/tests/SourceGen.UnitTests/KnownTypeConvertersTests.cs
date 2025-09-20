@@ -326,7 +326,7 @@ public partial class TestPage : ContentPage
 
 			Assert.IsNotNull(generated, "Generated code should not be null");
 			
-			// Should generate GridLength.Auto for "Auto" value
+			// Should generate FlexDirection.Row for "Row" value
 			Assert.That(generated, Does.Contain("flexLayout.SetValue(global::Microsoft.Maui.Controls.FlexLayout.DirectionProperty, global::Microsoft.Maui.Layouts.FlexDirection.Row);"),
 				"Generated code should contain FlexDirection.Row for 'Row' value");
 		}
