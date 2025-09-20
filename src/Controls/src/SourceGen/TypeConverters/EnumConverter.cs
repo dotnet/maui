@@ -16,12 +16,12 @@ internal class EnumConverter : ISGTypeConverter
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
 		{
-			var detectedEnumValue = toType.GetFields().FirstOrDefault(
+			IFieldSymbol? detectedEnumValue = toType.GetFields().FirstOrDefault(
 				f => string.Equals(f.Name, value, StringComparison.OrdinalIgnoreCase));
 
 			if (detectedEnumValue is not null)
 			{
-				return $"{toType.ToFQDisplayString()}.{detectedEnumValue}";
+				return $"{toType.ToFQDisplayString()}.{detectedEnumValue.Name}";
 			}
 		}
 

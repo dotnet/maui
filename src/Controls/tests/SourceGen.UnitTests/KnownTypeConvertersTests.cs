@@ -288,5 +288,47 @@ public partial class TestPage : ContentPage
 			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Auto"),
 				"Generated code should contain GridLength.Auto for 'Auto' value");
 		}
+
+		[Test]
+		public void EnumTypeConverter()
+		{
+			const string xaml = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<ContentPage
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					x:Class="Test.TestPage">
+					<FlexLayout Direction="Row" />
+				</ContentPage>
+				""";
+
+			const string code = """
+				using System;
+				using Microsoft.Maui.Controls;
+				using Microsoft.Maui.Controls.Xaml;
+
+				namespace Test;
+
+				[XamlProcessing(XamlInflator.SourceGen)]
+				public partial class TestPage : ContentPage
+				{
+					public TestPage()
+					{
+						InitializeComponent();
+					}
+				}
+				""";
+
+			var (result, generated) = RunGenerator(xaml, code);
+			
+			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+
+			Assert.IsNotNull(generated, "Generated code should not be null");
+			
+			// Should generate FlexDirection.Row for "Row" value
+			Assert.That(generated, Does.Contain("flexLayout.SetValue(global::Microsoft.Maui.Controls.FlexLayout.DirectionProperty, global::Microsoft.Maui.Layouts.FlexDirection.Row);"),
+				"Generated code should contain FlexDirection.Row for 'Row' value");
+		}
 	}
 }
