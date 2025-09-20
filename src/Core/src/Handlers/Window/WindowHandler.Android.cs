@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Handlers
 
 				// Apply top inset only to AppBarLayout to allow content behind it
 				appBarLayout?.SetPadding(0, topInset, 0, 0);
-				
+
 				// Apply side and bottom insets to root view, but not top
 				v.SetPadding(leftInset, 0, rightInset, bottomInset);
 
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 					displayCutout?.Right ?? 0,
 					0
 				) ?? Insets.None;
-				
+
 				return new WindowInsetsCompat.Builder(insets)
 					?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
 					?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)

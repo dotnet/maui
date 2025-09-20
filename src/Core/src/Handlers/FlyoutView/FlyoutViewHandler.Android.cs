@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Handlers
 					layoutParams.TopMargin = topInset;
 					v.LayoutParameters = layoutParams;
 				}
-				
+
 				return WindowInsetsCompat.Consumed;
 			}
 		}
