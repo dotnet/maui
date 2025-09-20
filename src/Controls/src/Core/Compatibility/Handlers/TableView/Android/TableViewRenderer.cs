@@ -77,8 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.OnAttachedToWindow();
 
-			if (Control != null)
-				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+			Control?.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
 
 			// There might be a better way to go about doing this but from what I can tell 
 			// once you detach and then reattach a ListView the cells become unselectable 
@@ -195,10 +194,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (disposing)
 			{
 				// Unhook the adapter from the ListView before disposing of it
-				if (Control != null)
-				{
-					Control.Adapter = null;
-				}
+				Control?.Adapter = null;
 
 				_adapter?.Dispose();
 				_adapter = null;

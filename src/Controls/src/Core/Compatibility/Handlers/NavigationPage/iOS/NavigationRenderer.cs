@@ -469,8 +469,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				CompletePendingNavigation(false);
 			};
 
-			if (NavigationDelegate is not null)
-				NavigationDelegate.WaitingForNavigationToFinish = true;
+			NavigationDelegate?.WaitingForNavigationToFinish = true;
 
 			_removeLifecycleEvents = new ActionDisposable(() =>
 			{
@@ -480,8 +479,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// on the ParentingViewController.
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
-				if (NavigationDelegate is not null)
-					NavigationDelegate.WaitingForNavigationToFinish = false;
+				NavigationDelegate?.WaitingForNavigationToFinish = false;
 			});
 
 			parentViewController.Appearing += appearing;
@@ -1048,7 +1046,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// We only check height because the navigation bar constrains vertical space (44pt height),
 				// but allows horizontal flexibility. Width can vary based on icon design and content,
 				// while height must fit within the fixed navigation bar bounds to avoid clipping.
-				
+
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
@@ -1381,10 +1379,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
 
-				if (childView is not null)
-				{
-					childView.Frame = View.Bounds;
-				}
+				childView?.Frame = View.Bounds;
 			}
 
 			public override void ViewDidLayoutSubviews()
@@ -2204,8 +2199,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				double height = Math.Min(toolbarHeight, Bounds.Height);
 
-				if (_icon != null)
-					_icon.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
+				_icon?.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
 
 				if (_child?.VirtualView != null)
 				{

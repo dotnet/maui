@@ -1,10 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Maui.ManualTests.Tests;
 
 namespace Microsoft.Maui.ManualTests.Categories;
 
 public abstract class CategoryViewModel
 {
+	[RequiresUnreferencedCode()]
 	public CategoryViewModel()
 	{
 		Tests = GetType().Assembly.GetTypes()

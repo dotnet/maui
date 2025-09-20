@@ -25,7 +25,7 @@ internal class EnumConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

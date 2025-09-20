@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Platform
 		bool TryRemoveRefresh(UIView view, int index = 0)
 		{
 			_refreshControlParent = view;
-	
+
 			_refreshControl.RemoveFromSuperview();
 
 			if (view is UIScrollView scrollView)
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_refreshControlParent = view;
- 
+
 			if (view is UIScrollView scrollView)
 			{
 				if (CanUseRefreshControlProperty())

@@ -169,8 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			controller = element;
-			if (controller != null)
-				controller.EffectControlProvider = this;
+			controller?.EffectControlProvider = this;
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;

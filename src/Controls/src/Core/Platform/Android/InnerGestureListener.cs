@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// Reset the flag since this is completing a double tap sequence
 				_singleTapFiredInSequence = false;
-				
+
 				// Fire only the double tap handler here Single tap was already
 				// fired earlier in OnSingleTapUp for better timing
 				return _tapDelegate(2, e);
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_tapDelegate(1, e);
 					_singleTapFiredInSequence = true; // Track that we fired single tap
 				}
-				
+
 				// Still return false to continue waiting for potential double tap
 				return false;
 			}

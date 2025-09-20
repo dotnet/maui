@@ -31,10 +31,10 @@ namespace Microsoft.Maui.Media
 				// null voice if fine - it is the default
 				// select the voice by identifier else by Language, otherwise set for default
 				speechUtterance.Voice =
-				    options.Locale?.Id != null
-				        ? AVSpeechSynthesisVoice.FromIdentifier(options.Locale.Id)
-				        : AVSpeechSynthesisVoice.FromLanguage(options.Locale?.Language)
-				        ?? AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
+					options.Locale?.Id != null
+						? AVSpeechSynthesisVoice.FromIdentifier(options.Locale.Id)
+						: AVSpeechSynthesisVoice.FromLanguage(options.Locale?.Language)
+						?? AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
 
 				// the platform has a range of 0.5 - 2.0
 				// anything lower than 0.5 is set to 0.5

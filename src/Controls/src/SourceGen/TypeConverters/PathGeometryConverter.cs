@@ -21,7 +21,7 @@ internal class PathGeometryConverter : ISGTypeConverter
 			return $"new {pathGeometryType.ToFQDisplayString()}()";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

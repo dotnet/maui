@@ -61,10 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var textBox = platformSearchBar.GetFirstDescendant<TextBox>();
 
-			if (textBox is not null)
-			{
-				textBox.SelectionStart = position;
-			}
+			textBox?.SelectionStart = position;
 		}
 
 		Color GetNativeTextColor(SearchBarHandler searchBarHandler)

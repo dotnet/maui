@@ -144,8 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void Draw(CGRect rect)
 		{
-			if (_actualView != null)
-				_actualView.Frame = Bounds;
+			_actualView?.Frame = Bounds;
 
 			base.Draw(rect);
 
