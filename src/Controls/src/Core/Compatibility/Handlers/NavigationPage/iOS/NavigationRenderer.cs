@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
 		{
 			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
-			[PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName] = NavigationPage.MapIsNavigationBarTranslucent,
 		};
 
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
@@ -513,10 +512,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var current = Current = NavPage?.CurrentPage;
 				ValidateNavbarExists(current);
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
 				UpdateTranslucent();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
 			{
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
@@ -628,7 +629,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateTranslucent()
 		{
-			_viewHandlerWrapper.UpdateProperty(IsNavigationBarTranslucentProperty.PropertyName);
+#pragma warning disable CS0618 // Type or member is obsolete
+			NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void InsertPageBefore(Page page, Page before)
@@ -767,6 +770,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_currentBarBackgroundBrush = null;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+			bool userTranslucentValue = false;
+			bool isNavigationBarTranslucentExplicitlySet = NavPage.IsSet(IsNavigationBarTranslucentProperty);
+			if (isNavigationBarTranslucentExplicitlySet)
+			{
+				userTranslucentValue = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
@@ -780,10 +792,34 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if (_currentBarBackgroundColor?.Alpha < 1f)
-						navigationBarAppearance.ConfigureWithTransparentBackground();
+					// If user explicitly set translucent property, respect that value
+					if (isNavigationBarTranslucentExplicitlySet)
+					{
+						if (userTranslucentValue)
+						{
+							navigationBarAppearance.ConfigureWithTransparentBackground();
+							NavigationBar.Translucent = true;
+						}
+						else
+						{
+							navigationBarAppearance.ConfigureWithOpaqueBackground();
+							NavigationBar.Translucent = false;
+						}
+					}
 					else
-						navigationBarAppearance.ConfigureWithOpaqueBackground();
+					{
+						// Default behavior: set translucency based on background color alpha
+						if (_currentBarBackgroundColor?.Alpha < 1f)
+						{
+							navigationBarAppearance.ConfigureWithTransparentBackground();
+							NavigationBar.Translucent = true;
+						}
+						else
+						{
+							navigationBarAppearance.ConfigureWithOpaqueBackground();
+							NavigationBar.Translucent = false;
+						}
+					}
 
 					navigationBarAppearance.BackgroundColor = _currentBarBackgroundColor.ToPlatform();
 				}
@@ -801,19 +837,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if (_currentBarBackgroundColor?.Alpha == 0f)
+				// If user explicitly set translucent property, respect that value
+				if (isNavigationBarTranslucentExplicitlySet)
 				{
-					NavigationBar.SetTransparentNavigationBar();
+					if (userTranslucentValue)
+					{
+						NavigationBar.SetTransparentNavigationBar();
+						NavigationBar.Translucent = true;
+					}
+					else
+					{
+						// Set navigation bar background color for opaque navigation bar
+						NavigationBar.BarTintColor = _currentBarBackgroundColor == null
+							? UINavigationBar.Appearance.BarTintColor
+							: _currentBarBackgroundColor.ToPlatform();
+
+						var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
+						NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+						NavigationBar.Translucent = false;
+					}
 				}
 				else
 				{
-					// Set navigation bar background color
-					NavigationBar.BarTintColor = _currentBarBackgroundColor == null
-						? UINavigationBar.Appearance.BarTintColor
-						: _currentBarBackgroundColor.ToPlatform();
+					// Default behavior: set translucency based on background color alpha
+					if (_currentBarBackgroundColor?.Alpha == 0f)
+					{
+						NavigationBar.SetTransparentNavigationBar();
+					}
+					else
+					{
+						// Set navigation bar background color
+						NavigationBar.BarTintColor = _currentBarBackgroundColor == null
+							? UINavigationBar.Appearance.BarTintColor
+							: _currentBarBackgroundColor.ToPlatform();
 
-					var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
-					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+						var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
+						NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+					}
 				}
 			}
 		}

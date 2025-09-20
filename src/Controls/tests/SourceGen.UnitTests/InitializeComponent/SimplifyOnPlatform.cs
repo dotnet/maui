@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.SourceGen.UnitTests.InitializeComponent;
+namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class SimplifyOnPlatform : SourceGenXamlInitializeComponentTestBase
 {
@@ -149,7 +149,7 @@ public partial class TestPage
 		xamlServiceProvider2.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver2, typeof(global::Test.TestPage).Assembly));
 		setter1.Property = ((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new global::Microsoft.Maui.Controls.BindablePropertyConverter()).ConvertFromInvariantString("IsVisible", xamlServiceProvider2) as global::Microsoft.Maui.Controls.BindableProperty;
 #line default
-#line 1 "{{testXamlFilePath}}"
+#line 9 "{{testXamlFilePath}}"
 		setter1.Value = "True";
 #line default
 		var setter3 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
