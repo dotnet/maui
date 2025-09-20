@@ -86,3 +86,9 @@ public class PerformanceCategoryViewModel : CategoryViewModel
 {
 	public override string CategoryName => Category.Performance;
 }
+
+[Category(id: "L", title: Category.BugFixes)]
+public class BugFixesCategoryViewModel : CategoryViewModel
+{
+	public override string CategoryName => Category.BugFixes;
+}

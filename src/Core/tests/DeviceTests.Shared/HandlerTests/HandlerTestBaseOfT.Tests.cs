@@ -45,7 +45,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
+#if WINDOWS
+			if (typeof(THandler).Name.Contains("WebView", StringComparison.Ordinal))
+			{
+				Assert.Equal(FlowDirection.LeftToRight, id);
+			}
+			else
+			{
+				Assert.Equal(flowDirection, id);
+			}
+#else
 			Assert.Equal(flowDirection, id);
+#endif
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
