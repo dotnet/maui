@@ -149,6 +149,7 @@ namespace Microsoft.Maui.Platform
 				navView.Content = null;
 
 			_rootView.Content = null;
+			SetToolbar(null);
 			_disconnected = true;
 		}
 
