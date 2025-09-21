@@ -236,17 +236,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var metrics = _shellContext.AndroidContext.Resources.DisplayMetrics;
 			var configuration = _shellContext.AndroidContext.Resources.Configuration;
-			
+
 			var width = 0;
 			var actionBarHeight = (int)_shellContext.AndroidContext.GetActionBarHeight();
-			
+
 			// For landscape orientation, use more of the available width
 			// For portrait orientation, use the traditional calculation
 			if (configuration.Orientation == Orientation.Landscape)
 			{
-				// In landscape, use a percentage of the width rather than the minimum dimension
+				// In landscape, use a larger portion of the width rather than the minimum dimension
 				// This allows for proper text wrapping in the flyout
-				width = (int)(metrics.WidthPixels * 0.4); // Use 40% of the width in landscape
+				// Use at least the portrait width, but use 60% of landscape width for more space
+				var portraitWidth = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
+				var landscapeWidth = (int)(metrics.WidthPixels * 0.6); // Use 60% of the width in landscape
+				width = Math.Max(portraitWidth, landscapeWidth);
 			}
 			else
 			{
