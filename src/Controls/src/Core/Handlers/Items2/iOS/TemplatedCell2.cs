@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							// relies on each cell participating in the measure lifecycle to update its internal state and bookkeeping,
 							// such as invalidating layout caches or triggering layout events.
 							// especially when templated views have explicit HeightRequest which won't arrange correctly otherwise.
-							virtualView.Measure(cached.Width, cached.Height);
+							virtualView.Measure(constraints.Width, cached.Height);
 						}
 						else
 						{
