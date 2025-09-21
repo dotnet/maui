@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Util;
 using Android.Views;
@@ -216,18 +217,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// this is about landscape devices and google does not perfectly follow these
 			// rules... so we'll kind of just... do our best.
 
-			var metrics = context.AndroidContext.Resources.DisplayMetrics;
-			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-
-			var actionBarHeight = (int)context.AndroidContext.GetActionBarHeight();
-
-			width -= actionBarHeight;
-
-			var maxWidth = actionBarHeight * 6;
-			width = Math.Min(width, maxWidth);
-
-			_flyoutWidthDefault = width;
-
+			RecalculateDefaultFlyoutWidth();
 
 			AddView(content);
 
@@ -236,11 +226,40 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
 
-
 			if (Shell.FlyoutIsPresented && _flyoutContent != null)
 			{
 				OpenDrawer(_flyoutContent.AndroidView, false);
 			}
+		}
+
+		void RecalculateDefaultFlyoutWidth()
+		{
+			var metrics = _shellContext.AndroidContext.Resources.DisplayMetrics;
+			var configuration = _shellContext.AndroidContext.Resources.Configuration;
+			
+			var width = 0;
+			var actionBarHeight = (int)_shellContext.AndroidContext.GetActionBarHeight();
+			
+			// For landscape orientation, use more of the available width
+			// For portrait orientation, use the traditional calculation
+			if (configuration.Orientation == Orientation.Landscape)
+			{
+				// In landscape, use a percentage of the width rather than the minimum dimension
+				// This allows for proper text wrapping in the flyout
+				width = (int)(metrics.WidthPixels * 0.4); // Use 40% of the width in landscape
+			}
+			else
+			{
+				// Use the traditional calculation for portrait mode
+				width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
+			}
+
+			width -= actionBarHeight;
+
+			var maxWidth = actionBarHeight * 6;
+			width = Math.Min(width, maxWidth);
+
+			_flyoutWidthDefault = width;
 		}
 
 		void AddFlyoutContentToLayoutIfNeeded(FlyoutBehavior behavior)
@@ -301,8 +320,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
 		}
 
+		protected override void OnConfigurationChanged(Configuration newConfig)
+		{
+			base.OnConfigurationChanged(newConfig);
+			RecalculateDefaultFlyoutWidth();
+			UpdateFlyoutSize();
+		}
+
 		void OnDualScreenServiceScreenChanged(object sender, EventArgs e)
 		{
+			RecalculateDefaultFlyoutWidth();
 			UpdateFlyoutSize();
 			if (_content != null)
 				UpdateDrawerLockMode(_behavior);
