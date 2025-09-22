@@ -20,24 +20,127 @@ namespace Microsoft.Maui.Controls
 		internal const DynamicallyAccessedMemberTypes DeclaringTypeMembers = DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods;
 		internal const DynamicallyAccessedMemberTypes ReturnTypeMembers = DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
 
+		/// <summary>
+		/// Represents a delegate that is called when a bindable property value has changed.
+		/// </summary>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="oldValue">The previous value of the property.</param>
+		/// <param name="newValue">The new value of the property.</param>
+		/// <remarks>
+		/// This delegate does not provide information about which specific <see cref="BindableProperty"/> 
+		/// triggered the change. If multiple properties share the same callback and need to be distinguished,
+		/// consider using separate callbacks or the <see cref="INotifyPropertyChanged.PropertyChanged"/> event.
+		/// </remarks>
 		public delegate void BindingPropertyChangedDelegate(BindableObject bindable, object oldValue, object newValue);
 
+		/// <summary>
+		/// Represents a strongly-typed delegate that is called when a bindable property value has changed.
+		/// </summary>
+		/// <typeparam name="TPropertyType">The type of the property value.</typeparam>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="oldValue">The previous value of the property.</param>
+		/// <param name="newValue">The new value of the property.</param>
+		/// <remarks>
+		/// This delegate does not provide information about which specific <see cref="BindableProperty"/> 
+		/// triggered the change. See <see cref="BindingPropertyChangedDelegate"/> for workaround strategies.
+		/// </remarks>
 		public delegate void BindingPropertyChangedDelegate<in TPropertyType>(BindableObject bindable, TPropertyType oldValue, TPropertyType newValue);
 
+		/// <summary>
+		/// Represents a delegate that is called when a bindable property value is about to change.
+		/// </summary>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="oldValue">The current value of the property before the change.</param>
+		/// <param name="newValue">The new value that the property will be set to.</param>
+		/// <remarks>
+		/// <para>
+		/// This delegate is invoked before a property value is changed on a <see cref="BindableObject"/>.
+		/// Like <see cref="BindingPropertyChangedDelegate"/>, this delegate does not include information 
+		/// about which specific <see cref="BindableProperty"/> is changing when multiple properties share the same callback.
+		/// </para>
+		/// </remarks>
 		public delegate void BindingPropertyChangingDelegate(BindableObject bindable, object oldValue, object newValue);
 
+		/// <summary>
+		/// Represents a strongly-typed delegate that is called when a bindable property value is about to change.
+		/// </summary>
+		/// <typeparam name="TPropertyType">The type of the property value.</typeparam>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="oldValue">The current value of the property before the change.</param>
+		/// <param name="newValue">The new value that the property will be set to.</param>
+		/// <remarks>
+		/// <para>
+		/// This strongly-typed delegate is invoked before a property value is changed on a <see cref="BindableObject"/>.
+		/// Like <see cref="BindingPropertyChangedDelegate{TPropertyType}"/>, this delegate does not include information 
+		/// about which specific <see cref="BindableProperty"/> is changing when multiple properties share the same callback.
+		/// </para>
+		/// </remarks>
 		public delegate void BindingPropertyChangingDelegate<in TPropertyType>(BindableObject bindable, TPropertyType oldValue, TPropertyType newValue);
 
+		/// <summary>
+		/// Represents a delegate that is called to coerce a property value to a valid range or state.
+		/// </summary>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="value">The value to be coerced.</param>
+		/// <returns>The coerced value.</returns>
 		public delegate object CoerceValueDelegate(BindableObject bindable, object value);
 
+		/// <summary>
+		/// Represents a strongly-typed delegate that is called to coerce a property value to a valid range or state.
+		/// </summary>
+		/// <typeparam name="TPropertyType">The type of the property value.</typeparam>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="value">The value to be coerced.</param>
+		/// <returns>The coerced value.</returns>
 		public delegate TPropertyType CoerceValueDelegate<TPropertyType>(BindableObject bindable, TPropertyType value);
 
+		/// <summary>
+		/// Represents a delegate that creates a default value for a bindable property.
+		/// </summary>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <returns>The default value for the property.</returns>
+		/// <remarks>
+		/// This delegate is useful for creating unique default instances for reference types,
+		/// avoiding shared references between different bindable object instances.
+		/// </remarks>
 		public delegate object CreateDefaultValueDelegate(BindableObject bindable);
 
+		/// <summary>
+		/// Represents a strongly-typed delegate that creates a default value for a bindable property.
+		/// </summary>
+		/// <typeparam name="TDeclarer">The type of the declaring object.</typeparam>
+		/// <typeparam name="TPropertyType">The type of the property value.</typeparam>
+		/// <param name="bindable">The declaring object instance that owns the property.</param>
+		/// <returns>The default value for the property.</returns>
+		/// <remarks>
+		/// This strongly-typed delegate is useful for creating unique default instances for reference types,
+		/// avoiding shared references between different bindable object instances.
+		/// </remarks>
 		public delegate TPropertyType CreateDefaultValueDelegate<in TDeclarer, out TPropertyType>(TDeclarer bindable);
 
+		/// <summary>
+		/// Represents a delegate that validates whether a value is acceptable for a bindable property.
+		/// </summary>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="value">The value to validate.</param>
+		/// <returns><see langword="true"/> if the value is valid; otherwise, <see langword="false"/>.</returns>
+		/// <remarks>
+		/// If this delegate returns <see langword="false"/>, an <see cref="ArgumentException"/> will be thrown
+		/// when attempting to set the property to the invalid value.
+		/// </remarks>
 		public delegate bool ValidateValueDelegate(BindableObject bindable, object value);
 
+		/// <summary>
+		/// Represents a strongly-typed delegate that validates whether a value is acceptable for a bindable property.
+		/// </summary>
+		/// <typeparam name="TPropertyType">The type of the property value.</typeparam>
+		/// <param name="bindable">The <see cref="BindableObject"/> instance that owns the property.</param>
+		/// <param name="value">The strongly-typed value to validate.</param>
+		/// <returns><see langword="true"/> if the value is valid; otherwise, <see langword="false"/>.</returns>
+		/// <remarks>
+		/// If this delegate returns <see langword="false"/>, an <see cref="ArgumentException"/> will be thrown
+		/// when attempting to set the property to the invalid value.
+		/// </remarks>
 		public delegate bool ValidateValueDelegate<in TPropertyType>(BindableObject bindable, TPropertyType value);
 
 		internal static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type, TypeConverter>
@@ -157,6 +260,15 @@ namespace Microsoft.Maui.Controls
 		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
 		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
 		/// <returns>A newly created BindableProperty.</returns>
+		/// <remarks>
+		/// <para>
+		/// When using the <paramref name="propertyChanged"/> callback, note that if multiple <see cref="BindableProperty"/> 
+		/// instances share the same <see cref="BindingPropertyChangedDelegate"/>, the callback cannot determine which 
+		/// specific property triggered the change. Consider using separate callback methods for properties that require 
+		/// different handling, or use alternative approaches such as monitoring the <see cref="INotifyPropertyChanged.PropertyChanged"/> 
+		/// event which includes the property name.
+		/// </para>
+		/// </remarks>
 		public static BindableProperty Create(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue = null, BindingMode defaultBindingMode = BindingMode.OneWay,
 											  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 											  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -177,6 +289,14 @@ namespace Microsoft.Maui.Controls
 		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
 		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
 		/// <returns>A newly created attached BindableProperty.</returns>
+		/// <remarks>
+		/// <para>
+		/// When using the <paramref name="propertyChanged"/> callback, note that if multiple attached <see cref="BindableProperty"/> 
+		/// instances share the same <see cref="BindingPropertyChangedDelegate"/>, the callback cannot determine which 
+		/// specific property triggered the change. Consider using separate callback methods for properties that require 
+		/// different handling.
+		/// </para>
+		/// </remarks>
 		public static BindableProperty CreateAttached(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 													  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 													  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -196,7 +316,15 @@ namespace Microsoft.Maui.Controls
 		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
 		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
 		/// <returns>A newly created attached read-only BindableProperty.</returns>
-		/// <remarks>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</remarks>
+		/// <remarks>
+		/// <para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para>
+		/// <para>
+		/// When using the <paramref name="propertyChanged"/> callback, note that if multiple attached <see cref="BindableProperty"/> 
+		/// instances share the same <see cref="BindingPropertyChangedDelegate"/>, the callback cannot determine which 
+		/// specific property triggered the change. Consider using separate callback methods for properties that require 
+		/// different handling.
+		/// </para>
+		/// </remarks>
 		public static BindablePropertyKey CreateAttachedReadOnly(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 																 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 																 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -217,6 +345,14 @@ namespace Microsoft.Maui.Controls
 		/// <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
 		/// <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
 		/// <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
+		/// <remarks>
+		/// <para>
+		/// When using the <paramref name="propertyChanged"/> callback, note that if multiple <see cref="BindableProperty"/> 
+		/// instances share the same <see cref="BindingPropertyChangedDelegate"/>, the callback cannot determine which 
+		/// specific property triggered the change. Consider using separate callback methods for properties that require 
+		/// different handling.
+		/// </para>
+		/// </remarks>
 		public static BindablePropertyKey CreateReadOnly(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 														 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 														 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)

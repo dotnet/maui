@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Pages
 						GalleryBuilder.NavButton("Shadow Playground", () =>
 							new ShadowPlaygroundPage(), Navigation),
 						GalleryBuilder.NavButton("Invalidate Shadow Host", () =>
-							new InvalidateShadowHostPage(), Navigation),	
+							new InvalidateShadowHostPage(), Navigation),
 						GalleryBuilder.NavButton("Shadow Mask", () =>
 							new ShadowMaskPage(), Navigation),
 						GalleryBuilder.NavButton("Shadow Benchmark", () =>

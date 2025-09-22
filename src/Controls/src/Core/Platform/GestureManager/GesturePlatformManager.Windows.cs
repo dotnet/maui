@@ -19,13 +19,6 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IPlatformViewHandler _handler;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
-		// Dictionary to track when each pointer last entered, used to work around a bug where
-		// PointerEntered events fire unexpectedly in multi-window scenarios
-		readonly Dictionary<uint, DateTime> _lastPointerEnteredTime = new();
-		// Debounce window in milliseconds - if two PointerEntered events for the same pointer
-		// occur within this timeframe in a multi-window scenario, the second one is likely
-		// the bug manifesting and should be ignored
-		const int POINTER_DEBOUNCE_MS = 1000;
 		FrameworkElement? _container;
 		FrameworkElement? _control;
 		VisualElement? _element;
@@ -191,7 +184,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// for example
 				// e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				// Even if AcceptedOperation is already set to Copy it will cause the copy animation
-				// to remain even after the the dragged element has left
+				// to remain even after the dragged element has left
 				if (!dragEventArgs.PlatformArgs?.Handled ?? true && operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
@@ -261,21 +254,18 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
-				var view = Element as View;
-
-				if (!rec.CanDrag || view is null)
+				if (!rec.CanDrag || Element is not View view)
 				{
 					e.Cancel = true;
 					return;
 				}
 
-				var handler = sender as IViewHandler;
 				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e), new PlatformDragStartingEventArgs(sender, e));
 
 				e.Data.Properties[_doNotUsePropertyString] = args.Data;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && handler != null)
+				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && sender is IViewHandler handler)
 #pragma warning restore CS0618 // Type or member is obsolete
 				{
 					if (handler?.PlatformView is UI.Xaml.Controls.Image nativeImage &&
@@ -509,8 +499,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_isPinching = true;
-
 			if (e.OriginalSource is UIElement container)
 			{
 				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
@@ -541,13 +529,13 @@ namespace Microsoft.Maui.Controls.Platform
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Clear();
 		}
 
 		void OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 		{
-			var view = Element as View;
-
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -559,40 +547,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
 
+			_isPinching = true;
 			_wasPinchGestureStartedSent = false;
 			_wasPanGestureStartedSent = false;
 		}
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
-
 			SwipeComplete(false);
 			PinchComplete(false);
 			PanComplete(false);
+
+			_fingers.Clear();
 		}
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
+			SwipeComplete(true);
+
 			if (!_isPanning)
 			{
-				uint id = e.Pointer.PointerId;
-				if (_fingers.Contains(id))
-					_fingers.Remove(id);
+				_fingers.Remove(e.Pointer.PointerId);
 			}
-
-			SwipeComplete(true);
-			PinchComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -606,49 +587,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
-
 			SwipeComplete(true);
-			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Remove(e.Pointer.PointerId);
 		}
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
-
-			var pointerId = e.Pointer?.PointerId ?? uint.MaxValue;
-			var now = DateTime.UtcNow;
-
-			// Periodic cleanup when dictionary gets large - this should never happen since each
-			// PointerEntered should have a matching PointerExited that cleans up the entry,
-			// but we include this as a safety measure to prevent unbounded memory growth.
-			// We clean up entries older than twice the debounce window.
-			if (_lastPointerEnteredTime.Count > 5)
-			{
-				var cutoff = now.AddMilliseconds(-POINTER_DEBOUNCE_MS * 2);
-				var keysToRemove = _lastPointerEnteredTime.Where(kvp => kvp.Value < cutoff).Select(kvp => kvp.Key).ToList();
-				foreach (var key in keysToRemove)
-					_lastPointerEnteredTime.Remove(key);
-			}
-
-			// Multi-window bug workaround: There's a specific bug where PointerEntered events
-			// fire unexpectedly when multiple windows are open. We work around this by 
-			// debouncing - if the same pointer had an Enter event recently and we have multiple
-			// windows open, we ignore the duplicate event. Only applies in multi-window scenarios
-			// to avoid performance overhead in normal single-window usage.
-			if (_lastPointerEnteredTime.TryGetValue(pointerId, out var lastTime) &&
-				(now - lastTime).TotalMilliseconds < POINTER_DEBOUNCE_MS && HasMultipleWindows())
-			{
-				return;
-			}
-
-			// Track this pointer's entry time for future debounce checks
-			_lastPointerEnteredTime[pointerId] = now;
-
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerEntered(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
@@ -656,17 +602,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-
-			// Clean up debounce tracking when pointer exits, but only for relevant events.
-			// This is part of the multi-window bug workaround. We only clean up tracking
-			// for events that are relevant to our current element's window to avoid clearing
-			// tracking data when spurious events from other windows occur.
-			if (IsPointerEventRelevantToCurrentElement(e))
-			{
-				var pointerId = e.Pointer?.PointerId ?? uint.MaxValue;
-				_lastPointerEnteredTime.Remove(pointerId);
-			}
-
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerExited(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
@@ -708,60 +643,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
 
-			// Check if the pointer event is relevant to the current element's window
-			if (!IsPointerEventRelevantToCurrentElement(e))
-			{
-				return;
-			}
 			var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
 			{
 				SendPointerEvent.Invoke(view, recognizer);
 			}
 		}
-
-		/// <summary>
-		/// Determines if multiple windows are currently open. This is used to decide
-		/// whether to apply pointer event debouncing to work around a specific bug where
-		/// PointerEntered events fire unexpectedly in multi-window scenarios.
-		/// </summary>
-		/// <returns>True if multiple windows are open, false otherwise</returns>
-		bool HasMultipleWindows() =>
-			Application.Current?.Windows?.Count > 1;
-
-		bool IsPointerEventRelevantToCurrentElement(PointerRoutedEventArgs e)
-		{
-			// For multi-window scenarios, we need to validate that the pointer event
-			// is actually relevant to the current element's window
-			try
-			{
-				// Check if the container has a valid XamlRoot (indicates it's in a live window)
-				if (_container?.XamlRoot is null || e?.OriginalSource is null)
-				{
-					return false;
-				}
-				// Validate that the event source is from the same visual tree as our container
-				if (e.OriginalSource is FrameworkElement sourceElement && sourceElement.XamlRoot != _container.XamlRoot)
-				{
-					return false; // Event is from a different window
-				}
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				// Log the exception for diagnostics
-				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
-				return false;
-			}
-		}
-
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
 		{
 			var result = e.GetPositionRelativeToElement(relativeTo);
@@ -776,8 +668,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnTap(object sender, RoutedEventArgs e)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -853,8 +744,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SwipeComplete(bool success)
 		{
-			var view = Element as View;
-			if (view == null || !_isSwiping)
+			if (Element is not View view || !_isSwiping)
 			{
 				return;
 			}
@@ -872,8 +762,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PanComplete(bool success)
 		{
-			var view = Element as View;
-			if (view == null || !_isPanning)
+			if (Element is not View view || !_isPanning)
 			{
 				return;
 			}
@@ -896,8 +785,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PinchComplete(bool success)
 		{
-			var view = Element as View;
-			if (view is null || !_isPinching)
+			if (Element is not View view || !_isPinching)
 			{
 				return;
 			}
