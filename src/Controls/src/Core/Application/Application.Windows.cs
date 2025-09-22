@@ -103,7 +103,9 @@ namespace Microsoft.Maui.Controls
 
 		void SetTileBarButtonColors(UI.Xaml.Window platformWindow, bool isDark)
 		{
-
+			// Color references:
+			// https://github.com/microsoft/WinUI-Gallery/blob/main/WinUIGallery/Helpers/TitleBarHelper.cs
+			// https://github.com/dotnet/maui/blob/main/src/Core/src/Platform/Windows/MauiWinUIWindow.cs#L218
 			if (AppWindowTitleBar.IsCustomizationSupported())
 			{
 				var titleBar = platformWindow.GetAppWindow()?.TitleBar;
