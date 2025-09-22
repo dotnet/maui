@@ -3,6 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using Foundation;
 using UIKit;
+using ObjCRuntime;
 
 namespace Microsoft.Maui.Devices
 {
@@ -13,31 +14,31 @@ namespace Microsoft.Maui.Devices
 #if MACCATALYST
 		// Core Graphics P/Invoke declarations for Mac Catalyst
 		// Returns the display ID of the main display
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern uint CGMainDisplayID();
 
 		// Returns information about a display’s current configuration
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern IntPtr CGDisplayCopyDisplayMode(uint display);
 
 		// Releases a Core Graphics display mode
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern void CGDisplayModeRelease(IntPtr mode);
 
 		// Returns the width of the specified display mode
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern nuint CGDisplayModeGetWidth(IntPtr mode);
 
 		// Returns the height of the specified display mode
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern nuint CGDisplayModeGetHeight(IntPtr mode);
 
 		// Returns the refresh rate of the specified display mode
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern double CGDisplayModeGetRefreshRate(IntPtr mode);
 
 		// Returns the rotation angle of a display in degrees
-		[DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
+		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern double CGDisplayRotation(uint display);
 
 #endif
