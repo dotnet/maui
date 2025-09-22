@@ -323,9 +323,9 @@ namespace Microsoft.Maui.TestCases.Tests
 					_ => 0,
 				};
                 
-				// For Android also crop the 3 button nav from the left or right, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped).
-				// For iOS, crop the home indicator at the bottom.
+				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
+				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
+				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
 				int cropFromLeft = 0;
 				int cropFromRight = 0;
 
