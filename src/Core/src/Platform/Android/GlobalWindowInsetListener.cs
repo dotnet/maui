@@ -227,7 +227,7 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <returns>True if the view intersects with any system bar, false otherwise</returns>
     public static bool IntersectsWithSystemBars(AView view, WindowInsetsCompat? insets)
     {
-        if (view is null)
+        if (view?.Context is null)
         {
             return false;
         }
@@ -251,16 +251,12 @@ internal static class GlobalWindowInsetListenerExtensions
             return true;
         }
 
-        var displayCutout = insets.DisplayCutout;
+        // Get the safe area insets
+        var safeAreaInsets = insets.ToSafeAreaInsets(view.Context);
 
-        if (displayCutout is null)
-        {
-            return false;
-        }
-
-        var displayCutoutBoundingRect = displayCutout.BoundingRects;
-
-        if (displayCutoutBoundingRect is null || !displayCutoutBoundingRect.Any())
+        // If there are no safe area insets, there's no intersection
+        if (safeAreaInsets.Left == 0 && safeAreaInsets.Top == 0 &&
+            safeAreaInsets.Right == 0 && safeAreaInsets.Bottom == 0)
         {
             return false;
         }
@@ -268,20 +264,44 @@ internal static class GlobalWindowInsetListenerExtensions
         // Get view's position on screen
         var viewLocation = new int[2];
         view.GetLocationOnScreen(viewLocation);
-        var viewRect = new ARect(
-            viewLocation[0],
-            viewLocation[1],
-            viewLocation[0] + view.Width,
-            viewLocation[1] + view.Height
-        );
+        var viewLeft = viewLocation[0];
+        var viewTop = viewLocation[1];
+        var viewRight = viewLeft + view.Width;
+        var viewBottom = viewTop + view.Height;
 
-
-        foreach (var rect in displayCutoutBoundingRect)
+        // Get screen dimensions
+        var displayMetrics = view.Context.Resources?.DisplayMetrics;
+        if (displayMetrics is null)
         {
-            if (ARect.Intersects(viewRect, rect))
-            {
-                return true;
-            }
+            return false;
+        }
+
+        var screenWidth = displayMetrics.WidthPixels;
+        var screenHeight = displayMetrics.HeightPixels;
+
+        // Check if view intersects with any of the safe area insets
+        // Top inset: view's top is within the top safe area
+        if (safeAreaInsets.Top > 0 && viewTop < safeAreaInsets.Top)
+        {
+            return true;
+        }
+
+        // Bottom inset: view's bottom extends into the bottom safe area
+        if (safeAreaInsets.Bottom > 0 && viewBottom > (screenHeight - safeAreaInsets.Bottom))
+        {
+            return true;
+        }
+
+        // Left inset: view's left is within the left safe area
+        if (safeAreaInsets.Left > 0 && viewLeft < safeAreaInsets.Left)
+        {
+            return true;
+        }
+
+        // Right inset: view's right extends into the right safe area
+        if (safeAreaInsets.Right > 0 && viewRight > (screenWidth - safeAreaInsets.Right))
+        {
+            return true;
         }
 
         return false;
