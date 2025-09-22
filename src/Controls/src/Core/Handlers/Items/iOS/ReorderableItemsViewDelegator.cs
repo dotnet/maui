@@ -20,14 +20,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsView = ViewController?.ItemsView;
 
 			if (itemsView?.IsGrouped != true)
+			{
 				return proposedIndexPath;
+			}
 
 			if (originalIndexPath.Section != proposedIndexPath.Section && !itemsView.CanMixGroups)
+			{
 				return originalIndexPath;
+			}
 
 			var itemsSource = ViewController?.ItemsSource;
 			if (itemsSource == null)
+			{
 				return proposedIndexPath;
+			}
 
 			var totalSections = itemsSource.GroupCount;
 
@@ -68,13 +74,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return proposedIndexPath;
 		}
 
-		private NSIndexPath FindFirstEmptyGroup(IItemsViewSource itemsSource, int totalSections)
+		NSIndexPath FindFirstEmptyGroup(IItemsViewSource itemsSource, int totalSections)
 		{
 			for (int section = 0; section < totalSections; section++)
 			{
 				var sectionItemCount = itemsSource.ItemCountInGroup(section);
 				if (sectionItemCount == 0)
+				{
 					return NSIndexPath.FromRowSection(0, section);
+				}
 			}
 			return null;
 		}
