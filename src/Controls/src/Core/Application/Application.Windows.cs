@@ -90,27 +90,35 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
+				// Set the theme on the root element of the window
 				root.RequestedTheme = followSystem ? ElementTheme.Default : forcedElementTheme;
 
-				if (AppWindowTitleBar.IsCustomizationSupported())
-				{
-					var titleBar = platformWindow.GetAppWindow()?.TitleBar;
-					if (titleBar is not null)
-					{
-						var isDark = followSystem
-							? (UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark)
-							: (forcedElementTheme == ElementTheme.Dark);
+				var isDark = followSystem
+						? (UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark)
+						: (forcedElementTheme == ElementTheme.Dark);
 
-						titleBar.ButtonBackgroundColor = UI.Colors.Transparent;
-						titleBar.ButtonInactiveBackgroundColor = UI.Colors.Transparent;
-						titleBar.ButtonHoverBackgroundColor = isDark ? UI.ColorHelper.FromArgb(0x0F, 0xFF, 0xFF, 0xFF) : UI.ColorHelper.FromArgb(0x0F, 0x00, 0x00, 0x00);
-						titleBar.ButtonHoverForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
-						titleBar.ButtonPressedBackgroundColor = UI.ColorHelper.FromArgb(0x1F, 0xFF, 0xFF, 0xFF);
-						titleBar.ButtonPressedForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
-						titleBar.ButtonForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
-					}
-				}
+				SetTileBarButtonColors(platformWindow, isDark);
 			});
+		}
+
+		void SetTileBarButtonColors(UI.Xaml.Window platformWindow, bool isDark)
+		{
+
+			if (AppWindowTitleBar.IsCustomizationSupported())
+			{
+				var titleBar = platformWindow.GetAppWindow()?.TitleBar;
+				if (titleBar is not null)
+				{
+					titleBar.ButtonBackgroundColor = UI.Colors.Transparent;
+					titleBar.ButtonInactiveBackgroundColor = UI.Colors.Transparent;
+					titleBar.ButtonHoverBackgroundColor = isDark ? UI.ColorHelper.FromArgb(0x0F, 0xFF, 0xFF, 0xFF) : UI.ColorHelper.FromArgb(0x0F, 0x00, 0x00, 0x00);
+					titleBar.ButtonHoverForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
+					titleBar.ButtonPressedBackgroundColor = UI.ColorHelper.FromArgb(0x1F, 0xFF, 0xFF, 0xFF);
+					titleBar.ButtonPressedForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
+					titleBar.ButtonForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
+				}
+			}
+
 		}
 	}
 }
