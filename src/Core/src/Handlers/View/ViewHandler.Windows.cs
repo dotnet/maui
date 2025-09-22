@@ -188,21 +188,21 @@ public partial class ViewHandler
 				uiElement.ClearValue(UIElement.ContextFlyoutProperty);
 			}
 		}
-
-		internal virtual bool PreventGestureBubbling
-			=> this switch
-			{
-				ButtonHandler => true,
-				DatePickerHandler => true,
-				StepperHandler => true,
-				SliderHandler => true,
-				SwitchHandler => true,
-				TimePickerHandler => true,
-				ImageButtonHandler => true,
-				RadioButtonHandler => true,
-				_ => false,
-			};
 	}
+
+	internal virtual bool PreventGestureBubbling
+		=> this switch
+		{
+			ButtonHandler => true,
+			DatePickerHandler => true,
+			StepperHandler => true,
+			SliderHandler => true,
+			SwitchHandler => true,
+			TimePickerHandler => true,
+			ImageButtonHandler => true,
+			RadioButtonHandler => true,
+			_ => false,
+		};
 
 	static void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
 	{
