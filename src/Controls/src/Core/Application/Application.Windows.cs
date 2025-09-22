@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 				{
 					titleBar.ButtonBackgroundColor = UI.Colors.Transparent;
 					titleBar.ButtonInactiveBackgroundColor = UI.Colors.Transparent;
-					titleBar.ButtonHoverBackgroundColor = isDark ? UI.ColorHelper.FromArgb(0x0F, 0xFF, 0xFF, 0xFF) : UI.ColorHelper.FromArgb(0x0F, 0x00, 0x00, 0x00);
+					titleBar.ButtonHoverBackgroundColor = isDark ? UI.ColorHelper.FromArgb(24, 255, 255, 255) : UI.ColorHelper.FromArgb(24, 0, 0, 0);
 					titleBar.ButtonHoverForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
 					titleBar.ButtonPressedBackgroundColor = UI.ColorHelper.FromArgb(0x1F, 0xFF, 0xFF, 0xFF);
 					titleBar.ButtonPressedForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
