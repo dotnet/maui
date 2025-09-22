@@ -4,12 +4,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class TestSharedResourceDictionary : ContentPage
 {
 	public TestSharedResourceDictionary() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[SetUp]
 		public void Setup()

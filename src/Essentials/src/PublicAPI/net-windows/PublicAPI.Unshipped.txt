@@ -19,6 +19,9 @@ Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
 Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
 *REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
 Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!

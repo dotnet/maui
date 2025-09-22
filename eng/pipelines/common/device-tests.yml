@@ -9,7 +9,6 @@ parameters:
   catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   skipProvisioning: true
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -62,7 +61,6 @@ stages:
                 configuration: ${{ project.androidConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
-              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
@@ -112,7 +110,6 @@ stages:
                 configuration: ${{ project.iOSConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
-              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
@@ -136,7 +133,6 @@ stages:
                 configuration: ${{ project.iOSConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
-              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
@@ -162,7 +158,6 @@ stages:
                   configuration: ${{ project.windowsConfiguration }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 skipProvisioning: ${{ parameters.skipProvisioning }}
-                agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                 artifactName: ${{ parameters.artifactName }}
                 artifactItemPattern: ${{ parameters.artifactItemPattern }}
                 useArtifacts: ${{ parameters.useArtifacts }}

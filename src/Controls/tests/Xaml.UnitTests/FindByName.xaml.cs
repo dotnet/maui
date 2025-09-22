@@ -2,13 +2,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class FindByName : ContentPage
 {
 	public FindByName() => InitializeComponent();
 
 	[TestFixture]
-	public class FindByNameTests
+	class FindByNameTests
 	{
 		[Test]
 		public void TestRootName([Values] XamlInflator inflator)

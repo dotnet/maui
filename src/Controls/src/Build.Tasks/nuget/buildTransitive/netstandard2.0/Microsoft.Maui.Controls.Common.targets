@@ -22,6 +22,12 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativePath" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Inflator" />
+    <CompilerVisibleProperty Include="MauiXamlNoWarn" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="NoWarn" />
+		<CompilerVisibleProperty Include="EnableMauiXamlDiagnostics" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EnableDiagnostics" />
+    <CompilerVisibleProperty Include="MauiXamlLineInfo" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
 	</ItemGroup>
-
 </Project>

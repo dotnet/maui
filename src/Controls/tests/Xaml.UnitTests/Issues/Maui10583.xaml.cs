@@ -20,7 +20,6 @@ public enum Maui10583Enum
 	John, Paul, George, Ringo
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui10583 : ContentPage
 {
 	public Maui10583() => InitializeComponent();

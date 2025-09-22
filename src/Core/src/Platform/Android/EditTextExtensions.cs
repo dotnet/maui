@@ -4,10 +4,12 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -42,10 +44,27 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor)
 		{
-			if (textColor != null)
+			if (textColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
-					editText.SetTextColor(c);
+				editText.SetTextColor(c);
+			}
+			else
+			{
+				// Fallback to system default color
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
+				{
+					using var ta = theme.ObtainStyledAttributes([global::Android.Resource.Attribute.TextColorPrimary]);
+					var cs = ta.GetColorStateList(0);
+
+					if (cs is not null)
+					{
+						int[] DisabledState = [-global::Android.Resource.Attribute.StateEnabled];
+						int[] EnabledState = [global::Android.Resource.Attribute.StateEnabled];
+						var state = editText.Enabled ? EnabledState : DisabledState;
+						var color = new global::Android.Graphics.Color(cs.GetColorForState(state, Colors.Black.ToPlatform()));
+						editText.SetTextColor(color);
+					}
+				}
 			}
 		}
 
@@ -133,10 +152,19 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor)
 		{
-			if (placeholderTextColor != null)
+			if (placeholderTextColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+				editText.SetHintTextColor(c);
+			else
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
-					editText.SetHintTextColor(c);
+				// Fallback to system default color
+				var typedValue = new TypedValue();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+					editText.Context?.Theme is Resources.Theme theme &&
+					theme.ResolveAttribute(global::Android.Resource.Attribute.TextColorHint, typedValue, true) &&
+					editText.Resources?.GetColor(typedValue.ResourceId, theme) is global::Android.Graphics.Color color)
+				{
+					editText.SetHintTextColor(color);
+				}
 			}
 		}
 
@@ -374,7 +402,7 @@ namespace Microsoft.Maui.Platform
 		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
 		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
 		// bounds of the EditText.
-		static bool RectContainsMotionEvent(Rect rect, MotionEvent motionEvent)
+		static bool RectContainsMotionEvent(global::Android.Graphics.Rect  rect, MotionEvent motionEvent)
 		{
 			var x = motionEvent.GetX();
 
@@ -394,7 +422,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Gets the location of the "Clear" button relative to the bounds of the EditText
-		static Rect GetClearButtonLocation(Rect buttonRect, EditText platformView)
+		static global::Android.Graphics.Rect GetClearButtonLocation(global::Android.Graphics.Rect buttonRect, EditText platformView)
 		{
 			// Determine the top and bottom edges of the button
 			// This assumes the button is vertically centered within the padded area of the EditText
@@ -410,19 +438,19 @@ namespace Microsoft.Maui.Platform
 			// The horizontal location of the button depends on the layout direction
 			var flowDirection = platformView.LayoutDirection;
 
-			if (flowDirection == LayoutDirection.Ltr)
+			if (flowDirection == global::Android.Views.LayoutDirection.Ltr)
 			{
 				var rightEdge = platformView.Width - platformView.PaddingRight;
 				var leftEdge = rightEdge - buttonRect.Width();
 
-				return new Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 			else
 			{
 				var leftEdge = platformView.PaddingLeft;
 				var rightEdge = leftEdge + buttonRect.Width();
 
-				return new Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
 	}

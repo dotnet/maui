@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 public class SourceGenCssTests : SourceGenTestsBase
 {
 	private record AdditionalCssFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
-		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Css", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName ?? Path, TargetFramework: TargetFramework);
+		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Css", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName ?? Path, TargetFramework: TargetFramework, NoWarn: "");
 
 	[Test]
 	public void TestCodeBehindGenerator_BasicCss()

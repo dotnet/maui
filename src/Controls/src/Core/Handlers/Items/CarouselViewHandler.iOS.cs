@@ -75,24 +75,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var size = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(11))
+			// Clamp size to constraints to prevent exceeding them on Mac Catalyst
+			if (!double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
 			{
-				// Ensure size never exceeds constraints.
-				// In the 22417 test sample on Mac, if widthConstraint is 1085, it becomes 1512 after the SizeThatFits call 
-				// inside ViewHandlerExtensions.iOS. This causes the view's width to appear larger on Mac.
-				// On iOS, the value remains correct — for example, if widthConstraint is 375, SizeThatFits also returns 375.
-				// This issue happened on Main also.
+				size.Width = widthConstraint;
+			}
 
-				if (!double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
-				{
-					size.Width = (float)widthConstraint;
-				}
-
-				if (!double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
-				{
-					size.Height = (float)heightConstraint;
-				}
-
+			if (!double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
+			{
+				size.Height = heightConstraint;
 			}
 
 			return size;

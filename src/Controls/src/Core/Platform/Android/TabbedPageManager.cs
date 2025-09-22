@@ -477,11 +477,6 @@ public class TabbedPageManager
 			child.IgnoresContainerArea = child is NavigationPage;
 	}
 
-	void UpdateOffscreenPageLimit()
-	{
-		_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
-	}
-
 	internal void UpdateSwipePaging()
 	{
 		_viewPager.UserInputEnabled = Element.OnThisPlatform().IsSwipePagingEnabled();
@@ -899,6 +894,13 @@ public class TabbedPageManager
 
 				icon.Mutate();
 				icon.SetState(_stateSet);
+
+				// The FontImageSource has its own color, so we don't need to apply the tint list.
+				if (page.IconImageSource is not FontImageSource)
+				{
+					_tabLayout.TabIconTint = colors;
+				}
+
 				ADrawableCompat.SetTintList(icon, colors);
 			}
 		}

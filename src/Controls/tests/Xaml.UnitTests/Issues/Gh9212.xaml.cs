@@ -13,7 +13,6 @@ public class Gh9212MarkupExtension : IMarkupExtension
 	public object ProvideValue(IServiceProvider serviceProvider) => Text;
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh9212 : ContentPage
 {
 	public Gh9212() => InitializeComponent();

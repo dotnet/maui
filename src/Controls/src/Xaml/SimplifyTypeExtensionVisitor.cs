@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (IsValueOfXDataTypeOrTargetType(node, parentNode, out XmlName propertyName)
 				&& IsTypeExtension(node, out ValueNode typeNameValueNode))
 			{
-				(parentNode as IElementNode).Properties[propertyName] = typeNameValueNode;
+				(parentNode as ElementNode).Properties[propertyName] = typeNameValueNode;
 			}
 
 			static bool IsValueOfXDataTypeOrTargetType(ElementNode node, INode parentNode, out XmlName propertyName)

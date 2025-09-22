@@ -9,7 +9,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlexLayout']/Docs/*" />
+	/// <summary>A Flexbox-like layout that lays out child elements in optionally wrappable rows or columns of child elements.</summary>
 	[ContentProperty(nameof(Children))]
 	public class FlexLayout : Layout, IFlexLayout
 	{
@@ -70,42 +70,46 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Direction']/Docs/*" />
+		/// <summary>Gets or sets the flex direction for child elements within this layout.</summary>
+		/// <remarks>The following image shows the options for</remarks>
 		public FlexDirection Direction
 		{
 			get => (FlexDirection)GetValue(DirectionProperty);
 			set => SetValue(DirectionProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='JustifyContent']/Docs/*" />
+		/// <summary>Gets or sets a value that that describes how child elements are justified when there is extra space around them.</summary>
+		/// <remarks>The following image shows options for</remarks>
 		public FlexJustify JustifyContent
 		{
 			get => (FlexJustify)GetValue(JustifyContentProperty);
 			set => SetValue(JustifyContentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignContent']/Docs/*" />
+		/// <summary>Gets or sets a value that controls how multiple rows or columns of child elements are aligned.</summary>
+		/// <remarks>This property behaves similarly to</remarks>
 		public FlexAlignContent AlignContent
 		{
 			get => (FlexAlignContent)GetValue(AlignContentProperty);
 			set => SetValue(AlignContentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignItems']/Docs/*" />
+		/// <summary>Gets or sets a value that controls how child elements are arranged within their row or column.</summary>
+		/// <remarks>The following image shows the options for</remarks>
 		public FlexAlignItems AlignItems
 		{
 			get => (FlexAlignItems)GetValue(AlignItemsProperty);
 			set => SetValue(AlignItemsProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Position']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether the coordinates of child elements are specified in absolute or relative terms. This is a bindable property.</summary>
 		public FlexPosition Position
 		{
 			get => (FlexPosition)GetValue(PositionProperty);
 			set => SetValue(PositionProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Wrap']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether and how child elements within this layout wrap. This is a bindable property.</summary>
 		public FlexWrap Wrap
 		{
 			get => (FlexWrap)GetValue(WrapProperty);

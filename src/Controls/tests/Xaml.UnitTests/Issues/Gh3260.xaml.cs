@@ -13,7 +13,6 @@ public class Gh3260MyLayout : Gh3260MyGLayout<View>
 	protected override void LayoutChildren(double x, double y, double width, double height) => throw new NotImplementedException();
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh3260 : ContentPage
 {
 	public Gh3260() => InitializeComponent();

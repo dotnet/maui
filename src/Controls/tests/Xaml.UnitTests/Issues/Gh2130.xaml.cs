@@ -19,7 +19,6 @@ public static class Gh2130Behavior
 
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh2130 : ContentPage
 {
 	public Gh2130() => InitializeComponent();

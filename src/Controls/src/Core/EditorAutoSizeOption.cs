@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/EditorAutoSizeOption.xml" path="Type[@FullName='Microsoft.Maui.Controls.EditorAutoSizeOption']/Docs/*" />
+	/// <summary>Enumerates values that control whether an editor will change size to accommodate input as the user enters it.</summary>
 	public enum EditorAutoSizeOption
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/EditorAutoSizeOption.xml" path="//Member[@MemberName='Disabled']/Docs/*" />
+		/// <summary>Automatic resizing is not enabled. This is the default value.</summary>
 		Disabled = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/EditorAutoSizeOption.xml" path="//Member[@MemberName='TextChanges']/Docs/*" />
+		/// <summary>Automatic resizing is enabled.</summary>
 		TextChanges = 1
 	}
 }

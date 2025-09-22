@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSourceConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.FileImageSourceConverter']/Docs/*" />
+	/// <summary>A <see cref="System.ComponentModel.TypeConverter"/> that converts to <see cref="Microsoft.Maui.Controls.FileImageSource"/>.</summary>
 	public sealed class FileImageSourceConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

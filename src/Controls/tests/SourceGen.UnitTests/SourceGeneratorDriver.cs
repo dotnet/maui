@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn);
 
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
@@ -31,7 +31,7 @@ public static class SourceGeneratorDriver
 			trackIncrementalGeneratorSteps: true);
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
-			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
+			.AddAdditionalTexts([.. additionalFiles.Select(f => f.Text)])
 			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
 
 		driver = driver.RunGenerators(compilation);
@@ -94,6 +94,7 @@ public static class SourceGeneratorDriver
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
+				MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),						//System.Private.Uri
 				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
 				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
 				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
@@ -151,7 +152,12 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.TargetPath" => _additionalFile.TargetPath,
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
-					"build_property.targetframework" => _additionalFile.TargetFramework,
+					"build_metadata.additionalfiles.Inflator" => "SourceGen",
+					"build_property.targetFramework" => _additionalFile.TargetFramework,
+					"build_property.EnableMauiXamlDiagnostics" => "true",
+					"build_property.MauiXamlLineInfo" => "enable",
+					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
+
 					_ => null
 				};
 

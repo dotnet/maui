@@ -15,7 +15,6 @@ public class Gh2508FlashingTriggerAction : TriggerAction<VisualElement>
 	}
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh2508 : ContentPage
 {
 	public Gh2508() => InitializeComponent();

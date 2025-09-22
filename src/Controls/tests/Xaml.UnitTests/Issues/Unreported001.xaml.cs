@@ -12,12 +12,11 @@ public class U001Page : ContentPage
 
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Unreported001 : TabbedPage
 {
 	public Unreported001() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

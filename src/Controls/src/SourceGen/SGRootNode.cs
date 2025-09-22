@@ -12,7 +12,5 @@ class SGRootNode : RootNode
 		// TypeReference = typeReference;
 	}
 
-	public IList<string>? DisableWarnings { get; internal set; }
-
 	// public TypeReference TypeReference { get; private set; }
 }

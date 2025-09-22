@@ -24,21 +24,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.NSGlobalXmlnsWithXStatic
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class GlobalXmlnsWithXStatic : ContentPage
 	{
 		public GlobalXmlnsWithXStatic() => InitializeComponent();
 
-		[Test]
-		public void XStaticWithAggregatedXmlns([Values] XamlInflator inflator)
+		[TestFixture]
+		class Tests
 		{
-			if (inflator == XamlInflator.XamlC)
-				MockCompiler.Compile(typeof(GlobalXmlnsWithXStatic));
+			[Test]
+			public void XStaticWithAggregatedXmlns([Values] XamlInflator inflator)
+			{
+				if (inflator == XamlInflator.XamlC)
+					MockCompiler.Compile(typeof(GlobalXmlnsWithXStatic));
 
-			var page = new GlobalXmlnsWithXStatic(inflator);
-			Assert.That(page.label0.Text, Is.EqualTo("MConstant"));
+				var page = new GlobalXmlnsWithXStatic(inflator);
+				Assert.That(page.label0.Text, Is.EqualTo("MConstant"));
+			}
 		}
-
 
 	}
 }

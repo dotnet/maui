@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	[ElementHandler<LabelHandler>]
@@ -94,7 +94,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextTransformProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
@@ -118,7 +119,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the Label class.</summary>
 		public Label()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Label>>(() => new PlatformConfigurationRegistry<Label>(this));
@@ -131,35 +132,37 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(FormattedText, this.BindingContext);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FormattedText']/Docs/*" />
+		/// <summary>Gets or sets the formatted text for the Label. This is a bindable property.</summary>
+		/// <remarks>Setting FormattedText to a non-null value will set the Text property to null.</remarks>
 		public FormattedString FormattedText
 		{
 			get { return (FormattedString)GetValue(FormattedTextProperty); }
 			set { SetValue(FormattedTextProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the horizontal alignment of the Text property. This is a bindable property.</summary>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='LineBreakMode']/Docs/*" />
+		/// <summary>Gets or sets the LineBreakMode for the Label. This is a bindable property.</summary>
 		public LineBreakMode LineBreakMode
 		{
 			get { return (LineBreakMode)GetValue(LineBreakModeProperty); }
 			set { SetValue(LineBreakModeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>Gets or sets the text for the Label. This is a bindable property.</summary>
+		/// <remarks>Setting Text to a non-null value will set the FormattedText property to null.</remarks>
 		public string Text
 		{
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the <see cref="Microsoft.Maui.Graphics.Color"/> for the text of this Label. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
@@ -173,35 +176,36 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the vertical alignement of the Text property. This is a bindable property.</summary>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
 			set { SetValue(VerticalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>Gets a value that indicates whether the font for the label is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextDecorations']/Docs/*" />
+		/// <summary>Gets or sets the <see cref="Microsoft.Maui.TextDecorations"/> applied to <see cref="Microsoft.Maui.Controls.Label.Text"/>.</summary>
 		public TextDecorations TextDecorations
 		{
 			get { return (TextDecorations)GetValue(TextDecorationsProperty); }
 			set { SetValue(TextDecorationsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>Gets or sets the font family to which the font for the label belongs.</summary>
+		/// <remarks>The font family can refer to a system font or a custom font.</remarks>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>Gets the size of the font for the label.</summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -215,14 +219,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='LineHeight']/Docs/*" />
+		/// <summary>Gets or sets the multiplier to apply to the default line height when displaying text. This is a bindable property.</summary>
 		public double LineHeight
 		{
 			get { return (double)GetValue(LineHeightProperty); }
 			set { SetValue(LineHeightProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='MaxLines']/Docs/*" />
+		/// <summary>Gets or sets the maximum number of lines allowed in the <see cref="Microsoft.Maui.Controls.Label"/>.</summary>
 		public int MaxLines
 		{
 			get => (int)GetValue(MaxLinesProperty);
@@ -236,7 +240,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(PaddingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextType']/Docs/*" />
+		/// <summary>Determines whether the Label should display plain text or HTML text. This is a bindable property.</summary>
 		public TextType TextType
 		{
 			get => (TextType)GetValue(TextTypeProperty);
@@ -389,7 +393,9 @@ namespace Microsoft.Maui.Controls
 		internal bool HasFormattedTextSpans
 			=> (FormattedText?.Spans?.Count ?? 0) > 0;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='GetChildElements']/Docs/*" />
+		/// <summary>Returns the child elements that are under the specified point.</summary>
+		/// <param name="point">The point under which to look for child elements.</param>
+		/// <returns>The child elements that are under the specified point.</returns>
 		public override IList<GestureElement> GetChildElements(Point point)
 		{
 			if (FormattedText?.Spans == null || FormattedText?.Spans.Count == 0)

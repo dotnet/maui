@@ -6,7 +6,6 @@ using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Unreported007 : ContentPage
 {
 	public Unreported007() => InitializeComponent();

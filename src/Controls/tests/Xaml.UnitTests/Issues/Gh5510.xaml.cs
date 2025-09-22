@@ -50,7 +50,6 @@ public class Gh5510VM : INotifyPropertyChanged
 	protected virtual void OnPropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5510 : ContentPage
 {
 	public Gh5510() => InitializeComponent();

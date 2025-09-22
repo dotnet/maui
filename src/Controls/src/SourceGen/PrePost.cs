@@ -15,8 +15,23 @@ class PrePost : IDisposable
 	/// <param name="iXmlLineInfo"></param>
 	/// <param name="fileName"></param>
 	/// <returns></returns>
-	public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
-		=> new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
+	public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
+	{
+		// Emit #line with an absolute path since relative paths have undefined behavior (https://github.com/dotnet/roslyn/issues/71202#issuecomment-1874649780)
+		static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
+		{
+			var lineNumber = iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1;
+			codeWriter.WriteLineNoTabs($"#line {lineNumber} \"{projectItem?.TargetPath}\"");
+		}
+
+		static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
+			=> codeWriter.WriteLineNoTabs("#line default");
+
+		return new(() => LineInfo(codeWriter, iXmlLineInfo, projectItem), () => LineDefault(codeWriter, iXmlLineInfo));
+	}
+
+	public static PrePost NoBlock() =>
+			new(() => { }, () => { });
 
 	public static PrePost NewConditional(IndentedTextWriter codeWriter, string condition, Action? orElse = null)
 	{
@@ -33,6 +48,7 @@ class PrePost : IDisposable
 
 	public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
 		=> new(() => codeWriter.WriteLineNoTabs($"#pragma warning disable {warning}"), () => codeWriter.WriteLineNoTabs($"#pragma warning restore {warning}"));
+		
 	readonly Action post;
 	PrePost(Action pre, Action post)
 	{
@@ -66,12 +82,4 @@ class PrePost : IDisposable
 				else
 					codeWriter.WriteLine(end);
 			});
-
-	[Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
-	static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
-		=> codeWriter.WriteLineNoTabs($"#line {(iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1)} \"{fileName}\"");
-
-	[Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
-	static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
-		=> codeWriter.WriteLineNoTabs("#line default");
 }

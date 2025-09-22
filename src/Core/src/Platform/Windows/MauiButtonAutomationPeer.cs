@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiButtonAutomationPeer : ButtonAutomationPeer
+	public partial class MauiButtonAutomationPeer : ButtonAutomationPeer
 	{
 		public MauiButtonAutomationPeer(Button owner) : base(owner)
 		{

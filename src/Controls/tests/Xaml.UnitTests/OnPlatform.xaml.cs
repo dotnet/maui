@@ -4,13 +4,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class OnPlatform : ContentPage
 {
 	public OnPlatform() => InitializeComponent();
 
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -27,11 +26,7 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void BoolToVisibility([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void BoolToVisibility([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -43,11 +38,7 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void DoubleToWidth([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void DoubleToWidth([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -63,11 +54,8 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void StringToText([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
+
 		public void StringToText([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -83,11 +71,8 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformAsResource([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
+
 		public void OnPlatformAsResource([Values] XamlInflator inflator)
-#endif
 		{
 			var layout = new OnPlatform(inflator);
 			var onplat = layout.Resources["fontAttributes"] as OnPlatform<FontAttributes>;
@@ -101,11 +86,8 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformAsResourceAreApplied([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
+
 		public void OnPlatformAsResourceAreApplied([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -121,11 +103,8 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatform2Syntax([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
+
 		public void OnPlatform2Syntax([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			var layout = new OnPlatform(inflator);
@@ -145,11 +124,7 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformDefault([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformDefault([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.Create("\ud83d\ude80");
 			var layout = new OnPlatform(inflator);
@@ -157,11 +132,7 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformInStyle0([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformInStyle0([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -173,11 +144,7 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformInStyle1([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformInStyle1([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);
@@ -189,11 +156,7 @@ public partial class OnPlatform : ContentPage
 		}
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformInline([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformInline([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new OnPlatform(inflator);

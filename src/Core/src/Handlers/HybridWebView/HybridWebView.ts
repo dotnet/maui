@@ -50,6 +50,10 @@ interface JSInvokeError {
 interface DotNetInvokeResult {
     IsJson: boolean;
     Result: any;
+    IsError?: boolean;
+    ErrorMessage?: string;
+    ErrorType?: string;
+    ErrorStackTrace?: string;
 }
 
 (() => {
@@ -213,6 +217,18 @@ interface DotNetInvokeResult {
 
         if (!response) {
             return null;
+        }
+
+        // Check if the response indicates an error
+        if (response.IsError) {
+            const error = new Error(response.ErrorMessage || 'Unknown error occurred in .NET method');
+            if (response.ErrorType) {
+                (error as any).dotNetErrorType = response.ErrorType;
+            }
+            if (response.ErrorStackTrace) {
+                (error as any).dotNetStackTrace = response.ErrorStackTrace;
+            }
+            throw error;
         }
 
         if (response.IsJson) {

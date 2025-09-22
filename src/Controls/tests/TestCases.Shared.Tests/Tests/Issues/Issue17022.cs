@@ -6,23 +6,23 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue17022 : _IssuesUITest
-	{
-		public Issue17022(TestDevice device)
-			: base(device)
-		{ }
+    public class Issue17022 : _IssuesUITest
+    {
+        public Issue17022(TestDevice device)
+            : base(device)
+        { }
 
-		public override string Issue => "UINavigationBar is Translucent";
+        public override string Issue => "UINavigationBar is Translucent";
 
-		// TODO: Add shell navigation bar tests when we can call shell in UITest
-		[Test]
-		[Category(UITestCategories.Navigation)]
-		[TestCase("NewNavigationPageButton", false)]
+        // TODO: Add shell navigation bar tests when we can call shell in UITest
+        [Test]
+        [Category(UITestCategories.Navigation)]
+        [TestCase("NewNavigationPageButton", false)]
         [TestCase("NewNavigationPageTransparentButton", false)]
         [TestCase("NewNavigationPageTranslucentButton", false)]
         [TestCase("NewNavigationPageTransparentTranslucentButton", false)]
         [TestCase("NewNavigationPageGridButton", false)]
-        [TestCase("NewNavigationPageGridTransparentButton", false)]
+        [TestCase("NewNavigationPageGridTransparentButton", true)] // if we set BarBackgroundColor to transparent, the boxview should be at the top.
         [TestCase("NewNavigationPageGridTranslucentButton", false, true)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
         [TestCase("NewNavigationPageGridTransparentTranslucentButton", true)]
         [TestCase("NewFlyoutPageButton", false)]
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [TestCase("NewFlyoutPageTranslucentButton", false)]
         [TestCase("NewFlyoutPageTransparentTranslucentButton", false)]
         [TestCase("NewFlyoutPageGridButton", false)]
-        [TestCase("NewFlyoutPageGridTransparentButton", false)]
+        [TestCase("NewFlyoutPageGridTransparentButton", true)] // if we set BarBackgroundColor to transparent, the boxview should be at the top.
         [TestCase("NewFlyoutPageGridTranslucentButton", false, true)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
         [TestCase("NewFlyoutPageGridTransparentTranslucentButton", true)]
         [TestCase("SemiTransparentNavigationPageBackgroundColor", true, true)]
@@ -38,14 +38,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [TestCase("SemiTransparentFlyoutPageBackgroundColor", true, true)]
         [TestCase("SemiTransparentFlyoutPageBrush", true, true)]
 
-		public void Issue17022Test(string testButtonID, bool isTopOfScreen, bool requiresScreenshot = false)
-		{
+        public void Issue17022Test(string testButtonID, bool isTopOfScreen, bool requiresScreenshot = false)
+        {
             App.WaitForElement(testButtonID).Click();
             var boxView = App.WaitForElement("TopBoxView");
             ClassicAssert.NotNull(boxView);
-			var rect = boxView.GetRect();
+            var rect = boxView.GetRect();
 
-            try { 
+            try
+            {
                 if (requiresScreenshot)
                 {
                     VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + testButtonID);
@@ -58,19 +59,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
                     }
                     else
                     {
-						ClassicAssert.AreNotEqual(rect.Y, 0);
+                        ClassicAssert.AreNotEqual(rect.Y, 0);
                     }
                 }
             }
-            catch 
-            { 
+            catch
+            {
                 Assert.Fail("Failed with exception");
             }
             finally
             {
                 App.WaitForElement("PopPageButton").Click();
             }
-		}
-	}
+        }
+    }
 }
 #endif

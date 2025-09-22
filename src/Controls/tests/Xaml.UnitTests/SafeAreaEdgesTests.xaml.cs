@@ -4,13 +4,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class SafeAreaEdgesTests : ContentPage
 	{
 		public SafeAreaEdgesTests() => InitializeComponent();
 
 		[TestFixture]
-		public class Tests
+		class Tests
 		{
 			[Test]
 			public void SingleValueConversions([Values] XamlInflator inflator)

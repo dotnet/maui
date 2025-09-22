@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ListStringTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListStringTypeConverter']/Docs/*" />
+	/// <summary>Type converter for converting properly formatted string lists to lists.</summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ListStringTypeConverter")]
 	public class ListStringTypeConverter : TypeConverter
 	{

@@ -9,7 +9,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiButton : Button
+	public partial class MauiButton : Button
 	{
 		public MauiButton()
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	internal class DefaultMauiButtonContent : MauiPanel
+	internal partial class DefaultMauiButtonContent : MauiPanel
 	{
 		readonly Image _image;
 		readonly TextBlock _textBlock;

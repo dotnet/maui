@@ -26,11 +26,7 @@ static class GeneratorHelpers
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 // </auto-generated>
-//------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
-#nullable enable
-#endif
-";
+//------------------------------------------------------------------------------";
 
 	public static string EscapeIdentifier(string identifier)
 	{
@@ -40,29 +36,16 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
-		var (additionalText, optionsProvider) = tuple;
-		var fileOptions = optionsProvider.GetOptions(additionalText);
-		if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
-		{
+		if (cancellationToken.IsCancellationRequested)
 			return null;
-		}
 
-		fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
-		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
-		fileOptions.TryGetValue("build_property._MauiForceXamlSourcegen", out var forceSourceGen);
-		fileOptions.TryGetValue("build_property.Configuration", out var configuration);
-		return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework)
-		{
-			ForceSourceGen = forceSourceGen == true.ToString(),
-			Configuration = configuration!,
-		};
+		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText));
+		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
+    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAdnCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAdnCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
@@ -120,10 +103,7 @@ static class GeneratorHelpers
 					continue;
 				}
 
-				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition)
-				{
-					DisableWarnings = warningDisableList,
-				};
+				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
 				XamlParser.ParseXaml(rootnode, reader);
 
 				return rootnode;
@@ -398,4 +378,19 @@ static class GeneratorHelpers
 		}
 		return null;
 	}
+
+	/// <summary>
+	/// Formats a value as a culture-independent C# literal for source generation.
+	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity
+	/// but also numeric types and makes sure they are formatted correctly.
+	/// </summary>
+	/// <param name="value">The value to format</param>
+	/// <param name="quoted">Whether to include quotes around the formatted value</param>
+	/// <returns>A culture-independent string representation suitable for source generation</returns>
+	public static string FormatInvariant(object value, bool quoted = false)
+	{
+		return SymbolDisplay.FormatPrimitive(value, quoteStrings: quoted, useHexadecimalNumbers: false);
+	}
+
+
 }

@@ -12,7 +12,6 @@ public class Maui12566View : ContentView
 #pragma warning restore 67
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui12566 : ContentPage
 {
 	public Maui12566() => InitializeComponent();

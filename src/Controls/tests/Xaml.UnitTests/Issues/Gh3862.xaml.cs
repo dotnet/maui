@@ -5,7 +5,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh3862 : ContentPage
 {
 	public Gh3862() => InitializeComponent();
@@ -20,11 +19,7 @@ public partial class Gh3862 : ContentPage
 		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
 
 		[Test]
-#if FIXME_BEFORE_PUBLIC_RELEASE
-		public void OnPlatformMarkupInStyle([Values(XamlInflator.XamlC, XamlInflator.Runtime)] XamlInflator inflator)
-#else
 		public void OnPlatformMarkupInStyle([Values] XamlInflator inflator)
-#endif
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new Gh3862(inflator);

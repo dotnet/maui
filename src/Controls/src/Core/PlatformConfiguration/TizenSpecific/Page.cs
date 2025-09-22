@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.Page;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Page']/Docs/*" />
+	/// <summary>Provides access to the bread crumb bar for pages on the Tizen platform.</summary>
 	public static class Page
 	{
 		#region BreadCrumbName

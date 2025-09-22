@@ -9,7 +9,6 @@ public class Gh5254VM
 	public List<Gh5254VM> Answer { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh5254 : ContentPage
 {
 	public Gh5254() => InitializeComponent();

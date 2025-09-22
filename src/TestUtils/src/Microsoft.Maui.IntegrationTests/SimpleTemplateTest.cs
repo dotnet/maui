@@ -321,4 +321,38 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
+
+	[Test]
+	[TestCase("SentenceStudio.ServiceDefaults")]
+	[TestCase("MyApp.ServiceDefaults")]
+	[TestCase("Company.Product.ServiceDefaults")]
+	public void AspireServiceDefaultsTemplateUsesCorrectProjectName(string projectName)
+	{
+		var projectDir = Path.Combine(TestDirectory, projectName);
+		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+
+		Assert.IsTrue(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\""),
+			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
+
+		// Verify the project file was created with the correct name (this was the bug)
+		Assert.IsTrue(File.Exists(expectedProjectFile),
+			$"Expected project file '{expectedProjectFile}' was not created. This indicates the template naming issue.");
+
+		// Verify no incorrectly named files exist
+		var incorrectFiles = Directory.GetFiles(projectDir, "*.csproj")
+			.Where(f => !f.Equals(expectedProjectFile, StringComparison.OrdinalIgnoreCase))
+			.ToArray();
+
+		Assert.IsEmpty(incorrectFiles,
+			$"Found incorrectly named project files: {string.Join(", ", incorrectFiles.Select(Path.GetFileName))}. Only '{Path.GetFileName(expectedProjectFile)}' should exist.");
+
+		// Verify the content is correct
+		Assert.IsTrue(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
+			"Expected Extensions.cs file was not created.");
+
+		// Verify we can build it (even if restore fails due to placeholder tokens, the project structure should be valid)
+		var projectContent = File.ReadAllText(expectedProjectFile);
+		Assert.IsTrue(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
+			"Project file should contain Aspire-specific properties.");
+	}
 }

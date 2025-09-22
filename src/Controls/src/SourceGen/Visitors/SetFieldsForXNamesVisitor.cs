@@ -42,7 +42,7 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 			return;
 
 
-		Writer.WriteLine($"this.{EscapeIdentifier((string)(node.Value))} = {Context.Variables[(IElementNode)parentNode].Name};");
+		Writer.WriteLine($"this.{EscapeIdentifier((string)(node.Value))} = {Context.Variables[(ElementNode)parentNode].Name};");
 	}
 
 	public void Visit(MarkupNode node, INode parentNode)
@@ -62,9 +62,8 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 	}
 
 	static bool IsXNameProperty(ValueNode node, INode parentNode)
-		=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
+		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
 
 	static bool IsVisualStateGroup(ElementNode node) => node?.XmlType.Name == "VisualStateGroup" && node?.Parent is IListNode;
 	static bool IsVisualState(ElementNode node) => node?.XmlType.Name == "VisualState" && node?.Parent is IListNode;
-
 }

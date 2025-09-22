@@ -5,7 +5,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 using AbsoluteLayout = Compatibility.AbsoluteLayout;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class Gh11551 : ContentPage
 {
 	public Gh11551() => InitializeComponent();

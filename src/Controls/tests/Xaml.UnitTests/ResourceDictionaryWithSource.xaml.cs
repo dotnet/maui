@@ -4,12 +4,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class ResourceDictionaryWithSource : ContentPage
 {
 	public ResourceDictionaryWithSource() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[Test]
 		public void RDWithSourceAreFound([Values] XamlInflator inflator)
@@ -33,24 +32,58 @@ public partial class ResourceDictionaryWithSource : ContentPage
 		}
 
 		[Test]
-		public void XRIDIsGeneratedForRDWithoutCodeBehind()
+		public void CanLoadInflatedResources([Values] XamlInflator from, [Values] XamlInflator rd)
 		{
+			var layout = new ResourceDictionaryWithSource(from);
+			var key = "Colors";
+			switch (rd)
+			{
+				case XamlInflator.Runtime:
+					key = "Colors.rt";
+					break;
+				case XamlInflator.SourceGen:
+					key = "Colors.sgen";
+					break;
+				case XamlInflator.XamlC:
+					key = "Colors.xc";
+					break;
+			}
+			var rdLoaded = layout.Resources[key] as ResourceDictionary;
+			Assert.That(rdLoaded, Is.Not.Null);
+			Assert.That(rdLoaded["MediumGrayTextColor"], Is.TypeOf<Color>());
+			Assert.That(rdLoaded["MediumGrayTextColor"] as Color, Is.EqualTo(Color.Parse("#ff4d4d4d")));			
+		}
+
+		[Test]
+		public void XRIDIsGeneratedForRDWithoutCodeBehind([Values] XamlInflator rd)
+		{
+			var path = "AppResources/Colors.xaml";
+			switch (rd)
+			{
+				case XamlInflator.Runtime:
+					path = "AppResources/Colors.rt.xaml";
+					break;
+				case XamlInflator.SourceGen:
+					path = "AppResources/Colors.sgen.xaml";
+					break;
+				case XamlInflator.XamlC:
+					path = "AppResources/Colors.xc.xaml";
+					break;
+			}
+
 			var asm = typeof(ResourceDictionaryWithSource).Assembly;
-			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, "AppResources/Colors.xaml");
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, path);
 			Assert.That(resourceId, Is.Not.Null);
 			var type = XamlResourceIdAttribute.GetTypeForResourceId(asm, resourceId);
-			Assert.That(type?.Name, Does.StartWith("__Type"), "xaml-comp default to true, this should have a type associated with it");
+			Assert.That(type?.Name, Does.StartWith("__Type"), "We add a type for all RD without Class, this should have a type associated with it");
 
-#if !FIXME_BEFORE_PUBLIC_RELEASE
-			Assert.Fail(); //make sure to have the same default for sourcegen 
-#endif
 		}
 
 		[Test]
 		public void CodeBehindIsGeneratedForRDWithXamlComp()
 		{
 			var asm = typeof(ResourceDictionaryWithSource).Assembly;
-			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, "AppResources/CompiledColors.xaml");
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, "AppResources/CompiledColors.rtxc.xaml");
 			Assert.That(resourceId, Is.Not.Null);
 			var type = XamlResourceIdAttribute.GetTypeForResourceId(asm, resourceId);
 			Assert.That(type, Is.Not.Null);
@@ -62,7 +95,7 @@ public partial class ResourceDictionaryWithSource : ContentPage
 		public void LoadResourcesWithAssembly([Values] XamlInflator inflator)
 		{
 			var layout = new ResourceDictionaryWithSource(inflator);
-			Assert.That(((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source, Is.EqualTo(new Uri("/AppResources/Colors.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative)));
+			Assert.That(((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source, Is.EqualTo(new Uri("/AppResources/Colors.rtxc.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative)));
 			Assert.That(((ResourceDictionary)layout.Resources["inCurrentAssembly"])["MediumGrayTextColor"], Is.TypeOf<Color>());
 			Assert.That(((ResourceDictionary)layout.Resources["inOtherAssembly"]).Source, Is.EqualTo(new Uri("/AppResources.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly", UriKind.Relative)));
 			Assert.That(((ResourceDictionary)layout.Resources["inOtherAssembly"])["notBlue"], Is.TypeOf<Color>());

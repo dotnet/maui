@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 	}
 
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz27968 : Bz27968Page
 	{
 		public Bz27968()

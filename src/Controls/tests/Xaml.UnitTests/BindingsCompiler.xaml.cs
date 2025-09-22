@@ -10,7 +10,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class BindingsCompiler : ContentPage
 	{
 		public BindingsCompiler()
@@ -19,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[TestFixture]
-		public class Tests
+		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
@@ -27,9 +26,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void Test([Values] XamlInflator inflator)
 			{
-				if (inflator == XamlInflator.Default)
-					Assert.Ignore("not testing for default");
-
 				var vm = new MockViewModel
 				{
 					Text = "Text0",

@@ -26,12 +26,11 @@ public class NavigateExtension : IMarkupExtension<ICommand>
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
 public partial class TypeExtension : ContentPage
 {
 	public TypeExtension() => InitializeComponent();
 
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);

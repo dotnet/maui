@@ -30,7 +30,7 @@ class XamlCache
 		return value;
 	}
 
-	public IList<XmlnsDefinitionAttribute> GetXmlsDefinitions(ModuleDefinition module, Func<ModuleDefinition, IList<XmlnsDefinitionAttribute>> valueFactory) =>
+	public IList<XmlnsDefinitionAttribute> GetXmlnsDefinitions(ModuleDefinition module, Func<ModuleDefinition, IList<XmlnsDefinitionAttribute>> valueFactory) =>
 		GetOrAdd(_xmlnsDefinitions, module, valueFactory);
 
 	public TypeDefinition Resolve(TypeReference typeReference) =>

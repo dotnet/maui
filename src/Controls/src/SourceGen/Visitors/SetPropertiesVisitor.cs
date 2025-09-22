@@ -46,24 +46,24 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			if (!parentNode.IsCollectionItem(node))
 				return;
 			string? contentProperty;
-			if (!Context.Variables.ContainsKey((IElementNode)parentNode))
+			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
-			var parentVar = Context.Variables[(IElementNode)parentNode];
+			var parentVar = Context.Variables[(ElementNode)parentNode];
 			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
-				propertyName = new XmlName(((IElementNode)parentNode).NamespaceURI, contentProperty);
+				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
 			else
 				return;
 		}
 
-		if (TrySetRuntimeName(propertyName, Context.Variables[(IElementNode)parentNode], node))
+		if (TrySetRuntimeName(propertyName, Context.Variables[(ElementNode)parentNode], node))
 			return;
 		if (skips.Contains(propertyName))
 			return;
-		if (parentNode is IElementNode node1 && node1.SkipProperties.Contains(propertyName))
+		if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
 			return;
 		if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
 			return;
-		SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context);
+		SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 	}
 
 	bool TrySetRuntimeName(XmlName propertyName, LocalVariable localVariable, ValueNode node)
@@ -97,7 +97,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		}
 
 		if ((propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName))
-		&& skips.Contains(propertyName) || parentNode is IElementNode epn && epn.SkipProperties.Contains(propertyName))
+		&& skips.Contains(propertyName) || parentNode is ElementNode epn && epn.SkipProperties.Contains(propertyName))
 			return;
 
 		if (propertyName == XmlName._CreateContent)
@@ -106,7 +106,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			Writer.WriteLine($"{variable.Name}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null) { FilePath = context.FilePath, ParentContext = context };
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
+				{
+					ParentContext = context,
+				};
 
 				//inflate the template
 				node.Accept(new CreateValuesVisitor(templateContext), null);
@@ -128,11 +131,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			//     return;
 			// if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
 			//     return;
-			SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context);
+			SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 		}
-		else if (parentNode.IsCollectionItem(node) && parentNode is IElementNode)
+		else if (parentNode.IsCollectionItem(node) && parentNode is ElementNode)
 		{
-			var parentVar = Context.Variables[(IElementNode)parentNode];
+			var parentVar = Context.Variables[(ElementNode)parentNode];
 			string? contentProperty;
 
 			if (CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context))
@@ -142,7 +145,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var name = new XmlName(node.NamespaceURI, contentProperty);
 				if (skips.Contains(name))
 					return;
-				if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+				if (parentNode is ElementNode && ((ElementNode)parentNode).SkipProperties.Contains(propertyName))
 					return;
 				SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
@@ -150,35 +153,19 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			{
 				Writer.WriteLine($"{parentVar.Name}.Add({Context.Variables[node].Name});");
 			}
-
-			//     Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
-			// }
-			// // Collection element, implicit content, or implicit collection element.
-			// else if (parentVar.VariableType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
-			//             && parentVar.VariableType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any())
-			// {
-			//     var elementType = parentVar.VariableType;
-			//     var adderTuple = elementType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
-			//     var adderRef = Module.ImportReference(adderTuple.Item1);
-			//     adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
-
-			//     Context.IL.Emit(Ldloc, parentVar);
-			//     Context.IL.Append(vardef.LoadAs(Context.Cache, adderRef.Parameters[0].ParameterType.ResolveGenericParameters(adderRef), Module));
-			//     Context.IL.Emit(Callvirt, adderRef);
-			//     if (adderRef.ReturnType.FullName != "System.Void")
-			//         Context.IL.Emit(Pop);
-			// }
-
-			// else
-			//     throw new BuildException(BuildExceptionCode.ContentPropertyAttributeMissing, node, null, ((IElementNode)parentNode).XmlType.Name);
+			else
+			{
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ((ElementNode)parentNode).XmlType.Name);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, $"Cannot set the content of {((ElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute"));
+			}
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ListNode parentList)
 		{
 			if (skips.Contains(parentList.XmlName))
 				return;
 
-			var parentVar = Context.Variables[(IElementNode)parentNode.Parent];
-			if (parentNode is IElementNode node1 && node1.SkipProperties.Contains(propertyName))
+			var parentVar = Context.Variables[(ElementNode)parentNode.Parent];
+			if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
 				return;
 			var elementType = parentVar.Type;
 			var localName = parentList.XmlName.LocalName;
@@ -189,7 +176,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 			if (propertyType == null)
 			{
-				var location = LocationCreate(Context.FilePath!, (IXmlLineInfo)node, localName);
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, localName);
 				//FIXME error should be "propertyType does not support Add()"
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 				return;
@@ -218,7 +205,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			else
 			//report diagnostic: not a collection
 			{
-				var location = LocationCreate(Context.FilePath!, (IXmlLineInfo)node, localName);
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, localName);
 				//FIXME error should be "propertyType does not support Add()"
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 			}
@@ -285,7 +272,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 		}
 
-		var location = LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, localName);
+		var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, localName);
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 	}
 
@@ -293,7 +280,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	{
 		if (bpFieldSymbol == null)
 			return false;
-		if (node is not IElementNode en)
+		if (node is not ElementNode en)
 			return false;
 
 		//TODO we could get the type directly from the XmlType of the node, so no need to instantiate de extension at all
@@ -304,7 +291,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	}
 
 	private static void SetDynamicResource(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context)
-		=> writer.WriteLine($"{parentVar.Name}.SetDynamicResource({fieldSymbol.ToFQDisplayString()}, {context.Variables[(IElementNode)valueNode].Name}.Key);");
+		=> writer.WriteLine($"{parentVar.Name}.SetDynamicResource({fieldSymbol.ToFQDisplayString()}, {context.Variables[(ElementNode)valueNode].Name}.Key);");
 
 	static bool CanConnectEvent(LocalVariable parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
 		//FIXME check event signature
@@ -333,7 +320,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		});
 		if (handlerSymbol == null)
 		{
-			var location = LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, handler);
+			var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, handler);
 			//FIXME better error message: "handler signature does not match event signature"
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, handler));
 			return;
@@ -427,7 +414,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return false;
 		if (node is ValueNode vn && vn.CanConvertTo(property, context))
 			return true;
-		if (node is not IElementNode elementNode)
+		if (node is not ElementNode elementNode)
 			return false;
 		if (!context.Variables.TryGetValue(elementNode, out var localVar))
 			return false;
@@ -487,14 +474,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (node is ValueNode valueNode)
 		{
-			using (PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath))
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
 				var valueString = valueNode.ConvertTo(property, context, parentVar);
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = {valueString};");
 			}
 		}
 		else if (node is ElementNode elementNode)
-			using (PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath))
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 				writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{context.Variables[elementNode].Name};");
 	}
 
@@ -548,7 +535,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	}
 
-	static bool CanAddToResourceDictionary(LocalVariable parentVar, ITypeSymbol collectionType, IElementNode node, SourceGenContext context)
+	static bool CanAddToResourceDictionary(LocalVariable parentVar, ITypeSymbol collectionType, ElementNode node, SourceGenContext context)
 	{
 		if (!collectionType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context))
 			return false;
@@ -557,7 +544,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		{
 			if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string key)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.FilePath!, (IXmlLineInfo)keyNode, ""), "x:Key must be a string literal"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, ""), "x:Key must be a string literal"));
 				//report diagnostic: x:Key must be a string literal
 				return false;
 			}
@@ -567,7 +554,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			}
 			if (keysInUse.Contains(key))
 			{
-				var location = LocationCreate(context.FilePath!, (IXmlLineInfo)keyNode, key);
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, key);
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
 				return false;
 			}
@@ -591,11 +578,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		//one of those will return true, but we need the propertyType
 		_ = CanGetValue(parentVar, bpFieldSymbol, attached, context, out var propertyType) || CanGet(parentVar, localName, context, out propertyType, out propertySymbol);
 
-		if (CanAddToResourceDictionary(parentVar, propertyType!, (IElementNode)valueNode, context))
+		if (CanAddToResourceDictionary(parentVar, propertyType!, (ElementNode)valueNode, context))
 		{
 			var rdVar = new LocalVariable(propertyType!, NamingHelpers.CreateUniqueVariableName(context, propertyType!));
 			writer.WriteLine($"var {rdVar.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, valueNode, context)};");
-			AddToResourceDictionary(writer, rdVar, (IElementNode)valueNode, context);
+			AddToResourceDictionary(writer, rdVar, (ElementNode)valueNode, context);
 			return;
 		}
 
@@ -618,11 +605,16 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (receiverType is not null && !propertyType!.Equals(receiverType, SymbolEqualityComparer.Default))
 			parentObj = $"(({receiverType.ToFQDisplayString()}){parentObj})";
 
-		using (PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.FilePath))
-			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){context.Variables[valueNode].Name});");
+		//look for intermediate implicit casts
+		string cast = string.Empty;
+		if (HasDoubleImplicitConversion(context.Variables[valueNode].Type, itemType, context, out var conv))
+			cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+
+		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
+			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{context.Variables[valueNode].Name});");
 	}
 
-	static void AddToResourceDictionary(IndentedTextWriter writer, LocalVariable parentVar, IElementNode node, SourceGenContext context)
+	static void AddToResourceDictionary(IndentedTextWriter writer, LocalVariable parentVar, ElementNode node, SourceGenContext context)
 	{
 		if (node.Properties.TryGetValue(XmlName.xKey, out var keyNode))
 		{

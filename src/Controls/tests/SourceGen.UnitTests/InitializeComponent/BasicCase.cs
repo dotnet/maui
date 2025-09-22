@@ -48,9 +48,7 @@ public partial class TestPage : ContentPage
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#if _MAUIXAML_SG_NULLABLE_ENABLE
 #nullable enable
-#endif
 
 namespace Test;
 
@@ -60,13 +58,9 @@ public partial class TestPage
 	private partial void InitializeComponent()
 	{
 		var button = new global::Microsoft.Maui.Controls.Button();
-#if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
-#endif
 		var __root = this;
-#if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
-#endif
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
