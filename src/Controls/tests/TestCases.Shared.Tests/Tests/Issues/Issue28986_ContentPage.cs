@@ -81,6 +81,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 
             // The behavior here would depend on platform-specific keyboard handling
             // We mainly verify the setting was applied correctly
+            App.DismissKeyboard();
         }
 
         // 6. Reset to Default to verify we can return to initial state
