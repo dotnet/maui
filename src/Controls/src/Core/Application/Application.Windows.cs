@@ -31,6 +31,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		partial void OnWindowRemovedPlatform(Window window)
+		{
+			window.HandlerChanged -= OnWindowHandlerChanged;
+		}
+
 		void OnWindowHandlerChanged(object? sender, EventArgs e) => TryApplyTheme();
 
 		void TryApplyTheme()
@@ -94,8 +99,8 @@ namespace Microsoft.Maui.Controls
 				root.RequestedTheme = followSystem ? ElementTheme.Default : forcedElementTheme;
 
 				var isDark = followSystem
-						? (UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark)
-						: (forcedElementTheme == ElementTheme.Dark);
+					? (UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark)
+					: (forcedElementTheme == ElementTheme.Dark);
 
 				SetTileBarButtonColors(platformWindow, isDark);
 			});
@@ -113,14 +118,15 @@ namespace Microsoft.Maui.Controls
 				{
 					titleBar.ButtonBackgroundColor = UI.Colors.Transparent;
 					titleBar.ButtonInactiveBackgroundColor = UI.Colors.Transparent;
-					titleBar.ButtonHoverBackgroundColor = isDark ? UI.ColorHelper.FromArgb(24, 255, 255, 255) : UI.ColorHelper.FromArgb(24, 0, 0, 0);
+					titleBar.ButtonHoverBackgroundColor = isDark
+						? UI.ColorHelper.FromArgb(24, 255, 255, 255)
+						: UI.ColorHelper.FromArgb(24, 0, 0, 0);
 					titleBar.ButtonHoverForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
 					titleBar.ButtonPressedBackgroundColor = UI.ColorHelper.FromArgb(0x1F, 0xFF, 0xFF, 0xFF);
 					titleBar.ButtonPressedForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
 					titleBar.ButtonForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
 				}
 			}
-
 		}
 	}
 }

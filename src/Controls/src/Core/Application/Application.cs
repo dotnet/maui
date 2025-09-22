@@ -507,7 +507,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_windows.Remove(window);
+
+#if WINDOWS
+			OnWindowRemovedPlatform(window);
+#endif
 		}
+
+#if WINDOWS
+		partial void OnWindowRemovedPlatform(Window window);
+#endif
 
 		public virtual void OpenWindow(Window window)
 		{
