@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:i="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue25671"
-             Title="LayoutPassTest">
+             Title="LayoutPassTest" x:DataType="{x:Null}">
 
   <i:Issue25671AbsoluteLayout>
     <i:Issue25671Grid Padding="0,0,0,100"

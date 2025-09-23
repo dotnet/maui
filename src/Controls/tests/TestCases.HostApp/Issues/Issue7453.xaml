@@ -7,7 +7,7 @@
     <TabBar AutomationId="TabBar">
         <Tab Title="Nested Tabs" AutomationId="tabbar">
             <ShellContent x:Name="tab" Title="Home">
-                <ContentPage>
+                <ContentPage x:DataType="{x:Null}">
                     <StackLayout HorizontalOptions="Center" Spacing="30">
                         <HorizontalStackLayout>
                             <Label Text="Current Shell Title : " FontAttributes="Bold"/>

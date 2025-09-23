@@ -11,7 +11,7 @@
             <Tab> 
                 <ShellContent Title="Generate" >
                   <ShellContent.Content>
-                    <ContentPage>
+                    <ContentPage x:DataType="{x:Null}">
                     <StackLayout>
                       <Label Text="Bug" FontSize="Large"/>
                       <Label Text="We have a TabbedPage with a ListView bound to an ObservableCollection."/>

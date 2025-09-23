@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue21375"
-             Title="Issue21375">
+             Title="Issue21375" x:DataType="{x:Null}">
     <VerticalStackLayout>
         <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single" x:Name="collectionView" AutomationId="collectionView" Background="LightBlue">
             <CollectionView.ItemTemplate>

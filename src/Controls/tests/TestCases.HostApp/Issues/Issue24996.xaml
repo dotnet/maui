@@ -4,7 +4,7 @@
              xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue24996"
              Title="Issue24996"
-             x:Name="Self">
+             x:Name="Self" x:DataType="{x:Null}">
   <AbsoluteLayout BackgroundColor="DarkSlateBlue">
     <AbsoluteLayout.GestureRecognizers>
       <TapGestureRecognizer Tapped="OnTapped" />

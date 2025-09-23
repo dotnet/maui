@@ -7,7 +7,7 @@
     <TabBar AutomationId="TabBar">
     <Tab Title="Nested Tabs" x:Name="tabs" AutomationId="tabbar">
         <ShellContent x:Name="tab1" Title="Home">
-            <ContentPage>
+            <ContentPage x:DataType="{x:Null}">
                 <StackLayout HorizontalOptions="Center" Spacing="20">
                     
                     <HorizontalStackLayout>

@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue10947"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:NavigationPage.PrefersLargeTitles="false"
-             Title="Issue10947">
+             Title="Issue10947" x:DataType="{x:Null}">
 
     <ContentPage.Resources>
         <x:Array x:Key="stringArray" Type="{x:Type x:String}">

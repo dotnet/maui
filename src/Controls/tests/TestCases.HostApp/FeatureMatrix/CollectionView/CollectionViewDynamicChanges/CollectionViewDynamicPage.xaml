@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.CollectionViewDynamicPage"
               xmlns:local="clr-namespace:Maui.Controls.Sample"
-             Title="CollectionViewDynamicPage">
+             Title="CollectionViewDynamicPage" x:DataType="{x:Null}">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                      Clicked="NavigateToOptionsPage_Clicked"

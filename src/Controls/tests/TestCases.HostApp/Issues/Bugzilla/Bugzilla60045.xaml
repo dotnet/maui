@@ -4,7 +4,7 @@
 	xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
 	x:Class="Maui.Controls.Sample.Issues.Bugzilla60045"
 	x:Name="This"
-	BindingContext="{x:Reference This}">
+	BindingContext="{x:Reference This}" x:DataType="{x:Null}">
 
 	<StackLayout>
 

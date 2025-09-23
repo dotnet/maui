@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries.ItemsUpdatingScrollModeGallery"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries"
-    Title="ItemsUpdatingScrollMode Gallery">
+    Title="ItemsUpdatingScrollMode Gallery" x:DataType="{x:Null}">
     <Grid 
         RowDefinitions="Auto, *" Margin="20">
         <StackLayout

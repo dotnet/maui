@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.RenderingPerformance"
-             Title="RenderingPerformance">
+             Title="RenderingPerformance" x:DataType="{x:Null}">
 
     <Grid Padding="24" RowDefinitions="Auto,Auto,*" RowSpacing="8">
       <Button x:Name="StartButton" Clicked="ButtonClicked" Text="Start" AutomationId="StartButton" />

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue17865"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue 17865">
+             Title="Issue 17865" x:DataType="{x:Null}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition 

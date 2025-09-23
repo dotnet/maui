@@ -6,7 +6,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.Issues.Issue9196">
-    <ContentPage.Content>
+    <ContentPage.Content x:DataType="{x:Null}">
         <StackLayout>
 
             <Label Text="Success"/>

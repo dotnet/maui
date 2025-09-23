@@ -5,7 +5,7 @@
 
     <Tab>
         <ShellContent Title="Page 1">
-            <ContentPage AutomationId="page">
+            <ContentPage AutomationId="page" x:DataType="{x:Null}">
                 <StackLayout>
                     <ListView>
                         <ListView.ItemTemplate>

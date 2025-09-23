@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			       xmlns:test="clr-namespace:Maui.Controls.Sample.Issues"
 			       xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             x:Class="Maui.Controls.Sample.Issues.Bugzilla23942">
+             x:Class="Maui.Controls.Sample.Issues.Bugzilla23942" x:DataType="{x:Null}">
 
 	<local:TestContentPage.Resources>
 		<ResourceDictionary>

@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="Test 13616" xmlns:local="using:Maui.Controls.Sample.Issues"
-    x:Class="Maui.Controls.Sample.Issues.Issue13616">
+    x:Class="Maui.Controls.Sample.Issues.Issue13616" x:DataType="{x:Null}">
     <StackLayout>
         <Label
             Padding="12"

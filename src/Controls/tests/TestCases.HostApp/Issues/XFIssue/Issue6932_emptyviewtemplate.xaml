@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.Issues.Issue6932_emptyviewtemplate" x:Name="ThePage">
-    <ContentPage.Resources>
+    <ContentPage.Resources x:DataType="{x:Null}">
         <DataTemplate x:Key="MyIntTemplate">
             <Frame Padding="10"
 				   BackgroundColor="Yellow">

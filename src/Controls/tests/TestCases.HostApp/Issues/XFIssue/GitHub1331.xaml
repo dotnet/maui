@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.GitHub1331">
-	<ContentPage.Content>
+	<ContentPage.Content x:DataType="{x:Null}">
 		<StackLayout>
 			
 			<Label x:Name="Result" Text="Running..."></Label>

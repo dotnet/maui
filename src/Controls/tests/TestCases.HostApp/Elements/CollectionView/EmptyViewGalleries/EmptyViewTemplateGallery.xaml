@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries.EmptyViewTemplateGallery">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries.EmptyViewTemplateGallery" x:DataType="{x:Null}">
 	<ContentPage.Content>
 		<Grid>
 			<Grid.RowDefinitions>
@@ -17,7 +16,7 @@
 					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
 				</CollectionView.ItemsLayout>
 				<CollectionView.EmptyViewTemplate>
-					<DataTemplate x:DataType="local:EmptyViewGalleryFilterInfo">
+					<DataTemplate>
 						<StackLayout> 
 							<Label FontAttributes="Bold" FontSize="18" Margin="10,25,10,10"
 									HorizontalOptions="Fill" HorizontalTextAlignment="Center" 

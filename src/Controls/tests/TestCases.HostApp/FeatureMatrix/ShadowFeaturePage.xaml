@@ -4,8 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.ShadowFeaturePage"
              xmlns:controls="clr-namespace:Maui.Controls.Sample"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             x:DataType="local:ShadowViewModel"
-             Title="Shadow Feature">
+             Title="Shadow Feature" x:DataType="{x:Null}">
   <ContentPage.Content>
     <Grid>
       <Label x:Name="FpsLabel" AutomationId="FpsLabel" HorizontalOptions="Start" VerticalOptions="Start" BackgroundColor="Black" TextColor="White" IsVisible="False" />

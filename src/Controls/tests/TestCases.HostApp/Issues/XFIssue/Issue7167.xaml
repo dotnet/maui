@@ -6,7 +6,7 @@
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.Issues.Issue7167">
-    <ContentPage.Content>
+    <ContentPage.Content x:DataType="{x:Null}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>

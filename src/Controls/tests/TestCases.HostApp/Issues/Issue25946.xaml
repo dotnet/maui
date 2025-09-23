@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue25946">
+             x:Class="Maui.Controls.Sample.Issues.Issue25946" x:DataType="{x:Null}">
     <Grid RowDefinitions="*,Auto">
         <!-- Loop set to False to avoid Windows automation issues - see issue: https://github.com/dotnet/maui/issues/29245 -->
         <CarouselView x:Name="collectionView" Loop="False">

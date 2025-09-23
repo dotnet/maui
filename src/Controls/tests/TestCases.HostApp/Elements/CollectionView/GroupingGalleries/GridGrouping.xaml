@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries.GridGrouping">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries.GridGrouping" x:DataType="{x:Null}">
     <ContentPage.Content>
         <CollectionView x:Name="CollectionView" IsGrouped="True" Header="This is a header" Footer="This is a footer.">
 

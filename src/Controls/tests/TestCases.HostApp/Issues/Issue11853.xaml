@@ -4,7 +4,7 @@
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue11853">
-    <ContentPage.Content>
+    <ContentPage.Content x:DataType="{x:Null}">
         <Grid RowDefinitions="Auto,320,*">
             <StackLayout BackgroundColor="LightGoldenrodYellow">
                 <Frame BackgroundColor="#2196F3" Padding="24" CornerRadius="0">

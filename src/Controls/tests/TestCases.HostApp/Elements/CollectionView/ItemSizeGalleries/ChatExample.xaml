@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:chat="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries.ChatExample">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries.ChatExample" x:DataType="{x:Null}">
 
     <ContentPage.Resources>
         <ResourceDictionary>

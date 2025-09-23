@@ -2,7 +2,7 @@
 <local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 				 xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-				 x:Class="Maui.Controls.Sample.Issues.Issue2777">
+				 x:Class="Maui.Controls.Sample.Issues.Issue2777" x:DataType="{x:Null}">
 	<local:TestContentPage.Content>
 		<ListView x:Name="itemListView" IsGroupingEnabled="true" ItemTapped="OnItemTapped">
 			<ListView.GroupHeaderTemplate>

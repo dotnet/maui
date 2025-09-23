@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue23868"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page">
+             Title="Main Page" x:DataType="{x:Null}">
   <StackLayout>
     <Label Text="Pull to refresh twice to replicate the issue"
                HorizontalOptions="Center"

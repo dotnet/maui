@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.SliderOptionsPage"
-             Title="SliderFeature">
+             Title="SliderFeature" x:DataType="{x:Null}">
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Apply" Clicked="ApplyButton_Clicked" AutomationId="Apply"/>
   </ContentPage.ToolbarItems>

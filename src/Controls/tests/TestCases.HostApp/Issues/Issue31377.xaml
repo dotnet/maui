@@ -8,7 +8,7 @@
 	<TabbedPage.ItemTemplate>
 		<DataTemplate>
 			<ContentPage Title="{Binding Name}"
-						 IconImageSource="coffee.png">
+						 IconImageSource="coffee.png" x:DataType="{x:Null}">
 				<StackLayout Padding="5, 25">
 					<Label Text="{Binding Name}"
 						   FontAttributes="Bold"

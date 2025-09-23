@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewPositionVisibility"
-    Title="Issue 12848">
+    Title="Issue 12848" x:DataType="{x:Null}">
     <StackLayout>
         <Label
             Padding="12"

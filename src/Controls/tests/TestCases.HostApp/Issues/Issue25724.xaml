@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue25724"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page">
+             Title="Main Page" x:DataType="{x:Null}">
 
   <Grid RowDefinitions="Auto,*">
 

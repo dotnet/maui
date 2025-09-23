@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19803"
              x:Name="Page"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
     <Grid RowDefinitions="*, 48">
         <CollectionView>
             <CollectionView.ItemsLayout>

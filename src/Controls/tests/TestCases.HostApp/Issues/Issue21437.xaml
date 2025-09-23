@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue21437"
              xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue21437">
+             Title="Issue21437" x:DataType="{x:Null}">
    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" HorizontalOptions="Start">
         <BindableLayout.ItemTemplate>
             <DataTemplate>

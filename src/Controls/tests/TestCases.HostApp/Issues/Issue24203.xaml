@@ -12,7 +12,7 @@
 			</DataTemplate>
 		</Shell.FlyoutHeaderTemplate>
     <ShellContent x:Name="Page1" Title="Page 1" FlyoutItemIsVisible="{Binding ShowFlyoutItem, Mode=TwoWay}">
-		<ContentPage>
+		<ContentPage x:DataType="{x:Null}">
 			<ContentView Padding="20">
 				<Label Text="Page 1" />
 			</ContentView>
