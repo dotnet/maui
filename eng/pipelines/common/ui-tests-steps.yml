@@ -186,8 +186,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-  # Use dynamic target framework from matrix variable 'tfm' instead of hardcoded net9.0
-  $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
+        $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
         if (Test-Path $folderPath) {
           Write-Host "##vso[task.setvariable variable=androidFolderExists;isOutput=true]true"
         } else {
@@ -197,7 +196,7 @@ steps:
     condition: eq(variables['CheckAndroidFolderExists.androidFolderExists'], 'true')
     displayName: Publish Android screenshot diffs
     inputs:
-  targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
+      targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
       artifact: uitest-snapshot-results-android
 
 # iOS snapshot diffs -> separate artifact
@@ -207,8 +206,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-  # Use dynamic target framework from matrix variable 'tfm'
-  $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
+        $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
         if (Test-Path $folderPath) {
           Write-Host "##vso[task.setvariable variable=iosFolderExists;isOutput=true]true"
         } else {
@@ -218,7 +216,7 @@ steps:
     condition: eq(variables['CheckIosFolderExists.iosFolderExists'], 'true')
     displayName: Publish iOS screenshot diffs
     inputs:
-  targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
+      targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
       artifact: uitest-snapshot-results-ios
 
 # Windows snapshot diffs -> separate artifact
@@ -228,8 +226,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-  # Use dynamic target framework from matrix variable 'tfm'
-  $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
+        $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
         if (Test-Path $folderPath) {
           Write-Host "##vso[task.setvariable variable=windowsFolderExists;isOutput=true]true"
         } else {
@@ -239,7 +236,7 @@ steps:
     condition: eq(variables['CheckWindowsFolderExists.windowsFolderExists'], 'true')
     displayName: Publish Windows screenshot diffs
     inputs:
-  targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
+      targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
       artifact: uitest-snapshot-results-windows
 
 # Mac (Catalyst) snapshot diffs -> separate artifact
@@ -249,8 +246,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-  # Use dynamic target framework from matrix variable 'tfm'
-  $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
+        $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff"
         if (Test-Path $folderPath) {
           Write-Host "##vso[task.setvariable variable=macFolderExists;isOutput=true]true"
         } else {
@@ -260,5 +256,5 @@ steps:
     condition: eq(variables['CheckMacFolderExists.macFolderExists'], 'true')
     displayName: Publish Mac screenshot diffs
     inputs:
-  targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
+      targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/$(tfm)/snapshots-diff
       artifact: uitest-snapshot-results-mac
