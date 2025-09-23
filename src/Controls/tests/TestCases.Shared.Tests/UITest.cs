@@ -176,9 +176,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
-			TimeSpan? retryTimeout = null,
-			int cropLeft = 0,
-			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0
@@ -189,7 +186,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, retryTimeout, cropLeft, cropRight, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -205,11 +202,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
-		/// <param name="retryDelay">Optional delay between retry attempts when verification fails. Default is 500ms.</param>
-		/// <param name="retryTimeout">Optional total time to keep retrying before giving up. If not specified, only one retry is attempted.
-		/// Use this for animations with variable completion times (e.g., retryTimeout: TimeSpan.FromSeconds(2)).</param>
-		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
-		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
@@ -241,9 +234,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
-			TimeSpan? retryTimeout = null,
-			int cropLeft = 0,
-			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
@@ -449,12 +439,18 @@ namespace Microsoft.Maui.TestCases.Tests
 				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
 				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
-				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
+				if (cropFromTop > 0 || cropFromBottom > 0 || cropFromLeft > 0)
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
+					// For better readability
+					int cropX = cropFromLeft;
+					int cropY = cropFromTop;
+					int cropWidth = width - cropFromLeft;
+					int cropHeight = height - cropFromTop - cropFromBottom;
+
+					imageEditor.Crop(cropX, cropY, cropWidth, cropHeight);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
