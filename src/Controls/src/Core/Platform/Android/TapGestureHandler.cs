@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count);
 		}
 
-		public bool HasMultiTapGestureRecognizers()
+		internal bool HasMultiTapGestureRecognizers()
 		{
 			var view = GetView();
 			if (view == null)
