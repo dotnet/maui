@@ -180,11 +180,8 @@ namespace Microsoft.Maui.Controls
 				return SafeAreaEdges.GetEdge(edge);
 			}
 
-			// By default on android it was never edge to edge so we set this to container by default
-			if (DeviceInfo.Platform != DevicePlatform.iOS && DeviceInfo.Platform != DevicePlatform.MacCatalyst)
-			{
-				return SafeAreaRegions.Container;
-			}
+
+			#if IOS || MACCATALYST
 
 			// Developer hasn't set SafeAreaEdges, fall back to legacy IgnoreSafeArea behavior
 			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
@@ -196,6 +193,13 @@ namespace Microsoft.Maui.Controls
 			{
 				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
 			}
+
+			#else
+			
+			// By default on android it was never edge to edge so we set this to container by default
+			return SafeAreaRegions.Container;
+
+			#endif
 		}
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
