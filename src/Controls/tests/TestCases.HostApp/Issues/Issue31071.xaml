@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue31071"
+    xmlns:local="clr-namespace:Maui.Controls.Sample">
+   <Page.Resources>
+        <ResourceDictionary>
+            <DataTemplate
+                x:Key="GroupHeaderTemplate"
+                x:DataType="{x:Null}">
+
+                <Label
+                    Padding="5"
+                    FontAttributes="Bold"
+                    Text="{Binding Key, StringFormat='Group: {0}'}" />
+            </DataTemplate>
+
+            <DataTemplate
+                x:Key="ItemTemplate"
+                x:DataType="x:Int32">
+
+                <local:Issue31071Item />
+            </DataTemplate>
+
+            <x:Int32 x:Key="Cols4">4</x:Int32>
+            <x:Int32 x:Key="Cols6">6</x:Int32>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid
+        Padding="10"
+        RowSpacing="10"
+        ColumnSpacing="10"
+        ColumnDefinitions="*,*"
+        RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+        <Label
+            AutomationId="MemoryLabel"
+            Text="{Binding TotalMemory,
+                StringFormat='Heap size: {0:0.0} mb'}" />
+
+        <Label
+            Grid.Column="1"
+            AutomationId="ItemsCountLabel"
+            Text="{Binding CollViewItemsCount,
+                StringFormat='CV items count: {0}'}" />
+
+        <Label
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            AutomationId="ActionTimeLabel"
+            Text="{Binding ActionTime,
+                StringFormat='Last action duration: {0:0.000} s'}" />
+
+        <Button
+            Grid.Row="2"
+            AutomationId="UngroupedButton"
+            Text="Ungrouped CollView"
+            Command="{Binding SetUnGroupedCommand}" />
+
+        <Button
+            Grid.Row="2"
+            Grid.Column="1"
+            AutomationId="GroupedButton"
+            Text="Grouped CollView"
+            Command="{Binding SetGroupedCommand}" />
+
+        <Button
+            Grid.Row="3"
+            AutomationId="Cols4Button"
+            Text="4 columns CollView"
+            CommandParameter="{StaticResource Cols4}"
+            Command="{Binding SetColumnsCommand}" />
+
+        <Button
+            Grid.Row="3"
+            Grid.Column="1"
+            AutomationId="Cols6Button"
+            Text="6 columns CollView"
+            CommandParameter="{StaticResource Cols6}"
+            Command="{Binding SetColumnsCommand}" />
+
+        <local:CollectionView2
+            Grid.Row="4"
+            Grid.ColumnSpan="2"
+            AutomationId="TestCollectionView"
+            Scrolled="OnScrolled"
+            IsGrouped="{Binding IsGrouped}"
+            ItemsSource="{Binding CollectionItems}"
+            ItemTemplate="{StaticResource ItemTemplate}"
+            GroupHeaderTemplate="{StaticResource GroupHeaderTemplate}">
+
+            <local:CollectionView2.ItemsLayout>
+                <GridItemsLayout
+                    Span="{Binding CVColumns}"
+                    Orientation="Vertical" />
+            </local:CollectionView2.ItemsLayout>
+        </local:CollectionView2>
+     </Grid>
+</ContentPage>
