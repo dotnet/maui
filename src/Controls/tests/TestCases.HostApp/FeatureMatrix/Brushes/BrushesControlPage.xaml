@@ -5,58 +5,66 @@
              x:Class="Maui.Controls.Sample.BrushesControlMainPage"
              x:DataType="local:BrushesViewModel"
              Title="BrushesControlPage">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Options"
-                     Clicked="OnOptionsClicked"/>
-    </ContentPage.ToolbarItems>
-    <VerticalStackLayout Padding="20"
-                         Spacing="15">
-        <StackLayout>
-            <Label Text="Brushes Control Test"
-                   FontSize="20"
-                   HorizontalOptions="Center"/>
-
-            <Border
-                WidthRequest="300"
-                HeightRequest="300"
-                StrokeThickness="30"
-                Stroke="{Binding StrokeBrush}"
-                Background="{Binding BrushTarget}"
-                Opacity="{Binding BrushOpacity}"
-                StrokeShape="RoundRectangle 30"
-                Shadow="{Binding ShadowBrush}">
-                <Label Text="Sample"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
-            </Border>
-        </StackLayout>
-        <BoxView HeightRequest="150"/>
-        <StackLayout>
-            <HorizontalStackLayout Spacing="10"
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="OnOptionsClicked"/>
+       </ContentPage.ToolbarItems>
+       <VerticalStackLayout Padding="20"
+                            Spacing="15">
+              <StackLayout>
+                     <Label Text="Brushes Feature Matrix"
+                            FontSize="20"
+                            HorizontalOptions="Center"
+                            AutomationId="BrushesLabel"/>
+                     <BoxView HeightRequest="35"/>
+                     <Border
+                            WidthRequest="300"
+                            HeightRequest="300"
+                            StrokeThickness="30"
+                            Stroke="{Binding StrokeBrush}"
+                            Background="{Binding BrushTarget}"
+                            Opacity="{Binding BrushOpacity}"
+                            StrokeShape="RoundRectangle 30"
+                            Shadow="{Binding ShadowBrush}">
+                            <Label Text="Test Brushes"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                     </Border>
+              </StackLayout>
+              <BoxView HeightRequest="80"/>
+              <StackLayout>
+                     <HorizontalStackLayout Spacing="10"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                            <Label Text="Selected Color 1:"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding SelectedColorName1}"
                                    VerticalOptions="Center"
-                    HorizontalOptions="Center">
-                <Label Text="Color 1:"
-                       VerticalOptions="Center"/>
-                <Label Text="{Binding SelectedColorName1}"
-                       VerticalOptions="Center"
-                       AutomationId="Color1"/>
-                <Label Text="Color 2:"
-                       VerticalOptions="Center"/>
-                <Label Text="{Binding SelectedColorName2}"
-                       VerticalOptions="Center"
-                       AutomationId="Color2"/>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout Spacing="10"
+                                   AutomationId="Color1"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                            <Label Text="Selected Color 2:"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding SelectedColorName2}"
                                    VerticalOptions="Center"
-                    HorizontalOptions="Center">
-                <Label Text="Result:"
-                       VerticalOptions="Center"/>
-                <Label Text="{Binding CompareResult}"
-                       VerticalOptions="Center"
-                       AutomationId="CompareResultLabel"/>
-            </HorizontalStackLayout>
-            <Button Text="Compare Brushes"
-                        Clicked="OnCompareClicked"/>
-        </StackLayout>
-    </VerticalStackLayout>
+                                   AutomationId="Color2"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                            <Label Text="Compare Result:"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding CompareResult}"
+                                   VerticalOptions="Center"
+                                   AutomationId="CompareResultLabel"/>
+                     </HorizontalStackLayout>
+                     <Button Text="Compare Selected Brushes"
+                             Clicked="OnCompareClicked"
+                             BackgroundColor="DarkBlue"
+                             TextColor="White"
+                             AutomationId="CompareButton"/>
+              </StackLayout>
+       </VerticalStackLayout>
 </ContentPage>
