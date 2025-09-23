@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif IOSUITEST
 	[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
-		[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Mac)]
 #elif WINTEST
 		[TestFixture(TestDevice.Windows)]
 #endif
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
 #if MACUITEST || WINTEST
-/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+		/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
 #endif
 		/// <remarks>
 		/// This method immediately throws an exception if the screenshot verification fails.
@@ -407,13 +407,15 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
+				var orientation = App.GetOrientation();
+
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
+					TestDevice.iOS => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "ios-iphonex" ? 90 : 110) : 0,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
 					_ => 0,
@@ -431,7 +433,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
+					TestDevice.Android => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "android-notch-36" ? 40 : 125) : 0,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
@@ -552,7 +554,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Reset();
 		}
-		
+
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
