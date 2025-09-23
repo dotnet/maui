@@ -177,17 +177,6 @@ namespace Microsoft.Maui.Platform
 		(int left, int top, int right, int bottom) _originalPadding;
 		bool _hasStoredOriginalPadding;
 
-
-		/// <summary>
-		/// Updates safe area configuration and triggers window insets re-application if needed.
-		/// Call this when safe area edge configuration changes.
-		/// </summary>
-		internal void InvalidateWindowInsets()
-		{
-			// Reset descendants and request fresh insets to avoid double padding
-			GlobalWindowInsetListenerExtensions.ResetDescendantsAndRequestInsets(this, _context);
-		}
-
 		public WindowInsetsCompat? HandleWindowInsets(View view, WindowInsetsCompat insets)
 		{
 			if (CrossPlatformLayout is null || insets is null)
@@ -201,27 +190,7 @@ namespace Microsoft.Maui.Platform
 				_hasStoredOriginalPadding = true;
 			}
 
-			if (GlobalWindowInsetListenerExtensions.IntersectsWithSystemBars(view, insets))
-			{
-				var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
-
-				var pixelsLeft = (int)_context.ToPixels(processedInsets.Left);
-				var pixelsTop = (int)_context.ToPixels(processedInsets.Top);
-				var pixelsRight = (int)_context.ToPixels(processedInsets.Right);
-				var pixelsBottom = (int)_context.ToPixels(processedInsets.Bottom);
-
-
-				// Apply all insets to content view group
-				SetPadding(pixelsLeft, pixelsTop, pixelsRight, pixelsBottom);
-
-				if (processedInsets.Top > 0 || processedInsets.Bottom > 0 || processedInsets.Left > 0 || processedInsets.Right > 0)
-				{
-					// Consume all insets since we handled them
-					return WindowInsetsCompat.Consumed;
-				}
-			}
-
-			return insets;
+			return SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
 		}
 
 		public void ResetWindowInsets(View view)
