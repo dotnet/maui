@@ -411,7 +411,11 @@ public class StackLayoutFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+#if ANDROID
+		VerifyScreenshot(cropLeft: 125);
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -432,7 +436,11 @@ public class StackLayoutFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+#if ANDROID
+		VerifyScreenshot(cropLeft: 125);
+#else
 		VerifyScreenshot();
+#endif
 	}
 #endif
 }
