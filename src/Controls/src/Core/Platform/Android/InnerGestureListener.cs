@@ -255,17 +255,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HasMultiTapHandler()
 		{
-			if (_tapGestureRecognizers == null)
+			if (_tapGestureHandler == null)
 				return false;
 
-			// Check if there are any tap recognizers with more than 2 taps required
-			// We check a reasonable range but don't artificially limit functionality
-			for (int i = 3; i <= 100; i++)
-			{
-				if (_tapGestureRecognizers(i).Any())
-					return true;
-			}
-			return false;
+			// Use the TapGestureHandler's method to check for multi-tap gesture recognizers
+			// This approach has no artificial limits and directly examines the actual gesture recognizers
+			return _tapGestureHandler.HasMultiTapGestureRecognizers();
 		}
 
 		bool HandleTapEvent(MotionEvent e)
@@ -324,19 +319,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			// If we don't have a handler for the current tap count, 
-			// continue waiting for more taps
-			// We set a reasonable upper bound to prevent infinite counting
-			if (_currentTapCount < 100)
-			{
-				return false; // Continue waiting for more taps
-			}
-			else
-			{
-				// Reset if we've exceeded a very high tap count
-				_currentTapCount = 0;
-				_lastTapTime = 0;
-				return false;
-			}
+			// continue waiting for more taps - no artificial limits
+			return false; // Continue waiting for more taps
 		}
 	}
 }

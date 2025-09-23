@@ -82,5 +82,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tap.SendTapped(new View());
 			Assert.Equal(1, tappedCount);
 		}
+
+		[Fact]
+		public void SupportsExtremelyHighNumberOfTapsRequired()
+		{
+			// Test that we truly have no artificial limits by testing a very high number
+			var tap = new TapGestureRecognizer
+			{
+				NumberOfTapsRequired = 1000
+			};
+
+			Assert.Equal(1000, tap.NumberOfTapsRequired);
+
+			int tappedCount = 0;
+			tap.Command = new Command(() => tappedCount++);
+
+			tap.SendTapped(new View());
+			Assert.Equal(1, tappedCount);
+		}
 	}
 }

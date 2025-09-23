@@ -103,5 +103,24 @@ namespace Microsoft.Maui.Controls.Platform
 			return view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count);
 		}
 
+		public bool HasMultiTapGestureRecognizers()
+		{
+			var view = GetView();
+			if (view == null)
+				return false;
+				
+			// Check direct gesture recognizers on the view
+			var hasMultiTap = view.GestureRecognizers?.OfType<TapGestureRecognizer>()
+				.Any(r => r.NumberOfTapsRequired > 2) == true;
+			
+			if (hasMultiTap)
+				return true;
+				
+			// Check child elements' gesture recognizers
+			var children = GetChildElements();
+			return children?.GetChildGesturesFor<TapGestureRecognizer>()
+				.Any(r => r.NumberOfTapsRequired > 2) == true;
+		}
+
 	}
 }
