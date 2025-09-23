@@ -418,24 +418,30 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 #endif
 
-				// For Android also crop the 3 button nav from the bottom, since it's not part of the
+				// For Android crop the 3 button nav from the bottom and left based on orientation, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
 				// For iOS, crop the home indicator at the bottom.
-				int cropFromBottom = _testDevice switch
-				{
-					TestDevice.Android => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "android-notch-36" ? 40 : 125) : 0,
-					TestDevice.iOS => 40,
-					_ => 0,
-				};
-
 				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
 				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
 				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
 				int cropFromLeft = 0;
-				int cropFromRight = 0;
+				int cropFromBottom = 0;
+				if (_testDevice == TestDevice.Android)
+				{
+					if (orientation == OpenQA.Selenium.ScreenOrientation.Portrait)
+					{
+						cropFromBottom = environmentName == "android-notch-36" ? 40 : 125;
+					}
+					else
+					{
+						cropFromLeft = 125;
+					}
+				}
+				else if (_testDevice == TestDevice.iOS)
+				{
+					cropFromBottom = 40;
+				}
 
-				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
-				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
 				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
 				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
