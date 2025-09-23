@@ -19,10 +19,14 @@ namespace Maui.Controls.Sample.Issues
 		public Issue2708Modal()
 		{
 			Title = "Modal Page";
-			
+
+			BackgroundColor = Colors.Transparent;
+
 			var layout = new StackLayout
 			{
 				Padding = new Thickness(20),
+				BackgroundColor = Colors.Transparent,
+				VerticalOptions = LayoutOptions.End,
 				Children =
 				{
 					new Label 
