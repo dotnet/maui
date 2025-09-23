@@ -481,7 +481,7 @@ public class GridFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
-	public void VerifyGrid_SetRowAndColumnSpacingAndPadding()
+	public void VerifyGrid_SetPaddingAndBackgroundColor()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);

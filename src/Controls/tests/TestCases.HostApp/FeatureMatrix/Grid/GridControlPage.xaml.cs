@@ -35,12 +35,9 @@ public partial class GridControlMainPage : ContentPage
 		base.OnAppearing();
 		MainGrid.Children.Clear();
 
-		Color evenColumnColor = Colors.LightBlue;
-		Color oddColumnColor = Colors.LightGreen;
-
 		var mainBox = new BoxView
 		{
-			Color = evenColumnColor,
+			Color = Colors.LightBlue,
 			AutomationId = "Boxview1"
 		};
 		MainGrid.Add(mainBox, 0, 0);
