@@ -140,11 +140,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var wasEmpty = _isEmpty;
 
-			_isEmpty = ItemsSource.ItemCount == 0;
+			_isEmpty = ItemsSource?.ItemCount == 0 || ItemsSource is null;
 
 			if (wasEmpty != _isEmpty)
 			{
 				UpdateEmptyViewVisibility(_isEmpty);
+				UpdateBouncingBehavior(_isEmpty);
 			}
 
 			if (wasEmpty && !_isEmpty)
@@ -153,6 +154,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
 				// So trigger a constraint update; if we need a measurement, that will make it happen
 				// TODO: Fix ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
+			}
+		}
+
+		void UpdateBouncingBehavior(bool isEmpty)
+		{
+			// Disable bouncing and scrolling when collection is empty to prevent extra space between header and EmptyView
+			// Only apply this to CollectionView, not CarouselView which has its own IsBounceEnabled property
+			if (ItemsView is CollectionView && CollectionView is not null)
+			{
+				CollectionView.Bounces = !isEmpty;
+				CollectionView.ScrollEnabled = !isEmpty;
 			}
 		}
 
@@ -282,6 +294,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
+
+			// Update bouncing behavior when ItemsSource changes
+			var isEmpty = ItemsSource?.ItemCount == 0 || ItemsSource is null;
+			UpdateBouncingBehavior(isEmpty);
 
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
@@ -463,7 +479,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+			var isEmpty = ItemsSource?.ItemCount == 0 || ItemsSource is null;
+			UpdateEmptyViewVisibility(isEmpty);
+			UpdateBouncingBehavior(isEmpty);
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
