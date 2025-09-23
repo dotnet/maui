@@ -21,6 +21,14 @@ namespace Microsoft.Maui.Controls.Platform
 		float _lastY;
 		bool _disposed;
 
+		// Multi-tap gesture support for taps > 2
+		int _currentTapCount = 0;
+		long _lastTapTime = 0;
+		float _lastTapX = -1;
+		float _lastTapY = -1;
+		const long _maxTapInterval = 500; // milliseconds
+		const float _maxTapDistance = 30; // pixels
+
 		Func<float, float, bool> _swipeDelegate;
 		Func<bool> _swipeCompletedDelegate;
 		Func<bool> _scrollCompleteDelegate;
@@ -77,28 +85,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				return false;
 
-			if (HasDoubleTapHandler())
-			{
-				return _tapDelegate(2, e);
-			}
-
-			// If we're getting here and don't have a double-tap handler, we might be looking at multiple
-			// single taps; that'll be handled in OnDoubleTapEvent
-
-			return false;
+			// Use the unified tap handling
+			return HandleTapEvent(e);
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTapEvent(MotionEvent e)
 		{
-			if (!HasDoubleTapHandler() && HasSingleTapHandler() && e.Action == MotionEventActions.Up)
-			{
-				// If we're registering double taps and we don't actually have a double-tap handler,
-				// but we _do_ have a single-tap handler, then we're really just seeing two singles in a row
-
-				// Fire off the delegate for the second single-tap (OnSingleTapUp already did the first one)
-				return _tapDelegate(1, e);
-			}
-
+			// Let OnDoubleTap handle the logic
 			return false;
 		}
 
@@ -149,16 +142,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				return false;
 
-			if (HasDoubleTapHandler())
-			{
-				// Because we have a handler for double-tap, we need to wait for
-				// OnSingleTapConfirmed (to verify it's really just a single tap) before running the delegate
-				return false;
-			}
-
-			// A single tap has occurred and there's no handler for double tap to worry about,
-			// so we can go ahead and run the delegate
-			return _tapDelegate(1, e);
+			// Handle multi-tap gesture counting
+			return HandleTapEvent(e);
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnSingleTapConfirmed(MotionEvent e)
@@ -166,21 +151,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				return false;
 
-			// The secondary button state only surfaces inside `OnSingleTapConfirmed`
-			// Inside 'OnSingleTap' the e.ButtonState doesn't indicate a secondary click
-			// So, if the gesture recognizer here has primary/secondary we want to ignore
-			// the _tapDelegate call that accounts for secondary clicks
-			if (!HasDoubleTapHandler() &&
-				(!e.IsSecondary() || HasSingleTapHandlerWithPrimaryAndSecondary()))
+			// For compatibility with existing single tap handling when we only have single tap handlers
+			if (!HasMultiTapHandler() && !HasDoubleTapHandler())
 			{
-				// We're not worried about double-tap, so OnSingleTapUp has already run the delegate
-				// there's nothing for us to do here
-				return false;
+				return _tapDelegate(1, e);
 			}
 
-			// Since there was a double-tap handler, we had to wait for OnSingleTapConfirmed;
-			// Now that we're sure it's a single tap, we can run the delegate
-			return _tapDelegate(1, e);
+			return false;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -274,6 +251,90 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 
 			return _tapGestureRecognizers(1).Any();
+		}
+
+		bool HasMultiTapHandler()
+		{
+			if (_tapGestureRecognizers == null)
+				return false;
+
+			// Check if there are any tap recognizers with more than 2 taps required
+			for (int i = 3; i <= 10; i++) // Support up to 10 taps for reasonable limit
+			{
+				if (_tapGestureRecognizers(i).Any())
+					return true;
+			}
+			return false;
+		}
+
+		bool HandleTapEvent(MotionEvent e)
+		{
+			if (e == null)
+				return false;
+
+			long currentTime = Java.Lang.JavaSystem.CurrentTimeMillis();
+			float currentX = e.GetX();
+			float currentY = e.GetY();
+
+			// Check if this tap is part of a multi-tap sequence
+			bool isSequentialTap = false;
+			if (_lastTapTime > 0)
+			{
+				long timeDiff = currentTime - _lastTapTime;
+				float distance = (float)Math.Sqrt(Math.Pow(currentX - _lastTapX, 2) + Math.Pow(currentY - _lastTapY, 2));
+
+				if (timeDiff <= _maxTapInterval && distance <= _maxTapDistance)
+				{
+					isSequentialTap = true;
+				}
+			}
+
+			if (isSequentialTap)
+			{
+				_currentTapCount++;
+			}
+			else
+			{
+				_currentTapCount = 1;
+			}
+
+			_lastTapTime = currentTime;
+			_lastTapX = currentX;
+			_lastTapY = currentY;
+
+			// Check if we have a gesture recognizer for this tap count
+			bool hasHandler = false;
+			if (_tapGestureRecognizers != null)
+			{
+				hasHandler = _tapGestureRecognizers(_currentTapCount).Any();
+			}
+
+			if (hasHandler)
+			{
+				// Fire the gesture immediately if we have a handler for this tap count
+				bool handled = _tapDelegate(_currentTapCount, e);
+				if (handled)
+				{
+					// Reset the tap count after successful gesture
+					_currentTapCount = 0;
+					_lastTapTime = 0;
+				}
+				return handled;
+			}
+
+			// If we don't have a handler for the current tap count, 
+			// continue waiting for more taps (up to a reasonable limit)
+			if (_currentTapCount < 10)
+			{
+				return false; // Continue waiting for more taps
+			}
+			else
+			{
+				// Reset if we've exceeded the maximum tap count
+				_currentTapCount = 0;
+				_lastTapTime = 0;
+				return false;
+			}
 		}
 	}
 }
