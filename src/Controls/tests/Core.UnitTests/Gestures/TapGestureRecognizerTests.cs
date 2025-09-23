@@ -29,5 +29,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tap.SendTapped(view);
 			Assert.Equal(result, tap.CommandParameter);
 		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		[InlineData(4)]
+		[InlineData(5)]
+		[InlineData(10)]
+		public void SupportsMultipleTapsRequired(int numberOfTaps)
+		{
+			var tap = new TapGestureRecognizer
+			{
+				NumberOfTapsRequired = numberOfTaps
+			};
+
+			Assert.Equal(numberOfTaps, tap.NumberOfTapsRequired);
+		}
+
+		[Fact]
+		public void MultiTapGestureCanBeTriggered()
+		{
+			var view = new View();
+			var tap = new TapGestureRecognizer
+			{
+				NumberOfTapsRequired = 3
+			};
+
+			int tappedCount = 0;
+			tap.Command = new Command(() => tappedCount++);
+
+			tap.SendTapped(view);
+			Assert.Equal(1, tappedCount);
+		}
 	}
 }
