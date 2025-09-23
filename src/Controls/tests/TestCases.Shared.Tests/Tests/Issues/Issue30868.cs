@@ -11,12 +11,28 @@ public class Issue30868 : _IssuesUITest
 	}
 	public override string Issue => "CollectionView selection visual states";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
-	public void CollectionViewSelectionMode()
+	public void CollectionViewSelectionModeOnDarkTheme()
+	{
+		try
+		{
+			App.SetDarkTheme();
+			App.WaitForElement("Item 2");
+			App.Tap("Item 2");
+			VerifyScreenshot();
+		}
+		finally
+		{
+			App.SetLightTheme();
+		}
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.CollectionView)]
+	public void CollectionViewSelectionModeOnLightTheme()
 	{
 		App.WaitForElement("Item 2");
-		App.Tap("Item 2");
 		VerifyScreenshot();
 	}
 }

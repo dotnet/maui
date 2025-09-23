@@ -33,7 +33,8 @@ public class Issue30868 : ContentPage
 					FontSize = 16,
 					VerticalOptions = LayoutOptions.Center,
 					VerticalTextAlignment = TextAlignment.Center,
-					Padding = new Thickness(10, 0, 10, 10)
+					Padding = new Thickness(10, 0, 10, 10),
+					TextColor = Colors.Purple
 				};
 				label.SetBinding(Label.TextProperty, ".");
 				return label;
