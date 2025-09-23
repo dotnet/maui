@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -28,6 +29,10 @@ namespace Microsoft.Maui.Controls.Platform
 		float _lastTapY = -1;
 		const long _maxTapInterval = 500; // milliseconds
 		const float _maxTapDistance = 30; // pixels
+		
+		// Timer for multi-tap timeout
+		Handler _tapTimeoutHandler;
+		Java.Lang.Runnable _tapTimeoutRunnable;
 
 		Func<float, float, bool> _swipeDelegate;
 		Func<bool> _swipeCompletedDelegate;
@@ -63,6 +68,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_scrollCompleteDelegate = panGestureHandler.OnPanComplete;
 			_swipeDelegate = swipeGestureHandler.OnSwipe;
 			_swipeCompletedDelegate = swipeGestureHandler.OnSwipeComplete;
+			
+			// Initialize tap timeout handler
+			_tapTimeoutHandler = new Handler(Looper.MainLooper);
 		}
 
 		public bool EnableLongPressGestures =>
@@ -85,8 +93,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				return false;
 
-			// Use the unified tap handling
-			return HandleTapEvent(e);
+			// Only handle double tap if we don't have multi-tap handlers
+			// Multi-tap counting is handled in OnSingleTapUp
+			if (!HasMultiTapHandler())
+			{
+				return _tapDelegate(2, e);
+			}
+
+			return false;
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTapEvent(MotionEvent e)
@@ -151,6 +165,25 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				return false;
 
+			// This is called after the gesture detector has determined it's a single tap (no double tap following)
+			// For multi-tap scenarios, we need to check if we have accumulated taps that should be processed
+			if (HasMultiTapHandler() && _currentTapCount > 0)
+			{
+				// Check if we have a handler for the current accumulated tap count
+				bool hasHandler = _tapGestureRecognizers?.Invoke(_currentTapCount).Any() == true;
+				if (hasHandler)
+				{
+					bool handled = _tapDelegate(_currentTapCount, e);
+					if (handled)
+					{
+						// Reset the tap count after successful gesture
+						_currentTapCount = 0;
+						_lastTapTime = 0;
+					}
+					return handled;
+				}
+			}
+
 			// For compatibility with existing single tap handling when we only have single tap handlers
 			if (!HasMultiTapHandler() && !HasDoubleTapHandler())
 			{
@@ -171,6 +204,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (disposing)
 			{
+				// Clean up tap timeout
+				CancelTapTimeout();
+				_tapTimeoutHandler?.Dispose();
+				_tapTimeoutHandler = null;
+				_tapTimeoutRunnable = null;
+				
 				_panGestureHandler = null;
 				_swipeGestureHandler = null;
 				_tapGestureHandler = null;
@@ -263,6 +302,44 @@ namespace Microsoft.Maui.Controls.Platform
 			return _tapGestureHandler.HasMultiTapGestureRecognizers();
 		}
 
+		void CancelTapTimeout()
+		{
+			if (_tapTimeoutRunnable != null && _tapTimeoutHandler != null)
+			{
+				_tapTimeoutHandler.RemoveCallbacks(_tapTimeoutRunnable);
+				_tapTimeoutRunnable?.Dispose();
+				_tapTimeoutRunnable = null;
+			}
+		}
+
+		void ScheduleTapTimeout(MotionEvent e)
+		{
+			if (_tapTimeoutHandler == null)
+				return;
+				
+			CancelTapTimeout();
+			
+			_tapTimeoutRunnable = new Java.Lang.Runnable(() =>
+			{
+				// Timeout reached - process accumulated taps
+				if (_currentTapCount > 0)
+				{
+					// Check if we have a handler for the current tap count
+					bool hasHandler = _tapGestureRecognizers?.Invoke(_currentTapCount).Any() == true;
+					if (hasHandler)
+					{
+						_tapDelegate(_currentTapCount, e);
+					}
+					
+					// Reset for next gesture
+					_currentTapCount = 0;
+					_lastTapTime = 0;
+				}
+			});
+			
+			_tapTimeoutHandler.PostDelayed(_tapTimeoutRunnable, _maxTapInterval);
+		}
+
 		bool HandleTapEvent(MotionEvent e)
 		{
 			if (e == null)
@@ -298,16 +375,13 @@ namespace Microsoft.Maui.Controls.Platform
 			_lastTapX = currentX;
 			_lastTapY = currentY;
 
-			// Check if we have a gesture recognizer for this tap count
-			bool hasHandler = false;
-			if (_tapGestureRecognizers != null)
+			// Check if we have a gesture recognizer for this exact tap count
+			bool hasHandlerForCurrentCount = _tapGestureRecognizers?.Invoke(_currentTapCount).Any() == true;
+			
+			if (hasHandlerForCurrentCount)
 			{
-				hasHandler = _tapGestureRecognizers(_currentTapCount).Any();
-			}
-
-			if (hasHandler)
-			{
-				// Fire the gesture immediately if we have a handler for this tap count
+				// We have a handler for this exact tap count - fire immediately
+				CancelTapTimeout();
 				bool handled = _tapDelegate(_currentTapCount, e);
 				if (handled)
 				{
@@ -317,10 +391,16 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				return handled;
 			}
-
-			// If we don't have a handler for the current tap count, 
-			// continue waiting for more taps - no artificial limits
-			return false; // Continue waiting for more taps
+			else
+			{
+				// No handler for current count - schedule timeout to wait for more taps
+				// But only if we have multi-tap handlers that might be triggered with more taps
+				if (HasMultiTapHandler())
+				{
+					ScheduleTapTimeout(e);
+				}
+				return false;
+			}
 		}
 	}
 }
