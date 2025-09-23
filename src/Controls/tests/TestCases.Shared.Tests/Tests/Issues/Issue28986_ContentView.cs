@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,15 +24,9 @@ public class Issue28986_ContentView : _IssuesUITest
 		Assert.That(initialSettings, Does.Contain("Left: Default, Top: Default, Right: Default, Bottom: Default"));
 		var contentViewWithDefaultSettings = contentViewContent.GetRect();
 		// Verify that ContentView content starts at Y=0 when SafeAreaEdges is Default
-#if ANDROID
-		// Status bar height can vary based on device and OS version, so we only validate Y=0 for None on Android 13+ API 30.
-		var apiLevel = App.GetDeviceApiLevel();
-		if (apiLevel > 36) // Android 13+
-#endif
-		{
-			Assert.That(contentViewWithDefaultSettings.Y, Is.EqualTo(0),
-			"ContentView should start at Y=0 when SafeAreaEdges is set to Default");
-		}
+
+		Assert.That(contentViewWithDefaultSettings.Y, Is.EqualTo(0),
+		"ContentView should start at Y=0 when SafeAreaEdges is set to Default");		
 
 		// 2. Ensure SafeAreaEdges are set to All
 		App.Tap("ResetAllButton");
@@ -47,15 +41,10 @@ public class Issue28986_ContentView : _IssuesUITest
 		var noneSettings = App.FindElement("CurrentSettings").GetText();
 		Assert.That(noneSettings, Does.Contain("Left: None, Top: None, Right: None, Bottom: None"));
 		var contentViewSafeAreaEdgesNone = App.WaitForElement("ContentViewContent").GetRect();
-#if ANDROID
-		// Status bar height can vary based on device and OS version, so we only validate Y=0 for None on Android 13+ API 30.
-		if (apiLevel > 36) // Android 13+
-#endif
-{
+
 		// Verify that ContentView position is at Y=0 when SafeAreaEdges is None
 		Assert.That(contentViewSafeAreaEdgesNone.Y, Is.EqualTo(0),
 			"ContentView should be at Y=0 when SafeAreaEdges is set to None (edge-to-edge)");
-}
 	}
 }
 #endif

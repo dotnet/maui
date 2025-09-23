@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,115 +14,112 @@ public class Issue28986_ContentPage : _IssuesUITest
     }
 
     [Test]
-    [Category(UITestCategories.SafeAreaEdges)]
-    public void SafeAreaContentPageBasicFunctionality()
-    {
-        // Wait for the page to load and get initial settings
-        var initialSettings = App.WaitForElement("CurrentSettings").GetText();
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaMainGridBasicFunctionality()
+	{
+		// 1. Test loads - verify essential elements are present
+		App.WaitForElement("ContentGrid");
 
-        // 1. Verify initial state - should be Default (as set in constructor)
-        Assert.That(initialSettings, Does.Contain("Left: Default, Top: Default, Right: Default, Bottom: Default"));
+		// 2. Verify initial state - MainGrid should start with All (offset by safe area)
+		var initialSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(initialSettings, Does.Contain("All (Full safe area)"));
 
-        // Get a reference element to measure positions relative to the ContentPage
-        var scrollViewContent = App.WaitForElement("CurrentSettings");
-        var contentPageWithDefaultSettings = scrollViewContent.GetRect();
 
-        // 2. Change SafeAreaEdges to All
-        App.Tap("ResetAllButton");
-        var allSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(allSettings, Does.Contain("Left: All, Top: All, Right: All, Bottom: All"));
+		var safePosition = App.WaitForElement("ContentGrid").GetRect();
+		// 3. Click button to set SafeAreaEdge to "None" on the MainGrid
+		App.Tap("GridResetNoneButton");
 
-        // Verify that content position changes when SafeAreaEdges changes from Default to All
-        var contentPageSafeAreaEdgesAll = App.WaitForElement("CurrentSettings").GetRect();
-        Assert.That(contentPageSafeAreaEdgesAll.Y, Is.GreaterThanOrEqualTo(contentPageWithDefaultSettings.Y),
-            "ContentPage content should move down (greater Y position) when SafeAreaEdges changes from Default to All");
+		var unSafePosition = App.WaitForElement("ContentGrid").GetRect();
+		Assert.That(unSafePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is set to None");
+		Assert.That(safePosition.Y, Is.Not.EqualTo(0), "ContentGrid Y position should not be 0 when SafeAreaEdges is set to All");
+	}
 
-        // 3. Change SafeAreaEdges to None (edge-to-edge)
-        App.Tap("ResetNoneButton");
-        var noneSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(noneSettings, Does.Contain("Left: None, Top: None, Right: None, Bottom: None"));
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaMainGridAllButtonFunctionality()
+	{
+		App.WaitForElement("GridResetAllButton");
+		App.WaitForElement("ContentGrid");
 
-        // Verify that content position changes when SafeAreaEdges is None
-        var contentPageSafeAreaEdgesNone = App.WaitForElement("CurrentSettings").GetRect();
-        Assert.That(contentPageSafeAreaEdgesNone.Y, Is.LessThanOrEqualTo(contentPageSafeAreaEdgesAll.Y),
-            "ContentPage content should move up (lesser Y position) when SafeAreaEdges changes from All to None");
+		// First set to None to establish baseline position
+		App.Tap("GridResetNoneButton");
+		var nonePosition = App.WaitForElement("ContentGrid").GetRect();
 
-        // 4. Test individual edge control - Top edge specifically
-        App.Tap("ResetNoneButton"); // Start with None
+		// Test "All" button functionality
+		App.Tap("GridResetAllButton");
+		var allPosition = App.WaitForElement("ContentGrid").GetRect();
 
-        // Change only the top edge to All
-        App.Tap("TopPicker");
-        App.Tap("All"); // Select "All" from the picker
+		// Verify MainGrid is set to All
+		var allSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(allSettings, Does.Contain("All (Full safe area)"));
 
-        var topAllSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(topAllSettings, Does.Contain("Top: All"));
+		// Verify position changes - All should offset content away from screen edges
+		Assert.That(allPosition.Y, Is.Not.EqualTo(0), "ContentGrid Y position should not be 0 when SafeAreaEdges is set to All");
+		Assert.That(allPosition.Y, Is.GreaterThanOrEqualTo(nonePosition.Y), "ContentGrid should be positioned lower when SafeAreaEdges is All vs None");
+	}
 
-        // Verify that content moves down when top edge is set to All
-        var contentPageTopAll = App.WaitForElement("CurrentSettings").GetRect();
-        Assert.That(contentPageTopAll.Y, Is.GreaterThanOrEqualTo(contentPageSafeAreaEdgesNone.Y),
-            "ContentPage content should move down when only top SafeAreaEdge is set to All");
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaMainGridSequentialButtonTesting()
+	{
+		App.WaitForElement("ContentGrid");
+		App.WaitForElement("CurrentSettings");
 
-        // 5. Test SoftInput functionality if available
-        var softInputEntry = App.FindElement("SoftInputTestEntry");
-        if (softInputEntry != null)
-        {
-            // Reset to test SoftInput
-            App.Tap("ResetNoneButton");
+		// Test sequence: All -> None -> Container -> All with position validation
 
-            // Change only bottom edge to SoftInput
-            App.Tap("BottomPicker");
-            App.Tap("SoftInput");
+		// 1. Set to All and capture position
+		App.Tap("GridResetAllButton");
+		var allPosition = App.WaitForElement("ContentGrid").GetRect();
+		var allSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(allSettings, Does.Contain("All (Full safe area)"));
 
-            var softInputSettings = App.WaitForElement("CurrentSettings").GetText();
-            Assert.That(softInputSettings, Does.Contain("Bottom: SoftInput"));
+		// 2. Set to None and verify position changes
+		App.Tap("GridResetNoneButton");
+		var nonePosition = App.WaitForElement("ContentGrid").GetRect();
 
-            // Tap the entry to potentially show keyboard
-            App.Tap("SoftInputTestEntry");
+		var noneSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
+		Assert.That(nonePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is None (edge-to-edge)");
+		Assert.That(allPosition.Y, Is.GreaterThan(nonePosition.Y), "All position should be lower than None position");
 
-            // The behavior here would depend on platform-specific keyboard handling
-            // We mainly verify the setting was applied correctly
-            App.DismissKeyboard();
-        }
+		// 3. Set to Container and verify position changes
+		App.Tap("GridSetContainerButton");
+		var containerPosition = App.WaitForElement("ContentGrid").GetRect();
+		var containerSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(containerSettings, Does.Contain("Container (Respect notches/bars)"));
+		Assert.That(containerPosition.Y, Is.GreaterThanOrEqualTo(nonePosition.Y), "Container position should be lower than None position");
 
-        // 6. Reset to Default to verify we can return to initial state
-        App.Tap("ResetDefaultButton");
-        var finalSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(finalSettings, Does.Contain("Left: Default, Top: Default, Right: Default, Bottom: Default"));
-    }
+		// 4. Return to All and verify position matches original
+		App.Tap("GridResetAllButton");
+		var finalAllPosition = App.WaitForElement("ContentGrid").GetRect();
+		var finalAllSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(finalAllSettings, Does.Contain("All (Full safe area)"));
+		Assert.That(finalAllPosition.Y, Is.EqualTo(allPosition.Y), "Final All position should match initial All position");
+	}
 
-    [Test]
-    [Category(UITestCategories.SafeAreaEdges)]
-    public void SafeAreaContentPageIndividualEdgeControl()
-    {
-        // Test individual edge controls
-        App.WaitForElement("CurrentSettings");
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaPerEdgeValidation()
+	{
+		App.WaitForElement("ContentGrid");
 
-        // Start with all None
-        App.Tap("ResetNoneButton");
-        var noneSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(noneSettings, Does.Contain("Left: None, Top: None, Right: None, Bottom: None"));
+		// Set all 4 edges to Container
+		App.Tap("GridSetContainerButton");
+		App.Tap("GridSetBottomSoftInputButton");
 
-        // Test Left edge
-        App.Tap("LeftPicker");
-        App.Tap("All");
-        var leftAllSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(leftAllSettings, Does.Contain("Left: All"));
-        Assert.That(leftAllSettings, Does.Contain("Top: None, Right: None, Bottom: None"));
+		var containerPosition = App.WaitForElement("ContentGrid").GetRect();
 
-        // Test Right edge  
-        App.Tap("RightPicker");
-        App.Tap("Container");
-        var rightContainerSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(rightContainerSettings, Does.Contain("Right: Container"));
-        Assert.That(rightContainerSettings, Does.Contain("Left: All")); // Should still be All
+		// Open Soft Input test entry
+		App.Tap("SoftInputTestEntry");
+		var containerPositionWithSoftInput = App.WaitForElement("ContentGrid").GetRect();
 
-        // Test Bottom edge
-        App.Tap("BottomPicker");
-        App.Tap("Default");
-        var bottomDefaultSettings = App.WaitForElement("CurrentSettings").GetText();
-        Assert.That(bottomDefaultSettings, Does.Contain("Bottom: Default"));
-        Assert.That(bottomDefaultSettings, Does.Contain("Left: All"));
-        Assert.That(bottomDefaultSettings, Does.Contain("Right: Container"));
-    }
+		Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when Soft Input is shown with Container edges");
+
+		App.DismissKeyboard();
+
+		var containerPositionWithoutSoftInput = App.WaitForElement("ContentGrid").GetRect();
+
+		Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
+	}
 }
 #endif

@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,15 +30,8 @@ public class Issue28986 : _IssuesUITest
 		App.Tap("GridResetNoneButton");
 
 		var unSafePosition = App.WaitForElement("ContentGrid").GetRect();
-#if ANDROID
-		// Status bar height can vary based on device and OS version, so we only validate Y=0 for None on Android 13+ API 30.
-		var apiLevel = App.GetDeviceApiLevel();
-		if (apiLevel > 36) // Android 13+
-#endif
-		{
-			Assert.That(unSafePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is set to None");
-			Assert.That(safePosition.Y, Is.Not.EqualTo(0), "ContentGrid Y position should not be 0 when SafeAreaEdges is set to All");
-		}
+		Assert.That(unSafePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is set to None");
+		Assert.That(safePosition.Y, Is.Not.EqualTo(0), "ContentGrid Y position should not be 0 when SafeAreaEdges is set to All");
 	}
 
 	[Test]
@@ -83,17 +76,11 @@ public class Issue28986 : _IssuesUITest
 		// 2. Set to None and verify position changes
 		App.Tap("GridResetNoneButton");
 		var nonePosition = App.WaitForElement("ContentGrid").GetRect();
-#if ANDROID
-		// Status bar height can vary based on device and OS version, so we only validate Y=0 for None on Android 13+ API 30.
-		var apiLevel = App.GetDeviceApiLevel();
-		if (apiLevel > 36) // Android 13+
-#endif
-		{
-			var noneSettings = App.FindElement("CurrentSettings").GetText();
-			Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
-			Assert.That(nonePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is None (edge-to-edge)");
-			Assert.That(allPosition.Y, Is.GreaterThan(nonePosition.Y), "All position should be lower than None position");
-		}
+
+		var noneSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(noneSettings, Does.Contain("None (Edge-to-edge)"));
+		Assert.That(nonePosition.Y, Is.EqualTo(0), "ContentGrid Y position should be 0 when SafeAreaEdges is None (edge-to-edge)");
+		Assert.That(allPosition.Y, Is.GreaterThan(nonePosition.Y), "All position should be lower than None position");
 
 		// 3. Set to Container and verify position changes
 		App.Tap("GridSetContainerButton");
