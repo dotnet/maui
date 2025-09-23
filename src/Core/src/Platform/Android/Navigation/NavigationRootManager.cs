@@ -76,6 +76,11 @@ namespace Microsoft.Maui.Platform
 				_rootView = navigationLayout;
 			}
 
+			if (navigationLayout is CoordinatorLayout && mauiContext.Context is not null)
+            {
+                GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
+            }
+
 			// if the incoming view is a Drawer Layout then the Drawer Layout
 			// will be the root view and internally handle all if its view management
 			// this is mainly used for FlyoutView
