@@ -397,11 +397,4 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
-Microsoft.Maui.Platform.GlobalWindowInsetListener
-Microsoft.Maui.Platform.GlobalWindowInsetListener.GlobalWindowInsetListener() -> void
-Microsoft.Maui.Platform.GlobalWindowInsetListener.OnApplyWindowInsets(Android.Views.View? v, AndroidX.Core.View.WindowInsetsCompat? insets) -> AndroidX.Core.View.WindowInsetsCompat?
-Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetView(Android.Views.View! view) -> void
-Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetAllViews() -> void
-Microsoft.Maui.Platform.GlobalWindowInsetListener.ResetDescendantsOfView(Android.Views.View! parentView) -> void
-override Microsoft.Maui.Platform.GlobalWindowInsetListener.Dispose(bool disposing) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void

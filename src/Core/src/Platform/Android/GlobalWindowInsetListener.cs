@@ -11,7 +11,7 @@ using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-    public class GlobalWindowInsetListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+    internal class GlobalWindowInsetListener : Java.Lang.Object, IOnApplyWindowInsetsListener
     {
         readonly HashSet<AView> _trackedViews = [];
 
@@ -25,8 +25,6 @@ namespace Microsoft.Maui.Platform
             // Handle custom inset views first
             if (v is IHandleWindowInsets customHandler)
             {
-                // Track this view
-                TrackView(v);
                 return customHandler.HandleWindowInsets(v, insets);
             }
 
@@ -93,7 +91,7 @@ namespace Microsoft.Maui.Platform
                 ?.Build() ?? insets;
         }
 
-        void TrackView(AView view)
+        public void TrackView(AView view)
         {
             _trackedViews.Add(view);
         }
@@ -121,19 +119,17 @@ namespace Microsoft.Maui.Platform
         /// Resets all tracked descendant views of the specified parent view to their original padding.
         /// This should be called before applying new insets when SafeArea settings change.
         /// </summary>
-        /// <param name="parentView">The parent view whose descendants should be reset</param>
-        public void ResetDescendantsOfView(AView parentView)
+        /// <param name="view">The parent view whose descendants should be reset</param>
+        public void ResetAppliedSafeAreas(AView view)
         {
+            ResetView(view);
+
             // Find all tracked views that are descendants of the parent view and reset them
             foreach (var trackedView in _trackedViews.ToArray()) // Use ToArray to avoid modification during enumeration
             {
-                if (trackedView != parentView && IsDescendantOf(trackedView, parentView))
+                if (IsDescendantOf(trackedView, view))
                 {
-                    // Reset to original padding but don't remove from tracking
-                    if (trackedView is IHandleWindowInsets customHandler)
-                    {
-                        customHandler.ResetWindowInsets(trackedView);
-                    }
+                    ResetView(trackedView);
                 }
             }
         }
@@ -215,108 +211,5 @@ internal static class GlobalWindowInsetListenerExtensions
         var listener = context.GetGlobalWindowInsetListener();
         listener?.ResetView(view);
         ViewCompat.SetOnApplyWindowInsetsListener(view, null);
-    }
-
-    /// <summary>
-    /// Resets tracked descendant views and requests fresh window insets.
-    /// Call this when SafeArea settings change to avoid double padding issues.
-    /// </summary>
-    /// <param name="view">The view whose descendants should be reset</param>
-    /// <param name="context">The Android context to get the listener from</param>
-    public static void ResetDescendantsAndRequestInsets(this View view, Context context)
-    {
-        var listener = context.GetGlobalWindowInsetListener();
-        listener?.ResetDescendantsOfView(view);
-
-        // Request fresh insets to be applied
-        ViewCompat.RequestApplyInsets(view);
-    }
-
-    /// <summary>
-    /// Checks if a view intersects with system bars (status bar, navigation bar, or display cutouts).
-    /// </summary>
-    /// <param name="view">The view to check for system bar intersection</param>
-    /// <param name="insets">The window insets containing system bar information</param>
-    /// <returns>True if the view intersects with any system bar, false otherwise</returns>
-    public static bool IntersectsWithSystemBars(AView view, WindowInsetsCompat? insets)
-    {
-        if (view?.Context is null)
-        {
-            return false;
-        }
-
-        if (insets is null)
-        {
-            return false;
-        }
-
-        if (!insets.HasInsets)
-        {
-            return false;
-        }
-
-
-        // Check if view has been laid out yet
-        if (view.Width == 0 || view.Height == 0)
-        {
-            // View hasn't been laid out yet, assume intersection for safety
-            // This ensures safe area padding is applied during initial layout
-            return true;
-        }
-
-        // Get the safe area insets
-        var safeAreaInsets = insets.ToSafeAreaInsetsPx(view.Context);
-
-        // If there are no safe area insets, there's no intersection
-        if (safeAreaInsets.Left == 0 && safeAreaInsets.Top == 0 &&
-            safeAreaInsets.Right == 0 && safeAreaInsets.Bottom == 0)
-        {
-            return false;
-        }
-
-        // Get view's position on screen
-        var viewLocation = new int[2];
-        view.GetLocationOnScreen(viewLocation);
-        var viewLeft = viewLocation[0];
-        var viewTop = viewLocation[1];
-        var viewRight = viewLeft + view.Width;
-        var viewBottom = viewTop + view.Height;
-
-        // Get screen dimensions
-        var displayMetrics = view.Context.Resources?.DisplayMetrics;
-        if (displayMetrics is null)
-        {
-            return false;
-        }
-
-        var screenWidth = displayMetrics.WidthPixels;
-        var screenHeight = displayMetrics.HeightPixels;
-
-        // Check if view intersects with any of the safe area insets
-        // Top inset: view's top is within the top safe area
-        if (safeAreaInsets.Top > 0 && viewTop < safeAreaInsets.Top)
-        {
-            return true;
-        }
-
-        // Bottom inset: view's bottom extends into the bottom safe area
-        if (safeAreaInsets.Bottom > 0 && viewBottom > (screenHeight - safeAreaInsets.Bottom))
-        {
-            return true;
-        }
-
-        // Left inset: view's left is within the left safe area
-        if (safeAreaInsets.Left > 0 && viewLeft < safeAreaInsets.Left)
-        {
-            return true;
-        }
-
-        // Right inset: view's right extends into the right safe area
-        if (safeAreaInsets.Right > 0 && viewRight > (screenWidth - safeAreaInsets.Right))
-        {
-            return true;
-        }
-
-        return false;
     }
 }
