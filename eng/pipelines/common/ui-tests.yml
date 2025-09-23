@@ -144,9 +144,16 @@ stages:
                         Write-Host "Checking for snapshot diffs at: $snapshotPath"
                         
                         if (Test-Path $snapshotPath) {
-                          $files = Get-ChildItem $snapshotPath -Recurse -File | Measure-Object
-                          Write-Host "✅ Found snapshot directory with $($files.Count) files"
-                          Write-Host "##vso[task.setvariable variable=androidSnapshotsExist;isOutput=true]true"
+                          # Look for actual diff files (usually .png files that indicate visual differences)
+                          $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+                          
+                          if ($diffFiles.Count -gt 0) {
+                            Write-Host "✅ Found $($diffFiles.Count) snapshot diff files"
+                            Write-Host "##vso[task.setvariable variable=androidSnapshotsExist;isOutput=true]true"
+                          } else {
+                            Write-Host "ℹ️ Directory exists but no diff files found (tests likely passed without visual changes)"
+                            Write-Host "##vso[task.setvariable variable=androidSnapshotsExist;isOutput=true]false"
+                          }
                         } else {
                           Write-Host "❌ No snapshot directory found at: $snapshotPath"
                           Write-Host "##vso[task.setvariable variable=androidSnapshotsExist;isOutput=true]false"
@@ -212,9 +219,15 @@ stages:
                         Write-Host "Checking for iOS snapshot diffs at: $snapshotPath"
                         
                         if (Test-Path $snapshotPath) {
-                          $files = Get-ChildItem $snapshotPath -Recurse -File | Measure-Object
-                          Write-Host "✅ Found iOS snapshot directory with $($files.Count) files"
-                          Write-Host "##vso[task.setvariable variable=iosSnapshotsExist;isOutput=true]true"
+                          $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+                          
+                          if ($diffFiles.Count -gt 0) {
+                            Write-Host "✅ Found $($diffFiles.Count) iOS snapshot diff files"
+                            Write-Host "##vso[task.setvariable variable=iosSnapshotsExist;isOutput=true]true"
+                          } else {
+                            Write-Host "ℹ️ Directory exists but no iOS diff files found"
+                            Write-Host "##vso[task.setvariable variable=iosSnapshotsExist;isOutput=true]false"
+                          }
                         } else {
                           Write-Host "❌ No iOS snapshot directory found at: $snapshotPath"
                           Write-Host "##vso[task.setvariable variable=iosSnapshotsExist;isOutput=true]false"
@@ -276,9 +289,15 @@ stages:
                         Write-Host "Checking for iOS CV2 snapshot diffs at: $snapshotPath"
                         
                         if (Test-Path $snapshotPath) {
-                          $files = Get-ChildItem $snapshotPath -Recurse -File | Measure-Object
-                          Write-Host "✅ Found iOS CV2 snapshot directory with $($files.Count) files"
-                          Write-Host "##vso[task.setvariable variable=iosCv2SnapshotsExist;isOutput=true]true"
+                          $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+                          
+                          if ($diffFiles.Count -gt 0) {
+                            Write-Host "✅ Found $($diffFiles.Count) iOS CV2 snapshot diff files"
+                            Write-Host "##vso[task.setvariable variable=iosCv2SnapshotsExist;isOutput=true]true"
+                          } else {
+                            Write-Host "ℹ️ Directory exists but no iOS CV2 diff files found"
+                            Write-Host "##vso[task.setvariable variable=iosCv2SnapshotsExist;isOutput=true]false"
+                          }
                         } else {
                           Write-Host "❌ No iOS CV2 snapshot directory found at: $snapshotPath"
                           Write-Host "##vso[task.setvariable variable=iosCv2SnapshotsExist;isOutput=true]false"
@@ -340,9 +359,15 @@ stages:
                         Write-Host "Checking for iOS CARV2 snapshot diffs at: $snapshotPath"
                         
                         if (Test-Path $snapshotPath) {
-                          $files = Get-ChildItem $snapshotPath -Recurse -File | Measure-Object
-                          Write-Host "✅ Found iOS CARV2 snapshot directory with $($files.Count) files"
-                          Write-Host "##vso[task.setvariable variable=iosCarv2SnapshotsExist;isOutput=true]true"
+                          $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+                          
+                          if ($diffFiles.Count -gt 0) {
+                            Write-Host "✅ Found $($diffFiles.Count) iOS CARV2 snapshot diff files"
+                            Write-Host "##vso[task.setvariable variable=iosCarv2SnapshotsExist;isOutput=true]true"
+                          } else {
+                            Write-Host "ℹ️ Directory exists but no iOS CARV2 diff files found"
+                            Write-Host "##vso[task.setvariable variable=iosCarv2SnapshotsExist;isOutput=true]false"
+                          }
                         } else {
                           Write-Host "❌ No iOS CARV2 snapshot directory found at: $snapshotPath"
                           Write-Host "##vso[task.setvariable variable=iosCarv2SnapshotsExist;isOutput=true]false"
@@ -441,9 +466,15 @@ stages:
                         Write-Host "Checking for Windows snapshot diffs at: $snapshotPath"
                         
                         if (Test-Path $snapshotPath) {
-                          $files = Get-ChildItem $snapshotPath -Recurse -File | Measure-Object
-                          Write-Host "✅ Found Windows snapshot directory with $($files.Count) files"
-                          Write-Host "##vso[task.setvariable variable=windowsSnapshotsExist;isOutput=true]true"
+                          $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+                          
+                          if ($diffFiles.Count -gt 0) {
+                            Write-Host "✅ Found $($diffFiles.Count) Windows snapshot diff files"
+                            Write-Host "##vso[task.setvariable variable=windowsSnapshotsExist;isOutput=true]true"
+                          } else {
+                            Write-Host "ℹ️ Directory exists but no Windows diff files found"
+                            Write-Host "##vso[task.setvariable variable=windowsSnapshotsExist;isOutput=true]false"
+                          }
                         } else {
                           Write-Host "❌ No Windows snapshot directory found at: $snapshotPath"
                           Write-Host "##vso[task.setvariable variable=windowsSnapshotsExist;isOutput=true]false"
@@ -500,9 +531,15 @@ stages:
                         Write-Host "Checking for Mac snapshot diffs at: $snapshotPath"
                         
                         if (Test-Path $snapshotPath) {
-                          $files = Get-ChildItem $snapshotPath -Recurse -File | Measure-Object
-                          Write-Host "✅ Found Mac snapshot directory with $($files.Count) files"
-                          Write-Host "##vso[task.setvariable variable=macSnapshotsExist;isOutput=true]true"
+                          $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+                          
+                          if ($diffFiles.Count -gt 0) {
+                            Write-Host "✅ Found $($diffFiles.Count) Mac snapshot diff files"
+                            Write-Host "##vso[task.setvariable variable=macSnapshotsExist;isOutput=true]true"
+                          } else {
+                            Write-Host "ℹ️ Directory exists but no Mac diff files found"
+                            Write-Host "##vso[task.setvariable variable=macSnapshotsExist;isOutput=true]false"
+                          }
                         } else {
                           Write-Host "❌ No Mac snapshot directory found at: $snapshotPath"
                           Write-Host "##vso[task.setvariable variable=macSnapshotsExist;isOutput=true]false"
