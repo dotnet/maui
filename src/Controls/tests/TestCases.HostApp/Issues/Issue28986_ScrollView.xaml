@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28986_ScrollView"
              x:Name="TestPage"
-             Title="SafeArea ScrollView Test">
+             Title="SafeArea ScrollView Test"
+             SafeAreaEdges="None">
     
     <Grid x:Name="MainGrid" BackgroundColor="Blue" SafeAreaEdges="None">
         <!-- ScrollView that spans the entire screen -->

@@ -74,16 +74,6 @@ namespace Microsoft.Maui.Platform
 		bool _hasStoredOriginalPadding;
 
 
-		/// <summary>
-		/// Updates safe area configuration and triggers window insets re-application if needed.
-		/// Call this when safe area edge configuration changes.
-		/// </summary>
-		internal void InvalidateWindowInsets()
-		{
-			// Reset descendants and request fresh insets to avoid double padding
-			GlobalWindowInsetListenerExtensions.ResetDescendantsAndRequestInsets(this, _context);
-		}
-
 		public WindowInsetsCompat? HandleWindowInsets(View view, WindowInsetsCompat insets)
 		{
 			// If we don't have a cross platform layout or insets are null just return
@@ -98,15 +88,7 @@ namespace Microsoft.Maui.Platform
 				_hasStoredOriginalPadding = true;
 			}
 
-			var processedInsets = SafeAreaExtensions.GetAdjustedSafeAreaInsets(insets, CrossPlatformLayout, _context);
-			if (GlobalWindowInsetListenerExtensions.IntersectsWithSystemBars(view, insets))
-			{
-				// Apply processed safe area padding directly to the scroll view so that child content
-				// can layout edge-to-edge inside it without needing its own inset listener
-				SetPadding((int)_context.ToPixels(processedInsets.Left), (int)_context.ToPixels(processedInsets.Top), (int)_context.ToPixels(processedInsets.Right), (int)_context.ToPixels(processedInsets.Bottom));
-			}
-
-			return WindowInsetsCompat.Consumed; // We handled them, prevent further propagation
+			return SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
 
 		}
 
@@ -312,7 +294,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_didSafeAreaEdgeConfigurationChange)
 			{
-				InvalidateWindowInsets();
+				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
 			}
 		}
