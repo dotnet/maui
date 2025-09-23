@@ -28,10 +28,10 @@ public class BrushesFeatureTests : UITest
 #endif
 	}
 
-	[Test, Order(1)]
+	[Test]
 	public void VerifySolidColorBrushComparison()
 	{
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("Color1Green");
@@ -40,8 +40,8 @@ public class BrushesFeatureTests : UITest
 		App.Tap("Color2Green");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Compare Brushes");
-		App.Tap("Compare Brushes");
+		App.WaitForElement("CompareButton");
+		App.Tap("CompareButton");
 		Assert.That(App.FindElement("CompareResultLabel").GetText(), Is.EqualTo("True"));
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -51,22 +51,22 @@ public class BrushesFeatureTests : UITest
 		App.Tap("Color2Red");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Compare Brushes");
-		App.Tap("Compare Brushes");
+		App.WaitForElement("CompareButton");
+		App.Tap("CompareButton");
 		Assert.That(App.FindElement("CompareResultLabel").GetText(), Is.EqualTo("False"));
 	}
 
 	[Test]
 	public void VerifySolidColorBrushWithBackgroundColor()
 	{
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("BackgroundSolidColor");
 		App.Tap("BackgroundSolidColor");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -79,7 +79,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("BackgroundLinearGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -92,7 +92,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("BackgroundRadialGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -107,7 +107,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("ShadowSolidColor");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -122,7 +122,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("ShadowLinearGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -137,7 +137,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("ShadowRadialGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -152,7 +152,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("StrokeSolidColor");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -167,7 +167,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("StrokeLinearGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -182,7 +182,7 @@ public class BrushesFeatureTests : UITest
 		App.Tap("StrokeRadialGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -198,7 +198,7 @@ public class BrushesFeatureTests : UITest
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -214,7 +214,7 @@ public class BrushesFeatureTests : UITest
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -230,7 +230,7 @@ public class BrushesFeatureTests : UITest
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -248,7 +248,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -266,7 +266,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -284,7 +284,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -302,7 +302,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -320,7 +320,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -338,7 +338,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("OpacityEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -353,7 +353,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("ShadowSolidColor");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -372,7 +372,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("LinearStartYEntry", "2");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -391,7 +391,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("RadialCenterYEntry", "0.8");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -407,7 +407,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("RadialRadiusEntry", "0.3");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -428,7 +428,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("LinearStartYEntry", "2");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -449,7 +449,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("LinearEndYEntry", "0.5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -467,7 +467,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("RadialRadiusEntry", "0.3");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -488,7 +488,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.EnterText("RadialCenterYEntry", "0.8");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -505,7 +505,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("StrokeSolidColor");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -522,7 +522,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("StrokeLinearGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -539,7 +539,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("StrokeRadialGradient");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -552,7 +552,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("AltSolidButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -565,7 +565,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("AltLinearButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 
@@ -578,7 +578,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.Tap("AltRadialButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Brushes Control Test");
+		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
 }

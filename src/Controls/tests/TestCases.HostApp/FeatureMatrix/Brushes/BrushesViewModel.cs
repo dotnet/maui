@@ -35,8 +35,8 @@ public class BrushesViewModel : INotifyPropertyChanged
 	public ICommand ApplyAltRadialBrushCommand { get; }
 	public ICommand CompareBrushesCommand { get; }
 
-	private string selectedColorName1;
-	private string selectedColorName2;
+	private string selectedColorName1 = "None";
+	private string selectedColorName2 = "None";
 	private string compareResult;
 
 	public string SelectedColorName1 { get => selectedColorName1; set { if (selectedColorName1 == value) return; selectedColorName1 = value; OnPropertyChanged(); } }
@@ -53,12 +53,10 @@ public class BrushesViewModel : INotifyPropertyChanged
 				return;
 			brushTarget = value;
 			OnPropertyChanged();
-			OnPropertyChanged(nameof(HasBrush));
 			UpdateDerivedProperties();
 		}
 	}
 
-	public bool HasBrush => BrushTarget != null && !Microsoft.Maui.Controls.Brush.IsNullOrEmpty(BrushTarget);
 
 	public Brush StrokeBrush
 	{
