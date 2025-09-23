@@ -46,6 +46,19 @@ namespace Microsoft.Maui.Platform
 
             // Handle special cases
             var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+
+            if (appBarLayout is null && v is ViewGroup group)
+            {
+                if (group.ChildCount > 0 && group.GetChildAt(0) is AppBarLayout firstChildAppBar)
+                {
+                    appBarLayout = firstChildAppBar;
+                }
+                else if (group.ChildCount > 1 && group.GetChildAt(1) is AppBarLayout secondChildAppBar)
+                {
+                    appBarLayout = secondChildAppBar;
+                }
+            }
+
             var hasNavigationBar = (appBarLayout?.GetChildAt(0) as MaterialToolbar)?.LayoutParameters?.Height > 0;
             if (appBarLayout is not null)
             {
