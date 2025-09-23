@@ -802,6 +802,40 @@ namespace UITest.Appium
 			return results;
 		}
 
+		public static void RetryAssert(
+			this IApp app,
+			Action assertToRetry,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				try
+				{
+					assertToRetry();
+					return; // Assert succeeded, exit
+				}
+				catch
+				{
+
+					// Check if timeout has been reached
+					long elapsed = DateTime.Now.Subtract(start).Ticks;
+					if (elapsed >= timeout.Value.Ticks)
+					{
+						// Timeout reached, rethrow the last exception
+						throw;
+					}
+
+					// Wait before retrying
+					Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+				}
+			}
+		}
+
 		/// <summary>
 		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.

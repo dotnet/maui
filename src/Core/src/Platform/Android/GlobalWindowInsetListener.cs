@@ -57,10 +57,10 @@ namespace Microsoft.Maui.Platform
                 }
             }
 
-            var hasNavigationBar = (appBarLayout?.GetChildAt(0) as MaterialToolbar)?.LayoutParameters?.Height > 0;
+            var appBarLayoutContainsSomething = appBarLayout?.GetChildAt(0)?.MeasuredHeight > 0;
             if (appBarLayout is not null)
             {
-                if (hasNavigationBar)
+                if (appBarLayoutContainsSomething)
                 {
                     appBarLayout.SetPadding(0, topInset, 0, 0);
                 }
@@ -73,14 +73,14 @@ namespace Microsoft.Maui.Platform
             // Create new insets with consumed values
             var newSystemBars = Insets.Of(
                 systemBars?.Left ?? 0,
-                hasNavigationBar ? 0 : systemBars?.Top ?? 0,
+                appBarLayoutContainsSomething ? 0 : systemBars?.Top ?? 0,
                 systemBars?.Right ?? 0,
                 systemBars?.Bottom ?? 0
             ) ?? Insets.None;
 
             var newDisplayCutout = Insets.Of(
                 displayCutout?.Left ?? 0,
-                hasNavigationBar ? 0 : displayCutout?.Top ?? 0,
+                appBarLayoutContainsSomething ? 0 : displayCutout?.Top ?? 0,
                 displayCutout?.Right ?? 0,
                 displayCutout?.Bottom ?? 0
             ) ?? Insets.None;
