@@ -228,15 +228,9 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
     [Category(UITestCategories.SafeAreaEdges)]
     public void SafeAreaBorderSoftInputBehavior()
     {
-#if ANDROID
-		// Status bar height can vary based on device and OS version, so we only validate Y=0 for None on Android 13+ API 30.
-		var apiLevel = App.GetDeviceApiLevel();
-		if (apiLevel > 36) // Android 13+
-#endif
-{
-
-
         var borderContent = App.WaitForElement("BorderContent");
+
+        App.ScrollDownTo("SetBottomSoftInputButton", "BorderContent");
 
         // 1. Set bottom edge to SoftInput mode
         App.Tap("SetBottomSoftInputButton");
@@ -247,18 +241,20 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
 
         // 2. Record initial state (keyboard hidden)
         var initialBounds = borderContent.GetRect();
+        App.ScrollUpTo("SafeAreaInsets", "BorderContent");
         var initialSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
 
         // Use IsKeyboardShown helper for reliable keyboard detection
         Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should initially be hidden");
 
         // 3. Tap entry to show keyboard
+        App.ScrollDownTo("TestEntry", "BorderContent");
         App.Tap("TestEntry");
-        Thread.Sleep(1000); // Wait for keyboard to appear in view
-        Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should become visible after tapping entry");
+        App.WaitForKeyboardToShow();
 
         // 4. Verify keyboard is shown and border adjusted
         var keyboardShownBounds = borderContent.GetRect();
+        App.ScrollUpTo("SafeAreaInsets", "BorderContent");
         var keyboardShownSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
 
         // Verify keyboard is shown using reliable helper method
@@ -322,7 +318,6 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
         // Verify that we observed the expected keyboard behavior through layout changes
         Assert.That(borderHeightChanged || safeAreaChanged, Is.True,
             "Test should demonstrate that keyboard interaction affects either safe area or border layout");
-}
     }
 
 #if TEST_FAILS_ON_ANDROID // Landscape orientation causes keyboard to occupy  fullview

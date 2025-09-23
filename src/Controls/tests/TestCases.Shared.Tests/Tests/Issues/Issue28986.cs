@@ -111,15 +111,21 @@ public class Issue28986 : _IssuesUITest
 
 		// Open Soft Input test entry
 		App.Tap("SoftInputTestEntry");
-		var containerPositionWithSoftInput = App.WaitForElement("ContentGrid").GetRect();
-
-		Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when Soft Input is shown with Container edges");
+		
+		App.RetryAssert(() =>
+		{
+			var containerPositionWithSoftInput = App.WaitForElement("ContentGrid").GetRect();
+			Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when Soft Input is shown with Container edges");
+		});
 
 		App.DismissKeyboard();
 
-		var containerPositionWithoutSoftInput = App.WaitForElement("ContentGrid").GetRect();
+		App.RetryAssert(() =>
+		{
+			var containerPositionWithoutSoftInput = App.WaitForElement("ContentGrid").GetRect();
 
-		Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
+			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
+		});
 	}
 }
 #endif
