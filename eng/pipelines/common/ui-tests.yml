@@ -157,7 +157,7 @@ stages:
                     displayName: Publish Android snapshot diffs
                     inputs:
                       targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-                      artifact: uitest-snapshot-results-android
+                      artifact: uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -225,7 +225,7 @@ stages:
                     displayName: Publish iOS snapshot diffs
                     inputs:
                       targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-                      artifact: uitest-snapshot-results-ios
+                      artifact: uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -289,7 +289,7 @@ stages:
                     displayName: Publish iOS CV2 snapshot diffs
                     inputs:
                       targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-                      artifact: uitest-snapshot-results-ios-cv2
+                      artifact: uitest-snapshot-results-ios-cv2-$(System.JobName)-$(System.JobAttempt)
 
   - stage: ios_ui_tests_mono_carv2
     displayName: iOS UITests Mono CarouselView2
@@ -353,7 +353,7 @@ stages:
                     displayName: Publish iOS CARV2 snapshot diffs
                     inputs:
                       targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-                      artifact: uitest-snapshot-results-ios-carv2
+                      artifact: uitest-snapshot-results-ios-carv2-$(System.JobName)-$(System.JobAttempt)
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
@@ -454,7 +454,7 @@ stages:
                     displayName: Publish Windows snapshot diffs
                     inputs:
                       targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-                      artifact: uitest-snapshot-results-windows
+                      artifact: uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -513,4 +513,4 @@ stages:
                     displayName: Publish Mac snapshot diffs
                     inputs:
                       targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-                      artifact: uitest-snapshot-results-mac
+                      artifact: uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)
