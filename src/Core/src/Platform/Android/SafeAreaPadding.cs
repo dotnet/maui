@@ -35,6 +35,26 @@ internal static class WindowInsetsExtensions
 		);
 	}
 
+
+	public static SafeAreaPadding ToSafeAreaInsetsPx(this WindowInsetsCompat insets, Context? context)
+	{
+		if (context == null)
+			return SafeAreaPadding.Empty;
+
+		// Get system bars insets (status bar, navigation bar)
+		var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+
+		// Get display cutout insets if available (API 28+)
+		var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+		return new(
+			Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0),
+			Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0),
+			Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0),
+			Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0)
+		);
+	}
+
 	public static SafeAreaPadding GetKeyboardInsets(this WindowInsetsCompat insets, Context? context)
 	{
 		if (context == null)
