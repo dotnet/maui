@@ -130,6 +130,30 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Android snapshot diffs
+                  - task: PowerShell@2
+                    condition: always()
+                    displayName: Check for Android snapshot diffs
+                    name: CheckAndroidSnapshots
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        $snapshotPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.Android.Tests/Release/net9.0/snapshots-diff"
+                        if (Test-Path $snapshotPath) {
+                          Write-Host "##vso[task.setvariable variable=androidSnapshotsExist;isOutput=true]true"
+                          Write-Host "Found Android snapshots at: $snapshotPath"
+                        } else {
+                          Write-Host "##vso[task.setvariable variable=androidSnapshotsExist;isOutput=true]false"
+                          Write-Host "No Android snapshots found at: $snapshotPath"
+                        }
+                  
+                  - task: PublishPipelineArtifact@1
+                    condition: eq(variables['CheckAndroidSnapshots.androidSnapshotsExist'], 'true')
+                    displayName: Publish Android snapshot diffs
+                    inputs:
+                      targetPath: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.Android.Tests/Release/net9.0/snapshots-diff
+                      artifact: uitest-snapshot-results-android
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -171,6 +195,30 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS snapshot diffs
+                  - task: PowerShell@2
+                    condition: always()
+                    displayName: Check for iOS snapshot diffs
+                    name: CheckIosSnapshots
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        $snapshotPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.iOS.Tests/Release/net9.0/snapshots-diff"
+                        if (Test-Path $snapshotPath) {
+                          Write-Host "##vso[task.setvariable variable=iosSnapshotsExist;isOutput=true]true"
+                          Write-Host "Found iOS snapshots at: $snapshotPath"
+                        } else {
+                          Write-Host "##vso[task.setvariable variable=iosSnapshotsExist;isOutput=true]false"
+                          Write-Host "No iOS snapshots found at: $snapshotPath"
+                        }
+                  
+                  - task: PublishPipelineArtifact@1
+                    condition: eq(variables['CheckIosSnapshots.iosSnapshotsExist'], 'true')
+                    displayName: Publish iOS snapshot diffs
+                    inputs:
+                      targetPath: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.iOS.Tests/Release/net9.0/snapshots-diff
+                      artifact: uitest-snapshot-results-ios
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -208,6 +256,30 @@ stages:
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CV2 snapshot diffs
+                  - task: PowerShell@2
+                    condition: always()
+                    displayName: Check for iOS CV2 snapshot diffs
+                    name: CheckIosCV2Snapshots
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        $snapshotPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.iOS.Tests/Release/net9.0/snapshots-diff"
+                        if (Test-Path $snapshotPath) {
+                          Write-Host "##vso[task.setvariable variable=iosCv2SnapshotsExist;isOutput=true]true"
+                          Write-Host "Found iOS CV2 snapshots at: $snapshotPath"
+                        } else {
+                          Write-Host "##vso[task.setvariable variable=iosCv2SnapshotsExist;isOutput=true]false"
+                          Write-Host "No iOS CV2 snapshots found at: $snapshotPath"
+                        }
+                  
+                  - task: PublishPipelineArtifact@1
+                    condition: eq(variables['CheckIosCV2Snapshots.iosCv2SnapshotsExist'], 'true')
+                    displayName: Publish iOS CV2 snapshot diffs
+                    inputs:
+                      targetPath: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.iOS.Tests/Release/net9.0/snapshots-diff
+                      artifact: uitest-snapshot-results-ios-cv2
 
   - stage: ios_ui_tests_mono_carv2
     displayName: iOS UITests Mono CarouselView2
@@ -245,6 +317,30 @@ stages:
                       testFilter: "CarouselView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CARV2 snapshot diffs
+                  - task: PowerShell@2
+                    condition: always()
+                    displayName: Check for iOS CARV2 snapshot diffs
+                    name: CheckIosCarV2Snapshots
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        $snapshotPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.iOS.Tests/Release/net9.0/snapshots-diff"
+                        if (Test-Path $snapshotPath) {
+                          Write-Host "##vso[task.setvariable variable=iosCarv2SnapshotsExist;isOutput=true]true"
+                          Write-Host "Found iOS CARV2 snapshots at: $snapshotPath"
+                        } else {
+                          Write-Host "##vso[task.setvariable variable=iosCarv2SnapshotsExist;isOutput=true]false"
+                          Write-Host "No iOS CARV2 snapshots found at: $snapshotPath"
+                        }
+                  
+                  - task: PublishPipelineArtifact@1
+                    condition: eq(variables['CheckIosCarV2Snapshots.iosCarv2SnapshotsExist'], 'true')
+                    displayName: Publish iOS CARV2 snapshot diffs
+                    inputs:
+                      targetPath: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.iOS.Tests/Release/net9.0/snapshots-diff
+                      artifact: uitest-snapshot-results-ios-carv2
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
@@ -319,6 +415,30 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Windows snapshot diffs
+                  - task: PowerShell@2
+                    condition: always()
+                    displayName: Check for Windows snapshot diffs
+                    name: CheckWindowsSnapshots
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        $snapshotPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.WinUI.Tests/Release/net9.0/snapshots-diff"
+                        if (Test-Path $snapshotPath) {
+                          Write-Host "##vso[task.setvariable variable=windowsSnapshotsExist;isOutput=true]true"
+                          Write-Host "Found Windows snapshots at: $snapshotPath"
+                        } else {
+                          Write-Host "##vso[task.setvariable variable=windowsSnapshotsExist;isOutput=true]false"
+                          Write-Host "No Windows snapshots found at: $snapshotPath"
+                        }
+                  
+                  - task: PublishPipelineArtifact@1
+                    condition: eq(variables['CheckWindowsSnapshots.windowsSnapshotsExist'], 'true')
+                    displayName: Publish Windows snapshot diffs
+                    inputs:
+                      targetPath: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.WinUI.Tests/Release/net9.0/snapshots-diff
+                      artifact: uitest-snapshot-results-windows
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -351,3 +471,27 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Mac snapshot diffs
+                  - task: PowerShell@2
+                    condition: always()
+                    displayName: Check for Mac snapshot diffs
+                    name: CheckMacSnapshots
+                    inputs:
+                      targetType: 'inline'
+                      script: |
+                        $snapshotPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.Mac.Tests/Release/net9.0/snapshots-diff"
+                        if (Test-Path $snapshotPath) {
+                          Write-Host "##vso[task.setvariable variable=macSnapshotsExist;isOutput=true]true"
+                          Write-Host "Found Mac snapshots at: $snapshotPath"
+                        } else {
+                          Write-Host "##vso[task.setvariable variable=macSnapshotsExist;isOutput=true]false"
+                          Write-Host "No Mac snapshots found at: $snapshotPath"
+                        }
+                  
+                  - task: PublishPipelineArtifact@1
+                    condition: eq(variables['CheckMacSnapshots.macSnapshotsExist'], 'true')
+                    displayName: Publish Mac snapshot diffs
+                    inputs:
+                      targetPath: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.Mac.Tests/Release/net9.0/snapshots-diff
+                      artifact: uitest-snapshot-results-mac
