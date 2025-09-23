@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 			_navigationRoot = li.Inflate(Resource.Layout.navigationlayout, null)
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
 
+			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(_navigationRoot, this.Context);
+
 			_navigationRoot.Id = View.GenerateViewId();
 			return dl;
 		}
