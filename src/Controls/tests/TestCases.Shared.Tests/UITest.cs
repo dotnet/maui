@@ -294,13 +294,15 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
+				var orientation = App.GetOrientation();
+
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
+					TestDevice.iOS => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "ios-iphonex" ? 90 : 110) : 0,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
 					_ => 0,
@@ -318,7 +320,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => 125,
+					TestDevice.Android => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? 125 : 0,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
