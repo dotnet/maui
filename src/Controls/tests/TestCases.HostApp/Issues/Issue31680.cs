@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Issues;
 
 public class Issue31680 : ContentPage
 {
-    private ObservableCollection<Listing> _items = new();
+    ObservableCollection<Listing> _items = new();
 
     public ObservableCollection<Listing> Items
     {
@@ -130,7 +130,7 @@ public class Issue31680 : ContentPage
         LoadData();
     }
 
-    private void LoadData()
+    void LoadData()
     {
         var random = new Random();
         var items = new ObservableCollection<Listing>();
