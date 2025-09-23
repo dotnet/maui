@@ -259,7 +259,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 
 			// Check if there are any tap recognizers with more than 2 taps required
-			for (int i = 3; i <= 10; i++) // Support up to 10 taps for reasonable limit
+			// We check a reasonable range but don't artificially limit functionality
+			for (int i = 3; i <= 100; i++)
 			{
 				if (_tapGestureRecognizers(i).Any())
 					return true;
@@ -323,14 +324,15 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			// If we don't have a handler for the current tap count, 
-			// continue waiting for more taps (up to a reasonable limit)
-			if (_currentTapCount < 10)
+			// continue waiting for more taps
+			// We set a reasonable upper bound to prevent infinite counting
+			if (_currentTapCount < 100)
 			{
 				return false; // Continue waiting for more taps
 			}
 			else
 			{
-				// Reset if we've exceeded the maximum tap count
+				// Reset if we've exceeded a very high tap count
 				_currentTapCount = 0;
 				_lastTapTime = 0;
 				return false;

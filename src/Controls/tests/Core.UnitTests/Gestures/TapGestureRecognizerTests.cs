@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(4)]
 		[InlineData(5)]
 		[InlineData(10)]
+		[InlineData(25)]
+		[InlineData(50)]
 		public void SupportsMultipleTapsRequired(int numberOfTaps)
 		{
 			var tap = new TapGestureRecognizer
@@ -60,6 +62,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tap.Command = new Command(() => tappedCount++);
 
 			tap.SendTapped(view);
+			Assert.Equal(1, tappedCount);
+		}
+
+		[Fact]
+		public void SupportsVeryHighNumberOfTapsRequired()
+		{
+			// Test that we don't artificially limit the number of taps
+			var tap = new TapGestureRecognizer
+			{
+				NumberOfTapsRequired = 100
+			};
+
+			Assert.Equal(100, tap.NumberOfTapsRequired);
+
+			int tappedCount = 0;
+			tap.Command = new Command(() => tappedCount++);
+
+			tap.SendTapped(new View());
 			Assert.Equal(1, tappedCount);
 		}
 	}
