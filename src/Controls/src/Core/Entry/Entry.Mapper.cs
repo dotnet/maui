@@ -29,15 +29,15 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-		static void MapTextTransform(IEntryHandler handler, Entry label)
+		static void MapTextTransform(IEntryHandler handler, Entry entry)
 		{
-			if (label.IsConnectingHandler())
+			if (entry.IsConnectingHandler())
 			{
 				// If we're connecting the handler, we don't want to map the text multiple times.
 				return;
 			}
 
-			MapText(handler, label);
+			MapText(handler, entry);
 		}
 	}
 }
