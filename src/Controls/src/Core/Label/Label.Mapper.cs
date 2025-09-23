@@ -144,15 +144,11 @@ namespace Microsoft.Maui.Controls
 
 		static void MapFont(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (label.HasFormattedTextSpans)
+			// if there is formatted text,
+			// then we re-apply the whole formatted text
+			if (label.HasFormattedTextSpans && !handler.IsConnectingHandler())
 			{
-				
-				if (!handler.IsConnectingHandler())
-				{
-					// if there is formatted text,
-					// then we re-apply the whole formatted text
-					handler.UpdateValue(nameof(FormattedText));
-				}
+				handler.UpdateValue(nameof(FormattedText));
 			}
 			else if (label.TextType == TextType.Text || !IsDefaultFont(label))
 			{
