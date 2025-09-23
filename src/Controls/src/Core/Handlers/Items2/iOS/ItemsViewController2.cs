@@ -35,6 +35,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
+		bool IsItemsSourceEmpty => (ItemsSource?.ItemCount ?? 0) == 0;
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
@@ -140,7 +142,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var wasEmpty = _isEmpty;
 
-			_isEmpty = ItemsSource?.ItemCount == 0 || ItemsSource is null;
+			_isEmpty = IsItemsSourceEmpty;
 
 			if (wasEmpty != _isEmpty)
 			{
@@ -296,8 +298,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
 			// Update bouncing behavior when ItemsSource changes
-			var isEmpty = ItemsSource?.ItemCount == 0 || ItemsSource is null;
-			UpdateBouncingBehavior(isEmpty);
+			UpdateBouncingBehavior(IsItemsSourceEmpty);
 
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
@@ -479,9 +480,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			var isEmpty = ItemsSource?.ItemCount == 0 || ItemsSource is null;
-			UpdateEmptyViewVisibility(isEmpty);
-			UpdateBouncingBehavior(isEmpty);
+			UpdateEmptyViewVisibility(IsItemsSourceEmpty);
+			UpdateBouncingBehavior(IsItemsSourceEmpty);
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
