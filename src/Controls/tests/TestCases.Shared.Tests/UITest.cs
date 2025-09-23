@@ -417,7 +417,6 @@ namespace Microsoft.Maui.TestCases.Tests
 					cropFromTop = 0;
 				}
 #endif
-
 				// For Android crop the 3 button nav from the bottom and left based on orientation, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
 				// For iOS, crop the home indicator at the bottom.
