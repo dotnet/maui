@@ -6,7 +6,7 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <DataTemplate x:Key="DefaultTemplate">
+            <DataTemplate x:Key="DefaultTemplate" x:DataType="local:CollectionViewGalleryTestItem">
                 <Grid HeightRequest="50" RowDefinitions="*,Auto">
                     
                     <Image Source="coffee.png" AutomationId="weekday"/>
@@ -14,7 +14,7 @@
                     <Label Grid.Row="1" Text="{Binding Date, StringFormat='{}{0:dddd}'}"></Label>
                 </Grid>
             </DataTemplate>
-            <DataTemplate x:Key="WeekendTemplate">
+            <DataTemplate x:Key="WeekendTemplate" x:DataType="local:CollectionViewGalleryTestItem">
                 <Grid HeightRequest="50" RowDefinitions="*,Auto">
                     
                     <Image Source="oasis.jpg" AutomationId="weekend"/>
@@ -23,11 +23,11 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="EmptyTemplate">
+            <DataTemplate x:Key="EmptyTemplate" x:DataType="{x:Type x:String}">
                 <Label Text="{Binding ., StringFormat='({0}) does not match any day of the week.'}"></Label>
             </DataTemplate>
 
-            <DataTemplate x:Key="SymbolsTemplate">
+            <DataTemplate x:Key="SymbolsTemplate" x:DataType="{x:Type x:String}">
                 <Label Background="Red" Text="{Binding ., StringFormat='({0}) _definitely_ does not match any day of the week.'}"></Label>
             </DataTemplate>
 
