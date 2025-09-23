@@ -287,6 +287,7 @@ internal static class LayoutFactory2
 
 			bool isHorizontal = itemsView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 			var peekAreaInsets = itemsView.PeekAreaInsets;
+			int lastPosition = itemsView.Loop ? itemsView.Position + 1 : itemsView.Position;
 
 			double sectionMargin = 0.0;
 
@@ -343,6 +344,15 @@ internal static class LayoutFactory2
 					return;
 				}
 
+				if (!itemsView.IsSwipeEnabled && !cv2Controller.ScrollToRequested)
+				{
+					cv2Controller.CollectionView.ScrollToItem(
+						NSIndexPath.FromItemSection(lastPosition, 0),
+						UICollectionViewScrollPosition.Left,
+						false);
+					return;
+				}
+
 				var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
@@ -390,8 +400,10 @@ internal static class LayoutFactory2
 					}
 				}
 
+				lastPosition = pageIndex;
 				//Update the CarouselView position
 				cv2Controller?.SetPosition(carouselPosition);
+				cv2Controller.ScrollToRequested = false;
 			};
 
 			return section;
