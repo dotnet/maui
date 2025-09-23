@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -180,7 +181,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// By default on android it was never edge to edge so we set this to container by default
-			if (!OperatingSystem.IsIOS() || !OperatingSystem.IsMacCatalyst())
+			if (DeviceInfo.Platform != DevicePlatform.iOS && DeviceInfo.Platform != DevicePlatform.MacCatalyst)
 			{
 				return SafeAreaRegions.Container;
 			}
