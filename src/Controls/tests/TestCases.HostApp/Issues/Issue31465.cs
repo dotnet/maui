@@ -35,7 +35,6 @@ public class Issue31465 : TestContentPage
 			AutomationId = "TestCollectionView"
 		};
 
-		// Set binding to Text property with null BindingContext (like the original)
 		collectionView.SetBinding(CollectionView2.ItemsSourceProperty, "Text");
 
 		collectionView.Header = new Label
