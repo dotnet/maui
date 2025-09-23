@@ -4,11 +4,11 @@ namespace Maui.Controls.Sample
 {
 	public class BrushesControlPage : NavigationPage
 	{
+		private BrushesViewModel _viewModel;
 		public BrushesControlPage()
 		{
-			var vm = new BrushesViewModel();
-			var main = new BrushesControlMainPage(vm);
-			PushAsync(main);
+			_viewModel = new BrushesViewModel();
+			PushAsync(new BrushesControlMainPage(_viewModel));
 		}
 	}
 
