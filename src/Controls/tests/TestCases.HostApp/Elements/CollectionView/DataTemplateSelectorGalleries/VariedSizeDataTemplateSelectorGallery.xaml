@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:datatemplateselectorgalleries="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries.VariedSizeDataTemplateSelectorGallery">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries.VariedSizeDataTemplateSelectorGallery"
+             x:DataType="datatemplateselectorgalleries:VariedSizeDataTemplateSelectorGallery">
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <DataTemplate x:Key="MilkTemplate">
+            <DataTemplate x:Key="MilkTemplate" x:DataType="datatemplateselectorgalleries:Milk">
                 <Border Stroke="Red" Background="Wheat" HeightRequest="100">
                     <Grid HeightRequest="100">
                         <Label Text="{Binding Name}" />
@@ -13,7 +14,7 @@
                 </Border>
             </DataTemplate>
 
-            <DataTemplate x:Key="CoffeeTemplate">
+            <DataTemplate x:Key="CoffeeTemplate" x:DataType="datatemplateselectorgalleries:Coffee">
                 <Border Stroke="Red" Background="SaddleBrown" HeightRequest="50">
                     <Grid HeightRequest="50">
                         <Label Text="{Binding Name}" />

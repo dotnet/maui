@@ -21,7 +21,7 @@
                     </x:Array>
                 </CollectionView.ItemsSource>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="{x:Type x:String}">
                         <Grid
                             HeightRequest="60"
                             Padding="12">
