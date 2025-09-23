@@ -2679,27 +2679,6 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Gets the Android API level of the device under test.
-		/// </summary>
-		/// <param name="app">The IApp instance representing the application under test.</param>
-		/// <returns>The Android API level as a long value.</returns>
-		/// <exception cref="InvalidOperationException">
-		/// Thrown when the app is not an AppiumAndroidApp or when the deviceApiLevel capability is missing or null.
-		/// </exception>
-		public static long GetDeviceApiLevel(this IApp app)
-		{
-			if (app is not AppiumAndroidApp appiumApp)
-			{
-				throw new InvalidOperationException("GetDeviceApiLevel is only supported on AppiumAndroidApp");
-			}
-
-			var deviceApiLevel = appiumApp.Driver.Capabilities.GetCapability("deviceApiLevel") as long?
-				?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
-
-			return deviceApiLevel;
-		}
-
-		/// <summary>
 		/// Gets the display density for the current device using the appropriate platform-specific method.
 		/// For Android, uses the Appium getDisplayDensity command for accurate results.
 		/// For iOS and Catalyst, uses the deviceScreenInfo command.
