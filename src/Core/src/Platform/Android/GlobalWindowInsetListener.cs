@@ -265,7 +265,7 @@ internal static class GlobalWindowInsetListenerExtensions
         }
 
         // Get the safe area insets
-        var safeAreaInsets = insets.ToSafeAreaInsets(view.Context);
+        var safeAreaInsets = insets.ToSafeAreaInsetsPx(view.Context);
 
         // If there are no safe area insets, there's no intersection
         if (safeAreaInsets.Left == 0 && safeAreaInsets.Top == 0 &&
