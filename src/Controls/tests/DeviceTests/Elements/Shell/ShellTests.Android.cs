@@ -751,5 +751,59 @@ namespace Microsoft.Maui.DeviceTests
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
 		}
+
+		[Fact(DisplayName = "ShellFragmentContainer destruction does not use problematic dispatcher pattern")]
+		public async Task ShellFragmentContainerDestructionDoesNotUseDispatcherPattern()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Get the ShellFragmentContainer type to verify OnDestroy method behavior
+				var shellFragmentContainerType = typeof(ShellFragmentContainer);
+				
+				// Verify that OnDestroy method either doesn't exist or doesn't call dispatcher
+				var onDestroyMethod = shellFragmentContainerType.GetMethod("OnDestroy", 
+					System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+				
+				if (onDestroyMethod != null)
+				{
+					// If OnDestroy exists, verify it's not overridden or doesn't contain problematic dispatcher pattern
+					// The base Fragment.OnDestroy should be used instead
+					Assert.True(onDestroyMethod.DeclaringType == typeof(AndroidX.Fragment.App.Fragment), 
+						"ShellFragmentContainer should not override OnDestroy method");
+				}
+
+				// Test that fragment creation and destruction works without exceptions
+				var shellContent = shell.CurrentItem as ShellContent;
+				var mauiContext = handler.MauiContext;
+				
+				Exception exception = null;
+				try
+				{
+					// Create a ShellFragmentContainer instance
+					var fragmentContainer = new ShellFragmentContainer(shellContent, mauiContext);
+					
+					// Test that disposal works without dispatcher exceptions
+					// This should use the base Fragment disposal mechanism
+					fragmentContainer.Dispose();
+				}
+				catch (Exception ex)
+				{
+					exception = ex;
+				}
+
+				// Verify no exception was thrown during fragment disposal
+				Assert.Null(exception);
+			});
+		}
 	}
 }
