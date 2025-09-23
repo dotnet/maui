@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			if (carouselView.Position < 0)
+			{
 				return;
+			}
 			(handler.PlatformView as IMauiCarouselRecyclerView).UpdateFromPosition();
 		}
 
