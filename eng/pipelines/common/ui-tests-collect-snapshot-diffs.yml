@@ -1,0 +1,36 @@
+parameters:
+  platform: '' # The platform name for logging (e.g., 'Android', 'iOS', 'Windows', 'Mac')
+  artifactName: '' # The artifact name to publish (e.g., 'uitest-snapshot-results-android')
+
+steps:
+- task: PowerShell@2
+  condition: always()
+  displayName: Check for ${{ parameters.platform }} snapshot diffs
+  name: Check${{ replace(parameters.platform, ' ', '') }}Snapshots # NOTE: This step name must match the variable reference in the condition below
+  inputs:
+    targetType: 'inline'
+    script: |
+      $snapshotPath = "$(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests"
+      Write-Host "Checking for ${{ parameters.platform }} snapshot diffs at: $snapshotPath"
+      
+      if (Test-Path $snapshotPath) {
+        $diffFiles = Get-ChildItem $snapshotPath -Recurse -File -Include "*.png", "*.jpg", "*.jpeg" | Where-Object { $_.Name -match "diff|actual|expected" }
+        
+        if ($diffFiles.Count -gt 0) {
+          Write-Host "✅ Found $($diffFiles.Count) ${{ parameters.platform }} snapshot diff files"
+          Write-Host "##vso[task.setvariable variable=snapshotsExist;isOutput=true]true"
+        } else {
+          Write-Host "ℹ️ Directory exists but no ${{ parameters.platform }} diff files found"
+          Write-Host "##vso[task.setvariable variable=snapshotsExist;isOutput=true]false"
+        }
+      } else {
+        Write-Host "❌ No ${{ parameters.platform }} snapshot directory found at: $snapshotPath"
+        Write-Host "##vso[task.setvariable variable=snapshotsExist;isOutput=true]false"
+      }
+
+- task: PublishPipelineArtifact@1
+  condition: eq(variables['Check${{ replace(parameters.platform, ' ', '') }}Snapshots.snapshotsExist'], 'true') # NOTE: This variable reference must match the step name above
+  displayName: Publish ${{ parameters.platform }} snapshot diffs
+  inputs:
+    targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
+    artifact: ${{ parameters.artifactName }}
