@@ -4,7 +4,9 @@
              x:Class="Maui.Controls.Sample.Issues.Issue21513"
              Title="Issue21513">
     <VerticalStackLayout>
+        <!-- TEMPORARY: Added BackgroundColor to force a visual snapshot difference for pipeline artifact validation -->
         <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Left,4"
+                BackgroundColor="DarkOrange"
                 AutomationId="WaitForStubControl"/>
         <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Right,4"/>
         <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Top,4"/>
