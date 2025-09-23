@@ -70,19 +70,31 @@ namespace Microsoft.Maui.Platform
                 }
             }
 
+
+            var bottomNavigation = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
+            
+            if (bottomNavigation)
+            {
+                v.SetPadding(0, 0, 0, bottomInset);
+            }
+            else
+            {
+                v.SetPadding(0, 0, 0, 0);
+            }
+
             // Create new insets with consumed values
             var newSystemBars = Insets.Of(
                 systemBars?.Left ?? 0,
                 appBarLayoutContainsSomething ? 0 : systemBars?.Top ?? 0,
                 systemBars?.Right ?? 0,
-                systemBars?.Bottom ?? 0
+                bottomNavigation ? 0 : systemBars?.Bottom ?? 0
             ) ?? Insets.None;
 
             var newDisplayCutout = Insets.Of(
                 displayCutout?.Left ?? 0,
                 appBarLayoutContainsSomething ? 0 : displayCutout?.Top ?? 0,
                 displayCutout?.Right ?? 0,
-                displayCutout?.Bottom ?? 0
+                bottomNavigation ? 0 : displayCutout?.Bottom ?? 0
             ) ?? Insets.None;
 
             return new WindowInsetsCompat.Builder(insets)
