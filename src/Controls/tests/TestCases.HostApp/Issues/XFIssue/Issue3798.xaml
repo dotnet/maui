@@ -5,7 +5,7 @@
         <ListView x:Name="listView"
               AutomationId="listViewSeparatorColor"
 			  ItemTapped="OnItemTapped"
-			  ItemsSource="{Binding .}" 
+			  ItemsSource="{Binding ., x:DataType={x:Null}}" 
               SeparatorColor ="Green" />
     </StackLayout>
 </local:TestContentPage>
