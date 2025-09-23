@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue25224"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page" x:DataType="{x:Null}">
+             Title="Main Page" x:DataType="local:Issue25224ViewModel">
 
   <ContentPage.Resources>
     <DataTemplate x:Key="AdvancedTemplate">
@@ -41,14 +41,14 @@
     <SearchBar Grid.Row="1"
              x:Name="searchBar"
              AutomationId="SearchBar"
-             SearchCommand="{Binding FilterCommand}"
-             SearchCommandParameter="{Binding Source={x:Reference searchBar}, Path=Text}"
+             SearchCommand="{Binding FilterCommand, x:DataType={x:Null}}"
+             SearchCommandParameter="{Binding Source={x:Reference searchBar, x:DataType={x:Null}}, Path=Text}"
              Placeholder="Filter" />
     <CollectionView Grid.Row="2"
                   x:Name="collectionView"
                   AutomationId="Success"
-                  ItemsSource="{Binding Monkeys}"
-                  EmptyView="{Binding Source={x:Reference searchBar}, Path=Text}">
+                  ItemsSource="{Binding Monkeys, x:DataType={x:Null}}"
+                  EmptyView="{Binding Source={x:Reference searchBar, x:DataType={x:Null}}, Path=Text}">
       <CollectionView.ItemTemplate>
         <DataTemplate>
           <Grid Padding="10">
@@ -61,11 +61,11 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Label Grid.Column="1"
-                         Text="{Binding Name}"
+                         Text="{Binding Name, x:DataType={x:Null}}"
                          FontAttributes="Bold" />
             <Label Grid.Row="1"
                          Grid.Column="1"
-                         Text="{Binding Location}"
+                         Text="{Binding Location, x:DataType={x:Null}}"
                          FontAttributes="Italic"
                          VerticalOptions="End" />
           </Grid>

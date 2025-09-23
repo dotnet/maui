@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.Issues.Issue9196">
-    <ContentPage.Content x:DataType="{x:Null}">
+    <ContentPage.Content x:DataType="local:_9196ViewModel">
         <StackLayout>
 
             <Label Text="Success"/>
 
             <CollectionView x:Name="ReceiptsCollection" SelectionMode="Single" ItemSizingStrategy="MeasureAllItems" 
-					    ItemsSource="{Binding ReceiptsList}">
+					    ItemsSource="{Binding ReceiptsList, x:DataType={x:Null}}">
 
                 <CollectionView.EmptyView>
                     <StackLayout Padding="30">
@@ -22,7 +22,7 @@
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="{x:Type x:String}">
                         <StackLayout>
                             <Grid Padding="10">
                                 <Grid.RowDefinitions>

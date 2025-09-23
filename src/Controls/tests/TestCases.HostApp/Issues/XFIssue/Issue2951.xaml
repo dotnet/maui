@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues" xmlns:extensions="clr-namespace:Maui.Controls.Sample.Issues" x:Name="ThePageIssue2951" x:Class="Maui.Controls.Sample.Issues.Issue2951">
+<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues" xmlns:extensions="clr-namespace:Maui.Controls.Sample.Issues" x:Name="ThePageIssue2951" x:Class="Maui.Controls.Sample.Issues.Issue2951">
 	<controls:TestContentPage.Resources>
 		<ResourceDictionary>
 			<Style x:Key="ButtonStyle" TargetType="Button">
@@ -14,10 +14,10 @@
 			<Style x:Key="ChangeStatusButton" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
 				<Setter Property="extensions:ButtonExtensions.IsPrimary" Value="False" />
 				<Setter Property="Text" Value="A" />
-				<Setter Property="Command" Value="{Binding Source={x:Reference ThePageIssue2951},Path=BindingContext.ButtonTapped}" />
-				<Setter Property="CommandParameter" Value="{Binding .}" />
+				<Setter Property="Command" Value="{Binding Source={x:Reference ThePageIssue2951, x:DataType={x:Null}},Path=BindingContext.ButtonTapped}" />
+				<Setter Property="CommandParameter" Value="{Binding ., x:DataType={x:Null}}" />
 				<Style.Triggers>
-					<DataTrigger Binding="{Binding IsStarted}" Value="True" TargetType="Button">
+					<DataTrigger Binding="{Binding IsStarted, x:DataType={x:Null}}" Value="True" TargetType="Button">
 						<Setter Property="extensions:ButtonExtensions.IsPrimary" Value="True" />
 						<Setter Property="Text" Value="B" />
 					</DataTrigger>
@@ -34,7 +34,7 @@
 							<Grid.RowDefinitions>
 								<RowDefinition Height="*" />
 							</Grid.RowDefinitions>
-							<Label Grid.Column="0" Text="{Binding Name}" TextColor="Yellow" />
+							<Label Grid.Column="0" Text="{Binding Name, x:DataType={x:Null}}" TextColor="Yellow" />
 							<Button AutomationId="btnChangeStatus" Grid.Column="1" Style="{StaticResource ChangeStatusButton}" />
 						</Grid>
 					</ViewCell.View>
@@ -45,7 +45,7 @@
 	<controls:TestContentPage.Content>
         <StackLayout>
             <Label x:Name="lblReady"></Label>
-		    <ListView x:Name="listView" ItemAppearing="ListView_ItemAppearing" ItemTemplate="{StaticResource TheItemTemplate}" ItemsSource="{Binding Items}" RowHeight="74" />
+		    <ListView x:Name="listView" ItemAppearing="ListView_ItemAppearing" ItemTemplate="{StaticResource TheItemTemplate}" ItemsSource="{Binding Items, x:DataType={x:Null}}" RowHeight="74" />
 	    </StackLayout>
     </controls:TestContentPage.Content>
 </controls:TestContentPage>

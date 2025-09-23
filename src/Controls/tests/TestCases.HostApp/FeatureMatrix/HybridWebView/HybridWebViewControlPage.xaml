@@ -19,18 +19,18 @@
               <!-- Row 0: HybridWebView at the top -->
               <HybridWebView Grid.Row="0"
                              x:Name="MyHybridWebView"
-                             DefaultFile="{Binding DefaultFile}"
-                             HybridRoot="{Binding HybridRoot}"
-                             IsVisible="{Binding IsVisible}"
-                             Shadow="{Binding Shadow}"
-                             FlowDirection="{Binding FlowDirection}"
+                             DefaultFile="{Binding DefaultFile, x:DataType={x:Null}}"
+                             HybridRoot="{Binding HybridRoot, x:DataType={x:Null}}"
+                             IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                             Shadow="{Binding Shadow, x:DataType={x:Null}}"
+                             FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
                              RawMessageReceived="OnRawMessageReceived"
                              AutomationId="HybridWebViewControl"/>
 
               <!-- Row 1: Title and Status Labels -->
               <VerticalStackLayout Grid.Row="1"
                                    Spacing="2">
-                     <Label Text="{Binding Status}"
+                     <Label Text="{Binding Status, x:DataType={x:Null}}"
                             FontSize="14"
                             TextColor="DarkGreen"
                             HorizontalOptions="Start"
@@ -48,7 +48,7 @@
                                           FontAttributes="Bold"
                                           FontSize="12"
                                           HorizontalOptions="Start"/>
-                                   <Label Text="{Binding HybridRoot}"
+                                   <Label Text="{Binding HybridRoot, x:DataType={x:Null}}"
                                           FontSize="11"
                                           TextColor="Blue"
                                           AutomationId="HybridRootLabel"/>
@@ -60,7 +60,7 @@
                                           FontAttributes="Bold"
                                           FontSize="12"
                                           HorizontalOptions="Start"/>
-                                   <Label Text="{Binding DefaultFile}"
+                                   <Label Text="{Binding DefaultFile, x:DataType={x:Null}}"
                                           FontSize="11"
                                           TextColor="Blue"
                                           AutomationId="DefaultFileLabel"/>
@@ -158,7 +158,7 @@
                                                    Grid.Column="0"
                                                    Spacing="5">
                                    <CheckBox x:Name="IsVisibleCheckBox"
-                                             IsChecked="{Binding IsVisible}"
+                                             IsChecked="{Binding IsVisible, x:DataType={x:Null}}"
                                              AutomationId="IsVisibleCheckBox"/>
                                    <Label Text="IsVisible"
                                           VerticalOptions="Center"
@@ -169,7 +169,7 @@
                                                    Grid.Column="1"
                                                    Spacing="5">
                                    <CheckBox x:Name="ShadowCheckBox"
-                                             IsChecked="{Binding HasShadow}"
+                                             IsChecked="{Binding HasShadow, x:DataType={x:Null}}"
                                              AutomationId="ShadowCheckBox"/>
                                    <Label Text="Shadow"
                                           VerticalOptions="Center"
@@ -179,7 +179,7 @@
                                                    Grid.Column="0"
                                                    Spacing="5">
                                    <CheckBox x:Name="FlowDirectionCheckBox"
-                                             IsChecked="{Binding IsLeftToRight}"
+                                             IsChecked="{Binding IsLeftToRight, x:DataType={x:Null}}"
                                              CheckedChanged="OnFlowDirectionCheckBoxChanged"
                                              AutomationId="FlowDirectionCheckBox"/>
                                    <Label Text="FlowDirection: LTR if checked, RTL if unchecked"

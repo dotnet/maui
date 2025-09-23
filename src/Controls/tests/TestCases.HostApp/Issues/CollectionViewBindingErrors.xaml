@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
-             x:Class="Maui.Controls.Sample.Issues.CollectionViewBindingErrors" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.Issues.CollectionViewBindingErrors" x:DataType="local:BindingErrorsViewModel">
     <StackLayout>
         <Label
             Text="The label below should read 'Binding Errors: 0'; if the number of binding errors is greater than zero, this test has failed." />
@@ -12,16 +12,16 @@
             Text="Binding Errors: 0" />
         <CollectionView 
             x:Name="CollectionView" 
-            ItemsSource="{Binding ItemsList}">
+            ItemsSource="{Binding ItemsList, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <StackLayout>
                         <Image
-                            Source="{Binding Image}" 
+                            Source="{Binding Image, x:DataType={x:Null}}" 
                             WidthRequest="100" 
                             HeightRequest="100"/>
                         <Label
-                            Text="{Binding Caption}" />
+                            Text="{Binding Caption, x:DataType={x:Null}}" />
                     </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

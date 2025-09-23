@@ -24,7 +24,7 @@
                                    FontSize="11"
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="TextEntry"
-                                   Text="{Binding Text}"
+                                   Text="{Binding Text, x:DataType={x:Null}}"
                                    TextChanged="Editor_TextChanged"
                                    AutomationId="TextEntryChanged"
                                    WidthRequest="100"/>
@@ -35,7 +35,7 @@
                                    FontSize="11"
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="FontSizeEntry"
-                                   Text="{Binding FontSize}"
+                                   Text="{Binding FontSize, x:DataType={x:Null}}"
                                    TextChanged="FontFamilyEditor_TextChanged"
                                    AutomationId="FontSizeEntry"
                                    WidthRequest="100"/>
@@ -280,7 +280,7 @@
                                    FontSize="11"
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="CharacterSpacingEntry"
-                                   Text="{Binding CharacterSpacing}"
+                                   Text="{Binding CharacterSpacing, x:DataType={x:Null}}"
                                    AutomationId="CharacterSpacing"
                                    TextChanged="CharacterSpacing_TextChanged"
                                    WidthRequest="100"/>
@@ -321,7 +321,7 @@
                                    FontSize="11"
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="MaxLengthEntry"
-                                   Text="{Binding MaxLength}"
+                                   Text="{Binding MaxLength, x:DataType={x:Null}}"
                                    AutomationId="MaxLength"
                                    FontSize="11"
                                    TextChanged="MaxLengthButton_Clicked"
@@ -369,7 +369,7 @@
                                    FontSize="11"
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="FontFamilyEntry"
-                                   Text="{Binding FontFamily}"
+                                   Text="{Binding FontFamily, x:DataType={x:Null}}"
                                    AutomationId="FontFamily"
                                    FontSize="11"
                                    TextChanged="FontFamilyEditor_TextChanged"
@@ -381,7 +381,7 @@
                                    FontSize="11"
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="PlaceholderEntry"
-                                   Text="{Binding Placeholder}"
+                                   Text="{Binding Placeholder, x:DataType={x:Null}}"
                                    AutomationId="PlaceholderText"
                                    FontSize="11"
                                    TextChanged="PlaceholderEditor_TextChanged"
@@ -390,7 +390,7 @@
                      <!-- Shadow -->
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox
-                                   IsChecked="{Binding HasShadow}"
+                                   IsChecked="{Binding HasShadow, x:DataType={x:Null}}"
                                    AutomationId="ShadowCheckBox"/>
                             <Label Text="Has Shadow"
                                    VerticalOptions="Center"/>

@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:Class="Maui.Controls.Sample.Issues.Issue5749" xmlns:control="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:Class="Maui.Controls.Sample.Issues.Issue5749" xmlns:control="clr-namespace:Maui.Controls.Sample.Issues">
     <StackLayout Padding="0,20,20,0">
         <control:CustomHorizontalListview Orientation="Horizontal" x:Name="listViewHorizontal" AutomationId="listViewHorizontal">
             <control:CustomHorizontalListview.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Label TextColor="Black" FontAttributes="Bold" Text="{Binding .}" FontSize="Large" />
+                        <Label TextColor="Black" FontAttributes="Bold" Text="{Binding ., x:DataType={x:Null}}" FontSize="Large" />
                     </ViewCell>
                 </DataTemplate>
             </control:CustomHorizontalListview.ItemTemplate>
         </control:CustomHorizontalListview>
-    <Label BindingContext="{x:Reference listViewHorizontal}" Text="{Binding IsEnabled}" AutomationId="{Binding IsEnabled}" FontAttributes="Bold" FontSize="Large" HorizontalOptions="Center" />
+    <Label BindingContext="{x:Reference listViewHorizontal}" Text="{Binding IsEnabled, x:DataType={x:Null}}" AutomationId="{Binding IsEnabled, x:DataType={x:Null}}" FontAttributes="Bold" FontSize="Large" HorizontalOptions="Center" />
         <Button x:Name="btnToggle" AutomationId="Button" Text="Toggle ScrollView.IsEnabled" HorizontalOptions="Center" Clicked="ToggleScrollViewIsEnabled" />
     </StackLayout>
 </local:TestContentPage>

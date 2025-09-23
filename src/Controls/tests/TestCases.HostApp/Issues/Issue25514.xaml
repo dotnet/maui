@@ -1,20 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue25514" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue25514" x:DataType="local:Issue25514ViewModel">
 
     <Grid RowDefinitions="*,Auto">
         <CollectionView
-            ItemsSource="{Binding StringsGroups}"
+            ItemsSource="{Binding StringsGroups, x:DataType={x:Null}}"
             IsGrouped="True">
             <CollectionView.GroupHeaderTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding Header}"/>
+                <DataTemplate x:DataType="{x:Type x:String}">
+                    <Label Text="{Binding Header, x:DataType={x:Null}}"/>
                 </DataTemplate>
             </CollectionView.GroupHeaderTemplate>
         </CollectionView>
 
-        <Button Command="{Binding LoadCollectionCommand}"
+        <Button Command="{Binding LoadCollectionCommand, x:DataType={x:Null}}"
                 Grid.Row="1"
                 AutomationId="button"
                 Text="Load Data"/>

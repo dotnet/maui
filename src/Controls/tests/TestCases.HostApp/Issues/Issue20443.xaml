@@ -10,11 +10,11 @@
     </ContentPage.BindingContext>
     <Grid>
         <RefreshView
-            IsRefreshing="{Binding IsRefreshing}"
-            Command="{Binding RefreshCommand}">
+            IsRefreshing="{Binding IsRefreshing, x:DataType={x:Null}}"
+            Command="{Binding RefreshCommand, x:DataType={x:Null}}">
             <CollectionView
                 ItemSizingStrategy="MeasureAllItems"
-                ItemsSource="{Binding Items}">
+                ItemsSource="{Binding Items, x:DataType={x:Null}}">
                 <CollectionView.ItemTemplate>
                     <local:Issue20443TemplateSelector>
                         <local:Issue20443TemplateSelector.ItemATemplate>

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.CollectionViewScrollPage"
-             Title="CollectionViewScrollPage" x:DataType="{x:Null}">
+             Title="CollectionViewScrollPage">
      <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                      Clicked="NavigateToOptionsPage_Clicked"
@@ -13,19 +13,19 @@
     <Grid RowDefinitions="Auto, *">
         <!-- Fixed Buttons Row -->
         <StackLayout Grid.Row="0" Spacing="40" Padding="40">
-            <Button Text="Add" Command="{Binding AddItemCommand}" IsVisible="{Binding ShowAddRemoveButtons}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
+            <Button Text="Add" Command="{Binding AddItemCommand, x:DataType={x:Null}}" IsVisible="{Binding ShowAddRemoveButtons, x:DataType={x:Null}}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
         </StackLayout>
         
         <!-- Scrollable CollectionView Row -->
             <local:CollectionView2 Grid.Row="1"
                 x:Name="collectionView"
-                ItemsSource="{Binding ItemsSource}"
-                ItemSizingStrategy="{Binding ItemSizingStrategy}"
-                ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode}"
-                ItemTemplate="{Binding ItemTemplate}"
-                IsGrouped="{Binding IsGrouped}"
-                GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
-                ItemsLayout="{Binding ItemsLayout}"
+                ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
+                ItemSizingStrategy="{Binding ItemSizingStrategy, x:DataType={x:Null}}"
+                ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode, x:DataType={x:Null}}"
+                ItemTemplate="{Binding ItemTemplate, x:DataType={x:Null}}"
+                IsGrouped="{Binding IsGrouped, x:DataType={x:Null}}"
+                GroupHeaderTemplate="{Binding GroupHeaderTemplate, x:DataType={x:Null}}"
+                ItemsLayout="{Binding ItemsLayout, x:DataType={x:Null}}"
                 AutomationId="CollectionViewControl">  
             </local:CollectionView2>
     </Grid>

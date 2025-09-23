@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewAdjustPeekAreaInsets"
-    Title="Issue 13436" x:DataType="{x:Null}">
+    Title="Issue 13436">
     <StackLayout>
         <Label
             Padding="12"
@@ -24,7 +24,7 @@
             </CarouselView.ItemsLayout>
             <CarouselView.ItemTemplate>
                 <DataTemplate>
-                    <Grid BackgroundColor="{Binding Color}">
+                    <Grid BackgroundColor="{Binding Color, x:DataType={x:Null}}">
                         <Grid Margin="20">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -33,12 +33,12 @@
                             <Label
                                 Grid.Row="0"
                                 Margin="0,0,0,20"
-                                Text="{Binding Name}"
+                                Text="{Binding Name, x:DataType={x:Null}}"
                                 TextColor="Black" />
                             <Label
                                 Grid.Row="1"
                                 Margin="0,0,0,20"
-                                Text="{Binding Desc}"
+                                Text="{Binding Desc, x:DataType={x:Null}}"
                                 TextColor="Black" />
                         </Grid>
                     </Grid>

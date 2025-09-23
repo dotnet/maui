@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.SelectionChangedCommandParameter" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.SelectionChangedCommandParameter" x:DataType="local:ItemsViewModel">
     <ContentPage.Content>
         <StackLayout>
 
             <Label x:Name="Result" Text="Pending..."></Label>
 
-            <CollectionView ItemsSource="{Binding Items}" Header="This is the header"
+            <CollectionView ItemsSource="{Binding Items, x:DataType={x:Null}}" Header="This is the header"
                     SelectionMode="Single"
-                    SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference MyCollectionView}}"
-                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                    SelectionChangedCommand="{Binding SelectionChangedCommand}"
+                    SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference MyCollectionView, x:DataType={x:Null}}}"
+                    SelectedItem="{Binding SelectedItem, Mode=TwoWay, x:DataType={x:Null}}"
+                    SelectionChangedCommand="{Binding SelectionChangedCommand, x:DataType={x:Null}}"
                     x:Name="MyCollectionView">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                         <StackLayout Padding="10">
-                            <Label Text="{Binding Text}" 
-                                    d:Text="{Binding .}"
+                            <Label Text="{Binding Text, x:DataType={x:Null}}" 
+                                    d:Text="{Binding ., x:DataType={x:Null}}"
                                     LineBreakMode="NoWrap" 
                                     Style="{DynamicResource ListItemTextStyle}" 
                                     FontSize="16" />
-                            <Label Text="{Binding Description}" 
+                            <Label Text="{Binding Description, x:DataType={x:Null}}" 
                                     d:Text="Item description"
                                     LineBreakMode="NoWrap"
                                     Style="{DynamicResource ListItemDetailTextStyle}"

@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterTemplate" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterTemplate" x:DataType="local:HeaderFooterDemoModel">
     <ContentPage.Content>
-        <CollectionView x:Name="CollectionView" Header="{Binding .}" Footer="{Binding .}" ItemsSource="{Binding Items}">
+        <CollectionView x:Name="CollectionView" Header="{Binding ., x:DataType={x:Null}}" Footer="{Binding ., x:DataType={x:Null}}" ItemsSource="{Binding Items, x:DataType={x:Null}}">
 
             <CollectionView.HeaderTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="50"></RowDefinition>
@@ -17,10 +17,10 @@
                         </Grid.RowDefinitions>
                         <Image Source="oasis.jpg" Aspect="AspectFill" HeightRequest="80">
                             <Image.GestureRecognizers>
-                                <TapGestureRecognizer NumberOfTapsRequired="1" Command="{Binding TapCommand}"></TapGestureRecognizer>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" Command="{Binding TapCommand, x:DataType={x:Null}}"></TapGestureRecognizer>
                             </Image.GestureRecognizers>
                         </Image>
-                        <Label Text="{Binding CurrentTime}" TextColor="AntiqueWhite" HorizontalTextAlignment="Center" 
+                        <Label Text="{Binding CurrentTime, x:DataType={x:Null}}" TextColor="AntiqueWhite" HorizontalTextAlignment="Center" 
                                FontAttributes="Bold" FontSize="36" InputTransparent="True" />
                         <Label Grid.Row="1" Text="This Is A Header"></Label>
                     </Grid>
@@ -28,7 +28,7 @@
             </CollectionView.HeaderTemplate>
 
             <CollectionView.FooterTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="50"></RowDefinition>
@@ -36,10 +36,10 @@
                         </Grid.RowDefinitions>
                         <Image Source="cover1.jpg" Aspect="AspectFill" HeightRequest="50">
                             <Image.GestureRecognizers>
-                                <TapGestureRecognizer NumberOfTapsRequired="1" Command="{Binding TapCommand}"></TapGestureRecognizer>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" Command="{Binding TapCommand, x:DataType={x:Null}}"></TapGestureRecognizer>
                             </Image.GestureRecognizers>
                         </Image>
-                        <Label Text="{Binding CurrentTime}" TextColor="AntiqueWhite" HorizontalTextAlignment="Center" 
+                        <Label Text="{Binding CurrentTime, x:DataType={x:Null}}" TextColor="AntiqueWhite" HorizontalTextAlignment="Center" 
                                FontAttributes="Bold" FontSize="20" InputTransparent="True" />
 
                         <Label Grid.Row="1" Text="This Is A Footer"></Label>

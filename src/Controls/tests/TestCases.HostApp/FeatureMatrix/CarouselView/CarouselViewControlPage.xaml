@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.CarouselViewControlPage"
-             Title="CarouselViewControlPage" x:DataType="{x:Null}">
+             Title="CarouselViewControlPage">
 
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Options"
@@ -22,7 +22,7 @@
                      <Button Grid.Row="0"
                              Grid.ColumnSpan="2"
                              Text="Add"
-                             Command="{Binding AddItemCommand}"
+                             Command="{Binding AddItemCommand, x:DataType={x:Null}}"
                              WidthRequest="150"
                              HorizontalOptions="Center"
                              AutomationId="AddButton"/>
@@ -33,21 +33,21 @@
                                           x:Name="carouselView"
                                           HeightRequest="300"
                                           WidthRequest="300"
-                                          ItemsSource="{Binding ItemsSource}"
-                                          EmptyView="{Binding EmptyView}"
-                                          EmptyViewTemplate="{Binding EmptyViewTemplate}"
-                                          ItemTemplate="{Binding ItemTemplate}"
-                                          Loop="{Binding Loop}"
-                                          IsSwipeEnabled="{Binding IsSwipeEnabled}"
-                                          PeekAreaInsets="{Binding PeekAreaInsets}"
-                                          Position="{Binding Position}"
-                                          CurrentItem="{Binding CurrentItem}"
+                                          ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
+                                          EmptyView="{Binding EmptyView, x:DataType={x:Null}}"
+                                          EmptyViewTemplate="{Binding EmptyViewTemplate, x:DataType={x:Null}}"
+                                          ItemTemplate="{Binding ItemTemplate, x:DataType={x:Null}}"
+                                          Loop="{Binding Loop, x:DataType={x:Null}}"
+                                          IsSwipeEnabled="{Binding IsSwipeEnabled, x:DataType={x:Null}}"
+                                          PeekAreaInsets="{Binding PeekAreaInsets, x:DataType={x:Null}}"
+                                          Position="{Binding Position, x:DataType={x:Null}}"
+                                          CurrentItem="{Binding CurrentItem, x:DataType={x:Null}}"
                                           CurrentItemChanged="OnCarouselView_CurrentItemChanged"
                                           PositionChanged="OnCarouselView_PositionChanged"
-                                          ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode}"
+                                          ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode, x:DataType={x:Null}}"
                                           IndicatorView="{x:Reference indicatorView}"
-                                          ItemsLayout="{Binding ItemsLayout}"
-                                          FlowDirection="{Binding FlowDirection}"
+                                          ItemsLayout="{Binding ItemsLayout, x:DataType={x:Null}}"
+                                          FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
                                           AutomationId="CarouselViewControl"/>
 
                      <!-- IndicatorView -->
@@ -58,7 +58,7 @@
                                     VerticalOptions="End"
                                     Margin="0,0,0,20"
                                     IndicatorColor="LightGray"
-                                    FlowDirection="{Binding FlowDirection}"
+                                    FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
                                     SelectedIndicatorColor="DarkGray"
                                     IndicatorSize="12"/>
 
@@ -68,7 +68,7 @@
                             Text="Current Item:"/>
                      <Label Grid.Row="3"
                             Grid.Column="1"
-                            Text="{Binding CurrentItemText}"
+                            Text="{Binding CurrentItemText, x:DataType={x:Null}}"
                             TextColor="Blue"
                             AutomationId="CurrentItemLabel"/>
 
@@ -78,7 +78,7 @@
                             Text="Previous Item:"/>
                      <Label Grid.Row="4"
                             Grid.Column="1"
-                            Text="{Binding PreviousItemText}"
+                            Text="{Binding PreviousItemText, x:DataType={x:Null}}"
                             TextColor="Blue"
                             AutomationId="PreviousItemLabel"/>
 
@@ -88,7 +88,7 @@
                             Text="Current Position:"/>
                      <Label Grid.Row="5"
                             Grid.Column="1"
-                            Text="{Binding CurrentPosition}"
+                            Text="{Binding CurrentPosition, x:DataType={x:Null}}"
                             TextColor="Blue"
                             AutomationId="CurrentPositionLabel"/>
 
@@ -98,7 +98,7 @@
                             Text="Previous Position:"/>
                      <Label Grid.Row="6"
                             Grid.Column="1"
-                            Text="{Binding PreviousItemPosition}"
+                            Text="{Binding PreviousItemPosition, x:DataType={x:Null}}"
                             TextColor="Blue"
                             AutomationId="PreviousPositionLabel"/>
               </Grid>

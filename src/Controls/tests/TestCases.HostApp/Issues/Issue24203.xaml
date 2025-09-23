@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
 	x:Class="Maui.Controls.Sample.Issues.Issue24203"
 	Title="Issue24203">
 	<Shell.FlyoutHeaderTemplate>
 		<DataTemplate>
 			<VerticalStackLayout Padding="20">
 				<Label Text="Value of BindableProperty" />
-				<Label Text="{Binding ShowFlyoutItem}" />
+				<Label Text="{Binding ShowFlyoutItem, x:DataType={x:Null}}" />
 			</VerticalStackLayout>
 			</DataTemplate>
 		</Shell.FlyoutHeaderTemplate>
-    <ShellContent x:Name="Page1" Title="Page 1" FlyoutItemIsVisible="{Binding ShowFlyoutItem, Mode=TwoWay}">
-		<ContentPage x:DataType="{x:Null}">
+    <ShellContent x:Name="Page1" Title="Page 1" FlyoutItemIsVisible="{Binding ShowFlyoutItem, Mode=TwoWay, x:DataType={x:Null}}">
+		<ContentPage x:DataType="local:Issue24203">
 			<ContentView Padding="20">
 				<Label Text="Page 1" />
 			</ContentView>
 		</ContentPage>
 	</ShellContent>
 
-	<MenuItem Text="Toggle FlyoutItem" Command="{Binding ToggleFlyoutItemCommand}" />
-	<MenuItem Text="Toggle FlyoutItem AP" Command="{Binding ToggleFlyoutItemWithAttachedPropertyCommand}" />
+	<MenuItem Text="Toggle FlyoutItem" Command="{Binding ToggleFlyoutItemCommand, x:DataType={x:Null}}" />
+	<MenuItem Text="Toggle FlyoutItem AP" Command="{Binding ToggleFlyoutItemWithAttachedPropertyCommand, x:DataType={x:Null}}" />
 </Shell>

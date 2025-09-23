@@ -8,9 +8,9 @@
     <FlyoutItem>
         <Shell.ItemTemplate>
             <DataTemplate>
-                <StackLayout Orientation="Horizontal" AutomationId="SmallFlyoutItem" Spacing="0" HeightRequest="{Binding BindingContext.SmallFlyoutItem}" BackgroundColor="LightBlue" >
+                <StackLayout Orientation="Horizontal" AutomationId="SmallFlyoutItem" Spacing="0" HeightRequest="{Binding BindingContext.SmallFlyoutItem, x:DataType={x:Null}}" BackgroundColor="LightBlue" >
                     <Label Text="I'm set to specific height: " TextColor="White" />
-                    <Label Text="{Binding BindingContext.SmallFlyoutItem}" TextColor="White" />
+                    <Label Text="{Binding BindingContext.SmallFlyoutItem, x:DataType={x:Null}}" TextColor="White" />
                 </StackLayout>
             </DataTemplate>
         </Shell.ItemTemplate>

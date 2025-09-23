@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue19509"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="local:Issue19509">
     <ScrollView>
         <VerticalStackLayout
             Padding="30,0"
@@ -27,10 +27,10 @@
                 FontSize="16"
                 PlaceholderColor="LightGray"
                 Placeholder="Enter Text"
-                Text="{Binding Text}"/>
+                Text="{Binding Text, x:DataType={x:Null}}"/>
             <Label
                 AutomationId="TestResult"
-                Text="{Binding Source={x:Reference BindingEntry}, Path=TextColor}"/>
+                Text="{Binding Source={x:Reference BindingEntry, x:DataType={x:Null}}, Path=TextColor}"/>
             <Button
                 AutomationId="button"
                 Text="Update text"

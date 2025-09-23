@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
 			 x:Class="Maui.Controls.Sample.Issues.Issue25859"
 			 xmlns:cv1="clr-namespace:Maui.Controls.Sample"
 			 xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
@@ -18,12 +18,12 @@
 				<DataTemplate>
 					<Label BackgroundColor="CornSilk"
 						   x:DataType="ns:Issue25859TestItem"
-						   Text="{Binding Name}"/>
+						   Text="{Binding Name, x:DataType={x:Null}}"/>
 				</DataTemplate>
 			</cv1:CollectionView1.ItemTemplate>
 			<cv1:CollectionView1.GroupHeaderTemplate>
 				<DataTemplate>
-					<Label Text="{Binding Name}"
+					<Label Text="{Binding Name, x:DataType={x:Null}}"
 						   x:DataType="ns:Issue25859ItemGroup"
 						   Background="YellowGreen"/>
 				</DataTemplate>

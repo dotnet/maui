@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.Issue7993">
     
@@ -17,7 +17,7 @@
             <Button Text="NewItemsSource" Clicked="NewItemsSourceClicked" HorizontalOptions="Center"/>
         </StackLayout>
 
-        <CollectionView Grid.Row="1" AutomationId="CollectionView7993" ItemsSource="{Binding Items}" Scrolled="CollectionView_OnScrolled">
+        <CollectionView Grid.Row="1" AutomationId="CollectionView7993" ItemsSource="{Binding Items, x:DataType={x:Null}}" Scrolled="CollectionView_OnScrolled">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
             </CollectionView.ItemsLayout>
@@ -25,7 +25,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid BackgroundColor="#F1F1F1">
-                        <Label Text="{Binding Text}" Margin="10" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        <Label Text="{Binding Text, x:DataType={x:Null}}" Margin="10" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

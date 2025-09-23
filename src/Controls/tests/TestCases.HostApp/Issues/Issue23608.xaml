@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
                x:Class="Maui.Controls.Sample.Issues.Issue23608"
-             Title="Issue23608" x:DataType="{x:Null}">
+             Title="Issue23608" x:DataType="local:Issue23608ViewModel">
  
 <VerticalStackLayout>
     <VerticalStackLayout.Resources>
@@ -23,7 +23,7 @@
     </Style>
     </VerticalStackLayout.Resources>
 <Label  Text="Enable the IsEnabled property" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="Label" />
-<Switch AutomationId="Switch" HorizontalOptions="Center" IsToggled="{Binding IsEnabled}" />
-<CheckBox IsChecked="true" IsEnabled="{Binding IsEnabled}" />
+<Switch AutomationId="Switch" HorizontalOptions="Center" IsToggled="{Binding IsEnabled, x:DataType={x:Null}}" />
+<CheckBox IsChecked="true" IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}" />
 </VerticalStackLayout>
 </ContentPage>

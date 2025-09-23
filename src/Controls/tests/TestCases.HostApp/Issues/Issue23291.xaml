@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             x:Class="Maui.Controls.Sample.Issues.Issue23291" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.Issues.Issue23291" x:DataType="local:Issue23291ViewModel">
     <ContentPage.Resources>
         <DataTemplate
             x:Key="fragmentOneItemTemplate">
@@ -54,8 +54,8 @@
         <CarouselView
             Grid.Row="1"
             x:Name="carousel"
-            Position="{Binding PagePosition}"
-            ItemsSource="{Binding DashboardItems}"
+            Position="{Binding PagePosition, x:DataType={x:Null}}"
+            ItemsSource="{Binding DashboardItems, x:DataType={x:Null}}"
             IsSwipeEnabled="False"
             IsScrollAnimated="False"
             HorizontalScrollBarVisibility="Never"
@@ -70,7 +70,7 @@
             
             <Button 
                 Text="Fragment One"
-                Command="{Binding OpenFragmentOneCommand}"
+                Command="{Binding OpenFragmentOneCommand, x:DataType={x:Null}}"
                 Height="40"
                 Width="100"
                 BackgroundColor="Red"/>
@@ -78,7 +78,7 @@
             <Button 
                 Text="Fragment Two"
                 AutomationId="openFragmentTwoButton"
-                Command="{Binding OpenFragmentTwoCommand}"
+                Command="{Binding OpenFragmentTwoCommand, x:DataType={x:Null}}"
                 Height="40"
                 Width="100"
                 BackgroundColor="Red"/>

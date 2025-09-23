@@ -59,8 +59,8 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Label Text="{Binding Title}" Grid.Column="0" />
-                                        <Label Text="{Binding Description}" Grid.Column="1" />
+                                        <Label Text="{Binding Title, x:DataType={x:Null}}" Grid.Column="0" />
+                                        <Label Text="{Binding Description, x:DataType={x:Null}}" Grid.Column="1" />
                                     </Grid>
                                 </Frame>
                             </SwipeView>

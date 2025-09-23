@@ -20,7 +20,7 @@
                 <LinearItemsLayout Orientation="Vertical"/>
             </local:CarouselView2.ItemsLayout>
             <local:CarouselView2.ItemTemplate>
-                <DataTemplate x:DataType="{x:Null}">
+                <DataTemplate>
                     <Border
                         StrokeThickness="1"
                         Stroke="#FFABAB"
@@ -39,8 +39,8 @@
                         <Label FontFamily="Regular"
                                FontSize="14"
                                Margin="6"
-                               AutomationId="{Binding .}"
-                               Text="{Binding .}"
+                               AutomationId="{Binding ., x:DataType={x:Null}}"
+                               Text="{Binding ., x:DataType={x:Null}}"
                                TextColor="Black"
                                VerticalOptions="Start"
                                HorizontalOptions="Center"/>

@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue20706"
-             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
   <ContentPage.BindingContext>
     <local:ViewModelClass/>
   </ContentPage.BindingContext>
@@ -11,9 +11,9 @@
       <Stepper AutomationId="myStepper"
                x:Name="stepperValue"
                Maximum="1000"
-               Increment="{Binding Increment}"/>
+               Increment="{Binding Increment, x:DataType={x:Null}}"/>
       <Entry AutomationId="entry"
-             Text="{Binding Value,Source={x:Reference stepperValue}} "/>
+             Text="{Binding Value,Source={x:Reference stepperValue, x:DataType={x:Null}}} "/>
       <Button AutomationId="incrementButton"
               Text="Change Increment Value"
               x:Name="button"

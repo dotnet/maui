@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue17782"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue 17782" x:DataType="{x:Null}">
+             Title="Issue 17782">
 
   <VerticalStackLayout x:Name="verticalStack" Spacing="10">
 
@@ -48,7 +48,7 @@
     <Editor x:Name="editorWithSlider" 
             AutomationId="EditorWithSlider" 
             Text="Editor" 
-            CharacterSpacing="{Binding Value}" 
+            CharacterSpacing="{Binding Value, x:DataType={x:Null}}" 
             BindingContext="{x:Reference Slider}" />
     
     <Slider x:Name="Slider" 

@@ -7,7 +7,7 @@
     VerticalOptions="Fill">
     <CollectionView 
       AutomationId="TestCollectionView"
-      ItemsSource="{Binding ItemSource}" 
+      ItemsSource="{Binding ItemSource, x:DataType={x:Null}}" 
       AbsoluteLayout.LayoutFlags="All" 
       AbsoluteLayout.LayoutBounds="0,0,1,1">
       <CollectionView.ItemTemplate>
@@ -18,19 +18,19 @@
             Margin="0,0">
             <Border Padding="10">
               <VerticalStackLayout 
-                RadioButtonGroup.GroupName="{Binding GroupId}" 
-                RadioButtonGroup.SelectedValue="{Binding ShowOptions}">
+                RadioButtonGroup.GroupName="{Binding GroupId, x:DataType={x:Null}}" 
+                RadioButtonGroup.SelectedValue="{Binding ShowOptions, x:DataType={x:Null}}">
                 <RadioButton 
-                  AutomationId="{Binding False}"
-                  Content="{Binding False}" 
+                  AutomationId="{Binding False, x:DataType={x:Null}}"
+                  Content="{Binding False, x:DataType={x:Null}}" 
                   VerticalOptions="Center">
                   <RadioButton.Value>
                     <x:Boolean>False</x:Boolean>
                   </RadioButton.Value>
                 </RadioButton>
                 <RadioButton 
-                  AutomationId="{Binding True}"
-                  Content="{Binding True}" 
+                  AutomationId="{Binding True, x:DataType={x:Null}}"
+                  Content="{Binding True, x:DataType={x:Null}}" 
                   VerticalOptions="Center">
                   <RadioButton.Value>
                     <x:Boolean>True</x:Boolean>
@@ -39,15 +39,15 @@
               </VerticalStackLayout>
             </Border>
             <VerticalStackLayout 
-              IsVisible="{Binding ShowOptions}"       
-              BindableLayout.ItemsSource="{Binding Options}">
+              IsVisible="{Binding ShowOptions, x:DataType={x:Null}}"       
+              BindableLayout.ItemsSource="{Binding Options, x:DataType={x:Null}}">
               <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="local:Options">
                   <HorizontalStackLayout>
                     <CheckBox />
                     <Label
                       VerticalOptions="Center" 
-                      Text="{Binding Name}" />
+                      Text="{Binding Name, x:DataType={x:Null}}" />
                   </HorizontalStackLayout>
                 </DataTemplate>
               </BindableLayout.ItemTemplate>

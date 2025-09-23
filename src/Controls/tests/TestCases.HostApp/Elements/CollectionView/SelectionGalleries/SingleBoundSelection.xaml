@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.SingleBoundSelection" x:DataType="{x:Null}">
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
+	x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.SingleBoundSelection">
 
 	<ContentPage.Content>
 		<StackLayout
@@ -14,7 +14,7 @@
 				HorizontalOptions="CenterAndExpand" />
 
 			<Label
-				Text="{Binding SelectedItem, StringFormat='{}Selected: {0}'}"
+				Text="{Binding SelectedItem, StringFormat='{, x:DataType={x:Null}}Selected: {0}'}"
 				VerticalOptions="CenterAndExpand"
 				HorizontalOptions="CenterAndExpand" />
 
@@ -29,9 +29,9 @@
 				Clicked="ClearClicked" />
 
             <CollectionView
-				ItemsSource="{Binding Items}"
+				ItemsSource="{Binding Items, x:DataType={x:Null}}"
 				SelectionMode="Single"
-				SelectedItem="{Binding SelectedItem}">
+				SelectedItem="{Binding SelectedItem, x:DataType={x:Null}}">
                 <CollectionView.Resources>
                     <ResourceDictionary>
                         <Style TargetType="Border">
@@ -56,18 +56,18 @@
                     </ResourceDictionary>
                 </CollectionView.Resources>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                         <Border
 							StrokeShape ="RoundRectangle 20,20,20,20"
 							Margin="10"
 							BackgroundColor="LightBlue" >
                             <StackLayout>
                                 <Image
-									Source="{Binding Image}"
+									Source="{Binding Image, x:DataType={x:Null}}"
 									HeightRequest="50" />
                                 <Label
-                                    AutomationId="{Binding Caption}"
-									Text="{Binding Caption}" />
+                                    AutomationId="{Binding Caption, x:DataType={x:Null}}"
+									Text="{Binding Caption, x:DataType={x:Null}}" />
                             </StackLayout>
                         </Border>
                     </DataTemplate>

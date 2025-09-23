@@ -88,7 +88,7 @@
                      AutomationId="CharacterSpacingEntry"
                      HeightRequest="37"
                      HorizontalOptions="Start"
-                     Text="{Binding CharacterSpacing}"
+                     Text="{Binding CharacterSpacing, x:DataType={x:Null}}"
                      VerticalOptions="Center"
                      WidthRequest="200"/>
 
@@ -167,7 +167,7 @@
                      AutomationId="FontSizeEntry"
                      HeightRequest="37"
                      HorizontalOptions="Start"
-                     Text="{Binding FontSize}"
+                     Text="{Binding FontSize, x:DataType={x:Null}}"
                      VerticalOptions="Center"
                      WidthRequest="100"/>
 

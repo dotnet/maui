@@ -13,20 +13,20 @@
       Pressed="OnLoadButtonPressed" />
     <cv2:CarouselView2 
       Grid.Row="1"
-      ItemsSource="{Binding Images}" 
+      ItemsSource="{Binding Images, x:DataType={x:Null}}" 
       MaximumHeightRequest="150">
       <cv2:CarouselView2.ItemTemplate>
         <DataTemplate x:DataType="local:Issue22035Model">
           <Grid
             RowDefinitions="*, Auto">
             <Image 
-              Source="{Binding ImagePath}"
-              AutomationId="{Binding AutomationId}" />
+              Source="{Binding ImagePath, x:DataType={x:Null}}"
+              AutomationId="{Binding AutomationId, x:DataType={x:Null}}" />
             <Label 
               Grid.Row="1"
               HorizontalOptions="Center"
-              AutomationId="{Binding AutomationId}"
-              Text="{Binding Text}"/>
+              AutomationId="{Binding AutomationId, x:DataType={x:Null}}"
+              Text="{Binding Text, x:DataType={x:Null}}"/>
           </Grid>
         </DataTemplate>
       </cv2:CarouselView2.ItemTemplate>

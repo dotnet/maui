@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue27200"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
   <Grid>
@@ -8,12 +8,12 @@
                     AutomationId="collectionView"
                     ItemSizingStrategy="MeasureAllItems"
                     x:DataType="ns:Issue27200ViewModel"
-                    ItemsSource="{Binding Items}">
+                    ItemsSource="{Binding Items, x:DataType={x:Null}}">
       <CollectionView.Header>
         <VerticalStackLayout BackgroundColor="Red"
                              Padding="10">
           <Label Text="Test"/>
-          <VerticalStackLayout IsVisible="{Binding ShowHeader}">
+          <VerticalStackLayout IsVisible="{Binding ShowHeader, x:DataType={x:Null}}">
             <ContentView HeightRequest="100"/>
             <ContentView HeightRequest="100"/>
           </VerticalStackLayout>
@@ -23,7 +23,7 @@
       <CollectionView.GroupHeaderTemplate>
         <DataTemplate>
           <VerticalStackLayout Padding="10">
-            <Label Text="{Binding Name}"
+            <Label Text="{Binding Name, x:DataType={x:Null}}"
                    x:DataType="ns:Issue27200ItemGroupViewModel"/>
           </VerticalStackLayout>
         </DataTemplate>
@@ -43,7 +43,7 @@
             <VerticalStackLayout Spacing="6"
                                  BackgroundColor="#88D3D3D3">
               <Label Text="Default line"/>
-              <Label Text="{Binding .}"/>
+              <Label Text="{Binding ., x:DataType={x:Null}}"/>
             </VerticalStackLayout>
           </ContentView>
         </DataTemplate>

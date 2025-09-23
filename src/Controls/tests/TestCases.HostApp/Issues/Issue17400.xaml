@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue17400"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue 17400" x:DataType="{x:Null}">
+             Title="Issue 17400" x:DataType="local:Issue17400ViewModel">
     <Grid
         Padding="30,0"
         VerticalOptions="Center"
         RowDefinitions="*, Auto">
         <CollectionView 
             x:Name="ItemsView"
-            ItemsSource="{Binding Items}"
-            IsVisible="{Binding AreItemsVisible}">
+            ItemsSource="{Binding Items, x:DataType={x:Null}}"
+            IsVisible="{Binding AreItemsVisible, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid
@@ -20,12 +20,12 @@
                         <Label 
                             AutomationId="WaitForStubControl"
                             Grid.Row="0" 
-                            Text="{Binding Label}" 
+                            Text="{Binding Label, x:DataType={x:Null}}" 
                             FontSize="20" 
                             FontAttributes="Bold"/>
                         <Label 
                             Grid.Row="1" 
-                            Text="{Binding Description}" 
+                            Text="{Binding Description, x:DataType={x:Null}}" 
                             FontSize="16"/>
                         <BoxView 
                             Grid.Row="2" 
@@ -39,7 +39,7 @@
             Grid.Row="1"
             AutomationId="UpdateBtn"
             Text="Change Visibility"
-            Command="{Binding UpdateCommand}"
+            Command="{Binding UpdateCommand, x:DataType={x:Null}}"
             HorizontalOptions="Center" />
     </Grid>
 </ContentPage>

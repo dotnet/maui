@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
                           xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
                           x:Class="Maui.Controls.Sample.Issues.Issue30350"
                           x:DataType="controls:Issue30350">
@@ -18,7 +18,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="Original image: "/>
-                        <Span Text="{Binding OriginalSize}"
+                        <Span Text="{Binding OriginalSize, x:DataType={x:Null}}"
                               FontAttributes="Bold"
                               TextColor="Blue"/>
                     </FormattedString>
@@ -26,7 +26,7 @@
             </Label>
 
             <!-- Original Image Display -->
-            <Image Source="{Binding OriginalSource}"
+            <Image Source="{Binding OriginalSource, x:DataType={x:Null}}"
                    AutomationId="OriginalImage"
                    HeightRequest="200"
                    Aspect="AspectFit"/>
@@ -36,7 +36,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="Downsized image: "/>
-                        <Span Text="{Binding DownsizedImageSize}"
+                        <Span Text="{Binding DownsizedImageSize, x:DataType={x:Null}}"
                               FontAttributes="Bold"
                               TextColor="Blue"/>
                     </FormattedString>
@@ -44,7 +44,7 @@
             </Label>
 
             <!-- Downsized Image Display -->
-            <Image Source="{Binding DownsizedSource}"
+            <Image Source="{Binding DownsizedSource, x:DataType={x:Null}}"
                    AutomationId="DownsizedImage"
                    HeightRequest="200"
                    Aspect="AspectFit"/>

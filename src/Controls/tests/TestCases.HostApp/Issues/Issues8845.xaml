@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue 8845"
-             x:Class="Maui.Controls.Sample.Issues.Issue8845" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.Issues.Issue8845">
 
   <VerticalStackLayout>
-    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}"/>
-    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName}"/>
+    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName, x:DataType={x:Null}}"/>
+    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName, x:DataType={x:Null}}"/>
     <Button AutomationId="UpdateButton" Text="Update" Clicked="Button_Clicked"/>
   </VerticalStackLayout>
 

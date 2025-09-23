@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.SliderOptionsPage"
-             Title="SliderFeature" x:DataType="{x:Null}">
+             Title="SliderFeature">
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Apply" Clicked="ApplyButton_Clicked" AutomationId="Apply"/>
   </ContentPage.ToolbarItems>
@@ -12,13 +12,13 @@
     <!-- Left Column -->
     <StackLayout Grid.Column="0" Padding="10" Spacing="8">
 
-      <Label Text="{Binding Minimum, StringFormat='Minimum: {0}'}" FontSize="15" />
+      <Label Text="{Binding Minimum, StringFormat='Minimum: {0, x:DataType={x:Null}}'}" FontSize="15" />
       <Entry x:Name="MinimumEntry" AutomationId="MinimumEntry" TextChanged="OnMinimumChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" />
       <!-- Maximum Value -->
-      <Label Text="{Binding Maximum, StringFormat='Maximum: {0}'}" FontSize="15" />
+      <Label Text="{Binding Maximum, StringFormat='Maximum: {0, x:DataType={x:Null}}'}" FontSize="15" />
       <Entry x:Name="MaximumEntry" AutomationId="MaximumEntry" TextChanged="OnMaximumChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" />
       <!-- Current Value -->
-      <Label Text="{Binding Value, StringFormat='Value: {0}'}" FontSize="15" />
+      <Label Text="{Binding Value, StringFormat='Value: {0, x:DataType={x:Null}}'}" FontSize="15" />
       <Entry x:Name="ValueEntry" AutomationId="ValueEntry" TextChanged="OnValueChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" />
       <!-- Flow Direction -->
       <Label Text="Flow Direction:" FontSize="15" />

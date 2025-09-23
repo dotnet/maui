@@ -1,20 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
 			xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
 			xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
-			ItemsSource="{Binding ItemsSource}"
+			ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
 			x:Class="Maui.Controls.Sample.Issues.Issue31377">
 	<TabbedPage.ItemTemplate>
 		<DataTemplate>
-			<ContentPage Title="{Binding Name}"
-						 IconImageSource="coffee.png" x:DataType="{x:Null}">
+			<ContentPage Title="{Binding Name, x:DataType={x:Null}}"
+						 IconImageSource="coffee.png" x:DataType="local:TabbedPageViewModel">
 				<StackLayout Padding="5, 25">
-					<Label Text="{Binding Name}"
+					<Label Text="{Binding Name, x:DataType={x:Null}}"
 						   FontAttributes="Bold"
 						   FontSize="18"
 						   HorizontalOptions="Center"/>
-					<Image Source="{Binding ImageUrl}"
+					<Image Source="{Binding ImageUrl, x:DataType={x:Null}}"
 						   HorizontalOptions="Center"
 						   WidthRequest="100"
 						   HeightRequest="100"/>

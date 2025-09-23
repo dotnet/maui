@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue21728"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="local:Issue21728">
   <CollectionView x:Name="collectionview" AutomationId="collectionview" ItemsLayout="VerticalGrid, 2">
 		<CollectionView.ItemTemplate>
 			<DataTemplate>
-				<Label Text="{Binding Name}" BackgroundColor="Red" HeightRequest="200" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+				<Label Text="{Binding Name, x:DataType={x:Null}}" BackgroundColor="Red" HeightRequest="200" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
 			</DataTemplate>
 		</CollectionView.ItemTemplate>
 		<CollectionView.Footer>

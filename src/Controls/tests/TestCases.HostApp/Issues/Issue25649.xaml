@@ -16,7 +16,7 @@
 
         <CollectionView AutomationId="collectionView"
                         x:DataType="local:_25649MainViewModel"
-                        ItemsSource="{Binding _25649People}"
+                        ItemsSource="{Binding _25649People, x:DataType={x:Null}}"
                         Scrolled="OnCollectionViewScrolled"
                         BackgroundColor="DarkGray">
             <CollectionView.ItemsLayout>
@@ -36,7 +36,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="local:_25649Person">
                     <VerticalStackLayout>
-                        <Label Text="{Binding Name}"
+                        <Label Text="{Binding Name, x:DataType={x:Null}}"
                                FontSize="Medium"/>
                         <Rectangle HeightRequest="2"
                                    BackgroundColor="Black"/>

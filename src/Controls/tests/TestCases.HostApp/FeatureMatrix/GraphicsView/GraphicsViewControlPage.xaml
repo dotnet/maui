@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.GraphicsViewControlMainPage"
-             Title="GraphicsViewFeature" x:DataType="{x:Null}">
+             Title="GraphicsViewFeature">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
@@ -20,13 +20,13 @@
                 Grid.Row="0"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                      Drawable="{Binding Drawable}"
-                      IsVisible="{Binding IsVisible}"
-                      IsEnabled="{Binding IsEnabled}"
-                      FlowDirection="{Binding FlowDirection}"
-                      Shadow="{Binding Shadow}"
-                      HeightRequest="{Binding HeightRequest}"
-                      WidthRequest="{Binding WidthRequest}"
+                      Drawable="{Binding Drawable, x:DataType={x:Null}}"
+                      IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                      IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+                      FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+                      Shadow="{Binding Shadow, x:DataType={x:Null}}"
+                      HeightRequest="{Binding HeightRequest, x:DataType={x:Null}}"
+                      WidthRequest="{Binding WidthRequest, x:DataType={x:Null}}"
                       StartHoverInteraction="OnStartHoverInteraction"
                       MoveHoverInteraction="OnMoveHoverInteraction"
                       EndHoverInteraction="OnEndHoverInteraction"
@@ -47,7 +47,7 @@
                Margin="80,0,10,10"/>
         <Label Grid.Row="1"
                 Grid.Column="1"
-               Text="{Binding DrawableTypeLabel}"
+               Text="{Binding DrawableTypeLabel, x:DataType={x:Null}}"
                FontSize="16"
                VerticalTextAlignment="Start"
                HorizontalTextAlignment="Start"
@@ -57,14 +57,14 @@
                 Grid.Column="0"
                 FontSize="16"
                Text="Triggered Events:"
-                IsVisible="{Binding IsEventStatusLabelVisible}"
+                IsVisible="{Binding IsEventStatusLabelVisible, x:DataType={x:Null}}"
                VerticalTextAlignment="Start"
                HorizontalTextAlignment="Start"
                Margin="80,0,10,10"/>
 
         <Label Grid.Row="2"
                Grid.Column="1"
-               Text="{Binding InteractionEvent}"
+               Text="{Binding InteractionEvent, x:DataType={x:Null}}"
                FontSize="14"
                VerticalTextAlignment="Start"
                HorizontalTextAlignment="Start"
@@ -74,7 +74,7 @@
                AutomationId="InteractionEventLabel"/>
 
         <Label Grid.Row="3" Grid.Column="0" Text="Drawable Dimensions:" FontSize="16" VerticalTextAlignment="Start" HorizontalTextAlignment="Start" Margin="80,0,10,10" />
-        <Label Grid.Row="3" Grid.Column="1" Text="{Binding DrawableDimensions}" FontSize="16" VerticalTextAlignment="Start" HorizontalTextAlignment="Start" AutomationId="DrawableDimensionsLabel" />
+        <Label Grid.Row="3" Grid.Column="1" Text="{Binding DrawableDimensions, x:DataType={x:Null}}" FontSize="16" VerticalTextAlignment="Start" HorizontalTextAlignment="Start" AutomationId="DrawableDimensionsLabel" />
 
         <!-- Clear Events Button -->
         <Button Grid.Row="4"

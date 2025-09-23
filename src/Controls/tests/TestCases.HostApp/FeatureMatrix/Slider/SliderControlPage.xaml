@@ -13,19 +13,19 @@
   <Grid Padding="20" RowDefinitions="Auto, Auto, Auto, Auto,Auto, Auto, Auto" ColumnDefinitions="0.5*, 0.5*" RowSpacing="10">
     <!-- Slider Control -->
     <Grid x:Name="SliderGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-      <Slider Minimum="{Binding Minimum}"
-            Maximum="{Binding Maximum}"
-            Value="{Binding Value}"
-            ThumbColor="{Binding ThumbColor}"
-            MinimumTrackColor="{Binding MinTrackColor}"
-            MaximumTrackColor="{Binding MaxTrackColor}"
-            BackgroundColor="{Binding BackgroundColor}"
-            IsVisible="{Binding IsVisible}"
-            IsEnabled="{Binding IsEnabled}"
-            FlowDirection="{Binding FlowDirection}"
-            ThumbImageSource="{Binding ThumbImageSource}"
-            DragStartedCommand="{Binding DragStartedCommand}"
-            DragCompletedCommand="{Binding DragCompletedCommand}"
+      <Slider Minimum="{Binding Minimum, x:DataType={x:Null}}"
+            Maximum="{Binding Maximum, x:DataType={x:Null}}"
+            Value="{Binding Value, x:DataType={x:Null}}"
+            ThumbColor="{Binding ThumbColor, x:DataType={x:Null}}"
+            MinimumTrackColor="{Binding MinTrackColor, x:DataType={x:Null}}"
+            MaximumTrackColor="{Binding MaxTrackColor, x:DataType={x:Null}}"
+            BackgroundColor="{Binding BackgroundColor, x:DataType={x:Null}}"
+            IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+            IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+            FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+            ThumbImageSource="{Binding ThumbImageSource, x:DataType={x:Null}}"
+            DragStartedCommand="{Binding DragStartedCommand, x:DataType={x:Null}}"
+            DragCompletedCommand="{Binding DragCompletedCommand, x:DataType={x:Null}}"
             Margin="0,100,0,100" AutomationId="SliderControl" />
     </Grid>
 
@@ -37,7 +37,7 @@
                HorizontalTextAlignment="Start" 
                Margin="80,0,10,10" />
     <Label Grid.Row="1" Grid.Column="1" 
-               Text="{Binding Minimum, StringFormat='{0:F2}'}" 
+               Text="{Binding Minimum, StringFormat='{0:F2, x:DataType={x:Null}}'}" 
                FontSize="16" 
                VerticalTextAlignment="Start" 
                HorizontalTextAlignment="Start" AutomationId="MinimumValueLabel"/>
@@ -49,7 +49,7 @@
                HorizontalTextAlignment="Start" 
                Margin="80,0,10,10" />
     <Label Grid.Row="2" Grid.Column="1" 
-               Text="{Binding Maximum, StringFormat='{0:F2}'}" 
+               Text="{Binding Maximum, StringFormat='{0:F2, x:DataType={x:Null}}'}" 
                FontSize="16" 
                VerticalTextAlignment="Start" 
                HorizontalTextAlignment="Start" AutomationId="MaximumValueLabel"/>
@@ -60,18 +60,18 @@
                HorizontalTextAlignment="Start" 
                Margin="80,0,10,10" />
     <Label Grid.Row="3" Grid.Column="1" 
-               Text="{Binding Value, StringFormat='{0:F2}'}" 
+               Text="{Binding Value, StringFormat='{0:F2, x:DataType={x:Null}}'}" 
                FontSize="16" 
                VerticalTextAlignment="Start" 
                HorizontalTextAlignment="Start" AutomationId="ValueLabel"/>
     <Label Grid.Row="4" Grid.Column="0"  FontSize="16"
-           Text="Triggered Events:" IsVisible ="{Binding IsEventStatusLabelVisible}"
+           Text="Triggered Events:" IsVisible ="{Binding IsEventStatusLabelVisible, x:DataType={x:Null}}"
            VerticalTextAlignment="Start" 
            HorizontalTextAlignment="Start" 
            Margin="80,0,10,10" />
-    <Label Grid.Row="4" Grid.Column="1" Text="{Binding DragStartStatus}" FontSize="16" VerticalTextAlignment="End" 
+    <Label Grid.Row="4" Grid.Column="1" Text="{Binding DragStartStatus, x:DataType={x:Null}}" FontSize="16" VerticalTextAlignment="End" 
       HorizontalTextAlignment="Start"  AutomationId="DragStartStatusLabel" Margin="0,0,10,10" />
-    <Label Grid.Row="5" Grid.Column="1" Text="{Binding DragCompletedStatus}" VerticalTextAlignment="Start" 
+    <Label Grid.Row="5" Grid.Column="1" Text="{Binding DragCompletedStatus, x:DataType={x:Null}}" VerticalTextAlignment="Start" 
 HorizontalTextAlignment="Start" FontSize="16" AutomationId="DragCompletedStatusLabel" Margin="0,0,10,10" />
 
   </Grid>

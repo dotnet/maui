@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Issues.Issue23951" x:DataType="{x:Null}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue23951" x:DataType="local:Issue23951ViewModel">
 
   <Grid RowDefinitions="Auto, Auto">
         <Frame Grid.Row="0"
@@ -12,13 +12,13 @@
             <Frame.Background>
                 <LinearGradientBrush x:Name="brush"
                                      EndPoint="1,0"
-                                     GradientStops="{Binding GradientStops}">
+                                     GradientStops="{Binding GradientStops, x:DataType={x:Null}}">
                 </LinearGradientBrush>
             </Frame.Background>
         </Frame>
         <Button Grid.Row="1"
                 Text="UpdateGradientStops"
                 AutomationId ="Button"
-                Command="{Binding ClickCommand}" />
+                Command="{Binding ClickCommand, x:DataType={x:Null}}" />
     </Grid>
 </ContentPage>

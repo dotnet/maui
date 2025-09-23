@@ -1,20 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue25598" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue25598" x:DataType="local:Issue25598ViewModel">
     <VerticalStackLayout 
             Padding="30,0"
             Spacing="25">
         <Button
             AutomationId="AddItemButton"
             Margin="0,20,0,0"
-            Command="{Binding AddRandomItemCommand}"
+            Command="{Binding AddRandomItemCommand, x:DataType={x:Null}}"
             Text="Add Random Item"/>
 
         <Button
             AutomationId="RemoveItemButton"
-            Command="{Binding RemoveCurrentItemCommand}"
-            CommandParameter="{Binding Source={x:Reference carouselView}, Path=Position}"
+            Command="{Binding RemoveCurrentItemCommand, x:DataType={x:Null}}"
+            CommandParameter="{Binding Source={x:Reference carouselView, x:DataType={x:Null}}, Path=Position}"
             Text="Remove Current Item"/>
         <Grid
             x:Name="cvGrid"
@@ -32,7 +32,7 @@
                 HorizontalOptions="FillAndExpand"
                 IndicatorView="indicatorView"
                 IsScrollAnimated="True"
-                ItemsSource="{Binding Items}"
+                ItemsSource="{Binding Items, x:DataType={x:Null}}"
                 ItemsUpdatingScrollMode="KeepScrollOffset"
                 VerticalOptions="EndAndExpand"
                 VerticalScrollBarVisibility="Default">
@@ -41,7 +41,7 @@
                         <Label
                             FontSize="18"
                             HorizontalOptions="Center"
-                            Text="{Binding .}"
+                            Text="{Binding ., x:DataType={x:Null}}"
                             VerticalOptions="CenterAndExpand"/>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>
@@ -84,7 +84,7 @@
                 HorizontalOptions="FillAndExpand"
                 IndicatorView="indicatorView2"
                 IsScrollAnimated="True"
-                ItemsSource="{Binding Items}"
+                ItemsSource="{Binding Items, x:DataType={x:Null}}"
                 ItemsUpdatingScrollMode="KeepScrollOffset"
                 VerticalOptions="EndAndExpand"
                 VerticalScrollBarVisibility="Default">
@@ -93,7 +93,7 @@
                         <Label
                             FontSize="18"
                             HorizontalOptions="Center"
-                            Text="{Binding .}"
+                            Text="{Binding ., x:DataType={x:Null}}"
                             VerticalOptions="CenterAndExpand"/>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>

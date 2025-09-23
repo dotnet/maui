@@ -24,8 +24,7 @@
                                    SnapPointsType="MandatorySingle"/>
             </CarouselView.ItemsLayout>
             <CarouselView.ItemTemplate>
-                <DataTemplate
-                    x:DataType="{x:Null}">
+                <DataTemplate>
                     <Border BackgroundColor="Red"
                             Stroke="Blue"
                             StrokeShape="RoundRectangle 12"
@@ -62,8 +61,8 @@
                                        FontFamily="Regular"
                                        FontSize="14"
                                        Margin="6"
-                                       AutomationId="{Binding .}"
-                                       Text="{Binding .}"
+                                       AutomationId="{Binding ., x:DataType={x:Null}}"
+                                       Text="{Binding ., x:DataType={x:Null}}"
                                        TextColor="Black"
                                        VerticalOptions="Center"/>
                             </Border>
@@ -79,7 +78,7 @@
                                        FontFamily="Regular"
                                        FontSize="14"
                                        Margin="6"
-                                       Text="{Binding .}"
+                                       Text="{Binding ., x:DataType={x:Null}}"
                                        TextColor="#155d27"
                                        VerticalOptions="Center"/>
                             </Border>

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
   xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
-  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
   xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
-  x:Class="Maui.Controls.Sample.Issues.Issue25201" x:DataType="{x:Null}">
+  x:Class="Maui.Controls.Sample.Issues.Issue25201">
 
   <VerticalStackLayout>
     <!-- https://github.com/dotnet/maui/issues/18001 -->
@@ -14,7 +14,7 @@
                  HeightRequest="100"
                  Padding="20"
                  Source="dotnet_bot"
-                 IsVisible="{Binding Source={x:Reference Switch1}, Path=IsToggled}"
+                 IsVisible="{Binding Source={x:Reference Switch1, x:DataType={x:Null}}, Path=IsToggled}"
                  />
 
     <!-- https://github.com/dotnet/maui/issues/16713 -->
@@ -35,7 +35,7 @@
             AbsoluteLayout.LayoutFlags="SizeProportional"
             AbsoluteLayout.LayoutBounds="0,0,1.0,1.0"
             BackgroundColor="#80FFFFFF"
-            IsVisible="{Binding Source={x:Reference Switch2}, Path=IsToggled}"
+            IsVisible="{Binding Source={x:Reference Switch2, x:DataType={x:Null}}, Path=IsToggled}"
             />
     </AbsoluteLayout>
   </VerticalStackLayout>

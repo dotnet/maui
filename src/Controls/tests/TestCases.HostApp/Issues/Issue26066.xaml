@@ -15,10 +15,10 @@
           x:Key="template">
         <StackLayout Padding="10" BackgroundColor="Lightgray">
           <Button
-            AutomationId="{Binding AutomationId}"
-            Command="{Binding ShowDialogCommand, Source={x:RelativeSource AncestorType={x:Type local:Issue26066ViewModel}}, x:DataType=local:Issue26066ViewModel}"
-            CommandParameter="{Binding .}"
-            Text="{Binding Text}"/>
+            AutomationId="{Binding AutomationId, x:DataType={x:Null}}"
+            Command="{Binding ShowDialogCommand, Source={x:RelativeSource AncestorType={x:Type local:Issue26066ViewModel, x:DataType={x:Null}}}, x:DataType=local:Issue26066ViewModel}"
+            CommandParameter="{Binding ., x:DataType={x:Null}}"
+            Text="{Binding Text, x:DataType={x:Null}}"/>
         </StackLayout>
       </DataTemplate>
     </Grid.Resources>
@@ -26,17 +26,17 @@
       Grid.Row="0"
       AutomationId="TestLoadButtonCV2"
       Text="Load Items CV2"
-      Command="{Binding LoadCommandCV2}"/>
+      Command="{Binding LoadCommandCV2, x:DataType={x:Null}}"/>
     <sample:CollectionView2  Grid.Row="1" BackgroundColor="LightBlue"
-        ItemsSource="{Binding Images2}"
+        ItemsSource="{Binding Images2, x:DataType={x:Null}}"
         ItemTemplate="{StaticResource template}"/>
     <Button BackgroundColor="LightGreen "
       Grid.Row="2"
       AutomationId="TestLoadButtonCV"
       Text="Load Items CV1"
-      Command="{Binding LoadCommand}"/>
+      Command="{Binding LoadCommand, x:DataType={x:Null}}"/>
     <sample:CollectionView1  Grid.Row="3" BackgroundColor="LightGreen"
-        ItemsSource="{Binding Images}"
+        ItemsSource="{Binding Images, x:DataType={x:Null}}"
         ItemTemplate="{StaticResource template}"/>
   </Grid>
 </ContentPage>

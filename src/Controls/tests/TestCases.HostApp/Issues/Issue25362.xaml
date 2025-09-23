@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue25362"
              x:Name="Self"
-             Title="Issue25362" x:DataType="{x:Null}">
+             Title="Issue25362" x:DataType="local:Issue25362">
     <Grid RowDefinitions="Auto,*">
         <HorizontalStackLayout Grid.Row="0">
             <Button
-                Command="{Binding AddCommand}"
+                Command="{Binding AddCommand, x:DataType={x:Null}}"
                 HorizontalOptions="Center"
                 AutomationId="button"
                 Text="Add" />
@@ -15,14 +15,14 @@
 
         <CollectionView
             Grid.Row="1"
-            ItemsSource="{Binding ItemList}">
+            ItemsSource="{Binding ItemList, x:DataType={x:Null}}">
 
             <CollectionView.Header>
                 <VerticalStackLayout>
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding BindingContext.ItemListHeader, Source={x:Reference Self}}">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding BindingContext.ItemListHeader, Source={x:Reference Self, x:DataType={x:Null}}}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <Label Padding="10" Text="{Binding .}" />
+                                <Label Padding="10" Text="{Binding ., x:DataType={x:Null}}" />
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
@@ -35,7 +35,7 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Label Padding="10" Text="{Binding .}" />
+                    <Label Padding="10" Text="{Binding ., x:DataType={x:Null}}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Issues.Issue9075" x:DataType="{x:Null}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue9075" x:DataType="local:Issue9075ViewModel">
   <ScrollView>
     <Grid 
       BackgroundColor="LightCoral">
@@ -11,7 +11,7 @@
         <RowDefinition Height="60"/>
       </Grid.RowDefinitions>
       <CarouselView 
-        ItemsSource="{Binding CarouselGrids}" 
+        ItemsSource="{Binding CarouselGrids, x:DataType={x:Null}}" 
         IndicatorView="indic"
         HorizontalOptions="Center"
         VerticalOptions="Center" 
@@ -36,7 +36,7 @@
                     Radius="20" 
                     Opacity="0.8"/>
                 </Border.Shadow>
-                <CollectionView ItemsSource="{Binding}">
+                <CollectionView ItemsSource="{Binding ., x:DataType={x:Null}}">
                   <CollectionView.ItemTemplate>
                     <DataTemplate>
                       <FlexLayout>
@@ -48,8 +48,8 @@
                           Background="WhiteSmoke" 
                           StrokeThickness="2">
                           <Label 
-                            Text="{Binding}" 
-                            AutomationId="{Binding}" 
+                            Text="{Binding ., x:DataType={x:Null}}" 
+                            AutomationId="{Binding ., x:DataType={x:Null}}" 
                             TextColor="Red" 
                             FontSize="12" 
                             FontAttributes="Bold"      

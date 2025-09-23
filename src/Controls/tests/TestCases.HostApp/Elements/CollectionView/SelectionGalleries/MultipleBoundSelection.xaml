@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.MultipleBoundSelection" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.MultipleBoundSelection">
     <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>
@@ -18,7 +18,7 @@
                 FontSize="10" VerticalOptions="Center" HorizontalOptions="Center" />
 
             <Label Grid.Row="1"
-                Text="{Binding SelectedItemsText, StringFormat='{}Selected: {0}'}" FontAttributes="Bold"
+                Text="{Binding SelectedItemsText, StringFormat='{, x:DataType={x:Null}}Selected: {0}'}" FontAttributes="Bold"
                 FontSize="10" VerticalOptions="Center" HorizontalOptions="Center" />
 
             <Button Grid.Row="2"
@@ -34,16 +34,16 @@
                 FontSize="10" Text="Clear CV selection and add Items 0 and 3" Clicked="DirectUpdateClicked" />
 
             <CollectionView Grid.Row="5"
-                x:Name="TestCollectionView" ItemsSource="{Binding Items}" Header="This is the header"   
-                SelectionMode="Multiple" SelectedItems="{Binding SelectedItems}">
+                x:Name="TestCollectionView" ItemsSource="{Binding Items, x:DataType={x:Null}}" Header="This is the header"   
+                SelectionMode="Multiple" SelectedItems="{Binding SelectedItems, x:DataType={x:Null}}">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                         <StackLayout>
                             <Image 
-                                Source="{Binding Image}" HeightRequest="30" />
+                                Source="{Binding Image, x:DataType={x:Null}}" HeightRequest="30" />
                             <Label 
-                                AutomationId="{Binding Caption}"
-                                FontSize="10" Text="{Binding Caption}" />
+                                AutomationId="{Binding Caption, x:DataType={x:Null}}"
+                                FontSize="10" Text="{Binding Caption, x:DataType={x:Null}}" />
                         </StackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

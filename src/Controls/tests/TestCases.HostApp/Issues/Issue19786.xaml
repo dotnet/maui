@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue19786" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue19786" x:DataType="local:Issue19786">
     <StackLayout>
-        <CarouselView Position="{Binding Position}" HeightRequest="200" ItemsSource="{Binding Items}">
+        <CarouselView Position="{Binding Position, x:DataType={x:Null}}" HeightRequest="200" ItemsSource="{Binding Items, x:DataType={x:Null}}">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <Frame Margin="10" WidthRequest="200" BackgroundColor="Red">
-                        <Label Text="{Binding .}"/>
+                        <Label Text="{Binding ., x:DataType={x:Null}}"/>
                     </Frame>
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
 
         <Grid ColumnDefinitions="*,*,*">
-            <Button AutomationId="addItemButton" Grid.Column="0" Text="Add item" Command="{Binding AddItemCommand}"/>
-            <Button AutomationId="goToNextItemButton" Grid.Column="1" Text="Go to next item" Command="{Binding GoToNextItemCommand}"/>
-            <Button AutomationId="removeLastItemButton" Grid.Column="2" Text="Remove last item" Command="{Binding RemoveItemCommand}"/>
+            <Button AutomationId="addItemButton" Grid.Column="0" Text="Add item" Command="{Binding AddItemCommand, x:DataType={x:Null}}"/>
+            <Button AutomationId="goToNextItemButton" Grid.Column="1" Text="Go to next item" Command="{Binding GoToNextItemCommand, x:DataType={x:Null}}"/>
+            <Button AutomationId="removeLastItemButton" Grid.Column="2" Text="Remove last item" Command="{Binding RemoveItemCommand, x:DataType={x:Null}}"/>
         </Grid>
     </StackLayout>
 </ContentPage>

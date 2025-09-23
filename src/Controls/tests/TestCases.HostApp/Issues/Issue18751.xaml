@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue18751" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue18751" x:DataType="local:MonkeysViewModel">
     <Grid 
         RowDefinitions="auto,auto,500">
         <Label 
@@ -15,7 +15,7 @@
             Grid.Row="2">
             <CollectionView 
                 AutomationId="TestCollectionView"
-                ItemsSource="{Binding Monkeys}"      
+                ItemsSource="{Binding Monkeys, x:DataType={x:Null}}"      
                 VerticalScrollBarVisibility="Always">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -32,17 +32,17 @@
                                 Grid.RowSpan="2"
                                 Aspect="AspectFill"
                                 HeightRequest="60"
-                                Source="{Binding ImageUrl}"
+                                Source="{Binding ImageUrl, x:DataType={x:Null}}"
                                 WidthRequest="60" />
                             <Label 
                                 Grid.Column="1"
                                 FontAttributes="Bold"
-                                Text="{Binding Name}" />
+                                Text="{Binding Name, x:DataType={x:Null}}" />
                             <Label 
                                 Grid.Row="1"
                                 Grid.Column="1"
                                 FontAttributes="Italic"
-                                Text="{Binding Location}"
+                                Text="{Binding Location, x:DataType={x:Null}}"
                                 VerticalOptions="End" />
                         </Grid>
                     </DataTemplate>

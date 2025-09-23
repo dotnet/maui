@@ -2,10 +2,10 @@
 <controls:TestContentPage
     xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.Issue11969"
     Title="Issue 11969">
-    <ContentPage.Content x:DataType="{x:Null}">
+    <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -83,7 +83,7 @@
                             AutomationId="SwipeViewId"
                             SwipeStarted="OnSwipeViewSwipeStarted"
                             SwipeEnded="OnSwipeViewSwipeEnded"
-                            IsEnabled="{Binding Source={x:Reference SwipeViewCheckBox}, Path=IsChecked}">
+                            IsEnabled="{Binding Source={x:Reference SwipeViewCheckBox, x:DataType={x:Null}}, Path=IsChecked}">
                             <SwipeView.LeftItems>
                                 <SwipeItems
                                     SwipeBehaviorOnInvoked="Close"
@@ -99,7 +99,7 @@
                                 </SwipeItems>
                             </SwipeView.LeftItems>
                             <Grid
-                                IsEnabled="{Binding Source={x:Reference SwipeViewContentCheckBox}, Path=IsChecked}"
+                                IsEnabled="{Binding Source={x:Reference SwipeViewContentCheckBox, x:DataType={x:Null}}, Path=IsChecked}"
                                 BackgroundColor="White"
                                 Padding="10">
                                 <Grid.RowDefinitions>
@@ -107,7 +107,7 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Label
-                                    Text="{Binding}"
+                                    Text="{Binding ., x:DataType={x:Null}}"
                                     FontAttributes="Bold" />
                                 <Button
                                     AutomationId="SwipeButtonId"

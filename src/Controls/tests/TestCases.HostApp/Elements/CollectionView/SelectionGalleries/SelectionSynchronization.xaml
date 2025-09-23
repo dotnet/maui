@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.SelectionSynchronization" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.SelectionSynchronization" x:DataType="local:SelectionSyncModel">
     <ContentPage.Resources>
         <ResourceDictionary>
-            <DataTemplate x:Key="TestTemplate">
-                <Label Text="{Binding .}" Margin="0,3,0,3"></Label>
+            <DataTemplate x:Key="TestTemplate" x:DataType="local:CollectionViewGalleryTestItem">
+                <Label Text="{Binding ., x:DataType={x:Null}}" Margin="0,3,0,3"></Label>
             </DataTemplate>
             <Style x:Key="CV" TargetType="CollectionView">
                 <Setter Property="HeightRequest" Value="250"/>
@@ -25,55 +25,55 @@
                 <Label AutomationId="FirstLabel" Text="Set ItemsSource then SelectedItems"/>
                 <Label Text="Should have items 2 and 3 selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Multiple"
-                                ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}">
+                                ItemsSource="{Binding Items, x:DataType={x:Null}}" SelectedItems="{Binding SelectedItems, x:DataType={x:Null}}">
                 </CollectionView>
 
                 <Label Text="Set SelectedItems then ItemsSource"/>
                 <Label Text="Should have items 2 and 3 selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Multiple"
-                                SelectedItems="{Binding SelectedItems}" ItemsSource="{Binding Items}">
+                                SelectedItems="{Binding SelectedItems, x:DataType={x:Null}}" ItemsSource="{Binding Items, x:DataType={x:Null}}">
                 
                 </CollectionView>
 
                 <Label Text="Set ItemsSource then SelectedItem"/>
                 <Label Text="Should have item 2 selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Single"
-                                ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}">
+                                ItemsSource="{Binding Items, x:DataType={x:Null}}" SelectedItem="{Binding SelectedItem, x:DataType={x:Null}}">
                 
                 </CollectionView>
 
                 <Label Text="Set SelectedItem then ItemsSource"/>
                 <Label Text="Should have item 2 selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Single"
-                                SelectedItem="{Binding SelectedItem}" ItemsSource="{Binding Items}">
+                                SelectedItem="{Binding SelectedItem, x:DataType={x:Null}}" ItemsSource="{Binding Items, x:DataType={x:Null}}">
                 
                 </CollectionView>
 
                 <Label Text="Set SelectedItems (not in source) then ItemsSource"/>
                 <Label Text="Should have nothing selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Multiple"
-                                SelectedItems="{Binding SelectedItemsNotInSource}" ItemsSource="{Binding Items}">
+                                SelectedItems="{Binding SelectedItemsNotInSource, x:DataType={x:Null}}" ItemsSource="{Binding Items, x:DataType={x:Null}}">
 
                 </CollectionView>
 
                 <Label Text="Set ItemsSource then SelectedItems (not in source)"/>
                 <Label Text="Should have nothing selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Multiple"
-                                ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItemsNotInSource}" >
+                                ItemsSource="{Binding Items, x:DataType={x:Null}}" SelectedItems="{Binding SelectedItemsNotInSource, x:DataType={x:Null}}" >
 
                 </CollectionView>
 
                 <Label Text="Set SelectedItem (not in source) then ItemsSource"/>
                 <Label Text="Should have nothing selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Single"
-                                SelectedItem="{Binding SelectedItemNotInSource}" ItemsSource="{Binding Items}">
+                                SelectedItem="{Binding SelectedItemNotInSource, x:DataType={x:Null}}" ItemsSource="{Binding Items, x:DataType={x:Null}}">
 
                 </CollectionView>
 
                 <Label Text="Set ItemsSource then SelectedItem (not in source)"/>
                 <Label Text="Should have nothing selected"/>
                 <CollectionView Style="{StaticResource CV}" SelectionMode="Single"
-                                ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItemNotInSource}">
+                                ItemsSource="{Binding Items, x:DataType={x:Null}}" SelectedItem="{Binding SelectedItemNotInSource, x:DataType={x:Null}}">
 
                 </CollectionView>
 
@@ -81,7 +81,7 @@
                 <Button x:Name="SwitchSource" Text="Switch Source" Clicked="SwitchSourceClicked"/>
                 <Label Text="After hitting the button, should only have Item 3 selected"/>
                 <CollectionView x:Name="CVSwitchSource" Style="{StaticResource CV}" SelectionMode="Multiple"
-                                ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}">
+                                ItemsSource="{Binding Items, x:DataType={x:Null}}" SelectedItems="{Binding SelectedItems, x:DataType={x:Null}}">
 
                 </CollectionView>
             </StackLayout>

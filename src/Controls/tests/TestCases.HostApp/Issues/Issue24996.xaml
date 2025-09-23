@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue24996"
              Title="Issue24996"
-             x:Name="Self" x:DataType="{x:Null}">
+             x:Name="Self">
   <AbsoluteLayout BackgroundColor="DarkSlateBlue">
     <AbsoluteLayout.GestureRecognizers>
       <TapGestureRecognizer Tapped="OnTapped" />
@@ -26,12 +26,12 @@
                          BackgroundColor="#222222">
       <Label x:Name="Coords"
              HeightRequest="40"
-             WidthRequest="{Binding Width, Source={x:Reference Self}}"
+             WidthRequest="{Binding Width, Source={x:Reference Self, x:DataType={x:Null}}}"
              AutomationId="Coords"
              TextColor="White"/>
       <Label x:Name="Stats"
              HeightRequest="40"
-             WidthRequest="{Binding Width, Source={x:Reference Self}}"
+             WidthRequest="{Binding Width, Source={x:Reference Self, x:DataType={x:Null}}}"
              AutomationId="Stats"
              TextColor="White"/>
     </VerticalStackLayout>

@@ -12,13 +12,13 @@
               RowSpacing="10">
                 <!-- CheckBox Control -->
 
-                <CheckBox IsChecked="{Binding IsChecked}"
-                          Color="{Binding Color}"
+                <CheckBox IsChecked="{Binding IsChecked, x:DataType={x:Null}}"
+                          Color="{Binding Color, x:DataType={x:Null}}"
                                 Grid.ColumnSpan="2"
                           HorizontalOptions="Center"
                           VerticalOptions="Center"
-                          IsEnabled="{Binding IsEnabled}"
-                          IsVisible="{Binding IsVisible}"
+                          IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+                          IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
                           CheckedChanged="OnCheckBoxCheckedChanged"
                           AutomationId="CheckBoxControl"/>
 
@@ -33,7 +33,7 @@
                        Margin="65,0,10,10"/>
                 <Label Grid.Row="1"
                        Grid.Column="1"
-                       Text="{Binding IsChecked}"
+                       Text="{Binding IsChecked, x:DataType={x:Null}}"
                        FontSize="16"
                        VerticalTextAlignment="Start"
                        HorizontalTextAlignment="Start"
@@ -44,13 +44,13 @@
                        Grid.Column="0"
                        FontSize="16"
                        Text="Triggered Events:"
-                       IsVisible="{Binding IsEventStatusLabelVisible}"
+                       IsVisible="{Binding IsEventStatusLabelVisible, x:DataType={x:Null}}"
                        VerticalTextAlignment="Start"
                        HorizontalTextAlignment="Start"
                        Margin="80,0,10,10"/>
                 <Label Grid.Row="2"
                        Grid.Column="1"
-                       Text="{Binding CheckedChangedStatus}"
+                       Text="{Binding CheckedChangedStatus, x:DataType={x:Null}}"
                        FontSize="16"
                        VerticalTextAlignment="Start"
                        HorizontalTextAlignment="Start"
@@ -72,7 +72,7 @@
                                         <Label Text="IsChecked"
                                                FontAttributes="Bold"
                                                Margin="0,15,0,0"/>
-                                        <Switch IsToggled="{Binding IsChecked}"
+                                        <Switch IsToggled="{Binding IsChecked, x:DataType={x:Null}}"
                                                 AutomationId="IsCheckedSwitch"/>
 
                                 </StackLayout>
@@ -80,14 +80,14 @@
                                         <Label Text="IsEnabled"
                                                FontAttributes="Bold"
                                                Margin="0,15,0,0"/>
-                                        <Switch IsToggled="{Binding IsEnabled}"
+                                        <Switch IsToggled="{Binding IsEnabled, x:DataType={x:Null}}"
                                                 AutomationId="IsEnabledSwitch"/>
                                 </StackLayout>
                                 <StackLayout Orientation="Horizontal">
                                         <Label Text="IsVisible"
                                                FontAttributes="Bold"
                                                Margin="0,15,0,0"/>
-                                        <Switch IsToggled="{Binding IsVisible}"
+                                        <Switch IsToggled="{Binding IsVisible, x:DataType={x:Null}}"
                                                 AutomationId="IsVisibleSwitch"/>
                                 </StackLayout>
                         </StackLayout>
@@ -102,17 +102,17 @@
                                        VerticalOptions="Center"/>
                                 <Button BackgroundColor="Blue"
                                         Grid.Column="1"
-                                        Command="{Binding SetColorCommand}"
+                                        Command="{Binding SetColorCommand, x:DataType={x:Null}}"
                                         CommandParameter="Blue"
                                         AutomationId="BlueColorButton"/>
                                 <Button BackgroundColor="Green"
                                         Grid.Column="2"
-                                        Command="{Binding SetColorCommand}"
+                                        Command="{Binding SetColorCommand, x:DataType={x:Null}}"
                                         CommandParameter="Green"
                                         AutomationId="GreenColorButton"/>
                                 <Button BackgroundColor="Gray"
                                         Grid.Column="3"
-                                        Command="{Binding SetColorCommand}"
+                                        Command="{Binding SetColorCommand, x:DataType={x:Null}}"
                                         AutomationId="DefaultColorButton"/>
                         </Grid>
 

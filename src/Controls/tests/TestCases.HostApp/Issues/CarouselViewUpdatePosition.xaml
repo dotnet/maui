@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
-    x:Class="Maui.Controls.Sample.Issues.CarouselViewUpdatePosition" x:DataType="{x:Null}">
+    x:Class="Maui.Controls.Sample.Issues.CarouselViewUpdatePosition">
     <ContentPage.Content>
         <StackLayout
             Margin="12">
@@ -20,7 +20,7 @@
                 <CarouselView.ItemTemplate>
                     <DataTemplate>
                         <Label
-                            Text="{Binding}"
+                            Text="{Binding ., x:DataType={x:Null}}"
                             FontSize="Large"
                             HorizontalOptions="CenterAndExpand"/>
                     </DataTemplate>

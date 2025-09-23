@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue8295_ContentPage"
-             x:Name="MPage" x:DataType="{x:Null}">
+             x:Name="MPage" x:DataType="local:Issue8295_NavigationPage">
 
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Edit">
       <ToolbarItem.IconImageSource>
         <FontImageSource  FontFamily="FA"
                           Color="Black"
-                          Glyph="{Binding Source={x:Reference MPage}, Path=BindingContext.TbGlyph}"/>
+                          Glyph="{Binding Source={x:Reference MPage, x:DataType={x:Null}}, Path=BindingContext.TbGlyph}"/>
       </ToolbarItem.IconImageSource>
     </ToolbarItem>
   </ContentPage.ToolbarItems>
@@ -21,7 +21,7 @@
       <Image.Source>
         <FontImageSource FontFamily="FA"
                          Color="Black"
-                         Glyph="{Binding Source={x:Reference MPage}, Path=BindingContext.TbGlyph}"/>
+                         Glyph="{Binding Source={x:Reference MPage, x:DataType={x:Null}}, Path=BindingContext.TbGlyph}"/>
       </Image.Source>
     </Image>
 

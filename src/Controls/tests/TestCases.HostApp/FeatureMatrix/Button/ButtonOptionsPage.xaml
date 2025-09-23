@@ -23,7 +23,7 @@
                      VerticalOptions="Center"/>
               <Entry Grid.Row="0"
                      Grid.Column="1"
-                     Text="{Binding Text}"
+                     Text="{Binding Text, x:DataType={x:Null}}"
                      AutomationId="TextEntry"
                      VerticalOptions="Center"/>
 
@@ -72,7 +72,7 @@
               <Entry Grid.Row="3"
                      Grid.Column="1"
                      AutomationId="BorderWidthEntry"
-                     Text="{Binding BorderWidth}"
+                     Text="{Binding BorderWidth, x:DataType={x:Null}}"
                      VerticalOptions="Center"/>
 
               <!-- CharacterSpacing -->
@@ -83,7 +83,7 @@
               <Entry Grid.Row="4"
                      Grid.Column="1"
                      AutomationId="CharacterSpacingEntry"
-                     Text="{Binding CharacterSpacing}"
+                     Text="{Binding CharacterSpacing, x:DataType={x:Null}}"
                      VerticalOptions="Center"/>
 
               <!-- CornerRadius -->
@@ -94,7 +94,7 @@
               <Entry Grid.Row="5"
                      Grid.Column="1"
                      AutomationId="CornerRadiusEntry"
-                     Text="{Binding CornerRadius}"
+                     Text="{Binding CornerRadius, x:DataType={x:Null}}"
                      VerticalOptions="Center"/>
 
               <!-- Flow Direction -->
@@ -166,7 +166,7 @@
               <Entry Grid.Row="9"
                      Grid.Column="1"
                      AutomationId="FontSizeEntry"
-                     Text="{Binding FontSize}"
+                     Text="{Binding FontSize, x:DataType={x:Null}}"
                      VerticalOptions="Center"/>
 
               <!-- IsEnabled -->
@@ -247,7 +247,7 @@
               <Entry Grid.Row="13"
                      Grid.Column="1"
                      AutomationId="PaddingEntry"
-                     Text="{Binding Padding}"
+                     Text="{Binding Padding, x:DataType={x:Null}}"
                      VerticalOptions="Center"/>
 
               <!-- Shadow -->

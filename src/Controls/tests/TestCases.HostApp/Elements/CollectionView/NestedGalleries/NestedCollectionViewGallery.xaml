@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries.NestedCollectionViewGallery" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries.NestedCollectionViewGallery" x:DataType="local:NestedCollectionViewModel">
     <ContentPage.Content>
         <StackLayout>
 
             <Label Text="It's CollectionViews all the way down." AutomationId="Success"/>
 
-            <CollectionView ItemsSource="{Binding Items}" ItemsLayout="VerticalList">
+            <CollectionView ItemsSource="{Binding Items, x:DataType={x:Null}}" ItemsLayout="VerticalList">
 
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                         <Grid Margin="5,5,5,15">
 
                             <Grid.RowDefinitions>
@@ -21,26 +21,26 @@
                                 <RowDefinition Height="100"></RowDefinition>
                             </Grid.RowDefinitions>
 
-                            <Label TextColor="Red" Text="{Binding Title}" FontAttributes="Italic" />
+                            <Label TextColor="Red" Text="{Binding Title, x:DataType={x:Null}}" FontAttributes="Italic" />
 
-                            <CollectionView Grid.Row="1" HeightRequest="100" ItemsSource="{Binding Items}" 
+                            <CollectionView Grid.Row="1" HeightRequest="100" ItemsSource="{Binding Items, x:DataType={x:Null}}" 
                                             ItemsLayout="HorizontalList" HorizontalScrollBarVisibility="Never"
                                             VerticalScrollBarVisibility="Never">
 
                                 <!-- Yo, dawg, we heard you like CollectionViews so we put some CollectionViews in your CollectionView -->
 
                                 <CollectionView.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                                         <Grid Margin="10" WidthRequest="100">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="80"></RowDefinition>
                                                 <RowDefinition Height="40"></RowDefinition>
                                             </Grid.RowDefinitions>
 
-                                            <Image Source="{Binding Image}" Aspect="AspectFill" HeightRequest="70" 
+                                            <Image Source="{Binding Image, x:DataType={x:Null}}" Aspect="AspectFill" HeightRequest="70" 
                                                    WidthRequest="70" VerticalOptions="Center" HorizontalOptions="Center"/>
 
-                                            <Label Grid.Row="1" TextColor="Blue" FontSize="10" Text="{Binding Caption}" 
+                                            <Label Grid.Row="1" TextColor="Blue" FontSize="10" Text="{Binding Caption, x:DataType={x:Null}}" 
                                                    HorizontalTextAlignment="Center" />
 
                                         </Grid>

@@ -1,26 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue26863"
-             x:Name="This" x:DataType="{x:Null}">
+             x:Name="This">
 
-  <VerticalStackLayout BindingContext="{Binding Source={Reference This}}">
+  <VerticalStackLayout BindingContext="{Binding Source={Reference This, x:DataType={x:Null}}}">
     <Button AutomationId="button"
             x:Name="button"
             IsVisible="false"
             Text="Click me"
-            Command="{Binding ScrollToCommand}"/>
+            Command="{Binding ScrollToCommand, x:DataType={x:Null}}"/>
     <CarouselView
       HeightRequest="200"
-      ItemsSource="{Binding List}"
+      ItemsSource="{Binding List, x:DataType={x:Null}}"
       HorizontalOptions="Fill"
       x:Name="CV"
       Loop="False">
       <CarouselView.ItemTemplate>
         <DataTemplate>
           <Label HorizontalOptions="Fill"
-                 AutomationId="{Binding .}"
-                 Text="{Binding .}"/>
+                 AutomationId="{Binding ., x:DataType={x:Null}}"
+                 Text="{Binding ., x:DataType={x:Null}}"/>
         </DataTemplate>
       </CarouselView.ItemTemplate>
     </CarouselView>

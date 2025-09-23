@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28098"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue28098" x:DataType="{x:Null}">
+             Title="Issue28098">
     <ContentPage.BindingContext>
         <local:MainPageViewModel x:Name="_viewModel"/>
     </ContentPage.BindingContext>
@@ -15,7 +15,7 @@
                        HeightRequest="570"
                        HorizontalOptions="Fill"
                        VerticalOptions="Fill"
-                       ItemsSource="{Binding Items}"
+                       ItemsSource="{Binding Items, x:DataType={x:Null}}"
                        Loop="False">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
@@ -27,7 +27,7 @@
                         <Label Padding="10"
                                VerticalOptions="Center"
                                HorizontalOptions="Center"
-                               Text="{Binding Name}"/>
+                               Text="{Binding Name, x:DataType={x:Null}}"/>
                     </StackLayout>
                 </DataTemplate>
             </CarouselView.ItemTemplate>

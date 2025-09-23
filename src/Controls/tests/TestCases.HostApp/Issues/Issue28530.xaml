@@ -1,27 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Issues.Issue28530" x:DataType="{x:Null}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue28530" x:DataType="local:Issue28530CollectionViewViewModel">
 
     <VerticalStackLayout Padding="10">
         <CollectionView
-            ItemsSource="{Binding GroupedItems}"
+            ItemsSource="{Binding GroupedItems, x:DataType={x:Null}}"
             IsGrouped="true"
             CanReorderItems="true"
             CanMixGroups="false"
             AutomationId="CollectionViewControl">
             <CollectionView.GroupHeaderTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding GroupHeaderName}"
+                    <Label Text="{Binding GroupHeaderName, x:DataType={x:Null}}"
                            FontAttributes="Bold"
                            Padding="5"/>
                 </DataTemplate>
             </CollectionView.GroupHeaderTemplate>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding Name}"
-                           AutomationId="{Binding .}"
+                    <Label Text="{Binding Name, x:DataType={x:Null}}"
+                           AutomationId="{Binding ., x:DataType={x:Null}}"
                            Padding="5"/>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

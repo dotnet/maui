@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:i="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue25671"
-             Title="LayoutPassTest" x:DataType="{x:Null}">
+             Title="LayoutPassTest">
 
   <i:Issue25671AbsoluteLayout>
     <i:Issue25671Grid Padding="0,0,0,100"
@@ -24,10 +24,10 @@
                                                BackgroundColor="SlateBlue"
                                                Padding="16,8"
                                                Spacing="8">
-                <i:Issue25671Label Text="{Binding Text}" TextColor="White"/>
+                <i:Issue25671Label Text="{Binding Text, x:DataType={x:Null}}" TextColor="White"/>
                 <i:Issue25671Image HorizontalOptions="Center">
                   <i:Issue25671Image.Source>
-                    <FontImageSource Glyph="{Binding Glyph}" Color="White" FontFamily="FA" Size="24"/>
+                    <FontImageSource Glyph="{Binding Glyph, x:DataType={x:Null}}" Color="White" FontFamily="FA" Size="24"/>
                   </i:Issue25671Image.Source>
                 </i:Issue25671Image>
               </i:Issue25671VerticalStackLayout>

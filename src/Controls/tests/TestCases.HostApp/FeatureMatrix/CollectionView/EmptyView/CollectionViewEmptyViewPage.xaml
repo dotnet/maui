@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.CollectionViewEmptyViewPage"
-             Title="CollectionViewFeature" x:DataType="{x:Null}">
+             Title="CollectionViewFeature">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                 Clicked="NavigateToOptionsPage_Clicked"
@@ -12,15 +12,15 @@
 
         <local:CollectionView2
             x:Name="collectionView"
-            ItemsSource="{Binding ItemsSource}"
-            EmptyView="{Binding EmptyView}"
-            Header="{Binding Header}"
-            Footer="{Binding Footer}"
-            EmptyViewTemplate="{Binding EmptyViewTemplate}"
-            GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
-            ItemTemplate="{Binding ItemTemplate}"
-            IsGrouped="{Binding IsGrouped}"
-            ItemsLayout="{Binding ItemsLayout}"
+            ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
+            EmptyView="{Binding EmptyView, x:DataType={x:Null}}"
+            Header="{Binding Header, x:DataType={x:Null}}"
+            Footer="{Binding Footer, x:DataType={x:Null}}"
+            EmptyViewTemplate="{Binding EmptyViewTemplate, x:DataType={x:Null}}"
+            GroupHeaderTemplate="{Binding GroupHeaderTemplate, x:DataType={x:Null}}"
+            ItemTemplate="{Binding ItemTemplate, x:DataType={x:Null}}"
+            IsGrouped="{Binding IsGrouped, x:DataType={x:Null}}"
+            ItemsLayout="{Binding ItemsLayout, x:DataType={x:Null}}"
             AutomationId="CollectionViewControl">
         </local:CollectionView2>
 </ContentPage>

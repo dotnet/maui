@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries.EmptyViewTemplateGallery" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries.EmptyViewTemplateGallery">
 	<ContentPage.Content>
 		<Grid>
 			<Grid.RowDefinitions>
@@ -16,11 +16,11 @@
 					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
 				</CollectionView.ItemsLayout>
 				<CollectionView.EmptyViewTemplate>
-					<DataTemplate>
+					<DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
 						<StackLayout> 
 							<Label FontAttributes="Bold" FontSize="18" Margin="10,25,10,10"
 									HorizontalOptions="Fill" HorizontalTextAlignment="Center" 
-									Text="{Binding Filter, StringFormat='Your filter term of {0} did not match any records'}"></Label>
+									Text="{Binding Filter, StringFormat='Your filter term of {0, x:DataType={x:Null}} did not match any records'}"></Label>
 						</StackLayout>
 					</DataTemplate>
 				</CollectionView.EmptyViewTemplate>

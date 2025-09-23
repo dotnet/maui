@@ -19,7 +19,7 @@
                            Spacing="3">
 
                      <!-- Title -->
-                     <Label Text="{Binding Title, StringFormat='Title: {0}'}"
+                     <Label Text="{Binding Title, StringFormat='Title: {0, x:DataType={x:Null}}'}"
                             FontSize="15"/>
                      <Entry x:Name="TitleEntry"
                             AutomationId="TitleEntry"
@@ -28,7 +28,7 @@
                             WidthRequest="150"/>
 
                      <!-- Selected Index -->
-                     <Label Text="{Binding SelectedIndex, StringFormat='Selected Index: {0}'}"
+                     <Label Text="{Binding SelectedIndex, StringFormat='Selected Index: {0, x:DataType={x:Null}}'}"
                             FontSize="15"/>
                      <Entry x:Name="SelectedIndexEntry"
                             AutomationId="SelectedIndexEntry"
@@ -38,7 +38,7 @@
                             WidthRequest="100"/>
 
                      <!-- Selected Item -->
-                     <Label Text="{Binding SelectedItem, StringFormat='Selected Item: {0}'}"
+                     <Label Text="{Binding SelectedItem, StringFormat='Selected Item: {0, x:DataType={x:Null}}'}"
                             FontSize="15"/>
                      <Entry x:Name="SelectedItemEntry"
                             AutomationId="SelectedItemEntry"
@@ -47,7 +47,7 @@
                             WidthRequest="150"/>
 
                      <!-- Character Spacing -->
-                     <Label Text="{Binding CharacterSpacing, StringFormat='Character Spacing: {0}'}"
+                     <Label Text="{Binding CharacterSpacing, StringFormat='Character Spacing: {0, x:DataType={x:Null}}'}"
                             FontSize="15"/>
                      <Entry x:Name="CharacterSpacingEntry"
                             AutomationId="CharacterSpacingEntry"
@@ -57,7 +57,7 @@
                             WidthRequest="100"/>
 
                      <!-- Font Size -->
-                     <Label Text="{Binding FontSize, StringFormat='Font Size: {0}'}"
+                     <Label Text="{Binding FontSize, StringFormat='Font Size: {0, x:DataType={x:Null}}'}"
                             FontSize="15"/>
                      <Entry x:Name="FontSizeEntry"
                             AutomationId="FontSizeEntry"

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue17865"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue 17865" x:DataType="{x:Null}">
+             Title="Issue 17865">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition 
@@ -21,12 +21,12 @@
         <CollectionView 
             x:Name="collectionView"
             Grid.Row="1" 
-            ItemsSource="{Binding Items}">
+            ItemsSource="{Binding Items, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label
                         Margin="5,2" 
-                        Text="{Binding ItemText}"
+                        Text="{Binding ItemText, x:DataType={x:Null}}"
                         HorizontalOptions="Fill"
                         TextColor="Gray"/>
                 </DataTemplate>

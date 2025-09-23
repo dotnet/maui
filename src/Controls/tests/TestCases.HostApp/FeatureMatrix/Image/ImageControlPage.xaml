@@ -15,18 +15,18 @@
     <Border x:Name="Container"
             Stroke="Black"
             StrokeThickness="2"
-            HeightRequest="{Binding ContainerHeight}"
-            WidthRequest="{Binding ContainerWidth}"
+            HeightRequest="{Binding ContainerHeight, x:DataType={x:Null}}"
+            WidthRequest="{Binding ContainerWidth, x:DataType={x:Null}}"
             HorizontalOptions="Center">
 
         <Image x:Name="TestImage"
-               Aspect="{Binding Aspect}"
-               IsAnimationPlaying="{Binding IsAnimationPlaying}"
-               IsOpaque="{Binding IsOpaque}"
-               Source="{Binding Source}"
-               IsVisible="{Binding IsVisible}"
-               FlowDirection="{Binding FlowDirection}"
-               Shadow="{Binding ImageShadow}"
+               Aspect="{Binding Aspect, x:DataType={x:Null}}"
+               IsAnimationPlaying="{Binding IsAnimationPlaying, x:DataType={x:Null}}"
+               IsOpaque="{Binding IsOpaque, x:DataType={x:Null}}"
+               Source="{Binding Source, x:DataType={x:Null}}"
+               IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+               FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+               Shadow="{Binding ImageShadow, x:DataType={x:Null}}"
                AutomationId="ImageControl"/>
     </Border>
     </VerticalStackLayout>

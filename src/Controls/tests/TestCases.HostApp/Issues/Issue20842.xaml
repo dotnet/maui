@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue20842"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             Background="White" x:DataType="{x:Null}">
+             Background="White">
     <ContentPage.Resources>
         <DataTemplate x:Key="validPersonTemplate">
             <Grid>
@@ -12,14 +12,14 @@
                     <ColumnDefinition Width="0.3*" />
                     <ColumnDefinition Width="0.3*" />
                 </Grid.ColumnDefinitions>
-                <Label Text="{Binding Name}"
+                <Label Text="{Binding Name, x:DataType={x:Null}}"
                        TextColor="Green"
                        FontAttributes="Bold" />
                 <Label Grid.Column="1"
-                       Text="{Binding DateOfBirth, StringFormat='{0:d}'}"
+                       Text="{Binding DateOfBirth, StringFormat='{0:d, x:DataType={x:Null}}'}"
                        TextColor="Green" />
                 <Label Grid.Column="2"
-                       Text="{Binding Location}"
+                       Text="{Binding Location, x:DataType={x:Null}}"
                        TextColor="Green"
                        HorizontalTextAlignment="End" />
             </Grid>
@@ -31,14 +31,14 @@
                     <ColumnDefinition Width="0.3*" />
                     <ColumnDefinition Width="0.3*" />
                 </Grid.ColumnDefinitions>
-                <Label Text="{Binding Name}"
+                <Label Text="{Binding Name, x:DataType={x:Null}}"
                        TextColor="Red"
                        FontAttributes="Bold" />
                 <Label Grid.Column="1"
-                       Text="{Binding DateOfBirth, StringFormat='{0:d}'}"
+                       Text="{Binding DateOfBirth, StringFormat='{0:d, x:DataType={x:Null}}'}"
                        TextColor="Red" />
                 <Label Grid.Column="2"
-                       Text="{Binding Location}"
+                       Text="{Binding Location, x:DataType={x:Null}}"
                        TextColor="Red"
                        HorizontalTextAlignment="End" />
             </Grid>

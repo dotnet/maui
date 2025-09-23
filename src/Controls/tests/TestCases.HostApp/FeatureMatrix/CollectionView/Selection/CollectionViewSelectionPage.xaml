@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.CollectionViewSelectionPage"
-             Title="CollectionViewControlPage" x:DataType="{x:Null}">
+             Title="CollectionViewControlPage">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Options"
                            Clicked="NavigateToOptionsPage_Clicked"
@@ -30,14 +30,14 @@
                      x:Name="collectionView"
                      Grid.Row="0"
                      Grid.ColumnSpan="2"
-                     ItemsSource="{Binding ItemsSource}"
-                     ItemTemplate="{Binding ItemTemplate}"
-                     ItemsLayout="{Binding ItemsLayout}"
-                     GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
-                     IsGrouped="{Binding IsGrouped}"
-                     SelectionMode="{Binding SelectionMode}"
-                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                     SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+                     ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
+                     ItemTemplate="{Binding ItemTemplate, x:DataType={x:Null}}"
+                     ItemsLayout="{Binding ItemsLayout, x:DataType={x:Null}}"
+                     GroupHeaderTemplate="{Binding GroupHeaderTemplate, x:DataType={x:Null}}"
+                     IsGrouped="{Binding IsGrouped, x:DataType={x:Null}}"
+                     SelectionMode="{Binding SelectionMode, x:DataType={x:Null}}"
+                     SelectedItem="{Binding SelectedItem, Mode=TwoWay, x:DataType={x:Null}}"
+                     SelectedItems="{Binding SelectedItems, Mode=TwoWay, x:DataType={x:Null}}"
                      SelectionChanged="OnCollectionViewSelectionChanged"
                      AutomationId="CollectionViewControl">
               </CollectionView>
@@ -48,7 +48,7 @@
                      FontAttributes="Bold"
                      Grid.Row="1"
                      Grid.Column="0"/>
-              <Label Text="{Binding SelectedItemText}"
+              <Label Text="{Binding SelectedItemText, x:DataType={x:Null}}"
                      AutomationId="SelectedSingle"
                      FontSize="14"
                      TextColor="Blue"
@@ -61,7 +61,7 @@
                      FontAttributes="Bold"
                      Grid.Row="2"
                      Grid.Column="0"/>
-              <Label Text="{Binding SelectedItemsCount}"
+              <Label Text="{Binding SelectedItemsCount, x:DataType={x:Null}}"
                      AutomationId="SelectedMultiple"
                      FontSize="14"
                      TextColor="Blue"
@@ -75,7 +75,7 @@
                      FontAttributes="Bold"
                      Grid.Row="3"
                      Grid.Column="0"/>
-              <Label Text="{Binding SelectionChangedEventCount, StringFormat='{0} times'}"
+              <Label Text="{Binding SelectionChangedEventCount, StringFormat='{0, x:DataType={x:Null}} times'}"
                      FontSize="14"
                      TextColor="Blue"
                      Grid.Row="3"
@@ -88,7 +88,7 @@
                      FontAttributes="Bold"
                      Grid.Row="4"
                      Grid.Column="0"/>
-              <Label Text="{Binding PreviousSelectionText}"
+              <Label Text="{Binding PreviousSelectionText, x:DataType={x:Null}}"
                      FontSize="14"
                      TextColor="Blue"
                      Grid.Row="4"
@@ -100,7 +100,7 @@
                      FontAttributes="Bold"
                      Grid.Row="5"
                      Grid.Column="0"/>
-              <Label Text="{Binding CurrentSelectionText}"
+              <Label Text="{Binding CurrentSelectionText, x:DataType={x:Null}}"
                      FontSize="14"
                      TextColor="Blue"
                      Grid.Row="5"

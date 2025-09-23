@@ -18,19 +18,19 @@
 
     <CollectionView Grid.Row="1" x:DataType="local:_25889MainViewModel" AutomationId="collectionView"
         IsGrouped="True"
-        ItemsSource="{Binding ActivityGroups}"
+        ItemsSource="{Binding ActivityGroups, x:DataType={x:Null}}"
         RemainingItemsThreshold="2"
-        RemainingItemsThresholdReachedCommand="{Binding GetDataCommand}">
+        RemainingItemsThresholdReachedCommand="{Binding GetDataCommand, x:DataType={x:Null}}">
         
         <CollectionView.GroupHeaderTemplate>
             <DataTemplate x:DataType="local:_25889GroupedActivity">
-                <Label Text="{Binding Key}" FontAttributes="Bold" Padding="5" />
+                <Label Text="{Binding Key, x:DataType={x:Null}}" FontAttributes="Bold" Padding="5" />
             </DataTemplate>
         </CollectionView.GroupHeaderTemplate>
 
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="local:_25889ActivityItem">
-                <Label Text="{Binding Name}" Padding="10" />
+                <Label Text="{Binding Name, x:DataType={x:Null}}" Padding="10" />
             </DataTemplate>
         </CollectionView.ItemTemplate>
     </CollectionView>

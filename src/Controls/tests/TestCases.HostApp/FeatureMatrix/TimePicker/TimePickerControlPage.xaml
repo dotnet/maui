@@ -18,18 +18,18 @@
                     Grid.ColumnSpan="2"
                     VerticalOptions="Center">
                      <TimePicker AutomationId="TimePickerControl"
-                                 CharacterSpacing="{Binding CharacterSpacing}"
-                                 FlowDirection="{Binding FlowDirection}"
-                                 Format="{Binding Format}"
-                                 FontAttributes="{Binding FontAttributes}"
-                                 FontFamily="{Binding FontFamily}"
-                                 FontSize="{Binding FontSize}"
-                                 IsEnabled="{Binding IsEnabled}"
-                                 IsVisible="{Binding IsVisible}"
-                                 Shadow="{Binding Shadow}"
-                                 Time="{Binding Time}"
+                                 CharacterSpacing="{Binding CharacterSpacing, x:DataType={x:Null}}"
+                                 FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+                                 Format="{Binding Format, x:DataType={x:Null}}"
+                                 FontAttributes="{Binding FontAttributes, x:DataType={x:Null}}"
+                                 FontFamily="{Binding FontFamily, x:DataType={x:Null}}"
+                                 FontSize="{Binding FontSize, x:DataType={x:Null}}"
+                                 IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+                                 IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                                 Shadow="{Binding Shadow, x:DataType={x:Null}}"
+                                 Time="{Binding Time, x:DataType={x:Null}}"
                                  TimeSelected="TimePicker_TimeSelected"
-                                 TextColor="{Binding TextColor}"/>
+                                 TextColor="{Binding TextColor, x:DataType={x:Null}}"/>
               </Grid>
 
               <Label Grid.Row="1"

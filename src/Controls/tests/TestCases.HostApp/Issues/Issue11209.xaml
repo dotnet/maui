@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.Issue11209"
     x:Name="Issue11209Page"
@@ -19,7 +19,7 @@
             Text="Tap any item on the list."/>
        <CollectionView
            Grid.Row="1"
-           ItemsSource="{Binding Source={x:Reference Issue11209Page}, Path=Items}">
+           ItemsSource="{Binding Source={x:Reference Issue11209Page, x:DataType={x:Null}}, Path=Items}">
            <CollectionView.ItemTemplate>
                <DataTemplate>
                     <SwipeView
@@ -44,7 +44,7 @@
                                HorizontalOptions="Start"
                                VerticalOptions="Center"
                                Margin="20"
-                               Text="{Binding .}"/>
+                               Text="{Binding ., x:DataType={x:Null}}"/>
                             <BoxView
                                 HeightRequest="1"
                                 BackgroundColor="Black"

@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue25191">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue25191" x:DataType="local:MainViewModel">
 
   <Grid RowDefinitions="50,*" x:Name="grid">
 
     <CollectionView Grid.Row="2" x:Name="collectionView"
                     ItemSizingStrategy="MeasureFirstItem"
-                    ItemsSource="{Binding Items}" 
+                    ItemsSource="{Binding Items, x:DataType={x:Null}}" 
                     AutomationId="collectionView">
       <CollectionView.EmptyView>
         <Label HorizontalOptions="Center"
@@ -15,7 +15,7 @@
            VerticalOptions="Center" />
       </CollectionView.EmptyView>
       <CollectionView.ItemTemplate>
-        <DataTemplate x:DataType="{x:Null}">
+        <DataTemplate>
           <Border Margin="0,5"
                 BackgroundColor="White"
                 HeightRequest="140"

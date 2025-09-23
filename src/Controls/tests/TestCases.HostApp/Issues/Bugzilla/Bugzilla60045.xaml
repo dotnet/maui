@@ -4,16 +4,16 @@
 	xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
 	x:Class="Maui.Controls.Sample.Issues.Bugzilla60045"
 	x:Name="This"
-	BindingContext="{x:Reference This}" x:DataType="{x:Null}">
+	BindingContext="{x:Reference This}">
 
 	<StackLayout>
 
 		<Label Text="The command on the list item below has CanExecute == false; clicking on it should not display an alert. If it does, this test has failed."></Label>
 
-		<ListView CachingStrategy="RecycleElement" ItemsSource="{Binding Items}" >
+		<ListView CachingStrategy="RecycleElement" ItemsSource="{Binding Items, x:DataType={x:Null}}" >
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<TextCell Text="Click This" Command="{Binding Action}"/>
+					<TextCell Text="Click This" Command="{Binding Action, x:DataType={x:Null}}"/>
 				</DataTemplate>
 			</ListView.ItemTemplate>
 		</ListView>

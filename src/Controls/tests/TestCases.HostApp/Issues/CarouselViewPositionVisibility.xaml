@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewPositionVisibility"
-    Title="Issue 12848" x:DataType="{x:Null}">
+    Title="Issue 12848" x:DataType="local:List">
     <StackLayout>
         <Label
             Padding="12"
@@ -16,11 +16,11 @@
             x:Name="carousel"
             HorizontalOptions="Center"
             HeightRequest="500"
-            ItemsSource="{Binding}">
+            ItemsSource="{Binding ., x:DataType={x:Null}}">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <Label
-                        Text="{Binding}"
+                        Text="{Binding ., x:DataType={x:Null}}"
                         FontSize="96"
                         HorizontalTextAlignment="Center"/>
                 </DataTemplate>
@@ -28,7 +28,7 @@
         </CarouselView>
         <Label
             AutomationId="CarouselPosition"
-            Text="{Binding Source={x:Reference carousel}, Path=Position}"
+            Text="{Binding Source={x:Reference carousel, x:DataType={x:Null}}, Path=Position}"
             HorizontalOptions="Center"/>
         <Button
             AutomationId="HideButton"

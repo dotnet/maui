@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              x:Class="Maui.Controls.Sample.Issues.Issue17283" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+              x:Class="Maui.Controls.Sample.Issues.Issue17283" x:DataType="local:Issue17283ViewModel">
 
   <VerticalStackLayout Padding="30,0"
                          Spacing="25"
@@ -9,23 +9,23 @@
     <CarouselView x:Name="CarouselView"
                       HeightRequest="200"
                       BackgroundColor="AliceBlue" 
-                      ItemsSource="{Binding Items}"
+                      ItemsSource="{Binding Items, x:DataType={x:Null}}"
                       Loop="True"
-                      Position="{Binding Position, Mode=TwoWay}">
+                      Position="{Binding Position, Mode=TwoWay, x:DataType={x:Null}}">
       <CarouselView.ItemTemplate>
         <DataTemplate>
           <VerticalStackLayout HeightRequest="200" VerticalOptions="Center">
             <Label FontSize="32" 
                                HorizontalTextAlignment="Center"
-                               AutomationId="{Binding .}"
-                               Text="{Binding .}"
+                               AutomationId="{Binding ., x:DataType={x:Null}}"
+                               Text="{Binding ., x:DataType={x:Null}}"
                                VerticalTextAlignment="Center" />
           </VerticalStackLayout>
         </DataTemplate>
       </CarouselView.ItemTemplate>
     </CarouselView>
-    <Button AutomationId="reloadItemsButton" Command="{Binding ReloadItemsCommand}" Text="Reload Items" />
-    <Button AutomationId="goToLastItemButton" Command="{Binding GoToLastItemCommand}" Text="Go to last item" />
+    <Button AutomationId="reloadItemsButton" Command="{Binding ReloadItemsCommand, x:DataType={x:Null}}" Text="Reload Items" />
+    <Button AutomationId="goToLastItemButton" Command="{Binding GoToLastItemCommand, x:DataType={x:Null}}" Text="Go to last item" />
   </VerticalStackLayout>
 
 </ContentPage>

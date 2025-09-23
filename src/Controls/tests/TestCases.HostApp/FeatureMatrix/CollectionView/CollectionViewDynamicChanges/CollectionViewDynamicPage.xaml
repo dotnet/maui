@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.CollectionViewDynamicPage"
               xmlns:local="clr-namespace:Maui.Controls.Sample"
-             Title="CollectionViewDynamicPage" x:DataType="{x:Null}">
+             Title="CollectionViewDynamicPage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                      Clicked="NavigateToOptionsPage_Clicked"
@@ -19,18 +19,18 @@
         <local:CollectionView2 
             x:Name="collectionView"
             Grid.Row="0" 
-            ItemsSource="{Binding ItemsSource}"
-            EmptyView="{Binding EmptyView}"
-            Header="{Binding Header}"
-            Footer="{Binding Footer}"
-            HeaderTemplate="{Binding HeaderTemplate}"
-            FooterTemplate="{Binding FooterTemplate}"
-            EmptyViewTemplate="{Binding EmptyViewTemplate}"
-            GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
-            GroupFooterTemplate="{Binding GroupFooterTemplate}"
-            ItemTemplate="{Binding ItemTemplate}"
-            IsGrouped="{Binding IsGrouped}"
-            ItemsLayout="{Binding ItemsLayout}"
+            ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
+            EmptyView="{Binding EmptyView, x:DataType={x:Null}}"
+            Header="{Binding Header, x:DataType={x:Null}}"
+            Footer="{Binding Footer, x:DataType={x:Null}}"
+            HeaderTemplate="{Binding HeaderTemplate, x:DataType={x:Null}}"
+            FooterTemplate="{Binding FooterTemplate, x:DataType={x:Null}}"
+            EmptyViewTemplate="{Binding EmptyViewTemplate, x:DataType={x:Null}}"
+            GroupHeaderTemplate="{Binding GroupHeaderTemplate, x:DataType={x:Null}}"
+            GroupFooterTemplate="{Binding GroupFooterTemplate, x:DataType={x:Null}}"
+            ItemTemplate="{Binding ItemTemplate, x:DataType={x:Null}}"
+            IsGrouped="{Binding IsGrouped, x:DataType={x:Null}}"
+            ItemsLayout="{Binding ItemsLayout, x:DataType={x:Null}}"
             AutomationId="CollectionViewControl">
         </local:CollectionView2>
 

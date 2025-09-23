@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue 20294"
              x:Class="Maui.Controls.Sample.Issues.Issue20294">
      <CollectionView SelectionMode="Single" Margin="10.0" AutomationId="theCollectionView">
@@ -47,8 +47,8 @@
         </CollectionView.Footer> 
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="x:String">
-                <Border AutomationId="{Binding}" StrokeThickness="0.2">
-                    <Label Text="{Binding}" FontSize="20"/>
+                <Border AutomationId="{Binding ., x:DataType={x:Null}}" StrokeThickness="0.2">
+                    <Label Text="{Binding ., x:DataType={x:Null}}" FontSize="20"/>
                 </Border>
             </DataTemplate>
         </CollectionView.ItemTemplate>

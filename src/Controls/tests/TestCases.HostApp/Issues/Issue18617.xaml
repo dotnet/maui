@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue18617" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue18617" x:DataType="local:Issue18617">
     <VerticalStackLayout>
         <Label 
             AutomationId="WaitForStubControl"
@@ -16,14 +16,14 @@
             Text="5. Repeat the steps above 2 more times." />
         <Button
             AutomationId="OnButton"
-            Command="{Binding OnCommand}"
+            Command="{Binding OnCommand, x:DataType={x:Null}}"
             Text="On" />
         <Button 
             AutomationId="OffButton"
-            Command="{Binding OffCommand}"
+            Command="{Binding OffCommand, x:DataType={x:Null}}"
             Text="Off" />
         <Label 
             AutomationId="StatusLabel"
-            Text="{Binding Status}"/>
+            Text="{Binding Status, x:DataType={x:Null}}"/>
     </VerticalStackLayout>
 </ContentPage>

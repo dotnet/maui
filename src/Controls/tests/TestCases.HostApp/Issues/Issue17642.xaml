@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.Issue17642"
-    Title="Issue 17642" x:DataType="{x:Null}">
+    Title="Issue 17642">
     <ContentPage.Resources>
         <ResourceDictionary>
 
@@ -47,7 +47,7 @@
                 </Button.Background>
             </Button>
             <Button
-                CornerRadius="{Binding Value, Source={x:Reference CornerSlider}}"
+                CornerRadius="{Binding Value, Source={x:Reference CornerSlider, x:DataType={x:Null}}}"
                 Text="Corner Radius Background"
                 TextColor="White">
                 <Button.Background>
@@ -73,7 +73,7 @@
                 Value="24"/>
             <Button
                 BorderColor="Red"
-                BorderWidth="{Binding Value, Source={x:Reference BorderWidthSlider}}"
+                BorderWidth="{Binding Value, Source={x:Reference BorderWidthSlider, x:DataType={x:Null}}}"
                 Text="BorderColor"
                 TextColor="White">
                 <Button.Background>

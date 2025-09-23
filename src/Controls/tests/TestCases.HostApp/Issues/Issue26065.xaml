@@ -2,14 +2,14 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
-             x:Class="Maui.Controls.Sample.Issues.Issue26065" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.Issues.Issue26065" x:DataType="local:BookViewModel">
 
   <Grid RowDefinitions="Auto,*">
     <Button AutomationId="ToggleButton" x:Name="btn" Clicked="Button_Clicked" Text="Modify Itemspacing" Grid.Row="0"/>
     <local:CollectionView2 x:Name="collView" AutomationId="CollectionView"
                     ItemsLayout="{OnIdiom Tablet='VerticalGrid, 2'}" 
                     Grid.Row="1"
-                    ItemsSource="{Binding Books}" 
+                    ItemsSource="{Binding Books, x:DataType={x:Null}}" 
                     VerticalOptions="Fill">
             
       <CollectionView.ItemTemplate>
@@ -17,10 +17,10 @@
           <Grid Padding="10" 
                 Background="White">
               <VerticalStackLayout>
-                  <Label Text="{Binding Title}" 
+                  <Label Text="{Binding Title, x:DataType={x:Null}}" 
                           FontSize="16" 
                           FontAttributes="Bold"/>
-                  <Label Text="{Binding Author}" 
+                  <Label Text="{Binding Author, x:DataType={x:Null}}" 
                           FontSize="14" 
                           TextColor="Gray"/>
               </VerticalStackLayout>

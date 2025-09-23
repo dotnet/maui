@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue19657"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
     <ScrollView>
         <Grid x:Name="contentGrid">
             <Grid.RowDefinitions>
@@ -12,8 +12,8 @@
             <Grid.Resources>
                 <DataTemplate x:Key="SampleItemTemplate">
                     <VerticalStackLayout Spacing="4">
-                        <Label Text="{Binding Title, Mode=OneWay}" FontAttributes="Bold" />
-                        <Label Text="{Binding Description, Mode=OneWay}" />
+                        <Label Text="{Binding Title, Mode=OneWay, x:DataType={x:Null}}" FontAttributes="Bold" />
+                        <Label Text="{Binding Description, Mode=OneWay, x:DataType={x:Null}}" />
                     </VerticalStackLayout>
                 </DataTemplate>
             </Grid.Resources>

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="Self"
-             x:Class="Maui.Controls.Sample.Issues.Issue29086" x:DataType="{x:Null}">
-    <CollectionView ItemsSource="{Binding Numbers}"
+             x:Class="Maui.Controls.Sample.Issues.Issue29086" x:DataType="local:Issue29086">
+    <CollectionView ItemsSource="{Binding Numbers, x:DataType={x:Null}}"
                     Margin="60">
         <CollectionView.ItemTemplate>
             <DataTemplate>
@@ -18,16 +18,16 @@
                                     AutomationId="AddButton"
                                     WidthRequest="40"
                                     BackgroundColor="LightGreen"
-                                    Command="{Binding Source={x:Reference Self}, Path=IncrementCommand}"
-                                    CommandParameter="{Binding .}"/>
+                                    Command="{Binding Source={x:Reference Self, x:DataType={x:Null}}, Path=IncrementCommand}"
+                                    CommandParameter="{Binding ., x:DataType={x:Null}}"/>
                             </SwipeItemView>
                             <SwipeItemView>
                                 <Button
                                     Text="-"
                                     WidthRequest="40"
                                     BackgroundColor="LightCoral"
-                                    Command="{Binding Source={x:Reference Self}, Path=DecrementCommand}"
-                                    CommandParameter="{Binding .}"/>
+                                    Command="{Binding Source={x:Reference Self, x:DataType={x:Null}}, Path=DecrementCommand}"
+                                    CommandParameter="{Binding ., x:DataType={x:Null}}"/>
                             </SwipeItemView>
                         </SwipeItems>
                     </SwipeView.LeftItems>
@@ -35,7 +35,7 @@
                     <Grid Padding="10"
                           AutomationId="SwipeItem"
                           BackgroundColor="LightBlue">
-                        <Label Text="{Binding Value}"
+                        <Label Text="{Binding Value, x:DataType={x:Null}}"
                                FontSize="18"
                                HorizontalOptions="Center"/>
                     </Grid>

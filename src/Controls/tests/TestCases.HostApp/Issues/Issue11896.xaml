@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue11896"
              x:Name="ThisMainPage"
              Title="Main Page"
-             xmlns:local="clr-namespace:Maui.Controls.Sample" x:DataType="{x:Null}">
+             xmlns:local="clr-namespace:Maui.Controls.Sample" x:DataType="local:Issue11896ViewModel">
 
   <Grid RowDefinitions="Auto,*">
 
@@ -13,11 +13,11 @@
           Padding="20"
           HorizontalOptions="Center"
           Spacing="20">
-      <Button Command="{Binding AddCommand}" Text="Add item" AutomationId="AddButton" />
-      <Button Command="{Binding RemoveCommand}" Text="Remove item" AutomationId="RemoveButton" />
+      <Button Command="{Binding AddCommand, x:DataType={x:Null}}" Text="Add item" AutomationId="AddButton" />
+      <Button Command="{Binding RemoveCommand, x:DataType={x:Null}}" Text="Remove item" AutomationId="RemoveButton" />
     </HorizontalStackLayout>
 
-    <CollectionView Grid.Row="1" ItemsSource="{Binding ItemList}">
+    <CollectionView Grid.Row="1" ItemsSource="{Binding ItemList, x:DataType={x:Null}}">
 
       <CollectionView.HeaderTemplate>
         <DataTemplate>
@@ -31,7 +31,7 @@
 
       <CollectionView.ItemTemplate>
         <DataTemplate>
-          <Label Padding="20,5,5,5" Text="{Binding .}" />
+          <Label Padding="20,5,5,5" Text="{Binding ., x:DataType={x:Null}}" />
         </DataTemplate>
       </CollectionView.ItemTemplate>
 

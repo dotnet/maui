@@ -2,9 +2,9 @@
 <controls:TestContentPage 
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue11853">
-    <ContentPage.Content x:DataType="{x:Null}">
+    <ContentPage.Content x:DataType="local:_11853ViewModel">
         <Grid RowDefinitions="Auto,320,*">
             <StackLayout BackgroundColor="LightGoldenrodYellow">
                 <Frame BackgroundColor="#2196F3" Padding="24" CornerRadius="0">
@@ -12,17 +12,17 @@
                         <Label Text="Repro CollectionView crash on iOS" HorizontalTextAlignment="Center" TextColor="White" FontSize="36"/>
                     </StackLayout>
                 </Frame>
-                <Button Text="Run" AutomationId="Run" HorizontalOptions="Start" Command="{Binding TestCommand}" />
+                <Button Text="Run" AutomationId="Run" HorizontalOptions="Start" Command="{Binding TestCommand, x:DataType={x:Null}}" />
             </StackLayout>
 
             <ScrollView Grid.Row="1">
                 <CollectionView 
-                HeightRequest="50" IsVisible="{Binding IsListVisible}"
-                ItemsSource="{Binding Items}">
+                HeightRequest="50" IsVisible="{Binding IsListVisible, x:DataType={x:Null}}"
+                ItemsSource="{Binding Items, x:DataType={x:Null}}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Padding="20,30,20,0">
-                                <Label Text="{Binding Text}" TextColor="DeepPink" FontSize="Body"/>
+                                <Label Text="{Binding Text, x:DataType={x:Null}}" TextColor="DeepPink" FontSize="Body"/>
                                 <BoxView HeightRequest="1" BackgroundColor="LightPink" Margin="0,30,0,0" />
                             </StackLayout>
                         </DataTemplate>

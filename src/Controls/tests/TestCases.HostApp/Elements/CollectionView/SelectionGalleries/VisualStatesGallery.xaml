@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.VisualStatesGallery" x:DataType="{x:Null}" >
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries"
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.VisualStatesGallery" x:DataType="local:VisualStatesGallery" >
     <VerticalStackLayout>
         <Label Text="Single Selection" />
         <CollectionView
-                ItemsSource="{Binding SingleSelectionItems}"
+                ItemsSource="{Binding SingleSelectionItems, x:DataType={x:Null}}"
                 VerticalOptions="FillAndExpand"
                 SelectionMode="Single"
                 ItemSizingStrategy="MeasureFirstItem"
                 EmptyView="No items defined">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <Grid ColumnDefinitions="*,Auto" BackgroundColor="White">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup Name="CommonStates">
@@ -25,7 +25,7 @@
                         </VisualStateManager.VisualStateGroups>
                         <Grid Grid.ColumnSpan="2" Margin="10,0,10,0"
                                     RowDefinitions="Auto" ColumnDefinitions="*,*">
-                            <Label Text="{Binding ItemName}" Grid.Column="0"
+                            <Label Text="{Binding ItemName, x:DataType={x:Null}}" Grid.Column="0"
                                     LineBreakMode="NoWrap" 
                                     FontSize="Large" />
                         </Grid>
@@ -36,13 +36,13 @@
 
         <Label Text="Multi Selection" />
         <CollectionView
-                ItemsSource="{Binding MultiSelectionItems}"
+                ItemsSource="{Binding MultiSelectionItems, x:DataType={x:Null}}"
                 VerticalOptions="FillAndExpand"
                 SelectionMode="Multiple"
                 ItemSizingStrategy="MeasureFirstItem"
                 EmptyView="No items defined">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <Grid ColumnDefinitions="*,Auto" BackgroundColor="White">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup Name="CommonStates">
@@ -56,7 +56,7 @@
                         </VisualStateManager.VisualStateGroups>
                         <Grid Grid.ColumnSpan="2" Margin="10,0,10,0"
                                     RowDefinitions="Auto" ColumnDefinitions="*,*">
-                            <Label Text="{Binding ItemName}" Grid.Column="0"
+                            <Label Text="{Binding ItemName, x:DataType={x:Null}}" Grid.Column="0"
                                     LineBreakMode="NoWrap" 
                                     FontSize="Large" />
                         </Grid>

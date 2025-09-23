@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue17610"
-             Title="Refresh View" x:DataType="{x:Null}">
+             Title="Refresh View">
     <ContentPage.Content>
         <Grid RowDefinitions="Auto,100,*,Auto">
             <Label Text="Scroll down until the refresh icon is fully visible, and then scroll all the way back up. The refresh icon should no longer be visible and a refresh should not get triggered." />
@@ -12,7 +12,7 @@
                     <VerticalStackLayout x:Name="vsl">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <Label Text="{Binding Text}" AutomationId="{Binding AutomationId}" />
+                                <Label Text="{Binding Text, x:DataType={x:Null}}" AutomationId="{Binding AutomationId, x:DataType={x:Null}}" />
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>

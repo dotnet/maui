@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue7562" x:DataType="{x:Null}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue7562" x:DataType="local:Issue7562">
     <Grid>
-        <CollectionView ItemsSource="{Binding Issues}" ItemSizingStrategy="MeasureFirstItem">
+        <CollectionView ItemsSource="{Binding Issues, x:DataType={x:Null}}" ItemSizingStrategy="MeasureFirstItem">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Label Text="{Binding Title, Mode=OneWay}"
+                        <Label Text="{Binding Title, Mode=OneWay, x:DataType={x:Null}}"
                         TextColor="Red"
-                        IsVisible="{Binding IsRed}"
+                        IsVisible="{Binding IsRed, x:DataType={x:Null}}"
                             />
 
-                        <Label Text="{Binding Title, Mode=OneWay}"
-                        TextColor="Green" AutomationId="{Binding Title}"
-                        IsVisible="{Binding IsGreen}" />
+                        <Label Text="{Binding Title, Mode=OneWay, x:DataType={x:Null}}"
+                        TextColor="Green" AutomationId="{Binding Title, x:DataType={x:Null}}"
+                        IsVisible="{Binding IsGreen, x:DataType={x:Null}}" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

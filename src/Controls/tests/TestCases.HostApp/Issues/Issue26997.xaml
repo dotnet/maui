@@ -5,12 +5,12 @@
 			 xmlns:local="clr-namespace:Maui.Controls.Sample"
 			 xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
 	<Grid>
-		<local:CollectionView2 ItemsSource="{Binding ImagesToDisplay}"
+		<local:CollectionView2 ItemsSource="{Binding ImagesToDisplay, x:DataType={x:Null}}"
 							   AutomationId="collectionView"
 							   x:DataType="ns:Issue26997">
 			<CollectionView.ItemTemplate>
 				<DataTemplate x:DataType="x:String">
-					<Image Source="{Binding .}"/>
+					<Image Source="{Binding ., x:DataType={x:Null}}"/>
 				</DataTemplate>
 			</CollectionView.ItemTemplate>
 		</local:CollectionView2>

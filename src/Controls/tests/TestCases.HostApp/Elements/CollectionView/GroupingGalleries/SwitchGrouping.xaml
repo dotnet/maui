@@ -1,36 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries.SwitchGrouping" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries.SwitchGrouping">
     <ContentPage.Content>
         <StackLayout>
 			
 			<StackLayout Orientation="Horizontal">
 				<Label Text="Is Grouped:"></Label><Switch x:Name="GroupingSwitch" 
-                    BindingContext="{x:Reference Name=CollectionView}" IsToggled="{Binding IsGrouped}"></Switch>
+                    BindingContext="{x:Reference Name=CollectionView}" IsToggled="{Binding IsGrouped, x:DataType={x:Null}}"></Switch>
 			</StackLayout>
        		<CollectionView x:Name="CollectionView">
 				
 				<CollectionView.ItemTemplate>
-					<DataTemplate>
+					<DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
 						<StackLayout>
-							<Label Text="{Binding Name}" Margin="5,0,0,0"/>
+							<Label Text="{Binding Name, x:DataType={x:Null}}" Margin="5,0,0,0"/>
 						</StackLayout>
 					</DataTemplate>
 				</CollectionView.ItemTemplate>
 			
 				<CollectionView.GroupHeaderTemplate>
-					<DataTemplate>
+					<DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
 					
-							<Label Text="{Binding Name}" BackgroundColor="LightGreen" FontSize="16" FontAttributes="Bold"/>
+							<Label Text="{Binding Name, x:DataType={x:Null}}" BackgroundColor="LightGreen" FontSize="16" FontAttributes="Bold"/>
 					
 					</DataTemplate>
 				</CollectionView.GroupHeaderTemplate>
 			
 				<CollectionView.GroupFooterTemplate>
-					<DataTemplate>
+					<DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
 						<StackLayout>
-							<Label Text="{Binding Count, StringFormat='{}Total members: {0:D}'}" BackgroundColor="Orange" 
+							<Label Text="{Binding Count, StringFormat='{, x:DataType={x:Null}}Total members: {0:D}'}" BackgroundColor="Orange" 
 								   Margin="0,0,0,15"/>
 						</StackLayout>
 					</DataTemplate>

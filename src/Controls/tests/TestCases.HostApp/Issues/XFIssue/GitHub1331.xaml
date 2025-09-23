@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.GitHub1331">
-	<ContentPage.Content x:DataType="{x:Null}">
+	<ContentPage.Content>
 		<StackLayout>
 			
 			<Label x:Name="Result" Text="Running..."></Label>
 
-			<ListView ItemsSource="{Binding Items}">
+			<ListView ItemsSource="{Binding Items, x:DataType={x:Null}}">
 				<ListView.ItemTemplate>
 					<DataTemplate>
 						<ViewCell>
@@ -16,12 +16,12 @@
 								<MenuItem Text="Context Action" />
 							</Cell.ContextActions>
 							<StackLayout Orientation="Horizontal">
-								<Label Text="{Binding Text}" HorizontalOptions="FillAndExpand"
+								<Label Text="{Binding Text, x:DataType={x:Null}}" HorizontalOptions="FillAndExpand"
 										VerticalOptions="Fill" VerticalTextAlignment="Center" Margin="10"/>
-								<Label Text="{Binding ActionText}" VerticalOptions="Fill" 
+								<Label Text="{Binding ActionText, x:DataType={x:Null}}" VerticalOptions="Fill" 
 										VerticalTextAlignment="Center" Margin="10" BackgroundColor="CornflowerBlue">
 									<Label.GestureRecognizers>
-										<TapGestureRecognizer Command="{Binding ActionTappedCommand}" />
+										<TapGestureRecognizer Command="{Binding ActionTappedCommand, x:DataType={x:Null}}" />
 									</Label.GestureRecognizers>
 								</Label>
 							</StackLayout>

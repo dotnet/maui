@@ -15,16 +15,16 @@
         <ScrollView
             x:Name="MyScrollView"
             Grid.Row="0"
-            FlowDirection="{Binding FlowDirection}"
-            IsVisible="{Binding IsVisible}"
-            IsEnabled="{Binding IsEnabled}"
-            Orientation="{Binding Orientation}"
-            HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility}"
-            VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility}"
+            FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+            IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+            IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+            Orientation="{Binding Orientation, x:DataType={x:Null}}"
+            HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, x:DataType={x:Null}}"
+            VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility, x:DataType={x:Null}}"
             Scrolled="OnScrollViewScrolled"
             AutomationId="ScrollViewControl">
             <ContentView x:Name="ScrollViewContent"
-                         Content="{Binding Content}"
+                         Content="{Binding Content, x:DataType={x:Null}}"
                          SizeChanged="ScrollViewContent_SizeChanged"
                          AutomationId="ScrollViewContent"/>
         </ScrollView>
@@ -32,7 +32,7 @@
                                HorizontalOptions="Center">
             <Label Text="ContentSize: "
                    FontSize="14"/>
-            <Label Text="{Binding ContentSizeString}"
+            <Label Text="{Binding ContentSizeString, x:DataType={x:Null}}"
                    FontSize="14"
                    AutomationId="ContentSizeLabel"/>
         </HorizontalStackLayout>
@@ -41,7 +41,7 @@
             <Label Text="Scroll X: "
                    FontSize="14"/>
             <Label
-                Text="{Binding ScrollXInt ,Mode=TwoWay}"
+                Text="{Binding ScrollXInt ,Mode=TwoWay, x:DataType={x:Null}}"
                 FontSize="14"
                 AutomationId="ScrollXLabel"/>
         </HorizontalStackLayout>
@@ -51,7 +51,7 @@
                 Text="Scroll Y: "
                 FontSize="14"/>
             <Label
-                Text="{Binding ScrollYInt, Mode=TwoWay}"
+                Text="{Binding ScrollYInt, Mode=TwoWay, x:DataType={x:Null}}"
                 FontSize="14"
                 AutomationId="ScrollYLabel"/>
         </HorizontalStackLayout>

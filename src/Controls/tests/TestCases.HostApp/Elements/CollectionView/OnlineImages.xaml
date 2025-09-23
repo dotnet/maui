@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
              xmlns:collectionviewgalleries="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
              x:Class="Maui.Controls.Sample.CollectionViewGalleries.OnlineImages"
              Title="Online images">
@@ -9,7 +9,7 @@
     <CollectionView x:Name="CollectionView" BackgroundColor="Yellow">
       <CollectionView.ItemTemplate>
         <DataTemplate x:DataType="collectionviewgalleries:OnlineImageInfo">
-          <Image HeightRequest="200" WidthRequest="200"  Source="{Binding Uri}" />
+          <Image HeightRequest="200" WidthRequest="200"  Source="{Binding Uri, x:DataType={x:Null}}" />
         </DataTemplate>
       </CollectionView.ItemTemplate>
     </CollectionView>

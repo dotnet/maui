@@ -14,15 +14,15 @@
 
                 <!-- BoxView at top center -->
                 <BoxView Grid.Row="0"
-                         Color="{Binding Color}"
-                         WidthRequest="{Binding Width}"
-                         Opacity="{Binding Opacity}"
-                         HeightRequest="{Binding Height}"
-                         CornerRadius="{Binding CornerRadius}"
-                         IsVisible="{Binding IsVisible}"
-                         Shadow="{Binding BoxShadow}"
+                         Color="{Binding Color, x:DataType={x:Null}}"
+                         WidthRequest="{Binding Width, x:DataType={x:Null}}"
+                         Opacity="{Binding Opacity, x:DataType={x:Null}}"
+                         HeightRequest="{Binding Height, x:DataType={x:Null}}"
+                         CornerRadius="{Binding CornerRadius, x:DataType={x:Null}}"
+                         IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                         Shadow="{Binding BoxShadow, x:DataType={x:Null}}"
                          VerticalOptions="Center"
-                         FlowDirection="{Binding FlowDirection}"
+                         FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
                          HorizontalOptions="Center"/>
 
                 <!-- Controls at bottom -->
@@ -48,7 +48,7 @@
                                                    AutomationId="CornerRadiusEntry"
                                                    Placeholder="e.g. 10,20,30,40"
                                                    IsCursorVisible="False"
-                                                   Text="{Binding CornerRadiusEntryText, Mode=TwoWay}"
+                                                   Text="{Binding CornerRadiusEntryText, Mode=TwoWay, x:DataType={x:Null}}"
                                                    TextChanged="OnCornerRadiusEntryChanged"/>
                                 <Label FontAttributes="Bold"
                                        AutomationId="OpacityLabel"
@@ -57,7 +57,7 @@
                                                    Placeholder="Enter opacity (0.0 - 1.0)"
                                                    AutomationId="OpacityEntry"
                                                    IsCursorVisible="False"
-                                                   Text="{Binding OpacityEntryText, Mode=TwoWay}"
+                                                   Text="{Binding OpacityEntryText, Mode=TwoWay, x:DataType={x:Null}}"
                                                    TextChanged="OnOpacityChanged"/>
 
                                 <Button Text="Reset Changes"
@@ -78,26 +78,26 @@
                                                      Value="Red"
                                                      GroupName="Colors"
                                                      AutomationId="RedRadioButton"
-                                                     IsChecked="{Binding IsRedChecked, Mode=TwoWay}"/>
+                                                     IsChecked="{Binding IsRedChecked, Mode=TwoWay, x:DataType={x:Null}}"/>
 
                                         <RadioButton Content="Blue"
                                                      Value="Blue"
                                                      GroupName="Colors"
                                                      AutomationId="BlueRadioButton"
-                                                     IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
+                                                     IsChecked="{Binding IsBlueChecked, Mode=TwoWay, x:DataType={x:Null}}"/>
                                 </VerticalStackLayout>
 
                                 <VerticalStackLayout Spacing="5">
                                         <HorizontalStackLayout
                                                 Spacing="10">
-                                                <CheckBox IsChecked="{Binding IsVisible}"
+                                                <CheckBox IsChecked="{Binding IsVisible, x:DataType={x:Null}}"
                                                           AutomationId="VisibilityCheckBox"/>
                                                 <Label Text="Is Visible"
                                                        VerticalOptions="Center"/>
                                         </HorizontalStackLayout>
                                         <HorizontalStackLayout Spacing="10">
                                                 <CheckBox
-                                                        IsChecked="{Binding HasShadow}"
+                                                        IsChecked="{Binding HasShadow, x:DataType={x:Null}}"
                                                         AutomationId="ShadowCheckBox"/>
                                                 <Label Text="Has Shadow"
                                                        VerticalOptions="Center"/>

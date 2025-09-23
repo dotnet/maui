@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="Test 13616" xmlns:local="using:Maui.Controls.Sample.Issues"
-    x:Class="Maui.Controls.Sample.Issues.Issue13616" x:DataType="{x:Null}">
+    x:Class="Maui.Controls.Sample.Issues.Issue13616" x:DataType="local:Issue13616ViewModel">
     <StackLayout>
         <Label
             Padding="12"
@@ -18,7 +18,7 @@
                 AutomationId="AddItemButtonId"
                 Text="Add new Item"
                 CornerRadius="10"
-                Command="{Binding AddCardCommand}"
+                Command="{Binding AddCardCommand, x:DataType={x:Null}}"
                 HeightRequest="40"
                 WidthRequest="200"
                 HorizontalOptions="CenterAndExpand"/>
@@ -26,7 +26,7 @@
                 x:Name="carouselView"
                 AutomationId="CarouselViewId"
                 HorizontalScrollBarVisibility="Never"
-                ItemsSource="{Binding Items}"
+                ItemsSource="{Binding Items, x:DataType={x:Null}}"
                 PeekAreaInsets="15"
                 Loop="False"
                 HeightRequest="250"
@@ -48,7 +48,7 @@
                             IsClippedToBounds="True"
                             Margin="10">
                             <Grid
-                                BackgroundColor="{Binding Color}">
+                                BackgroundColor="{Binding Color, x:DataType={x:Null}}">
                                 <Grid Margin="20">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -57,12 +57,12 @@
                                     <Label
                                         Grid.Row="0"
                                         Margin="0,0,0,20"
-                                        Text="{Binding Name}"
+                                        Text="{Binding Name, x:DataType={x:Null}}"
                                         TextColor="Black" />
                                     <Label
                                         Grid.Row="1"
                                         Margin="0,0,0,20"
-                                        Text="{Binding Desc}"
+                                        Text="{Binding Desc, x:DataType={x:Null}}"
                                         TextColor="Black" />
                                 </Grid>
                             </Grid>

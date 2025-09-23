@@ -1,36 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.Issues.Issue7167">
-    <ContentPage.Content x:DataType="{x:Null}">
+    <ContentPage.Content x:DataType="local:Issue7167ViewModel">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <ListView x:Name="MyListView"
-                      ItemsSource="{Binding Items}"
+                      ItemsSource="{Binding Items, x:DataType={x:Null}}"
                       CachingStrategy="RecycleElement" 
                       ItemSelected="MyListView_OnItemSelected" 
                       AutomationId="ListViewId">
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <TextCell Text="{Binding .}" />
+                        <TextCell Text="{Binding ., x:DataType={x:Null}}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
 
             </ListView>
 
             <StackLayout Grid.Row="1">
-                <Button Text="AddCommand" Command="{Binding AddCommand}" AutomationId="AddCommandId"/>
-                <Button Text="ClearListCommand" Command="{Binding ClearListCommand}" AutomationId="ClearListCommandId"/>
-                <Button Text="AddRangeCommand" Command="{Binding AddRangeCommand}" AutomationId="AddRangeCommandId"/>
-                <Button Text="AddRangeWithCleanCommand" Command="{Binding AddRangeWithCleanCommand}" AutomationId="AddRangeWithCleanCommandId" />
+                <Button Text="AddCommand" Command="{Binding AddCommand, x:DataType={x:Null}}" AutomationId="AddCommandId"/>
+                <Button Text="ClearListCommand" Command="{Binding ClearListCommand, x:DataType={x:Null}}" AutomationId="ClearListCommandId"/>
+                <Button Text="AddRangeCommand" Command="{Binding AddRangeCommand, x:DataType={x:Null}}" AutomationId="AddRangeCommandId"/>
+                <Button Text="AddRangeWithCleanCommand" Command="{Binding AddRangeWithCleanCommand, x:DataType={x:Null}}" AutomationId="AddRangeWithCleanCommandId" />
             </StackLayout>
         </Grid>
     </ContentPage.Content>

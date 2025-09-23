@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.PerformanceGalleries"
     x:Class="Maui.Controls.Sample.CollectionViewGalleries.PerformanceGalleries.ShadowBenchmark"
-    Title="Shadow Benchmark" x:DataType="{x:Null}">
+    Title="Shadow Benchmark" x:DataType="local:ShadowBenchmarkViewModel">
     <ContentView.Resources>
         <ResourceDictionary>
 
@@ -14,7 +14,7 @@
 
             <Style x:Key="UserBorderStyle" TargetType="Border">
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Stroke" Value="{Binding User.Color}" />
+                <Setter Property="Stroke" Value="{Binding User.Color, x:DataType={x:Null}}" />
                 <Setter Property="StrokeThickness" Value="4" />
                 <Setter Property="HeightRequest" Value="54" />
                 <Setter Property="WidthRequest" Value="54" />
@@ -93,9 +93,9 @@
     </ContentView.Resources>
     <ContentPage.Content>
         <CollectionView 
-            ItemsSource="{Binding Posts}">
+            ItemsSource="{Binding Posts, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <Grid Padding="16">
                         <Border
                             BackgroundColor="White"
@@ -113,7 +113,7 @@
                             <Grid>
                                 <Image 
                                     Aspect="AspectFill"
-                                    Source="{Binding Image}"/>
+                                    Source="{Binding Image, x:DataType={x:Null}}"/>
                                 <Grid 
                                     BackgroundColor="Black"
                                     Opacity="0.1"/>
@@ -128,7 +128,7 @@
                                                 <Ellipse />
                                             </Border.StrokeShape>
                                             <Image
-                                                Source="{Binding User.Image}"
+                                                Source="{Binding User.Image, x:DataType={x:Null}}"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center"
                                                 Margin="1">
@@ -146,7 +146,7 @@
                                         RowDefinitions="Auto, Auto"
                                         Margin="0, 18" >
                                         <Label 
-                                            Text="{Binding User.Name}"
+                                            Text="{Binding User.Name, x:DataType={x:Null}}"
                                             Style="{StaticResource UserNameStyle}"/>
                                         <Label 
                                             Grid.Row="1"
@@ -162,7 +162,7 @@
                                                 Data="M8.5319849,0C11.560988,7.3866431E-08 14.464015,1.6680007 15.99997,4.5209999 18.139016,0.55099538 22.921994,-1.1230173 27.008008,0.7949839 31.297024,2.8069787 33.185032,8.0069957 31.22604,12.411997 29.27303,16.804 15.998994,30.380001 15.998994,30.380001 15.915985,30.327022 2.7269701,16.804 0.77395964,12.411997 -1.1850933,8.0069957 0.70291448,2.8069787 4.9929701,0.7949839 6.1419612,0.25497467 7.3469826,7.3866431E-08 8.5319849,0z"
                                                 Style="{StaticResource HeartIconStyle}"/>
                                             <Label 
-                                                Text="{Binding Likes}"
+                                                Text="{Binding Likes, x:DataType={x:Null}}"
                                                 Style="{StaticResource HeartTextStyle}"/>
                                         </StackLayout>
                                         <Grid>
@@ -195,7 +195,7 @@
                                         <StackLayout
                                             Grid.Column="1">
                                             <Label 
-                                                Text="{Binding Title}"
+                                                Text="{Binding Title, x:DataType={x:Null}}"
                                                 Style="{StaticResource TitleTextStyle}">
                                                 <!--
                                                 <Label.Shadow>
@@ -207,7 +207,7 @@
                                                 -->
                                             </Label>
                                             <Label 
-                                                Text="{Binding User.From}"
+                                                Text="{Binding User.From, x:DataType={x:Null}}"
                                                 Style="{StaticResource FromTextStyle}"/>
                                         </StackLayout>
                                     </Grid>

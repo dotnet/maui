@@ -1,26 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Issues.Issue27418" x:DataType="{x:Null}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue27418" x:DataType="local:Issue27418ViewModel">
 
     <VerticalStackLayout>
         <CarouselView AutomationId="CarouselView"
                       PeekAreaInsets="50"
                       Loop="false"
-                      ItemsSource="{Binding CarouselItems}"
+                      ItemsSource="{Binding CarouselItems, x:DataType={x:Null}}"
                       HorizontalScrollBarVisibility="Never">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <VerticalStackLayout
                         Spacing="25">
-                        <Label Text="{Binding LabelText}"
+                        <Label Text="{Binding LabelText, x:DataType={x:Null}}"
                                FontSize="Large"/>
                         <Image HeightRequest="200"
                                WidthRequest="200"
                                Source="dotnet_bot.png"/>
                         <Button
-                            Text="{Binding ButtonText}"
+                            Text="{Binding ButtonText, x:DataType={x:Null}}"
                             FontSize="Large"
                             HorizontalOptions="Fill"/>
                     </VerticalStackLayout>

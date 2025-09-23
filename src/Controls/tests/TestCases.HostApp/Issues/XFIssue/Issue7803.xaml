@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.Issue7803">
 
@@ -13,11 +13,11 @@
 
         <StackLayout Grid.Row="0" Orientation="Vertical" Spacing="5">
             <Label LineBreakMode="WordWrap" Text="Pull to refresh and verify that the last item shows 19. If not, the test has failed." HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-            <Label LineBreakMode="WordWrap" Text="{Binding Text}" HorizontalTextAlignment="Center"/>
+            <Label LineBreakMode="WordWrap" Text="{Binding Text, x:DataType={x:Null}}" HorizontalTextAlignment="Center"/>
         </StackLayout>
 
-        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
-            <CollectionView AutomationId="CollectionView7803" ItemsSource="{Binding Items}">
+        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing, x:DataType={x:Null}}" Command="{Binding RefreshCommand, x:DataType={x:Null}}">
+            <CollectionView AutomationId="CollectionView7803" ItemsSource="{Binding Items, x:DataType={x:Null}}">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
                 </CollectionView.ItemsLayout>
@@ -25,7 +25,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid HeightRequest="100" BackgroundColor="Beige">
-                            <Label Text="{Binding Position}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                            <Label Text="{Binding Position, x:DataType={x:Null}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

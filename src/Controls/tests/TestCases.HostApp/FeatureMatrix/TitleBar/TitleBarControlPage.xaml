@@ -16,7 +16,7 @@
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="ShowTitleBarCheckBox"
-                                      IsChecked="{Binding IsVisible}"/>
+                                      IsChecked="{Binding IsVisible, x:DataType={x:Null}}"/>
                             <Label Text="Show TitleBar"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
@@ -25,13 +25,13 @@
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="ShowLeadingContentCheckBox"
-                                      IsChecked="{Binding ShowLeadingContent}"/>
+                                      IsChecked="{Binding ShowLeadingContent, x:DataType={x:Null}}"/>
                             <Label Text="Show Leading Content"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="ShowTrailingContentCheckBox"
-                                      IsChecked="{Binding ShowTrailingContent}"/>
+                                      IsChecked="{Binding ShowTrailingContent, x:DataType={x:Null}}"/>
                             <Label Text="Show Trailing Content"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
@@ -40,30 +40,30 @@
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="15">
                             <CheckBox AutomationId="ShowTitleCheckBox"
-                                      IsChecked="{Binding ShowTitle}"/>
+                                      IsChecked="{Binding ShowTitle, x:DataType={x:Null}}"/>
                             <Label Text="Title:"
                                    VerticalOptions="Center"/>
                             <Entry  AutomationId="TitleEntry"
-                                    Text="{Binding Title}"
+                                    Text="{Binding Title, x:DataType={x:Null}}"
                                     WidthRequest="200"
-                                    IsEnabled="{Binding ShowTitle}"/>
+                                    IsEnabled="{Binding ShowTitle, x:DataType={x:Null}}"/>
                      </HorizontalStackLayout>
                      <HorizontalStackLayout Spacing="5">
                             <CheckBox AutomationId="ShowSubtitleCheckBox"
-                                      IsChecked="{Binding ShowSubtitle}"/>
+                                      IsChecked="{Binding ShowSubtitle, x:DataType={x:Null}}"/>
                             <Label Text="Subtitle:"
                                    VerticalOptions="Center"/>
                             <Entry  AutomationId="SubtitleEntry"
-                                    Text="{Binding Subtitle}"
+                                    Text="{Binding Subtitle, x:DataType={x:Null}}"
                                     WidthRequest="200"
-                                    IsEnabled="{Binding ShowSubtitle}"/>
+                                    IsEnabled="{Binding ShowSubtitle, x:DataType={x:Null}}"/>
                      </HorizontalStackLayout>
                      <Label Text="Icon"
                             FontSize="Medium"
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="ShowIconCheckBox"
-                                      IsChecked="{Binding ShowIcon}"/>
+                                      IsChecked="{Binding ShowIcon, x:DataType={x:Null}}"/>
                             <Label Text="Show Icon"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
@@ -93,7 +93,7 @@
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="ShowBackgroundColorCheckBox"
-                                      IsChecked="{Binding ShowBackgroundColor}"/>
+                                      IsChecked="{Binding ShowBackgroundColor, x:DataType={x:Null}}"/>
                             <Label Text="Enable Background Color"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
@@ -101,18 +101,18 @@
                             <RadioButton AutomationId="OrangeRadioButton"
                                          Content="Orange"
                                          GroupName="BackgroundColorGroup"
-                                         IsChecked="{Binding IsOrangeChecked}"/>
+                                         IsChecked="{Binding IsOrangeChecked, x:DataType={x:Null}}"/>
                             <RadioButton AutomationId="RedRadioButton"
                                          Content="Red"
                                          GroupName="BackgroundColorGroup"
-                                         IsChecked="{Binding IsRedChecked}"/>
+                                         IsChecked="{Binding IsRedChecked, x:DataType={x:Null}}"/>
                      </HorizontalStackLayout>
                      <Label Text="Foreground Color"
                             FontSize="Medium"
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="ShowForegroundColorCheckBox"
-                                      IsChecked="{Binding ShowForegroundColor}"/>
+                                      IsChecked="{Binding ShowForegroundColor, x:DataType={x:Null}}"/>
                             <Label Text="Enable Foreground Color"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
@@ -120,14 +120,14 @@
                             <RadioButton AutomationId="WhiteForegroundRadioButton"
                                          Content="White"
                                          GroupName="ForegroundColorGroup"
-                                         IsChecked="{Binding IsWhiteForegroundChecked}"/>
+                                         IsChecked="{Binding IsWhiteForegroundChecked, x:DataType={x:Null}}"/>
                      </HorizontalStackLayout>
                      <Label Text="Select TitleBar Content"
                             FontSize="Medium"
                             FontAttributes="Bold"/>
                      <HorizontalStackLayout Spacing="10">
                             <CheckBox AutomationId="IsTitleBarContentVisibleCheckBox"
-                                      IsChecked="{Binding IsTitleBarContentVisible}"/>
+                                      IsChecked="{Binding IsTitleBarContentVisible, x:DataType={x:Null}}"/>
                             <Label Text="Enable TitleBar Content"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
@@ -135,18 +135,18 @@
                             <RadioButton AutomationId="SearchBarRadioButton"
                                          Content="SearchBar"
                                          GroupName="TitleBarContentGroup"
-                                         IsChecked="{Binding IsSearchBarChecked}"
+                                         IsChecked="{Binding IsSearchBarChecked, x:DataType={x:Null}}"
                                          CheckedChanged="OnTitleBarContentChanged"
                                          Value="SearchBar"/>
                             <RadioButton AutomationId="HorizontalStackLayoutRadioButton"
                                          Content="Horizontal StackLayout"
                                          GroupName="TitleBarContentGroup"
-                                         IsChecked="{Binding IsHorizontalStackLayoutChecked}"
+                                         IsChecked="{Binding IsHorizontalStackLayoutChecked, x:DataType={x:Null}}"
                                          CheckedChanged="OnTitleBarContentChanged"
                                          Value="HorizontalStackLayout"/>
                             <RadioButton AutomationId="ProgressBarRadioButton"
                                          Content="Grid with ProgressBar"
-                                         IsChecked="{Binding IsGridWithProgressBarChecked}"
+                                         IsChecked="{Binding IsGridWithProgressBarChecked, x:DataType={x:Null}}"
                                          GroupName="TitleBarContentGroup"
                                          CheckedChanged="OnTitleBarContentChanged"
                                          Value="ProgressBar"/>

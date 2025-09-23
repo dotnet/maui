@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.CarouselViewOptionsPage"
-             Title="CarouselViewOptionsPage" x:DataType="{x:Null}">
+             Title="CarouselViewOptionsPage">
 
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Apply"
@@ -151,7 +151,7 @@
                                    <StackLayout Orientation="Horizontal"
                                                 Spacing="5">
                                           <CheckBox x:Name="Loop"
-                                                    IsChecked="{Binding Loop}"/>
+                                                    IsChecked="{Binding Loop, x:DataType={x:Null}}"/>
                                           <Label Text="Enable Loop"
                                                  VerticalOptions="Center"
                                                  AutomationId="LoopLabel"
@@ -166,7 +166,7 @@
                                    <StackLayout Orientation="Horizontal"
                                                 Spacing="5">
                                           <CheckBox x:Name="IsSwipeEnabled"
-                                                    IsChecked="{Binding IsSwipeEnabled}"/>
+                                                    IsChecked="{Binding IsSwipeEnabled, x:DataType={x:Null}}"/>
                                           <Label Text="Enable Swipe"
                                                  VerticalOptions="Center"
                                                  AutomationId="SwipeLabel"
@@ -185,7 +185,7 @@
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
                                    <Entry x:Name="PeekAreaInsets"
-                                          Text="{Binding Thickness}"
+                                          Text="{Binding Thickness, x:DataType={x:Null}}"
                                           Completed="OnPeekAreaInsetsEntryCompleted"
                                           MaxLength="3"
                                           AutomationId="PeekAreaInsetsEntry"
@@ -199,7 +199,7 @@
                                           VerticalOptions="Center"
                                           FontAttributes="Bold"/>
                                    <Entry x:Name="PositionEntry"
-                                          Text="{Binding Position}"
+                                          Text="{Binding Position, x:DataType={x:Null}}"
                                           Completed="OnPositionEntryCompleted"
                                           MaxLength="1"
                                           AutomationId="PositionEntry"

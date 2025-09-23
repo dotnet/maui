@@ -19,14 +19,14 @@
                      x:Name="collectionView"
                      Grid.Row="0"
                      Grid.ColumnSpan="2"
-                     ItemsSource="{Binding ItemsSource}"
-                     ItemTemplate="{Binding ItemTemplate}"
-                     IsGrouped="{Binding IsGrouped}"
-                     SelectionMode="{Binding SelectionMode}"
-                     SelectedItem="{Binding SelectedItem}"
-                     SelectedItems="{Binding SelectedItems}"
+                     ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
+                     ItemTemplate="{Binding ItemTemplate, x:DataType={x:Null}}"
+                     IsGrouped="{Binding IsGrouped, x:DataType={x:Null}}"
+                     SelectionMode="{Binding SelectionMode, x:DataType={x:Null}}"
+                     SelectedItem="{Binding SelectedItem, x:DataType={x:Null}}"
+                     SelectedItems="{Binding SelectedItems, x:DataType={x:Null}}"
                      SelectionChanged="OnCollectionViewSelectionChanged"
-                     GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
+                     GroupHeaderTemplate="{Binding GroupHeaderTemplate, x:DataType={x:Null}}"
                      AutomationId="CollectionViewItemsSource">
               </local:CollectionView2>
               <!--Add or Remove item based on Index-->
@@ -57,7 +57,7 @@
                      FontAttributes="Bold"
                      Grid.Row="3"
                      Grid.Column="0"/>
-              <Label Text="{Binding PreviousSelectionText}"
+              <Label Text="{Binding PreviousSelectionText, x:DataType={x:Null}}"
                      TextColor="Blue"
                      Grid.Row="3"
                      Grid.Column="1"
@@ -67,7 +67,7 @@
                      FontAttributes="Bold"
                      Grid.Row="4"
                      Grid.Column="0"/>
-              <Label Text="{Binding CurrentSelectionText}"
+              <Label Text="{Binding CurrentSelectionText, x:DataType={x:Null}}"
                      TextColor="Blue"
                      Grid.Row="4"
                      Grid.Column="1"

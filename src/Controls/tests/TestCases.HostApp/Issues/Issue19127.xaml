@@ -1,25 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue19127"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="local:Issue19127Settings">
          <VerticalStackLayout
             VerticalOptions="Center">
-            <Button Text="{Binding IsCameraEnabled, StringFormat='Toggle Camera View ({0})'}"
-                    Command="{Binding EnableCamera}"
+            <Button Text="{Binding IsCameraEnabled, StringFormat='Toggle Camera View ({0, x:DataType={x:Null}})'}"
+                    Command="{Binding EnableCamera, x:DataType={x:Null}}"
                     AutomationId="button" />
 
             <Frame x:Name="frame"
                    HeightRequest="191">
                 <Frame.Triggers>
-                    <DataTrigger TargetType="Frame" Binding="{Binding IsCameraEnabled}" Value="False">
+                    <DataTrigger TargetType="Frame" Binding="{Binding IsCameraEnabled, x:DataType={x:Null}}" Value="False">
                         <Setter Property="Content">
                             <Grid BackgroundColor="Gray">
                                 <Label AutomationId="label1" Text="Camera is Disabled" TextColor="White" />
                             </Grid>
                         </Setter>
                     </DataTrigger>
-                    <DataTrigger TargetType="Frame" Binding="{Binding IsCameraEnabled}" Value="True">
+                    <DataTrigger TargetType="Frame" Binding="{Binding IsCameraEnabled, x:DataType={x:Null}}" Value="True">
                         <Setter Property="Content">
                             <Grid BackgroundColor="HotPink">
                                 <Label AutomationId="label2" Text="Camera is Enabled" TextColor="White" />

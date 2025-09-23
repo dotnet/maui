@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue25385" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue25385" x:DataType="local:Issue25385ViewModel">
     <VerticalStackLayout>
         <Rectangle
             AutomationId="Rectangle"
@@ -10,7 +10,7 @@
             BackgroundColor="#FF0000">
             <Rectangle.Triggers>
                 <DataTrigger TargetType="Rectangle"
-                             Binding="{Binding IsActive}"
+                             Binding="{Binding IsActive, x:DataType={x:Null}}"
                              Value="True">
                     <Setter Property="BackgroundColor"
                             Value="#00FF00"/>
@@ -23,7 +23,7 @@
                  BackgroundColor="#FF0000">
             <Ellipse.Triggers>
                 <DataTrigger TargetType="Ellipse"
-                             Binding="{Binding IsActive}"
+                             Binding="{Binding IsActive, x:DataType={x:Null}}"
                              Value="True">
                     <Setter Property="BackgroundColor"
                             Value="#00FF00"/>
@@ -32,6 +32,6 @@
         </Ellipse>
         <Button Text="Change color"
                 AutomationId="Button"
-                Command="{Binding ChangeColorCommand}"/> 
+                Command="{Binding ChangeColorCommand, x:DataType={x:Null}}"/> 
     </VerticalStackLayout>
 </ContentPage>

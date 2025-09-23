@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.ShadowFeaturePage"
              xmlns:controls="clr-namespace:Maui.Controls.Sample"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Shadow Feature" x:DataType="{x:Null}">
+             Title="Shadow Feature" x:DataType="local:ShadowViewModel">
   <ContentPage.Content>
     <Grid>
       <Label x:Name="FpsLabel" AutomationId="FpsLabel" HorizontalOptions="Start" VerticalOptions="Start" BackgroundColor="Black" TextColor="White" IsVisible="False" />
@@ -13,27 +13,27 @@
           <Border 
             x:Name="BorderShadow"
             AutomationId="BorderShadow"
-            FlowDirection="{Binding FlowDirection}"
-            IsEnabled="{Binding IsEnabled}"
-            IsVisible="{Binding IsVisible}"
+            FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+            IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+            IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
             StrokeShape="RoundRectangle 24"
             Background="Red"
             WidthRequest="80" 
             Margin="12, 0">
             <Border.Shadow>
               <Shadow
-                Brush="{Binding Color}"
-                Offset="{Binding Offset}"
-                Radius="{Binding Radius}"
-                Opacity="{Binding Opacity}"/>
+                Brush="{Binding Color, x:DataType={x:Null}}"
+                Offset="{Binding Offset, x:DataType={x:Null}}"
+                Radius="{Binding Radius, x:DataType={x:Null}}"
+                Opacity="{Binding Opacity, x:DataType={x:Null}}"/>
             </Border.Shadow>
           </Border>
           <Image 
             x:Name="ImageShadow"
             AutomationId="ImageShadow"
-            FlowDirection="{Binding FlowDirection}"
-            IsEnabled="{Binding IsEnabled}"
-            IsVisible="{Binding IsVisible}"
+            FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+            IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+            IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
             Grid.Column="1"
             Aspect="AspectFit"
             Source="oasis.jpg"
@@ -41,18 +41,18 @@
             Margin="12, 0">
             <Image.Shadow>
               <Shadow 
-                Brush="{Binding Color}"
-                Offset="{Binding Offset}"
-                Radius="{Binding Radius}"
-                Opacity="{Binding Opacity}"/>
+                Brush="{Binding Color, x:DataType={x:Null}}"
+                Offset="{Binding Offset, x:DataType={x:Null}}"
+                Radius="{Binding Radius, x:DataType={x:Null}}"
+                Opacity="{Binding Opacity, x:DataType={x:Null}}"/>
             </Image.Shadow>
           </Image>
           <Label 
             x:Name="LabelShadow"
             AutomationId="LabelShadow"
-            FlowDirection="{Binding FlowDirection}"
-            IsEnabled="{Binding IsEnabled}"
-            IsVisible="{Binding IsVisible}"
+            FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+            IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+            IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
             Grid.Column="2"
             Text="Label"
             FontSize="18"
@@ -60,25 +60,25 @@
             Margin="12, 0">
             <Label.Shadow>
               <Shadow 
-                Brush="{Binding Color}"
-                Offset="{Binding Offset}"
-                Radius="{Binding Radius}"
-                Opacity="{Binding Opacity}"/>
+                Brush="{Binding Color, x:DataType={x:Null}}"
+                Offset="{Binding Offset, x:DataType={x:Null}}"
+                Radius="{Binding Radius, x:DataType={x:Null}}"
+                Opacity="{Binding Opacity, x:DataType={x:Null}}"/>
             </Label.Shadow>
           </Label>
         </Grid>
         <Grid x:Name="OptionsContainer" ColumnDefinitions="*, *" RowDefinitions="*, *">
           <StackLayout Grid.Column="0" Padding="10" Spacing="8">
-            <Label AutomationId="ColorValue" Text="{Binding Color, StringFormat='Color: {0}'}" HorizontalOptions="Start" LineBreakMode="CharacterWrap" FontSize="10" WidthRequest="100" />
+            <Label AutomationId="ColorValue" Text="{Binding Color, StringFormat='Color: {0, x:DataType={x:Null}}'}" HorizontalOptions="Start" LineBreakMode="CharacterWrap" FontSize="10" WidthRequest="100" />
             <controls:UITestEntry x:Name="ColorEntry" AutomationId="ColorEntry" IsCursorVisible="False" TextChanged="OnColorChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Color Hex" />
-            <Label AutomationId="OffsetXValue" Text="{Binding OffsetX, StringFormat='OffsetX: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" IsCursorVisible="False" Text="{Binding OffsetX}" TextChanged="OnOffsetXChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset X" />
-            <Label AutomationId="OffsetYValue" Text="{Binding OffsetY, StringFormat='OffsetY: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" IsCursorVisible="False" Text="{Binding OffsetY}" TextChanged="OnOffsetYChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset Y" />
-            <Label AutomationId="RadiusValue" Text="{Binding Radius, StringFormat='Radius: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="RadiusEntry" AutomationId="RadiusEntry" IsCursorVisible="False" Text="{Binding Radius}" TextChanged="OnRadiusChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
-            <Label AutomationId="OpacityValue" Text="{Binding Opacity, StringFormat='Opacity: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="OpacityEntry" AutomationId="OpacityEntry" IsCursorVisible="False" Text="{Binding Opacity}" TextChanged="OnOpacityChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Opacity" />
+            <Label AutomationId="OffsetXValue" Text="{Binding OffsetX, StringFormat='OffsetX: {0, x:DataType={x:Null}}'}" FontSize="15" />
+            <controls:UITestEntry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" IsCursorVisible="False" Text="{Binding OffsetX, x:DataType={x:Null}}" TextChanged="OnOffsetXChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset X" />
+            <Label AutomationId="OffsetYValue" Text="{Binding OffsetY, StringFormat='OffsetY: {0, x:DataType={x:Null}}'}" FontSize="15" />
+            <controls:UITestEntry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" IsCursorVisible="False" Text="{Binding OffsetY, x:DataType={x:Null}}" TextChanged="OnOffsetYChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset Y" />
+            <Label AutomationId="RadiusValue" Text="{Binding Radius, StringFormat='Radius: {0, x:DataType={x:Null}}'}" FontSize="15" />
+            <controls:UITestEntry x:Name="RadiusEntry" AutomationId="RadiusEntry" IsCursorVisible="False" Text="{Binding Radius, x:DataType={x:Null}}" TextChanged="OnRadiusChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
+            <Label AutomationId="OpacityValue" Text="{Binding Opacity, StringFormat='Opacity: {0, x:DataType={x:Null}}'}" FontSize="15" />
+            <controls:UITestEntry x:Name="OpacityEntry" AutomationId="OpacityEntry" IsCursorVisible="False" Text="{Binding Opacity, x:DataType={x:Null}}" TextChanged="OnOpacityChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Opacity" />
           </StackLayout>
           <StackLayout Grid.Column="0" Grid.Row="1" Padding="10" Spacing="8">
             <Button x:Name="ClipButton" AutomationId="ClipButton" Text="Add Clip" HorizontalOptions="Start" Clicked="OnClipClicked" />
@@ -103,7 +103,7 @@
             </StackLayout>
           </StackLayout>
           <StackLayout Grid.Column="1" Grid.Row="1" Padding="10" Spacing="8">
-            <Button x:Name="ResetButton" AutomationId="ResetButton" Text="Reset" HorizontalOptions="Start" Clicked="OnResetClicked"  Command="{Binding ResetCommand}" />
+            <Button x:Name="ResetButton" AutomationId="ResetButton" Text="Reset" HorizontalOptions="Start" Clicked="OnResetClicked"  Command="{Binding ResetCommand, x:DataType={x:Null}}" />
           </StackLayout>
         </Grid>
       </StackLayout>

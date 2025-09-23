@@ -13,26 +13,26 @@
     <controls:TestContentPage.Resources>
         <ResourceDictionary>
             <DataTemplate x:Key="Temp1">
-                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455}}">
+                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455, x:DataType={x:Null}}}">
                     <ViewCell.ContextActions>
-                        <MenuItem Text="{Binding Item1Text}" />
-                        <MenuItem Text="{Binding Item2Text}" />
-                        <MenuItem Text="{Binding Item3Text}" />
-                        <MenuItem Text="{Binding Item4Text}" />
+                        <MenuItem Text="{Binding Item1Text, x:DataType={x:Null}}" />
+                        <MenuItem Text="{Binding Item2Text, x:DataType={x:Null}}" />
+                        <MenuItem Text="{Binding Item3Text, x:DataType={x:Null}}" />
+                        <MenuItem Text="{Binding Item4Text, x:DataType={x:Null}}" />
                     </ViewCell.ContextActions>
                     <Grid>
-                        <Label Text="{Binding Text}" />
+                        <Label Text="{Binding Text, x:DataType={x:Null}}" />
                     </Grid>
                 </ViewCell>
             </DataTemplate>
             <DataTemplate x:Key="Temp2">
-                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455}}">
+                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455, x:DataType={x:Null}}}">
                     <ViewCell.ContextActions>
-                        <MenuItem Text="{Binding Item1Text}" />
-                        <MenuItem Text="{Binding Item2Text}" />
+                        <MenuItem Text="{Binding Item1Text, x:DataType={x:Null}}" />
+                        <MenuItem Text="{Binding Item2Text, x:DataType={x:Null}}" />
                     </ViewCell.ContextActions>
                     <Grid>
-                        <Label Text="{Binding Text}" />
+                        <Label Text="{Binding Text, x:DataType={x:Null}}" />
                     </Grid>
                 </ViewCell>
             </DataTemplate>
@@ -42,12 +42,12 @@
         </ResourceDictionary>
     </controls:TestContentPage.Resources>
     <controls:TestContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleLegacyMode}" Text="Toggle LegacyMode" />
+        <ToolbarItem Command="{Binding ToggleLegacyMode, x:DataType={x:Null}}" Text="Toggle LegacyMode" />
     </controls:TestContentPage.ToolbarItems>
     <controls:TestContentPage.Content>
         <ListView HorizontalOptions="FillAndExpand"
                   ItemTemplate="{StaticResource Issue1455DataTemplateSelector}"
-                  ItemsSource="{Binding Items}"
+                  ItemsSource="{Binding Items, x:DataType={x:Null}}"
                   VerticalOptions="FillAndExpand" />
     </controls:TestContentPage.Content>
 </controls:TestContentPage>

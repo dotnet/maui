@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
-             x:Class="Maui.Controls.Sample.Issues.Github5623" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.Issues.Github5623" x:DataType="local:ViewModel5623">
 <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="200"/>
@@ -20,13 +20,13 @@
             <Label x:Name="Label7" LineBreakMode="WordWrap" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </StackLayout>
 
-        <CollectionView Grid.Row="1" AutomationId="CollectionView5623" ItemSizingStrategy="{Binding ItemSizingStrategy}"  ItemsSource="{Binding Items}" Scrolled="CollectionView_OnScrolled" RemainingItemsThreshold="25" RemainingItemsThresholdReached="CollectionView_RemainingItemsThresholdReached" RemainingItemsThresholdReachedCommand="{Binding RemainingItemsThresholdReachedCommand}">
+        <CollectionView Grid.Row="1" AutomationId="CollectionView5623" ItemSizingStrategy="{Binding ItemSizingStrategy, x:DataType={x:Null}}"  ItemsSource="{Binding Items, x:DataType={x:Null}}" Scrolled="CollectionView_OnScrolled" RemainingItemsThreshold="25" RemainingItemsThresholdReached="CollectionView_RemainingItemsThresholdReached" RemainingItemsThresholdReachedCommand="{Binding RemainingItemsThresholdReachedCommand, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Grid HeightRequest="{Binding Height}" BackgroundColor="{Binding BackgroundColor}">
+                    <Grid HeightRequest="{Binding Height, x:DataType={x:Null}}" BackgroundColor="{Binding BackgroundColor, x:DataType={x:Null}}">
                         <StackLayout Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
-                            <Label Text="{Binding Text}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="{Binding AutomationId}"/>
-                            <Label Text="{Binding HeightText}" FontSize="Micro" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
+                            <Label Text="{Binding Text, x:DataType={x:Null}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="{Binding AutomationId, x:DataType={x:Null}}"/>
+                            <Label Text="{Binding HeightText, x:DataType={x:Null}}" FontSize="Micro" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
                         </StackLayout>
                     </Grid>
                 </DataTemplate>

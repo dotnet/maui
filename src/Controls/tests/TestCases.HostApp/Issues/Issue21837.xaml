@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue21837"
-             Title="Issue21837" x:DataType="{x:Null}">
+             Title="Issue21837" x:DataType="local:Issue21837">
 
     <VerticalStackLayout HorizontalOptions="Start" Spacing="10">
-        <Label AutomationId="resultLabel"  Text="{Binding TapCount, StringFormat='Number of recognized taps: {0}'}" FontSize="30" FontAttributes="Bold" />
+        <Label AutomationId="resultLabel"  Text="{Binding TapCount, StringFormat='Number of recognized taps: {0, x:DataType={x:Null}}'}" FontSize="30" FontAttributes="Bold" />
         
         <Label Text="Single line, progressively limited width:" FontSize="20" FontAttributes="Bold" />
 
@@ -14,7 +14,7 @@
                 <FormattedString>
                     <Span Text="Only our WidthRequests differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>
@@ -25,7 +25,7 @@
                 <FormattedString>
                     <Span Text="Only our WidthRequests differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>
@@ -36,7 +36,7 @@
                 <FormattedString>
                     <Span Text="Only our WidthRequests differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>
@@ -47,7 +47,7 @@
                 <FormattedString>
                     <Span Text="Only our WidthRequests differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>
@@ -61,7 +61,7 @@
                 <FormattedString>
                     <Span Text="Only our MaxLines differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>
@@ -72,7 +72,7 @@
                 <FormattedString>
                     <Span Text="Only our MaxLines differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>
@@ -83,7 +83,7 @@
                 <FormattedString>
                     <Span Text="Only our MaxLines differ. Otherwise we're the same. Please tap us!">
                         <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding TapCommand}" />
+                            <TapGestureRecognizer Command="{Binding TapCommand, x:DataType={x:Null}}" />
                         </Span.GestureRecognizers>
                     </Span>
                 </FormattedString>

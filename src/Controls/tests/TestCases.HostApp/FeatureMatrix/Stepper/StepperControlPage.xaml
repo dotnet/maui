@@ -24,13 +24,13 @@
     <Stepper Grid.Row="0"
              Grid.Column="0"
              Grid.ColumnSpan="2"
-             Minimum="{Binding Minimum}"
-             Maximum="{Binding Maximum}"
-             Increment="{Binding Increment}"
-             Value="{Binding Value}"
-             IsEnabled="{Binding IsEnabled}"
-             IsVisible="{Binding IsVisible}"
-             FlowDirection="{Binding FlowDirection}"
+             Minimum="{Binding Minimum, x:DataType={x:Null}}"
+             Maximum="{Binding Maximum, x:DataType={x:Null}}"
+             Increment="{Binding Increment, x:DataType={x:Null}}"
+             Value="{Binding Value, x:DataType={x:Null}}"
+             IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+             IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+             FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
              AutomationId="StepperControl"/>
 
     <!-- Minimum Value -->
@@ -43,7 +43,7 @@
     <Label Grid.Row="1"
            Grid.Column="1"
            AutomationId="MinimumLabel"
-           Text="{Binding Minimum, StringFormat='{0:F2}'}"
+           Text="{Binding Minimum, StringFormat='{0:F2, x:DataType={x:Null}}'}"
            FontSize="16"
            VerticalTextAlignment="Center"
            HorizontalTextAlignment="End"/>
@@ -59,7 +59,7 @@
     <Label Grid.Row="2"
            Grid.Column="1"
            AutomationId="MaximumLabel"
-           Text="{Binding Maximum, StringFormat='{0:F2}'}"
+           Text="{Binding Maximum, StringFormat='{0:F2, x:DataType={x:Null}}'}"
            FontSize="16"
            VerticalTextAlignment="Center"
            HorizontalTextAlignment="End"/>
@@ -74,7 +74,7 @@
     <Label Grid.Row="3"
            Grid.Column="1"
            AutomationId="ValueLabel"
-           Text="{Binding Value, StringFormat='{0:F2}'}"
+           Text="{Binding Value, StringFormat='{0:F2, x:DataType={x:Null}}'}"
            FontSize="16"
            VerticalTextAlignment="Center"
            HorizontalTextAlignment="End"/>

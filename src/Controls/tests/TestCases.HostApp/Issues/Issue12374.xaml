@@ -2,7 +2,7 @@
 <controls:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -33,11 +33,11 @@
         <RefreshView
             Grid.Row="2"
             x:Name="MainRefreshView"
-            IsRefreshing="{Binding IsRefreshing}"
-            Command="{Binding RefreshCommand}">
+            IsRefreshing="{Binding IsRefreshing, x:DataType={x:Null}}"
+            Command="{Binding RefreshCommand, x:DataType={x:Null}}">
             <CollectionView
                 Grid.Row="1"
-                ItemsSource="{Binding Items}"
+                ItemsSource="{Binding Items, x:DataType={x:Null}}"
                 SelectionMode="Single"
                 SelectionChanged="CollectionView_SelectionChanged">
                 <CollectionView.EmptyView>
@@ -66,17 +66,17 @@
                                     <SwipeItem Text="Delete" BackgroundColor="Red" Invoked="Item_SwipeInvoked" />
                                 </SwipeItems>
                             </SwipeView.RightItems>
-                            <Grid HeightRequest="40" Padding="10" BackgroundColor="{Binding Color}">
-                                <Label Text="{Binding Name}" VerticalOptions="Center" />
+                            <Grid HeightRequest="40" Padding="10" BackgroundColor="{Binding Color, x:DataType={x:Null}}">
+                                <Label Text="{Binding Name, x:DataType={x:Null}}" VerticalOptions="Center" />
                             </Grid>
                         </SwipeView>
                         -->
                         <Grid
                             HeightRequest="40"
                             Padding="10"
-                            BackgroundColor="{Binding Color}">
+                            BackgroundColor="{Binding Color, x:DataType={x:Null}}">
                             <Label
-                                Text="{Binding Name}"
+                                Text="{Binding Name, x:DataType={x:Null}}"
                                 VerticalOptions="Center" />
                         </Grid>
                     </DataTemplate>

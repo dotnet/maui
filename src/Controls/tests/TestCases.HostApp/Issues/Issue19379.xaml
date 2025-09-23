@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue19379"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="local:Issue19379">
     <Grid 
         Padding="30,0"
         RowSpacing="25"
@@ -11,13 +11,13 @@
             AutomationId="WaitForStubControl"
             Text="Issue 19379"/>
         <CollectionView Grid.Row="1"
-            Header="{Binding CustomHeader, Mode=TwoWay}"       
-            ItemsSource="{Binding ItemList}">
+            Header="{Binding CustomHeader, Mode=TwoWay, x:DataType={x:Null}}"       
+            ItemsSource="{Binding ItemList, x:DataType={x:Null}}">
             <CollectionView.HeaderTemplate>
                 <DataTemplate>
                     <ContentView>
                         <Label 
-                            Text="{Binding Title}" 
+                            Text="{Binding Title, x:DataType={x:Null}}" 
                             BackgroundColor="Yellow" 
                             Margin="0,10"
                             AutomationId="HeaderLabel"/>
@@ -27,7 +27,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label 
-                        Text="{Binding .}"
+                        Text="{Binding ., x:DataType={x:Null}}"
                         BackgroundColor="SkyBlue"
                         Margin="10"
                         VerticalOptions="Center"

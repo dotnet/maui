@@ -2,7 +2,7 @@
 <local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 					   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 					   xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-					   x:Class="Maui.Controls.Sample.Issues.Issue2289" x:DataType="{x:Null}">
+					   x:Class="Maui.Controls.Sample.Issues.Issue2289" x:DataType="local:Issue2289">
 	<local:TestContentPage.Content>
 		<TableView HasUnevenRows="true">
 			<TableView.Root>
@@ -17,16 +17,16 @@
 				<TableSection Title="TextCell ContextActions Disable">
 					<TextCell Text="txtCellDisableContextActions1" Detail="test" IsEnabled="false">
 						<TextCell.ContextActions>
-							<MenuItem Command="{Binding MoreCommand}" Text="More" />
-							<MenuItem Command="{Binding DeleteCommand}" Text="Delete" />
+							<MenuItem Command="{Binding MoreCommand, x:DataType={x:Null}}" Text="More" />
+							<MenuItem Command="{Binding DeleteCommand, x:DataType={x:Null}}" Text="Delete" />
 						</TextCell.ContextActions>
 					</TextCell>
 				</TableSection>
 				<TableSection Title="TextCell ContextActions Enable">
 					<TextCell Text="txtCellEnabledContextActions1" Detail="test" IsEnabled="true">
 						<TextCell.ContextActions>
-							<MenuItem Command="{Binding MoreCommand}" Text="More" />
-							<MenuItem Command="{Binding DeleteCommand}" Text="Delete" IsDestructive="true" />
+							<MenuItem Command="{Binding MoreCommand, x:DataType={x:Null}}" Text="More" />
+							<MenuItem Command="{Binding DeleteCommand, x:DataType={x:Null}}" Text="Delete" IsDestructive="true" />
 						</TextCell.ContextActions>
 					</TextCell>
 				</TableSection>

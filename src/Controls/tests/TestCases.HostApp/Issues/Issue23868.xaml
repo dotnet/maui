@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue23868"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page" x:DataType="{x:Null}">
+             Title="Main Page" x:DataType="local:Issue23868">
   <StackLayout>
     <Label Text="Pull to refresh twice to replicate the issue"
                HorizontalOptions="Center"
@@ -12,25 +12,25 @@
                FontSize="16"
                Margin="10"
                TextColor="Red" />
-        <RefreshView x:Name="refreshView" Command="{Binding PullToRefreshCommand}" Refreshing="OnRefreshing">
-            <CollectionView AutomationId="CollectionView" x:Name="collectionView" ItemsSource="{Binding Items}">
+        <RefreshView x:Name="refreshView" Command="{Binding PullToRefreshCommand, x:DataType={x:Null}}" Refreshing="OnRefreshing">
+            <CollectionView AutomationId="CollectionView" x:Name="collectionView" ItemsSource="{Binding Items, x:DataType={x:Null}}">
                 <CollectionView.Header>
                     <Grid ColumnDefinitions="2*,*"
                           HorizontalOptions="CenterAndExpand"
-                          IsVisible="{Binding Source={x:Reference collectionView}, Path=ItemsSource.Count, FallbackValue=False}">
+                          IsVisible="{Binding Source={x:Reference collectionView, x:DataType={x:Null}}, Path=ItemsSource.Count, FallbackValue=False}">
                         <Label Grid.Column="0"
                                Text="Items Count:"
                                VerticalTextAlignment="Center"
                                HorizontalOptions="EndAndExpand"/>
                         <Label Grid.Column="1"
-                               Text="{Binding Items.Count}"
+                               Text="{Binding Items.Count, x:DataType={x:Null}}"
                                VerticalTextAlignment="Center"
                                HorizontalOptions="StartAndExpand"/>
                     </Grid>
                 </CollectionView.Header>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

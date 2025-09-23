@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.RenderingPerformance"
-             Title="RenderingPerformance" x:DataType="{x:Null}">
+             Title="RenderingPerformance" x:DataType="local:MeasuredLabel">
 
     <Grid Padding="24" RowDefinitions="Auto,Auto,*" RowSpacing="8">
       <Button x:Name="StartButton" Clicked="ButtonClicked" Text="Start" AutomationId="StartButton" />
@@ -11,20 +11,20 @@
       
       <ScrollView Grid.Row="2">
         <ContentView>
-          <VerticalStackLayout x:Name="BindableContainer" BindableLayout.ItemsSource="{Binding Models}">
+          <VerticalStackLayout x:Name="BindableContainer" BindableLayout.ItemsSource="{Binding Models, x:DataType={x:Null}}">
             <BindableLayout.ItemTemplate>
               <DataTemplate>
                 <Border Margin="0,16" Padding="8" StrokeShape="RoundRectangle 8" Background="LightBlue">
                   <Grid RowDefinitions="Auto,Auto,Auto">
-                    <Label Text="{Binding Header}" />
-                    <Label Text="{Binding Content}" Grid.Row="1" />
-                    <VerticalStackLayout Grid.Row="2" BindableLayout.ItemsSource="{Binding SubModels}" Margin="16,0">
+                    <Label Text="{Binding Header, x:DataType={x:Null}}" />
+                    <Label Text="{Binding Content, x:DataType={x:Null}}" Grid.Row="1" />
+                    <VerticalStackLayout Grid.Row="2" BindableLayout.ItemsSource="{Binding SubModels, x:DataType={x:Null}}" Margin="16,0">
                       <BindableLayout.ItemTemplate>
                         <DataTemplate>
                           <ContentView>
                             <VerticalStackLayout Margin="0,8">
-                              <Label Text="{Binding Header}" />
-                              <issues:MeasuredLabel IsMeasured="{Binding IsMeasured}" Text="{Binding Content}" />
+                              <Label Text="{Binding Header, x:DataType={x:Null}}" />
+                              <issues:MeasuredLabel IsMeasured="{Binding IsMeasured, x:DataType={x:Null}}" Text="{Binding Content, x:DataType={x:Null}}" />
                             </VerticalStackLayout>
                           </ContentView>
                         </DataTemplate>

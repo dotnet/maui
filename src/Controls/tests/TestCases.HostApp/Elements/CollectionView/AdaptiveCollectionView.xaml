@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
     x:Class="Maui.Controls.Sample.CollectionViewGalleries.AdaptiveCollectionView"
-    Title="Adaptive CollectionView" x:DataType="{x:Null}">
+    Title="Adaptive CollectionView">
     <ContentPage.Content>
         <Grid>
             <CollectionView 
@@ -21,14 +21,14 @@
                     </x:Array>
                 </CollectionView.ItemsSource>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                         <Grid
                             HeightRequest="60"
                             Padding="12">
                             <Label 
                                 HorizontalOptions="Center"
                                 VerticalOptions="Center"
-                                Text="{Binding}"/>
+                                Text="{Binding ., x:DataType={x:Null}}"/>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

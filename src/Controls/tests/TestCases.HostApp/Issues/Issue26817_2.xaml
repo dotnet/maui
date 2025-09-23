@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
-             x:Class="Maui.Controls.Sample.Issues.Issue26817_2" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.Issues.Issue26817_2">
     <VerticalStackLayout>
       <Label Text="Border" Padding="0,10,10,10"/>
       <CollectionView SelectionMode="Single" x:Name="border">
@@ -14,11 +14,11 @@
          </CollectionView.ItemsSource>
          <CollectionView.ItemTemplate>
                <DataTemplate>
-                  <Border BackgroundColor="LightGray" Padding="10" Margin="5" SemanticProperties.Description="{Binding}">
+                  <Border BackgroundColor="LightGray" Padding="10" Margin="5" SemanticProperties.Description="{Binding ., x:DataType={x:Null}}">
                      <VerticalStackLayout>
-                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
-                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" />
-                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center"/>
                      </VerticalStackLayout>
                   </Border>
                </DataTemplate>
@@ -35,10 +35,10 @@
          </CollectionView.ItemsSource>
          <CollectionView.ItemTemplate>
                <DataTemplate>
-                  <VerticalStackLayout BackgroundColor="LightBlue" Padding="10" Margin="5"  SemanticProperties.Description="{Binding}">
-                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
-                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" />
-                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                  <VerticalStackLayout BackgroundColor="LightBlue" Padding="10" Margin="5"  SemanticProperties.Description="{Binding ., x:DataType={x:Null}}">
+                     <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                     <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center" />
+                     <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center"/>
                   </VerticalStackLayout>
                </DataTemplate>
          </CollectionView.ItemTemplate>
@@ -54,10 +54,10 @@
          </CollectionView.ItemsSource>
          <CollectionView.ItemTemplate>
                <DataTemplate>
-                  <Grid BackgroundColor="LightGreen" Padding="10" Margin="5"  SemanticProperties.Description="{Binding}" RowDefinitions="*,*,*">
-                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0"/>
-                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="1"/>
-                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="2"/>
+                  <Grid BackgroundColor="LightGreen" Padding="10" Margin="5"  SemanticProperties.Description="{Binding ., x:DataType={x:Null}}" RowDefinitions="*,*,*">
+                     <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0"/>
+                     <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="1"/>
+                     <Label Text="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="2"/>
                   </Grid>
                </DataTemplate>
          </CollectionView.ItemTemplate>

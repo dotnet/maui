@@ -105,7 +105,7 @@
                                 <Label Text="IndicatorSize"
                                        FontAttributes="Bold"
                                        AutomationId="IndicatorSizeLabel"/>
-                                <Stepper Value="{Binding IndicatorSize}"
+                                <Stepper Value="{Binding IndicatorSize, x:DataType={x:Null}}"
                                          Minimum="1"
                                          Maximum="100"
                                          Increment="10"
@@ -116,7 +116,7 @@
                                 <Label Text="Position"
                                        FontAttributes="Bold"
                                        AutomationId="PositionLabel"/>
-                                <Stepper Value="{Binding Position}"
+                                <Stepper Value="{Binding Position, x:DataType={x:Null}}"
                                          Minimum="0"
                                          Maximum="50"
                                          Increment="1"
@@ -264,7 +264,7 @@
                        AutomationId="MaximumVisibleLabel"/>
                 <StackLayout Grid.Row="9"
                              Spacing="10">
-                        <Stepper Value="{Binding MaximumVisible}"
+                        <Stepper Value="{Binding MaximumVisible, x:DataType={x:Null}}"
                                  Minimum="1"
                                  Maximum="100"
                                  Increment="1"

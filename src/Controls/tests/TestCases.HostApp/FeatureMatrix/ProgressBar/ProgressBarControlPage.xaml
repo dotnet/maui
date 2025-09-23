@@ -15,18 +15,18 @@
                     Grid.ColumnSpan="2">
                      <ProgressBar x:Name="progressBarControl"
                                   AutomationId="ProgressBarControl"
-                                  BackgroundColor="{Binding BackgroundColor}"
-                                  FlowDirection="{Binding FlowDirection}"
-                                  IsVisible="{Binding IsVisible}"
-                                  Progress="{Binding Progress}"
-                                  ProgressColor="{Binding ProgressColor}"
-                                  Shadow="{Binding Shadow}"/>
+                                  BackgroundColor="{Binding BackgroundColor, x:DataType={x:Null}}"
+                                  FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+                                  IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                                  Progress="{Binding Progress, x:DataType={x:Null}}"
+                                  ProgressColor="{Binding ProgressColor, x:DataType={x:Null}}"
+                                  Shadow="{Binding Shadow, x:DataType={x:Null}}"/>
               </Grid>
 
               <!-- Progress -->
               <Label Grid.Row="1"
                      Grid.Column="0"
-                     Text="{Binding Progress, StringFormat='Progress: {0:F2}'}"
+                     Text="{Binding Progress, StringFormat='Progress: {0:F2, x:DataType={x:Null}}'}"
                      HorizontalOptions="Start"
                      VerticalOptions="Center"/>
               <local:UITestEntry Grid.Row="1"
@@ -141,7 +141,7 @@
                      VerticalTextAlignment="Center"/>
               <Label Grid.Row="7"
                      Grid.Column="1"
-                     Text="{Binding Progress, StringFormat='{0:F2}'}"
+                     Text="{Binding Progress, StringFormat='{0:F2, x:DataType={x:Null}}'}"
                      FontSize="16"
                      VerticalTextAlignment="Center"
                      AutomationId="ProgressValueLabel"/>

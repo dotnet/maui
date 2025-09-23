@@ -40,18 +40,18 @@
 
     <Button    AutomationId="Button"
                Text="Select Next"
-               Command="{Binding SelectNextCommand}"
+               Command="{Binding SelectNextCommand, x:DataType={x:Null}}"
                HorizontalOptions="Fill" />
 
     <Label
-               Text="{Binding LabelText}" />
+               Text="{Binding LabelText, x:DataType={x:Null}}" />
 
-    <CollectionView AutomationId="CollectionView" ItemsSource="{Binding List}"
+    <CollectionView AutomationId="CollectionView" ItemsSource="{Binding List, x:DataType={x:Null}}"
                            SelectionMode="Single" 
-                           SelectedItem="{Binding SelectedItem}">
+                           SelectedItem="{Binding SelectedItem, x:DataType={x:Null}}">
       <CollectionView.ItemTemplate>
         <DataTemplate x:DataType="x:String">
-          <Label Text="{Binding .}"/>
+          <Label Text="{Binding ., x:DataType={x:Null}}"/>
         </DataTemplate>
       </CollectionView.ItemTemplate>
     </CollectionView>

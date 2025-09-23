@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
              xmlns:chat="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries.ChatExample" x:DataType="{x:Null}">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries.ChatExample">
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <DataTemplate x:Key="Local">
+            <DataTemplate x:Key="Local" x:DataType="local:CollectionViewGalleryTestItem">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -14,13 +14,13 @@
                     </Grid.ColumnDefinitions>
                     <Frame BorderColor="Green" BackgroundColor="LightGreen" CornerRadius="5" Grid.Column="1">
                         <StackLayout Margin="2">
-                            <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="End" />
+                            <Label Text="{Binding Text, x:DataType={x:Null}}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="End" />
                         </StackLayout>
                     </Frame>
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="Remote">
+            <DataTemplate x:Key="Remote" x:DataType="local:CollectionViewGalleryTestItem">
                 <Grid Padding="5,0,5,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"></ColumnDefinition>
@@ -28,7 +28,7 @@
                     </Grid.ColumnDefinitions>
                     <Frame BorderColor="Blue" BackgroundColor="LightBlue" CornerRadius="5">
                         <StackLayout Margin="2">
-                            <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="Start" />
+                            <Label Text="{Binding Text, x:DataType={x:Null}}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="Start" />
                         </StackLayout>
                     </Frame>
                 </Grid>
@@ -54,7 +54,7 @@
                 <Button x:Name="Lots" Text="Add 1000 Messages" Margin="2" />
             </StackLayout>
 
-            <CollectionView ItemsSource="{Binding ChatMessages}" 
+            <CollectionView ItemsSource="{Binding ChatMessages, x:DataType={x:Null}}" 
                             ItemTemplate="{StaticResource ChatTemplateSelector}"
                             ItemSizingStrategy="MeasureAllItems"
                             Grid.Row="1">

@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue21437"
              xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
-             Title="Issue21437" x:DataType="{x:Null}">
-   <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" HorizontalOptions="Start">
+             Title="Issue21437" x:DataType="local:Issue21437">
+   <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items, x:DataType={x:Null}}" HorizontalOptions="Start">
         <BindableLayout.ItemTemplate>
             <DataTemplate>
-                <Label Text="{Binding .}" AutomationId="{Binding .}" HorizontalOptions="Start">
+                <Label Text="{Binding ., x:DataType={x:Null}}" AutomationId="{Binding ., x:DataType={x:Null}}" HorizontalOptions="Start">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer
                             NumberOfTapsRequired="2"
-                            Command="{Binding TapCommand, Source={RelativeSource AncestorType={x:Type issues:Issue21437}}}"
-                            CommandParameter="{Binding .}" />
+                            Command="{Binding TapCommand, Source={RelativeSource AncestorType={x:Type issues:Issue21437, x:DataType={x:Null}}}}"
+                            CommandParameter="{Binding ., x:DataType={x:Null}}" />
                     </Label.GestureRecognizers>
                 </Label>
             </DataTemplate>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue31096" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue31096" x:DataType="local:GroupedAnimalsViewModel">
     <Grid RowDefinitions="Auto, *">
         <Switch
             IsToggled="False"
@@ -9,8 +9,8 @@
             x:Name="switch"/>
         <CollectionView
             Grid.Row="1"
-            ItemsSource="{Binding Animals}"
-            IsGrouped="{Binding Source={x:Reference switch}, Path=IsToggled}"
+            ItemsSource="{Binding Animals, x:DataType={x:Null}}"
+            IsGrouped="{Binding Source={x:Reference switch, x:DataType={x:Null}}, Path=IsToggled}"
             x:Name="cv">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
@@ -18,11 +18,11 @@
                         Padding="10"
                         RowDefinitions="Auto, Auto">
                         <Label
-                            Text="{Binding Name}"
+                            Text="{Binding Name, x:DataType={x:Null}}"
                             FontAttributes="Bold"/>
                         <Label
                             Grid.Row="1"
-                            Text="{Binding Location}"
+                            Text="{Binding Location, x:DataType={x:Null}}"
                             VerticalOptions="End"/>
                     </Grid>
                 </DataTemplate>
@@ -30,7 +30,7 @@
             <CollectionView.GroupHeaderTemplate>
                 <DataTemplate>
                     <Label
-                        Text="{Binding Name}"
+                        Text="{Binding Name, x:DataType={x:Null}}"
                         AutomationId="GroupHeader"
                         FontAttributes="Bold"/>
                 </DataTemplate>

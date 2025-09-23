@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage  
   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-  x:Class="Maui.Controls.Sample.Issues.Issue22417" x:DataType="{x:Null}">
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+  x:Class="Maui.Controls.Sample.Issues.Issue22417">
   <Grid
       RowDefinitions="Auto, *, Auto">
     <Grid.Resources>
@@ -10,15 +10,15 @@
       <DataTemplate x:Key="SampleItemTemplate">
         <Grid 
           RowDefinitions="Auto, Auto"
-          BackgroundColor="{Binding Color, Mode=OneWay}">
+          BackgroundColor="{Binding Color, Mode=OneWay, x:DataType={x:Null}}">
           <Label 
             TextColor="White"
-            Text="{Binding Title, Mode=OneWay}" 
+            Text="{Binding Title, Mode=OneWay, x:DataType={x:Null}}" 
             FontAttributes="Bold" />
           <Label 
             Grid.Row="1"
             TextColor="White"
-            Text="{Binding Description, Mode=OneWay}" />
+            Text="{Binding Description, Mode=OneWay, x:DataType={x:Null}}" />
         </Grid>
       </DataTemplate>
       

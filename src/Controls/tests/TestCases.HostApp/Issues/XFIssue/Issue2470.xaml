@@ -11,7 +11,7 @@
             <Tab> 
                 <ShellContent Title="Generate" >
                   <ShellContent.Content>
-                    <ContentPage x:DataType="{x:Null}">
+                    <ContentPage>
                     <StackLayout>
                       <Label Text="Bug" FontSize="Large"/>
                       <Label Text="We have a TabbedPage with a ListView bound to an ObservableCollection."/>
@@ -20,7 +20,7 @@
                       <Label Text="Flip the switch, go to the Results tab, notice the wrong data. If the data is correct, come back here and flip the switch and try it again. After a few tries, you should see the bug."/>
                       <Label Text="Then swipe the data down and notice it gets better."/>
                       <Label Text="This bug only happens on Android."/>
-                      <Switch IsToggled="{Binding TwoOrFive}" AutomationId="Switch" />
+                      <Switch IsToggled="{Binding TwoOrFive, x:DataType={x:Null}}" AutomationId="Switch" />
                     </StackLayout>
                     </ContentPage>
                   </ShellContent.Content>
@@ -28,10 +28,10 @@
                 <ShellContent Title="Results">
                   <ShellContent.Content>
                     <ContentPage>
-                    <ListView ItemsSource="{Binding Entries}">
+                    <ListView ItemsSource="{Binding Entries, x:DataType={x:Null}}">
                       <ListView.ItemTemplate>
                         <DataTemplate>
-                          <SwitchCell Text="{Binding Name}" On="{Binding Selected}"/>
+                          <SwitchCell Text="{Binding Name, x:DataType={x:Null}}" On="{Binding Selected, x:DataType={x:Null}}"/>
                         </DataTemplate>
                       </ListView.ItemTemplate>
                     </ListView>

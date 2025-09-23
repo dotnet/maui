@@ -9,22 +9,22 @@
 
    <TabBar FlexLayout.AlignSelf="Auto">
         <ShellContent Title="Page 1" ContentTemplate="{DataTemplate local:Issue18251Page}"  />
-        <Tab Title="Page 2" IsVisible="{Binding IsLoggedIn}" >
-            <ShellContent Title="Page 2-A" ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
-            <ShellContent Title="Page 2-B" ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
+        <Tab Title="Page 2" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" >
+            <ShellContent Title="Page 2-A" ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
+            <ShellContent Title="Page 2-B" ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
         </Tab>
-        <ShellContent Title="LogIn/Out"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
-        <ShellContent Title="LogIn/Out"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedOut}"/>
-        <ShellContent Title="Page 5"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedOut}" />
-        <ShellContent Title="Page 6"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedOut}" />
-        <ShellContent Title="Page 7"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
-        <ShellContent Title="Page 8"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}"  />
-        <ShellContent Title="Page 9"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
-        <ShellContent Title="Page 10"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
-        <ShellContent Title="Page 11"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
+        <ShellContent Title="LogIn/Out"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
+        <ShellContent Title="LogIn/Out"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedOut, x:DataType={x:Null}}"/>
+        <ShellContent Title="Page 5"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedOut, x:DataType={x:Null}}" />
+        <ShellContent Title="Page 6"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedOut, x:DataType={x:Null}}" />
+        <ShellContent Title="Page 7"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
+        <ShellContent Title="Page 8"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}"  />
+        <ShellContent Title="Page 9"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
+        <ShellContent Title="Page 10"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
+        <ShellContent Title="Page 11"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
         <ShellContent Title="Page 12"  ContentTemplate="{DataTemplate local:Issue18251Page}" />
         <ShellContent Title="Page 13"  ContentTemplate="{DataTemplate local:Issue18251Page}" />
         <ShellContent Title="Page 14"  ContentTemplate="{DataTemplate local:Issue18251Page}" />
-        <ShellContent Title="Page 15"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn}" />
+        <ShellContent Title="Page 15"  ContentTemplate="{DataTemplate local:Issue18251Page}" IsVisible="{Binding IsLoggedIn, x:DataType={x:Null}}" />
     </TabBar>
 </Shell>

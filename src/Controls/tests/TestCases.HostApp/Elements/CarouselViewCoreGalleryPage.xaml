@@ -26,7 +26,7 @@
                 Grid.Row="1" 
                 Grid.Column="0" />
             <Label 
-                Text="{Binding Path=Position, Source={x:Reference Name=carousel}}"
+                Text="{Binding Path=Position, Source={x:Reference Name=carousel, x:DataType={x:Null}}}"
                 x:DataType="CarouselView"
                 AutomationId="lblPosition" 
                 Grid.Row="1" 
@@ -37,7 +37,7 @@
                 Grid.Column="0" />
             <Label 
                 Text="{Binding Index, x:DataType=local:CarouselItem}"
-                BindingContext="{Binding CurrentItem, Source={x:Reference Name=carousel}, x:DataType=CarouselView}"
+                BindingContext="{Binding CurrentItem, Source={x:Reference Name=carousel, x:DataType={x:Null}}, x:DataType=CarouselView}"
                 AutomationId="lblCurrentItem" 
                 Grid.Row="2"
                 Grid.Column="1" />
@@ -46,7 +46,7 @@
                 Grid.Row="3" 
                 Grid.Column="0" />
             <Label 
-                Text="{Binding Selected.Index}"
+                Text="{Binding Selected.Index, x:DataType={x:Null}}"
                 AutomationId="lblSelected"
                 Grid.Row="3" 
                 Grid.Column="1" />
@@ -56,20 +56,20 @@
                 Orientation="Horizontal"
                 HorizontalOptions="Center">
                 <Button 
-                    Command="{Binding PreviousCommand}" 
+                    Command="{Binding PreviousCommand, x:DataType={x:Null}}" 
                     AutomationId="btnPrev"
                     Text="&lt;" 
                     FontAttributes="Bold" 
                     BackgroundColor="LightGray" 
                     TextColor="Black" />
                 <Button 
-                    Command="{Binding RemoveCommand}"  
+                    Command="{Binding RemoveCommand, x:DataType={x:Null}}"  
                     AutomationId="btnRemove"
-                    Text="{Binding Path=Selected.Index, StringFormat='Remove {0}'}"
+                    Text="{Binding Path=Selected.Index, StringFormat='Remove {0, x:DataType={x:Null}}'}"
                     BackgroundColor="LightGray" 
                     TextColor="Black" />
                 <Button 
-                    Command="{Binding NextCommand}"  
+                    Command="{Binding NextCommand, x:DataType={x:Null}}"  
                     AutomationId="btnNext" 
                     Text="&gt;" FontAttributes="Bold"
                     BackgroundColor="LightGray"
@@ -81,11 +81,11 @@
                 x:Name="carousel"
                 Grid.Row="5"
                 Grid.ColumnSpan="2"
-                Loop="{Binding IsLoop}"
+                Loop="{Binding IsLoop, x:DataType={x:Null}}"
                 AutomationId="TheCarouselView"
-                ItemsSource="{Binding Items}"
-                Position="{Binding Position}"
-                CurrentItem="{Binding Selected}">
+                ItemsSource="{Binding Items, x:DataType={x:Null}}"
+                Position="{Binding Position, x:DataType={x:Null}}"
+                CurrentItem="{Binding Selected, x:DataType={x:Null}}">
                 <local:CarouselView1.ItemTemplate>
                     <DataTemplate x:DataType="local:CarouselItem">
                         <Border 
@@ -98,18 +98,18 @@
                             BackgroundColor="Yellow">
                             <Grid RowDefinitions="*,Auto">
                                 <Image 
-                                    Source="{Binding Image}"
+                                    Source="{Binding Image, x:DataType={x:Null}}"
                                     InputTransparent="true"
-                                    AutomationId="{Binding Title}"
+                                    AutomationId="{Binding Title, x:DataType={x:Null}}"
                                     Aspect="AspectFit" />
                                 <Label 
-                                    Text="{Binding Index}"  Grid.Row="1"
+                                    Text="{Binding Index, x:DataType={x:Null}}"  Grid.Row="1"
                                     FontSize="14"
                                     TextColor="Black"
                                     HorizontalOptions="Start" 
                                     VerticalOptions="Center" />
                                 <Label 
-                                    Text="{Binding Title}"  Grid.Row="1"
+                                    Text="{Binding Title, x:DataType={x:Null}}"  Grid.Row="1"
                                     FontSize="14"
                                     TextColor="Black"
                                     HorizontalOptions="End" 

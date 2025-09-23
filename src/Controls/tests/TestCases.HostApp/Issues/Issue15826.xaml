@@ -1,38 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     x:Class="Maui.Controls.Sample.Issues.Issue15826"
     xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
     <ScrollView>
         <VerticalStackLayout>
             <Button x:Name="Swap" AutomationId="Swap" Text="Swap List" Clicked="Button_Clicked"/>
-            <ListView x:Name="List1" AutomationId="List1" IsVisible="{Binding List1Visible}"
-                ItemsSource="{Binding List1Data}"
+            <ListView x:Name="List1" AutomationId="List1" IsVisible="{Binding List1Visible, x:DataType={x:Null}}"
+                ItemsSource="{Binding List1Data, x:DataType={x:Null}}"
                 RowHeight="40"
                 SeparatorVisibility="None"
                 VerticalOptions="Fill">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="ns:ListData">
                         <ViewCell>
-                            <Label Text="{Binding Text}" />
+                            <Label Text="{Binding Text, x:DataType={x:Null}}" />
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <ListView x:Name="List2" AutomationId="List2" IsVisible="{Binding List2Visible}"
-                ItemsSource="{Binding List2Data}"
+            <ListView x:Name="List2" AutomationId="List2" IsVisible="{Binding List2Visible, x:DataType={x:Null}}"
+                ItemsSource="{Binding List2Data, x:DataType={x:Null}}"
                 RowHeight="40"
                 SeparatorVisibility="None"
                 VerticalOptions="Fill">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="ns:ListData">
                         <ViewCell>
-                            <Label Text="{Binding Text}" />
+                            <Label Text="{Binding Text, x:DataType={x:Null}}" />
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Label x:Name="LabelStatus" AutomationId="LabelStatus" Text="{Binding ListsStatus}" />
+            <Label x:Name="LabelStatus" AutomationId="LabelStatus" Text="{Binding ListsStatus, x:DataType={x:Null}}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

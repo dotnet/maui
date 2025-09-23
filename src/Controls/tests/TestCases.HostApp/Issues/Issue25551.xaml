@@ -2,15 +2,15 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue25551"
-             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="local:Issue25551">
 
   <VerticalStackLayout>
     <CollectionView AutomationId="SingleSelection"
     Margin="15,0,0,15"
     SelectionMode="Single"   
     HeightRequest="300"
-    ItemsSource="{Binding Items}"
-    SelectedItem="{Binding SelectedItem}"
+    ItemsSource="{Binding Items, x:DataType={x:Null}}"
+    SelectedItem="{Binding SelectedItem, x:DataType={x:Null}}"
     VerticalOptions="Center">
       <CollectionView.ItemsLayout>
         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
@@ -37,7 +37,7 @@
             </VisualStateManager.VisualStateGroups>
 
             <Label 
-              Text="{Binding .}" 
+              Text="{Binding ., x:DataType={x:Null}}" 
               x:Name="ItemName"
               FontAttributes="Bold"
               FontSize="14"
@@ -55,8 +55,8 @@
     Margin="15,0,0,15"
     SelectionMode="Multiple"   
     HeightRequest="300"
-    ItemsSource="{Binding Items}"
-    SelectedItems="{Binding SelectedItems}"
+    ItemsSource="{Binding Items, x:DataType={x:Null}}"
+    SelectedItems="{Binding SelectedItems, x:DataType={x:Null}}"
     VerticalOptions="Center">
       <CollectionView.ItemsLayout>
         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
@@ -83,7 +83,7 @@
             </VisualStateManager.VisualStateGroups>
 
             <Label 
-              Text="{Binding .}" 
+              Text="{Binding ., x:DataType={x:Null}}" 
               x:Name="ItemName"
               FontAttributes="Bold"
               FontSize="14"

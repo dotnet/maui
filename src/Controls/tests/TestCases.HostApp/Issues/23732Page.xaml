@@ -2,13 +2,13 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues._23732Page"
-             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="{x:Null}">
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues" x:DataType="local:_23732Page">
 
   <Grid RowDefinitions="Auto,*">
     <CollectionView
             Grid.Row="1"
             Margin="0,20"
-            ItemsSource="{Binding Models}">
+            ItemsSource="{Binding Models, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid

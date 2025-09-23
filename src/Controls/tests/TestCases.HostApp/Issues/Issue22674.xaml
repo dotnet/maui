@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue22674" x:DataType="{x:Null}">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue22674" x:DataType="local:Issue22674">
   <CollectionView 
     AutomationId="TestCollectionView"
     SelectionMode="Single"
-		ItemsSource="{Binding ItemList}"
+		ItemsSource="{Binding ItemList, x:DataType={x:Null}}"
 		SelectionChanged="OnCollectionViewSelectionChanged">
     <CollectionView.ItemTemplate>
       <DataTemplate>
         <Label
-          Text="{Binding .}" 
+          Text="{Binding ., x:DataType={x:Null}}" 
           HorizontalTextAlignment="Center" />
       </DataTemplate>
     </CollectionView.ItemTemplate>

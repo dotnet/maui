@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<controls:TestContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+<controls:TestContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
 	x:Class="Maui.Controls.Sample.Issues.Issue7886" >
 	<StackLayout HorizontalOptions="Center" VerticalOptions="Center">
         <!-- Place new controls here -->
         <Label Text="Open the modal by the button below, then pop the modal by the Done toolbaritem. If you are back on the first page without a crash, this test succeeded!" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
-        <Button AutomationId="{Binding ButtonAutomationId}" Text="Push Me" Clicked="Handle_Clicked" BackgroundColor="Aqua"/>
+        <Button AutomationId="{Binding ButtonAutomationId, x:DataType={x:Null}}" Text="Push Me" Clicked="Handle_Clicked" BackgroundColor="Aqua"/>
     </StackLayout>
 </controls:TestContentPage>

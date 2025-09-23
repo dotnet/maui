@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries"
     x:Class="Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries.ItemsUpdatingScrollModeGallery"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries"
-    Title="ItemsUpdatingScrollMode Gallery" x:DataType="{x:Null}">
+    Title="ItemsUpdatingScrollMode Gallery">
     <Grid 
         RowDefinitions="Auto, *" Margin="20">
         <StackLayout
@@ -22,9 +22,9 @@
         <CollectionView 
             x:Name="CollectionView"
             Grid.Row="1"
-            ItemsSource="{Binding Items}">
+            ItemsSource="{Binding Items, x:DataType={x:Null}}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:CollectionViewGalleryTestItem">
                     <Grid 
                         Padding="12">
                         <Grid.RowDefinitions>
@@ -32,11 +32,11 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Label 
-                            Text="{Binding Text1}"
+                            Text="{Binding Text1, x:DataType={x:Null}}"
                             FontAttributes="Bold" />
                         <Label 
                             Grid.Row="1"
-                            Text="{Binding Text2}"
+                            Text="{Binding Text2, x:DataType={x:Null}}"
                             FontAttributes="Italic"
                             VerticalOptions="End" />
                     </Grid>

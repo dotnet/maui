@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.Issues.Issue6932">
-    <ContentPage.Resources x:DataType="{x:Null}">
+    <ContentPage.Resources>
         <DataTemplate x:Key="MyIntTemplate">
             <Frame Padding="10"
 				   BackgroundColor="Yellow">
-                <Label Text="{Binding }" />
+                <Label Text="{Binding , x:DataType={x:Null}}" />
             </Frame>
         </DataTemplate>
     </ContentPage.Resources>
@@ -20,12 +20,12 @@
         </Grid.RowDefinitions>
         <ScrollView VerticalScrollBarVisibility="Never"
 					HorizontalScrollBarVisibility="Always">
-            <StackLayout AutomationId="{Binding LayoutAutomationId}" BindableLayout.ItemsSource="{Binding ItemsSource}"
+            <StackLayout AutomationId="{Binding LayoutAutomationId, x:DataType={x:Null}}" BindableLayout.ItemsSource="{Binding ItemsSource, x:DataType={x:Null}}"
                          BindableLayout.ItemTemplate="{StaticResource MyIntTemplate}"
 						 Spacing="7"
 						 Padding="10, 5">
                 <BindableLayout.EmptyView>
-                    <Grid BackgroundColor="Blue" AutomationId="{Binding EmptyViewAutomationId}">
+                    <Grid BackgroundColor="Blue" AutomationId="{Binding EmptyViewAutomationId, x:DataType={x:Null}}">
                         <Label Text="No Results"/>
                     </Grid>
                 </BindableLayout.EmptyView>
@@ -35,12 +35,12 @@
 					 Orientation="Horizontal"
 					 Spacing="0"
 					 Grid.Row="1">
-            <Button Command="{Binding AddItemCommand}"
-					Text="Add" AutomationId="{Binding AddAutomationId}" />
-            <Button Command="{Binding RemoveItemCommand}"
-					Text="Remove" AutomationId="{Binding RemoveAutomationId}" />
-            <Button Command="{Binding ClearCommand}"
-					Text="Clear" AutomationId="{Binding ClearAutomationId}" />
+            <Button Command="{Binding AddItemCommand, x:DataType={x:Null}}"
+					Text="Add" AutomationId="{Binding AddAutomationId, x:DataType={x:Null}}" />
+            <Button Command="{Binding RemoveItemCommand, x:DataType={x:Null}}"
+					Text="Remove" AutomationId="{Binding RemoveAutomationId, x:DataType={x:Null}}" />
+            <Button Command="{Binding ClearCommand, x:DataType={x:Null}}"
+					Text="Clear" AutomationId="{Binding ClearAutomationId, x:DataType={x:Null}}" />
         </StackLayout>
     </Grid>
 </controls:TestContentPage>

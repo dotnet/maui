@@ -15,20 +15,20 @@
               <VerticalStackLayout x:Name="DatePickerLayout"
                                    Padding="20,100,20,100">
                      <DatePicker AutomationId="DatePickerControl"
-                                 CharacterSpacing="{Binding CharacterSpacing}"
-                                 Date="{Binding Date}"
+                                 CharacterSpacing="{Binding CharacterSpacing, x:DataType={x:Null}}"
+                                 Date="{Binding Date, x:DataType={x:Null}}"
                                  DateSelected="OnDateSelected"
-                                 FlowDirection="{Binding FlowDirection}"
-                                 Format="{Binding Format}"
-                                 FontAttributes="{Binding FontAttributes}"
-                                 FontFamily="{Binding FontFamily}"
-                                 FontSize="{Binding FontSize}"
-                                 IsEnabled="{Binding IsEnabled}"
-                                 IsVisible="{Binding IsVisible}"
-                                 MinimumDate="{Binding MinimumDate}"
-                                 MaximumDate="{Binding MaximumDate}"
-                                 Shadow="{Binding Shadow}"
-                                 TextColor="{Binding TextColor}"/>
+                                 FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
+                                 Format="{Binding Format, x:DataType={x:Null}}"
+                                 FontAttributes="{Binding FontAttributes, x:DataType={x:Null}}"
+                                 FontFamily="{Binding FontFamily, x:DataType={x:Null}}"
+                                 FontSize="{Binding FontSize, x:DataType={x:Null}}"
+                                 IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+                                 IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                                 MinimumDate="{Binding MinimumDate, x:DataType={x:Null}}"
+                                 MaximumDate="{Binding MaximumDate, x:DataType={x:Null}}"
+                                 Shadow="{Binding Shadow, x:DataType={x:Null}}"
+                                 TextColor="{Binding TextColor, x:DataType={x:Null}}"/>
               </VerticalStackLayout>
 
               <Label Text="DateSelected Event"

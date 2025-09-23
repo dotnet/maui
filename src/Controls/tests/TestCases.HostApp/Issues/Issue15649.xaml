@@ -33,13 +33,13 @@
     </ContentPage.Resources>
     <ContentPage.Triggers>
         <DataTrigger TargetType="ContentPage"
-                     Binding="{Binding PositionSelected, Source={x:Reference HomePage},x:DataType=local:Issue15649}"
+                     Binding="{Binding PositionSelected, Source={x:Reference HomePage, x:DataType={x:Null}},x:DataType=local:Issue15649}"
                      Value="1">
             <Setter Property="ControlTemplate"
                     Value="{DynamicResource Page1}"/>
         </DataTrigger>
         <DataTrigger TargetType="ContentPage"
-                     Binding="{Binding PositionSelected, Source={x:Reference HomePage},x:DataType=local:Issue15649}"
+                     Binding="{Binding PositionSelected, Source={x:Reference HomePage, x:DataType={x:Null}},x:DataType=local:Issue15649}"
                      Value="2">
             <Setter Property="ControlTemplate"
                     Value="{DynamicResource Page2}"/>

@@ -26,7 +26,7 @@
                      <Entry AutomationId="TextEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="{Binding Text}"
+                            Text="{Binding Text, x:DataType={x:Null}}"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
               </HorizontalStackLayout>
@@ -39,7 +39,7 @@
                      <Entry AutomationId="PlaceholderEntry"
                             HeightRequest="37"
                             HorizontalOptions="Start"
-                            Text="{Binding Placeholder}"
+                            Text="{Binding Placeholder, x:DataType={x:Null}}"
                             VerticalOptions="Center"
                             WidthRequest="100"/>
               </HorizontalStackLayout>
@@ -155,7 +155,7 @@
                      <Entry AutomationId="CharacterSpacingEntry"
                             HeightRequest="37"
                             Keyboard="Numeric"
-                            Text="{Binding CharacterSpacing}"
+                            Text="{Binding CharacterSpacing, x:DataType={x:Null}}"
                             WidthRequest="50"/>
               </HorizontalStackLayout>
 
@@ -167,7 +167,7 @@
                             VerticalOptions="Center"/>
                      <Entry AutomationId="CursorPositionEntry"
                             HeightRequest="37"
-                            Text="{Binding CursorPosition}"
+                            Text="{Binding CursorPosition, x:DataType={x:Null}}"
                             Keyboard="Numeric"
                             WidthRequest="50"/>
               </HorizontalStackLayout>
@@ -228,7 +228,7 @@
                      <Entry AutomationId="FontSizeEntry"
                             HeightRequest="37"
                             Keyboard="Numeric"
-                            Text="{Binding FontSize}"
+                            Text="{Binding FontSize, x:DataType={x:Null}}"
                             WidthRequest="50"/>
               </HorizontalStackLayout>
 
@@ -240,7 +240,7 @@
                      <Entry AutomationId="MaxLengthEntry"
                             HeightRequest="37"
                             Keyboard="Numeric"
-                            Text="{Binding MaxLength}"
+                            Text="{Binding MaxLength, x:DataType={x:Null}}"
                             WidthRequest="50"/>
               </HorizontalStackLayout>
 
@@ -378,7 +378,7 @@
                      HeightRequest="37"
                      Keyboard="Numeric"
                      HorizontalOptions="Start"
-                     Text="{Binding SelectionLength}"
+                     Text="{Binding SelectionLength, x:DataType={x:Null}}"
                      WidthRequest="50"/>
 
               <!-- Vertical Text Alignment -->

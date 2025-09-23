@@ -4,11 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewUpdateCurrentItem"
-    BackgroundColor="Blue" x:DataType="{x:Null}">
+    BackgroundColor="Blue" x:DataType="local:ViewModelIssue9827">
     <ContentPage.Resources>
         <ResourceDictionary>
             
-            <DataTemplate x:Key="MyTemplate">
+            <DataTemplate x:Key="MyTemplate" x:DataType="{x:Type x:String}">
                 <Grid Margin="10" BackgroundColor="Blue">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="110"/>
@@ -21,13 +21,13 @@
                     <StackLayout Grid.Column="1">
                         <StackLayout Orientation="Horizontal">
                             <Label 
-                                Text="{Binding Title}" FontSize="Subtitle"
+                                Text="{Binding Title, x:DataType={x:Null}}" FontSize="Subtitle"
                                 LineBreakMode="WordWrap" />
                         </StackLayout>
-                        <Label Text="{Binding Title}" FontSize="Micro" />
-                        <Label Text="{Binding Title}" FontSize="Micro" />
-                        <Label Text="{Binding Title}" FontSize="Micro" />
-                        <Label Text="{Binding Title}" FontSize="Micro" />
+                        <Label Text="{Binding Title, x:DataType={x:Null}}" FontSize="Micro" />
+                        <Label Text="{Binding Title, x:DataType={x:Null}}" FontSize="Micro" />
+                        <Label Text="{Binding Title, x:DataType={x:Null}}" FontSize="Micro" />
+                        <Label Text="{Binding Title, x:DataType={x:Null}}" FontSize="Micro" />
                     </StackLayout>
                 </Grid>
             </DataTemplate>
@@ -48,24 +48,24 @@
             HorizontalOptions="Center" Grid.Row="1"
             Orientation="Horizontal">
             <Button 
-                AutomationId="btnPrev" Command="{Binding GoPrevCommand}" 
+                AutomationId="btnPrev" Command="{Binding GoPrevCommand, x:DataType={x:Null}}" 
                 Text="Back"/>
             <Label 
                 AutomationId="lblPosition" Text="{ Binding Path=Position, Source={x:Reference cv}, StringFormat='Pos:{0}'}"/>
             <Button 
-                AutomationId="btnNext" Command="{Binding GoNextCommand}" 
+                AutomationId="btnNext" Command="{Binding GoNextCommand, x:DataType={x:Null}}" 
                 Text="Next"/>
         </StackLayout>
         <SearchBar 
             AutomationId="searchBar" Grid.Row="2" x:Name="matchSearch" 
-            BindingContext="{Binding CarouselCurrentItem}" Text="{Binding Title, Mode=OneWay}" 
+            BindingContext="{Binding CarouselCurrentItem, x:DataType={x:Null}}" Text="{Binding Title, Mode=OneWay, x:DataType={x:Null}}" 
             Placeholder="Title" WidthRequest="300" />
         <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29312 -->  
         <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->      
         <local:CarouselView1
             Grid.Row="3" x:Name="cv"
-            ItemsSource="{Binding Items}" 
-            CurrentItem="{Binding CarouselCurrentItem}" 
+            ItemsSource="{Binding Items, x:DataType={x:Null}}" 
+            CurrentItem="{Binding CarouselCurrentItem, x:DataType={x:Null}}" 
             IsSwipeEnabled="true"
             PeekAreaInsets="20"
             IndicatorView="indicators"

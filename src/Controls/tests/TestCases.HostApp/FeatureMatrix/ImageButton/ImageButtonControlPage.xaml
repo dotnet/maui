@@ -15,44 +15,44 @@
               ColumnDefinitions="*" >
 
                 <ImageButton x:Name="TestImageButton"
-                             Source="{Binding Source}"
-                             Aspect="{Binding Aspect}"
-                             BorderColor="{Binding BorderColor}"
-                             BorderWidth="{Binding BorderWidth}"
-                             CornerRadius="{Binding CornerRadius}"
-                             IsEnabled="{Binding IsEnabled}"
-                             Command="{Binding ImageCommand}"
-                             CommandParameter="{Binding CommandParameter}"
+                             Source="{Binding Source, x:DataType={x:Null}}"
+                             Aspect="{Binding Aspect, x:DataType={x:Null}}"
+                             BorderColor="{Binding BorderColor, x:DataType={x:Null}}"
+                             BorderWidth="{Binding BorderWidth, x:DataType={x:Null}}"
+                             CornerRadius="{Binding CornerRadius, x:DataType={x:Null}}"
+                             IsEnabled="{Binding IsEnabled, x:DataType={x:Null}}"
+                             Command="{Binding ImageCommand, x:DataType={x:Null}}"
+                             CommandParameter="{Binding CommandParameter, x:DataType={x:Null}}"
                              Clicked="OnImageButtonClicked"
                              Pressed="OnImageButtonPressed"
                              Released="OnImageButtonReleased"
-                             Padding="{Binding Padding}"
-                             IsVisible="{Binding IsVisible}"
-                             Shadow="{Binding Shadow}"
-                             FlowDirection="{Binding FlowDirection}"
+                             Padding="{Binding Padding, x:DataType={x:Null}}"
+                             IsVisible="{Binding IsVisible, x:DataType={x:Null}}"
+                             Shadow="{Binding Shadow, x:DataType={x:Null}}"
+                             FlowDirection="{Binding FlowDirection, x:DataType={x:Null}}"
                              WidthRequest="350"
                              HeightRequest="450"
                              AutomationId="ImageButtonControl"/>
                 <Label Grid.Row="1"
-                       Text="{Binding ClickTotal, StringFormat='ImageButton Clicked: {0}'}"
+                       Text="{Binding ClickTotal, StringFormat='ImageButton Clicked: {0, x:DataType={x:Null}}'}"
                        HorizontalOptions="Center"
                        FontSize="12"
-                       IsVisible="{Binding IsButtonClicked}"/>
+                       IsVisible="{Binding IsButtonClicked, x:DataType={x:Null}}"/>
                 <Label Grid.Row="2"
-                       Text="{Binding PressedTotal, StringFormat='ImageButton Pressed: {0}'}"
+                       Text="{Binding PressedTotal, StringFormat='ImageButton Pressed: {0, x:DataType={x:Null}}'}"
                        HorizontalOptions="Center"
                        FontSize="12"
-                       IsVisible="{Binding IsButtonClicked}"/>
+                       IsVisible="{Binding IsButtonClicked, x:DataType={x:Null}}"/>
                 <Label Grid.Row="3"
-                       Text="{Binding ReleasedTotal, StringFormat='ImageButton Released: {0}'}"
+                       Text="{Binding ReleasedTotal, StringFormat='ImageButton Released: {0, x:DataType={x:Null}}'}"
                        HorizontalOptions="Center"
                        FontSize="12"
-                       IsVisible="{Binding IsButtonClicked}"/>
+                       IsVisible="{Binding IsButtonClicked, x:DataType={x:Null}}"/>
                 <Label Grid.Row="4"
-                       Text="{Binding CommandResult}"
+                       Text="{Binding CommandResult, x:DataType={x:Null}}"
                        HorizontalOptions="Center"
                        FontSize="12"
-                       IsVisible="{Binding IsButtonClicked}"/>
+                       IsVisible="{Binding IsButtonClicked, x:DataType={x:Null}}"/>
         </Grid>
 
 </ContentPage>

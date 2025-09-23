@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:datatemplateselectorgalleries="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries" xmlns:datatemplateselectorgalleries="clr-namespace:Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries"
              x:Class="Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries.VariedSizeDataTemplateSelectorGallery">
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <DataTemplate x:Key="MilkTemplate">
+            <DataTemplate x:Key="MilkTemplate" x:DataType="local:DrinkBase">
                 <Border Stroke="Red" Background="Wheat" HeightRequest="100">
                     <Grid HeightRequest="100">
-                        <Label Text="{Binding Name}" />
+                        <Label Text="{Binding Name, x:DataType={x:Null}}" />
                     </Grid>
                 </Border>
             </DataTemplate>
 
-            <DataTemplate x:Key="CoffeeTemplate">
+            <DataTemplate x:Key="CoffeeTemplate" x:DataType="local:DrinkBase">
                 <Border Stroke="Red" Background="SaddleBrown" HeightRequest="50">
                     <Grid HeightRequest="50">
-                        <Label Text="{Binding Name}" />
+                        <Label Text="{Binding Name, x:DataType={x:Null}}" />
                     </Grid>
                 </Border>
             </DataTemplate>
@@ -24,12 +24,12 @@
             <DataTemplate x:Key="LatteTemplate" x:DataType="datatemplateselectorgalleries:Latte">
                 <Border Stroke="Red" Background="BurlyWood" >
                     <VerticalStackLayout>
-                        <Label Text="{Binding Name, StringFormat='Drink name is: {0}'}"/>
+                        <Label Text="{Binding Name, StringFormat='Drink name is: {0, x:DataType={x:Null}}'}"/>
                         <Label Text="     The ingredients are: " Margin="0,10,0,0"/>
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Ingredients}" >
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Ingredients, x:DataType={x:Null}}" >
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="datatemplateselectorgalleries:DrinkBase">
-                                    <Label Text="{Binding Name, StringFormat='    {0}'}" />
+                                    <Label Text="{Binding Name, StringFormat='    {0, x:DataType={x:Null}}'}" />
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
                         </VerticalStackLayout>
@@ -47,7 +47,7 @@
     <ContentPage.Content>
             <Grid RowDefinitions="*,Auto">
 
-                <CollectionView ItemsSource="{Binding Items}" 
+                <CollectionView ItemsSource="{Binding Items, x:DataType={x:Null}}" 
                             ItemTemplate="{StaticResource VehicleTemplateSelector}"
                             VerticalOptions="FillAndExpand"
                             ItemSizingStrategy="MeasureAllItems" />
@@ -67,12 +67,12 @@
 
                     <StackLayout Orientation="Horizontal">
                         <Label Text="Index"/>
-                        <Entry Text="{Binding Index}" HorizontalOptions="FillAndExpand"/>
+                        <Entry Text="{Binding Index, x:DataType={x:Null}}" HorizontalOptions="FillAndExpand"/>
                     </StackLayout>
 
                     <Picker x:Name="TemplatePicker"
                         Title="Select a template"
-                        SelectedItem="{Binding SelectedTemplate}">
+                        SelectedItem="{Binding SelectedTemplate, x:DataType={x:Null}}">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type x:String}">
                                 <x:String>Coffee</x:String>
