@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Content.Res;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -160,6 +161,14 @@ namespace Microsoft.Maui.Platform
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
 			}
+		}
+
+		protected override void OnConfigurationChanged(Configuration? newConfig)
+		{
+			base.OnConfigurationChanged(newConfig);
+
+			Context?.GetGlobalWindowInsetListener()?.ResetView(this);
+			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
 		/// <summary>
