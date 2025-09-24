@@ -1516,6 +1516,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
+				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
 			}
@@ -2115,31 +2117,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ClipsToBounds = true;
 			}
 
-			UIEdgeInsets CalculateUIEdgeInsets()
-			{
-				var type = UIBarButtonSystemItem.FixedSpace;
-				var spacer = new UIBarButtonItem(type, (_, _) => { });
-				spacer.Width = SystemMargin + (OperatingSystem.IsIOSVersionAtLeast(11) ? 8 : -16);
-
-				nfloat screenWidth = UIScreen.MainScreen.Bounds.Size.Width;
-
-				if (!OperatingSystem.IsIOSVersionAtLeast(11) && screenWidth < 375)
-				{
-					// 3.5 and 4 inch
-					spacer.Width += 8;
-				}
-				else if (screenWidth >= 414)
-				{
-					// 5.5 inch
-					spacer.Width -= 4;
-				}
-
-				return new UIEdgeInsets(0, spacer.Width, 0, spacer.Width);
-			}
-
 			public override UIEdgeInsets AlignmentRectInsets
 			{
-				get => CalculateUIEdgeInsets();
+				get
+				{
+					if (_child?.VirtualView is IView view)
+					{
+						var margin = view.Margin;
+						return new UIEdgeInsets(-(nfloat)margin.Top, -(nfloat)margin.Left, -(nfloat)margin.Bottom, -(nfloat)margin.Right);
+					}
+					else
+					{
+						return base.AlignmentRectInsets;
+					}
+				}
 			}
 
 			void OnTitleViewParentSet(object sender, EventArgs e)

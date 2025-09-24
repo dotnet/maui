@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 
 		void ChildAdded(object sender, ElementEventArgs e)
 		{
-			if (string.IsNullOrEmpty(_groupName))
+			if (string.IsNullOrEmpty(_groupName) || _layout == null)
 			{
 				return;
 			}
@@ -162,6 +162,11 @@ namespace Microsoft.Maui.Controls
 
 		void SetSelectedValue(object radioButtonValue)
 		{
+			if(object.Equals(_selectedValue, radioButtonValue))
+			{
+				return;
+			}
+
 			_selectedValue = radioButtonValue;
 
 			if (radioButtonValue != null)

@@ -1,0 +1,79 @@
+<FlyoutPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.FlyoutControlMainPage"
+            xmlns:local="clr-namespace:Maui.Controls.Sample"
+            x:DataType="local:FlyoutPageViewModel"
+            IsGestureEnabled="{Binding IsGestureEnabled}"
+            FlyoutLayoutBehavior="{Binding FlyoutLayoutBehavior}"
+            IsEnabled="{Binding IsEnabled}"
+            FlowDirection="{Binding FlowDirection}"
+            IsVisible="{Binding IsVisible }">
+
+        <FlyoutPage.ToolbarItems>
+                <ToolbarItem Text="Options"
+                             Clicked="NavigateToOptionsPage_Clicked"/>
+        </FlyoutPage.ToolbarItems>
+
+        <FlyoutPage.Flyout>
+                <ContentPage x:Name="DefaultFlyout" Title="The Flyout"
+                             BackgroundColor="Beige"
+                             IconImageSource="{Binding IconImageSource}">
+                        <VerticalStackLayout>
+                                <Label Text="Flyout Item 1"
+                                       AutomationId="FlyoutItem1Label"/>
+                                <Label Text="Flyout Item 2"
+                                       AutomationId="FlyoutItem2Label"/>
+                                <Label Text="Flyout Item 3"
+                                       AutomationId="FlyoutItem3Label"/>
+                                <Label Text="Flyout Item 4"
+                                       AutomationId="FlyoutItem4Label"/>
+                                <Button Text="Close Flyout"
+                                        Clicked="OnCloseFlyoutClicked"
+                                        AutomationId="CloseFlyoutButton"/>
+                        </VerticalStackLayout>
+                </ContentPage>
+        </FlyoutPage.Flyout>
+
+        <FlyoutPage.Detail>
+                <NavigationPage>
+                        <x:Arguments>
+                                <ContentPage Title="{Binding Title}"
+                                             BackgroundColor="{Binding BackgroundColor}"
+                                             x:Name="DetailContentPage">
+                                        <StackLayout Padding="10"
+                                                     Spacing="10">
+                                                <Label Text="This is the Detail Page"
+                                                       AutomationId="DetailPageLabel"/>
+                                                <Button Text="Set Flyout 1"
+                                                        Clicked="OnSetFlyout1Clicked"
+                                                        AutomationId="SetFlyout1Button"/>
+                                                <Button Text="Set Flyout 2"
+                                                        Clicked="OnSetFlyout2Clicked"
+                                                        AutomationId="SetFlyout2Button"/>
+                                                <Button Text="Set Detail 1"
+                                                        Clicked="OnSetDetail1Clicked"
+                                                        AutomationId="SetDetail1Button"/>
+                                                <Button Text="Set Detail 2"
+                                                        Clicked="OnSetDetail2Clicked"
+                                                        AutomationId="SetDetail2Button"/>
+                                                <Button Text="Go To New Page"
+                                                        Clicked="OnGoToNewPageClicked"
+                                                        AutomationId="GoToNewPageButton"/>
+                                                <Button Text="Open Flyout"
+                                                        Clicked="OnOpenFlyoutClicked"
+                                                        AutomationId="OpenFlyoutButton"/>
+                                                <Label x:Name="NavigatedToLabel"
+                                                       Text="NavigatedTo: "
+                                                       AutomationId="NavigatedToLabel"/>
+                                                <Label x:Name="NavigatingFromLabel"
+                                                       Text="NavigatingFrom:"
+                                                       AutomationId="NavigatingFromLabel"/>
+                                                <Label x:Name="NavigatedFromLabel"
+                                                       Text="NavigatedFrom:"
+                                                       AutomationId="NavigatedFromLabel"/>
+                                        </StackLayout>
+                                </ContentPage>
+                        </x:Arguments>
+                </NavigationPage>
+        </FlyoutPage.Detail>
+</FlyoutPage>

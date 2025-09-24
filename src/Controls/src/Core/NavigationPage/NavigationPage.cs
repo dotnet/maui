@@ -892,11 +892,13 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.NavigationType = navigationType;
+						// Move the SendNavigating here so that it's fired prior to the stack being modified
+						// This ensures consistent event ordering across all platforms (iOS, Catalyst, Android, Windows)
+						Owner.SendNavigating(previousPage);
 						Owner.PushPage(root);
 					},
 					() =>
 					{
-						Owner.SendNavigating(navigationType, previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},

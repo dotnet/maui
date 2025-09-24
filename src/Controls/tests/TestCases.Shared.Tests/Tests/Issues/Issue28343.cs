@@ -22,7 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshNotTriggered");
 			App.WaitForElement("ListItem0");
 			App.ScrollUp("CollectionView");
+			Thread.Sleep(1000);
 			App.WaitForElement("RefreshNotTriggered");
+			App.WaitForElement("ScrollToUpButton");
+			App.Tap("ScrollToUpButton");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
 		}
 

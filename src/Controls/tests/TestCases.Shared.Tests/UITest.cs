@@ -332,7 +332,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
-                
+
 				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
 				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
 				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
