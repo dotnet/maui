@@ -19,26 +19,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				App.SetOrientationPortrait();
 #endif
-				WaitForAllElements();
-				var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
-				// Use retryTimeout to allow layout to settle
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			WaitForAllElements();
+			var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
+			// Use retryTimeout to allow layout to settle
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
-				changeBoundsButton.Click();
+			changeBoundsButton.Click();
 
-				WaitForAllElements();
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			WaitForAllElements();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 #if IOS || ANDROID
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
-				// Use retryTimeout to allow orientation change to settle
-#if ANDROID
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#else
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
+
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
 
 				changeBoundsButton.Click();
 				WaitForAllElements();

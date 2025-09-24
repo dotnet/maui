@@ -397,7 +397,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
-				var orientation = App.GetOrientation();
+				// Get the current orientation, default to Portrait (e.g. Windows, Mac)
+				var orientation = OpenQA.Selenium.ScreenOrientation.Portrait;
+#if ANDROID || IOS
+				orientation = App.GetOrientation();
+#endif
 
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
