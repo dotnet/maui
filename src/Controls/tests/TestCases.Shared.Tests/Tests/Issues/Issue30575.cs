@@ -15,6 +15,7 @@ public class Issue30575 : _IssuesUITest
 	[FlakyTest("Temporarily disabled due to flakiness in CI. Tracking issue: https://github.com/dotnet/maui/issues/31869")]
 	public void WebViewShouldNotMirrored()
 	{
+		VerifyInternetConnectivity();
 		App.WaitForElement("WebViewLabel");
 		Thread.Sleep(3000);
 		VerifyScreenshot();
