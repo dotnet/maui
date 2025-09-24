@@ -1,26 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
-using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-    internal class GlobalWindowInsetListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+    internal class GlobalWindowInsetListener : WindowInsetsAnimationCompat.Callback, IOnApplyWindowInsetsListener
     {
         readonly HashSet<AView> _trackedViews = [];
+        bool IsImeAnimating { get; set; }
 
-        public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
+        AView? _pendingView;
+
+		public GlobalWindowInsetListener() : base(DispatchModeStop)
+		{
+		}
+
+		public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
         {
-            if (insets is null || !insets.HasInsets || v is null)
+            if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
             {
+                if (IsImeAnimating)
+                    _pendingView = v;
+
                 return insets;
             }
+            
+            _pendingView = null;
 
             // Handle custom inset views first
             if (v is IHandleWindowInsets customHandler)
@@ -177,7 +189,78 @@ namespace Microsoft.Maui.Platform
             }
             base.Dispose(disposing);
         }
-    }
+
+		public override void OnPrepare(WindowInsetsAnimationCompat? animation)
+		{
+            base.OnPrepare(animation);
+
+            if (animation is null)
+                return;
+
+			// Check if this is an IME animation
+			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+			{
+				IsImeAnimating = true;
+			}
+		}
+
+		public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
+        {
+            if (animation is null)
+                return bounds;
+
+			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+			{
+				IsImeAnimating = true;
+			}
+			return bounds;
+		}
+
+		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
+		{
+			if (insets != null && runningAnimations != null)
+			{
+				// Check for IME animations
+				foreach (var animation in runningAnimations)
+				{
+					if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+					{
+						var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+						var imeHeight = imeInsets?.Bottom ?? 0;
+						// IME height during animation: imeHeight
+					}
+				}
+			}
+            return insets;
+		}
+
+		public override void OnEnd(WindowInsetsAnimationCompat? animation)
+		{
+            base.OnEnd(animation);
+
+            if (animation is null)
+                return;
+
+			// Check if this was an IME animation
+			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+			{
+
+                if (_pendingView is AView view)
+                {
+                    _pendingView = null;
+                    view.Post(() =>
+                    {
+                        IsImeAnimating = false;
+                        ViewCompat.RequestApplyInsets(view);
+                    });
+                }
+                else
+                {                    
+                    IsImeAnimating = false;
+                }
+			}
+		}
+	}
 }
 
 /// <summary>
@@ -209,6 +292,7 @@ internal static class GlobalWindowInsetListenerExtensions
         if (listener is not null)
         {
             ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
+            ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
         }
     }
 
@@ -223,5 +307,6 @@ internal static class GlobalWindowInsetListenerExtensions
         var listener = context.GetGlobalWindowInsetListener();
         listener?.ResetView(view);
         ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+        ViewCompat.SetWindowInsetsAnimationCallback(view, null);
     }
 }

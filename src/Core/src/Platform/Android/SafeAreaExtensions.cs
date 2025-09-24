@@ -2,6 +2,7 @@ using System;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
+using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Platform;
 
@@ -60,12 +61,32 @@ internal static class SafeAreaExtensions
             var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
             var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
+            if (isKeyboardShowing &&
+                context.GetActivity()?.Window is Window window &&
+                window?.Attributes is WindowManagerLayoutParams attr)
+            {
+                // If the window is panned from the keyboard being open
+                // and there isn't a bottom inset to apply then just don't touch anything
+                var softInputMode = attr.SoftInputMode;
+                if (softInputMode == SoftInput.AdjustPan
+                    && bottom == 0
+                )
+                {
+                    return WindowInsetsCompat.Consumed;
+                }
+            }
+
             // Check intersection with view bounds to determine which edges actually need padding
             if (view.Width > 0 && view.Height > 0)
             {
                 if (left > 0 || right > 0 || top > 0 || bottom > 0)
                 {
                     if (view.GetParent()?.GetParentOfType<MauiScrollView>() is not null)
+                    {
+                        return WindowInsetsCompat.Consumed;
+                    }
+
+                    if (view.GetParent()?.GetParentOfType<AppBarLayout>() is not null)
                     {
                         return WindowInsetsCompat.Consumed;
                     }
@@ -94,7 +115,7 @@ internal static class SafeAreaExtensions
 
                     // Calculate actual overlap for each edge
                     // Top: how much the view extends into the top safe area
-                    if (top > 0 && viewTop < top)
+                    if (top > 0 && viewTop < top && viewTop >= 0)
                     {
                         // Calculate the actual overlap amount
                         top = Math.Min(top - viewTop, top);
@@ -139,56 +160,59 @@ internal static class SafeAreaExtensions
                         right = 0;
                     }
                 }
+
+                // Build new window insets with unconsumed values
+                var builder = new WindowInsetsCompat.Builder(windowInsets);
+
+                // Get original insets for each type
+                var systemBars = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+                var displayCutout = windowInsets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+                var ime = windowInsets.GetInsets(WindowInsetsCompat.Type.Ime());
+
+                // Calculate what's left after consumption
+                // For system bars and display cutout, only consume what we're using
+                if (systemBars is not null)
+                {
+                    var newSystemBarsLeft = left > 0 ? 0 : systemBars.Left;
+                    var newSystemBarsTop = top > 0 ? 0 : systemBars.Top;
+                    var newSystemBarsRight = right > 0 ? 0 : systemBars.Right;
+                    var newSystemBarsBottom = (bottom > 0 || isKeyboardShowing) ? 0 : systemBars.Bottom;
+
+                    builder.SetInsets(WindowInsetsCompat.Type.SystemBars(),
+                        AndroidX.Core.Graphics.Insets.Of(newSystemBarsLeft, newSystemBarsTop, newSystemBarsRight, newSystemBarsBottom));
+                }
+
+                if (displayCutout is not null)
+                {
+                    var newCutoutLeft = left > 0 ? 0 : displayCutout.Left;
+                    var newCutoutTop = top > 0 ? 0 : displayCutout.Top;
+                    var newCutoutRight = right > 0 ? 0 : displayCutout.Right;
+                    var newCutoutBottom = (bottom > 0 || isKeyboardShowing) ? 0 : displayCutout.Bottom;
+
+                    builder.SetInsets(WindowInsetsCompat.Type.DisplayCutout(),
+                        AndroidX.Core.Graphics.Insets.Of(newCutoutLeft, newCutoutTop, newCutoutRight, newCutoutBottom));
+                }
+
+                // For keyboard (IME), only consume if we're handling it
+                if (ime is not null && isKeyboardShowing)
+                {
+                    var newImeBottom = (bottom > 0 && bottom >= keyboardInsets.Bottom) ? 0 : ime.Bottom;
+                    builder.SetInsets(WindowInsetsCompat.Type.Ime(),
+                        AndroidX.Core.Graphics.Insets.Of(0, 0, 0, newImeBottom));
+                }
+
+                newWindowInsets = builder.Build();
+
+                // Apply all insets to content view group
+                if (left > 0 || right > 0 || top > 0 || bottom > 0)
+                {
+                    view.SetPadding((int)left, (int)top, (int)right, (int)bottom);
+                    context.GetGlobalWindowInsetListener()?.TrackView(view);
+                }
             }
-
-            // Build new window insets with unconsumed values
-            var builder = new WindowInsetsCompat.Builder(windowInsets);
-
-            // Get original insets for each type
-            var systemBars = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-            var displayCutout = windowInsets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-            var ime = windowInsets.GetInsets(WindowInsetsCompat.Type.Ime());
-
-            // Calculate what's left after consumption
-            // For system bars and display cutout, only consume what we're using
-            if (systemBars is not null)
+            else
             {
-                var newSystemBarsLeft = left > 0 ? 0 : systemBars.Left;
-                var newSystemBarsTop = top > 0 ? 0 : systemBars.Top;
-                var newSystemBarsRight = right > 0 ? 0 : systemBars.Right;
-                var newSystemBarsBottom = (bottom > 0 && !isKeyboardShowing) ? 0 : systemBars.Bottom;
-
-                builder.SetInsets(WindowInsetsCompat.Type.SystemBars(),
-                    AndroidX.Core.Graphics.Insets.Of(newSystemBarsLeft, newSystemBarsTop, newSystemBarsRight, newSystemBarsBottom));
-            }
-
-            if (displayCutout is not null)
-            {
-                var newCutoutLeft = left > 0 ? 0 : displayCutout.Left;
-                var newCutoutTop = top > 0 ? 0 : displayCutout.Top;
-                var newCutoutRight = right > 0 ? 0 : displayCutout.Right;
-                var newCutoutBottom = (bottom > 0 && !isKeyboardShowing) ? 0 : displayCutout.Bottom;
-
-                builder.SetInsets(WindowInsetsCompat.Type.DisplayCutout(),
-                    AndroidX.Core.Graphics.Insets.Of(newCutoutLeft, newCutoutTop, newCutoutRight, newCutoutBottom));
-            }
-
-            // For keyboard (IME), only consume if we're handling it
-            if (ime is not null && isKeyboardShowing)
-            {
-                var newImeBottom = (bottom > 0 && bottom >= keyboardInsets.Bottom) ? 0 : ime.Bottom;
-                builder.SetInsets(WindowInsetsCompat.Type.Ime(),
-                    AndroidX.Core.Graphics.Insets.Of(0, 0, 0, newImeBottom));
-            }
-
-            newWindowInsets = builder.Build();
-
-            // Apply all insets to content view group
-            if (left > 0 || right > 0 || top > 0 || bottom > 0)
-            {
-                view.SetPadding((int)left, (int)top, (int)right, (int)bottom);
-                context.GetGlobalWindowInsetListener()?.TrackView(view);
-
+                newWindowInsets = windowInsets;
             }
         }
         else
@@ -209,9 +233,14 @@ internal static class SafeAreaExtensions
         }
 
         // Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
-        if (SafeAreaEdges.IsSoftInput(safeAreaRegion) && isKeyboardShowing && edge == 3)
+        if (isKeyboardShowing && edge == 3)
         {
-            return keyBoardInsets.Bottom;
+            if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
+                return keyBoardInsets.Bottom;
+
+            // if they keyboard is showing then we will just return 0 for the bottom inset
+            // because that part of the view is covered by the keyboard so we don't want to pad the view
+            return 0;
         }
 
         // All other regions respect safe area in some form
