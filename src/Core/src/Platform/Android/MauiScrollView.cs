@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _defaultHorizontalScrollVisibility;
 		ScrollBarVisibility _defaultVerticalScrollVisibility;
 		ScrollBarVisibility _horizontalScrollVisibility;
-		bool _didSafeAreaEdgeConfigurationChange;
+		bool _didSafeAreaEdgeConfigurationChange = true;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDetachedFromWindow();
 			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
 		#region IHandleWindowInsets Implementation

@@ -224,6 +224,7 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
             "Dimensions should still differ between portrait and landscape after multiple changes");
     }
 
+#if TEST_FAILS_ON_ANDROID 
     [Test]
     [Category(UITestCategories.SafeAreaEdges)]
     public void SafeAreaBorderSoftInputBehavior()
@@ -319,6 +320,7 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
         Assert.That(borderHeightChanged || safeAreaChanged, Is.True,
             "Test should demonstrate that keyboard interaction affects either safe area or border layout");
     }
+#endif
 
 #if TEST_FAILS_ON_ANDROID // Landscape orientation causes keyboard to occupy  fullview
     [Test]

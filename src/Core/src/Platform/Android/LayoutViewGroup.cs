@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
-		bool _didSafeAreaEdgeConfigurationChange;
+		bool _didSafeAreaEdgeConfigurationChange = true;
 
 		public bool InputTransparent { get; set; }
 
@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDetachedFromWindow();
 			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
 		public bool ClipsToBounds { get; set; }

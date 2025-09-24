@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
-		bool _didSSafeAreaEdgeConfigurationChange;
+		bool _didSafeAreaEdgeConfigurationChange = true;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDetachedFromWindow();
 			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -140,10 +141,10 @@ namespace Microsoft.Maui.Platform
 
 			CrossPlatformArrange(destination);
 
-			if (_didSSafeAreaEdgeConfigurationChange)
+			if (_didSafeAreaEdgeConfigurationChange)
 			{
 				ViewCompat.RequestApplyInsets(this);
-				_didSSafeAreaEdgeConfigurationChange = false;
+				_didSafeAreaEdgeConfigurationChange = false;
 			}
 		}
 
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.Platform
 			base.OnConfigurationChanged(newConfig);
 
 			Context?.GetGlobalWindowInsetListener()?.ResetView(this);
-			_didSSafeAreaEdgeConfigurationChange = true;
+			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
 		/// <summary>
@@ -161,7 +162,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void MarkSafeAreaEdgeConfigurationChanged()
 		{
-			_didSSafeAreaEdgeConfigurationChange = true;
+			_didSafeAreaEdgeConfigurationChange = true;
 			// Ensure a layout pass so that OnLayout will trigger InvalidateWindowInsets
 			RequestLayout();
 		}

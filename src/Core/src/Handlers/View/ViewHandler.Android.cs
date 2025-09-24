@@ -256,6 +256,11 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler())
+			{
+				return;
+			}
+			
 			if (handler.MauiContext?.Context is null || handler.PlatformView is not PlatformView platformView)
 			{
 				return;
