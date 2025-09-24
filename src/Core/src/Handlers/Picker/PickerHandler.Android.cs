@@ -28,6 +28,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.Click -= OnClick;
 
+			if (_dialog != null)
+			{
+				_dialog.ShowEvent -= OnDialogShown;
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Hide();
+				_dialog.Dispose();
+				_dialog = null;
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 
