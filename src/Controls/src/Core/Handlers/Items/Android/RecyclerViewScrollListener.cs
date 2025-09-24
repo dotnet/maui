@@ -124,9 +124,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static int AdjustGroupIndex(IGroupableItemsViewSource source, int position, bool hasHeader, bool hasFooter, int count, bool isStart)
 		{
-			if (position < 0)
+			if (position < 0 || position >= count)
 			{
-				return 0;
+				return Math.Max(0, GetGroupedDataCount(source) - 1);
 			}
 
 			// Adjust for header if present
@@ -168,6 +168,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// If we reach here, pos was beyond the last item
 			// Return the last valid data index (or 0 if empty)
 			return Math.Max(0, dataIndex - 1);
+		}
+
+		static int GetGroupedDataCount(IGroupableItemsViewSource source)
+		{
+			// Count data items only (excluding all headers and footers)
+			int dataCount = 0;
+			for (int index = 0; index < source.Count; index++)
+			{
+				if (!source.IsGroupHeader(index) && !source.IsGroupFooter(index) &&
+					!source.IsHeader(index) && !source.IsFooter(index))
+				{
+					dataCount++;
+				}
+			}
+
+			return dataCount;
 		}
 
 		static int FindNextDataIndex(IGroupableItemsViewSource source, int start, bool hasFooter, int count, int dataIndex)
