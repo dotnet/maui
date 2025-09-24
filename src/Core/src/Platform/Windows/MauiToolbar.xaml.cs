@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_commandBarMoreButton == null)
 			{
-				_commandBarMoreButton = CommandBar.GetTemplateChild("MoreButton") as Button;
+				_commandBarMoreButton = this.GetTemplateChild("MoreButton") as Button;
 				if (_commandBarMoreButton != null)
 				{
 					UpdateIconColor(); // Apply current icon color to the MoreButton
