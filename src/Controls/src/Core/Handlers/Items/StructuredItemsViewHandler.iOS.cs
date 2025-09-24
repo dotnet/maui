@@ -47,5 +47,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			handler.UpdateLayout();
 		}
+
+		static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
+		{
+			handler.UpdateLayout();
+		}
 	}
 }
