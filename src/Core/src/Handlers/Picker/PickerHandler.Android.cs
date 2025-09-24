@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Handlers
 				_dialog.ShowEvent -= OnDialogShown;
 				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
-				_dialog.Dispose();
 				_dialog = null;
 			}
 
