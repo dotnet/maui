@@ -76,8 +76,13 @@ internal static class SafeAreaExtensions
                 }
             }
 
+            var globalWindowInsetsListener = context.GetGlobalWindowInsetListener();
+            bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
+
             // Check intersection with view bounds to determine which edges actually need padding
-            if (view.Width > 0 && view.Height > 0)
+            // If we don't have any tracked views yet we will find the first view to pad
+            // in order to limit duplicate measures
+            if ((view.MeasuredHeight > 0 && view.MeasuredWidth > 0) || !hasTrackedViews)
             {
                 if (left > 0 || right > 0 || top > 0 || bottom > 0)
                 {
@@ -115,14 +120,17 @@ internal static class SafeAreaExtensions
 
                     // Calculate actual overlap for each edge
                     // Top: how much the view extends into the top safe area
+                    // If the viewTop is < 0 that means that it's most likely
+                    // panned off the top of the screen so we don't want to apply any top inset
                     if (top > 0 && viewTop < top && viewTop >= 0)
                     {
                         // Calculate the actual overlap amount
                         top = Math.Min(top - viewTop, top);
                     }
                     else
-                    {
-                        top = 0;
+                    { 
+                        if (view.MeasuredHeight > 0 && hasTrackedViews)
+                            top = 0;
                     }
 
                     // Bottom: how much the view extends into the bottom safe area
@@ -134,7 +142,10 @@ internal static class SafeAreaExtensions
                     }
                     else
                     {
-                        bottom = 0;
+                        // if the view height is zero because it hasn't done the first pass
+                        // and we don't have any tracked views yet then we will apply the bottom inset
+                        if (view.MeasuredHeight > 0 && hasTrackedViews)
+                            bottom = 0;
                     }
 
                     // Left: how much the view extends into the left safe area
@@ -145,7 +156,8 @@ internal static class SafeAreaExtensions
                     }
                     else
                     {
-                        left = 0;
+                        if (view.MeasuredWidth > 0 && hasTrackedViews)
+                            left = 0;
                     }
 
                     // Right: how much the view extends into the right safe area
@@ -157,7 +169,8 @@ internal static class SafeAreaExtensions
                     }
                     else
                     {
-                        right = 0;
+                        if (view.MeasuredWidth > 0 && hasTrackedViews)
+                            right = 0;
                     }
                 }
 
@@ -204,10 +217,10 @@ internal static class SafeAreaExtensions
                 newWindowInsets = builder.Build();
 
                 // Apply all insets to content view group
+                view.SetPadding((int)left, (int)top, (int)right, (int)bottom);
                 if (left > 0 || right > 0 || top > 0 || bottom > 0)
                 {
-                    view.SetPadding((int)left, (int)top, (int)right, (int)bottom);
-                    context.GetGlobalWindowInsetListener()?.TrackView(view);
+                    globalWindowInsetsListener?.TrackView(view);
                 }
             }
             else
