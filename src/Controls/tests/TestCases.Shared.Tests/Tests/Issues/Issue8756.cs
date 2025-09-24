@@ -42,5 +42,26 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			
 			Assert.DoesNotThrow(() => App.WaitForElement("StatusLabel"));
 		}
+
+		[Test]
+		[Category(UITestCategories.ToolbarItem)]
+		[Category(UITestCategories.Visual)]
+		public void ToolbarOverflowMenuVisualRegression()
+		{
+			App.WaitForElement("IssueDescription");
+			
+			// Take screenshot with default IconColor
+			VerifyScreenshot("ToolbarOverflow_DefaultTheme");
+			
+			// Apply custom IconColor (White) and take screenshot
+			App.Tap("ToggleIconColorButton");
+			App.WaitForElement("StatusLabel");
+			VerifyScreenshot("ToolbarOverflow_CustomWhiteIconColor");
+			
+			// Toggle back to default and verify
+			App.Tap("ToggleIconColorButton");
+			App.WaitForElement("StatusLabel");
+			VerifyScreenshot("ToolbarOverflow_BackToDefault");
+		}
 	}
 }
