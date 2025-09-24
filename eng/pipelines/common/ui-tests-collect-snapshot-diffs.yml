@@ -14,7 +14,7 @@ steps:
       Write-Host "Checking for ${{ parameters.platform }} snapshot diffs at: $snapshotDiffPath"
       
       if (Test-Path $snapshotDiffPath) {
-        $diffFiles = Get-ChildItem $snapshotDiffPath -File
+        $diffFiles = Get-ChildItem $snapshotDiffPath -File -Recurse
         
         if ($diffFiles.Count -gt 0) {
           Write-Host "✅ Found $($diffFiles.Count) ${{ parameters.platform }} snapshot diff files in snapshots-diff directory"
