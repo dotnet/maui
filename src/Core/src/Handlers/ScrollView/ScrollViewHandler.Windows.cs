@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -78,15 +79,23 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
+				// Start scroll instrumentation for programmatic scroll
+				using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(scrollView as IView ?? handler.VirtualView, ScrollType.Programmatic, 
+					scrollView.HorizontalOffset, scrollView.VerticalOffset);
+				
 				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
 			}
 		}
 
 		void ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
 		{
+			// Start scroll instrumentation for user gesture
+			using var scrollInstrumentation = DiagnosticInstrumentation.StartScrolling(VirtualView, ScrollType.UserGesture, 
+				VirtualView.HorizontalOffset, VirtualView.VerticalOffset);
+			
 			VirtualView.VerticalOffset = PlatformView.VerticalOffset;
 			VirtualView.HorizontalOffset = PlatformView.HorizontalOffset;
-
+			
 			if (e.IsIntermediate == false)
 			{
 				VirtualView.ScrollFinished();
