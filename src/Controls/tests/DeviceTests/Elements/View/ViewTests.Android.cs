@@ -16,6 +16,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -81,8 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						// This fails sometimes due to the way we arrange the content based on coordinates instead of size
 						// Assert.Equal(expectedWidth, pxFrame.Width);
-						Assert.True(pxFrame.Left == lastRight);
-
+						Assert.True(pxFrame.Left == lastRight, $"ColumnCount: {columnCount} Expected Left {lastRight} but got {pxFrame.Left} for child {i} Device Info: {DeviceDisplay.Current.MainDisplayInfo}");
 						lastRight = pxFrame.Right;
 					}
 				});
