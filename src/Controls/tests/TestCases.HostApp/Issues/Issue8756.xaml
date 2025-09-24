@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue8756">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Item 1" AutomationId="ToolbarItem1" />
+        <ToolbarItem Text="Item 2" AutomationId="ToolbarItem2" />
+        <ToolbarItem Text="Item 3" AutomationId="ToolbarItem3" />
+        <ToolbarItem Text="Item 4" AutomationId="ToolbarItem4" />
+        <ToolbarItem Text="Item 5" AutomationId="ToolbarItem5" />
+    </ContentPage.ToolbarItems>
+    <StackLayout Padding="12">
+        <Label Text="Test page for toolbar overflow menu (3 dots) theming in dark mode" AutomationId="IssueDescription" />
+        <Label Text="The 3-dot menu should be visible in dark theme on both Windows 10 and Windows 11" />
+        <Label Text="Check that the overflow menu button is appropriately themed for dark mode" />
+        <Button Text="Open Menu" AutomationId="OpenMenuButton" Clicked="OnOpenMenuClicked" />
+    </StackLayout>
+</ContentPage>
