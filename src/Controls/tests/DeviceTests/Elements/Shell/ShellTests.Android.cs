@@ -759,7 +759,17 @@ namespace Microsoft.Maui.DeviceTests
 			var page = new ContentPage();
 			var shell = await CreateShellAsync(shell =>
 			{
-				shell.CurrentItem = new ShellContent { Content = page };
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "TestRoute",
+							Content = page
+						}
+					}
+				});
 			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
@@ -783,7 +793,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				// Test that fragment creation and destruction works without exceptions
-				var shellContent = shell.CurrentItem as ShellContent;
+				var shellContent = shell.CurrentItem.CurrentItem.Items.First();
 				var mauiContext = handler.MauiContext;
 				
 				Exception exception = null;
