@@ -11,7 +11,7 @@
 * [.NET MAUI Samples](https://github.com/dotnet/maui-samples)
 * [Development Guide](./.github/DEVELOPMENT.md)
 
-Create a new app with `dotnet new maui -n NewApp` or a [sample app](https://github.com/dotnet/maui-samples/tree/main/10.0/Apps/DeveloperBalance#developer-balance) with `dotnet new maui -NewApp -sc` that includes the [open-source Syncfusion Toolkit for .NET MAUI](https://www.syncfusion.com/net-maui-toolkit?utm_source=msftdotnet&utm_medium=banner&utm_campaign=mauipremium_sep25) with over 30 additional controls, the [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui) with tons of helpers and views, and [MVVM Toolkit](https://github.com/CommunityToolkit/dotnet). 
+Create a new app with `dotnet new maui -n NewApp` or a [sample app](https://github.com/dotnet/maui-samples/tree/main/10.0/Apps/DeveloperBalance#developer-balance) with `dotnet new maui -n NewApp -sc` that includes the [open-source Syncfusion Toolkit for .NET MAUI](https://www.syncfusion.com/net-maui-toolkit?utm_source=msftdotnet&utm_medium=banner&utm_campaign=mauipremium_sep25) with over 30 additional controls, the [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui) with tons of helpers and views, and [MVVM Toolkit](https://github.com/CommunityToolkit/dotnet). 
 
 ## Overview
 
