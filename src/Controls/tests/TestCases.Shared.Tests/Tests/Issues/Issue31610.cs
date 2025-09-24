@@ -30,10 +30,7 @@ public class Issue31610 : _IssuesUITest
 
 		App.DragCoordinates(startX, startY, endX, startY);
 
-		Thread.Sleep(1000);
-
 		App.Tap("AddItemsButton");
-		Thread.Sleep(500);
 
 		App.WaitForElement("ItemLabel6");
 		App.WaitForElement("ItemLabel7");
@@ -46,10 +43,8 @@ public class Issue31610 : _IssuesUITest
 		Assert.That(item7.GetText(), Is.EqualTo("Item 7"));
 
 		App.Tap("ToggleDirectionButton");
-		Thread.Sleep(500);
 
 		App.Tap("AddItemsButton");
-		Thread.Sleep(500);
 
 		App.WaitForElement("ItemLabel9");
 		App.WaitForElement("ItemLabel10");
@@ -77,7 +72,6 @@ public class Issue31610 : _IssuesUITest
 		for (int i = 0; i < 3; i++)
 		{
 			App.Tap("AddItemsButton");
-			Thread.Sleep(300);
 		}
 
 		App.WaitForElement("Item1");
@@ -102,8 +96,6 @@ public class Issue31610 : _IssuesUITest
 
 		App.DragCoordinates(startX, startY, endX, startY);
 
-		Thread.Sleep(500);
-
 		App.WaitForElement("Item1");
 	}
 
@@ -115,19 +107,16 @@ public class Issue31610 : _IssuesUITest
 		App.WaitForElement("ToggleDirectionButton");
 
 		App.Tap("AddItemsButton");
-		Thread.Sleep(500);
 
 		var toggleButton = App.FindElement("ToggleDirectionButton");
 		Assert.That(toggleButton.GetText(), Is.EqualTo("Switch to LTR"));
 
 		App.Tap("ToggleDirectionButton");
-		Thread.Sleep(500);
 
 		var toggleButtonAfter = App.FindElement("ToggleDirectionButton");
 		Assert.That(toggleButtonAfter.GetText(), Is.EqualTo("Switch to RTL"));
 
 		App.Tap("AddItemsButton");
-		Thread.Sleep(500);
 
 		App.WaitForElement("Item1");
 		var item1Ltr = App.FindElement("Item1");
@@ -137,7 +126,6 @@ public class Issue31610 : _IssuesUITest
 		Assert.That(item1LtrRect.Height, Is.GreaterThan(0));
 
 		App.Tap("ToggleDirectionButton");
-		Thread.Sleep(500);
 
 		App.WaitForElement("Item1");
 		var item1BackToRtl = App.FindElement("Item1");
@@ -157,7 +145,6 @@ public class Issue31610 : _IssuesUITest
 		App.WaitForElement("Item8");
 
 		App.Tap("AddItemsButton");
-		Thread.Sleep(1000);
 
 		App.WaitForElement("Item9");
 		App.WaitForElement("Item10");
@@ -173,10 +160,8 @@ public class Issue31610 : _IssuesUITest
 		Assert.That(item11Label.GetText(), Is.EqualTo("Item 11"));
 
 		App.Tap("ToggleDirectionButton");
-		Thread.Sleep(500);
 
 		App.Tap("AddItemsButton");
-		Thread.Sleep(1000);
 
 		App.WaitForElement("Item12");
 		App.WaitForElement("Item13");
