@@ -217,8 +217,10 @@ override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycod
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyShortcut(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyUp(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.Platform.ContentViewGroup.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.ContentViewGroup.OnConfigurationChanged(Android.Content.Res.Configuration? newConfig) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.LayoutViewGroup.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.LayoutViewGroup.OnConfigurationChanged(Android.Content.Res.Configuration? newConfig) -> void
 override Microsoft.Maui.Platform.LayoutViewGroup.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.Draw(Android.Graphics.Canvas? canvas) -> void
@@ -231,6 +233,7 @@ override Microsoft.Maui.Platform.MauiHorizontalScrollView.OnTouchEvent(Android.V
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiScrollView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiScrollView.OnConfigurationChanged(Android.Content.Res.Configuration? newConfig) -> void
 override Microsoft.Maui.Platform.MauiScrollView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiShapeableImageView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnLayout(bool changed, int left, int top, int right, int bottom) -> void

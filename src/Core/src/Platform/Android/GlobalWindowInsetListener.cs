@@ -62,11 +62,11 @@ namespace Microsoft.Maui.Platform
             {
                 if (appBarLayoutContainsSomething)
                 {
-                    appBarLayout.SetPadding(0, topInset, 0, 0);
+                    appBarLayout.SetPadding(leftInset, topInset, rightInset, 0);
                 }
                 else
                 {
-                    appBarLayout.SetPadding(0, 0, 0, 0);
+                    appBarLayout.SetPadding(leftInset, 0, rightInset, 0);
                 }
             }
 
