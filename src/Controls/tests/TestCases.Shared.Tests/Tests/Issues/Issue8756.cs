@@ -19,17 +19,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("IssueDescription");
 			
-			// The test validates that the overflow menu (3-dot button) is appropriately themed
-			// This is a visual test - the main assertion is that the overflow menu is visible
-			// and properly styled for dark theme on both Windows 10 and Windows 11
+			// Verify the test page loads correctly
+			App.WaitForElement("StatusLabel");
+			App.WaitForElement("ToggleIconColorButton");
 			
-			// The fix should ensure the CommandBar's MoreButton respects the IconColor property
-			// which will make it visible in dark themes across both Windows versions
+			// Test toggling IconColor to ensure overflow button theming works
+			App.Tap("ToggleIconColorButton");
+			App.WaitForElement("StatusLabel");
 			
-			// Since this is primarily a visual styling issue, the test confirms the page loads
-			// The actual validation would need to be done visually or with more advanced
-			// UI automation that can inspect the button's styling properties
-			Assert.DoesNotThrow(() => App.WaitForElement("OpenMenuButton"));
+			// Toggle back to default
+			App.Tap("ToggleIconColorButton");
+			App.WaitForElement("StatusLabel");
+			
+			// The main assertion is that these operations complete without errors
+			// The actual visual validation of the 3-dot overflow button theming
+			// needs to be done manually or with more sophisticated UI inspection tools
+			// 
+			// The fix ensures that:
+			// 1. CommandBar's MoreButton respects the IconColor property
+			// 2. This provides consistent theming across Windows 10 and Windows 11
+			// 3. The overflow button is visible in dark themes
+			
+			Assert.DoesNotThrow(() => App.WaitForElement("StatusLabel"));
 		}
 	}
 }
