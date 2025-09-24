@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 8756, "3 dots in menu is in black in dark theme in Windows 10, but white in Windows 11", PlatformAffected.Windows)]
+[Issue(IssueTracker.Github, 8756, "3 dots in menu is in black in dark theme in Windows 10, but white in Windows 11", PlatformAffected.Windows | PlatformAffected.Android)]
 public partial class Issue8756 : ContentPage
 {
 	bool _useCustomIconColor = false;
