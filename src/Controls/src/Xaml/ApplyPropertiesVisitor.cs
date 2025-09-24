@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static readonly IList<XmlName> Skips = [
 			XmlName.xArguments,
 			XmlName.xClass,
+			XmlName.xClassModifier,
 			XmlName.xDataType,
 			XmlName.xFactoryMethod,
 			XmlName.xFieldModifier,
