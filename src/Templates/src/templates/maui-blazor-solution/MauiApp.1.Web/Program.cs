@@ -110,8 +110,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #endif
-app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapStaticAssets();
 
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()

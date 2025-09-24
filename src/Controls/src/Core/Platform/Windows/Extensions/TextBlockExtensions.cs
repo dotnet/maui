@@ -34,13 +34,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 				default:
 					if (label.FormattedText != null)
+					{
 						platformControl.UpdateInlines(label);
+					}
 					else
 					{
-						if (platformControl.TextHighlighters.Count > 0)
+						if (!label.IsConnectingHandler() && platformControl.TextHighlighters.Count > 0)
 						{
 							platformControl.TextHighlighters.Clear();
 						}
+
 						platformControl.Text = text;
 					}
 					break;
@@ -69,15 +72,21 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
 		{
 			if (label.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
 				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
+			}
 		}
 
 		internal static void SetLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode, int? maxLines = null)
 		{
 			if (maxLines.HasValue && maxLines >= 0)
+			{
 				textBlock.MaxLines = maxLines.Value;
+			}
 			else
+			{
 				textBlock.MaxLines = 0;
+			}
 
 			switch (lineBreakMode)
 			{
