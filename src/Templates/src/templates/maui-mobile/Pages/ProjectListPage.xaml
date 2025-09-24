@@ -7,11 +7,13 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.ProjectListPage"
              x:DataType="pageModels:ProjectListPageModel"
+             x:Name="ProjectList"
              Title="Projects">
 
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
+                BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectList}, x:DataType=ContentPage}"
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
