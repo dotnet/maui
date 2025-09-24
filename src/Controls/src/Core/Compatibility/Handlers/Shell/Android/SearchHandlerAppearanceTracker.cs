@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler = searchView.SearchHandler;
 			_control = searchView.View;
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
+			_searchHandler.FocusChangeRequested += SearchHandlerFocusChangeRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
 			_editText.FocusChange += EditTextFocusChange;
 			UpdateSearchBarColors();
@@ -38,6 +39,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateHorizontalTextAlignment();
 			UpdateVerticalTextAlignment();
 			UpdateInputType();
+		}
+
+	    void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		{
+			if (e.Focus)
+			{
+				e.Result = _editText.RequestFocus();
+			}
+			else
+			{
+				_editText.ClearFocus();
+				e.Result = _editText.IsFocused;
+			}
 		}
 
 		protected virtual void SearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -236,6 +250,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_searchHandler != null)
 				{
 					_searchHandler.PropertyChanged -= SearchHandlerPropertyChanged;
+					_searchHandler.FocusChangeRequested -= SearchHandlerFocusChangeRequested;
 					_editText.FocusChange -= EditTextFocusChange;
 				}
 				_searchHandler = null;
