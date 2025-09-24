@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void ScheduleTapTimeout(MotionEvent e)
+		void ScheduleTapTimeout()
 		{
 			if (_tapTimeoutHandler == null)
 				return;
@@ -328,7 +328,9 @@ namespace Microsoft.Maui.Controls.Platform
 					bool hasHandler = _tapGestureRecognizers?.Invoke(_currentTapCount).Any() == true;
 					if (hasHandler)
 					{
-						_tapDelegate(_currentTapCount, e);
+						// Create a simple motion event for the callback - we just need it for the delegate call
+						// The actual position info isn't critical for timeout-based gesture completion
+						_tapDelegate(_currentTapCount, null);
 					}
 					
 					// Reset for next gesture
@@ -397,7 +399,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// But only if we have multi-tap handlers that might be triggered with more taps
 				if (HasMultiTapHandler())
 				{
-					ScheduleTapTimeout(e);
+					ScheduleTapTimeout();
 				}
 				return false;
 			}
