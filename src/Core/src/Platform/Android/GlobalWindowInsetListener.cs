@@ -69,7 +69,18 @@ namespace Microsoft.Maui.Platform
                 }
             }
 
-            var appBarLayoutContainsSomething = appBarLayout?.GetChildAt(0)?.MeasuredHeight > 0;
+            bool appBarLayoutContainsSomething = appBarLayout?.MeasuredHeight > 0;
+
+            for (int i = 0; i < (appBarLayout?.ChildCount ?? 0) && !appBarLayoutContainsSomething; i++)
+            {
+                var child = appBarLayout?.GetChildAt(i);
+                if (child is not null && child.MeasuredHeight > 0)
+                {
+                    appBarLayoutContainsSomething = true;
+                    break;
+                }
+            }
+
             if (appBarLayout is not null)
             {
                 if (appBarLayoutContainsSomething)
@@ -119,6 +130,8 @@ namespace Microsoft.Maui.Platform
         {
             _trackedViews.Add(view);
         }
+
+        public bool HasTrackedView => _trackedViews.Count > 0;
 
         public void ResetView(AView view)
         {
