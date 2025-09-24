@@ -14,6 +14,7 @@ public class Issue30575 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void WebViewShouldNotMirrored()
 	{
+		VerifyInternetConnectivity();
 		App.WaitForElement("WebViewLabel");
 		Thread.Sleep(3000);
 		VerifyScreenshot();

@@ -74,7 +74,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Scroll right to ensure the footer is visible and positioned at the end
 			for (int i = 0; i < 5; i++)
 			{
-				App.ScrollRight("CV", ScrollStrategy.Auto, 0.9, 250);
+				App.ScrollRight("CV", ScrollStrategy.Gesture, 0.9, 250);
 			}
 
 			// Verify the footer is visible
