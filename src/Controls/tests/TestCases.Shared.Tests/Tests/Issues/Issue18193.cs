@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/27206
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,19 +16,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellNavigationShouldWorkInMoreTab()
 		{
-			App.WaitForElementTillPageNavigationSettled("Navigate to page 6");
-			App.Tap("Navigate to page 6");
-			App.WaitForElementTillPageNavigationSettled("Navigate to detail page");
-			App.Tap("Navigate to detail page");
-			App.WaitForElementTillPageNavigationSettled("Navigate back");
-			App.Tap("Navigate back");
-			App.WaitForElementTillPageNavigationSettled("Navigate to Page 2");
-			App.Tap("Navigate to Page 2");
-			App.WaitForElementTillPageNavigationSettled("Navigate to page 5");
-			App.Tap("Navigate to page 5");
+			App.WaitForElementTillPageNavigationSettled("NavigationToPageSixthButton");
+			App.Tap("NavigationToPageSixthButton");
+			App.WaitForElementTillPageNavigationSettled("NavigateToDetailButton");
+			App.Tap("NavigateToDetailButton");
+			App.WaitForElementTillPageNavigationSettled("NavigateBackButton");
+			App.Tap("NavigateBackButton");
+			App.WaitForElementTillPageNavigationSettled("NavigateToPageTwoButton");
+			App.Tap("NavigateToPageTwoButton");
+			App.WaitForElementTillPageNavigationSettled("NavigateToPageFiveButton");
+			App.Tap("NavigateToPageFiveButton");
 			App.WaitForElementTillPageNavigationSettled("More");
 			App.Tap("More");
 		}
 	}
 }
-#endif
