@@ -20,11 +20,20 @@ namespace Microsoft.Maui.Platform
 		WBrush? _menuBarForeground;
 		private Button? _navigationViewBackButton;
 		private Button? _togglePaneButton;
+		private Button? _commandBarMoreButton;
 		private Graphics.Color? _iconColor;
 
 		public MauiToolbar()
 		{
 			InitializeComponent();
+			CommandBar.Loaded += OnCommandBarLoaded;
+		}
+
+		void OnCommandBarLoaded(object sender, RoutedEventArgs e)
+		{
+			// Get the MoreButton from the CommandBar template
+			_commandBarMoreButton = CommandBar.GetTemplateChild("MoreButton") as Button;
+			UpdateIconColor(); // Apply current icon color to the MoreButton
 		}
 
 		internal string? Title
@@ -171,6 +180,12 @@ namespace Microsoft.Maui.Platform
 				NavigationViewBackButton?.UpdateForegroundColor(IconColor);
 				TogglePaneButton?.UpdateForegroundColor(IconColor);
 
+				// Apply IconColor to CommandBar's MoreButton (3-dot overflow menu)
+				if (_commandBarMoreButton != null)
+				{
+					_commandBarMoreButton.Foreground = IconColor.ToPlatform();
+				}
+
 			}
 			else
 			{
@@ -184,6 +199,9 @@ namespace Microsoft.Maui.Platform
 
 				NavigationViewBackButton?.ClearValue(Button.ForegroundProperty);
 				TogglePaneButton?.ClearValue(Button.ForegroundProperty);
+
+				// Clear CommandBar's MoreButton foreground to use default theme
+				_commandBarMoreButton?.ClearValue(Button.ForegroundProperty);
 			}
 		}
 
