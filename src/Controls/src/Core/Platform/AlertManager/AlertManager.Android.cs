@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using static Android.Views.ViewGroup;
 using AButton = Android.Widget.Button;
@@ -109,6 +111,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
+				if (sender.Handler == null)
+				{
+					sender.ToHandler(MauiContext);
+				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -168,6 +175,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
+				if (sender.Handler == null)
+				{
+					sender.ToHandler(MauiContext);
+				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -248,6 +260,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
+				if (sender.Handler == null)
+				{
+					sender.ToHandler(MauiContext);
+				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
