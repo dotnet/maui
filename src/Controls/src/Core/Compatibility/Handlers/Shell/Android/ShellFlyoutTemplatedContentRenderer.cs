@@ -90,17 +90,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (insets == null || v == null)
 					return insets;
-
-
-				var appBar = v.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
-
+					
 				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
-				v.SetPadding(0, 0, 0, bottomInset);
-				appBar?.SetPadding(0, topInset, 0, 0);
+				v.SetPadding(0, topInset, 0, bottomInset);
 
 				return WindowInsetsCompat.Consumed;
 			}
