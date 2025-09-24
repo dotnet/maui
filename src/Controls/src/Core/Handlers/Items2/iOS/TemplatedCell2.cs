@@ -93,9 +93,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure = virtualView.Measure(constraints.Width, constraints.Height);
+					if (ShouldUseCachedFirstItemSize(out var itemsView))
+					{
+						// Always get the cached first item size from the CollectionView
+						var cached = CollectionViewMeasurementCache.GetFirstItemMeasuredSize(itemsView);
+						if (!cached.IsZero)
+						{
+							_measuredSize = cached;
+							// Even when we have a cached measurement for the first item (due to ItemSizingStrategy.MeasureFirstItem),
+							// we still need to call Measure on the virtualView. This is because the iOS platform's layout system
+							// relies on each cell participating in the measure lifecycle to update its internal state and bookkeeping,
+							// such as invalidating layout caches or triggering layout events.
+							// especially when templated views have explicit HeightRequest which won't arrange correctly otherwise.
+							virtualView.Measure(constraints.Width, cached.Height);
+						}
+						else
+						{
+							_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+						}
+					}
+					else
+					{
+						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+					}
 					_cachedConstraints = constraints;
-					_measuredSize = measure;
 					_needsArrange = true;
 				}
 
@@ -121,6 +142,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
 				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
 			return constraints;
+		}
+
+		/// <summary>
+		/// Determines whether the cached first item size should be used for measurement optimization.
+		/// </summary>
+		/// <param name="itemsView">The CollectionView if optimization should be used, null otherwise.</param>
+		/// <returns>True if cached first item size should be used, false otherwise.</returns>
+		private bool ShouldUseCachedFirstItemSize(out CollectionView itemsView)
+		{
+			itemsView = null;
+
+			if (PlatformHandler?.VirtualView is View view &&
+				view.Parent is CollectionView collectionView &&
+				collectionView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				itemsView = collectionView;
+				return true;
+			}
+
+			return false;
 		}
 
 		public override void LayoutSubviews()
