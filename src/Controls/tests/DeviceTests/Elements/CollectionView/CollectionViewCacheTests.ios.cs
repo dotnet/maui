@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -85,6 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[RequiresUnreferencedCode("Test uses string-based bindings which are not trim-safe")]
 		public async Task EnsureCellSizesAreCached()
 		{
 			SetupBuilder();
