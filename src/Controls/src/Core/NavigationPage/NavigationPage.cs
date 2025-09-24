@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		INavigationPageController NavigationPageController => this;
 
-	
+
 		partial void Init();
 
 #if WINDOWS || ANDROID || TIZEN
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		bool _setForMaui;
-			
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
@@ -714,9 +714,9 @@ namespace Microsoft.Maui.Controls
 				var visiblePage = Navigation.NavigationStack[NavigationStack.Count - 1];
 				RootPage = navStack[0];
 				CurrentPage = visiblePage;
-				
+
 				var navigationType = DetermineNavigationType();
-				
+
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
@@ -736,13 +736,13 @@ namespace Microsoft.Maui.Controls
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
 			}
 		}
-		
+
 		NavigationType DetermineNavigationType()
 		{
 			var parentPages = this.GetParentPages();
 
 			bool hasTabOrFlyout = parentPages.Any(page => page is FlyoutPage or TabbedPage);
-    
+
 			if (hasTabOrFlyout)
 			{
 				return NavigationType.Replace;
@@ -750,7 +750,7 @@ namespace Microsoft.Maui.Controls
 
 			return NavigationType.Push;
 		}
-		
+
 		// Once we get all platforms over to the new APIs
 		// we can just delete all the code inside NavigationPage.cs that fires "requested" events
 		class MauiNavigationImpl : NavigationProxy
@@ -894,7 +894,7 @@ namespace Microsoft.Maui.Controls
 						Owner.NavigationType = navigationType;
 						// Move the SendNavigating here so that it's fired prior to the stack being modified
 						// This ensures consistent event ordering across all platforms (iOS, Catalyst, Android, Windows)
-						Owner.SendNavigating(previousPage);
+						Owner.SendNavigating(navigationType, previousPage);
 						Owner.PushPage(root);
 					},
 					() =>
