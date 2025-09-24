@@ -111,10 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
-				if (sender.Handler == null)
-				{
-					sender.ToHandler(MauiContext);
-				}
+				EnsureHandlerExists(sender);
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -175,10 +172,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
-				if (sender.Handler == null)
-				{
-					sender.ToHandler(MauiContext);
-				}
+				EnsureHandlerExists(sender);
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -260,10 +254,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
-				if (sender.Handler == null)
-				{
-					sender.ToHandler(MauiContext);
-				}
+				EnsureHandlerExists(sender);
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -305,6 +296,14 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
 				alertDialog.Show();
 				editText.RequestFocus();
+			}
+
+			void EnsureHandlerExists(IView sender)
+			{
+				if (sender.Handler == null)
+				{
+					sender.ToHandler(MauiContext);
+				}
 			}
 
 			void UpdateProgressBarVisibility(bool isBusy)
