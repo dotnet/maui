@@ -270,4 +270,14 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_MauiSetWinUIDefaultsForPublishAot" BeforeTargets="PrepareForBuild" Condition="'$(PublishAot)' == 'true' and '$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <PropertyGroup>
+      <DebugSymbols Condition="'$(DebugSymbols)' == ''">false</DebugSymbols>
+      <DebugType Condition="'$(DebugType)' == ''">None</DebugType>
+      <EmbedXbfInPri Condition="'$(EmbedXbfInPri)' == ''">false</EmbedXbfInPri>
+      <SelfContained Condition="'$(SelfContained)' == ''">true</SelfContained>
+      <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+    </PropertyGroup>
+  </Target>
+
 </Project>

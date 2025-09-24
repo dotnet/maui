@@ -1,0 +1,165 @@
+<!-- TwoPaneViewOptionsPage.xaml -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TwoPaneViewOptionsPage"
+             x:DataType="local:TwoPaneViewViewModel"
+             Title="TwoPaneView Options">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+       <HorizontalStackLayout>
+       <VerticalStackLayout 
+              Spacing="10" Padding="5"
+              AutomationId="DimensionsPanel">
+
+              <!-- MinTallModeHeight -->
+              <Label Text="MinTallModeHeight"
+                     FontAttributes="Bold"/>
+              <Stepper x:Name="TallModeStepper"
+                       Maximum="1000"
+                       Minimum="0"
+                       Increment="200"
+                       ValueChanged="OnTallModeHeightChanged"
+                       AutomationId="TallModeStepper"/>
+              <Label x:Name="TallModeHeightValue"
+                     Text="500px"
+                     AutomationId="TallModeHeightValue"/>
+
+              <!-- MinWideModeWidth -->
+              <Label Text="MinWideModeWidth"
+                     FontAttributes="Bold"/>
+              <Stepper x:Name="WideModeStepper"
+                       Maximum="1500"
+                       Minimum="0"
+                       Increment="200"
+                       ValueChanged="OnWideModeWidthChanged"
+                       AutomationId="WideModeStepper"/>
+              <Label x:Name="WideModeWidthValue"
+                     Text="700px"/>
+
+              <!-- Pane1Length -->
+              <Label Text="Pane1Length"
+                     FontAttributes="Bold"
+                     AutomationId="Pane1LengthLabel"/>
+              <Stepper x:Name="Pane1LengthStepper"
+                       Maximum="2"
+                       Minimum="0.5"
+                       Increment="0.5"
+                       ValueChanged="OnPane1LengthChanged"
+                       AutomationId="Pane1LengthStepper"/>
+              <Label x:Name="Pane1LengthValue"
+                     Text="1"
+                     AutomationId="Pane1LengthValue"/>
+
+              <!-- Pane2Length -->
+              <Label Text="Pane2Length"
+                     FontAttributes="Bold"
+                     AutomationId="Pane2LengthLabel"/>
+              <Stepper x:Name="Pane2LengthStepper"
+                       Maximum="2"
+                       Minimum="0.5"
+                       Increment="0.5"
+                       ValueChanged="OnPane2LengthChanged"
+                       AutomationId="Pane2LengthStepper"/>
+              <Label x:Name="Pane2LengthValue"
+                     Text="1"
+                     AutomationId="Pane2LengthValue"/>
+       </VerticalStackLayout>
+       <VerticalStackLayout  Spacing="10" Padding="5">
+               <!-- TallModeConfiguration -->
+              <Label Text="TallModeConfiguration"
+                     FontAttributes="Bold"
+                     Margin="0,10,0,0"
+                     AutomationId="TallModeConfigurationLabel"/>
+              <Label 
+                     FontSize="Small"
+                     TextColor="#6c757d"
+                     AutomationId="TallModeConfigurationDescription"/>
+              <HorizontalStackLayout>
+                  <RadioButton Content="TopBottom"
+                               GroupName="TallModeGroup"
+                               IsChecked="{Binding IsTallModeTopBottom}"
+                               Value="TopBottom"
+                               AutomationId="TallModeTopBottomRadio"/>
+                  <RadioButton Content="SinglePane"
+                               GroupName="TallModeGroup"
+                               IsChecked="{Binding IsTallModeSinglePane}"
+                               Value="SinglePane"
+                               AutomationId="TallModeSinglePaneRadio"/>
+              </HorizontalStackLayout>
+
+              <!-- WideModeConfiguration -->
+              <Label Text="WideModeConfiguration"
+                     FontAttributes="Bold"
+                     Margin="0,10,0,0"
+                     AutomationId="WideModeConfigurationLabel"/>
+              <Label 
+                     FontSize="Small"
+                     TextColor="#6c757d"
+                     AutomationId="WideModeConfigurationDescription"/>
+              <HorizontalStackLayout>
+                  <RadioButton Content="LeftRight"
+                               GroupName="WideModeGroup"
+                               IsChecked="{Binding IsWideModeLeftRight}"
+                               Value="LeftRight"
+                               AutomationId="WideModeLeftRightRadio"/>
+                  <RadioButton Content="SinglePane"
+                               GroupName="WideModeGroup"
+                               IsChecked="{Binding IsWideModeSinglePane}"
+                               Value="SinglePane"
+                               AutomationId="WideModeSinglePaneRadio"/>
+              </HorizontalStackLayout>
+
+              <!-- PanePriority -->
+              <Label Text="PanePriority"
+                     FontAttributes="Bold"
+                     Margin="0,10,0,0"
+                     AutomationId="PanePriorityLabel"/>
+              <Label
+                     FontSize="Small"
+                     TextColor="#6c757d"
+                     AutomationId="PanePriorityDescription"/>
+              <HorizontalStackLayout>
+                  <RadioButton Content="Pane1"
+                               GroupName="PanePriorityGroup"
+                               IsChecked="{Binding IsPanePriorityPane1}"
+                               Value="Pane1"
+                               AutomationId="PanePriorityPane1Radio"/>
+                  <RadioButton Content="Pane2"
+                               GroupName="PanePriorityGroup"
+                               IsChecked="{Binding IsPanePriorityPane2}"
+                               Value="Pane2"
+                               AutomationId="PanePriorityPane2Radio"/>
+              </HorizontalStackLayout>
+
+              <HorizontalStackLayout Spacing="10"
+                                     Padding="0,10,0,0">
+                     <CheckBox x:Name="FlowDirectionRTLCheckBox"
+                               AutomationId="FlowDirectionRTLCheckBox"
+                               IsChecked="False"
+                               CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
+                     <Label Text="RTL"
+                            VerticalOptions="Center"
+                            AutomationId="FlowDirectionLabel"/>
+              </HorizontalStackLayout>
+              <HorizontalStackLayout Spacing="10">
+                     <CheckBox IsChecked="{Binding IsVisible}"
+                               AutomationId="VisibilityCheckBox"/>
+                     <Label Text="Is Visible"
+                            VerticalOptions="Center"
+                            AutomationId="VisibilityLabel"/>
+              </HorizontalStackLayout>
+              <HorizontalStackLayout Spacing="10">
+                     <CheckBox IsChecked="{Binding IsShadowEnabled}"
+                               AutomationId="ShadowCheckBox"/>
+                     <Label Text="Is Shadow Enabled"
+                            VerticalOptions="Center"
+                            AutomationId="ShadowLabel"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
+       </HorizontalStackLayout>
+</ContentPage>
