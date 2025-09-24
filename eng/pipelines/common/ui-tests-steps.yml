@@ -175,6 +175,7 @@ steps:
   condition: always()
   displayName: publish artifacts
 
+# Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
@@ -182,83 +183,3 @@ steps:
     displayName: 'Enable Notification Center'
     continueOnError: true
     timeoutInMinutes: 60
-
-  - ${{ if eq(parameters.platform, 'android')}}:
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff"
-          if (Test-Path $folderPath) {
-            Write-Host "##vso[task.setvariable variable=androidFolderExists;isOutput=true]true"
-          } else {
-            Write-Host "##vso[task.setvariable variable=androidFolderExists;isOutput=true]false"
-          }
-      name: CheckAndroidFolderExists
-
-    - task: PublishBuildArtifacts@1
-      condition: eq(variables['CheckAndroidFolderExists.androidFolderExists'], 'true')
-      displayName: publish Android screenshots artifacts
-      inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Android.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
-        ArtifactName: uitest-snapshot-results-android
-
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff"
-          if (Test-Path $folderPath) {
-            Write-Host "##vso[task.setvariable variable=iosFolderExists;isOutput=true]true"
-          } else {
-            Write-Host "##vso[task.setvariable variable=iosFolderExists;isOutput=true]false"
-          }
-      name: CheckIosFolderExists
-
-    - task: PublishBuildArtifacts@1
-      condition: eq(variables['CheckIosFolderExists.iosFolderExists'], 'true')
-      displayName: publish iOS screenshots artifacts
-      inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.iOS.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
-        ArtifactName: uitest-snapshot-results-ios
-
-  - ${{ if eq(parameters.platform, 'windows')}}:
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff"
-          if (Test-Path $folderPath) {
-            Write-Host "##vso[task.setvariable variable=windowsFolderExists;isOutput=true]true"
-          } else {
-            Write-Host "##vso[task.setvariable variable=windowsFolderExists;isOutput=true]false"
-          }
-      name: CheckWindowsFolderExists
-
-    - task: PublishBuildArtifacts@1
-      condition: eq(variables['CheckWindowsFolderExists.windowsFolderExists'], 'true')
-      displayName: publish Windows screenshots artifacts
-      inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.WinUI.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
-        ArtifactName: uitest-snapshot-results-windows
-
-  - ${{ if eq(parameters.platform, 'catalyst')}}:
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          $folderPath = "${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff"
-          if (Test-Path $folderPath) {
-            Write-Host "##vso[task.setvariable variable=macFolderExists;isOutput=true]true"
-          } else {
-            Write-Host "##vso[task.setvariable variable=macFolderExists;isOutput=true]false"
-          }
-      name: CheckMacFolderExists
-
-    - task: PublishBuildArtifacts@1
-      condition: eq(variables['CheckMacFolderExists.macFolderExists'], 'true')
-      displayName: publish Mac screenshots artifacts
-      inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.TestCases.Mac.Tests/${{ parameters.configuration }}/net9.0/snapshots-diff
-        ArtifactName: uitest-snapshot-results-mac

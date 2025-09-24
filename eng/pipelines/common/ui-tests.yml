@@ -147,7 +147,14 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
-  
+
+                  # Collect and publish Android snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
+
+
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
     dependsOn: build_ui_tests_coreclr
@@ -186,6 +193,12 @@ stages:
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
+                  
+                  # Collect and publish Android snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -227,6 +240,12 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -264,6 +283,12 @@ stages:
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS CV2'
+                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_carv2
     displayName: iOS UITests Mono CarouselView2
@@ -301,6 +326,12 @@ stages:
                       testFilter: "CarouselView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CARV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS CARV2'
+                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.JobName)-$(System.JobAttempt)'
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
@@ -375,6 +406,12 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Windows snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Windows'
+                      artifactName: 'uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -407,3 +444,9 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Mac snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Mac'
+                      artifactName: 'uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)'
