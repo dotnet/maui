@@ -1741,9 +1741,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;
 
-			if (node.Properties.ContainsKey(XmlName.xKey))
+			if (node.Properties.TryGetValue(XmlName.xKey, out INode property))
 			{
-				var valueNode = node.Properties[XmlName.xKey] as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
+				var valueNode = property as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
 				var key = (valueNode).Value as string;
 				var names = context.Cache.GetResourceNamesInUse(parent);
 				if (names.Contains(key))
@@ -1794,10 +1794,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 
-			if (node.Properties.ContainsKey(XmlName.xKey))
+			if (node.Properties.TryGetValue(XmlName.xKey, out INode property))
 			{
 				var names = context.Cache.GetResourceNamesInUse(parent);
-				var valueNode = node.Properties[XmlName.xKey] as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
+				var valueNode = property as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
 				var key = (valueNode).Value as string;
 				names.Add(key);
 
