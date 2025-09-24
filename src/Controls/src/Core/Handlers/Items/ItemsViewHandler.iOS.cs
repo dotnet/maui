@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ConnectHandler(platformView);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
+			// Enable the native iOS "tap status bar to scroll to top" behavior
+			Controller.CollectionView.ScrollsToTop = true;
 			ItemsView.ScrollToRequested += ScrollToRequested;
 		}
 
