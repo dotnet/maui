@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-				 xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-				 x:Class="Maui.Controls.Sample.Issues.Issue22104">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue22104">
 
   <ContentPage.BindingContext>
     <local:Issue22104ViewModel/>
   </ContentPage.BindingContext>
-
   <ContentPage.Resources>
     <Style TargetType="Label">
+      <Setter Property="TextColor"
+      Value="Blue"/>
+      <Setter Property="Background"
+      Value="Transparent"/>
       <Setter Property="VisualStateManager.VisualStateGroups">
         <VisualStateGroupList>
           <VisualStateGroup x:Name="CommonStates">
             <VisualState x:Name="Normal">
               <VisualState.Setters>
-                <Setter Property="TextColor" Value="Black"/>
+                <Setter Property="TextColor"
+            Value="Black"/>
+                <Setter Property="Background"
+            Value="AliceBlue"/>
               </VisualState.Setters>
             </VisualState>
             <VisualState x:Name="Selected">
               <VisualState.Setters>
-                <Setter Property="TextColor" Value="Red"/>
+                <Setter Property="TextColor"
+            Value="Blue"/>
+                <Setter Property="Background"
+            Value="Red"/>
               </VisualState.Setters>
             </VisualState>
           </VisualStateGroup>
@@ -30,25 +39,25 @@
   </ContentPage.Resources>
 
   <VerticalStackLayout
-           Padding="30,0"
-           Spacing="25">
+    Padding="30,0"
+    Spacing="25">
     <Image
-               Source="dotnet_bot.png"
-               HeightRequest="185"
-               Aspect="AspectFit"
-               SemanticProperties.Description="dot net bot in a race car number eight" />
+      Source="dotnet_bot.png"
+      HeightRequest="185"
+      Aspect="AspectFit"
+      SemanticProperties.Description="dot net bot in a race car number eight"/>
 
     <Button    AutomationId="Button"
                Text="Select Next"
                Command="{Binding SelectNextCommand}"
-               HorizontalOptions="Fill" />
+               HorizontalOptions="Fill"/>
 
-    <Label
-               Text="{Binding LabelText}" />
+    <Label  Text="{Binding LabelText}"/>
 
-    <CollectionView AutomationId="CollectionView" ItemsSource="{Binding List}"
-                           SelectionMode="Single" 
-                           SelectedItem="{Binding SelectedItem}">
+    <CollectionView AutomationId="CollectionView"
+        ItemsSource="{Binding List}"
+                    SelectionMode="Single"
+                    SelectedItem="{Binding SelectedItem}">
       <CollectionView.ItemTemplate>
         <DataTemplate x:DataType="x:String">
           <Label Text="{Binding .}"/>
