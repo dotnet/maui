@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue6407"
+             Title="Tap Gesture > 2 Taps">
+    <ScrollView>
+        <StackLayout Padding="20">
+            <Label Text="Test NumberOfTapsRequired > 2" 
+                   FontSize="18" 
+                   FontAttributes="Bold" 
+                   Margin="0,0,0,20"/>
+            
+            <Label Text="Instructions: Test each box with the specified number of taps" 
+                   FontSize="14" 
+                   Margin="0,0,0,20"/>
+
+            <!-- Single Tap Test -->
+            <Label Text="Single Tap Test:" FontAttributes="Bold"/>
+            <BoxView x:Name="SingleTapBox"
+                     BackgroundColor="LightBlue"
+                     HeightRequest="80"
+                     WidthRequest="200"
+                     HorizontalOptions="Center"
+                     AutomationId="SingleTapBox">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="OnSingleTap"/>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+            <Label x:Name="SingleTapCounter" Text="Single taps: 0" Margin="0,5,0,15" AutomationId="SingleTapCounter"/>
+
+            <!-- Double Tap Test -->
+            <Label Text="Double Tap Test:" FontAttributes="Bold"/>
+            <BoxView x:Name="DoubleTapBox"
+                     BackgroundColor="LightGreen"
+                     HeightRequest="80"
+                     WidthRequest="200"
+                     HorizontalOptions="Center"
+                     AutomationId="DoubleTapBox">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnDoubleTap"/>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+            <Label x:Name="DoubleTapCounter" Text="Double taps: 0" Margin="0,5,0,15" AutomationId="DoubleTapCounter"/>
+
+            <!-- Triple Tap Test -->
+            <Label Text="Triple Tap Test:" FontAttributes="Bold"/>
+            <BoxView x:Name="TripleTapBox"
+                     BackgroundColor="LightCoral"
+                     HeightRequest="80"
+                     WidthRequest="200"
+                     HorizontalOptions="Center"
+                     AutomationId="TripleTapBox">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer NumberOfTapsRequired="3" Tapped="OnTripleTap"/>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+            <Label x:Name="TripleTapCounter" Text="Triple taps: 0" Margin="0,5,0,15" AutomationId="TripleTapCounter"/>
+
+            <!-- Quadruple Tap Test -->
+            <Label Text="Quadruple Tap Test:" FontAttributes="Bold"/>
+            <BoxView x:Name="QuadrupleTapBox"
+                     BackgroundColor="LightGoldenrodYellow"
+                     HeightRequest="80"
+                     WidthRequest="200"
+                     HorizontalOptions="Center"
+                     AutomationId="QuadrupleTapBox">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer NumberOfTapsRequired="4" Tapped="OnQuadrupleTap"/>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+            <Label x:Name="QuadrupleTapCounter" Text="Quadruple taps: 0" Margin="0,5,0,15" AutomationId="QuadrupleTapCounter"/>
+
+            <!-- Quintuple Tap Test -->
+            <Label Text="Quintuple Tap Test:" FontAttributes="Bold"/>
+            <BoxView x:Name="QuintupleTapBox"
+                     BackgroundColor="Plum"
+                     HeightRequest="80"
+                     WidthRequest="200"
+                     HorizontalOptions="Center"
+                     AutomationId="QuintupleTapBox">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer NumberOfTapsRequired="5" Tapped="OnQuintupleTap"/>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+            <Label x:Name="QuintupleTapCounter" Text="Quintuple taps: 0" Margin="0,5,0,15" AutomationId="QuintupleTapCounter"/>
+
+            <!-- Reset Button -->
+            <Button Text="Reset Counters" 
+                    Clicked="OnResetCounters" 
+                    Margin="0,20,0,0"
+                    AutomationId="ResetButton"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
