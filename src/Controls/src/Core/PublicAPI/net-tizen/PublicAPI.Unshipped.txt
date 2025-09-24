@@ -34,6 +34,9 @@ Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, 
 *REMOVED*Microsoft.Maui.Controls.IMessagingCenter
 Microsoft.Maui.Controls.SearchHandler.HideSoftInputAsync() -> void
 Microsoft.Maui.Controls.SearchHandler.ShowSoftInputAsync() -> void
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
