@@ -399,7 +399,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				// Get the current orientation, default to Portrait (e.g. Windows, Mac)
 				var orientation = OpenQA.Selenium.ScreenOrientation.Portrait;
-#if ANDROID || IOS
+#if ANDROID || IOSUITEST
 				orientation = App.GetOrientation();
 #endif
 
