@@ -13,6 +13,8 @@
         <Label Text="Test page for toolbar overflow menu (3 dots) theming in dark mode" AutomationId="IssueDescription" />
         <Label Text="The 3-dot menu should be visible in dark theme on both Windows 10 and Windows 11" />
         <Label Text="Check that the overflow menu button is appropriately themed for dark mode" />
-        <Button Text="Open Menu" AutomationId="OpenMenuButton" Clicked="OnOpenMenuClicked" />
+        <Label Text="This issue was: 3-dot overflow button appeared black in Windows 10 dark theme but white in Windows 11" />
+        <Button Text="Toggle IconColor" AutomationId="ToggleIconColorButton" Clicked="OnToggleIconColorClicked" />
+        <Label x:Name="StatusLabel" Text="IconColor: Default" AutomationId="StatusLabel" />
     </StackLayout>
 </ContentPage>
