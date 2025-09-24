@@ -122,7 +122,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 				((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 				Element.Appearing -= OnTabbedPageAppearing;
-				Element.Disappearing -= OnTabbedPageDisappearing;
 				RemoveTabs();
 				_viewPager.LayoutChange -= OnLayoutChanged;
 				_viewPager.Adapter = null;
@@ -133,7 +132,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				_viewPager.LayoutChange += OnLayoutChanged;
 				Element.Appearing += OnTabbedPageAppearing;
-				Element.Disappearing += OnTabbedPageDisappearing;
 				_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 				if (IsBottomTabPlacement)
@@ -213,11 +211,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				_tabplacementId = 0;
 			}
-		}
-
-		void OnTabbedPageDisappearing(object sender, EventArgs e)
-		{
-			RemoveTabs();
 		}
 
 		void OnTabbedPageAppearing(object sender, EventArgs e)
