@@ -794,7 +794,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Test that fragment creation and destruction works without exceptions
 				var shellContent = shell.CurrentItem.CurrentItem.Items.First();
-				var mauiContext = handler.MauiContext;
+				var mauiContext = MauiContext;
 				
 				Exception exception = null;
 				try
