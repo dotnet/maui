@@ -277,10 +277,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ContentPage has special logic - defaults to SafeAreaRegions.None (edge-to-edge) on iOS
 			var safeAreaView2 = (ISafeAreaView2)page;
 
-			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0));
-			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(1));
-			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(2));
-			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(3));
+			// only iOS defaults to "None" for ContentPage so we are just validating that the default is container
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView2.GetSafeAreaRegionsForEdge(0));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView2.GetSafeAreaRegionsForEdge(1));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView2.GetSafeAreaRegionsForEdge(2));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView2.GetSafeAreaRegionsForEdge(3));
 		}
 
 		// Tests based on existing iOS safe area usage patterns

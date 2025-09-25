@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 		IBorderStroke? _clip;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
+		bool _isInsetListenerSet;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Platform
 			// ScrollViews handle their own insets
 			if (Parent is not MauiScrollView)
 			{
-				GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+				_isInsetListenerSet = GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(this, _context);
 			}
 		}
 
@@ -62,6 +63,7 @@ namespace Microsoft.Maui.Platform
 			base.OnDetachedFromWindow();
 			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
 			_didSafeAreaEdgeConfigurationChange = true;
+			_isInsetListenerSet = false;
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -141,7 +143,7 @@ namespace Microsoft.Maui.Platform
 
 			CrossPlatformArrange(destination);
 
-			if (_didSafeAreaEdgeConfigurationChange)
+			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
