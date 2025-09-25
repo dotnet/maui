@@ -65,6 +65,18 @@ public class Issue31361 : ContentPage
 			contentLabel.Text = "The content is not scrollable";
 		};
 
+		var changeLoopButton = new Button
+		{
+			Text = "Change Loop",
+			AutomationId = "changeLoopButton",
+			HorizontalOptions = LayoutOptions.Center,
+			Margin = new Thickness(20)
+		};
+		changeLoopButton.Clicked += (s, e) =>
+		{
+			carouselView.Loop = !carouselView.Loop;
+		};
+
 		carouselView.Scrolled += (s, e) =>
 		{
 			if (e.VerticalDelta != 0)
@@ -80,6 +92,7 @@ public class Issue31361 : ContentPage
 		verticalStackLayout.Children.Add(contentLabel);
 		verticalStackLayout.Children.Add(carouselView);
 		verticalStackLayout.Children.Add(orientationButton);
+		verticalStackLayout.Children.Add(changeLoopButton);
 		Content = verticalStackLayout;
 	}
 }
