@@ -48,6 +48,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new AlertsGalleryPage(), "Alerts Gallery"),
 			// Elements
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
+			new GalleryPageFactory(() => new BorderControlPage(), "Border Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
 			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
@@ -68,6 +69,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new KeyboardScrollingScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Small Titles"),
 			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
+			new GalleryPageFactory(() => new PickerControlPage(), "Picker Feature Matrix"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 			new GalleryPageFactory(() => new ProgressBarControlPage(), "ProgressBar Feature Matrix"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
@@ -86,7 +88,9 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new TimePickerControlPage(), "Time Picker Feature Matrix"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
+			new GalleryPageFactory(() => new RefreshViewControlPage(), "RefreshView Feature Matrix"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
+			new GalleryPageFactory(() => new NavigationPageControlPage(), "NavigationPage Feature Matrix"),
 			new GalleryPageFactory(() => new CheckBoxControlPage(), "CheckBox Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
@@ -99,7 +103,19 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewControlPage(), "ScrollView Feature Matrix"),
 			new GalleryPageFactory(() => new GraphicsViewControlPage(), "GraphicsView Feature Matrix"),
 			new GalleryPageFactory(() => new EditorControlPage(), "Editor Feature Matrix"),
+			new GalleryPageFactory(() => new StackLayoutControlPage(), "StackLayout Feature Matrix"),
+			new GalleryPageFactory(() => new AbsoluteLayoutControlPage(), "AbsoluteLayout Feature Matrix"),
+			new GalleryPageFactory(() => new ContentViewControlPage(), "ContentView Feature Matrix"),
+			new GalleryPageFactory(() => new ShapesControlPage(), "Shapes Feature Matrix"),
+			new GalleryPageFactory(() => new ContentPageControlPage(), "ContentPage Feature Matrix"),
+			new GalleryPageFactory(() => new FlyoutControlPage(), "Flyout Feature Matrix"),
+			new GalleryPageFactory(() => new SwipeViewControlPage(), "SwipeView Feature Matrix"),
+			new GalleryPageFactory(() => new WebViewControlPage(), "WebView Feature Matrix"),
+			new GalleryPageFactory(() => new TwoPaneViewControlPage(), "TwoPaneView Feature Matrix"),
+			new GalleryPageFactory(() => new TitleBarControlPage(), "TitleBar Feature Matrix"),
+			new GalleryPageFactory(() => new IndicatorViewControlPage(), "IndicatorView Feature Matrix"),
 		};
+
 
 		public CorePageView(Page rootPage)
 		{

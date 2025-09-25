@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="Type[@FullName='Microsoft.Maui.Controls.CarouselView']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.ItemsView"/> whose scrollable child views 'snap' into place.</summary>
 	public class CarouselView : ItemsView
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemVisualState']/Docs/*" />
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls
 			carousel.OnPositionChanged(args);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='SetIsDragging']/Docs/*" />
+		/// <param name="value">The value to set.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsDragging(bool value)
 		{

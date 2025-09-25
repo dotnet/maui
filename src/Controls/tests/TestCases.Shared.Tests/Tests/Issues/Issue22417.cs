@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST //This test is failing, likely due to product issue, for more information: https://github.com/dotnet/maui/issues/27059
+﻿#if TEST_FAILS_ON_WINDOWS //This test is failing, likely due to product issue, for more information: https://github.com/dotnet/maui/issues/27059
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

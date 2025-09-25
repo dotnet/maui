@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || ANDROID
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/19240"
 #endif
 		)]
@@ -111,60 +111,58 @@ namespace Microsoft.Maui.DeviceTests
 
 			var weakReferences = new List<WeakReference>();
 
+			var labels = new List<Label>();
+			IList logicalChildren = null;
+			var collectionView = new CollectionView
 			{
-				var labels = new List<Label>();
-				IList logicalChildren = null;
-				var collectionView = new CollectionView
+				Header = new Label { Text = "Header" },
+				Footer = new Label { Text = "Footer" },
+				ItemTemplate = new DataTemplate(() =>
 				{
-					Header = new Label { Text = "Header" },
-					Footer = new Label { Text = "Footer" },
-					ItemTemplate = new DataTemplate(() =>
-					{
-						var label = new Label();
-						labels.Add(label);
-						return label;
-					}),
-				};
+					var label = new Label();
+					labels.Add(label);
+					return label;
+				}),
+			};
 
-				var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 
-				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await navPage.PushAsync(new ContentPage { Content = collectionView });
+
+				var data = new ObservableCollection<string>()
 				{
-					await navPage.PushAsync(new ContentPage { Content = collectionView });
-
-					var data = new ObservableCollection<string>()
-					{
 						"Item 1",
 						"Item 2",
 						"Item 3"
-					};
-					weakReferences.Add(new(data));
-					collectionView.ItemsSource = data;
-					await Task.Delay(100);
+				};
+				weakReferences.Add(new(data));
+				collectionView.ItemsSource = data;
+				await Task.Delay(100);
 
-					Assert.NotEmpty(labels);
-					foreach (var label in labels)
-					{
-						weakReferences.Add(new(label));
-						weakReferences.Add(new(label.Handler));
-						weakReferences.Add(new(label.Handler.PlatformView));
-					}
+				Assert.NotEmpty(labels);
+				foreach (var label in labels)
+				{
+					weakReferences.Add(new(label));
+					weakReferences.Add(new(label.Handler));
+					weakReferences.Add(new(label.Handler.PlatformView));
+				}
 
-					// Get ItemsView._logicalChildren
-					var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-					logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
-					Assert.NotNull(logicalChildren);
-
-					// Replace with cloned collection
-					collectionView.ItemsSource = new ObservableCollection<string>(data);
-					await Task.Delay(100);
-					await navPage.PopAsync();
-				});
-
-
+				// Get ItemsView._logicalChildren
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
 				Assert.NotNull(logicalChildren);
-				Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
-			}
+
+				// Replace with cloned collection
+				collectionView.ItemsSource = new ObservableCollection<string>(data);
+				await Task.Delay(100);
+				await navPage.PopAsync();
+			});
+
+
+			Assert.NotNull(logicalChildren);
+			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}

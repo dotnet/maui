@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Platform
 {
-	public sealed class TextAlignmentToHorizontalAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public sealed partial class TextAlignmentToHorizontalAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

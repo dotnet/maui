@@ -70,14 +70,14 @@ namespace Microsoft.Maui.Controls
 		System.Type IWrappedValue.ValueType => typeof(T);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs/*" />
+	/// <summary>Class that is used within <c>OnPlatform</c> tags in XAML when specifying values on platforms.</summary>
 	[ContentProperty("Value")]
 	public class On
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Platform']/Docs/*" />
+		/// <summary>Gets or sets the list of specified platforms.</summary>
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> Platform { get; set; }
-		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>Gets or sets the value on the current platform.</summary>
 		public object Value { get; set; }
 	}
 }

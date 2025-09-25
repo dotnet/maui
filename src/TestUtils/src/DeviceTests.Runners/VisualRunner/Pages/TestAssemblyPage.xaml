@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner"
              x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.TestAssemblyPage"
+             x:DataType="local:TestAssemblyViewModel"
              Title="{Binding DisplayName}">
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20" RowSpacing="10">
@@ -32,9 +33,9 @@
                             ItemsSource="{Binding TestCases}"
                             SelectionMode="Single"
                             SelectionChangedCommand="{Binding NavigateToResultCommand}"
-                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}}">
+                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}, x:DataType=CollectionView}">>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="local:TestCaseViewModel">
                         <StackLayout Padding="20,10" Spacing="5">
                             <Label Text="{Binding DisplayName}" />
                             <Label Text="{Binding Message}" TextColor="{Binding RunStatus, Converter={StaticResource RunStatusToColorConverter}}" />

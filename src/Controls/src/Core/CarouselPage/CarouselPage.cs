@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CarouselPage>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CarouselPage.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the CarouselPage class.</summary>
 		public CarouselPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CarouselPage>>(() => new PlatformConfigurationRegistry<CarouselPage>(this));

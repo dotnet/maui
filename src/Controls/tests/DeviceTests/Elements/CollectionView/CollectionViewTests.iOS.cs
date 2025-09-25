@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -52,6 +56,61 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				GroupHeader = header;
 			}
+		}
+
+		[Fact]
+		public async Task CollectionViewItemsArrangeCorrectly()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = Enumerable.Range(1, 50).Select(i => $"Item {i}").ToArray();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				MaximumHeightRequest = 300,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+					};
+					label.SetBinding(Label.TextProperty, ".");
+
+					return new Border
+					{
+						WidthRequest = 200,
+						StrokeShape = new RoundRectangle() { CornerRadius = 12 },
+						Content = label
+					};
+				}),
+				ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Horizontal)
+				{
+					HorizontalItemSpacing = 50
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				// Get the first cell's content
+				var firstCellContent = collectionView.GetVisualTreeDescendants().OfType<Border>().FirstOrDefault();
+
+				Assert.NotNull(firstCellContent);
+
+				var frame = firstCellContent.Frame;
+
+				Assert.True(frame.Width == 200 && frame.Height == 300);
+
+			});
 		}
 
 		[Fact]
@@ -101,29 +160,27 @@ namespace Microsoft.Maui.DeviceTests
 			var labels = new List<WeakReference>();
 			VerticalCell cell = null;
 
+			var bindingContext = "foo";
+			var collectionView = new MyUserControl
 			{
-				var bindingContext = "foo";
-				var collectionView = new MyUserControl
-				{
-					Labels = labels
-				};
-				collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
+				Labels = labels
+			};
+			collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
 
-				var handler = await CreateHandlerAsync(collectionView);
+			var handler = await CreateHandlerAsync(collectionView);
 
-				await InvokeOnMainThreadAsync(() =>
-				{
-					cell = new VerticalCell(CGRect.Empty);
-					cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-				});
+			await InvokeOnMainThreadAsync(() =>
+			{
+				cell = new VerticalCell(CGRect.Empty);
+				cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
+			});
 
-				Assert.NotNull(cell);
-			}
+			Assert.NotNull(cell);
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
-			await AssertionExtensions.WaitForGC(labels.ToArray());
+			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
 		}
 

@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs/*" />
+	/// <summary>Class that presents a menu item and associates it with a command.</summary>
 	public partial class MenuItem : BaseMenuItem, IMenuItemController, ICommandElement, IMenuElement, IPropertyPropagationController
 	{
 		/// <summary>Bindable property for <see cref="Accelerator"/>.</summary>
@@ -46,28 +46,31 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='GetAccelerator']/Docs/*" />
+		/// <summary>Gets the accelerator for the specified bindable object.</summary>
+		/// <param name="bindable">The bindable object for which to retrieve the accelerator keys.</param>
 		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")]
 		public static Accelerator GetAccelerator(BindableObject bindable) => (Accelerator)bindable.GetValue(AcceleratorProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='SetAccelerator']/Docs/*" />
+		/// <summary>Sets the accelerator for the specified bindable object.</summary>
+		/// <param name="bindable">The bindable object for which to set the accelerator keys.</param>
+		/// <param name="value">The new accelerator for the object.</param>
 		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")]
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Intitializes a new <see cref="Microsoft.Maui.Controls.MenuItem"/> instance.</summary>
 		public MenuItem()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>Gets or sets the command that is run when the menu is clicked. This is a bindable property.</summary>
 		public ICommand Command
 		{
 			get => (ICommand)GetValue(CommandProperty);
 			set => SetValue(CommandProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter that is passed to the command. This is a bindable property.</summary>
 		public object CommandParameter
 		{
 			get => GetValue(CommandParameterProperty);
@@ -81,21 +84,22 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IconImageSourceProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='IsDestructive']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates whether or not the menu item removes its associated UI element.</summary>
+		/// <remarks>The following example shows how to add a MenuItem with IsDestructive set to True.</remarks>
 		public bool IsDestructive
 		{
 			get => (bool)GetValue(IsDestructiveProperty);
 			set => SetValue(IsDestructiveProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>The text of the menu item. This is a bindable property.</summary>
 		public string Text
 		{
 			get => (string)GetValue(TextProperty);
 			set => SetValue(TextProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform. This is a bindable property.</summary>
 		public bool IsEnabled
 		{
 			get => (bool)GetValue(IsEnabledProperty);

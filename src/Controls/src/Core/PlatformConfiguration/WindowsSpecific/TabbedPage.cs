@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.TabbedPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage']/Docs/*" />
+	/// <summary>Provides control over header icons on the Windows platform.</summary>
 	public static class TabbedPage
 	{
 		/// <summary>Bindable property for attached property <c>HeaderIconsEnabled</c>.</summary>
@@ -45,19 +45,23 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='IsHeaderIconsEnabled']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether header icons are enabled.</summary>
+		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
+		/// <returns><see langword="true"/> if header icons are enabled. Otherwise, <see langword="false"/>.</returns>
 		public static bool IsHeaderIconsEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetHeaderIconsEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='EnableHeaderIcons']/Docs/*" />
+		/// <summary>Enables header icons.</summary>
+		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
 		public static void EnableHeaderIcons(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			SetHeaderIconsEnabled(config.Element, true);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='DisableHeaderIcons']/Docs/*" />
+		/// <summary>Disables header icons.</summary>
+		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
 		public static void DisableHeaderIcons(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			SetHeaderIconsEnabled(config.Element, false);
