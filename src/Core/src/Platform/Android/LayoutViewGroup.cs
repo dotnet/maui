@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		readonly ARect _clipRect = new();
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
+		bool _isInsetListenerSet;
 
 		public bool InputTransparent { get; set; }
 
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Platform
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+			_isInsetListenerSet = GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(this, _context);
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.Platform
 			base.OnDetachedFromWindow();
 			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
 			_didSafeAreaEdgeConfigurationChange = true;
+			_isInsetListenerSet = false;
 		}
 
 		public bool ClipsToBounds { get; set; }
@@ -157,7 +159,7 @@ namespace Microsoft.Maui.Platform
 				ClipBounds = null;
 			}
 
-			if (_didSafeAreaEdgeConfigurationChange)
+			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;

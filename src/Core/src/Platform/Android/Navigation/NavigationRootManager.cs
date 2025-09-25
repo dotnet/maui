@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 
 			if (navigationLayout is CoordinatorLayout && mauiContext.Context is not null)
             {
-                GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
+                GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
             }
 
 			// if the incoming view is a Drawer Layout then the Drawer Layout

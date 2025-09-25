@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
 
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(_root, this.Context);
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_root, this.Context);
 
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
