@@ -105,12 +105,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 				var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
+				//v.SetPadding(0, 0, 0, bottomInset);
+
 				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 				{
 					bgImage.SetPadding(0, topInset, 0, 0);
 				}
 
-				appbarLayout?.SetPadding(0, topInset, 0, 0);
+				//appbarLayout?.SetPadding(0, topInset, 0, 0);
 
 				return WindowInsetsCompat.Consumed;
 			}
