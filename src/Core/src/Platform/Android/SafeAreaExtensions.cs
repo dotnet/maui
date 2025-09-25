@@ -106,8 +106,8 @@ internal static class SafeAreaExtensions
                 view.GetLocationOnScreen(viewLocation);
                 var viewLeft = viewLocation[0];
                 var viewTop = viewLocation[1];
-                var viewRight = viewLeft + view.Width;
-                var viewBottom = viewTop + view.Height;
+                var viewRight = viewLeft + view.MeasuredWidth;
+                var viewBottom = viewTop + view.MeasuredHeight;
 
                 // Get actual screen dimensions (including system UI)
                 var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
