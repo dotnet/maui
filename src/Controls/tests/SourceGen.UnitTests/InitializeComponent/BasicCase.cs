@@ -14,7 +14,8 @@ public class BasicCase : SourceGenXamlInitializeComponentTestBase
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Test.TestPage">
+	x:Class="Test.TestPage"
+	x:ClassModifier="Internal">
 		<Button x:Name="MyButton" Text="Hello MAUI!" />
 </ContentPage>
 """;
@@ -28,7 +29,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Test;
 
 [XamlProcessing(XamlInflator.SourceGen)]
-public partial class TestPage : ContentPage
+partial class TestPage : ContentPage
 {
 	public TestPage()
 	{
@@ -53,12 +54,12 @@ public partial class TestPage : ContentPage
 namespace Test;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
-public partial class TestPage
+internal partial class TestPage
 {
 	private partial void InitializeComponent()
 	{
 		var button = new global::Microsoft.Maui.Controls.Button();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
