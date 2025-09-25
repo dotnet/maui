@@ -12,6 +12,8 @@ using UIKit;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using AndroidX.Core.View;
+using System.Threading;
 #else
 using Microsoft.Maui.Controls.Handlers;
 #endif
@@ -158,7 +160,7 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
-				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea().Top);
+				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top);
 			});
 		}
 
@@ -195,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (!headerMarginTop.HasValue)
 				{
-					headerMargin.Top = GetSafeArea().Top;
+					headerMargin.Top = GetSafeArea(handler.ToPlatform()).Top;
 				}
 
 				await OpenFlyout(handler);
@@ -281,7 +283,7 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(headerRequestedHeight, initialBox.Height, 0.3);
 
 				var bottomOffset = await ScrollFlyoutToBottom(handler);
-				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				var scrolledBox = (shell.FlyoutHeader as IView).GetViewBounds();
 
 				if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
 				{
@@ -289,18 +291,26 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				else
 				{
-					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
 
+					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
+					
 					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
 					{
 						// scrolledBoy.Y is negative because the header is scrolled up
 						var diff = scrolledBox.Y + headerRequestedHeight;
+
+						#if ANDROID
+						// For android because we are already insetting the flyout container we need to substract that from the Y
+						var safeARea = GetSafeArea(handler.ToPlatform()).Top;
+						diff -= safeARea;
+						#endif
+
 						var epsilon = 0.3;
 						Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 					}
 					else
 					{
-						AssertionExtensions.CloseEnough(GetSafeArea().Top, scrolledBox.Y, 0.3, "Header position");
+						AssertionExtensions.CloseEnough(GetSafeArea(handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
 					}
 				}
 			});
@@ -345,7 +355,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (shell.FlyoutFooter != null)
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
 				else
-					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea().Top)) - 30);
+					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea(handler.ToPlatform()).Top)) - 30);
 
 				Assert.True(leftDiff < 0.2, $"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
 
@@ -355,12 +365,31 @@ namespace Microsoft.Maui.DeviceTests
 
 #endif
 
-		Thickness GetSafeArea()
+		Thickness GetSafeArea(object view)
 		{
 #if IOS || MACCATALYST
 			var insets = UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 			return new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom);
 #else
+			if (view is global::Android.Views.View aView &&
+				aView?.Context is global::Android.Content.Context context)
+			{
+				var activity = context.GetActivity();
+				if (activity?.Window?.DecorView is global::Android.Views.View decorView)
+				{
+					var rootInsets = ViewCompat.GetRootWindowInsets(decorView);
+					if (rootInsets != null)
+					{
+						var safeArea = rootInsets.ToSafeAreaInsetsPx(context);
+						return new Thickness(
+							context.FromPixels(safeArea.Left),
+							context.FromPixels(safeArea.Top),
+							context.FromPixels(safeArea.Right),
+							context.FromPixels(safeArea.Bottom));
+					}
+				}
+			}
+			
 			return Thickness.Zero;
 #endif
 		}

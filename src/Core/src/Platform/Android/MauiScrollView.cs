@@ -67,7 +67,10 @@ namespace Microsoft.Maui.Platform
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+			if (_isInsetListenerSet)
+				GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+
+			_isInsetListenerSet = false;
 			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
