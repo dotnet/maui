@@ -128,8 +128,8 @@ internal static class SafeAreaExtensions
                         top = Math.Min(top - viewTop, top);
                     }
                     else
-                    { 
-                        if (view.MeasuredHeight > 0 && hasTrackedViews)
+                    {
+                        if (view.MeasuredHeight > 0 || hasTrackedViews)
                             top = 0;
                     }
 
@@ -144,7 +144,7 @@ internal static class SafeAreaExtensions
                     {
                         // if the view height is zero because it hasn't done the first pass
                         // and we don't have any tracked views yet then we will apply the bottom inset
-                        if (view.MeasuredHeight > 0 && hasTrackedViews)
+                        if (view.MeasuredHeight > 0 || hasTrackedViews)
                             bottom = 0;
                     }
 
@@ -156,7 +156,7 @@ internal static class SafeAreaExtensions
                     }
                     else
                     {
-                        if (view.MeasuredWidth > 0 && hasTrackedViews)
+                        if (view.MeasuredWidth > 0 || hasTrackedViews)
                             left = 0;
                     }
 
@@ -169,7 +169,7 @@ internal static class SafeAreaExtensions
                     }
                     else
                     {
-                        if (view.MeasuredWidth > 0 && hasTrackedViews)
+                        if (view.MeasuredWidth > 0 || hasTrackedViews)
                             right = 0;
                     }
                 }
