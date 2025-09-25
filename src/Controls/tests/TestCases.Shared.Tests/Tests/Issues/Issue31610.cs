@@ -1,3 +1,4 @@
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -177,3 +178,4 @@ public class Issue31610 : _IssuesUITest
 		Assert.That(item14Label.GetText(), Is.EqualTo("Item 14"));
 	}
 }
+#endif
