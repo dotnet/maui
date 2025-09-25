@@ -84,20 +84,9 @@ internal static class SafeAreaExtensions
             // in order to limit duplicate measures
             if ((view.MeasuredHeight > 0 && view.MeasuredWidth > 0) || !hasTrackedViews)
             {
-                if (left > 0 || right > 0 || top > 0 || bottom > 0)
+                if (left == 0 && right == 0 && top == 0 && bottom == 0)
                 {
-                    if (view.GetParent()?.GetParentOfType<MauiScrollView>() is not null)
-                    {
-                        return WindowInsetsCompat.Consumed;
-                    }
-
-                    if (view.GetParent()?.GetParentOfType<AppBarLayout>() is not null)
-                    {
-                        return WindowInsetsCompat.Consumed;
-                    }
-                }
-                else
-                {
+                    view.SetPadding(0, 0, 0, 0);
                     return windowInsets;
                 }
 

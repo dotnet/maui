@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
+using AndroidX.Core.Widget;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 
@@ -299,14 +300,27 @@ internal static class GlobalWindowInsetListenerExtensions
     /// </summary>
     /// <param name="view">The Android view to set the listener on</param>
     /// <param name="context">The Android context to get the listener from</param>
-    public static void SetGlobalWindowInsetListener(this View view, Context context)
+    public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
     {
+        if (view.FindParent(
+            (parent) =>
+                parent is NestedScrollView ||
+                parent is AppBarLayout ||
+                parent is MauiScrollView)
+            is not null)
+        {
+            // Don't set the listener on views inside a NestedScrollView or AppBarLayout
+            return false;
+        }
+
         var listener = context.GetGlobalWindowInsetListener();
         if (listener is not null)
         {
             ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
             ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
         }
+
+        return true;
     }
 
     /// <summary>

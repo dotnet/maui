@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _defaultVerticalScrollVisibility;
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
+		bool _isInsetListenerSet;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Platform
 		public override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(this, _context);
+			_isInsetListenerSet = GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(this, _context);
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -294,7 +295,7 @@ namespace Microsoft.Maui.Platform
 				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
 
-			if (_didSafeAreaEdgeConfigurationChange)
+			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;

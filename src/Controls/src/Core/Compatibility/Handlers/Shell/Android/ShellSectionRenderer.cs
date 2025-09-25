@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
-			GlobalWindowInsetListenerExtensions.SetGlobalWindowInsetListener(root, this.Context);
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(root, this.Context);
 			int actionBarHeight = context.GetActionBarHeight();
 
 			var shellToolbar = new Toolbar(shellSection);
