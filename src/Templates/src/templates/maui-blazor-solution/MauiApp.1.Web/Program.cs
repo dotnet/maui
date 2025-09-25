@@ -116,6 +116,7 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

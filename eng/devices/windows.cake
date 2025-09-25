@@ -5,6 +5,13 @@ using System.Security.Cryptography.X509Certificates;
 
 const string defaultVersion = "10.0.19041.0";
 
+// Test category filtering:
+// Use --test-filter to run only specific categories. Examples:
+//   --test-filter="Button"              # Run only Button category
+//   --test-filter="Button,Label"        # Run Button and Label categories
+//   --test-filter="Button,Layout"       # Run any category containing "Button" or "Layout"
+// Categories are matched case-insensitively using substring matching
+
 // required
 string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_WINDOWS_PROJECT);
@@ -182,20 +189,80 @@ Task("buildOnly")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
+// Helper function to wait for a specific test result file with timeout
+Func<string, string, bool> WaitForCategoryTestResult = (string expectedFile, string categoryName) => {
+	var timeoutInSeconds = 480; // 8 minutes per category
+	var waited = 0;
+	
+	Information($"Waiting for test results file: {expectedFile}");
+	
+	while (!FileExists(expectedFile) && waited < timeoutInSeconds) {
+		System.Threading.Thread.Sleep(1000);
+		waited++;
+		
+		if (waited % 10 == 0) { // Log every 10 seconds
+			Information($"Still waiting for {categoryName} test results... ({waited}s)");
+		}
+	}
+	
+	if (FileExists(expectedFile)) {
+		Information($"✓ Found test results for {categoryName} after {waited} seconds");
+		return true;
+	} else {
+		Warning($"✗ Timeout waiting for {categoryName} test results after {waited} seconds");
+		return false;
+	}
+};
+
+// Helper function to filter categories based on testFilter parameter
+Func<string[], string[]> FilterCategories = (string[] allCategories) => {
+	if (string.IsNullOrWhiteSpace(testFilter)) {
+		Information("No test filter specified, running all categories");
+		return allCategories;
+	}
+	
+	var filters = testFilter.Split(',', StringSplitOptions.RemoveEmptyEntries)
+		.Select(f => f.Trim())
+		.ToArray();
+	
+	var filteredCategories = allCategories.Where(category => 
+		filters.Any(filter => 
+			category.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+		)
+	).ToArray();
+	
+	Information($"Test filter '{testFilter}' applied:");
+	Information($"  - Total categories available: {allCategories.Length}");
+	Information($"  - Filtered categories to run: {filteredCategories.Length}");
+	
+	if (filteredCategories.Length > 0) {
+		Information("  - Categories that will run:");
+		foreach (var category in filteredCategories) {
+			Information($"    * {category}");
+		}
+	} else {
+		Warning($"No categories matched the filter '{testFilter}'. Available categories:");
+		foreach (var category in allCategories) {
+			Information($"    * {category}");
+		}
+	}
+	
+	return filteredCategories;
+};
+
 Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	var waitForResultTimeoutInSeconds = 240;
-
 	CleanDirectories(TEST_RESULTS);
-
 	Information("Cleaned directories");
 
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
 	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}";
 
-	if (!string.IsNullOrWhiteSpace(testFilter))
+	// For Controls project tests, each category gets its own result file, so don't append testFilter here
+	// For non-Controls tests, append testFilter to the single result file
+	if (!isControlsProjectTestRun && !string.IsNullOrWhiteSpace(testFilter))
 	{
 		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
 	}
@@ -216,6 +283,10 @@ Task("testOnly")
 	{
 		DeleteFile(testsToRunFile);
 	}
+
+	// Track completed and failed test categories
+	var completedCategories = new List<string>();
+	var failedCategories = new List<string>();
 
 	if (isPackagedTestRun)
 	{
@@ -287,22 +358,46 @@ Task("testOnly")
 			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
 			StartProcess("powershell", startArgsInitial);
 
-			Information($"Waiting 10 seconds for process to finish...");
+			Information($"Waiting 10 seconds for category discovery to finish...");
 			System.Threading.Thread.Sleep(10000);
 
-			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+			if (!FileExists(testsToRunFile)) {
+				throw new Exception("Test categories file was not created during discovery phase");
+			}
 
-			for (int i = 0; i <= testCategoriesToRun; i++)
+			var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
+			var filteredCategories = FilterCategories(expectedCategories);
+			
+			if (filteredCategories.Length == 0) {
+				Information("No categories to run after applying filter. Skipping test execution.");
+				return;
+			}
+			
+			Information($"Will run {filteredCategories.Length} filtered categories out of {expectedCategories.Length} total");
+
+			for (int i = 0; i < filteredCategories.Length; i++)
 			{
-				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
-
+				var categoryName = filteredCategories[i];
+				// Find the original index of this category in the expected categories
+				var originalIndex = Array.IndexOf(expectedCategories, categoryName);
+				var expectedResultFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}_{categoryName}.xml";
+				
+				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
+				
+				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + originalIndex + "\"";
 				Information(startArgs);
 
 				// Start the DeviceTests app for packaged
 				StartProcess("powershell", startArgs);
 
-				Information($"Waiting 10 seconds for the next...");
-				System.Threading.Thread.Sleep(10000);
+				// Wait for this specific category's results
+				if (WaitForCategoryTestResult(expectedResultFile, categoryName)) {
+					completedCategories.Add(categoryName);
+					Information($"✓ Category {categoryName} completed successfully");
+				} else {
+					failedCategories.Add(categoryName);
+					Error($"✗ Category {categoryName} failed or timed out");
+				}
 			}
 		}
 		else
@@ -313,99 +408,122 @@ Task("testOnly")
 
 			// Start the DeviceTests app for packaged
 			StartProcess("powershell", startArgs);
+			
+			// Wait for the single test result file
+			if (WaitForCategoryTestResult(testResultsFile, "All Tests")) {
+				completedCategories.Add("All Tests");
+			} else {
+				failedCategories.Add("All Tests");
+			}
 		}
 	}
 	else
 	{
-		// Unpackaged process blocks the thread, so we can wait shorter for the results
-		waitForResultTimeoutInSeconds = 30;
-
 		if (isControlsProjectTestRun)
 		{
 			// Start the app once, this will trigger the discovery of the test categories
 			StartProcess(TEST_APP, testResultsFile + " -1");
+			
+			Information($"Waiting 10 seconds for category discovery to finish...");
+			System.Threading.Thread.Sleep(10000);
 
-			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+			if (!FileExists(testsToRunFile)) {
+				throw new Exception("Test categories file was not created during discovery phase");
+			}
 
-			for (int i = 0; i <= testCategoriesToRun; i++)
+			var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
+			var filteredCategories = FilterCategories(expectedCategories);
+			
+			if (filteredCategories.Length == 0) {
+				Information("No categories to run after applying filter. Skipping test execution.");
+				return;
+			}
+
+			Information($"Will run {filteredCategories.Length} filtered categories out of {expectedCategories.Length} total");
+
+			for (int i = 0; i < filteredCategories.Length; i++)
 			{
+				var categoryName = filteredCategories[i];
+				// Find the original index of this category in the expected categories
+				var originalIndex = Array.IndexOf(expectedCategories, categoryName);
+				var expectedResultFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}_{categoryName}.xml";
+				
+				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
+				
 				// Start the DeviceTests app for unpackaged
-				StartProcess(TEST_APP, testResultsFile + " " + i);
+				StartProcess(TEST_APP, testResultsFile + " " + originalIndex);
+
+				// Wait for this specific category's results
+				if (WaitForCategoryTestResult(expectedResultFile, categoryName)) {
+					completedCategories.Add(categoryName);
+					Information($"✓ Category {categoryName} completed successfully");
+				} else {
+					failedCategories.Add(categoryName);
+					Error($"✗ Category {categoryName} failed or timed out");
+				}
 			}
 		}
 		else
 		{
 			StartProcess(TEST_APP, testResultsFile);
-		}
-	}
-
-	var waited = 0;
-	while (System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0) {
-		System.Threading.Thread.Sleep(1000);
-		waited++;
-
-		Information($"Waiting {waited} second(s) for tests to finish...");
-		if (waited >= waitForResultTimeoutInSeconds)
-			break;
-	}
-
-	// If we're running the Controls project, double-check if we have all test result files
-	// and if the categories we expected to run match the test result files
-	if (isControlsProjectTestRun)
-	{
-		var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
-		var expectedCategoriesRanCount = expectedCategories.Length;
-		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
-
-		while (actualResultFileCount < expectedCategoriesRanCount) {
-			actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
-			System.Threading.Thread.Sleep(1000);
-			waited++;
-
-			Information($"Waiting {waited} additional second(s) for tests to finish...");
-			if (waited >= 30)
-				break;
-		}
 			
-		if (FileExists(testsToRunFile))
-		{
-			DeleteFile(testsToRunFile);
-		}
-
-		// While the count should match exactly, if we get more files somehow we'll allow it
-		// If it's less, throw an exception to fail the pipeline.
-		if (actualResultFileCount < expectedCategoriesRanCount)
-		{
-			// Grab the category name from the file name
-			// Ex: "TestResults-com_microsoft_maui_controls_devicetests_Frame.xml" -> "Frame"
-			var actualFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
-			var actualCategories = actualFiles.Select(x => x.Substring(0, x.Length - 4)   // Remove ".xml"
-					 										.Split('_').Last()).ToList();
-
-			foreach (var category in expectedCategories)
-			{
-				if (!actualCategories.Contains(category))
-				{
-					Error($"Error: missing test file result for {category}");
-				}
+			// Wait for the single test result file
+			if (WaitForCategoryTestResult(testResultsFile, "All Tests")) {
+				completedCategories.Add("All Tests");
+			} else {
+				failedCategories.Add("All Tests");
 			}
-
-			throw new Exception($"Expected test result files: {expectedCategoriesRanCount}, actual files: {actualResultFileCount}, some process(es) might have crashed.");
 		}
 	}
 
-	if(System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0)
-	{
-		throw new Exception($"Test result file(s) not found after {waited} seconds, process might have crashed or not completed yet.");
+	// Final validation and reporting
+	Information($"=== Test Execution Summary ===");
+	Information($"Completed categories: {completedCategories.Count}");
+	Information($"Failed categories: {failedCategories.Count}");
+
+	if (completedCategories.Any()) {
+		Information("✓ Successfully completed categories:");
+		foreach (var category in completedCategories) {
+			Information($"  - {category}");
+		}
 	}
 
-	foreach(var file in System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml"))
+	if (failedCategories.Any()) {
+		Error("✗ Failed or timed out categories:");
+		foreach (var category in failedCategories) {
+			Error($"  - {category}");
+		}
+	}
+
+	// Clean up the test categories file
+	if (FileExists(testsToRunFile))
+	{
+		DeleteFile(testsToRunFile);
+	}
+
+	// Check if we have any test result files at all
+	var actualResultFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
+	if (actualResultFiles.Length == 0)
+	{
+		throw new Exception($"No test result files found. All test processes may have crashed or failed to start.");
+	}
+
+	// If we're running Controls tests, validate we have results for expected categories
+	if (isControlsProjectTestRun && failedCategories.Any())
+	{
+		throw new Exception($"Some test categories failed to complete: {string.Join(", ", failedCategories)}. Expected {completedCategories.Count + failedCategories.Count} categories, but {failedCategories.Count} failed.");
+	}
+
+	// Check for test failures in the result files
+	foreach(var file in actualResultFiles)
 	{
 		var failed = XmlPeek(file, "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
 		if (!string.IsNullOrEmpty(failed)) {
-			throw new Exception($"At least {failed} test(s) failed.");
+			throw new Exception($"At least {failed} test(s) failed in {System.IO.Path.GetFileName(file)}.");
 		}
 	}
+
+	Information($"✓ All test executions completed successfully with {actualResultFiles.Length} result file(s)");
 });
 
 Task("build")

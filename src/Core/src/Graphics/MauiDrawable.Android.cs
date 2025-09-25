@@ -660,7 +660,7 @@ namespace Microsoft.Maui.Graphics
 			var data = new GradientData(orderStops.Length);
 
 			int count = 0;
-			foreach (var orderStop in orderStops)
+			foreach (var orderStop in orderStops.OrderBy(s => s.Offset))
 			{
 				data.Colors[count] = orderStop.Color.ToPlatform().ToArgb();
 				data.Offsets[count] = orderStop.Offset;
