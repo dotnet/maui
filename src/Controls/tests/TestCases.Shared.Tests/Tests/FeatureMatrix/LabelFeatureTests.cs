@@ -633,13 +633,9 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		App.Tap(MainLabel);
-<<<<<<< HEAD
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-=======
-		VerifyScreenshot();
->>>>>>> fd1fbdea66 (Updated test samples)
 	}
 
 	[Test, Order(30)]
