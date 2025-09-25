@@ -111,6 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
+				// Wait for handler to be ready before showing dialog
 				if (sender.Handler is null && sender is VisualElement ve)
 				{
 					void OnHandlerReady(object s, EventArgs e)
@@ -181,6 +182,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
+				// Wait for handler to be ready before showing dialog
 				if (sender.Handler is null && sender is VisualElement ve)
 				{
 					void OnHandlerReady(object s, EventArgs e)
@@ -272,6 +274,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
+				// Wait for handler to be ready before showing dialog
 				if (sender.Handler is null && sender is VisualElement ve)
 				{
 					void OnHandlerReady(object s, EventArgs e)
