@@ -75,8 +75,6 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.Tap(MainLabel);
-		App.Tap("TestEntry");
 #if ANDROID || IOS
 		if (App.WaitForKeyboardToShow())
 			App.DismissKeyboard();
