@@ -14,6 +14,14 @@
 		PathF InnerPathForBounds(Rect bounds, float strokeThickness);
 	}
 
+	/// <summary>
+	/// Provides a version for the <see cref="IShape"/> so that every time something
+	/// changes in the shape definition the <see cref="Version"/> is increased by 1.
+	/// </summary>
+	/// <remarks>
+	/// This is especially useful in handler's mappers to improve the performance
+	/// by avoiding useless calls to platform when nothing has changed.
+	/// </remarks>
 	internal interface IVersionedShape : IShape
 	{
 		int Version { get; }
