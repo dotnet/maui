@@ -131,8 +131,10 @@ stages:
         iosVersions: [ '18.0' ]
       ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
         skipProvisioning: false
-      ${{ else }}:  
+        gitHubToken: $(provisionator--github--pat)
+      ${{ else }}:
         skipProvisioning: true
+        gitHubToken: ''
       projects:
         - name: controls
           desc: Controls

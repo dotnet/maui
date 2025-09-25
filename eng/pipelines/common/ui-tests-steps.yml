@@ -11,6 +11,7 @@ parameters:
   testFilter: ''
   testConfigurationArgs: ''
   skipProvisioning: true
+  gitHubToken: ''
   checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
@@ -65,6 +66,7 @@ steps:
     androidEmulatorApiLevel: ${{ parameters.version }}
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
+    gitHubToken: ${{ parameters.gitHubToken }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
     ${{ else }}:
