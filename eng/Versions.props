@@ -5,10 +5,9 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel>ci.net10</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>
-    </PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
