@@ -45,8 +45,6 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.Tap(MainLabel);
-		App.Tap("TestEntry");
 		App.PressEnter();
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
@@ -57,8 +55,6 @@ public class EntryFeatureTests : UITest
 	{
 
 		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		App.Tap(MainLabel);
 		App.ClearText("TestEntry");
 		App.EnterText("TestEntry", "New Text");
 
