@@ -17,7 +17,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : IEntryHandler
 	{
-		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper)
+		private static readonly IPropertyMapper<IEntry, IEntryHandler> EntryPriorityMapper = new PropertyMapper<IEntry, IEntryHandler>()
+		{
+			[nameof(IEntry.MaxLength)] = MapMaxLength,
+		};
+
+		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper, EntryPriorityMapper)
 		{
 			[nameof(IEntry.Background)] = MapBackground,
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
@@ -30,7 +35,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
 			[nameof(IEntry.Keyboard)] = MapKeyboard,
-			[nameof(IEntry.MaxLength)] = MapMaxLength,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
