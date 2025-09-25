@@ -6,17 +6,17 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class EasingConverter : ISGTypeConverter
+class EasingConverter : ISGTypeConverter
 {
-	private static readonly HashSet<string> KnownEasingNames = new(StringComparer.OrdinalIgnoreCase)
+	static readonly HashSet<string> KnownEasingNames = new(StringComparer.OrdinalIgnoreCase)
 	{
 		"Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut",
 		"BounceOut", "BounceIn", "SpringIn", "SpringOut"
 	};
 
-	public IEnumerable<string> SupportedTypes => new[] { "Easing", "Microsoft.Maui.Easing" };
+	public IEnumerable<string> SupportedTypes => ["Easing", "Microsoft.Maui.Easing"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		var easingName = value;

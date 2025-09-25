@@ -5,11 +5,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ColumnDefinitionCollectionConverter : ISGTypeConverter
+class ColumnDefinitionCollectionConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "ColumnDefinitionCollection", "Microsoft.Maui.Controls.ColumnDefinitionCollection" };
+	public IEnumerable<string> SupportedTypes => ["ColumnDefinitionCollection", "Microsoft.Maui.Controls.ColumnDefinitionCollection"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
