@@ -74,6 +74,7 @@ parameters:
       demands:
         - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 15.6
   
   - name: androidPoolLinux
     type: object
@@ -91,6 +92,7 @@ parameters:
       demands:
         - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 15.6
   
   - name: windowsBuildPool
     type: object
@@ -108,7 +110,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-14
+      vmImage: macOS-15
 
 stages:
 
