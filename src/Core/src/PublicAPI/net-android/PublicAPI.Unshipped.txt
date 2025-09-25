@@ -32,6 +32,8 @@ Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? cont
 Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
 Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle, int defStyleRes) -> void
+*REMOVED*override Microsoft.Maui.Platform.ContentViewGroup.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+*REMOVED*override Microsoft.Maui.Platform.LayoutViewGroup.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.set -> void

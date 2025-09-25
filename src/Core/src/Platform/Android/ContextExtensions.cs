@@ -415,14 +415,17 @@ namespace Microsoft.Maui.Platform
 			return _navigationBarHeight ?? 0;
 		}
 
-		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double minimumSize, double maximumSize)
+		internal static (int MeasureSpec, double CrossPlatformConstraint, bool Exact) CreateMeasureSpec(this Context context, double constraint, double explicitSize, double minimumSize, double maximumSize)
 		{
 			var mode = MeasureSpecMode.AtMost;
+			var exact = false;
+			var crossPlatformConstraint = constraint;
 
 			if (IsExplicitSet(explicitSize))
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
+				exact = true;
 
 				// Since the mode is "Exactly", we have to return the exact final value clamped to the minimum/maximum.
 				constraint = Math.Max(explicitSize, ResolveMinimum(minimumSize));
@@ -431,11 +434,14 @@ namespace Microsoft.Maui.Platform
 				{
 					constraint = Math.Min(constraint, maximumSize);
 				}
+
+				crossPlatformConstraint = constraint;
 			}
 			else if (IsMaximumSet(maximumSize) && maximumSize < constraint)
 			{
 				mode = MeasureSpecMode.AtMost;
 				constraint = maximumSize;
+				crossPlatformConstraint = constraint;
 			}
 			else if (double.IsInfinity(constraint))
 			{
@@ -447,7 +453,7 @@ namespace Microsoft.Maui.Platform
 			// Convert to a platform size to create the spec for measuring
 			var deviceConstraint = (int)context.ToPixels(constraint);
 
-			return mode.MakeMeasureSpec(deviceConstraint);
+			return (mode.MakeMeasureSpec(deviceConstraint), crossPlatformConstraint, exact);
 		}
 
 		public static float GetDisplayDensity(this Context? context)
