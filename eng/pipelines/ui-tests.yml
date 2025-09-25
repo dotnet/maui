@@ -129,7 +129,7 @@ stages:
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
-      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
+      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'], true) ) }}:
         skipProvisioning: false
         gitHubToken: $(provisionator--github--pat)
       ${{ else }}:
