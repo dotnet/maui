@@ -86,17 +86,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
 		{
+			private WeakReference<ImageView> _bgImageRef;
+
+			public WindowsListener(ImageView bgImage)
+			{
+				_bgImageRef = new WeakReference<ImageView>(bgImage);
+			}
+
 			public WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
 			{
 				if (insets == null || v == null)
 					return insets;
-					
+
+				// The flyout overlaps the status bar so we don't really care about insetting it
 				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+				var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
-				v.SetPadding(0, topInset, 0, bottomInset);
+				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
+				{
+					bgImage.SetPadding(0, topInset, 0, 0);
+				}
+
+				appbarLayout?.SetPadding(0, topInset, 0, 0);
 
 				return WindowInsetsCompat.Consumed;
 			}
@@ -109,7 +123,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Resource.Layout.flyoutcontent, null);
 
 			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
-			ViewCompat.SetOnApplyWindowInsetsListener(coordinator, new WindowsListener());
 
 			(_appBar.LayoutParameters as CoordinatorLayout.LayoutParams)
 				.Behavior = new AppBarLayout.Behavior();
@@ -133,6 +146,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
+
+			ViewCompat.SetOnApplyWindowInsetsListener(coordinator, new WindowsListener(_bgImage));
 
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
