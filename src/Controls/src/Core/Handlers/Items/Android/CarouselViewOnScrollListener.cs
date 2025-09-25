@@ -7,6 +7,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		readonly CarouselView _carouselView;
 		readonly CarouselViewLoopManager _carouselViewLoopManager;
+		RecyclerView _lastRecyclerView;
+		int _lastDx;
+		int _lastDy;
+
+		// Track programmatic scroll state
+		bool _isProgrammaticScrolling;
 
 		public CarouselViewOnScrollListener(ItemsView itemsView, ItemsViewAdapter<CarouselView, IItemsViewSource> itemsViewAdapter, CarouselViewLoopManager carouselViewLoopManager) : base((CarouselView)itemsView, itemsViewAdapter, true)
 		{
@@ -26,12 +32,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_carouselView.SetIsDragging(false);
 			}
 
+			// Detect programmatic scrolling
+			if (state == RecyclerView.ScrollStateSettling && !_carouselView.IsDragging)
+			{
+				_isProgrammaticScrolling = true;
+			}
+			else if (state == RecyclerView.ScrollStateIdle)
+			{
+				// When scroll completes, process any cached programmatic scroll data
+				if (_isProgrammaticScrolling && _lastRecyclerView is not null)
+				{
+					ProcessScrolled(_lastRecyclerView, _lastDx, _lastDy);
+					_lastRecyclerView = null;
+					_lastDx = 0;
+					_lastDy = 0;
+				}
+
+				_isProgrammaticScrolling = false;
+			}
+
 			_carouselView.IsScrolling = state != RecyclerView.ScrollStateIdle;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
 		{
-			base.OnScrolled(recyclerView, dx, dy);
+			if (_isProgrammaticScrolling)
+			{
+				// Cache scroll data for programmatic scrolls - will be processed when ScrollStateIdle is reached
+				_lastRecyclerView = recyclerView;
+				_lastDx = dx;
+				_lastDy = dy;
+			}
+			else
+			{
+				// Process immediately for manual user scrolling
+				ProcessScrolled(recyclerView, dx, dy);
+			}
+		}
+
+		void ProcessScrolled(RecyclerView recyclerView, int dx, int dy)
+		{
+			if (recyclerView is not null)
+			{
+				base.OnScrolled(recyclerView, dx, dy);
+			}
 
 			if (_carouselView.Loop)
 			{
