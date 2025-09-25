@@ -60,10 +60,6 @@ Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyLongPress
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyMultiple
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyShortcut
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnKeyUp
-Microsoft.Maui.Platform.LayoutViewGroup.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
-Microsoft.Maui.Platform.LayoutViewGroup.ResetWindowInsets(Android.Views.View! view) -> void
-Microsoft.Maui.Platform.ContentViewGroup.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
-Microsoft.Maui.Platform.ContentViewGroup.ResetWindowInsets(Android.Views.View! view) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
@@ -74,8 +70,6 @@ Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(nint j
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
 Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.set -> void
-Microsoft.Maui.Platform.MauiScrollView.HandleWindowInsets(Android.Views.View! view, AndroidX.Core.View.WindowInsetsCompat! insets) -> AndroidX.Core.View.WindowInsetsCompat?
-Microsoft.Maui.Platform.MauiScrollView.ResetWindowInsets(Android.Views.View! view) -> void
 Microsoft.Maui.Platform.MauiShapeableImageView
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void

@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 		bool _hasStoredOriginalPadding;
 
 
-		public WindowInsetsCompat? HandleWindowInsets(View view, WindowInsetsCompat insets)
+		WindowInsetsCompat? IHandleWindowInsets.HandleWindowInsets(View view, WindowInsetsCompat insets)
 		{
 			// If we don't have a cross platform layout or insets are null just return
 			if (CrossPlatformLayout is null || insets is null)
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Platform
 
 		}
 
-		public void ResetWindowInsets(View view)
+		void IHandleWindowInsets.ResetWindowInsets(View view)
 		{
 			if (_hasStoredOriginalPadding)
 			{

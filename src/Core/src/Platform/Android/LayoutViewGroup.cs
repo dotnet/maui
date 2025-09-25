@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Platform
 		(int left, int top, int right, int bottom) _originalPadding;
 		bool _hasStoredOriginalPadding;
 
-		public WindowInsetsCompat? HandleWindowInsets(View view, WindowInsetsCompat insets)
+		WindowInsetsCompat? IHandleWindowInsets.HandleWindowInsets(View view, WindowInsetsCompat insets)
 		{
 			if (CrossPlatformLayout is null || insets is null)
 			{
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Platform
 			return SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
 		}
 
-		public void ResetWindowInsets(View view)
+		void IHandleWindowInsets.ResetWindowInsets(View view)
 		{
 			if (_hasStoredOriginalPadding)
 			{
