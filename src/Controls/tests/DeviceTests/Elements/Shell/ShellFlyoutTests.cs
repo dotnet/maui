@@ -298,13 +298,6 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						// scrolledBoy.Y is negative because the header is scrolled up
 						var diff = scrolledBox.Y + headerRequestedHeight;
-
-						#if ANDROID
-						// For android because we are already insetting the flyout container we need to substract that from the Y
-						var safeARea = GetSafeArea(handler.ToPlatform()).Top;
-						diff -= safeARea;
-						#endif
-
 						var epsilon = 0.3;
 						Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 					}
@@ -358,7 +351,7 @@ namespace Microsoft.Maui.DeviceTests
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea(handler.ToPlatform()).Top)) - 30);
 
 				Assert.True(leftDiff < 0.2, $"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
-
+				//await Task.Delay(2000000);
 				Assert.True(verticalDiff < 0.2, $"{partTesting} Top Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
 			});
 		}
@@ -371,25 +364,6 @@ namespace Microsoft.Maui.DeviceTests
 			var insets = UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 			return new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom);
 #else
-			if (view is global::Android.Views.View aView &&
-				aView?.Context is global::Android.Content.Context context)
-			{
-				var activity = context.GetActivity();
-				if (activity?.Window?.DecorView is global::Android.Views.View decorView)
-				{
-					var rootInsets = ViewCompat.GetRootWindowInsets(decorView);
-					if (rootInsets != null)
-					{
-						var safeArea = rootInsets.ToSafeAreaInsetsPx(context);
-						return new Thickness(
-							context.FromPixels(safeArea.Left),
-							context.FromPixels(safeArea.Top),
-							context.FromPixels(safeArea.Right),
-							context.FromPixels(safeArea.Bottom));
-					}
-				}
-			}
-			
 			return Thickness.Zero;
 #endif
 		}
