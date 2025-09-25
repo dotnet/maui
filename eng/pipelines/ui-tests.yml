@@ -120,6 +120,7 @@ stages:
       windowsPool: ${{ parameters.windowsPool }}
       windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
+      UseProvisionator: ${{ parameters.UseProvisionator }}
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
@@ -129,7 +130,7 @@ stages:
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
-      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'], 'true') ) }}:
+      ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'], 'true') ) }}:
         skipProvisioning: false
         gitHubToken: $(provisionator--github--pat)
       ${{ else }}:

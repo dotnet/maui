@@ -11,6 +11,7 @@ parameters:
   timeoutInMinutes: 180
   skipProvisioning: true
   gitHubToken: ''
+  UseProvisionator: false # Parameter to control whether to use Provisionator
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
