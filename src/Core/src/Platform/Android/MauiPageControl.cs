@@ -179,6 +179,9 @@ namespace Microsoft.Maui.Platform
 
 			imageView.ContentDescription = contentDescription;
 			
+			// Prevent "double tap to activate" announcement for already selected indicators
+			imageView.Clickable = !isSelected;
+			
 			// Force TalkBack to announce the updated description for the selected item
 			if (isSelected && imageView.IsAccessibilityFocused)
 			{
@@ -267,9 +270,9 @@ namespace Microsoft.Maui.Platform
 				{
 					return;
 				}
-					
+	
 				base.OnInitializeAccessibilityNodeInfo(host, info);
-				
+
 				// Set class name to avoid "button" announcement
 				info.ClassName = "android.view.View";
 			}
