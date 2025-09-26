@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
+		float _initialTouchX;
+		float _initialTouchY;
+
 		protected CarouselView Carousel => ItemsView as CarouselView;
 
 		public MauiCarouselRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<ItemsViewAdapter<CarouselView, IItemsViewSource>> getAdapter) : base(context, getItemsLayout, getAdapter)
@@ -37,7 +40,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!IsSwipeEnabled)
 				return false;
 
+			switch (ev.Action)
+			{
+				case MotionEventActions.Down:
+					_initialTouchX = ev.GetX();
+					_initialTouchY = ev.GetY();
+					break;
+
+				case MotionEventActions.Move:
+					float deltaX = ev.GetX() - _initialTouchX;
+					float deltaY = ev.GetY() - _initialTouchY;
+
+					if (ShouldDelegateToChild(deltaX, deltaY))
+					{
+						return false;
+					}
+					break;
+
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					// Reset initial touch values at the end of the gesture
+					// to prevent old values from being used if we don't get a Down event
+					_initialTouchX = 0;
+					_initialTouchY = 0;
+					break;
+			}
+
 			return base.OnInterceptTouchEvent(ev);
+		}
+
+		bool ShouldDelegateToChild(float deltaX, float deltaY)
+		{
+			float absDeltaX = Math.Abs(deltaX);
+			float absDeltaY = Math.Abs(deltaY);
+
+			return IsHorizontal ? absDeltaY > absDeltaX : absDeltaX > absDeltaY;
 		}
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
