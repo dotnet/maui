@@ -216,6 +216,8 @@ Check available queues at [helix.dot.net](https://helix.dot.net). The current co
 
 ### Running Device Tests Locally
 
+The following commands assume you are on the root of the maui repository.
+
 #### Step 1: Build Build Tasks
 First, restore tools and build the required MSBuild tasks:
 
@@ -224,7 +226,7 @@ First, restore tools and build the required MSBuild tasks:
 dotnet tool restore
 
 # Build the Build tasks (required)
-./build.sh -restore -build -configuration Release -projects './Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog -warnAsError false
+./build.sh -restore -build -configuration Release -projects $(PWD)/Microsoft.Maui.BuildTasks.slnf /bl:BuildBuildTasks.binlog -warnAsError false
 ```
 
 #### Step 2: Build Device Tests
@@ -237,6 +239,16 @@ Build the device test projects:
 
 #### Step 3: Send to Helix
 Submit the tests to Helix for execution:
+
+We need to ake some variables, more info about Helix can be read [here](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md) 
+
+```bash
+export BUILD_REASON=pr
+export BUILD_REPOSITORY_NAME=maui
+export BUILD_SOURCEBRANCH=main
+export SYSTEM_TEAMPROJECT=dnceng
+export SYSTEM_ACCESSTOKEN='' 
+```
 
 ```bash
 # Send to Helix for Android

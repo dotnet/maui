@@ -6,6 +6,7 @@
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.Open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.Open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
+        <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
@@ -24,9 +25,9 @@
         <HelixBuild>t001</HelixBuild>
     </PropertyGroup>
 
-    <PropertyGroup>
+    <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' != ''">
         <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
-        <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
+       
     </PropertyGroup>
 
     <PropertyGroup>
