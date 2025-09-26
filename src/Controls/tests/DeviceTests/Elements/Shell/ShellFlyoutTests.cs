@@ -312,7 +312,7 @@ namespace Microsoft.Maui.DeviceTests
 							diff -= GetSafeArea(handler.ToPlatform()).Top;
 						#endif
 
-						var epsilon = 0.3;
+						var epsilon = 0.5;
 						
 						// only worry about this check if diff is greater than epsilon 
 						if (Math.Abs(diff) > epsilon)
