@@ -309,7 +309,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 				var headerPlatformView = header.ToPlatform();
 				var appBar = headerPlatformView.GetParentOfType<AppBarLayout>();
-				Assert.Equal(appBar.MeasuredHeight, headerPlatformView.MeasuredHeight);
+				Assert.Equal(appBar.MeasuredHeight - appBar.PaddingTop, headerPlatformView.MeasuredHeight);
 			});
 		}
 

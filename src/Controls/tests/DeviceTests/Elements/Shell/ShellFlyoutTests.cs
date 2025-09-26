@@ -209,34 +209,13 @@ namespace Microsoft.Maui.DeviceTests
 				var contentFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutContent);
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
-				var headerFrameY = headerFrame.Y;
-
-				// On android now that we are handling safe area insets ourselves
-				// we need to account for the safe area when validating the header position
-				// since the header margin no longer includes the safe area
-#if ANDROID
-				// Adjust for AppBarLayout padding on Android
-				var headerView = (IView)shell.FlyoutHeader;
-				var platformView = headerView?.ToPlatform();
-				var appBarLayout = platformView?.GetParentOfType<global::Google.Android.Material.AppBar.AppBarLayout>();
-
-				if (appBarLayout != null)
-				{
-					headerFrameY -= platformView.FromPixels(appBarLayout.PaddingTop);
-				}
-#endif
-
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrameY, epsilon: 0.3, message: "Header Y");
+				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, epsilon: 0.3, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
 				var expectedContentY = headerMargin.Top + headerMargin.Bottom + contentMargin.Top;
-
-#if ANDROID
-				expectedContentY += safeArea.Top;
-#endif
 
 #if IOS
 				if (contentType != "ScrollView")
