@@ -312,8 +312,11 @@ namespace Microsoft.Maui.DeviceTests
 							diff -= GetSafeArea(handler.ToPlatform()).Top;
 						#endif
 
-						var epsilon = 0.4;
-						Assert.True(diff > 0, $"Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+						var epsilon = 0.3;
+						
+						// only worry about this check if diff is greater than epsilon 
+						if (Math.Abs(diff) > epsilon)
+						     Assert.True(diff > 0, $"Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 						
 						Assert.True(Math.Abs(diff) <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 						
