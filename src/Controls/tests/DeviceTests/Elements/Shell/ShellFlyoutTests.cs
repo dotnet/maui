@@ -8,11 +8,14 @@ using Xunit;
 using UIKit;
 #endif
 
+#if ANDROID
+using AndroidX.Core.View;
+#endif
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using AndroidX.Core.View;
 using System.Threading;
 #else
 using Microsoft.Maui.Controls.Handlers;
