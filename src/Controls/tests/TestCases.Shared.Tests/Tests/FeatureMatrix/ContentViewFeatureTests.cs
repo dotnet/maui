@@ -5,19 +5,14 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.ViewBaseTests)]
-public class ContentViewFeatureTests : UITest
+public class ContentViewFeatureTests : _GalleryUITest
 {
 	public const string ContentViewFeatureMatrix = "ContentView Feature Matrix";
+	public override string GalleryPageName => ContentViewFeatureMatrix;
 
 	public ContentViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ContentViewFeatureMatrix);
 	}
 
 	[Test]
