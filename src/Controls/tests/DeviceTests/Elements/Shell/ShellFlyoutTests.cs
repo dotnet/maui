@@ -215,7 +215,15 @@ namespace Microsoft.Maui.DeviceTests
 				// we need to account for the safe area when validating the header position
 				// since the header margin no longer includes the safe area
 #if ANDROID
-				headerFrameY -= safeArea.Top;
+				// Adjust for AppBarLayout padding on Android
+				var headerView = (IView)shell.FlyoutHeader;
+				var platformView = headerView?.ToPlatform();
+				var appBarLayout = platformView?.GetParentOfType<global::Google.Android.Material.AppBar.AppBarLayout>();
+
+				if (appBarLayout != null)
+				{
+					headerFrameY -= platformView.FromPixels(appBarLayout.PaddingTop);
+				}
 #endif
 
 				// validate header position
@@ -313,8 +321,17 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						// scrolledBoy.Y is negative because the header is scrolled up
 						var diff = scrolledBox.Y + headerRequestedHeight;
+
+						// on android the header is offset by the safe area via padding so we need to account for that with the height
+						#if ANDROID
+							diff -= GetSafeArea(handler.ToPlatform()).Top;
+						#endif
+
 						var epsilon = 0.3;
-						Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+						Assert.True((diff + epsilon) > 0, $"Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+						
+						Assert.True(Math.Abs(diff) <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+						
 					}
 					else
 					{
@@ -363,10 +380,15 @@ namespace Microsoft.Maui.DeviceTests
 				if (shell.FlyoutFooter != null)
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
 				else
-					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea(handler.ToPlatform()).Top)) - 30);
+				{
+					#if ANDROID
+						verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
+					#else
+						verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea(handler.ToPlatform()).Top)) - 30);
+					#endif
+				}
 
 				Assert.True(leftDiff < 0.2, $"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
-				//await Task.Delay(2000000);
 				Assert.True(verticalDiff < 0.2, $"{partTesting} Top Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
 			});
 		}
