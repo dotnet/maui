@@ -40,7 +40,6 @@
                         <!-- Left Column - Entry Controls -->
                         <StackLayout Grid.Column="0"
                                      Grid.Row="0"
-                                     Padding="20"
                                      Spacing="10">
                                 <Label FontAttributes="Bold"
                                        AutomationId="CornerRadiusLabel"
@@ -70,7 +69,6 @@
                         <!-- Right Column - Controls -->
                         <StackLayout Grid.Column="1"
                                      Grid.Row="0"
-                                     Padding="20"
                                      Spacing="1">
                                 <HorizontalStackLayout>
                                         <!-- Color -->
