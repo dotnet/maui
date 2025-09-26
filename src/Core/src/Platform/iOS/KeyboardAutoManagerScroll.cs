@@ -475,6 +475,12 @@ public static class KeyboardAutoManagerScroll
 		else if (cursorRect.Y <= topBoundary && cursorRect.Bottom <= bottomBoundary)
 		{
 			move = cursorRect.Y - (nfloat)topBoundary;
+
+			// no need to move the screen down if we can already see the view
+			if (move < 0)
+			{
+				move = 0;
+			}
 		}
 
 		else if (cursorRect.Y <= topBoundary && cursorRect.Bottom >= bottomBoundary)
