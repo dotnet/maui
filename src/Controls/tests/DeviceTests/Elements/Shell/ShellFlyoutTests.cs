@@ -417,8 +417,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			return Thickness.Zero;
 #endif
+            return Thickness.Zero;
 		}
 #endif
 
