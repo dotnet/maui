@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 			ApplyThemeToAllWindows(newTheme, UserAppTheme == AppTheme.Unspecified);
 		}
 
-		partial void OnWindowAddedPlatform(Window window)
+		partial void OnPlatformWindowAdded(Window window)
 		{
 			window.HandlerChanged += OnWindowHandlerChanged;
 
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		partial void OnWindowRemovedPlatform(Window window)
+		partial void OnPlatformWindowRemoved(Window window)
 		{
 			window.HandlerChanged -= OnWindowHandlerChanged;
 		}
