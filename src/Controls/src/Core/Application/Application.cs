@@ -509,13 +509,9 @@ namespace Microsoft.Maui.Controls
 			_windows.Remove(window);
 
 #if WINDOWS
-			OnWindowRemovedPlatform(window);
+			OnPlatformWindowRemoved(window);
 #endif
 		}
-
-#if WINDOWS
-		partial void OnWindowRemovedPlatform(Window window);
-#endif
 
 		public virtual void OpenWindow(Window window)
 		{
@@ -590,14 +586,14 @@ namespace Microsoft.Maui.Controls
 			window.FinishedAddingWindowToApplication(this);
 
 #if WINDOWS
-			OnWindowAddedPlatform(window);
+			OnPlatformWindowAdded(window);
 #endif
 		}
 
 #if WINDOWS
-
 		// Windows-specific hook implemented in Application.Windows.cs
-		partial void OnWindowAddedPlatform(Window window);
+		partial void OnPlatformWindowAdded(Window window);
+		partial void OnPlatformWindowRemoved(Window window);
 #endif
 	}
 }
