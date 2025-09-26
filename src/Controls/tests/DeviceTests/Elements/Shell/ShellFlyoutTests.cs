@@ -195,9 +195,11 @@ namespace Microsoft.Maui.DeviceTests
 			},
 			async (shell, handler) =>
 			{
+				var safeArea = GetSafeArea(handler.ToPlatform());
 				if (!headerMarginTop.HasValue)
 				{
-					headerMargin.Top = GetSafeArea(handler.ToPlatform()).Top;
+					flyoutHeader.Margin =
+						new Thickness(flyoutHeader.Margin.Left, safeArea.Top, flyoutHeader.Margin.Right, flyoutHeader.Margin.Bottom);
 				}
 
 				await OpenFlyout(handler);
@@ -207,13 +209,26 @@ namespace Microsoft.Maui.DeviceTests
 				var contentFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutContent);
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
+				var headerFrameY = headerFrame.Y;
+
+				// On android now that we are handling safe area insets ourselves
+				// we need to account for the safe area when validating the header position
+				// since the header margin no longer includes the safe area
+#if ANDROID
+				headerFrameY -= safeArea.Top;
+#endif
+
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, epsilon: 0.3, message: "Header Y");
+				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrameY, epsilon: 0.3, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
 				var expectedContentY = headerMargin.Top + headerMargin.Bottom + contentMargin.Top;
+
+#if ANDROID
+				expectedContentY += safeArea.Top;
+#endif
 
 #if IOS
 				if (contentType != "ScrollView")
@@ -364,6 +379,25 @@ namespace Microsoft.Maui.DeviceTests
 			var insets = UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 			return new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom);
 #else
+			if (view is global::Android.Views.View aView &&
+				aView?.Context is global::Android.Content.Context context)
+			{
+				var activity = context.GetActivity();
+				if (activity?.Window?.DecorView is global::Android.Views.View decorView)
+				{
+					var rootInsets = ViewCompat.GetRootWindowInsets(decorView);
+					if (rootInsets != null)
+					{
+						var safeArea = rootInsets.ToSafeAreaInsetsPx(context);
+						return new Thickness(
+							context.FromPixels(safeArea.Left),
+							context.FromPixels(safeArea.Top),
+							context.FromPixels(safeArea.Right),
+							context.FromPixels(safeArea.Bottom));
+					}
+				}
+			}
+
 			return Thickness.Zero;
 #endif
 		}

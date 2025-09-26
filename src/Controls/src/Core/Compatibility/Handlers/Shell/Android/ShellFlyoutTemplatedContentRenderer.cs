@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 				{
-					bgImage.SetPadding(0, topInset, 0, 0);
+					bgImage.SetPadding(0, topInset, 0, bottomInset);
 				}
 
 				return WindowInsetsCompat.Consumed;
