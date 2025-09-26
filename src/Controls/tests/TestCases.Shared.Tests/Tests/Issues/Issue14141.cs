@@ -19,7 +19,9 @@ public class Issue14141 : _IssuesUITest
 	{
 		App.WaitForElement("Issue14141ScrollBtn");
 		App.Tap("Issue14141ScrollBtn");
-		VerifyScreenshot();
+
+		var resultLabel = App.WaitForElement("Issue14141ResultLabel").GetText();
+		Assert.That(resultLabel, Is.EqualTo("Success"));
 	}
 }
 #endif

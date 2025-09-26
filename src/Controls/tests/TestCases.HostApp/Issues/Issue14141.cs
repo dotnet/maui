@@ -6,18 +6,17 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 14141, "Incorrect Intermediate CurrentItem updates with CarouselView Scroll Animation Enabled", PlatformAffected.Android)]
 public class Issue14141 : ContentPage
 {
-	Issue14141ViewModel _viewModel = new();
-	string[] _items = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11" };
+	Label resultStatus;
+	Label selectedItemLabel;
+	CarouselView carouselView;
 	public Issue14141()
 	{
-		BindingContext = _viewModel;
-
-		CarouselView carouselView = new CarouselView
+		carouselView = new CarouselView
 		{
 			HeightRequest = 150,
-			Loop = true,
+			Loop = false,
 			IsScrollAnimated = true,
-			ItemsSource = new ObservableCollection<string>(_items),
+			ItemsSource = new ObservableCollection<string>{ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11" },
 			ItemTemplate = new DataTemplate(() =>
 			{
 				Border border = new Border
@@ -34,13 +33,13 @@ public class Issue14141 : ContentPage
 				return border;
 			})
 		};
-		carouselView.SetBinding(CarouselView.CurrentItemProperty, nameof(Issue14141ViewModel.SelectedItem));
+		carouselView.PropertyChanged += CarouselView_PropertyChanged;
 
-		Label selectedItemLabel = new Label
+		selectedItemLabel = new Label
 		{
+			Text = "Selected Item : 0",
 			FontSize = 16
 		};
-		selectedItemLabel.SetBinding(Label.TextProperty, nameof(Issue14141ViewModel.SelectedItem), stringFormat: "Selected item: {0}");
 
 		Button selectButton = new Button
 		{
@@ -48,13 +47,18 @@ public class Issue14141 : ContentPage
 			Text = "Select item 4",
 			FontSize = 12
 		};
-		selectButton.Clicked += (s, e) => SelectItem(4);
-
-		Label logLabel = new Label
+		
+		selectButton.Clicked += (s, e) => 
 		{
-			FontSize = 14
+			carouselView.CurrentItem = "4";
+			selectedItemLabel.Text = $"Selected Item : {carouselView.CurrentItem}";
 		};
-		logLabel.SetBinding(Label.TextProperty, nameof(Issue14141ViewModel.ActionHistoryText));
+
+		resultStatus = new Label
+		{
+			AutomationId = "Issue14141ResultLabel",
+			Text = "Success"
+		};
 
 		Content = new VerticalStackLayout
 		{
@@ -65,47 +69,22 @@ public class Issue14141 : ContentPage
 				carouselView,
 				selectedItemLabel,
 				selectButton,
-				new Label { Text = "Current Item Update History: ", FontSize = 16 },
-				logLabel
+				resultStatus
 			}
 		};
 	}
 
-    void SelectItem(int index)
-    {
-        _viewModel.AddLog($"Current Item: {_items[index]}");
-        _viewModel.SelectedItem = _items[index];
-    }
-}
+	void CarouselView_PropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(CarouselView.CurrentItem))
+		{
+			var currentItemValue = carouselView.CurrentItem?.ToString();
 
-public class Issue14141ViewModel : INotifyPropertyChanged
-{
-    public event PropertyChangedEventHandler PropertyChanged;
-    string _selectedItem;
-    public string SelectedItem
-    {
-        get => _selectedItem;
-        set
-        {
-            if (_selectedItem != value)
-            {
-                _selectedItem = value;
-                AddLog("Current Item: " + (_selectedItem ?? "null"));
-                OnPropertyChanged(nameof(SelectedItem));
-            }
-        }
-    }
-
-    ObservableCollection<string> _logEntries = new();
-
-    public string ActionHistoryText => string.Join(Environment.NewLine, _logEntries);
-
-    public void AddLog(string message)
-    {
-        _logEntries.Add(message);
-        OnPropertyChanged(nameof(ActionHistoryText));
-    }
-
-    private void OnPropertyChanged(string propertyName) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			if (!string.IsNullOrEmpty(currentItemValue) && currentItemValue != "0" &&
+			    currentItemValue != "4")
+			{
+				resultStatus.Text = "Failure";
+			}
+		}
+	}
 }
