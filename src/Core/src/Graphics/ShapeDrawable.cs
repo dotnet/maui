@@ -65,8 +65,9 @@ namespace Microsoft.Maui.Graphics
 
 			ApplyTransform(path);
 
-			DrawStrokePath(canvas, rect, path);
+			// Draw fill first, then stroke on top to ensure stroke is fully visible
 			DrawFillPath(canvas, rect, path);
+			DrawStrokePath(canvas, rect, path);
 		}
 
 		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
