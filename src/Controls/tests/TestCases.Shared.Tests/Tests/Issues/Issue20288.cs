@@ -67,18 +67,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var attempts = 0;
 			string innerHTMLResult = "";
 			
-			while (attempts < maxAttempts)
+			// Wait up to 15 seconds for the result to change from the default text or "Loading..."
+			App.WaitFor(() =>
 			{
-				System.Threading.Thread.Sleep(1000); // Wait 1 second
 				innerHTMLResult = App.FindElement("InnerHTMLResult").GetText() ?? "";
-				
-				// Break if we get a result that's not the default placeholder or loading text
-				if (innerHTMLResult != "innerHTML result will appear here" && innerHTMLResult != "Loading...")
-				{
-					break;
-				}
-				attempts++;
-			}
+				return innerHTMLResult != "innerHTML result will appear here" && innerHTMLResult != "Loading...";
+			}, timeout: TimeSpan.FromSeconds(15));
 			
 			// The result should not be NULL and should indicate success
 			Assert.That(innerHTMLResult, Does.Not.Contain("NULL"), "innerHTML evaluation should not return NULL");
