@@ -4,9 +4,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class FlyoutPageFeatureTests : UITest
+public class FlyoutPageFeatureTests : _GalleryUITest
 {
 	public const string FlyoutPageFeatureMatrix = "Flyout Feature Matrix";
+	public override string GalleryPageName => FlyoutPageFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string FlowDirectionRTL = "FlowDirectionRTL";
@@ -25,12 +26,6 @@ public class FlyoutPageFeatureTests : UITest
 	public FlyoutPageFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(FlyoutPageFeatureMatrix);
 	}
 
 	[Test, Order(1)]
