@@ -394,7 +394,7 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS || MACCATALYST
 			var insets = UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 			return new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom);
-#else
+#elif ANDROID
 			if (view is global::Android.Views.View aView &&
 				aView?.Context is global::Android.Content.Context context)
 			{
