@@ -319,7 +319,7 @@ namespace Microsoft.Maui.DeviceTests
 						
 						// only worry about this check if diff is greater than epsilon 
 						if (Math.Abs(diff) > epsilon)
-						     Assert.True(diff > 0, $"Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+						     Assert.True(diff > 0, $"Diff: {diff}. Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 						
 						Assert.True(Math.Abs(diff) <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 						
@@ -418,7 +418,11 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 #endif
-            return Thickness.Zero;
+
+#if WINDOWS || ANDROID
+			return Thickness.Zero;
+#endif
+			
 		}
 #endif
 
