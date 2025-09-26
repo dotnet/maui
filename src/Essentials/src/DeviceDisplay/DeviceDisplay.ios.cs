@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Devices
 			
 			if (mode == IntPtr.Zero)
 			{
-				System.Diagnostics.Debug.WriteLine("[DeviceDisplay] Failed to get display mode, falling back to UIScreen");
 				return GetFallbackDisplayInfo();
 			}
 
