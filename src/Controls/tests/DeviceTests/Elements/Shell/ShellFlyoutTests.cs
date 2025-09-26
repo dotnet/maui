@@ -160,7 +160,13 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
+				#if IOS
 				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top);
+				#else
+				// On android the we pad the top of the header frame by the safe area because how layout works
+				// so that is already included in the headerFrame Height
+				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height);
+				#endif
 			});
 		}
 
@@ -307,14 +313,20 @@ namespace Microsoft.Maui.DeviceTests
 						#endif
 
 						var epsilon = 0.3;
-						Assert.True((diff + epsilon) > 0, $"Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+						Assert.True(diff > 0, $"Scrolled Header: position {scrolledBox.Y} should be negative to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 						
 						Assert.True(Math.Abs(diff) <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 						
 					}
 					else
 					{
+#if ANDROID
+						// On android the header is offset by the safe area via padding so we need to account for that with the height
+						AssertionExtensions.CloseEnough(0, scrolledBox.Y, 0.3, "Header position");
+#else
+						// On iOS the header is not offset by the safe area so we need to account for that with the height
 						AssertionExtensions.CloseEnough(GetSafeArea(handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
+#endif
 					}
 				}
 			});
