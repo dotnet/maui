@@ -47,6 +47,11 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BoxView>>(() => new PlatformConfigurationRegistry<BoxView>(this));
 		}
 
+		~BoxView()
+		{
+			_fillProxy?.Unsubscribe();
+		}
+
 		/// <summary>
 		/// Gets or sets the color which will fill the rectangle. This is a bindable property.
 		/// </summary>
@@ -55,6 +60,19 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Color)GetValue(ColorElement.ColorProperty);
 			set => SetValue(ColorElement.ColorProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the brush that fills the interior of the BoxView.
+		/// </summary>
+		/// <value>
+		/// A <see cref="Brush"/> object that describes how the BoxView's interior is painted.
+		/// The default value is <see langword="null"/>.
+		/// </value>
+		public Brush Fill
+		{
+			get => (Brush)GetValue(FillProperty);
+			set => SetValue(FillProperty, value);
 		}
 
 		/// <summary>
