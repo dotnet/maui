@@ -1,6 +1,132 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using System;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+
+namespace Microsoft.Maui.Controls
 {
 	public partial class Application
 	{
+		AppTheme? _currentThemeForWindows;
+
+		partial void OnRequestedThemeChangedPlatform(AppTheme newTheme)
+		{
+			_currentThemeForWindows = newTheme;
+
+			if (!AnyWindowReady())
+			{
+				return;
+			}
+
+			ApplyThemeToAllWindows(newTheme, UserAppTheme == AppTheme.Unspecified);
+		}
+
+		partial void OnPlatformWindowAdded(Window window)
+		{
+			window.HandlerChanged += OnWindowHandlerChanged;
+
+			if (_currentThemeForWindows is not null && window.Handler is not null)
+			{
+				TryApplyTheme();
+			}
+		}
+
+		partial void OnPlatformWindowRemoved(Window window)
+		{
+			window.HandlerChanged -= OnWindowHandlerChanged;
+		}
+
+		void OnWindowHandlerChanged(object? sender, EventArgs e) => TryApplyTheme();
+
+		void TryApplyTheme()
+		{
+			if (!AnyWindowReady())
+			{
+				return;
+			}
+
+			if (_currentThemeForWindows is AppTheme theme)
+			{
+				ApplyThemeToAllWindows(theme, UserAppTheme == AppTheme.Unspecified);
+			}
+		}
+
+		bool AnyWindowReady()
+		{
+			foreach (var window in Windows)
+			{
+				var platformWindow = window?.Handler?.PlatformView as UI.Xaml.Window;
+				if (platformWindow?.Content is FrameworkElement)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		void ApplyThemeToAllWindows(AppTheme newTheme, bool followSystem)
+		{
+			var forcedElementTheme = newTheme switch
+			{
+				AppTheme.Dark => ElementTheme.Dark,
+				AppTheme.Light => ElementTheme.Light,
+				_ => ElementTheme.Default
+			};
+
+			foreach (var window in Windows)
+			{
+				ApplyThemeToWindow(window, followSystem, forcedElementTheme);
+			}
+		}
+
+		void ApplyThemeToWindow(Window? window, bool followSystem, ElementTheme forcedElementTheme)
+		{
+			var platformWindow = window?.Handler?.PlatformView as UI.Xaml.Window;
+
+			if (platformWindow is null)
+			{
+				return;
+			}
+
+			platformWindow.DispatcherQueue.TryEnqueue(() =>
+			{
+				if (platformWindow.Content is not FrameworkElement root)
+				{
+					return;
+				}
+
+				// Set the theme on the root element of the window
+				root.RequestedTheme = followSystem ? ElementTheme.Default : forcedElementTheme;
+
+				var isDark = followSystem
+					? (UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark)
+					: (forcedElementTheme == ElementTheme.Dark);
+
+				SetTileBarButtonColors(platformWindow, isDark);
+			});
+		}
+
+		void SetTileBarButtonColors(UI.Xaml.Window platformWindow, bool isDark)
+		{
+			// Color references:
+			// https://github.com/microsoft/WinUI-Gallery/blob/main/WinUIGallery/Helpers/TitleBarHelper.cs
+			// https://github.com/dotnet/maui/blob/main/src/Core/src/Platform/Windows/MauiWinUIWindow.cs#L218
+			if (AppWindowTitleBar.IsCustomizationSupported())
+			{
+				var titleBar = platformWindow.GetAppWindow()?.TitleBar;
+				if (titleBar is not null)
+				{
+					titleBar.ButtonBackgroundColor = UI.Colors.Transparent;
+					titleBar.ButtonInactiveBackgroundColor = UI.Colors.Transparent;
+					titleBar.ButtonHoverBackgroundColor = isDark
+						? UI.ColorHelper.FromArgb(24, 255, 255, 255)
+						: UI.ColorHelper.FromArgb(24, 0, 0, 0);
+					titleBar.ButtonHoverForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
+					titleBar.ButtonPressedBackgroundColor = UI.ColorHelper.FromArgb(0x1F, 0xFF, 0xFF, 0xFF);
+					titleBar.ButtonPressedForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
+					titleBar.ButtonForegroundColor = isDark ? UI.Colors.White : UI.Colors.Black;
+				}
+			}
+		}
 	}
 }
