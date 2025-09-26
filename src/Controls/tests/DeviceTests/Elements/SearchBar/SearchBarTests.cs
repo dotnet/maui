@@ -130,5 +130,62 @@ namespace Microsoft.Maui.DeviceTests
 				SearchBarTests.GetPlatformText(handler);
 		}
 #endif
+
+#if MACCATALYST || IOS
+		[Theory(DisplayName = "SearchBar renders with specified WidthRequest on iOS/Mac")]
+		[InlineData(200)]
+		[InlineData(250)]
+		[InlineData(300)]
+		public async Task ValidateSearchBarWidthRequestRendering(double requestedWidth)
+		{
+			var searchBar = new SearchBar
+			{
+				WidthRequest = requestedWidth,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
+				var platformControl = GetPlatformControl(handler);
+
+				double actualWidth = 0;
+
+				if (platformControl is UIKit.UISearchBar uiSearchBar)
+				{
+					actualWidth = uiSearchBar.Frame.Width;
+				}
+
+				Assert.Equal(requestedWidth, actualWidth);
+			});
+		}
+
+
+		[Theory(DisplayName = "SearchBar renders with specified HeightRequest on iOS/Mac")]
+		[InlineData(100)]
+		[InlineData(150)]
+		[InlineData(80)]
+		public async Task ValidateSearchBarHeightRequestRendering(double requestedHeight)
+		{
+			var searchBar = new SearchBar
+			{
+				HeightRequest = requestedHeight,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
+				var platformControl = GetPlatformControl(handler);
+
+				double actualHeight = 0;
+
+				if (platformControl is UIKit.UISearchBar uiSearchBar)
+				{
+					actualHeight = uiSearchBar.Frame.Height;
+				}
+
+				Assert.Equal(requestedHeight, actualHeight);
+			});
+		}
+#endif
 	}
 }
