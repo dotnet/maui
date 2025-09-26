@@ -28,7 +28,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
-using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
 using System.Reflection;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
