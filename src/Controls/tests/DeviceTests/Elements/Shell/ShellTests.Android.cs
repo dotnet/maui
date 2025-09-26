@@ -583,8 +583,8 @@ namespace Microsoft.Maui.DeviceTests
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
-				context.FromPixels(platformView.MeasuredWidth),
-				context.FromPixels(platformView.MeasuredHeight));
+				context.FromPixels(platformView.MeasuredWidth- (platformView.PaddingLeft + platformView.PaddingRight)),
+				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 
 		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)
