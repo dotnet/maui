@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				/ Check if element is truly visible in the visual tree
-					
+				// Check if element is truly visible in the visual tree
+
 				// RenderTargetBitmap.RenderAsync fails with "Value does not fall within the expected range"
 				// when called on elements that are not visible (collapsed, hidden, or in process of hiding/showing)
 				// See: https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.imaging.rendertargetbitmap.renderasync
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 					// See: https://docs.microsoft.com/en-us/windows/win32/direct2d/direct2d-limits
 					// Maximum texture size is typically 16384x16384 pixels for most hardware
 					const int maxDimension = 16384;
-										
+
 					if (height > 0 && width > 0 && height <= maxDimension && width <= maxDimension)
 					{
 						var visual = ElementCompositionPreview.GetElementVisual(element);
@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Platform
 
 						var elementVisual = visual.Compositor.CreateSpriteVisual();
 						elementVisual.Size = element.RenderSize.ToVector2();
-						
-						using var bitmap = new RenderTargetBitmap();
+
+						var bitmap = new RenderTargetBitmap();
 						await bitmap.RenderAsync(element, width, height);
 
 						var pixels = await bitmap.GetPixelsAsync();
@@ -89,11 +89,11 @@ namespace Microsoft.Maui.Platform
 						}
 
 						using (var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(
-							       pixels,
-							       BitmapPixelFormat.Bgra8,
-							       bitmap.PixelWidth,
-							       bitmap.PixelHeight,
-							       BitmapAlphaMode.Premultiplied))
+								   pixels,
+								   BitmapPixelFormat.Bgra8,
+								   bitmap.PixelWidth,
+								   bitmap.PixelHeight,
+								   BitmapAlphaMode.Premultiplied))
 						{
 							var brush = CompositionImageBrush.FromBGRASoftwareBitmap(
 								visual.Compositor,
@@ -112,43 +112,43 @@ namespace Microsoft.Maui.Platform
 
 			return mask;
 		}
-	}
-	
-	static bool IsElementRenderable(UIElement element)
-	{
-		if (element is null)
-			return false;
 
-		// Check the element itself
-		if (element.Visibility == Visibility.Collapsed)
-			return false;
-
-		// For FrameworkElement, also check if it's loaded and has positive ActualWidth/Height
-		if (element is FrameworkElement frameworkElement)
+		static bool IsElementRenderable(UIElement element)
 		{
-			// Element must be loaded into the visual tree
-			if (!frameworkElement.IsLoaded)
+			if (element is null)
 				return false;
 
-			// Element must have positive dimensions (ActualWidth/Height > 0)
-			if (frameworkElement.ActualWidth <= 0 || frameworkElement.ActualHeight <= 0)
+			// Check the element itself
+			if (element.Visibility == UI.Xaml.Visibility.Collapsed)
 				return false;
+
+			// For FrameworkElement, also check if it's loaded and has positive ActualWidth/Height
+			if (element is FrameworkElement frameworkElement)
+			{
+				// Element must be loaded into the visual tree
+				if (!frameworkElement.IsLoaded)
+					return false;
+
+				// Element must have positive dimensions (ActualWidth/Height > 0)
+				if (frameworkElement.ActualWidth <= 0 || frameworkElement.ActualHeight <= 0)
+					return false;
+			}
+
+			// Check all parent elements up the visual tree
+			var parent = element;
+			while (parent != null)
+			{
+				if (parent.Visibility == UI.Xaml.Visibility.Collapsed)
+					return false;
+
+				// Move up
+				if (parent is FrameworkElement fe)
+					parent = fe.Parent as UIElement;
+				else
+					break;
+			}
+
+			return true;
 		}
-
-		// Check all parent elements up the visual tree
-		var parent = element;
-		while (parent != null)
-		{
-			if (parent.Visibility == Visibility.Collapsed)
-				return false;
-
-			// Move up
-			if (parent is FrameworkElement fe)
-				parent = fe.Parent as UIElement;
-			else
-				break;
-		}
-
-		return true;
 	}
 }
