@@ -953,23 +953,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return true;
 		}
 
-		internal static void SetFlyoutLeftBarButton(UIViewController containerController, FlyoutPage FlyoutPage)
+		internal static void SetFlyoutBarButton(UIViewController containerController, FlyoutPage FlyoutPage, bool isRTL)
 		{
+			if (isRTL)
+				containerController.NavigationItem.LeftBarButtonItem = null;
+			else
+				containerController.NavigationItem.RightBarButtonItem = null;
+
 			if (!FlyoutPage.ShouldShowToolbarButton())
 			{
 				containerController.NavigationItem.LeftBarButtonItem = null;
+				containerController.NavigationItem.RightBarButtonItem = null;
 				return;
 			}
-
 
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result?.Value;
+				UIBarButtonItem uIBarButtonItem = null;
+
 				if (icon != null)
 				{
 					try
 					{
-						containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
+						uIBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
 					}
 					catch (Exception)
 					{
@@ -977,16 +984,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 
-				if (icon == null || containerController.NavigationItem.LeftBarButtonItem == null)
+				if (icon == null || uIBarButtonItem == null)
 				{
-					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(FlyoutPage.Flyout.Title, UIBarButtonItemStyle.Plain, OnItemTapped);
+					uIBarButtonItem = new UIBarButtonItem(FlyoutPage.Flyout.Title, UIBarButtonItemStyle.Plain, OnItemTapped);
 				}
 
 				if (FlyoutPage != null && !string.IsNullOrEmpty(FlyoutPage.AutomationId))
-					SetAutomationId(containerController.NavigationItem.LeftBarButtonItem, $"btn_{FlyoutPage.AutomationId}");
+					SetAutomationId(uIBarButtonItem, $"btn_{FlyoutPage.AutomationId}");
 
-				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityHint(FlyoutPage);
-				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(FlyoutPage);
+				uIBarButtonItem.SetAccessibilityHint(FlyoutPage);
+				uIBarButtonItem.SetAccessibilityLabel(FlyoutPage);
+
+				if (isRTL)
+					containerController.NavigationItem.RightBarButtonItem = uIBarButtonItem;
+				else
+					containerController.NavigationItem.LeftBarButtonItem = uIBarButtonItem;
+
 			});
 
 			void OnItemTapped(object sender, EventArgs e)
@@ -1521,7 +1534,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				SetFlyoutLeftBarButton(this, n._parentFlyoutPage);
+				SetFlyoutBarButton(this, n._parentFlyoutPage, isRTL: false);
 			}
 
 
