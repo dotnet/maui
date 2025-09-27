@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests;
 
-[Category("Permissions")] 
+[Category("Permissions")]
 public class Microphone_Tests
 {
 	[Fact]

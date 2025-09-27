@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(reference.IsAlive, "RadioButton should not be alive");
 
 		}
-		
+
 		[Fact]
 		public void GroupNullSelectionClearsAnySelection()
 		{
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ValuePropertyCoercedToItselfIfSetToNull()
 		{
 			var radioButton = new RadioButton();
-			
+
 			Assert.Equal(radioButton, radioButton.Value);
 
 			radioButton.Value = null;

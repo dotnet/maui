@@ -130,18 +130,15 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 					handler.VirtualView.Date = newDate;
 				}
 #elif IOS
-                if (handler.DatePickerDialog != null)
-                {
-                    handler.DatePickerDialog.SetDate(newDate.ToNSDate(), false);
-                    typeof(DatePickerHandler).GetMethod("SetVirtualViewDate",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
-                        .Invoke(handler, null);
-                }
+				if (handler.DatePickerDialog != null)
+				{
+					handler.DatePickerDialog.SetDate(newDate.ToNSDate(), false);
+					typeof(DatePickerHandler).GetMethod("SetVirtualViewDate",
+						System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+						.Invoke(handler, null);
+				}
 #elif WINDOWS
-                if (handler.PlatformView != null)
-                {
-                    handler.PlatformView.Date = newDate;
-                }
+                handler.PlatformView?.Date = newDate;
 #else
 				handler.VirtualView.Date = newDate;
 #endif
