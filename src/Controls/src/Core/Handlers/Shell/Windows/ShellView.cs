@@ -110,8 +110,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_flyoutBackdrop = value;
 
-				if (_shellSplitView != null)
-					_shellSplitView.FlyoutBackdrop = value;
+				_shellSplitView?.FlyoutBackdrop = value;
 			}
 		}
 

@@ -20,7 +20,7 @@ internal class LayoutOptionsConverter : ISGTypeConverter
 			var parts = value.Split(['.']);
 			if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
 			{
-				context.ReportConversionFailed( xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
+				context.ReportConversionFailed(xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
 				return "default";
 			}
 
@@ -39,15 +39,15 @@ internal class LayoutOptionsConverter : ISGTypeConverter
 				{ "CenterAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.CenterAndExpand" },
 				{ "EndAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.EndAndExpand" },
 				{ "FillAndExpand", $"{layoutOptionsType.ToFQDisplayString()}.FillAndExpand" }
-			};			
-		
+			};
+
 			if (layoutOptionsMap.TryGetValue(value, out var layoutOption))
 			{
 				return layoutOption;
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.LayoutOptionsConversionFailed);
 		return "default";
 	}
 }

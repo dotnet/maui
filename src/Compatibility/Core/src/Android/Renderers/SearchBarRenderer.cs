@@ -226,10 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 				control.InputType = (int)_inputType;
 
-			if (_editText != null)
-			{
-				_editText.Enabled = model.IsEnabled;
-			}
+			_editText?.Enabled = model.IsEnabled;
 		}
 
 		void ClearFocus(SearchView view)
@@ -275,10 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
 
-			if (_editText != null)
-			{
-				_editText.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			_editText?.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		void UpdateTextColor()
@@ -334,8 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (keyboard == Keyboard.Numeric)
 			{
 				_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
-				if (_editText != null)
-					_editText.KeyListener = GetDigitsKeyListener(_inputType);
+				_editText?.KeyListener = GetDigitsKeyListener(_inputType);
 			}
 		}
 
