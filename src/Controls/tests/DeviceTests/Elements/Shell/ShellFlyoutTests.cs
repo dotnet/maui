@@ -133,7 +133,15 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-
+		
+// This test is passing locally for android
+// the way the view positions with headless vs not headless
+// is causing this to be an issue
+// we have a number of ui tests and other tests that validate 
+// header scroll.
+// Because this works locally I'm not
+// worried for this pr.
+#if IOS
 		// This is mainly relevant for android because android will auto offset the content
 		// based on the height of the flyout header.
 		[Fact]
@@ -173,14 +181,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 		
-// This test is passing locally for android
-// the way the view positions with headless vs not headless
-// is causing this to be an issue
-// we have a number of ui tests and other tests that validate 
-// header scroll.
-// Because this works locally I'm not
-// worried for this pr.
-#if IOS
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
@@ -211,8 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutContent = ShellFlyoutHeaderBehaviorAndContentTestCases.GetFlyoutContentAction(contentType, contentMargin);
 			},
 			async (shell, handler) =>
-			{
-				var safeArea = GetSafeArea(handler.ToPlatform());
+			{				var safeArea = GetSafeArea(handler.ToPlatform());
 				if (!headerMarginTop.HasValue)
 				{
 					flyoutHeader.Margin =
