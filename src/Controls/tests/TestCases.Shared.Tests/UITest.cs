@@ -432,6 +432,45 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		protected virtual void TryToResetTestState()
+		{
+			Reset();
+		}
+		
+		protected override void FixtureSetup()
+		{
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(false);
+#endif
+					TryToResetTestState();
+
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						App.Back();
+#if ANDROID || MACCATALYST
+						App.ToggleSystemAnimations(true);
+#endif
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
+		}
+
 		public override void TestSetup()
 		{
 			base.TestSetup();
