@@ -5,15 +5,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue28986 : _IssuesUITest
+public class Issue28986_ContentPage : _IssuesUITest
 {
-	public override string Issue => "Test SafeArea attached property for per-edge safe area control";
+    public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
 
-	public Issue28986(TestDevice device) : base(device)
-	{
-	}
+    public Issue28986_ContentPage(TestDevice device) : base(device)
+    {
+    }
 
-	[Test]
+    [Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaMainGridBasicFunctionality()
 	{
@@ -97,7 +97,8 @@ public class Issue28986 : _IssuesUITest
 		Assert.That(finalAllPosition.Y, Is.EqualTo(allPosition.Y), "Final All position should match initial All position");
 	}
 
-#if TEST_FAILS_ON_ANDROID
+
+	#if TEST_FAILS_ON_ANDROID
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaPerEdgeValidation()
