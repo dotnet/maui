@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ValuePropertyCoercedToItselfIfSetToNull()
 		{
 			var radioButton = new RadioButton();
-			
+
 			Assert.Equal(radioButton, radioButton.Value);
 
 			radioButton.Value = null;
