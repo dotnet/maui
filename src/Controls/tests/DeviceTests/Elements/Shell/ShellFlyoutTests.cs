@@ -273,7 +273,9 @@ namespace Microsoft.Maui.DeviceTests
 // Because this works locally I'm not
 // worried for this pr.
 #if IOS
-                public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
+        [Theory]
+		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
+		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
                 {
                         var headerRequestedHeight = 250;
                         var headerMinHeight = 100;
