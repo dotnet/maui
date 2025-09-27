@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 			_navigationRoot = li.Inflate(Resource.Layout.navigationlayout, null)
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
 
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_navigationRoot, this.Context);
+
 			_navigationRoot.Id = View.GenerateViewId();
 			return dl;
 		}
@@ -239,7 +241,6 @@ namespace Microsoft.Maui.Handlers
 						DrawerLayout.LayoutParams.MatchParent,
 						(int)GravityFlags.Start);
 
-				ViewCompat.SetOnApplyWindowInsetsListener(flyoutView, new WindowsListener());
 				// Flyout has to get added after the content otherwise clicking anywhere
 				// on the flyout will cause it to close and gesture
 				// recognizers inside the flyout won't fire
@@ -248,42 +249,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
-		}
-
-		// Temporary workaround:
-		// Android 15 / API 36 removed the prior opt‑out path for edge‑to‑edge
-		// (legacy "edge to edge ignore" + decor fitting). This placeholder exists
-		// so we can keep apps from regressing (content accidentally covered by
-		// system bars) until a proper, unified edge‑to‑edge + system bar inset
-		// configuration API is implemented in MAUI.
-		//
-		// NOTE:
-		// - Keep this minimal.
-		// - Will be replaced by the planned comprehensive window insets solution.
-		// - Do not extend; add new logic to the forthcoming implementation instead.
-		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
-		{
-			public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
-			{
-				if (insets == null || v == null)
-					return insets;
-
-				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
-
-				// Here we are using margin because the view passed in is the actual IView from the MAUI xplat control
-				// if we set padding it causes the control to inset so we need to use margin
-				// realistically this listener will probably go away once we get the SafeAreaEdges code propagated to
-				// MauiViews correctly
-				if (v.LayoutParameters is DrawerLayout.LayoutParams layoutParams)
-				{
-					layoutParams.TopMargin = topInset;
-					v.LayoutParameters = layoutParams;
-				}
-				
-				return WindowInsetsCompat.Consumed;
-			}
 		}
 
 		void UpdateIsPresented()

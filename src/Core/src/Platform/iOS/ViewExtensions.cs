@@ -537,6 +537,10 @@ namespace Microsoft.Maui.Platform
 			return (element.ToPlatform())?.GetLocationOnScreen();
 		}
 
+		internal static Rect GetViewBounds(this UIView platformView) => platformView.GetPlatformViewBounds();
+
+		internal static Rect GetViewBounds(this IView view) => view.ToPlatform().GetViewBounds();
+
 		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 

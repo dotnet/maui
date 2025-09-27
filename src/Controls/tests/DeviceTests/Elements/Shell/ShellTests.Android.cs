@@ -309,7 +309,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 				var headerPlatformView = header.ToPlatform();
 				var appBar = headerPlatformView.GetParentOfType<AppBarLayout>();
-				Assert.Equal(appBar.MeasuredHeight, headerPlatformView.MeasuredHeight);
+				Assert.Equal(appBar.MeasuredHeight - appBar.PaddingTop, headerPlatformView.MeasuredHeight);
 			});
 		}
 
@@ -583,8 +583,8 @@ namespace Microsoft.Maui.DeviceTests
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
-				context.FromPixels(platformView.MeasuredWidth),
-				context.FromPixels(platformView.MeasuredHeight));
+				context.FromPixels(platformView.MeasuredWidth- (platformView.PaddingLeft + platformView.PaddingRight)),
+				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 
 		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)

@@ -1,84 +1,97 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28986, "Test SafeArea ContentPage for per-edge safe area control", PlatformAffected.All, issueTestNumber: 2)]
+[Issue(IssueTracker.Github, 28986, "Test SafeArea ContentPage for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 2)]
 public partial class Issue28986_ContentPage : ContentPage
 {
 	public Issue28986_ContentPage()
 	{
 		InitializeComponent();
-		// Initialize controls (start with all All)
-		LeftPicker.SelectedIndex = 3;   // All
-		TopPicker.SelectedIndex = 3;    // All
-		RightPicker.SelectedIndex = 3;  // All
-		BottomPicker.SelectedIndex = 3; // All
-
-		UpdateSafeAreaSettings();
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnEdgePickerChanged(object sender, EventArgs e)
+	private void OnGridSetNoneClicked(object sender, EventArgs e)
 	{
-		UpdateSafeAreaSettings();
+		TestContentPage.SafeAreaEdges = SafeAreaEdges.None;
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnResetDefaultClicked(object sender, EventArgs e)
+	private void OnGridSetContainerClicked(object sender, EventArgs e)
 	{
-		LeftPicker.SelectedIndex = 3;   // Default
-		TopPicker.SelectedIndex = 3;    // Default
-		RightPicker.SelectedIndex = 3;  // Default
-		BottomPicker.SelectedIndex = 3; // Default
-		UpdateSafeAreaSettings();
+		TestContentPage.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnResetNoneClicked(object sender, EventArgs e)
+	private void OnGridSetAllClicked(object sender, EventArgs e)
 	{
-		LeftPicker.SelectedIndex = 0;   // None
-		TopPicker.SelectedIndex = 0;    // None
-		RightPicker.SelectedIndex = 0;  // None
-		BottomPicker.SelectedIndex = 0; // None
-		UpdateSafeAreaSettings();
+		TestContentPage.SafeAreaEdges = SafeAreaEdges.All;
+		UpdateCurrentSettingsLabel();
 	}
 
-	private void OnResetAllClicked(object sender, EventArgs e)
+	private void OnGridSetBottomSoftInputClicked(object sender, EventArgs e)
 	{
-		LeftPicker.SelectedIndex = 4;   // All
-		TopPicker.SelectedIndex = 4;    // All
-		RightPicker.SelectedIndex = 4;  // All
-		BottomPicker.SelectedIndex = 4; // All
-		UpdateSafeAreaSettings();
-	}
-
-	private SafeAreaRegions GetSafeAreaRegionsFromPickerIndex(int index)
-	{
-		return index switch
-		{
-			0 => SafeAreaRegions.None,
-			1 => SafeAreaRegions.SoftInput,
-			2 => SafeAreaRegions.Container,
-			3 => SafeAreaRegions.Default,
-			4 => SafeAreaRegions.All,
-			_ => SafeAreaRegions.None
-		};
-	}
-
-	private void UpdateSafeAreaSettings()
-	{
-		// Create SafeAreaEdges for ContentPage settings
-		var safeAreaSettings = new SafeAreaEdges(
-			GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex),   // Left
-			GetSafeAreaRegionsFromPickerIndex(TopPicker.SelectedIndex),    // Top  
-			GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex),  // Right
-			GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)  // Bottom
+		var current = TestContentPage.SafeAreaEdges;
+		TestContentPage.SafeAreaEdges = new SafeAreaEdges(
+			current.Left,     // Left
+			current.Top,     // Top
+			current.Right,   // Right
+			SafeAreaRegions.SoftInput       // Bottom
 		);
+		UpdateCurrentSettingsLabel();
+	}
 
-		// Apply SafeAreaEdges to the ContentPage itself
-		this.SafeAreaEdges = safeAreaSettings;
+	private void OnGridSetTopContainerClicked(object sender, EventArgs e)
+	{
+		var current = TestContentPage.SafeAreaEdges;
+		TestContentPage.SafeAreaEdges = new SafeAreaEdges(
+			current.Left,              // Left (keep current)
+			SafeAreaRegions.Container, // Top
+			current.Right,             // Right (keep current)
+			current.Bottom             // Bottom (keep current)
+		);
+		UpdateCurrentSettingsLabel();
+	}
 
-		// Update the display label
-		var settingsText = $"Left: {GetSafeAreaRegionsFromPickerIndex(LeftPicker.SelectedIndex)}, " +
-						  $"Top: {GetSafeAreaRegionsFromPickerIndex(TopPicker.SelectedIndex)}, " +
-						  $"Right: {GetSafeAreaRegionsFromPickerIndex(RightPicker.SelectedIndex)}, " +
-						  $"Bottom: {GetSafeAreaRegionsFromPickerIndex(BottomPicker.SelectedIndex)}";
+	private void OnGridSetTopNoneClicked(object sender, EventArgs e)
+	{
+		var current = TestContentPage.SafeAreaEdges;
+		TestContentPage.SafeAreaEdges = new SafeAreaEdges(
+			current.Left,         // Left (keep current)
+			SafeAreaRegions.None, // Top
+			current.Right,        // Right (keep current)
+			current.Bottom        // Bottom (keep current)
+		);
+		UpdateCurrentSettingsLabel();
+	}
 
-		CurrentSettingsLabel.Text = $"Current ContentPage SafeAreaEdges: {settingsText}";
+	private void UpdateCurrentSettingsLabel()
+	{
+		var edges = TestContentPage.SafeAreaEdges;
+		var settingText = GetSafeAreaEdgesDescription(edges);
+		CurrentSettingsLabel.Text = $"Current TestContentPage SafeAreaEdges: {settingText}";
+	}
+
+	private string GetSafeAreaEdgesDescription(SafeAreaEdges edges)
+	{
+		// Check for common patterns
+		if (edges.Left == SafeAreaRegions.None && edges.Top == SafeAreaRegions.None &&
+			edges.Right == SafeAreaRegions.None && edges.Bottom == SafeAreaRegions.None)
+		{
+			return "None (Edge-to-edge)";
+		}
+
+		if (edges.Left == SafeAreaRegions.All && edges.Top == SafeAreaRegions.All &&
+			edges.Right == SafeAreaRegions.All && edges.Bottom == SafeAreaRegions.All)
+		{
+			return "All (Full safe area)";
+		}
+
+		if (edges.Left == SafeAreaRegions.Container && edges.Top == SafeAreaRegions.Container &&
+			edges.Right == SafeAreaRegions.Container && edges.Bottom == SafeAreaRegions.Container)
+		{
+			return "Container (Respect notches/bars)";
+		}
+
+		// For mixed values, show individual edges
+		return $"Left:{edges.Left}, Top:{edges.Top}, Right:{edges.Right}, Bottom:{edges.Bottom}";
 	}
 }
