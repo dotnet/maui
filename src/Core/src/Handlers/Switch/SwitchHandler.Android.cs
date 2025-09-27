@@ -77,9 +77,21 @@ namespace Microsoft.Maui.Handlers
 		{
 			public SwitchHandler? Handler { get; set; }
 
+			// Delay to allow the switch toggle animation to complete before updating shadow.
+			// Android's SwitchCompat uses a built-in animation when toggling that can interfere
+			// with shadow rendering if updated immediately. This delay ensures the animation
+			// finishes before we re-apply the shadow to prevent visual glitches.
+			private const int ShadowUpdateDelayMs = 150;
+
 			void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton? buttonView, bool isToggled)
 			{
 				Handler?.OnCheckedChanged(isToggled);
+
+				// Schedule shadow update after a short delay to allow toggle animation to finish
+				if (Handler?.VirtualView?.Shadow is not null)
+				{
+					Handler.PlatformView?.PostDelayed(() => MapShadow(Handler, Handler.VirtualView), ShadowUpdateDelayMs);
+				}
 			}
 		}
 	}
