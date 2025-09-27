@@ -56,17 +56,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ImageSource source = toolbar.TitleIcon;
 
-			if (source == null || source.IsEmpty)
-			{
-				if (nativeToolbar.GetChildAt(0) is ToolbarTitleIconImageView existingImageView)
-					nativeToolbar.RemoveView(existingImageView);
+			ToolbarTitleIconImageView? iconView = null;
 
+			if (nativeToolbar.GetChildAt(0) is ToolbarTitleIconImageView existingImageView)
+			{
+				iconView = existingImageView;
+			}
+
+			if (source is null || source.IsEmpty)
+			{
+				if (iconView is not null)
+				{
+					nativeToolbar.RemoveView(iconView);
+				}
 				return;
 			}
 
-			var iconView = new ToolbarTitleIconImageView(nativeToolbar.Context);
-			nativeToolbar.AddView(iconView, 0);
-			iconView.SetImageResource(global::Android.Resource.Color.Transparent);
+			if (iconView is null)
+			{
+				iconView = new ToolbarTitleIconImageView(nativeToolbar.Context);
+				nativeToolbar.AddView(iconView, 0);
+				iconView.SetImageResource(global::Android.Resource.Color.Transparent);
+			}
 
 			source.LoadImage(toolbar.Handler.MauiContext, (result) =>
 			{
