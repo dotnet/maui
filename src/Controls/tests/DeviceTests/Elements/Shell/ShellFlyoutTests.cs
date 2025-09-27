@@ -214,7 +214,7 @@ namespace Microsoft.Maui.DeviceTests
                         {
                                 if (!headerMarginTop.HasValue)
                                 {
-                                        headerMargin.Top = GetSafeArea().Top;
+                                        headerMargin.Top = GetSafeArea(handler.ToPlatform()).Top;
                                 }
 
                                 await OpenFlyout(handler);
@@ -327,7 +327,7 @@ namespace Microsoft.Maui.DeviceTests
                                         }
                                         else
                                         {
-                                                AssertionExtensions.CloseEnough(GetSafeArea().Top, scrolledBox.Y, 0.3, "Header position");
+                                                AssertionExtensions.CloseEnough(GetSafeArea(handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
                                         }
                                 }
                         });
