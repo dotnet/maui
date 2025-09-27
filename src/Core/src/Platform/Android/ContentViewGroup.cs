@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Platform
 		{
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
 		}
-
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		
+		internal override void DoMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (CrossPlatformLayout is null)
 			{

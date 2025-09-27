@@ -61,11 +61,11 @@ namespace Microsoft.Maui.Platform
 		{
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
 		}
-
+		
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
 		// apply to ViewHandlerExtensions.MeasureVirtualView
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		internal override void DoMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (CrossPlatformMeasure == null)
 			{
