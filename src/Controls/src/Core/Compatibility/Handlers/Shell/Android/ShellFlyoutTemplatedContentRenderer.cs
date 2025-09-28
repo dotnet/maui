@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		protected AView FooterView => _footerView?.PlatformView;
 		protected AView View => _rootView;
+		WindowsListener _windowsListener;
 
 
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
@@ -86,15 +87,84 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
 		{
+			private WeakReference<ImageView> _bgImageRef;
+			private WeakReference<AView> _flyoutViewRef;
+			private WeakReference<AView> _footerViewRef;
+
+			public AView FlyoutView
+			{
+				get
+				{
+					if (_flyoutViewRef != null && _flyoutViewRef.TryGetTarget(out var flyoutView))
+						return flyoutView;
+
+					return null;
+				}
+                set
+                {
+					_flyoutViewRef = new WeakReference<AView>(value);
+                }
+			}
+			public AView FooterView
+			{
+				get
+				{
+					if (_footerViewRef != null && _footerViewRef.TryGetTarget(out var footerView))
+						return footerView;
+
+					return null;
+				}
+                set
+                {
+					_footerViewRef = new WeakReference<AView>(value);
+                }
+			}
+
+			public WindowsListener(ImageView bgImage)
+			{
+				_bgImageRef = new WeakReference<ImageView>(bgImage);
+			}
+
 			public WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
 			{
 				if (insets == null || v == null)
 					return insets;
 
 				// The flyout overlaps the status bar so we don't really care about insetting it
+				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
+				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+				var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
-				v.SetPadding(0, displayCutout?.Top ?? 0, 0, 0);
+				int flyoutViewBottomInset = 0;
+
+				if (FooterView is not null)
+				{
+					v.SetPadding(0, 0, 0, bottomInset);
+					flyoutViewBottomInset = 0;
+				}
+                else
+                {
+					flyoutViewBottomInset = bottomInset;
+					v.SetPadding(0, 0, 0, 0);
+                }
+
+				if (appbarLayout.MeasuredHeight > 0)
+				{
+					FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
+					appbarLayout?.SetPadding(0, topInset, 0, 0);
+				}
+				else
+				{
+					FlyoutView?.SetPadding(0, topInset, 0, flyoutViewBottomInset);
+					appbarLayout?.SetPadding(0, 0, 0, 0);
+                }
+
+				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
+				{
+					bgImage.SetPadding(0, topInset, 0, bottomInset);
+				}
 
 				return WindowInsetsCompat.Consumed;
 			}
@@ -107,7 +177,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Resource.Layout.flyoutcontent, null);
 
 			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
-			ViewCompat.SetOnApplyWindowInsetsListener(_appBar, new WindowsListener());
 
 			(_appBar.LayoutParameters as CoordinatorLayout.LayoutParams)
 				.Behavior = new AppBarLayout.Behavior();
@@ -131,6 +200,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
+
+			_windowsListener = new WindowsListener(_bgImage);
+			ViewCompat.SetOnApplyWindowInsetsListener(coordinator, _windowsListener);
 
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
@@ -226,6 +298,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_flyoutContentView = CreateFlyoutContent(_rootView);
+			_windowsListener.FlyoutView = _flyoutContentView;
 			if (_flyoutContentView == null)
 				return;
 
@@ -341,6 +414,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var oldFooterView = _footerView;
 				_rootView.RemoveView(_footerView);
 				_footerView = null;
+				_windowsListener.FooterView = null;
 				oldFooterView.View = null;
 			}
 
@@ -356,6 +430,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchWidth = true
 			};
+
+			_windowsListener.FooterView = _footerView;
 
 			var footerViewLP = new CoordinatorLayout.LayoutParams(0, 0)
 			{
