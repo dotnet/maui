@@ -311,8 +311,6 @@ stages:
         - template: /eng/common/templates/steps/enable-internal-sources.yml
           parameters:
             legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-            runtimeSourceFeed: $(runtimeSourceFeed)
-            runtimeSourceFeedKey: $(runtimeSourceFeedKey)
   
         - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
