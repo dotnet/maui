@@ -4,6 +4,7 @@ trigger:
     - main
     - net10.0
     - release/*
+    - internal/release/*
   tags:
     include:
     - '*'
