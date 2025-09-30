@@ -124,6 +124,7 @@ public class BoxViewFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/31821
 	[Test]
 	[Category(UITestCategories.BoxView)]
 	public void BoxView_CornerRadiusWithColorAndShadow()
@@ -197,4 +198,5 @@ public class BoxViewFeatureTests : UITest
 
 		VerifyScreenshot();
 	}
+#endif
 }

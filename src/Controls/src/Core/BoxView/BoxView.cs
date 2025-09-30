@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = CornerElement.CornerRadiusProperty;
 
-		/// <summary>Bindable property for <see cref="Color"/>.</summary>
+		/// <summary>Bindable property for <see cref="Fill"/>.</summary>
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(BoxView), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
