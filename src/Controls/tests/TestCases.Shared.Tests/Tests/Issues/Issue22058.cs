@@ -1,4 +1,4 @@
-﻿#if WINDOWS
+﻿#if WINDOWS || MACCATALYST // TitleBar is only supported on Windows and MacCatalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,11 +19,13 @@ public class Issue22058 : _IssuesUITest
 	{
 		App.WaitForElement("ThemeChangeButton");
 		App.Tap("ThemeChangeButton");
-		App.Tap("timePicker");
 
+#if WINDOWS //TimePicker pop up is only supported on Windows
+		App.Tap("TimePickerControl");
 		Thread.Sleep(500); // Slight delay to allow the TimePicker to open
-		VerifyScreenshot();
-		App.TapCoordinates(10, 10);
+#endif
+		VerifyScreenshot(includeTitleBar: true);
+		App.TapCoordinates(50, 50);
 		App.Tap("ThemeChangeButton");
 	}
 }
