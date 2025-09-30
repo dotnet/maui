@@ -186,6 +186,7 @@ stages:
         - name: essentials
           desc: Essentials
           androidApiLevelsExclude: [ 25, 27 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -197,6 +198,7 @@ stages:
         - name: graphics
           desc: Graphics
           androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -208,6 +210,7 @@ stages:
         - name: core
           desc: Core
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -219,6 +222,7 @@ stages:
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Debug'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -230,6 +234,7 @@ stages:
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          androidApiLevelsCoreClrExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
