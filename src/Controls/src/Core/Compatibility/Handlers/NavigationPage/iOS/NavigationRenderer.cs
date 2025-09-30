@@ -2185,7 +2185,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (Superview != null)
 					{
 						// For iOS 18+ and pre-iOS 11, we use autoresizing masks and need to adjust the frame manually
-						if ((OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18)) ||
+						if (OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18) ||
 							!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 						{
 							value.Y = Superview.Bounds.Y;
