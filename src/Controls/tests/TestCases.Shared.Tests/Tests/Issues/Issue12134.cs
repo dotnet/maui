@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyInternetConnectivity();
 			for (int i = 0; i < 10; i++)
 			{
+				Thread.Sleep(2000);
 				App.WaitForElement("Success", $"Failied on: {i}");
 				App.Tap("LoadNewWebView");
 			}
