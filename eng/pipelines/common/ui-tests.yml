@@ -147,6 +147,12 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Android snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
 
                   # Collect and publish Android snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
