@@ -2089,7 +2089,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
+				// For iOS 18+, we need to use autoresizing masks instead of constraints to ensure proper TitleView display
+				if (OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18))
+				{
+					TranslatesAutoresizingMaskIntoConstraints = true;
+					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -2178,7 +2184,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (Superview != null)
 					{
-						if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
+						// For iOS 18+ and pre-iOS 11, we use autoresizing masks and need to adjust the frame manually
+						if ((OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18)) ||
+							!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 						{
 							value.Y = Superview.Bounds.Y;
 
