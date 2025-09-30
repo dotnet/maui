@@ -40,7 +40,7 @@ public class Issue22058 : ContentPage
 		var timePicker = new TimePicker
 		{
 			VerticalOptions = LayoutOptions.Center,
-			AutomationId = "timePicker",
+			AutomationId = "TimePickerControl",
 			HorizontalOptions = LayoutOptions.End,
 		};
 
