@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Application
 	{
 		AppTheme? _currentThemeForWindows;
-		AppTheme? _lastAppliedTheme;
 
 		partial void OnRequestedThemeChangedPlatform(AppTheme newTheme)
 		{
@@ -62,12 +61,6 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-			if (_lastAppliedTheme == newTheme && !followSystem)
-			{
-				return;
-			}
-
-			_lastAppliedTheme = newTheme;
 
 			var forcedElementTheme = newTheme switch
 			{
