@@ -112,17 +112,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
 				// Wait for handler to be ready before showing dialog
-				if (sender.Handler is null && sender is VisualElement ve)
-				{
-					void OnHandlerReady(object s, EventArgs e)
-					{
-						ve.HandlerChanged -= OnHandlerReady;
-						OnActionSheetRequested(sender, arguments);
-					}
-
-					ve.HandlerChanged += OnHandlerReady;
+				if (WaitForHandlerIfNeeded(sender, () => OnActionSheetRequested(sender, arguments)))
 					return;
-				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -183,17 +175,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
 				// Wait for handler to be ready before showing dialog
-				if (sender.Handler is null && sender is VisualElement ve)
-				{
-					void OnHandlerReady(object s, EventArgs e)
-					{
-						ve.HandlerChanged -= OnHandlerReady;
-						OnAlertRequested(sender, arguments);
-					}
-
-					ve.HandlerChanged += OnHandlerReady;
+				if (WaitForHandlerIfNeeded(sender, () => OnAlertRequested(sender, arguments)))
 					return;
-				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -275,17 +259,8 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
 				// Wait for handler to be ready before showing dialog
-				if (sender.Handler is null && sender is VisualElement ve)
-				{
-					void OnHandlerReady(object s, EventArgs e)
-					{
-						ve.HandlerChanged -= OnHandlerReady;
-						OnPromptRequested(sender, arguments);
-					}
-
-					ve.HandlerChanged += OnHandlerReady;
+				if (WaitForHandlerIfNeeded(sender, () => OnPromptRequested(sender, arguments)))
 					return;
-				}
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -327,6 +302,22 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
 				alertDialog.Show();
 				editText.RequestFocus();
+			}
+
+			bool WaitForHandlerIfNeeded(IView sender, System.Action action)
+			{
+				if (sender.Handler is null && sender is VisualElement ve)
+				{
+					void OnHandlerReady(object s, EventArgs e)
+					{
+						ve.HandlerChanged -= OnHandlerReady;
+						action();
+					}
+
+					ve.HandlerChanged += OnHandlerReady;
+					return true;
+				}
+				return false;
 			}
 
 			void UpdateProgressBarVisibility(bool isBusy)
