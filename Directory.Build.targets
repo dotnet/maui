@@ -121,5 +121,8 @@
 
   <!-- Tell typescript to stop deleting everything before building the next TFM -->
   <Target Name="TypeScriptDeleteOutputFromOtherConfigs" />
+  <!-- Don't add any outputs to any item group, we are embedding things manually -->
+  <Target Name="GetTypeScriptOutputForPublishing" />
+  <Target Name="GetTypeScriptCopyToOutputDirectoryItems" />
 
 </Project>
