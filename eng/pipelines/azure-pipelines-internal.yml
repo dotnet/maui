@@ -28,6 +28,7 @@ schedules:
     - main
     - net10.0
     - inflight/current
+  always: true
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
