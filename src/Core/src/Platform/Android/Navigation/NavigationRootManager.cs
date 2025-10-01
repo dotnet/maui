@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 			ClearPlatformParts();
 
 			mauiContext = mauiContext ?? _mauiContext;
-			CoordinatorLayout? navigationLayout = null;
+			CoordinatorLayout? navigationLayout = null; // Will now be a MauiCoordinatorLayout instance
 
 			if (view is IFlyoutView)
 			{
@@ -71,15 +71,12 @@ namespace Microsoft.Maui.Platform
 				navigationLayout ??=
 				   LayoutInflater
 					   .Inflate(Resource.Layout.navigationlayout, null)
-					   .JavaCast<CoordinatorLayout>();
+					   .JavaCast<CoordinatorLayout>(); // XML root swapped to MauiCoordinatorLayout
 
 				_rootView = navigationLayout;
 			}
 
-			if (navigationLayout is CoordinatorLayout && mauiContext.Context is not null)
-            {
-                GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
-            }
+			// MauiCoordinatorLayout attaches its own local GlobalWindowInsetListener instance.
 
 			// if the incoming view is a Drawer Layout then the Drawer Layout
 			// will be the root view and internally handle all if its view management

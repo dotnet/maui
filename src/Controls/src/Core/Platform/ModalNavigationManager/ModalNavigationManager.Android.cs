@@ -206,7 +206,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
-			GlobalWindowInsetListener? _modalInsetListener;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
 
@@ -316,10 +315,8 @@ namespace Microsoft.Maui.Controls.Platform
 				var context = rootView.Context ?? inflater.Context;
 				if (context is not null)
 				{
-					// Modal pages get their own separate GlobalWindowInsetListener instance
-					// This prevents cross-contamination with the main window's inset tracking
-					_modalInsetListener = new GlobalWindowInsetListener();
-					ViewCompat.SetOnApplyWindowInsetsListener(rootView, _modalInsetListener);
+					// MauiCoordinatorLayout already installed its own GlobalWindowInsetListener.
+					// If future modal-specific behavior is required, adapt the layout's listener instead of replacing it.
 				}
 
 				if (IsAnimated)
@@ -376,19 +373,8 @@ namespace Microsoft.Maui.Controls.Platform
 					_modal.Toolbar.Handler = null;
 				}
 
-				// Clean up the modal's separate GlobalWindowInsetListener
-				if (_modalInsetListener is not null)
-				{
-					_modalInsetListener.ResetAllViews();
-					_modalInsetListener.Dispose();
-					_modalInsetListener = null;
-				}
-
-				var rootView = _navigationRootManager?.RootView;
-				if (rootView is not null)
-				{
-					ViewCompat.SetOnApplyWindowInsetsListener(rootView, null);
-				}
+				// No special cleanup needed for a replaced listener; MauiCoordinatorLayout listener stays alive
+				// until the layout itself is GC'd.
 
 				_modal.Handler = null;
 				_modal = null!;

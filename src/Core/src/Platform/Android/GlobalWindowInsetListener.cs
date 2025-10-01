@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Platform
 
         AView? _pendingView;
 
-		public GlobalWindowInsetListener() : base(DispatchModeStop)
-		{
-		}
+        public GlobalWindowInsetListener() : base(DispatchModeStop)
+        {
+        }
 
-		public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
+        public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
         {
             if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 
                 return insets;
             }
-            
+
             _pendingView = null;
 
             // Handle custom inset views first
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Platform
 
 
             var bottomNavigation = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
-            
+
             if (bottomNavigation)
             {
                 v.SetPadding(0, 0, 0, bottomInset);
@@ -213,60 +213,60 @@ namespace Microsoft.Maui.Platform
             base.Dispose(disposing);
         }
 
-		public override void OnPrepare(WindowInsetsAnimationCompat? animation)
-		{
+        public override void OnPrepare(WindowInsetsAnimationCompat? animation)
+        {
             base.OnPrepare(animation);
 
             if (animation is null)
                 return;
 
-			// Check if this is an IME animation
-			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-			{
-				IsImeAnimating = true;
-			}
-		}
+            // Check if this is an IME animation
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            {
+                IsImeAnimating = true;
+            }
+        }
 
-		public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
+        public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
         {
             if (animation is null)
                 return bounds;
 
-			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-			{
-				IsImeAnimating = true;
-			}
-			return bounds;
-		}
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            {
+                IsImeAnimating = true;
+            }
+            return bounds;
+        }
 
-		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
-		{
-			if (insets != null && runningAnimations != null)
-			{
-				// Check for IME animations
-				foreach (var animation in runningAnimations)
-				{
-					if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-					{
-						var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-						var imeHeight = imeInsets?.Bottom ?? 0;
-						// IME height during animation: imeHeight
-					}
-				}
-			}
+        public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
+        {
+            if (insets != null && runningAnimations != null)
+            {
+                // Check for IME animations
+                foreach (var animation in runningAnimations)
+                {
+                    if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+                    {
+                        var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                        var imeHeight = imeInsets?.Bottom ?? 0;
+                        // IME height during animation: imeHeight
+                    }
+                }
+            }
             return insets;
-		}
+        }
 
-		public override void OnEnd(WindowInsetsAnimationCompat? animation)
-		{
+        public override void OnEnd(WindowInsetsAnimationCompat? animation)
+        {
             base.OnEnd(animation);
 
             if (animation is null)
                 return;
 
-			// Check if this was an IME animation
-			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-			{
+            // Check if this was an IME animation
+            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            {
 
                 if (_pendingView is AView view)
                 {
@@ -278,12 +278,12 @@ namespace Microsoft.Maui.Platform
                     });
                 }
                 else
-                {                    
+                {
                     IsImeAnimating = false;
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -311,6 +311,16 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <param name="context">The Android context to get the listener from</param>
     public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
     {
+        // First check if this view is contained within a MauiCoordinatorLayout that has its own listener.
+        // This lets individual CoordinatorLayout hierarchies manage insets independently.
+        if (view.FindParent(p => p is MauiCoordinatorLayout) is MauiCoordinatorLayout localLayout)
+        {
+            var localListener = localLayout.WindowInsetListener;
+            ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
+            ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
+            return true;
+        }
+
         if (view is not MaterialToolbar && view.FindParent(
             (parent) =>
                 parent is NestedScrollView ||
@@ -340,6 +350,15 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <param name="context">The Android context to get the listener from</param>
     public static void RemoveGlobalWindowInsetListener(this View view, Context context)
     {
+        // Prefer removing from a local MauiCoordinatorLayout listener if present.
+        if (view.FindParent(p => p is MauiCoordinatorLayout) is MauiCoordinatorLayout localLayout)
+        {
+            localLayout.WindowInsetListener.ResetView(view);
+            ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+            ViewCompat.SetWindowInsetsAnimationCallback(view, null);
+            return;
+        }
+
         var listener = context.GetGlobalWindowInsetListener();
         listener?.ResetView(view);
         ViewCompat.SetOnApplyWindowInsetsListener(view, null);
