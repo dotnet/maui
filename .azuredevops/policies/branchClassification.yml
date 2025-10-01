@@ -1,5 +1,6 @@
 description: Branch classification configuration for repository
 resource: repository
+disabled: false
 configuration:
   branchClassificationSettings:
     defaultClassification: nonproduction
