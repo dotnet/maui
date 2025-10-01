@@ -132,7 +132,7 @@ public class BrushesViewModel : INotifyPropertyChanged
 			BrushTarget = BuildRadial(
 				new GradientStopCollection
 				{
-					new GradientStop(Colors.MediumPurple, 0.1f),
+					new GradientStop(Colors.IndianRed, 0.1f),
 					new GradientStop(Colors.LightPink, 1.0f)
 				},
 				center,
@@ -164,7 +164,7 @@ public class BrushesViewModel : INotifyPropertyChanged
 				new GradientStopCollection
 				{
 			new GradientStop(Colors.DarkOrange, 0.45f),
-			new GradientStop(Colors.DarkRed, 0.55f)
+			new GradientStop(Colors.DarkSlateBlue, 0.55f)
 				},
 				start,
 				end);
@@ -186,14 +186,13 @@ public class BrushesViewModel : INotifyPropertyChanged
 
 		ApplyRadialShadowCommand = new Command(() =>
 			{
-				var center = new Point(0.1, 0.5);
+				var center = new Point(0.5, 0.5);
 				var radius = 1.0;
 
 				var stops = new GradientStopCollection
 				{
-				new GradientStop(Colors.Black.WithAlpha(1.0f), 0.0f),
-				new GradientStop(Colors.Black.WithAlpha(0.9f), 0.45f),
-				new GradientStop(Colors.Black.WithAlpha(0.85f), 1.0f)
+					new GradientStop(Colors.Red, 0.5f),
+					new GradientStop(Colors.Blue, 0.5f),
 				};
 
 				var radial = BuildRadial(stops, center, radius);
