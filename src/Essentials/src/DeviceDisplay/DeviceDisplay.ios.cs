@@ -74,14 +74,11 @@ namespace Microsoft.Maui.Devices
 			// Get scale factor from UIScreen as a fallback (this is usually stable)
 			var scale = UIScreen.MainScreen.Scale;
 
-			// For Mac Catalyst, calculate orientation based on actual dimensions and rotation
-			var orientation = CalculateOrientationFromDimensionsAndRotation(width, height, rotationDegrees);
-
 			return new DisplayInfo(
 				width: width,
 				height: height,
 				density: scale,
-				orientation: orientation,
+				orientation: DisplayOrientation.Portrait,
 				rotation: rotation,
 				rate: (float)refreshRate);
 #else
@@ -99,21 +96,6 @@ namespace Microsoft.Maui.Devices
 				270 => DisplayRotation.Rotation270,
 				_ => DisplayRotation.Rotation0
 			};
-
-		static DisplayOrientation CalculateOrientationFromDimensionsAndRotation(double width, double height, double rotationDegrees)
-		{
-			// For 90° and 270° rotations, the effective orientation is swapped
-			if (rotationDegrees == 90 || rotationDegrees == 270)
-			{
-				// Swap width and height for orientation calculation
-				return height >= width ? DisplayOrientation.Landscape : DisplayOrientation.Portrait;
-			}
-			else
-			{
-				// 0° and 180° rotations don't change the orientation
-				return width >= height ? DisplayOrientation.Landscape : DisplayOrientation.Portrait;
-			}
-		}
 
 		DisplayInfo GetFallbackDisplayInfo()
 		{
