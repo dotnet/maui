@@ -8,7 +8,6 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using static Android.Views.ViewGroup;
 using AButton = Android.Widget.Button;
