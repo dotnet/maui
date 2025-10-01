@@ -111,6 +111,7 @@ public class BrushesFeatureTests : UITest
 		VerifyBrushesScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Shadow gradient brushes are not rendered as gradients on iOS, MacCatalyst, and Windows; instead, they fall back to a solid color because the underlying native shadow APIs only support single-color shadows.
 	[Test]
 	public void VerifyLinearGradientBrushWithShadow()
 	{
@@ -140,6 +141,7 @@ public class BrushesFeatureTests : UITest
 		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
+#endif
 
 	[Test]
 	public void VerifySolidColorBrushWithStroke()
@@ -306,6 +308,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		VerifyBrushesScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Shadow gradient brushes are not rendered as gradients on iOS, MacCatalyst, and Windows; instead, they fall back to a solid color because the underlying native shadow APIs only support single-color shadows.
 	[Test]
 	public void VerifyLinearGradientBrushWithShadowAndOpacity()
 	{
@@ -341,6 +344,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
+#endif
 
 	[Test]
 	public void VerifySolidColorBrushWithBackgroundColorAndShadow()
@@ -509,6 +513,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		VerifyBrushesScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Shadow gradient brushes are not rendered as gradients on iOS, MacCatalyst, and Windows; instead, they fall back to a solid color because the underlying native shadow APIs only support single-color shadows.
 	[Test]
 	public void VerifyLinearGradientBrushWithBackgroundAndShadowAndStroke()
 	{
@@ -542,6 +547,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
+#endif
 
 	[Test]
 	public void VerifyBackgroundWithAlterSolidColorBrush()
