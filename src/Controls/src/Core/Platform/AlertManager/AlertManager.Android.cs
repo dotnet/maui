@@ -112,7 +112,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// Wait for handler to be ready before showing dialog
 				if (WaitForHandlerIfNeeded(sender, () => OnActionSheetRequested(sender, arguments)))
+				{
 					return;
+				}
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -175,7 +177,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// Wait for handler to be ready before showing dialog
 				if (WaitForHandlerIfNeeded(sender, () => OnAlertRequested(sender, arguments)))
+				{
 					return;
+				}
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -259,7 +263,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// Wait for handler to be ready before showing dialog
 				if (WaitForHandlerIfNeeded(sender, () => OnPromptRequested(sender, arguments)))
+				{
 					return;
+				}
 
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
