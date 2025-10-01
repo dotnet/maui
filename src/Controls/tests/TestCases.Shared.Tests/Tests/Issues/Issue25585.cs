@@ -17,7 +17,7 @@ public class Issue25585 : _IssuesUITest
 		App.TapShellFlyoutIcon();
 		App.Tap("Second Page");
 #if MACCATALYST
-			App.WaitForElement(AppiumQuery.ById($"action-button--{999 - 0}"));
+		App.WaitForElement(AppiumQuery.ById($"action-button--{999 - 0}"));
 #else
 		App.WaitForElement("OK");
 #endif
