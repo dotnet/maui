@@ -197,7 +197,7 @@ stages:
                   # Collect and publish Android snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
-                      platform: 'Android CoreCLR'
+                      platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
