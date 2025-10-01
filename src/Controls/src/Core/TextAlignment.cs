@@ -17,44 +17,24 @@ public class TextAlignmentConverter : TypeConverter
 		var strValue = value?.ToString();
 		if (strValue is not null)
 		{
-			if (strValue.Equals("Start", StringComparison.OrdinalIgnoreCase) || strValue.Equals("left", StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals("Start", StringComparison.OrdinalIgnoreCase) ||
+				strValue.Equals("left", StringComparison.OrdinalIgnoreCase) ||
+				strValue.Equals("top", StringComparison.OrdinalIgnoreCase))
 			{
 				return TextAlignment.Start;
 			}
 
-			if (strValue.Equals("top", StringComparison.OrdinalIgnoreCase))
-			{
-				return TextAlignment.Start;
-			}
-
-			if (strValue.Equals("right", StringComparison.OrdinalIgnoreCase))
-			{
-				return TextAlignment.End;
-			}
-
-			if (strValue.Equals("bottom", StringComparison.OrdinalIgnoreCase))
-			{
-				return TextAlignment.End;
-			}
-
-			if (strValue.Equals("center", StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals("Center", StringComparison.OrdinalIgnoreCase) ||
+				strValue.Equals("middle", StringComparison.OrdinalIgnoreCase))
 			{
 				return TextAlignment.Center;
 			}
 
-			if (strValue.Equals("middle", StringComparison.OrdinalIgnoreCase))
-			{
-				return TextAlignment.Center;
-			}
-
-			if (strValue.Equals("End", StringComparison.OrdinalIgnoreCase) || strValue.Equals("right", StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals("End", StringComparison.OrdinalIgnoreCase) ||
+				strValue.Equals("right", StringComparison.OrdinalIgnoreCase) ||
+				strValue.Equals("bottom", StringComparison.OrdinalIgnoreCase))
 			{
 				return TextAlignment.End;
-			}
-
-			if (strValue.Equals("Center", StringComparison.OrdinalIgnoreCase) || strValue.Equals("center", StringComparison.OrdinalIgnoreCase))
-			{
-				return TextAlignment.Center;
 			}
 
 			if (Enum.TryParse(strValue, out TextAlignment direction))
