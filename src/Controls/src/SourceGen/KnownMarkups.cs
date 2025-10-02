@@ -631,6 +631,8 @@ internal class KnownMarkups
 					n = pen;
 				else if (np is ListNode lnp && lnp.Parent is ElementNode elnp)
 					n = elnp;
+				else
+					n = null;
 				continue;
 			}
 			//single resource in <Resources>
