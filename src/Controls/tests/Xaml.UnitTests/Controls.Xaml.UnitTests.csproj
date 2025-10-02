@@ -113,6 +113,7 @@
 
     <!-- <MauiXaml Update="DataTemplate.xaml" TreeOrder="true" /> -->
     <MauiXaml Update="SetValue.xaml" TreeOrder="true" />
+    <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
   </ItemGroup>
 
 </Project>
