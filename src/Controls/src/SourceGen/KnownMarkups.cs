@@ -139,6 +139,12 @@ internal class KnownMarkups
 			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
 			return true;
 		}
+		else if (getNodeValue != null)
+		{
+			var lvalue = getNodeValue(valueNode, bpRef.Type);
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
+			return true;
+		}
 		else if (context.Variables.TryGetValue(valueNode, out var variable))
 		{
 			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.ValueAccessor}}}";
@@ -537,7 +543,7 @@ internal class KnownMarkups
 	}
 
 	//all of this could/should be better, but is already slightly better than XamlC
-	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		// If the resource is defined locally, we can return the value directly
 		var eNode = (node as ElementNode)!;
