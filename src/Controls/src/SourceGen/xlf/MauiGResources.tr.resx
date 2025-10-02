@@ -125,75 +125,75 @@
     <value>XAML ayrıştırma başarısız oldu</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
-    <value>Expression must end with '}'.</value>
+    <value>İfade ‘}’ ile bitmelidir.</value>
   </data>
   <data name="RectConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Rect, expected format is "x, y, w, h"</value>
+    <value>"{0}" Rect'e dönüştürülemiyor, beklenen biçim “x, y, w, h”</value>
   </data>
   <data name="ConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into "{1}".</value>
+    <value>"{0}", "{1}" olarak dönüştürülemiyor.</value>
   </data>
   <data name="PointConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Point, expected format is "x, y".</value>
+    <value>"{0}", Point türüne dönüştürülemiyor, beklenen biçim “x, y”.</value>
   </data>
   <data name="ThicknessConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l".</value>
+    <value>"{0}" Thickness’a dönüştürülemiyor, beklenen biçim “h, v” veya “l, t, r, b” veya “l”.</value>
   </data>
   <data name="CornerRadiusConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l".</value>
+    <value>"{0}" değerini CornerRadius'a dönüştürülemiyor, beklenen biçim "tl, tr, bl, br" veya "l".</value>
   </data>
   <data name="SymbolResolution" xml:space="preserve">
-    <value>Symbol resolution failed</value>
+    <value>Sembol çözümlemesi başarısız oldu</value>
   </data>
   <data name="TypeResolutionMessage" xml:space="preserve">
-    <value>Cannot resolve type "{0}".</value>
+    <value>"{0}" türü çözümlenemiyor.</value>
     <comment>{0} is a xmlnamespace and typename</comment>
   </data>
   <data name="DuplicateTypeError" xml:space="preserve">
-    <value>Multiple Types found for "{0}".</value>
+    <value>"{0}" için birden çok Tür bulundu.</value>
   </data>
   <data name="MemberResolution" xml:space="preserve">
-    <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
+    <value>“{0}” için erişilebilir özellik, BindableProperty veya olay bulunamadı veya değer ile özellik arasında uyumsuzluk var.</value>
     <comment>{0} is a property name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
+    <value>"{0}" Easing'e dönüştürülemiyor, beklenen değer "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" veya "SpringOut".</value>
   </data>
   <data name="FlexBasisConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
+    <value>"{0}" değerini FlexBasis'e dönüştürülemiyor, beklenen değerler "Auto" veya "n%", "n" olup, n sayısal bir değerdir.</value>
   </data>
   <data name="FlowDirectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
+    <value>"{0}" FlowDirection'a dönüştürülemiyor, beklenen değerler "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" veya "RightToLeft".</value>
   </data>
   <data name="GridLengthConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into GridLength, expected values are "*", "n*", "Auto" or "n" where n is a numeric value.</value>
+    <value>"{0}" GridLength'e dönüştürülemiyor, beklenen değerler "*", "n*", "Auto" veya "n" olup, n sayısal bir değerdir.</value>
   </data>
   <data name="ListStringConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
+    <value>"{0}" List&lt;string&gt;'e dönüştürülemiyor, beklenen biçim “x, y, z”.</value>
   </data>
   <data name="StrokeShapeConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Shape (or descendant).</value>
+    <value>"{0}" Shape (veya alt öğesi) olarak dönüştürülemiyor.</value>
   </data>
   <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into ColumnDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>"{0}" ColumnDefinitionCollection'a dönüştürülemiyor, beklenen değerler "*", "n*", "Auto" veya "n" (veya bunlar virgülle ayrılmış bir bileşimi) olup, n sayısal bir değerdir.</value>
   </data>
   <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into RowDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>"{0}" RowDefinitionCollection'a dönüştürülemiyor, beklenen değerler "*", "n*", "Auto" veya "n" (veya bunlar virgülle ayrılmış bir bileşimi) olup, burada n sayısal bir değerdir.</value>
   </data>
   <data name="LayoutOptionsConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
+    <value>"{0}" LayoutOptions'a dönüştürülemiyor, beklenen değerler "Start", "Center", "End" veya "Fill".</value>
   </data>
   <data name="MethodResolution" xml:space="preserve">
-    <value>No method found for '{0}'.</value>
+    <value>'{0}' için metot bulunamadı.</value>
     <comment>0 is a method or ctor name</comment>
   </data>
   <data name="DuplicateKeyInRD" xml:space="preserve">
-    <value>duplicate key in resource dictionary</value>
+    <value>kaynak sözlüğünde yinelenen anahtar</value>
     <comment>
 </comment>
   </data>
   <data name="ConversionFailedTitle" xml:space="preserve">
-    <value>Conversion Failed</value>
+    <value>Dönüştürme Başarısız Oldu</value>
     <comment>
 </comment>
   </data>
