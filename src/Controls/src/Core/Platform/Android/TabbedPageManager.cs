@@ -734,13 +734,13 @@ public class TabbedPageManager
 				// instead of leaving the application in a broken state
 				if (IsDarkTheme)
 				{
-					defaultColor = ColorUtils.SetAlphaComponent(
+					defaultColor = AndroidX.Core.Graphics.ColorUtils.SetAlphaComponent(
 						ContextCompat.GetColor(_context.Context, Resource.Color.primary_dark_material_light),
 						153); // 60% opacity
 				}
 				else
 				{
-					defaultColor = ColorUtils.SetAlphaComponent(
+					defaultColor = AndroidX.Core.Graphics.ColorUtils.SetAlphaComponent(
 						ContextCompat.GetColor(_context.Context, Resource.Color.primary_dark_material_dark),
 						153); // 60% opacity
 				}
