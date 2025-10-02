@@ -509,7 +509,7 @@ internal class KnownMarkups
 		}
 	}
 
-	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		// should be possible to return the right value, as soon as we no longer use the namescope
 		returnType = context.Compilation.ObjectType;
@@ -540,6 +540,92 @@ internal class KnownMarkups
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"ReferenceExtension: Name '{name}' not found in any NameScope"));
 		value = string.Empty;
 		return false; // or throw an exception?
+	}
+
+	/// <summary>
+	/// Provides value for AppThemeBindingExtension by generating an AppThemeBinding instance
+	/// with Light, Dark, and Default properties set based on the markup extension's properties.
+	/// </summary>
+	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
+
+		if (getNodeValue is null)
+		{
+			// Fallback when we don't have getNodeValue - shouldn't happen in normal flow
+			value = string.Empty;
+			return false;
+		}
+
+		// Get the target property type for type conversion
+		ITypeSymbol? propertyType = null;
+		if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
+		{
+			var localName = propertyName.LocalName;
+			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
+			var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
+			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
+			propertyType = typeandconverter?.type ?? propertySymbol?.Type;
+		}
+
+		// Default to object if we can't determine property type
+		if (propertyType is null)
+			propertyType = context.Compilation.ObjectType;
+
+		// Extract Light, Dark, and Default values from the markup extension
+		string? lightValue = null;
+		string? darkValue = null;
+		string? defaultValue = null;
+
+		// Check for Default property (can be in CollectionItems as it's the ContentProperty)
+		if (node.Properties.TryGetValue(new XmlName("", "Default"), out INode? defaultNode)
+			|| node.Properties.TryGetValue(new XmlName(null, "Default"), out defaultNode)
+			|| (node.CollectionItems.Count == 1 && (defaultNode = node.CollectionItems[0]) != null))
+		{
+			var defaultLocal = getNodeValue(defaultNode, propertyType);
+			defaultValue = defaultLocal.ValueAccessor;
+		}
+
+		// Check for Light property
+		if (node.Properties.TryGetValue(new XmlName("", "Light"), out INode? lightNode)
+			|| node.Properties.TryGetValue(new XmlName(null, "Light"), out lightNode))
+		{
+			var lightLocal = getNodeValue(lightNode, propertyType);
+			lightValue = lightLocal.ValueAccessor;
+		}
+
+		// Check for Dark property
+		if (node.Properties.TryGetValue(new XmlName("", "Dark"), out INode? darkNode)
+			|| node.Properties.TryGetValue(new XmlName(null, "Dark"), out darkNode))
+		{
+			var darkLocal = getNodeValue(darkNode, propertyType);
+			darkValue = darkLocal.ValueAccessor;
+		}
+
+		// At least one value must be set
+		if (lightValue is null && darkValue is null && defaultValue is null)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
+				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
+			value = string.Empty;
+			return false;
+		}
+
+		// Build the AppThemeBinding initialization expression
+		var parts = new List<string>();
+		
+		if (lightValue is not null)
+			parts.Add($"Light = {lightValue}");
+		
+		if (darkValue is not null)
+			parts.Add($"Dark = {darkValue}");
+		
+		if (defaultValue is not null)
+			parts.Add($"Default = {defaultValue}");
+
+		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
+		return true;
 	}
 
 	//all of this could/should be better, but is already slightly better than XamlC

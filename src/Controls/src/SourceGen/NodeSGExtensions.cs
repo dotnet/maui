@@ -106,6 +106,7 @@ static class NodeSGExtensions
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")!, KnownMarkups.ProvideValueForTemplateBindingExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension")!, KnownMarkups.ProvideValueForReferenceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")!, KnownMarkups.ProvideValueForStaticResourceExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension")!, KnownMarkups.ProvideValueForAppThemeBindingExtension},
 	};
 
 	public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
