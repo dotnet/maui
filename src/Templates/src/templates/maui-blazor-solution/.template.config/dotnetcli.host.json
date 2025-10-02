@@ -1,8 +1,70 @@
 {
   "$schema": "http://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
+    "msExtensionsLoggingDebugVersion": {
+      "isHidden": true
+    },
+    "componentsWebVersion": {
+      "isHidden": true
+    },
+    "componentsWebAssemblyVersion": {
+      "isHidden": true
+    },
+    "componentsWebAssemblyServerVersion": {
+      "isHidden": true
+    },
     "Framework": {
       "longName": "framework"
+    },
+    "FrameworkAspNet": {
+      "isHidden": true
+    },
+    "UserSecretsId": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
+    "kestrelHttpPort": {
+      "isHidden": true
+    },
+    "kestrelHttpsPort": {
+      "isHidden": true
+    },
+    "iisHttpPort": {
+      "isHidden": true
+    },
+    "iisHttpsPort": {
+      "isHidden": true
+    },
+    "InteractivityPlatform": {
+      "longName": "interactivity",
+      "shortName": "int"
+    },
+    "InteractivityLocation": {
+      "isHidden": true
+    },
+    "AllInteractive": {
+      "longName": "all-interactive"
+    },
+    "IncludeSampleContent": {
+      "isHidden": true
+    },
+    "Empty": {
+      "longName": "empty"
+    },
+    "UseLocalDB": {
+      "longName": "use-local-db",
+      "isHidden": true
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
+    },
+    "UseProgramMain": {
+      "longName": "use-program-main",
+      "shortName": ""
     }
   },
   "usageExamples": [
