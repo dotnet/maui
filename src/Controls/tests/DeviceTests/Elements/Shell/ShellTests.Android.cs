@@ -752,8 +752,8 @@ namespace Microsoft.Maui.DeviceTests
 			await OnNavigatedToAsync(page);
 		}
 
-		[Fact(DisplayName = "ShellFragmentContainer destruction does not use problematic dispatcher pattern")]
-		public async Task ShellFragmentContainerDestructionDoesNotUseDispatcherPattern()
+		[Fact(DisplayName = "ShellFragmentContainer can be destroyed after context is disposed")]
+		public async Task ShellFragmentContainerCanBeDestroyedAfterContextDisposed()
 		{
 			SetupBuilder();
 			var page = new ContentPage();
@@ -772,38 +772,32 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
+			// Create a disposable context stub that we can dispose before the fragment
+			var mauiContextStub = ContextStub.CreateNew(MauiContext);
+
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 				await OnNavigatedToAsync(shell.CurrentPage);
 
-				// Get the ShellFragmentContainer type to verify OnDestroy method behavior
-				var shellFragmentContainerType = typeof(ShellFragmentContainer);
-				
-				// Verify that OnDestroy method either doesn't exist or doesn't call dispatcher
-				var onDestroyMethod = shellFragmentContainerType.GetMethod("OnDestroy", 
-					System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-				
-				if (onDestroyMethod != null)
-				{
-					// If OnDestroy exists, verify it's not overridden or doesn't contain problematic dispatcher pattern
-					// The base Fragment.OnDestroy should be used instead
-					Assert.True(onDestroyMethod.DeclaringType == typeof(AndroidX.Fragment.App.Fragment), 
-						"ShellFragmentContainer should not override OnDestroy method");
-				}
-
-				// Test that fragment creation and destruction works without exceptions
+				// Get the ShellContent to create a fragment
 				var shellContent = shell.CurrentItem.CurrentItem.Items.First();
-				var mauiContext = MauiContext;
 				
 				Exception exception = null;
+				ShellFragmentContainer fragmentContainer = null;
+				
 				try
 				{
-					// Create a ShellFragmentContainer instance
-					var fragmentContainer = new ShellFragmentContainer(shellContent, mauiContext);
+					// Create a ShellFragmentContainer instance with the disposable context
+					fragmentContainer = new ShellFragmentContainer(shellContent, mauiContextStub);
 					
-					// Test that disposal works without dispatcher exceptions
-					// This should use the base Fragment disposal mechanism
+					// Dispose the context/service provider FIRST - this simulates the real bug scenario
+					// where the activity/context is destroyed before the fragment
+					mauiContextStub.Dispose();
+					
+					// Now try to destroy the fragment - the old code would throw ObjectDisposedException
+					// when trying to access _mauiContext.GetDispatcher() because the service provider is disposed
+					// The fix (removing OnDestroy override) allows this to work without exception
 					fragmentContainer.Dispose();
 				}
 				catch (Exception ex)
@@ -812,6 +806,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				// Verify no exception was thrown during fragment disposal
+				// This validates that the fragment can be destroyed even when the context is already disposed
 				Assert.Null(exception);
 			});
 		}
