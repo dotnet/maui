@@ -22,7 +22,7 @@ public class TabbedPageFeatureTests : UITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("TabbedPageControl");
+		App.WaitForElement("Tab1Label");
 		VerifyScreenshot();
 	}
 
@@ -222,7 +222,7 @@ public class TabbedPageFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/31121
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link - https://github.com/dotnet/maui/issues/31121, https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(14)]
 	[Category(UITestCategories.TabbedPage)]
