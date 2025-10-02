@@ -20,6 +20,9 @@ public class DependencyFirst : SourceGenXamlInitializeComponentTestBase
 	x:Class="Test.TestPage">
 	<ContentPage.Resources>
 		<local:ReverseConverter x:Key="reverseConverter" />
+		<Style TargetType="Button">
+			<Setter Property="TextColor" Value="White"></Setter>
+		</Style>
 	</ContentPage.Resources>
 	<ListView>
 		<ListView.ItemTemplate>

@@ -24,9 +24,14 @@ public class LayoutBenchmark
 	}
 
 	[BenchmarkDotNet.Attributes.Benchmark]
-	public void SourceGen()
+	public void SourceGenLazy()
 	{
 		var page = new Microsoft.Maui.Controls.Xaml.UnitTests.Benchmark("SourceGen");
+	}
+	[BenchmarkDotNet.Attributes.Benchmark]
+	public void SourceGen()
+	{
+		var page = new Microsoft.Maui.Controls.Xaml.UnitTests.Benchmark2("SourceGen");
 	}
 	[BenchmarkDotNet.Attributes.Benchmark]
 	public void Runtime()
