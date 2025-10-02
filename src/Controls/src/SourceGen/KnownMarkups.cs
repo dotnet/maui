@@ -620,7 +620,11 @@ internal class KnownMarkups
 		{
 			if (!n.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
 			{
-				n = n.Parent as ElementNode;
+				var np = n.Parent;
+				if (np is ElementNode pen)
+					n = pen;
+				else if (np is ListNode lnp && lnp.Parent is ElementNode elnp)
+					n = elnp;
 				continue;
 			}
 			//single resource in <Resources>
