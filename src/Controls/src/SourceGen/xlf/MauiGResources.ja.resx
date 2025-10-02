@@ -125,75 +125,75 @@
     <value>XAML の解析に失敗しました</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
-    <value>Expression must end with '}'.</value>
+    <value>式の末尾は '}' にする必要があります。</value>
   </data>
   <data name="RectConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Rect, expected format is "x, y, w, h"</value>
+    <value>"{0}" を Rect に変換できません。想定される形式は "x, y, w, h" です</value>
   </data>
   <data name="ConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into "{1}".</value>
+    <value>"{0}" を "{1}" に変換できません。</value>
   </data>
   <data name="PointConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Point, expected format is "x, y".</value>
+    <value>"{0}" を Point に変換できません。想定される形式は "x, y" です。</value>
   </data>
   <data name="ThicknessConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l".</value>
+    <value>"{0}" を Thickness に変換できません。必要な形式は "h, v"、"l, t, r b" または "l" です。</value>
   </data>
   <data name="CornerRadiusConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l".</value>
+    <value>"{0}" を CornerRadius に変換できません。想定される形式は "tl, tr, bl, br" または "l" です。</value>
   </data>
   <data name="SymbolResolution" xml:space="preserve">
-    <value>Symbol resolution failed</value>
+    <value>シンボルの解決に失敗しました</value>
   </data>
   <data name="TypeResolutionMessage" xml:space="preserve">
-    <value>Cannot resolve type "{0}".</value>
+    <value>型 "{0}" を解決できません。</value>
     <comment>{0} is a xmlnamespace and typename</comment>
   </data>
   <data name="DuplicateTypeError" xml:space="preserve">
-    <value>Multiple Types found for "{0}".</value>
+    <value>"{0}" に対して複数の型が見つかりました。</value>
   </data>
   <data name="MemberResolution" xml:space="preserve">
-    <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
+    <value>アクセス可能なプロパティ、BindableProperty、または "{0}" のイベントが見つからないか、値とプロパティの型が一致しません。</value>
     <comment>{0} is a property name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
+    <value>"{0}" を Easing に変換できません。想定される値は "Linear"、"SinOut"、"SinIn"、"SinInOut"、"CubicIn"、"CubicOut"、"CubicInOut"、"BounceOut"、"BounceIn"、"SpringIn"、または "SpringOut" です。</value>
   </data>
   <data name="FlexBasisConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
+    <value>"{0}" を FlexBasis に変換できません。想定される値は "Auto" または "n%"、"n" です。ここで n は数値です。</value>
   </data>
   <data name="FlowDirectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
+    <value>"{0}" を FlowDirection に変換できません。想定される値は "rtl"、"ltr"、"inherit"、"MatchParent"、"LeftToRight"、または "RightToLeft" です。</value>
   </data>
   <data name="GridLengthConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into GridLength, expected values are "*", "n*", "Auto" or "n" where n is a numeric value.</value>
+    <value>"{0}" を GridLength に変換できません。想定される値は "*"、"n*"、"Auto"、または "n" です。ここで n は数値です。</value>
   </data>
   <data name="ListStringConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
+    <value>"{0}" を List&lt;string&gt; に変換できません。必要な形式は "x, y, z" です。</value>
   </data>
   <data name="StrokeShapeConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Shape (or descendant).</value>
+    <value>"{0}" を Shape (または子孫) に変換できません。</value>
   </data>
   <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into ColumnDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>"{0}" を ColumnDefinitionCollection に変換できません。想定される値は "*"、"n*"、"Auto"、または "n" (またはコンマで区切られたこれらの組み合わせ) です。ここで n は数値です。</value>
   </data>
   <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into RowDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>"{0}" を RowDefinitionCollection に変換できません。想定される値は "*", "n*", "Auto", または "n" (もしくはこれらをカンマで区切った組み合わせ) であり、ここで n は数値です。</value>
   </data>
   <data name="LayoutOptionsConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
+    <value>"{0}" を LayoutOptions に変換できません。想定される値は "Start"、"Center"、"End"、または "Fill" です。</value>
   </data>
   <data name="MethodResolution" xml:space="preserve">
-    <value>No method found for '{0}'.</value>
+    <value>'{0}' のメソッドが見つかりませんでした。</value>
     <comment>0 is a method or ctor name</comment>
   </data>
   <data name="DuplicateKeyInRD" xml:space="preserve">
-    <value>duplicate key in resource dictionary</value>
+    <value>リソース ディクショナリ内の重複するキー</value>
     <comment>
 </comment>
   </data>
   <data name="ConversionFailedTitle" xml:space="preserve">
-    <value>Conversion Failed</value>
+    <value>変換が失敗しました</value>
     <comment>
 </comment>
   </data>
