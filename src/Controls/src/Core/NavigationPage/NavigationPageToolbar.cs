@@ -34,12 +34,32 @@ namespace Microsoft.Maui.Controls
 			RootPage = rootPage;
 			_toolbarTracker.PageAppearing += OnPageAppearing;
 			_toolbarTracker.Target = RootPage;
+
+#if ANDROID || WINDOWS
+			// Subscribe to orientation changes to update FlyoutPage toolbar button visibility
+			// Android/Windows need manual orientation detection, iOS/Mac handle this automatically
+			if (parent is FlyoutPage)
+			{
+				Microsoft.Maui.Devices.DeviceDisplay.MainDisplayInfoChanged += OnOrientationChanged;
+			}
+#endif
 		}
 
 		void OnToolbarItemsChanged(object sender, EventArgs e)
 		{
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 		}
+
+#if ANDROID || WINDOWS
+		void OnOrientationChanged(object sender, Microsoft.Maui.Devices.DisplayInfoChangedEventArgs e)
+		{
+			// Re-evaluate toolbar button visibility when orientation changes
+			if (_currentNavigationPage is not null)
+			{
+				ApplyChanges(_currentNavigationPage);
+			}
+		}
+#endif
 
 		void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
@@ -328,6 +348,13 @@ namespace Microsoft.Maui.Controls
 					navPage.ChildRemoved -= NavigationPageChildrenChanged;
 				}
 			}
+
+#if ANDROID || WINDOWS
+			if (Parent is FlyoutPage)
+			{
+				Microsoft.Maui.Devices.DeviceDisplay.MainDisplayInfoChanged -= OnOrientationChanged;
+			}
+#endif
 		}
 	}
 }
