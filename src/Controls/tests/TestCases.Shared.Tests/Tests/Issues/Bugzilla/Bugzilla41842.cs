@@ -17,7 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla41842Test()
 		{
-			App.WaitForElement("SuccessLabel");
+#if MACCATALYST
+			App.WaitForElement("FlyoutLabel");
+#else
+			App.WaitForElement("Success");
+#endif
 		}
 	}
 }
