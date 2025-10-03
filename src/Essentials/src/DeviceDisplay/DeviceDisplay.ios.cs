@@ -46,6 +46,10 @@ namespace Microsoft.Maui.Devices
 		}
 #else
 #if MACCATALYST
+		const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
+#endif
+
+#if MACCATALYST
 		// Core Graphics P/Invoke declarations for Mac Catalyst
 		// Returns the display ID of the main display
 		[DllImport(Constants.CoreGraphicsLibrary)]
@@ -158,7 +162,7 @@ namespace Microsoft.Maui.Devices
 #if MACCATALYST
 			// On Mac Catalyst, use multiple notifications to cover all display changes
 			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
-			observer = notificationCenter.AddObserver(new NSString("NSApplicationDidChangeScreenParametersNotification"), OnMainDisplayInfoChanged);
+			observer = notificationCenter.AddObserver(new NSString(NSApplicationDidChangeScreenParametersNotification), OnMainDisplayInfoChanged);
 #else
 			// On iOS, use status bar orientation changes (deprecated but still works)
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
