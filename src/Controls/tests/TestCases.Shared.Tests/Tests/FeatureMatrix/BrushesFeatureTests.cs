@@ -2,7 +2,6 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Brush)]
@@ -22,9 +21,9 @@ public class BrushesFeatureTests : UITest
 	public void VerifyBrushesScreenshot()
 	{
 #if WINDOWS
-		VerifyScreenshot(cropTop: 100, tolerance: 0.10);
+		VerifyScreenshot(cropTop: 100);
 #else
-		VerifyScreenshot(tolerance: 0.10);
+		VerifyScreenshot();
 #endif
 	}
 
@@ -237,7 +236,7 @@ public class BrushesFeatureTests : UITest
 	}
 
 	[Test]
-public void VerifySolidBrushColorWithStrokeAndOpacity()
+	public void VerifySolidBrushColorWithStrokeAndOpacity()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -398,6 +397,7 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.WaitForElement("BrushesLabel");
 		VerifyBrushesScreenshot();
 	}
+
 
 	[Test]
 	public void VerifyRadialGradientBrushWithBackgroundAndRadius()
@@ -585,6 +585,70 @@ public void VerifySolidBrushColorWithStrokeAndOpacity()
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("BrushesLabel");
+		VerifyBrushesScreenshot();
+	}
+
+	[Test]
+	public void VerifyAddLinearGradientStop()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundLinearGradient");
+		App.Tap("BackgroundLinearGradient");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("BrushesLabel");
+		App.WaitForElement("AddLinearStopButton");
+		App.Tap("AddLinearStopButton");
+		VerifyBrushesScreenshot();
+	}
+
+	[Test]
+	public void VerifyRemoveLinearGradientStop()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundLinearGradient");
+		App.Tap("BackgroundLinearGradient");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("BrushesLabel");
+		App.WaitForElement("AddLinearStopButton");
+		App.Tap("AddLinearStopButton");
+		App.WaitForElement("RemoveLinearStopButton");
+		App.Tap("RemoveLinearStopButton");
+		VerifyBrushesScreenshot();
+	}
+
+	[Test]
+	public void VerifyAddRadialGradientStop()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundRadialGradient");
+		App.Tap("BackgroundRadialGradient");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("BrushesLabel");
+		App.WaitForElement("AddRadialStopButton");
+		App.Tap("AddRadialStopButton");
+		VerifyBrushesScreenshot();
+	}
+
+	[Test]
+	public void VerifyRemoveRadialGradientStop()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundRadialGradient");
+		App.Tap("BackgroundRadialGradient");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("BrushesLabel");
+		App.WaitForElement("AddRadialStopButton");
+		App.Tap("AddRadialStopButton");
+		App.WaitForElement("RemoveRadialStopButton");
+		App.Tap("RemoveRadialStopButton");
 		VerifyBrushesScreenshot();
 	}
 }
