@@ -5,8 +5,8 @@
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25476.101",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25476.101"
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25502.106",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25502.106"
   },
   "sdk": {
     "allowPrerelease": true
