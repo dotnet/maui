@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 
 		public bool InputTransparent { get; set; }
 
+		internal AView WrappedView => ChildCount > 0 ? GetChildAt(0) : null;
+
 		public WrapperView(Context context)
 			: base(context)
 		{

@@ -109,11 +109,14 @@ namespace Microsoft.Maui
 		{
 			int measuredWidth;
 			int measuredHeight;
-			if (platformViewGroup is not ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout })
+
+			// If it's a WrapperView we need to check the wrapped view instead
+			var unwrappedView = ((platformViewGroup as WrapperView)?.WrappedView ?? platformViewGroup) as PlatformViewGroup;
+			var crossPlatformLayout = (unwrappedView as ICrossPlatformLayoutBacking)?.CrossPlatformLayout;
+
+			// This instance of PlatformViewGroup is not backed by a crossPlatformLayout, so we need to go through the default measure method
+			if (crossPlatformLayout is null)
 			{
-				// TODO: Make WrapperView an ICrossPlatformLayoutBacking,
-				// or even better, create two abstract methods PlatformMeasure / PlatformLayout so we can avoid ICrossPlatformLayoutBacking
-				// throw new InvalidOperationException("PlatformViewGroup inheritors must implement ICrossPlatformLayoutBacking.");
 				var nativePacked = PlatformInterop.MeasureAndGetWidthAndHeight(platformViewGroup, widthSpec, heightSpec);
 
 				var nativeWidth = (int)(nativePacked >> 32);

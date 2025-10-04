@@ -128,7 +128,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    protected void doMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (getChildCount() == 0) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             return;
@@ -138,6 +138,34 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         viewBounds.set(0, 0, MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
         child.measure(widthMeasureSpec, heightMeasureSpec);
         setMeasuredDimension(child.getMeasuredWidth(), child.getMeasuredHeight());
+    }
+
+    @Override
+    public long measureAndGetWidthAndHeight(int widthMeasureSpec, int heightMeasureSpec) {
+        if (getChildCount() == 0 || !(getChildAt(0) instanceof PlatformViewGroup)) {
+            this.measure(widthMeasureSpec, heightMeasureSpec);
+            int width = this.getMeasuredWidth();
+            int height = this.getMeasuredHeight();
+            long measure = ((long)width << 32) | (height & 0xffffffffL);
+            return measure;
+        } else {
+            PlatformViewGroup child = (PlatformViewGroup)getChildAt(0);
+            long measure = super.measureAndGetWidthAndHeight(widthMeasureSpec, heightMeasureSpec);
+            child.measureAndGetWidthAndHeight(widthMeasureSpec, heightMeasureSpec);
+            return measure;
+        }
+    }
+
+    @Override
+    public void overrideMeasuredDimension(int width, int height) {
+        setMeasuredDimension(width, height);
+
+        if (getChildCount() == 0 || !(getChildAt(0) instanceof PlatformViewGroup)) {
+            return;
+        }
+
+        PlatformViewGroup child = (PlatformViewGroup)getChildAt(0);
+        child.overrideMeasuredDimension(width, height);
     }
 
     @Override
