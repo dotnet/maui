@@ -149,7 +149,11 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+			
+			if (_modal?.VirtualView is Page)
+			{
+				_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
