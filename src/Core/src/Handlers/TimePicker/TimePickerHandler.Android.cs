@@ -5,6 +5,8 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
 using DateFormat = Android.Text.Format.DateFormat;
+using Android.Views;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -12,6 +14,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiTimePicker? _timePicker;
 		TimePickerDialog? _dialog;
+		int _currentHour;
+		int _currentMinute;
 
 		protected override MauiTimePicker CreatePlatformView()
 		{
@@ -26,6 +30,22 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ShowPicker = ShowPickerDialog;
 			platformView.HidePicker = HidePickerDialog;
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
+
+			if (platformView.IsAttachedToWindow)
+				OnViewAttachedToWindow();
+		}
+
+		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
+		{
+			// Called when an activity is destroyed or view is detached
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+		}
+
+		void OnViewAttachedToWindow(object? sender = null, View.ViewAttachedToWindowEventArgs? e = null)
+		{
+			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker platformView)
@@ -37,16 +57,30 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+			OnViewDetachedFromWindow();
+
 			platformView.ShowPicker = null;
 			platformView.HidePicker = null;
+
+			base.DisconnectHandler(platformView);
 		}
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
 		{
+			// Store the current values for orientation change handling
+			_currentHour = hour;
+			_currentMinute = minute;
+
 			void onTimeSetCallback(object? obj, TimePickerDialog.TimeSetEventArgs args)
 			{
 				if (VirtualView == null || PlatformView == null)
 					return;
+
+				// Update stored values when user selects time
+				_currentHour = args.HourOfDay;
+				_currentMinute = args.Minute;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
 				VirtualView.IsFocused = false;
@@ -113,6 +147,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
+
 
 			ShowPickerDialog(VirtualView.Time);
 		}
