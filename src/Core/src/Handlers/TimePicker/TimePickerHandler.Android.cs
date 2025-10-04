@@ -147,7 +147,9 @@ namespace Microsoft.Maui.Handlers
 		void ShowPickerDialog(int hour, int minute)
 		{
 			if (_dialog is null)
+			{
 				_dialog = CreateTimePickerDialog(hour, minute);
+			}
 			else
 			{
 				// Update the dialog with new values (for orientation changes)
