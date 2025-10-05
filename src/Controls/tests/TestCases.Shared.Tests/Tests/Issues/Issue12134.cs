@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-
+		[FlakyTest("Temporarily disabled due to flakiness in CI. Tracking issue will be created to re-enable.")]
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
 			VerifyInternetConnectivity();

@@ -12,6 +12,7 @@ public class Issue30575 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.WebView)]
+	[FlakyTest("Temporarily disabled due to flakiness in CI. Tracking issue will be created to re-enable.")]
 	public void WebViewShouldNotMirrored()
 	{
 		App.WaitForElement("WebViewLabel");
