@@ -21,12 +21,22 @@ namespace Microsoft.Maui.Handlers
 			_navigationRootManager = MauiContext?.GetNavigationRootManager();
 			platformView.PaneOpened += OnPaneOpened;
 			platformView.PaneClosed += OnPaneClosed;
+			platformView.Loaded += OnLoaded;
+		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			if (VirtualView is not null)
+			{
+				PlatformView.IsPaneOpen = VirtualView.IsPresented;
+			}
 		}
 
 		protected override void DisconnectHandler(RootNavigationView platformView)
 		{
 			platformView.PaneOpened -= OnPaneOpened;
 			platformView.PaneClosed -= OnPaneClosed;
+			platformView.Loaded -= OnLoaded;
 		}
 
 		void OnPaneOpened(NavigationView sender, object args)
