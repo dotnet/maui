@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		readonly CarouselView _carouselView;
 		readonly CarouselViewLoopManager _carouselViewLoopManager;
-		RecyclerView _lastRecyclerView;
 		int _lastDx;
 		int _lastDy;
 
@@ -40,10 +39,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (state == RecyclerView.ScrollStateIdle)
 			{
 				// When scroll completes, process any cached programmatic scroll data
-				if (_isProgrammaticScrolling && _lastRecyclerView is not null)
+				if (_isProgrammaticScrolling && recyclerView is not null)
 				{
-					ProcessScrolled(_lastRecyclerView, _lastDx, _lastDy);
-					_lastRecyclerView = null;
+					ProcessScrolled(recyclerView, _lastDx, _lastDy);
 					_lastDx = 0;
 					_lastDy = 0;
 				}
@@ -59,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_isProgrammaticScrolling)
 			{
 				// Cache scroll data for programmatic scrolls - will be processed when ScrollStateIdle is reached
-				_lastRecyclerView = recyclerView;
 				_lastDx = dx;
 				_lastDy = dy;
 			}
@@ -72,10 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ProcessScrolled(RecyclerView recyclerView, int dx, int dy)
 		{
-			if (recyclerView is not null)
-			{
-				base.OnScrolled(recyclerView, dx, dy);
-			}
+			base.OnScrolled(recyclerView, dx, dy);
 
 			if (_carouselView.Loop)
 			{

@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue14141 : _IssuesUITest
+public class Issue31874 : _IssuesUITest
 {
-	public Issue14141(TestDevice device) : base(device)
+	public Issue31874(TestDevice device) : base(device)
 	{
 	}
 
@@ -17,10 +17,10 @@ public class Issue14141 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCurrentItemUpdatesWithScrollAnimation()
 	{
-		App.WaitForElement("Issue14141ScrollBtn");
-		App.Tap("Issue14141ScrollBtn");
+		App.WaitForElement("Issue31874ScrollBtn");
+		App.Tap("Issue31874ScrollBtn");
 
-		var resultLabel = App.WaitForElement("Issue14141ResultLabel").GetText();
+		var resultLabel = App.WaitForElement("Issue31874ResultLabel").GetText();
 		Assert.That(resultLabel, Is.EqualTo("Success"));
 	}
 }
