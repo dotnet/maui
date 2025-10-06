@@ -11,15 +11,15 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 {
-	protected record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null)
+	protected record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, bool TreeOrder = false, bool Dry = false)
 		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn);
 
-	protected (GeneratorDriverRunResult result, string? text) RunGenerator(string xaml, string code, string noWarn = "", string targetFramework = "", string? path = null)
+	protected (GeneratorDriverRunResult result, string? text) RunGenerator(string xaml, string code, string noWarn = "", string targetFramework = "", string? path = null, bool treeOrder = false, bool dry = false)
 	{
 		var compilation = CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 		var workingDirectory = Environment.CurrentDirectory;
-		var xamlFile = new AdditionalXamlFile(Path.Combine(workingDirectory, path ?? "Test.xaml"), xaml, RelativePath: path ?? "Test.xaml", TargetFramework: targetFramework, NoWarn: noWarn, ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml");
+		var xamlFile = new AdditionalXamlFile(Path.Combine(workingDirectory, path ?? "Test.xaml"), xaml, RelativePath: path ?? "Test.xaml", TargetFramework: targetFramework, NoWarn: noWarn, ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml", TreeOrder: treeOrder, Dry: dry);
 		var result = RunGenerator<CodeBehindGenerator>(compilation, xamlFile);
 		var generated = result.Results.SingleOrDefault().GeneratedSources.SingleOrDefault(gs => gs.HintName.EndsWith(".xsg.cs")).SourceText?.ToString();
 

@@ -5,10 +5,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
+
 record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 {
-	private readonly AdditionalText _additionalText = AdditionalText;
-	
 	public string Configuration
 		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
@@ -43,7 +42,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	{
 		get
 		{
-			var xamlinflator = 0;			
+			var xamlinflator = 0;
 			var parts = Options.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "").Split(',');
 			for (int i = 0; i < parts.Length; i++)
 			{
@@ -68,5 +67,5 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		=> Options.GetValueOrNull("build_property.targetFramework");
 
 	public string? TargetPath
-		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", _additionalText.Path);
+		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
 }
