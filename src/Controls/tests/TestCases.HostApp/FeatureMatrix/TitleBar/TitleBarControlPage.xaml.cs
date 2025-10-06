@@ -37,7 +37,6 @@ public partial class TitleBarControlPage : ContentPage
 				ForegroundColor = _viewModel.ForegroundColor,
 				Icon = _viewModel.Icon,
 				IsVisible = _viewModel.IsVisible,
-				TitleFontAttributes = FontAttributes.None,
 				HeightRequest = 60
 			};
 

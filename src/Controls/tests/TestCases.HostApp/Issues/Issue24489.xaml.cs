@@ -42,7 +42,6 @@ public partial class Issue24489 : ContentPage
 			Icon = "dotnet_bot.png",
 			Content = grid,
 			HeightRequest = 300,
-			TitleFontAttributes = FontAttributes.None,
 			TrailingContent = new Border()
 			{
 				WidthRequest = 32,
