@@ -605,8 +605,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
 			{
-				_emptyViewFormsElement.Measure(frame.Width, frame.Height);
-				_emptyViewFormsElement.Arrange(new Rect(0, 0, frame.Width, frame.Height));
+				if (frame.Width > 0 && frame.Height > 0)
+				{
+					_emptyViewFormsElement.Measure(frame.Width, frame.Height);
+
+					// Arrange in the native container's local coordinate space (0,0).
+					// The native container (_emptyUIView) is already positioned correctly by iOS,
+					// so the MAUI element just needs to fill its container without additional offset.
+					//_emptyViewFormsElement.Arrange(new Rect(0, 0, frame.Width, frame.Height));
+					_emptyViewFormsElement.Arrange(new Rect(0, 0, frame.Width, frame.Height));
+				}
 			}
 
 			_emptyUIView.Frame = frame;
