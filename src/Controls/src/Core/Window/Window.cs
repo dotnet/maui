@@ -328,9 +328,15 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal AlertManager AlertManager { get; }
+		/// <summary>
+		/// Gets the alert manager for this window, which handles alert, action sheet, and prompt dialogs.
+		/// </summary>
+		public AlertManager AlertManager { get; }
 
-		internal ModalNavigationManager ModalNavigationManager { get; }
+		/// <summary>
+		/// Gets the modal navigation manager for this window, which handles the modal page stack.
+		/// </summary>
+		public ModalNavigationManager ModalNavigationManager { get; }
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");

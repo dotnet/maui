@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class GestureManager
+	public class GestureManager
 	{
 		readonly IControlsView _view;
 		object? _containerView;

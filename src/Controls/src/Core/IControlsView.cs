@@ -7,7 +7,7 @@ using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Controls
 {
-	internal interface IControlsView : IControlsVisualElement
+	public interface IControlsView : IControlsVisualElement
 	{
 	}
 }

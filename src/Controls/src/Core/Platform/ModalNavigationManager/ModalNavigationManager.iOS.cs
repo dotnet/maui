@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	public partial class ModalNavigationManager
 	{
 		// We need to wait for the window to be activated the first time before
 		// we push any modal views.

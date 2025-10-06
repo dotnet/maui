@@ -5,7 +5,10 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class AlertManager
+	/// <summary>
+	/// Manages alert, action sheet, and prompt dialogs for a window.
+	/// </summary>
+	public partial class AlertManager
 	{
 		readonly Window _window;
 
@@ -65,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext);
 
-		internal interface IAlertManagerSubscription
+		public interface IAlertManagerSubscription
 		{
 			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments);
 

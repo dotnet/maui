@@ -17,7 +17,7 @@ using AndroidX.Core.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	public partial class ModalNavigationManager
 	{
 		ViewGroup? _modalParentView;
 		AAnimation? _dismissAnimation;

@@ -17,7 +17,7 @@ using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	public class GesturePlatformManager : IDisposable
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
