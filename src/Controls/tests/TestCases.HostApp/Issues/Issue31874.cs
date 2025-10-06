@@ -3,13 +3,13 @@ using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14141, "Incorrect Intermediate CurrentItem updates with CarouselView Scroll Animation Enabled", PlatformAffected.Android)]
-public class Issue14141 : ContentPage
+[Issue(IssueTracker.Github, 31874, "Incorrect Intermediate CurrentItem updates with CarouselView Scroll Animation Enabled", PlatformAffected.Android)]
+public class Issue31874 : ContentPage
 {
 	Label resultStatus;
 	Label selectedItemLabel;
 	CarouselView carouselView;
-	public Issue14141()
+	public Issue31874()
 	{
 		carouselView = new CarouselView
 		{
@@ -43,7 +43,7 @@ public class Issue14141 : ContentPage
 
 		Button selectButton = new Button
 		{
-			AutomationId = "Issue14141ScrollBtn",
+			AutomationId = "Issue31874ScrollBtn",
 			Text = "Select item 4",
 			FontSize = 12
 		};
@@ -56,7 +56,7 @@ public class Issue14141 : ContentPage
 
 		resultStatus = new Label
 		{
-			AutomationId = "Issue14141ResultLabel",
+			AutomationId = "Issue31874ResultLabel",
 			Text = "Success"
 		};
 
