@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
 			if (platformView.IsAttachedToWindow)
+			{
 				OnViewAttachedToWindow();
+			}
 		}
 
 		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
