@@ -16,9 +16,10 @@ namespace Microsoft.Maui
 
 		public static List<string> GetItemsAsList(this IPicker picker)
 		{
-			var returnValue = new List<string>(picker.GetCount());
-			for (int i = 0; i < returnValue.Count; i++)
-				returnValue[i] = picker.GetItem(i);
+			var numberOfElements = picker.GetCount();
+			var returnValue = new List<string>(numberOfElements);
+			for (int i = 0; i < numberOfElements; i++)
+				returnValue.Add(picker.GetItem(i));
 
 			return returnValue;
 		}
