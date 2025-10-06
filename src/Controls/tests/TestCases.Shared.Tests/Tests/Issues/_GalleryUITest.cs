@@ -26,7 +26,28 @@ namespace Microsoft.Maui.TestCases.Tests
 
         public override void LaunchAppWithTest()
         {
-            App.LaunchApp(GalleryPageName, ResetAfterEachTest);
+            const int maxRetries = 3;
+            const int delayBetweenRetries = 2000; // 2 seconds
+            
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    App.LaunchApp(GalleryPageName, ResetAfterEachTest);
+                    return; // Success, exit retry loop
+                }
+                catch (Exception)
+                {
+                    if (attempt == maxRetries)
+                    {
+                        TestContext.WriteLine($"Failed to launch app after {maxRetries} attempts.");
+                        throw; // Final attempt failed, rethrow the original exception
+                    }
+                    
+                    // Wait before retrying
+                    System.Threading.Thread.Sleep(delayBetweenRetries);
+                }
+            }
         }
 
         protected override void FixtureSetup()
