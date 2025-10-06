@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="TitleFontAttributes"/>.</summary>
 		public static readonly BindableProperty TitleFontAttributesProperty =
 			BindableProperty.Create(nameof(TitleFontAttributes), typeof(FontAttributes),
-				typeof(TitleBar), FontAttributes.Bold);
+				typeof(TitleBar), FontAttributes.None);
 
 		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -308,8 +308,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="FontAttributes"/> applied to the title text.  
-		/// Defaults to <see cref="FontAttributes.Bold"/>.
+		/// Gets or sets the <see cref="FontAttributes"/> applied to the title text.
+		/// Defaults to <see cref="FontAttributes.None"/>.
 		/// </summary>
 		public FontAttributes TitleFontAttributes
 		{
