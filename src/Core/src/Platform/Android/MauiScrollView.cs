@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Platform
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
 		Java.Lang.IRunnable? _setAppBarLiftTargetRunnable;
+		Android.Views.LayoutDirection _prevLayoutDirection = Android.Views.LayoutDirection.Ltr;
+		bool _checkedForRtlScroll;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -224,6 +226,12 @@ namespace Microsoft.Maui.Platform
 			bool orientationChanged = _scrollOrientation != orientation;
 			_scrollOrientation = orientation;
 
+			// Reset RTL tracking when orientation changes
+			if (orientationChanged)
+			{
+				_checkedForRtlScroll = false;
+			}
+
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
 			{
 				if (_hScrollView == null)
@@ -264,6 +272,23 @@ namespace Microsoft.Maui.Platform
 					_content.RemoveFromParent();
 					_hScrollView?.RemoveFromParent();
 					AddView(_content);
+				}
+			}
+		}
+
+		internal void UpdateFlowDirection(Microsoft.Maui.FlowDirection flowDirection)
+		{
+			if (_hScrollView != null)
+			{
+				var layoutDirection = flowDirection == Microsoft.Maui.FlowDirection.RightToLeft
+					? Android.Views.LayoutDirection.Rtl
+					: Android.Views.LayoutDirection.Ltr;
+
+				if (_prevLayoutDirection != layoutDirection)
+				{
+					_prevLayoutDirection = layoutDirection;
+					_hScrollView.LayoutDirection = layoutDirection;
+					_checkedForRtlScroll = false; // Reset to allow re-evaluation
 				}
 			}
 		}
@@ -369,6 +394,21 @@ namespace Microsoft.Maui.Platform
 				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
 
+			// Handle RTL initial positioning
+			if (!_checkedForRtlScroll && _hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
+			{
+				if (_hScrollView.LayoutDirection == Android.Views.LayoutDirection.Rtl)
+				{
+					Post(() =>
+					{
+						// Scroll to the right end for RTL
+						_hScrollView?.ScrollTo(_hScrollView?.GetChildAt(0)?.Width ?? 0, 0);
+					});
+				}
+			}
+
+			_checkedForRtlScroll = true;
+
 			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
 			{
 				ViewCompat.RequestApplyInsets(this);
@@ -473,6 +513,7 @@ namespace Microsoft.Maui.Platform
 		void IOnScrollChangeListener.OnScrollChange(NestedScrollView? v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 #pragma warning restore CA1822
 		{
+			_checkedForRtlScroll = true;
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
 		}
 	}
