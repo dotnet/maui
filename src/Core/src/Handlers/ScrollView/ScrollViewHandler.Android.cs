@@ -147,6 +147,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.SetOrientation(scrollView.Orientation);
 		}
 
+		internal static void MapFlowDirection(IScrollViewHandler handler, IScrollView scrollView)
+		{
+			if (handler.PlatformView is MauiScrollView mauiScrollView && scrollView is IView view)
+			{
+				mauiScrollView.UpdateFlowDirection(view.FlowDirection);
+			}
+		}
+
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is not ScrollToRequest request)
