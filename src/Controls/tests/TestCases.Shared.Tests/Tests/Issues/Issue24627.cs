@@ -29,5 +29,14 @@ public class Issue24627 : _IssuesUITest
 		App.Tap("ChangeFAButton");
 		VerifyScreenshot(includeTitleBar: true);
 	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.TitleView)]
+	public void ChangeTitleBarTitleFontAttributesToItalic()
+	{
+		App.WaitForElement("ItalicButton");
+		App.Tap("ItalicButton");
+		VerifyScreenshot(includeTitleBar: true);
+	}
 }
 #endif
