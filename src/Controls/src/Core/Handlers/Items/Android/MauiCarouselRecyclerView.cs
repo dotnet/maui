@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
-
+		float _touchSlop;
 		float _initialTouchX;
 		float _initialTouchY;
 
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
+			_touchSlop = ViewConfiguration.Get(context).ScaledTouchSlop;
 		}
 
 		public bool IsSwipeEnabled { get; set; }
@@ -51,9 +52,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					float deltaX = ev.GetX() - _initialTouchX;
 					float deltaY = ev.GetY() - _initialTouchY;
 
-					if (ShouldDelegateToChild(deltaX, deltaY))
+					// Check if movement exceeds touch slop before evaluating direction
+					if (Math.Abs(deltaX) > _touchSlop || Math.Abs(deltaY) > _touchSlop)
 					{
-						return false;
+						if (ShouldDelegateToChild(deltaX, deltaY))
+						{
+							return false;
+						}
 					}
 					break;
 
