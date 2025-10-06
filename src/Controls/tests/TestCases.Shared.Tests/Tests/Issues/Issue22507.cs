@@ -14,7 +14,7 @@ public class Issue22507 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CarouselView)]
-    public void HandleCarouselVerticalScroll()
+    public void HandleCarouselVerticalToHorizontalScroll()
     {
         // Wait for the test page to load
         App.WaitForElement("Issue22507Label");
@@ -22,7 +22,23 @@ public class Issue22507 : _IssuesUITest
         App.ScrollDown("Issue22507CollectionView");
         // Swipe horizontally to navigate to the next CarouselView item (Page 2)
         App.SwipeRightToLeft();
-        // wait for page 2
+        App.WaitForElement("Item 1");
+        for (int i = 0; i < 2; i++)
+        {
+            App.ScrollDown("Issue22507CollectionView", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
+        }
+        App.WaitForElement("Item 20");
+    }
+
+    [Test]
+    [Category(UITestCategories.CarouselView)]
+    public void HandleCarouselHorizontalToVerticalScroll()
+    {
+        // Wait for the test page to load
+        App.WaitForElement("Issue22507Label");
+
+        // Swipe horizontally to navigate to the next CarouselView item (Page 2)
+        App.SwipeRightToLeft();
         App.WaitForElement("Item 1");
         for (int i = 0; i < 2; i++)
         {
