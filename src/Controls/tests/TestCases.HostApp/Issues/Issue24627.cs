@@ -34,12 +34,25 @@ public class Issue24627 : ContentPage
 			VerticalOptions = LayoutOptions.Center
 		};
 
+		var italicButton = new Button
+		{
+			Text = "Set Title FontAttributes to Italic",
+			AutomationId = "ItalicButton",
+			Command = new Command(() =>
+			{
+				customTitleBar.TitleFontAttributes = FontAttributes.Italic;
+			}),
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+
 		var verticalStack = new VerticalStackLayout
 		{
 			Children =
 			{
 				label,
-				button
+				button,
+				italicButton
 			},
 			Spacing = 25,
 			Padding = new Thickness(30, 0),
