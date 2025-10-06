@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -84,11 +85,87 @@ namespace Microsoft.Maui.Storage
 
 	public partial class FileBase
 	{
+		// Static mapping for file extensions to MIME types
+		// Used as fallback when Windows StorageFile.ContentType doesn't provide correct MIME type
+		static readonly Dictionary<string, string> ExtensionToMimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
+		{
+			// Image formats
+			{ ".jpg", "image/jpeg" },
+			{ ".jpeg", "image/jpeg" },
+			{ ".png", "image/png" },
+			{ ".gif", "image/gif" },
+			{ ".bmp", "image/bmp" },
+			{ ".svg", "image/svg+xml" },
+			{ ".webp", "image/webp" },
+			{ ".tiff", "image/tiff" },
+			{ ".tif", "image/tiff" },
+			{ ".ico", "image/x-icon" },
+			
+			// Audio formats
+			{ ".mp3", "audio/mpeg" },
+			{ ".wav", "audio/wav" },
+			{ ".flac", "audio/flac" },
+			{ ".aac", "audio/aac" },
+			{ ".ogg", "audio/ogg" },
+			{ ".wma", "audio/x-ms-wma" },
+			
+			// Video formats
+			{ ".mp4", "video/mp4" },
+			{ ".avi", "video/x-msvideo" },
+			{ ".mov", "video/quicktime" },
+			{ ".wmv", "video/x-ms-wmv" },
+			{ ".webm", "video/webm" },
+			{ ".mkv", "video/x-matroska" },
+			{ ".flv", "video/x-flv" },
+			
+			// Document formats
+			{ ".pdf", "application/pdf" },
+			{ ".doc", "application/msword" },
+			{ ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+			{ ".xls", "application/vnd.ms-excel" },
+			{ ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+			{ ".ppt", "application/vnd.ms-powerpoint" },
+			{ ".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
+			{ ".txt", "text/plain" },
+			{ ".rtf", "application/rtf" },
+			
+			// Web formats
+			{ ".html", "text/html" },
+			{ ".htm", "text/html" },
+			{ ".css", "text/css" },
+			{ ".js", "application/javascript" },
+			{ ".json", "application/json" },
+			{ ".xml", "text/xml" },
+			
+			// Archive formats
+			{ ".zip", "application/zip" },
+			{ ".rar", "application/x-rar-compressed" },
+			{ ".7z", "application/x-7z-compressed" },
+			{ ".tar", "application/x-tar" },
+			{ ".gz", "application/gzip" }
+		};
+
 		internal FileBase(IStorageFile file)
 			: this(file?.Path)
 		{
 			File = file;
-			ContentType = file?.ContentType;
+			
+			// Set the ContentType, but prefer our mapping for known problematic extensions
+			var fileContentType = file?.ContentType;
+			var extension = Path.GetExtension(file?.Path ?? "");
+			
+			// If Windows provides a generic "application/octet-stream" or empty ContentType,
+			// try to get a more specific MIME type from our extension mapping
+			if (string.IsNullOrWhiteSpace(fileContentType) || 
+			    fileContentType == "application/octet-stream")
+			{
+				var betterContentType = PlatformGetContentType(extension);
+				ContentType = betterContentType ?? fileContentType;
+			}
+			else
+			{
+				ContentType = fileContentType;
+			}
 		}
 
 		void PlatformInit(FileBase file)
@@ -98,8 +175,18 @@ namespace Microsoft.Maui.Storage
 
 		internal IStorageFile File { get; set; }
 
-		// we can't do anything here, but Windows will take care of it
-		string PlatformGetContentType(string extension) => null;
+		// Use extension mapping as fallback when Windows doesn't provide correct MIME type
+		string PlatformGetContentType(string extension)
+		{
+			if (string.IsNullOrWhiteSpace(extension))
+				return null;
+
+			extension = extension.ToLowerInvariant();
+			if (!extension.StartsWith("."))
+				extension = "." + extension;
+
+			return ExtensionToMimeTypeMap.TryGetValue(extension, out var mimeType) ? mimeType : null;
+		}
 
 		internal virtual Task<Stream> PlatformOpenReadAsync() =>
 			File.OpenStreamForReadAsync();
