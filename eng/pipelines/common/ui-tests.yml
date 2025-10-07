@@ -10,6 +10,8 @@ parameters:
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
+  gitHubToken: ''
+  UseProvisionator: false # Parameter to control whether to use Provisionator
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
@@ -130,6 +132,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      gitHubToken: ${{ parameters.gitHubToken }}
                   
                   # Collect and publish Android snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -177,6 +180,7 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      gitHubToken: ${{ parameters.gitHubToken }}
                   
                   # Collect and publish iOS snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -220,6 +224,7 @@ stages:
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      gitHubToken: ${{ parameters.gitHubToken }}
                   
                   # Collect and publish iOS CV2 snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -263,6 +268,7 @@ stages:
                       testFilter: "CarouselView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      gitHubToken: ${{ parameters.gitHubToken }}
                   
                   # Collect and publish iOS CARV2 snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -312,6 +318,7 @@ stages:
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
                         skipProvisioning: ${{ parameters.skipProvisioning }}
+                        gitHubToken: ${{ parameters.gitHubToken }}
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
@@ -343,6 +350,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      gitHubToken: ${{ parameters.gitHubToken }}
                   
                   # Collect and publish Windows snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -381,6 +389,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      gitHubToken: ${{ parameters.gitHubToken }}
                   
                   # Collect and publish Mac snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
