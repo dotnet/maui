@@ -18,6 +18,6 @@ public class Issue31897 : _IssuesUITest
 		App.WaitForElement("GetHeightButton");
 		App.Tap("GetHeightButton");
 		var label = App.WaitForElement("HeightLabel");
-		Assert.Equal("250", label.Height);
+		Assert.That(label.GetText(), Is.EqualTo("250"));
 	}
 }
