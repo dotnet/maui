@@ -1,13 +1,10 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 31897, "CollectionView card height appears larger in Developer Balance sample", PlatformAffected.iOS | PlatformAffected.macOS)]
-public partial class Issue31897 : ContentPage
+public class Issue31897 : ContentPage
 {
-	ObservableCollection<string> Countries = new();
 	Button getHeight;
 	Label HeightLabel;
 	CollectionView2 ProjectsCollectionView;
@@ -127,9 +124,8 @@ public partial class Issue31897 : ContentPage
 		Content = mainGrid;
 	}
 
-	public partial class Issue31897ViewModel : INotifyPropertyChanged
+	public class Issue31897ViewModel : INotifyPropertyChanged
 	{
-
 		List<Issue31897Project> _projects = new();
 
 		public event PropertyChangedEventHandler PropertyChanged;
