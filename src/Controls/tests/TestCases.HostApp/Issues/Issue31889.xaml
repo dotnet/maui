@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.Issues.Issue31889">
+    <VerticalStackLayout Spacing="20"
+                         HorizontalOptions="Center">
+        <HorizontalStackLayout>
+            <Label Text="Entry: "
+                   VerticalOptions="Center"/>
+            <local:UITestEntry AutomationId="TestEntry"
+                               IsCursorVisible="False"
+                               IsSpellCheckEnabled="False"
+                               Placeholder="Entry Placeholder"
+                               PlaceholderColor="{AppThemeBinding Light=Green, Dark=Orange}"
+                               Text="Entry Text"
+                               TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                               WidthRequest="200"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout>
+            <Label Text="Editor: "
+                   VerticalOptions="Center"/>
+            <local:UITestEditor AutomationId="TestEditor"
+                                IsCursorVisible="False"
+                                IsSpellCheckEnabled="False"
+                                Placeholder="Editor Placeholder"
+                                PlaceholderColor="{AppThemeBinding Light=Green, Dark=Orange}"
+                                Text="Editor Text"
+                                TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                WidthRequest="200"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Spacing="10"
+                               HorizontalOptions="Center">
+            <Button AutomationId="LightThemeButton"
+                    Text="Light Theme"
+                    Clicked="OnLightThemeButtonClicked"
+                    HorizontalOptions="Center"/>
+            <Button AutomationId="DarkThemeButton"
+                    Text="Dark Theme"
+                    Clicked="OnDarkThemeButtonClicked"
+                    HorizontalOptions="Center"/>
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>
