@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // Using AppThemeBinding and changing theme not working on Windows
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -36,3 +37,4 @@ public class Issue30868 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
