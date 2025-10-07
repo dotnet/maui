@@ -11,7 +11,7 @@ namespace Microsoft.Maui.UnitTests.Extensions
 		[InlineData("Macaque", "Capuchin", "Saki")]
 		[InlineData("Baboon", null, "Tamarin")]
 		[InlineData]
-		public void GetItemsAsArrayReturnsAllItems(string[] items)
+		public void GetItemsAsArrayReturnsAllItems(params string[] items)
 		{
 			var picker = CreateMockPicker(items);
 			var result = picker.GetItemsAsArray();
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.UnitTests.Extensions
 		[InlineData("Macaque", "Capuchin", "Saki")]
 		[InlineData("Baboon", null, "Tamarin")]
 		[InlineData]
-		public void GetItemsAsListReturnsAllItems(string[] items)
+		public void GetItemsAsListReturnsAllItems(params string[] items)
 		{
 			var picker = CreateMockPicker(items);
 			var result = picker.GetItemsAsList();
