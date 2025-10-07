@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Controls
 
 			if (platformWindow is null)
 			{
+				System.Diagnostics.Debug.WriteLine("ApplyThemeToWindow: platformWindow is null. Unable to apply theme to the root element.");
 				return;
 			}
 
@@ -98,11 +99,11 @@ namespace Microsoft.Maui.Controls
 					? (UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark)
 					: (forcedElementTheme == ElementTheme.Dark);
 
-				SetTileBarButtonColors(platformWindow, isDark);
+				SetTitleBarButtonColors(platformWindow, isDark);
 			});
 		}
 
-		void SetTileBarButtonColors(UI.Xaml.Window platformWindow, bool isDark)
+		void SetTitleBarButtonColors(UI.Xaml.Window platformWindow, bool isDark)
 		{
 			// Color references:
 			// https://github.com/microsoft/WinUI-Gallery/blob/main/WinUIGallery/Helpers/TitleBarHelper.cs
