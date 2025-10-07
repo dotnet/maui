@@ -205,10 +205,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Get the CollectionView orientation
 			var scrollDirection = Controller.GetScrollDirection();
 
-			// If contentSize comes back null, it means none of the content has been realized yet;
-			// we need to return the expansive size the collection view wants by default to get
-			// it to start measuring its content
-
+			// If contentSize is zero in the relevant dimension (height for vertical, width for horizontal),
+			// it means none of the content has been realized yet; we need to return the expansive size
+			// the collection view wants by default to get it to start measuring its content
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
