@@ -52,12 +52,18 @@ public static class Extensions
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
-            {                
+            {
+				// Enable reporting metrics coming from the .NET MAUI SDK
+				metrics.AddMeter("Microsoft.Maui");
+				
                 metrics.AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
+				// Enable reporting tracing coming from the .NET MAUI SDK
+				tracing.AddSource("Microsoft.Maui");
+				
                 tracing.AddSource(builder.Environment.ApplicationName)
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
