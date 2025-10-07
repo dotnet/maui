@@ -806,5 +806,19 @@ namespace Microsoft.Maui.Platform
 
 			view.Post(ShowSoftInput);
 		}
+
+		internal static bool IsConfirmKey(this Keycode keyCode)
+		{
+			switch (keyCode)
+			{
+				case Keycode.DpadCenter:
+				case Keycode.Enter:
+				case Keycode.Space:
+				case Keycode.NumpadEnter:
+					return true;
+				default:
+					return false;
+			}
+		}
 	}
 }

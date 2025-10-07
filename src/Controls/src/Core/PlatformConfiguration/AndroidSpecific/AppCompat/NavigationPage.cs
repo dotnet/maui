@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 {
 	using FormsElement = Maui.Controls.NavigationPage;
 
-	/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage']/Docs/*" />
+	/// <summary>Appcompat platform specific navigation page.</summary>
 	public static class NavigationPage
 	{
 		/// <summary>Bindable property for attached property <c>BarHeight</c>.</summary>

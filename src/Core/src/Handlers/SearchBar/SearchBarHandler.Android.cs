@@ -4,6 +4,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using static AndroidX.AppCompat.Widget.SearchView;
+using AView = Android.Views.View;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
@@ -68,6 +69,25 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, handler.QueryEditor);
 		}
 
+		internal static void MapFlowDirection(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (searchBar.FlowDirection == FlowDirection.MatchParent && searchBar.Parent != null && searchBar.Parent is IView parentView)
+			{
+				// When FlowDirection is MatchParent, respect the parent's FlowDirection
+				if (handler.PlatformView is AView platformView)
+					Microsoft.Maui.Platform.ViewExtensions.UpdateFlowDirection(platformView, parentView);
+
+				if (handler.QueryEditor is TextView textView)
+					Microsoft.Maui.Platform.TextViewExtensions.UpdateFlowDirection(textView, parentView);
+			}
+			else
+			{
+				// Otherwise, use the SearchBar's own FlowDirection
+				handler.PlatformView?.UpdateFlowDirection(searchBar);
+				handler.QueryEditor?.UpdateFlowDirection(searchBar);
+			}
+		}
+
 		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
@@ -92,6 +112,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateTextColor(searchBar);
+			handler.PlatformView?.UpdateTextColor(searchBar);
 		}
 
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)

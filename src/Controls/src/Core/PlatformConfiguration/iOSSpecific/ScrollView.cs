@@ -3,13 +3,15 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.ScrollView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ScrollView']/Docs/*" />
+	/// <summary>The scroll view instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
 	public static class ScrollView
 	{
 		/// <summary>Bindable property for <see cref="ShouldDelayContentTouches"/>.</summary>
 		public static readonly BindableProperty ShouldDelayContentTouchesProperty = BindableProperty.Create(nameof(ShouldDelayContentTouches), typeof(bool), typeof(ScrollView), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='GetShouldDelayContentTouches']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</returns>
 		public static bool GetShouldDelayContentTouches(BindableObject element)
 		{
 			return (bool)element.GetValue(ShouldDelayContentTouchesProperty);
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ShouldDelayContentTouchesProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='ShouldDelayContentTouches']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</returns>
 		public static bool ShouldDelayContentTouches(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetShouldDelayContentTouches(config.Element);

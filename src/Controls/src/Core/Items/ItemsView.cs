@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that serves as a base class for views that contain a templated list of items.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract class ItemsView : View
 	{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 			OnRemainingItemsThresholdReached();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='SendScrolled']/Docs/*" />
+		/// <param name="e">The event arguments.</param>
 		public void SendScrolled(ItemsViewScrolledEventArgs e)
 		{
 			Scrolled?.Invoke(this, e);
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource);
+			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource?.GetType());
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 	}

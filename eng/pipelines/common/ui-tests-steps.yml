@@ -6,12 +6,12 @@ parameters:
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   configuration: "Release"
   runtimeVariant: "Mono"
   testFilter: ''
   testConfigurationArgs: ''
   skipProvisioning: true
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -170,6 +170,7 @@ steps:
   condition: always()
   displayName: publish artifacts
 
+# Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh

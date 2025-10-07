@@ -139,8 +139,10 @@ namespace Microsoft.Maui.Handlers
 			CompleteRefresh();
 			_refreshCompletionDeferral = args.GetDeferral();
 
-			if (VirtualView != null)
+			if (VirtualView != null && !VirtualView.IsRefreshing)
+			{
 				VirtualView.IsRefreshing = true;
+			}
 		}
 
 		void CompleteRefresh()

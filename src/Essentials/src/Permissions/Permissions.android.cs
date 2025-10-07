@@ -102,7 +102,9 @@ namespace Microsoft.Maui.ApplicationModel
 					return PermissionStatus.Granted;
 
 				var permissionResult = await DoRequest(runtimePermissions);
-				if (permissionResult.GrantResults.Any(g => g == Permission.Denied))
+				// OnRequestPermissionsResult can be called with an empty grantResults array if the user interaction was interrupted. 
+				// Ignoring this could lead to incorrect assumptions that permissions were granted.
+				if (permissionResult.GrantResults.Length == 0 || permissionResult.GrantResults.Any(g => g == Permission.Denied))
 					return PermissionStatus.Denied;
 
 				return PermissionStatus.Granted;
