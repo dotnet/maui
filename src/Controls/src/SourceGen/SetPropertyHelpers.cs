@@ -435,7 +435,7 @@ static class SetPropertyHelpers
 		var adder = propertyType!.GetAllMethods("Add", context).First(m => m.Parameters.Length == 1);
 		var receiverType = adder.ReceiverType;
 
-		var parentObj = $"{parentVar.ValueAccessor}.{localName}";
+		var parentObj = localName != null ? $"{parentVar.ValueAccessor}.{localName}" : parentVar.ValueAccessor;
 		if (bpFieldSymbol != null)
 		{
 			var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);

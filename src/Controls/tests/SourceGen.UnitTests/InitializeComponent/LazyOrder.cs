@@ -407,8 +407,24 @@ file ref struct TestPageInflator() {
 	<ContentPage.Resources>
 		<Color x:Key="Primary">#512BD4</Color>
         <Color x:Key="White">White</Color>
+		<Color x:Key="Gray200">#C8C8C8</Color>
+        <Color x:Key="Gray600">#404040</Color>
+        <Color x:Key="Gray950">#141414</Color>
         <Style TargetType="Button">
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Primary}}" />
+			<Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
 		</Style>
 	</ContentPage.Resources>
 </ContentPage>
@@ -457,6 +473,9 @@ public partial class TestPage
 #endif
 		this.Resources["Primary"] = new global::Microsoft.Maui.Graphics.Color(0.31764707f, 0.16862746f, 0.83137256f, 1f) /* #512BD4 */;
 		this.Resources["White"] = global::Microsoft.Maui.Graphics.Colors.White;
+		this.Resources["Gray200"] = new global::Microsoft.Maui.Graphics.Color(0.78431374f, 0.78431374f, 0.78431374f, 1f) /* #C8C8C8 */;
+		this.Resources["Gray600"] = new global::Microsoft.Maui.Graphics.Color(0.2509804f, 0.2509804f, 0.2509804f, 1f) /* #404040 */;
+		this.Resources["Gray950"] = new global::Microsoft.Maui.Graphics.Color(0.078431375f, 0.078431375f, 0.078431375f, 1f) /* #141414 */;
 		this.Resources.Add(inflator.style);
 
 	}
@@ -468,6 +487,106 @@ file ref struct TestPageInflator() {
 	public global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
 
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+	global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+	
+	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
+	public global::Microsoft.Maui.Controls.VisualState visualState  {
+		get {
+			if (field != null)
+				return field;
+			field = Create(ref this);
+			SetProperties(field, ref this);
+
+			static global::Microsoft.Maui.Controls.VisualState Create(ref TestPageInflator inflator) {
+				var visualState1 = new global::Microsoft.Maui.Controls.VisualState();
+				return visualState1;
+			}
+
+			static void SetProperties(global::Microsoft.Maui.Controls.VisualState local, ref TestPageInflator inflator) {
+				local.Name = "Normal";
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+				inflator.iNameScope1.RegisterName("Normal", inflator.visualState);
+#endif
+			}
+
+			return field;
+		}
+	}
+	
+	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
+	public global::Microsoft.Maui.Controls.VisualState visualState2  {
+		get {
+			if (field != null)
+				return field;
+			field = Create(ref this);
+			SetProperties(field, ref this);
+
+			static global::Microsoft.Maui.Controls.VisualState Create(ref TestPageInflator inflator) {
+				var visualState3 = new global::Microsoft.Maui.Controls.VisualState();
+				return visualState3;
+			}
+
+			static void SetProperties(global::Microsoft.Maui.Controls.VisualState local, ref TestPageInflator inflator) {
+				local.Name = "Disabled";
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+				inflator.iNameScope1.RegisterName("Disabled", inflator.visualState2);
+#endif
+				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)local.Setters).Add((global::Microsoft.Maui.Controls.Setter)new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Button.TextColorProperty, Value = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = new global::Microsoft.Maui.Graphics.Color(0.078431375f, 0.078431375f, 0.078431375f, 1f) /* #141414 */, Dark = new global::Microsoft.Maui.Graphics.Color(0.78431374f, 0.78431374f, 0.78431374f, 1f) /* #C8C8C8 */ }});
+				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)local.Setters).Add((global::Microsoft.Maui.Controls.Setter)new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty, Value = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = new global::Microsoft.Maui.Graphics.Color(0.78431374f, 0.78431374f, 0.78431374f, 1f) /* #C8C8C8 */, Dark = new global::Microsoft.Maui.Graphics.Color(0.2509804f, 0.2509804f, 0.2509804f, 1f) /* #404040 */ }});
+			}
+
+			return field;
+		}
+	}
+	
+	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
+	public global::Microsoft.Maui.Controls.VisualStateGroup visualStateGroup  {
+		get {
+			if (field != null)
+				return field;
+			field = Create(ref this);
+			SetProperties(field, ref this);
+
+			static global::Microsoft.Maui.Controls.VisualStateGroup Create(ref TestPageInflator inflator) {
+				var visualStateGroup1 = new global::Microsoft.Maui.Controls.VisualStateGroup();
+				return visualStateGroup1;
+			}
+
+			static void SetProperties(global::Microsoft.Maui.Controls.VisualStateGroup local, ref TestPageInflator inflator) {
+				local.Name = "CommonStates";
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+				inflator.iNameScope1.RegisterName("CommonStates", inflator.visualStateGroup);
+#endif
+				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.VisualState>)local.States).Add((global::Microsoft.Maui.Controls.VisualState)inflator.visualState);
+				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.VisualState>)local.States).Add((global::Microsoft.Maui.Controls.VisualState)inflator.visualState2);
+			}
+
+			return field;
+		}
+	}
+	
+	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
+	public global::Microsoft.Maui.Controls.VisualStateGroupList visualStateGroupList  {
+		get {
+			if (field != null)
+				return field;
+			field = Create(ref this);
+			SetProperties(field, ref this);
+
+			static global::Microsoft.Maui.Controls.VisualStateGroupList Create(ref TestPageInflator inflator) {
+				var visualStateGroupList1 = new global::Microsoft.Maui.Controls.VisualStateGroupList();
+				return visualStateGroupList1;
+			}
+
+			static void SetProperties(global::Microsoft.Maui.Controls.VisualStateGroupList local, ref TestPageInflator inflator) {
+				local.Add((global::Microsoft.Maui.Controls.VisualStateGroup)inflator.visualStateGroup);
+			}
+
+			return field;
+		}
+	}
 	
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Style style  {
@@ -484,6 +603,7 @@ file ref struct TestPageInflator() {
 
 			static void SetProperties(global::Microsoft.Maui.Controls.Style local, ref TestPageInflator inflator) {
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)local.Setters).Add((global::Microsoft.Maui.Controls.Setter)new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Button.TextColorProperty, Value = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = global::Microsoft.Maui.Graphics.Colors.White, Dark = new global::Microsoft.Maui.Graphics.Color(0.31764707f, 0.16862746f, 0.83137256f, 1f) /* #512BD4 */ }});
+				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)local.Setters).Add((global::Microsoft.Maui.Controls.Setter)new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualStateManager.VisualStateGroupsProperty, Value = inflator.visualStateGroupList});
 			}
 
 			return field;

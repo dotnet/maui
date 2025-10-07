@@ -299,3 +299,4 @@ Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
 Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
 ~Microsoft.Maui.Controls.Binding.DataType.get -> System.Type
 ~Microsoft.Maui.Controls.Binding.DataType.set -> void
+~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList

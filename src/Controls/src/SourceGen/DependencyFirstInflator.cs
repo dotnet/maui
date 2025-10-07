@@ -62,7 +62,15 @@ class DependencyFirstInflator
 		var xNameProp = node.Properties.FirstOrDefault(p => p.Key == XmlName.xName);
 		if (xNameProp.Value is ValueNode valueNode && valueNode.Value is string xName)
 		{
+			//set runtime name (VSG)
+			var runtimeNameAttr = localVar.Type.GetAllAttributes(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RuntimeNamePropertyAttribute")!, context).FirstOrDefault();
+			if (runtimeNameAttr?.ConstructorArguments[0].Value is string name)
+				writers.localMethodWriter.WriteLine($"{localVar.ValueAccessor}.{name} = \"{xName}\";");
+
+			//set fields in InitializeComponent
 			writers.ICWriter?.WriteLine($"this.{EscapeIdentifier(xName)} = {parentVar.ValueAccessor};");
+
+			//register in namescope
 			var namescope = context.Scopes[node];
 			if (namescope.namesInScope.ContainsKey(xName))
 				//TODO send diagnostic instead
@@ -90,7 +98,7 @@ class DependencyFirstInflator
 			&& parentVar.Type.CanAdd(context))
         {
 			foreach (var item in node.CollectionItems)
-			SetPropertyValue(new KeyValuePair<XmlName, INode>(XmlName.Empty, item), writers, parentVar, localVar, scopes, context, parentVar, asCollectionItem: true);
+				SetPropertyValue(new KeyValuePair<XmlName, INode>(XmlName.Empty, item), writers, parentVar, localVar, scopes, context, parentVar, asCollectionItem: true);
         }
 	}
 
@@ -369,7 +377,11 @@ class DependencyFirstInflator
 
 			using (PrePost.NewBlock(writer, $"static void SetProperties({type.ToFQDisplayString()} {localVar.ValueAccessor}, ref {currentScope.type} inflator) {{", "}"))
 			{
-				SetValuesForNode(elementNode, (writer, writers.declarationWriter, writers.ICWriter), currentVar, localVar, scopes, context);
+				var icWriter = SetNamescopesAndRegisterNamesVisitor.IsDataTemplate(elementNode, elementNode.Parent)
+							|| SetNamescopesAndRegisterNamesVisitor.IsStyle(elementNode, elementNode.Parent)
+							|| SetNamescopesAndRegisterNamesVisitor.IsVisualStateGroupList(elementNode)
+					? null : writers.ICWriter;
+				SetValuesForNode(elementNode, (writer, writers.declarationWriter, icWriter), currentVar, localVar, scopes, context);
 			}
 			writer.WriteLineNoTabs();
 

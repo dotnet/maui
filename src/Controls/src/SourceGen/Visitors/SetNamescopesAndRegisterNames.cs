@@ -95,7 +95,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		=> parentNode is ElementNode pnode && pnode.XmlType.Name == "Style";
 
 	public static bool IsVisualStateGroupList(ElementNode node)
-		=> node != null && node.XmlType.Name == "VisualStateGroup" && node.Parent is IListNode;
+		=> node != null && node.XmlType.Name == "VisualStateGroupList" && node.Parent is IListNode;
 
 	static bool IsXNameProperty(ValueNode node, INode parentNode)
 		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;

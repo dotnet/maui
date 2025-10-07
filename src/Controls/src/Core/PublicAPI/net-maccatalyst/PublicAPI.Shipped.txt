@@ -3498,7 +3498,6 @@
 ~static Microsoft.Maui.Controls.VisualElement.MapBackgroundImageSource(Microsoft.Maui.IViewHandler handler, Microsoft.Maui.IView view) -> void
 ~static Microsoft.Maui.Controls.VisualMarker.Default.get -> Microsoft.Maui.Controls.IVisual
 ~static Microsoft.Maui.Controls.VisualMarker.MatchParent.get -> Microsoft.Maui.Controls.IVisual
-~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 ~static Microsoft.Maui.Controls.VisualStateManager.GoToState(Microsoft.Maui.Controls.VisualElement visualElement, string name) -> bool
 ~static Microsoft.Maui.Controls.VisualStateManager.HasVisualStateGroups(this Microsoft.Maui.Controls.VisualElement element) -> bool
 ~static Microsoft.Maui.Controls.VisualStateManager.SetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement, Microsoft.Maui.Controls.VisualStateGroupList value) -> void

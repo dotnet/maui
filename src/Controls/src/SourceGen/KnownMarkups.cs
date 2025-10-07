@@ -127,6 +127,7 @@ internal class KnownMarkups
 
 		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
 		var bpRef = bpNode.GetBindableProperty(context);
+		var bprefType = bpRef.GetBPTypeAndConverter(context)?.type;
 
 		string targetsetter;
 		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
@@ -141,7 +142,7 @@ internal class KnownMarkups
 		}
 		else if (getNodeValue != null)
 		{
-			var lvalue = getNodeValue(valueNode, bpRef.Type);
+			var lvalue = getNodeValue(valueNode, bprefType!);
 			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
 			return true;
 		}
