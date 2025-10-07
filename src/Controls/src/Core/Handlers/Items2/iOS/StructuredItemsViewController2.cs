@@ -181,13 +181,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			nfloat headerHeight = 0;
 			var headerView = CollectionView.ViewWithTag(HeaderTag);
 
-			if (headerView != null)
+			// Only use header height if ItemsView actually has a header
+			if (headerView != null && (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null))
 				headerHeight = headerView.Frame.Height;
 
 			nfloat footerHeight = 0;
 			var footerView = CollectionView.ViewWithTag(FooterTag);
 
-			if (footerView != null)
+			// Only use footer height if ItemsView actually has a footer
+			if (footerView != null && (ItemsView.Footer is not null || ItemsView.FooterTemplate is not null))
 				footerHeight = footerView.Frame.Height;
 
 			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
