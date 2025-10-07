@@ -89,22 +89,22 @@ public class Issue29130 : ContentPage
 public class Issue29130ViewModel
 
 {
-	public ObservableCollection<ItemModel> Items { get; } = new()
+	public ObservableCollection<Issue29130ItemModel> Items { get; } = new()
 	{
-		new ItemModel("Short Text", 14, "29130Item1"),
-		new ItemModel("Short Text expanded to test sizing. Just a few more words added.", 18, "29130Item2"),
-		new ItemModel("This is a bit longer text that continues with additional words to create a slightly larger visual footprint.This is a bit longer text that continues with additional words to create a slightly larger visual footprint.This is a bit longer text that continues with additional words to create a slightly larger visual footprint.", 24, "29130Item3"),
+		new Issue29130ItemModel("Short Text", 14, "29130Item1"),
+		new Issue29130ItemModel("Short Text expanded to test sizing. Just a few more words added.", 18, "29130Item2"),
+		new Issue29130ItemModel("This is a bit longer text that continues with additional words to create a slightly larger visual footprint.This is a bit longer text that continues with additional words to create a slightly larger visual footprint.This is a bit longer text that continues with additional words to create a slightly larger visual footprint.", 24, "29130Item3"),
 	};
 }
 
-public class ItemModel
+public class Issue29130ItemModel
 {
 	public string Text { get; }
 	public double FontSize { get; }
 
 	public string AutomationId { get; set; }
 
-	public ItemModel(string text, double fontSize, string automationId = null)
+	public Issue29130ItemModel(string text, double fontSize, string automationId = null)
 	{
 		AutomationId = automationId;
 		Text = text;
