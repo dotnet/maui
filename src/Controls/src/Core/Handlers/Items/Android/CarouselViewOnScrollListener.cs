@@ -41,12 +41,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// When scroll completes, process any cached programmatic scroll data
 				if (_isProgrammaticScrolling && recyclerView is not null)
 				{
-					ProcessScrolled(recyclerView, _lastDx, _lastDy);
+					_isProgrammaticScrolling = false;
+					OnScrolled(recyclerView, _lastDx, _lastDy);
+
 					_lastDx = 0;
 					_lastDy = 0;
 				}
-
-				_isProgrammaticScrolling = false;
 			}
 
 			_carouselView.IsScrolling = state != RecyclerView.ScrollStateIdle;
@@ -63,19 +63,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				// Process immediately for manual user scrolling
-				ProcessScrolled(recyclerView, dx, dy);
-			}
-		}
+				base.OnScrolled(recyclerView, dx, dy);
 
-		void ProcessScrolled(RecyclerView recyclerView, int dx, int dy)
-		{
-			base.OnScrolled(recyclerView, dx, dy);
-
-			if (_carouselView.Loop)
-			{
-				//We could have a race condition where we are scrolling our collection to center the first item
-				//We save that ScrollToEventARgs and call it again
-				_carouselViewLoopManager.CheckPendingScrollToEvents(recyclerView);
+				if (_carouselView.Loop)
+				{
+					//We could have a race condition where we are scrolling our collection to center the first item
+					//We save that ScrollToEventARgs and call it again
+					_carouselViewLoopManager.CheckPendingScrollToEvents(recyclerView);
+				}
 			}
 		}
 
