@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 31897, "CollectionView card height appears larger in Developer Balance sample", PlatformAffected.iOS | PlatformAffected.macOS)]
-public class Issue31897 : ContentPage
+public partial class Issue31897 : ContentPage
 {
 	ObservableCollection<string> Countries = new();
 	Button getHeight;
@@ -39,7 +39,7 @@ public class Issue31897 : ContentPage
 
 		getHeight.Clicked += (object sender, EventArgs e) =>
 		{
-			HeightLabel.Text = ProjectsCollectionView.Height.ToString();
+			HeightLabel.Text = Math.Round(ProjectsCollectionView.Height).ToString();
 		};
 
 		getHeight.SetValue(SemanticProperties.HeadingLevelProperty, SemanticHeadingLevel.Level1);
