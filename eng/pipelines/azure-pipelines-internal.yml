@@ -98,10 +98,11 @@ extends:
             skipProvisioning: true
             skipXcode: true
 
-    - template: /eng/pipelines/arcade/stage-api-scan.yml@self
-      parameters:
-        pool: ${{ parameters.VM_IMAGE_HOST }}
-        dependsOnStage: Pack
+    - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/net10.0'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+      - template: /eng/pipelines/arcade/stage-api-scan.yml@self
+        parameters:
+          pool: ${{ parameters.VM_IMAGE_HOST }}
+          dependsOnStage: Pack
 
     # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
