@@ -78,8 +78,7 @@ namespace Microsoft.Maui
 			if (Path.IsPathRooted(filename) && File.Exists(filename))
 			{
 				scale = 1;
-				var url = NSUrl.CreateFileUrl(filename);
-				return CGImageSource.FromUrl(url);
+				return CGImageSource.FromUrl(NSUrl.CreateFileUrl(filename));
 			}
 
 			// search the bundle for the scaled image
