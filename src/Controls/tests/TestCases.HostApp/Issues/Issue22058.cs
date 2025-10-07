@@ -16,24 +16,33 @@ public class Issue22058 : ContentPage
 
 		var button = new Button
 		{
-			Text = "Change User App Theme",
+			Text = "Change To Dark User App Theme",
 			AutomationId = "ThemeChangeButton",
 			VerticalOptions = LayoutOptions.Center,
-			HorizontalOptions = LayoutOptions.Center
+			HorizontalOptions = LayoutOptions.Start,
 		};
 
 		button.Clicked += (sender, e) =>
 		{
 			if (Application.Current is not null)
 			{
-				if (Application.Current.UserAppTheme == AppTheme.Dark)
-				{
-					Application.Current.UserAppTheme = AppTheme.Unspecified;
-				}
-				else
-				{
-					Application.Current.UserAppTheme = AppTheme.Dark;
-				}
+				Application.Current.UserAppTheme = AppTheme.Dark;
+			}
+		};
+
+		var resetThemeButton = new Button
+		{
+			Text = "Reset User App Theme",
+			AutomationId = "ResetThemeButton",
+			VerticalOptions = LayoutOptions.Center,
+			HorizontalOptions = LayoutOptions.Start,
+		};
+
+		resetThemeButton.Clicked += (sender, e) =>
+		{
+			if (Application.Current is not null)
+			{
+				Application.Current.UserAppTheme = AppTheme.Unspecified;
 			}
 		};
 
@@ -41,7 +50,7 @@ public class Issue22058 : ContentPage
 		{
 			VerticalOptions = LayoutOptions.Center,
 			AutomationId = "TimePickerControl",
-			HorizontalOptions = LayoutOptions.End,
+			HorizontalOptions = LayoutOptions.Center,
 		};
 
 		var verticalStackLayout = new VerticalStackLayout()
@@ -51,6 +60,7 @@ public class Issue22058 : ContentPage
 		};
 
 		verticalStackLayout.Add(button);
+		verticalStackLayout.Add(resetThemeButton);
 		verticalStackLayout.Add(timePicker);
 
 		Content = verticalStackLayout;
