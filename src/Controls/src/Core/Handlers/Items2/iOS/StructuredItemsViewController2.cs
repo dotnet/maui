@@ -48,6 +48,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
+		internal void UpdateHeaderView()
+		{
+			CleanupHeaderFooterViewsIfNeeded();
+		}
+
+		internal void UpdateFooterView()
+		{
+			CleanupHeaderFooterViewsIfNeeded();
+		}
+
+		void CleanupHeaderFooterViewsIfNeeded()
+		{
+			// Clean up header view if no header content
+			if (ItemsView.Header is null && ItemsView.HeaderTemplate is null)
+			{
+				var headerView = CollectionView.ViewWithTag(HeaderTag);
+				headerView?.RemoveFromSuperview();
+			}
+
+			// Clean up footer view if no footer content
+			if (ItemsView.Footer is null && ItemsView.FooterTemplate is null)
+			{
+				var footerView = CollectionView.ViewWithTag(FooterTag);
+				footerView?.RemoveFromSuperview();
+			}
+		}
+
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, NSString elementKind, NSIndexPath indexPath)
 		{
 			// We don't have a header or footer, so we don't need to do anything
@@ -182,14 +209,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var headerView = CollectionView.ViewWithTag(HeaderTag);
 
 			// Only use header height if ItemsView actually has a header
-			if (headerView != null && (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null))
+			if (headerView != null)
 				headerHeight = headerView.Frame.Height;
 
 			nfloat footerHeight = 0;
 			var footerView = CollectionView.ViewWithTag(FooterTag);
 
 			// Only use footer height if ItemsView actually has a footer
-			if (footerView != null && (ItemsView.Footer is not null || ItemsView.FooterTemplate is not null))
+			if (footerView != null)
 				footerHeight = footerView.Frame.Height;
 
 			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
