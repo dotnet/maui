@@ -257,6 +257,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			WeakReference weakCollectionView = null;
+			WeakReference weakHandler = null;
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
@@ -274,15 +275,21 @@ namespace Microsoft.Maui.DeviceTests
 				// Verify handler is created
 				Assert.NotNull(handler);
 				
+				// Store weak reference to the handler
+				weakHandler = new WeakReference(handler);
+				
 				// Disconnect the handler
 				((IElementHandler)handler).DisconnectHandler();
 			});
 
 			// Force garbage collection
-			await AssertionExtensions.WaitForGC(weakCollectionView);
+			await AssertionExtensions.WaitForGC(weakCollectionView, weakHandler);
 
 			// Verify the CollectionView was collected
 			Assert.False(weakCollectionView.IsAlive, "CollectionView should have been garbage collected");
+			
+			// Verify the handler was collected
+			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
 		}
 
 		/// <summary>
