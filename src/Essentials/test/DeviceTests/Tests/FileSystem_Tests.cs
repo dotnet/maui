@@ -58,7 +58,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 #endif
 
-
 #if WINDOWS
 		[Fact]
 		public async Task EnsureFileResultContentType()
