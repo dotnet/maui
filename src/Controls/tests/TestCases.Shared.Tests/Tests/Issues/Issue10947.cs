@@ -22,18 +22,18 @@ public class Issue10947 : _IssuesUITest
 		var headerEntry = App.WaitForElement(HeaderEntry);
 		var headerLocation = headerEntry.GetRect();
 		var footerEntry = App.WaitForElement(FooterEntry);
-		var footerLocation = headerEntry.GetRect();
+		var footerLocation = footerEntry.GetRect();
 
 		App.Tap(HeaderEntry);
 
 		var newHeaderEntry = App.WaitForElement(HeaderEntry);
-		var newHeaderLocation = headerEntry.GetRect();
+		var newHeaderLocation = newHeaderEntry.GetRect();
 		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
 		App.Tap(FooterEntry);
 
 		var newFooterEntry = App.WaitForElement(FooterEntry);
-		var newFooterLocation = headerEntry.GetRect();
+		var newFooterLocation = newFooterEntry.GetRect();
 
 		ClassicAssert.AreEqual(footerLocation, newFooterLocation);
 	}
