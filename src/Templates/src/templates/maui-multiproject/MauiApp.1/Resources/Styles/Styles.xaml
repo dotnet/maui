@@ -401,6 +401,28 @@
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="OrientationStates">
+                    <VisualState x:Name="Portrait">
+                        <VisualState.StateTriggers>
+                            <OrientationStateTrigger Orientation="Portrait" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="SafeAreaEdges" Value="Container" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Landscape">
+                        <VisualState.StateTriggers>
+                            <OrientationStateTrigger Orientation="Landscape" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="SafeAreaEdges" Value="Container" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
