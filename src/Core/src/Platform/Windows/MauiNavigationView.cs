@@ -135,6 +135,7 @@ namespace Microsoft.Maui.Platform
 			PaneContentGrid.Margin = new WThickness(0, 0, 0, 0);
 			UpdateMenuItemsContainerHeight();
 			RootSplitView.CornerRadius = new UI.Xaml.CornerRadius(0);
+			CornerRadius = new UI.Xaml.CornerRadius(0);
 
 			// On WinAppSDK 1.7, it seems that if the PaneContentGrid width is not explicitly set,
 			// it takes on the desired width of its child.
