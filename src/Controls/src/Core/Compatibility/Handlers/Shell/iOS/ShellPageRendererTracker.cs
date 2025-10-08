@@ -789,6 +789,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				NavigationItem.TitleView = null;
 			}
+
+			if (_searchController?.SearchBar is not null)
+			{
+				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
+			}
 			_searchController.SetSearchResultsUpdater(null);
 			_searchController.Dispose();
 			_searchController = null;
@@ -924,7 +929,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tvc.Disconnect();
 			}
 
-			if (_searchController is not null)
+			if (_searchController?.SearchBar is not null)
 			{
 				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
 			}
