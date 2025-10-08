@@ -22,7 +22,7 @@ public class Issue31899 : _IssuesUITest
 	}
 #endif
 
-#if IOS || MACCATALYST		// More Info - https://github.com/dotnet/maui/issues/31911
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS		// More Info - https://github.com/dotnet/maui/issues/31911
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
 	public void AddHeaderFooterAtRuntime()
