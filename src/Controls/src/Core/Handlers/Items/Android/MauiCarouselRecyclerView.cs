@@ -372,8 +372,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			SetCurrentItem(_oldPosition);
 
-			var index = Carousel.Loop ? LoopedPosition(itemCount) + _oldPosition : _oldPosition;
-			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
+			if (Carousel.Loop)
+			{
+				UpdateLoopCentering(itemCount);
+			}
+			else
+			{
+				ScrollHelper.JumpScrollToPosition(_oldPosition, Microsoft.Maui.Controls.ScrollToPosition.Center);
+			}
 			_gotoPosition = -1;
 		}
 
@@ -386,6 +392,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var loopScale = CarouselViewLoopManager.LoopScale / 2;
 			return loopScale - (loopScale % itemCount);
+		}
+
+		void UpdateLoopCentering(int itemCount)
+		{
+			if (ItemsViewAdapter is null || itemCount == 0)
+			{
+				return;
+			}
+
+			var currentPosition = Carousel.Position;
+			
+			// Calculate the proper looped index for centering
+			var index = LoopedPosition(itemCount) + currentPosition;
+			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
 		}
 
 		void UpdatePositionFromVisibilityChanges()
