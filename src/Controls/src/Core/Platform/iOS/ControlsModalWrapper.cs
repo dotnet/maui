@@ -150,6 +150,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLayoutSubviews();
 			
+			// Defensive check to prevent crashes during iOS snapshot creation
+			// when VirtualView may be disposed during app state transitions
 			if (_modal?.VirtualView is Page)
 			{
 				_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
