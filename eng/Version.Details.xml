@@ -35,105 +35,105 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>dad5528e5bdf92a05a5a404c5f7939523390b96d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="9.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="9.0.7">
+    <Dependency Name="Microsoft.JSInterop" Version="9.0.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>bd99997ac72930d857dfd5feb89c143ab31d22d8</Sha>
+      <Sha>be7fed811e288fa647ed8cad0d12664bbb28e5d6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>3f4da9ced34942d83054e647f3b1d9d7dde281e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="9.0.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e36e4d1a8f8dfb08d7e3a6041459c9791d732c01</Sha>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.25214.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
