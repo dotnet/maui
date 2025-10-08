@@ -173,7 +173,7 @@ stages:
         windowsPool: ${{ parameters.windowsPool }}
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-          androidApiLevels: [ 33, 30, 29, 27, 26, 25, 24, 23 ]
+          androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
           iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
@@ -212,7 +212,7 @@ stages:
         - name: core
           desc: Core
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
-          androidApiLevelsCoreClrExclude: [ 25, 23]
+          androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
