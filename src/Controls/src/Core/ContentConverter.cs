@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			return view;
 		}
 
-		static Label ConvertToLabel(string textContent, ContentPresenter presenter)
+		static ContentLabel ConvertToLabel(string textContent, ContentPresenter presenter)
 		{
 			var label = new ContentLabel
 			{
@@ -130,5 +130,5 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	class ContentLabel : Label{}
+	class ContentLabel : Label { }
 }
