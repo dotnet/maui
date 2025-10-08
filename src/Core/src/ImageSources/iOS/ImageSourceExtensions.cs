@@ -62,7 +62,7 @@ namespace Microsoft.Maui
 			var filename = imageSource.File;
 			
 			// If the path is absolute (e.g., from MediaPicker), try to load it directly first
-			if (Path.IsPathRooted(filename))
+			if (Path.IsPathRooted(filename) && File.Exists(filename))
 				return UIImage.FromFile(filename);
 			
 			return UIImage.FromBundle(filename) ?? UIImage.FromFile(filename);
