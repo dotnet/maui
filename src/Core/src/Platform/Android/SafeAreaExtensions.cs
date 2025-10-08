@@ -235,14 +235,20 @@ internal static class SafeAreaExtensions
         }
 
         // Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
-        if (isKeyboardShowing && edge == 3)
+        if (edge == 3)
         {
-            if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-                return keyBoardInsets.Bottom;
+	        if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
+	        {
+		        // SoftInput only applies padding when keyboard is showing
+		        return isKeyboardShowing ? keyBoardInsets.Bottom : 0;
+	        }
 
-            // if they keyboard is showing then we will just return 0 for the bottom inset
-            // because that part of the view is covered by the keyboard so we don't want to pad the view
-            return 0;
+	        if (isKeyboardShowing)
+	        {
+		        // if the keyboard is showing then we will just return 0 for the bottom inset
+		        // because that part of the view is covered by the keyboard so we don't want to pad the view
+		        return 0;
+	        }
         }
 
         // All other regions respect safe area in some form
