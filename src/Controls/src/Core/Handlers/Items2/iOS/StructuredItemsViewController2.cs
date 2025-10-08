@@ -50,23 +50,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdateHeaderView()
 		{
-			CleanupHeaderFooterViewsIfNeeded();
-		}
-
-		internal void UpdateFooterView()
-		{
-			CleanupHeaderFooterViewsIfNeeded();
-		}
-
-		void CleanupHeaderFooterViewsIfNeeded()
-		{
 			// Clean up header view if no header content
 			if (ItemsView.Header is null && ItemsView.HeaderTemplate is null)
 			{
 				var headerView = CollectionView.ViewWithTag(HeaderTag);
 				headerView?.RemoveFromSuperview();
 			}
+		}
 
+		internal void UpdateFooterView()
+		{
 			// Clean up footer view if no footer content
 			if (ItemsView.Footer is null && ItemsView.FooterTemplate is null)
 			{
