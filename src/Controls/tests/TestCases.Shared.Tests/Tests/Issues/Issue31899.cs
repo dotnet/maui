@@ -10,7 +10,7 @@ public class Issue31899 : _IssuesUITest
 
 	public override string Issue => "Header/Footer removed at runtime leaves empty space and EmptyView not resized in CollectionView";
 
-#if !ANDROID		// More Info - https://github.com/dotnet/maui/issues/31911
+#if TEST_FAILS_ON_ANDROID		// More Info - https://github.com/dotnet/maui/issues/31911
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
 	public void RemoveHeaderFooterAtRuntime()
