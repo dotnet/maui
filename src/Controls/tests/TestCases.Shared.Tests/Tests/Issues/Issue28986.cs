@@ -13,6 +13,41 @@ public class Issue28986 : _IssuesUITest
 	{
 	}
 
+#if ANDROID
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SoftInputDoesNotApplyBottomPaddingWhenKeyboardHidden()
+	{
+		// This test validates the fix for issue #31870
+		// When SafeAreaEdges.Bottom is set to SoftInput and the keyboard is NOT showing,
+		// there should be NO bottom padding from the navigation bar.
+		App.WaitForElement("ContentGrid");
+
+		// First, set to None to get the baseline position (no safe area padding)
+		App.Tap("GridResetNoneButton");
+		var noneRect = App.WaitForElement("MainGrid").GetRect();
+
+		// Now set bottom edge to SoftInput (keyboard is still hidden)
+		App.Tap("GridSetBottomSoftInputButton");
+
+		// Wait for layout to update
+		App.WaitForElement("MainGrid");
+
+		// Get the current settings to verify SoftInput is set
+		var currentSettings = App.FindElement("CurrentSettings").GetText();
+		Assert.That(currentSettings, Does.Contain("Bottom:SoftInput"),
+			"Bottom edge should be set to SoftInput");
+
+		// Get the rect after setting SoftInput
+		var softInputRect = App.WaitForElement("MainGrid").GetRect();
+
+		// Verify that the bottom position is the same as None (no padding applied)
+		// The height should be the same because SoftInput should not add padding when keyboard is hidden
+		Assert.That(softInputRect.Height, Is.EqualTo(noneRect.Height).Within(5),
+			"MainGrid height should be the same with SoftInput as with None when keyboard is hidden (no bottom padding)");
+	}
+#endif
+	
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaMainGridBasicFunctionality()
