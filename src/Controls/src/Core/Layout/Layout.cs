@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls
 				}
 #pragma warning restore CS0618 // Type or member is obsolete
 
-				return SafeAreaRegions.Container;
+				return SafeAreaRegions.None;
 			}
 
 #pragma warning disable CS0618 // Type or member is obsolete

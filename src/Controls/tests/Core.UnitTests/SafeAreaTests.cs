@@ -627,6 +627,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(SafeAreaRegions.None, horizontalSafeAreaView2.GetSafeAreaRegionsForEdge(3)); // Bottom
 		}
 
+		// Test that platform-specific API is respected when explicitly set
+		[Fact]
+		public void Page_GetSafeAreaRegionsForEdge_RespectsExplicitUseSafeArea()
+		{
+			var page = new ContentPage();
+			
+			// Initially should return None (default)
+			var safeAreaView2 = (ISafeAreaView2)page;
+			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0));
+			
+			#if IOS || MACCATALYST
+			// Explicitly set UseSafeArea to true
+#pragma warning disable CS0618 // Type or member is obsolete
+			page.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetUseSafeArea(true);
+#pragma warning restore CS0618 // Type or member is obsolete
+			
+			// Now should return All
+			Assert.Equal(SafeAreaRegions.All, safeAreaView2.GetSafeAreaRegionsForEdge(0));
+			
+			// Explicitly set UseSafeArea to false
+#pragma warning disable CS0618 // Type or member is obsolete
+			page.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetUseSafeArea(false);
+#pragma warning restore CS0618 // Type or member is obsolete
+			
+			// Should return None
+			Assert.Equal(SafeAreaRegions.None, safeAreaView2.GetSafeAreaRegionsForEdge(0));
+			#endif
+		}
+
 		#endregion
 	}
 }
