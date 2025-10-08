@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (state == RecyclerView.ScrollStateIdle)
 			{
 				// When scroll completes, process any cached programmatic scroll data
-				if (_isProgrammaticScrolling && recyclerView is not null)
+				if (_isProgrammaticScrolling)
 				{
 					_isProgrammaticScrolling = false;
 					OnScrolled(recyclerView, _lastDx, _lastDy);
