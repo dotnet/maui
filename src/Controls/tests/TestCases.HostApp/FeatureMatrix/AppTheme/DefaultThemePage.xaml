@@ -8,7 +8,6 @@
        <ContentPage.Resources>
               <ResourceDictionary>
                      <ResourceDictionary.MergedDictionaries>
-                            <ResourceDictionary Source="Styles/Colors.xaml"/>
                             <ResourceDictionary Source="Styles/Styles.xaml"/>
                      </ResourceDictionary.MergedDictionaries>
               </ResourceDictionary>
