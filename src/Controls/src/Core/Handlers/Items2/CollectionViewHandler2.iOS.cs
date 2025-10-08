@@ -1,7 +1,6 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Handlers;
@@ -64,18 +63,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 	{
-		IItemsLayout _currentItemsLayout;
-		PropertyChangedEventHandler _itemsLayoutPropertyChangedHandler;
-
 		// Reorderable
 		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
 			 => new ReorderableItemsViewController2<ReorderableItemsView>(itemsView, layout);
-
-		protected override void DisconnectHandler(UIView platformView)
-		{
-			UnsubscribeFromItemsLayoutPropertyChanged();
-			base.DisconnectHandler(platformView);
-		}
 
 		public static void MapCanReorderItems(CollectionViewHandler2 handler, ReorderableItemsView itemsView)
 		{
@@ -212,41 +202,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
 		{
-			// Unsubscribe from the previous ItemsLayout if it exists
-			UnsubscribeFromItemsLayoutPropertyChanged();
-
 			if (itemsLayout is not null)
 			{
-				// Create the handler if it doesn't exist
-				if (_itemsLayoutPropertyChangedHandler == null)
+				itemsLayout.PropertyChanged += (sender, args) =>
 				{
-					_itemsLayoutPropertyChangedHandler = (sender, args) =>
+					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
+						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
+						args.PropertyName == nameof(GridItemsLayout.Span) ||
+						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+
 					{
-						if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-							args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-							args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-							args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-							args.PropertyName == nameof(GridItemsLayout.Span) ||
-							args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-
-						{
-							UpdateLayout();
-						}
-					};
-				}
-
-				// Subscribe to the new ItemsLayout
-				itemsLayout.PropertyChanged += _itemsLayoutPropertyChangedHandler;
-				_currentItemsLayout = itemsLayout;
-			}
-		}
-
-		void UnsubscribeFromItemsLayoutPropertyChanged()
-		{
-			if (_currentItemsLayout is not null && _itemsLayoutPropertyChangedHandler is not null)
-			{
-				_currentItemsLayout.PropertyChanged -= _itemsLayoutPropertyChangedHandler;
-				_currentItemsLayout = null;
+						UpdateLayout();
+					}
+				};
 			}
 		}
 	}
