@@ -265,15 +265,25 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{
-			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
-			if (ignoreSafeArea)
+			// Check if platform-specific API has been explicitly set by the user
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (IsSet(PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty))
 			{
-				return SafeAreaRegions.None; // If legacy says "ignore", return None (edge-to-edge)
+				// If the user has explicitly set UseSafeArea, respect that setting
+				var useSafeArea = On<PlatformConfiguration.iOS>().UsingSafeArea();
+#pragma warning restore CS0618 // Type or member is obsolete
+				if (useSafeArea)
+				{
+					return SafeAreaRegions.All; // User explicitly wants safe area - obey all insets
+				}
+				else
+				{
+					return SafeAreaRegions.None; // User explicitly disabled safe area - edge-to-edge
+				}
 			}
-			else
-			{
-				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
-			}
+			
+			// Default to None (edge-to-edge) when user hasn't set any value
+			return SafeAreaRegions.None;
 		}
 
 		/// <summary>

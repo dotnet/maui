@@ -183,23 +183,28 @@ namespace Microsoft.Maui.Controls
 
 			#if IOS || MACCATALYST
 
-			// Developer hasn't set SafeAreaEdges, fall back to legacy IgnoreSafeArea behavior
-			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
-			if (ignoreSafeArea)
+			// Check if platform-specific API has been explicitly set by the user
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (IsSet(PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty))
 			{
-				return SafeAreaRegions.None; // If legacy says "ignore", return None (edge-to-edge)
+				// If the user has explicitly set UseSafeArea, respect that setting
+				var useSafeArea = On<PlatformConfiguration.iOS>().UsingSafeArea();
+#pragma warning restore CS0618 // Type or member is obsolete
+				if (useSafeArea)
+				{
+					return SafeAreaRegions.All; // User explicitly wants safe area - obey all insets
+				}
+				else
+				{
+					return SafeAreaRegions.None; // User explicitly disabled safe area - edge-to-edge
+				}
 			}
-			else
-			{
-				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
-			}
-
-			#else
-			
-			// By default on android it was never edge to edge so we set this to container by default
-			return SafeAreaRegions.Container;
 
 			#endif
+			
+			// Default to None (edge-to-edge) when user hasn't set any value
+			// This ensures consistent behavior across iOS, Android, and Mac Catalyst
+			return SafeAreaRegions.None;
 		}
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()

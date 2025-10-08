@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
-			return SafeAreaEdges.Container;
+			return SafeAreaEdges.None;
 		}
 
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
