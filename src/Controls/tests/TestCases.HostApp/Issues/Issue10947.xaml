@@ -7,8 +7,7 @@
              Title="Issue10947">
 
     <ContentPage.Resources>
-        <x:Array x:Key="stringArray"
-                Type="{x:Type x:String}">
+        <x:Array x:Key="stringArray" Type="{x:Type x:String}">
             <x:String>First Item</x:String>
             <x:String>Second Item</x:String>
             <x:String>Third Item</x:String>
@@ -18,8 +17,6 @@
         </x:Array>
     </ContentPage.Resources>
     <Grid>
-
-
         <CollectionView x:Name="CollectionView1"
                 ItemsSource="{StaticResource stringArray}"
                 Background="aliceblue">
