@@ -523,7 +523,7 @@ namespace Microsoft.Maui.Controls
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
-			return SafeAreaEdges.None;
+			return SafeAreaEdges.Default;
 		}
 
 		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>

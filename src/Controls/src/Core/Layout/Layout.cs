@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls
 
 		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
 		{
-			return SafeAreaEdges.None;
+			return SafeAreaEdges.Container;
 		}
 
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls
 				}
 #pragma warning restore CS0618 // Type or member is obsolete
 
-				return SafeAreaRegions.None;
+				return SafeAreaRegions.Container;
 			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
