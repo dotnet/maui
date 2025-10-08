@@ -267,6 +267,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = true;
+				
+				// Notify VoiceOver that the picker popup has appeared
+				if (sender is MauiPicker platformView && platformView.InputView != null)
+				{
+					platformView.PostAccessibilityFocusNotification(platformView.InputView);
+				}
 #if MACCATALYST
 				if (Handler is not PickerHandler handler)
 					return;
@@ -286,8 +292,17 @@ namespace Microsoft.Maui.Handlers
 				{
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}
+
 				if (VirtualView is IPicker virtualView)
+				{
 					virtualView.IsFocused = false;
+				}
+				
+				// Restore VoiceOver focus to the picker field when the popup closes
+				if (sender is MauiPicker platformView)
+				{
+					platformView.PostAccessibilityFocusNotification();
+				}
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
