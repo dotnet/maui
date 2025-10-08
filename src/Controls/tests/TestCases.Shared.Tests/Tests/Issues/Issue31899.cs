@@ -23,7 +23,7 @@ public class Issue31899 : _IssuesUITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS		// More Info - https://github.com/dotnet/maui/issues/31911
-	[Test, Order(1)]
+	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void AddHeaderFooterAtRuntime()
 	{
