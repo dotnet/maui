@@ -201,14 +201,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			nfloat headerHeight = 0;
 			var headerView = CollectionView.ViewWithTag(HeaderTag);
 
-			// Only use header height if ItemsView actually has a header
 			if (headerView != null)
 				headerHeight = headerView.Frame.Height;
 
 			nfloat footerHeight = 0;
 			var footerView = CollectionView.ViewWithTag(FooterTag);
 
-			// Only use footer height if ItemsView actually has a footer
 			if (footerView != null)
 				footerHeight = footerView.Frame.Height;
 
