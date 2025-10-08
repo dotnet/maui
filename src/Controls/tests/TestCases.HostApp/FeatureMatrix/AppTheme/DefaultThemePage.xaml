@@ -5,6 +5,15 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              Title="DefaultThemePage">
 
+       <ContentPage.Resources>
+              <ResourceDictionary>
+                     <ResourceDictionary.MergedDictionaries>
+                            <ResourceDictionary Source="Styles/Colors.xaml"/>
+                            <ResourceDictionary Source="Styles/Styles.xaml"/>
+                     </ResourceDictionary.MergedDictionaries>
+              </ResourceDictionary>
+       </ContentPage.Resources>
+
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="AppThemePage"
                            Clicked="OnNavigateToAppThemePageClicked"
@@ -155,6 +164,7 @@
                      <Picker AutomationId="Picker"
                              x:Name="picker"
                              SelectedIndex="4"
+                             Title="Select a monkey"
                              WidthRequest="200">
                             <Picker.ItemsSource>
                                    <x:Array Type="{x:Type x:String}">
