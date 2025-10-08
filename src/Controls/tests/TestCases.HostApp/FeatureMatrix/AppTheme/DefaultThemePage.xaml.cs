@@ -13,6 +13,7 @@ public partial class DefaultMainThemePage : ContentPage
     public DefaultMainThemePage()
     {
         InitializeComponent();
+        this.SetAppThemeColor(BackgroundColorProperty, Colors.White, Colors.Black);
     }
 
     public async void OnNavigateToAppThemePageClicked(object sender, EventArgs e)
