@@ -26,14 +26,12 @@ public class Issue10947 : _IssuesUITest
 
 		App.Tap(HeaderEntry);
 
-		var newHeaderEntry = App.WaitForElement(HeaderEntry);
-		var newHeaderLocation = newHeaderEntry.GetRect();
+		var newHeaderLocation = headerEntry.GetRect();
 		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
 		App.Tap(FooterEntry);
 
-		var newFooterEntry = App.WaitForElement(FooterEntry);
-		var newFooterLocation = newFooterEntry.GetRect();
+		var newFooterLocation = footerEntry.GetRect();
 
 		ClassicAssert.AreEqual(footerLocation, newFooterLocation);
 	}
