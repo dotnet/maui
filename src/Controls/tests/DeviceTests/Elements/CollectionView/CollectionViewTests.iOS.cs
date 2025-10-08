@@ -251,38 +251,38 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 
-		[Fact(DisplayName = "CollectionView Unsubscribes From ItemsLayout PropertyChanged")]
-		public async Task CollectionViewUnsubscribesFromItemsLayoutPropertyChanged()
+		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
+		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
 		{
 			SetupBuilder();
 
-			var collectionView = new CollectionView
-			{
-				ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
-				ItemTemplate = new DataTemplate(() => new Label()),
-				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
-			};
+			WeakReference weakCollectionView = null;
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
+				var collectionView = new CollectionView
+				{
+					ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
+					ItemTemplate = new DataTemplate(() => new Label())
+					// Note: Not setting ItemsLayout - using the default
+				};
+
+				weakCollectionView = new WeakReference(collectionView);
+
+				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				
 				// Verify handler is created
 				Assert.NotNull(handler);
 				
-				// Change the ItemsLayout to trigger a new subscription
-				var newLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
-				collectionView.ItemsLayout = newLayout;
-				
-				// Give the handler time to process the change
-				await Task.Delay(100);
-				
-				// Disconnect the handler - this should unsubscribe from the ItemsLayout
+				// Disconnect the handler
 				((IElementHandler)handler).DisconnectHandler();
-				
-				// Verify that changing the ItemsLayout properties doesn't cause issues after disconnect
-				// If the handler is not properly unsubscribed, this could cause a crash or memory leak
-				newLayout.SnapPointsAlignment = SnapPointsAlignment.End;
-				newLayout.SnapPointsType = SnapPointsType.Mandatory;
 			});
+
+			// Force garbage collection
+			await AssertionExtensions.WaitForGC(weakCollectionView);
+
+			// Verify the CollectionView was collected
+			Assert.False(weakCollectionView.IsAlive, "CollectionView should have been garbage collected");
 		}
 
 		/// <summary>
