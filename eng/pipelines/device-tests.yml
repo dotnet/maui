@@ -176,7 +176,7 @@ stages:
         agentPoolAccessToken: $(AgentPoolAccessToken)
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-          androidApiLevels: [ 36, 35, 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
+          androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
           iosVersions: [ 'simulator-18.0' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
