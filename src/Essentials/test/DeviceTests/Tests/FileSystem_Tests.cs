@@ -57,5 +57,18 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			File.Delete(filePath);
 		}
 #endif
+
+
+#if WINDOWS
+		[Fact]
+		public async Task EnsureFileResultContentType()
+		{
+			string filePath = Path.Combine(FileSystem.CacheDirectory, "test.webp");
+			await File.WriteAllTextAsync(filePath, "File Content type is image/webp");
+			FileResult fileResult = new FileResult(filePath);
+			Assert.Equal("image/webp", fileResult.ContentType);
+			File.Delete(filePath);
+		}
+#endif
 	}
 }
