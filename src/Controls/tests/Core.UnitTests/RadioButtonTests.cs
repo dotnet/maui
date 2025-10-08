@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(reference.IsAlive, "RadioButton should not be alive");
 
 		}
-		
+
 		[Fact]
 		public void GroupNullSelectionClearsAnySelection()
 		{

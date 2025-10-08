@@ -583,7 +583,7 @@ namespace Microsoft.Maui.DeviceTests
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
-				context.FromPixels(platformView.MeasuredWidth- (platformView.PaddingLeft + platformView.PaddingRight)),
+				context.FromPixels(platformView.MeasuredWidth - (platformView.PaddingLeft + platformView.PaddingRight)),
 				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 

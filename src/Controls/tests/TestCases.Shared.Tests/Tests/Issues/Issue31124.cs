@@ -19,7 +19,7 @@ public class Issue31124 : _IssuesUITest
 	{
 		// Find the initial date label text, should show today's date
 		var initialDateLabel = App.WaitForElement("DateLabel").GetText();
-		Assert.That(ContainsValidDate(initialDateLabel), Is.True, 
+		Assert.That(ContainsValidDate(initialDateLabel), Is.True,
 			"DatePicker should initially show today's date");
 
 		// Click the button to set date to null
@@ -30,7 +30,7 @@ public class Issue31124 : _IssuesUITest
 		Assert.That(ContainsValidDate(dateAfterNull), Is.False,
 			"DatePicker should be empty after being set to null");
 	}
-	
+
 	static bool IsValidDate(string? input)
 	{
 		return !string.IsNullOrWhiteSpace(input) && DateTime.TryParse(input, out _);
@@ -40,7 +40,7 @@ public class Issue31124 : _IssuesUITest
 	{
 		if (string.IsNullOrWhiteSpace(labelText))
 			return false;
-    
+
 		// Extract the date part after "Current Date: "
 		var prefix = "Current Date: ";
 		if (labelText.StartsWith(prefix))
@@ -48,7 +48,7 @@ public class Issue31124 : _IssuesUITest
 			var datePart = labelText.Substring(prefix.Length);
 			return IsValidDate(datePart);
 		}
-    
+
 		return false;
 	}
 }
