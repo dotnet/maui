@@ -33,7 +33,47 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSemantics(this UIView platformView, IView view) =>
 			UpdateSemantics(platformView, view?.Semantics);
+		
+		/// <summary>
+		/// Posts a VoiceOver screen changed notification to return focus to the specified view.
+		/// This is typically used when an input view is dismissed and focus should return to the original control.
+		/// </summary>
+		/// <param name="platformView">The platform view that should receive focus</param>
+		internal static void PostAccessibilityFocusNotification(this UIView platformView)
+		{
+			// TODO: Make public for .NET 11.
+			
+			if (UIAccessibility.IsVoiceOverRunning)
+			{
+				UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, platformView);
+			}
+		}
+		
+		/// <summary>
+		/// Posts a VoiceOver screen changed notification for an input view when it becomes visible.
+		/// This ensures VoiceOver shifts focus to the input view (e.g., UIPickerView, UIDatePicker) when it appears.
+		/// </summary>
+		/// <param name="platformView">The platform view that hosts the input view</param>
+		/// <param name="inputView">The input view that should receive focus</param>
+		internal static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
+		{
+			// TODO: Make public for .NET 11.
+			
+			if (inputView == null)
+			{
+				return;
+			}
 
+			// Post notification with a delay to ensure the InputView is fully displayed in the window hierarchy
+			platformView.BeginInvokeOnMainThread(() =>
+			{
+				if (UIAccessibility.IsVoiceOverRunning && inputView.Window is not null)
+				{
+					UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, inputView);
+				}
+			});
+		}
+		
 		internal static void UpdateSemantics(this UIView platformView, Semantics? semantics)
 		{
 			if (semantics == null)

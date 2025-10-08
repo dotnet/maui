@@ -101,13 +101,26 @@ namespace Microsoft.Maui.Handlers
 		static void OnStarted(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = true;
+				
+				// Notify VoiceOver that the date picker popup has appeared
+				if (datePickerHandler.PlatformView?.InputView is not null)
+				{
+					datePickerHandler.PlatformView.PostAccessibilityFocusNotification(datePickerHandler.PlatformView.InputView);
+				}
+			}
 		}
 
 		static void OnEnded(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = false;
+				
+				// Restore VoiceOver focus to the date picker field when the popup closes
+				datePickerHandler.PlatformView?.PostAccessibilityFocusNotification();
+			}
 		}
 
 		static void OnDoneClicked(object? sender)
