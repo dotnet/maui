@@ -187,11 +187,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="ItemsLayout"/>.</summary>
 		public static readonly BindableProperty ItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
-				null, defaultValueCreator: (b) => new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
-				{
-					SnapPointsType = SnapPointsType.MandatorySingle,
-					SnapPointsAlignment = SnapPointsAlignment.Center
-				});
+				null, defaultValueCreator: (b) => LinearItemsLayout.CreateCarouselHorizontalDefault());
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='ItemsLayout']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(CarouselLayoutTypeConverter))]
