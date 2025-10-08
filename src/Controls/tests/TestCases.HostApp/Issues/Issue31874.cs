@@ -6,6 +6,9 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 31874, "Incorrect Intermediate CurrentItem updates with CarouselView Scroll Animation Enabled", PlatformAffected.Android)]
 public class Issue31874 : ContentPage
 {
+	const string InitialItem = "0";
+	const string TargetItem = "4";
+	
 	Label resultStatus;
 	Label selectedItemLabel;
 	CarouselView carouselView;
@@ -37,20 +40,20 @@ public class Issue31874 : ContentPage
 
 		selectedItemLabel = new Label
 		{
-			Text = "Selected Item : 0",
+			Text = $"Selected Item : {InitialItem}",
 			FontSize = 16
 		};
 
 		Button selectButton = new Button
 		{
 			AutomationId = "Issue31874ScrollBtn",
-			Text = "Select item 4",
+			Text = $"Select item {TargetItem}",
 			FontSize = 12
 		};
 		
 		selectButton.Clicked += (s, e) => 
 		{
-			carouselView.CurrentItem = "4";
+			carouselView.CurrentItem = TargetItem;
 			selectedItemLabel.Text = $"Selected Item : {carouselView.CurrentItem}";
 		};
 
@@ -80,8 +83,8 @@ public class Issue31874 : ContentPage
 		{
 			var currentItemValue = carouselView.CurrentItem?.ToString();
 
-			if (!string.IsNullOrEmpty(currentItemValue) && currentItemValue != "0" &&
-			    currentItemValue != "4")
+			if (!string.IsNullOrEmpty(currentItemValue) && currentItemValue != InitialItem &&
+			    currentItemValue != TargetItem)
 			{
 				resultStatus.Text = "Failure";
 			}
