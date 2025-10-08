@@ -247,8 +247,17 @@
                              IsToggled="True"/>
               </HorizontalStackLayout>
 
-              <!-- TimePicker -->
+              <!-- TitleBar -->
               <HorizontalStackLayout Grid.Row="11"
+                                     Grid.Column="1"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="TitleBar: "
+                            VerticalOptions="Center"/>
+                     <TitleBar Title="My App"/>
+              </HorizontalStackLayout>
+
+              <!-- TimePicker -->
+              <HorizontalStackLayout Grid.Row="12"
                                      Grid.Column="1"
                                      IsVisible="False">
                      <Label Text="TimePicker: "
@@ -256,15 +265,6 @@
                      <TimePicker AutomationId="TimePicker"
                                  Format="HH:mm tt"
                                  Time="4:00"/>
-              </HorizontalStackLayout>
-
-              <!-- TitleBar -->
-              <HorizontalStackLayout Grid.Row="12"
-                                     Grid.Column="0"
-                                     Grid.ColumnSpan="2">
-                     <Label Text="TitleBar: "
-                            VerticalOptions="Center"/>
-                     <TitleBar Title="My App"/>
               </HorizontalStackLayout>
        </Grid>
 </ContentPage>

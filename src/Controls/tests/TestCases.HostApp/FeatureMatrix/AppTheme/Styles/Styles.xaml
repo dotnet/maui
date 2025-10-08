@@ -27,20 +27,6 @@
                         Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}"/>
                 <Setter Property="BackgroundColor"
                         Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
-                <Setter Property="BorderWidth"
-                        Value="0"/>
-                <Setter Property="CornerRadius"
-                        Value="8"/>
-                <Setter Property="Padding"
-                        Value="14,10"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -62,10 +48,6 @@
         <Style TargetType="CheckBox">
                 <Setter Property="Color"
                         Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -86,14 +68,6 @@
                         Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -114,16 +88,8 @@
                         Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
                 <Setter Property="PlaceholderColor"
                         Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -144,16 +110,8 @@
                         Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
                 <Setter Property="PlaceholderColor"
                         Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -174,14 +132,6 @@
                         Value="1"/>
                 <Setter Property="BorderColor"
                         Value="Transparent"/>
-                <Setter Property="BorderWidth"
-                        Value="0"/>
-                <Setter Property="CornerRadius"
-                        Value="0"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -203,10 +153,6 @@
                         Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -222,30 +168,6 @@
                 </Setter>
         </Style>
 
-        <Style TargetType="Label"
-               x:Key="Headline">
-                <Setter Property="TextColor"
-                        Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}"/>
-                <Setter Property="FontSize"
-                        Value="32"/>
-                <Setter Property="HorizontalOptions"
-                        Value="Center"/>
-                <Setter Property="HorizontalTextAlignment"
-                        Value="Center"/>
-        </Style>
-
-        <Style TargetType="Label"
-               x:Key="SubHeadline">
-                <Setter Property="TextColor"
-                        Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}"/>
-                <Setter Property="FontSize"
-                        Value="24"/>
-                <Setter Property="HorizontalOptions"
-                        Value="Center"/>
-                <Setter Property="HorizontalTextAlignment"
-                        Value="Center"/>
-        </Style>
-
         <Style TargetType="Picker">
                 <Setter Property="TextColor"
                         Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
@@ -253,14 +175,6 @@
                         Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -301,14 +215,6 @@
                         Value="Transparent"/>
                 <Setter Property="TextColor"
                         Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -357,14 +263,6 @@
                         Value="{StaticResource Gray500}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -389,10 +287,6 @@
                         Value="{StaticResource Gray500}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -439,10 +333,6 @@
         <Style TargetType="Stepper">
                 <Setter Property="BackgroundColor"
                         Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray800}}"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -499,14 +389,6 @@
                         Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                 <Setter Property="BackgroundColor"
                         Value="Transparent"/>
-                <Setter Property="FontFamily"
-                        Value="OpenSansRegular"/>
-                <Setter Property="FontSize"
-                        Value="14"/>
-                <Setter Property="MinimumHeightRequest"
-                        Value="44"/>
-                <Setter Property="MinimumWidthRequest"
-                        Value="44"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -523,15 +405,17 @@
         </Style>
 
         <Style TargetType="TitleBar">
-                <Setter Property="MinimumHeightRequest"
-                        Value="32"/>
+                <Setter Property="BackgroundColor"
+                        Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}"/>
+                <Setter Property="ForegroundColor"
+                        Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                         <VisualStateGroupList>
                                 <VisualStateGroup x:Name="TitleActiveStates">
                                         <VisualState x:Name="TitleBarTitleActive">
                                                 <VisualState.Setters>
                                                         <Setter Property="BackgroundColor"
-                                                                Value="Transparent"/>
+                                                                Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}"/>
                                                         <Setter Property="ForegroundColor"
                                                                 Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
                                                 </VisualState.Setters>
@@ -539,7 +423,7 @@
                                         <VisualState x:Name="TitleBarTitleInactive">
                                                 <VisualState.Setters>
                                                         <Setter Property="BackgroundColor"
-                                                                Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}"/>
+                                                                Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"/>
                                                         <Setter Property="ForegroundColor"
                                                                 Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"/>
                                                 </VisualState.Setters>
