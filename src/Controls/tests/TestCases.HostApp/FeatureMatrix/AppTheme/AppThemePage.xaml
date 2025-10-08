@@ -283,9 +283,21 @@
                              ThumbColor="{AppThemeBinding Light=Black, Dark=White}"/>
               </HorizontalStackLayout>
 
-              <!-- TimePicker -->
+              <!-- TitleBar -->
               <HorizontalStackLayout Grid.Row="11"
                                      Grid.Column="1"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="TitleBar: "
+                            VerticalOptions="Center"/>
+                     <TitleBar BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                               ForegroundColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                               Title="My App"
+                               WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- TimePicker -->
+              <HorizontalStackLayout Grid.Row="12"
+                                     Grid.Column="0"
                                      IsVisible="False">
                      <Label Text="TimePicker: "
                             VerticalOptions="Center"/>
@@ -294,17 +306,6 @@
                                  BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
                                  Format="HH:mm tt"
                                  Time="4:00"/>
-              </HorizontalStackLayout>
-
-              <!-- TitleBar -->
-              <HorizontalStackLayout Grid.Row="12"
-                                     Grid.Column="0"
-                                     Grid.ColumnSpan="2">
-                     <Label Text="TitleBar: "
-                            VerticalOptions="Center"/>
-                     <TitleBar BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
-                               Title="My App"
-                               ForegroundColor="{AppThemeBinding Light=Blue, Dark=Red}"/>
               </HorizontalStackLayout>
        </Grid>
 </ContentPage>
