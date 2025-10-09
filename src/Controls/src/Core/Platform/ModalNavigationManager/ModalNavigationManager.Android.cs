@@ -312,13 +312,6 @@ namespace Microsoft.Maui.Controls.Platform
 				var rootView = _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
 
-				var context = rootView.Context ?? inflater.Context;
-				if (context is not null)
-				{
-					// MauiCoordinatorLayout already installed its own GlobalWindowInsetListener.
-					// If future modal-specific behavior is required, adapt the layout's listener instead of replacing it.
-				}
-
 				if (IsAnimated)
 				{
 					_ = new GenericGlobalLayoutListener((listener, view) =>
@@ -372,9 +365,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_modal.Toolbar.Handler = null;
 				}
-
-				// No special cleanup needed for a replaced listener; MauiCoordinatorLayout listener stays alive
-				// until the layout itself is GC'd.
 
 				_modal.Handler = null;
 				_modal = null!;

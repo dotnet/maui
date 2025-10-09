@@ -9,6 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_page = ((IShellContentController)_shellContent).GetOrCreateContent();
 			}
 
-			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
+			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<MauiCoordinatorLayout>();
 
 			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
@@ -144,7 +145,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
 
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_root, this.Context);
+			// No need to call TrySetGlobalWindowInsetListener since MauiCoordinatorLayout 
+			// automatically registers itself and its listener in the static registry
 
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
