@@ -68,8 +68,7 @@ namespace Microsoft.Maui.Handlers
 
 					}
 				}
-				if (handler.PlatformView != null)
-					handler.PlatformView.Configuration = config;
+				handler.PlatformView?.Configuration = config;
 			}
 			else
 			{
@@ -109,8 +108,7 @@ namespace Microsoft.Maui.Handlers
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.TextColor != null && handler.PlatformView != null)
 					config.BaseForegroundColor = button?.TextColor.ToPlatform();
-				if (handler.PlatformView != null)
-					handler.PlatformView.Configuration = config;
+				handler.PlatformView?.Configuration = config;
 			}
 			else
 			{

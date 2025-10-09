@@ -69,11 +69,8 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				tcs.TrySetResult(e.Result == MFMailComposeResult.Sent);
 			};
 
-			if (controller.PresentationController != null)
-			{
-				controller.PresentationController.Delegate =
+			controller.PresentationController?.Delegate =
 					new UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
-			}
 
 			parentController.PresentViewController(controller, true, null);
 
