@@ -15,6 +15,8 @@ using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
+using Google.Android.Material.AppBar;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -99,21 +101,45 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
 
 			var context = Context;
-			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
-			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(root, this.Context);
+			var root = new MauiCoordinatorLayout(context);
+
+			// Create AppBarLayout directly instead of using PlatformInterop
+			var appbar = new AppBarLayout(context, null, Resource.Attribute.appBarLayoutStyle);
+			appbar.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+			root.AddView(appbar);
+
 			int actionBarHeight = context.GetActionBarHeight();
 
 			var shellToolbar = new Toolbar(shellSection);
 			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, shellToolbar);
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
 			appbar.AddView(_toolbar);
-			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
+
+			// Create TabLayout directly instead of using PlatformInterop
+			_tablayout = new TabLayout(context);
+			var layoutParams = new AppBarLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, actionBarHeight);
+			layoutParams.Gravity = GravityFlags.Bottom;
+			_tablayout.LayoutParameters = layoutParams;
+			_tablayout.TabMode = TabLayout.ModeScrollable;
+			appbar.AddView(_tablayout);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 			var adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
 			var pageChangedCallback = new ViewPagerPageChanged(this);
-			_viewPager = PlatformInterop.CreateShellViewPager(context, root, _tablayout, this, adapter, pageChangedCallback);
+
+			// Create ViewPager2 directly instead of using PlatformInterop
+			_viewPager = new ViewPager2(context);
+			var viewPagerLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+			viewPagerLayoutParams.Behavior = new AppBarLayout.ScrollingViewBehavior();
+			_viewPager.OverScrollMode = OverScrollMode.Never;
+			_viewPager.Id = AView.GenerateViewId();
+			_viewPager.LayoutParameters = viewPagerLayoutParams;
+			_viewPager.Adapter = adapter;
+			_viewPager.RegisterOnPageChangeCallback(pageChangedCallback);
+			root.AddView(_viewPager);
+
+			// Create TabLayoutMediator to connect TabLayout with ViewPager2
+			new TabLayoutMediator(_tablayout, _viewPager, this).Attach();
 
 			Page currentPage = null;
 			int currentIndex = -1;

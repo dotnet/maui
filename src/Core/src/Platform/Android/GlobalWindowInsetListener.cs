@@ -311,11 +311,9 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <param name="context">The Android context to get the listener from</param>
     public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
     {
-        // First check if this view is contained within a MauiCoordinatorLayout that has its own listener.
-        // This lets individual CoordinatorLayout hierarchies manage insets independently.
-        if (view.FindParent(p => p is MauiCoordinatorLayout) is MauiCoordinatorLayout localLayout)
+        // First check if this view is contained within a MauiCoordinatorLayout using the static registry
+        if (MauiCoordinatorLayout.FindListenerForView(view) is GlobalWindowInsetListener localListener)
         {
-            var localListener = localLayout.WindowInsetListener;
             ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
             ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
             return true;
@@ -351,9 +349,9 @@ internal static class GlobalWindowInsetListenerExtensions
     public static void RemoveGlobalWindowInsetListener(this View view, Context context)
     {
         // Prefer removing from a local MauiCoordinatorLayout listener if present.
-        if (view.FindParent(p => p is MauiCoordinatorLayout) is MauiCoordinatorLayout localLayout)
+        if (MauiCoordinatorLayout.FindListenerForView(view) is GlobalWindowInsetListener localListener)
         {
-            localLayout.WindowInsetListener.ResetView(view);
+            localListener.ResetView(view);
             ViewCompat.SetOnApplyWindowInsetsListener(view, null);
             ViewCompat.SetWindowInsetsAnimationCallback(view, null);
             return;

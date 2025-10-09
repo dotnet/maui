@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Views;
 using AndroidX.Core.View;
+using Microsoft.Maui.Platform;
 using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -260,27 +261,33 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			
-			if (handler.MauiContext?.Context is null || handler.PlatformView is not PlatformView platformView)
+
+			if (handler.MauiContext?.Context is null || handler.PlatformView is not View platformView)
 			{
 				return;
 			}
 
-			switch (platformView)
+			// Use our static registry approach to find and reset the appropriate listener
+			var listener = MauiCoordinatorLayout.FindListenerForView(platformView) ??
+						   handler.MauiContext.Context.GetGlobalWindowInsetListener();
+
+			// Check for specific view group types that handle safe area
+			if (handler.PlatformView is ContentViewGroup cvg)
 			{
-				case ContentViewGroup cvg:
-        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(cvg);
-					cvg.MarkSafeAreaEdgeConfigurationChanged();
-					break;
-				case LayoutViewGroup lvg:
-        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(lvg);
-					lvg.MarkSafeAreaEdgeConfigurationChanged();
-					break;
-				case MauiScrollView msv:
-        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(msv);
-					msv.MarkSafeAreaEdgeConfigurationChanged();
-					break;
+				listener?.ResetAppliedSafeAreas(cvg);
+				cvg.MarkSafeAreaEdgeConfigurationChanged();
 			}
+			else if (handler.PlatformView is LayoutViewGroup lvg)
+			{
+				listener?.ResetAppliedSafeAreas(lvg);
+				lvg.MarkSafeAreaEdgeConfigurationChanged();
+			}
+			else if (handler.PlatformView is MauiScrollView msv)
+			{
+				listener?.ResetAppliedSafeAreas(msv);
+				msv.MarkSafeAreaEdgeConfigurationChanged();
+			}
+
 			view.InvalidateMeasure();
 		}
 	}
