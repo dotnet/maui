@@ -194,8 +194,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 					$"--launch-timeout={launchTimeout} " +
 					xcode_args +
 					$"--verbosity=\"Debug\" " +
-					$"--set-env=\"TestFilter={category}\" " +
-					$"--device=\"iPhone 16\"");
+					$"--set-env=\"TestFilter={category}\" ");
 
 				if (device.Contains("device"))
 				{
