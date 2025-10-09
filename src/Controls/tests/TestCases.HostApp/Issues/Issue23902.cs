@@ -1,7 +1,7 @@
 namespace Controls.TestCases.HostApp.Issues;
 
 [Issue(IssueTracker.Github, 23902, "NavigationPage and FlyoutPage both call OnNavigatedTo, so it is called twice", PlatformAffected.Android)]
-public partial class Issue23902FlyoutPage : FlyoutPage
+public class Issue23902FlyoutPage : FlyoutPage
 {
 	public Issue23902FlyoutPage()
 	{
