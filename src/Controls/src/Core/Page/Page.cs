@@ -770,8 +770,11 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
-			if(HasNavigatedTo)
+			if (HasNavigatedTo)
+			{
 				return;
+			}
+			
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
