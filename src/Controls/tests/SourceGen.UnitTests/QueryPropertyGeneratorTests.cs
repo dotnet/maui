@@ -448,4 +448,35 @@ namespace MyApp
 		Assert.That(generatedSource, Does.Contain("else if (previousKeys.Contains(\"name\"))"));
 		Assert.That(generatedSource, Does.Contain("private HashSet<string>? _queryPropertyKeys"));
 	}
+
+	[Test]
+	public void ViewCompleteGeneratedSource()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	[QueryProperty(nameof(Age), ""age"")]
+	public partial class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+		public int Age { get; set; }
+	}
+}";
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
+
+		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+
+		Assert.That(result.Diagnostics, Is.Empty);
+		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
+		
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		System.Console.WriteLine("===== GENERATED SOURCE =====");
+		System.Console.WriteLine(generatedSource);
+		System.Console.WriteLine("===========================");
+	}
 }
