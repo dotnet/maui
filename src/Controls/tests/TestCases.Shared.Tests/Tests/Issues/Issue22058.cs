@@ -15,13 +15,13 @@ public class Issue22058 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.TitleView)]
-	public void VerifyTitleBarBackgroundColorChange()
+	public async Task VerifyTitleBarBackgroundColorChange()
 	{
 		try
 		{
 			App.WaitForElement("ThemeChangeButton");
 			App.Tap("ThemeChangeButton");
-			Thread.Sleep(1000); // Slight delay to apply the theme change
+			await Task.Delay(1000); // Slight delay to apply the theme change
 			VerifyScreenshot(includeTitleBar: true);
 		}
 		finally
@@ -32,13 +32,13 @@ public class Issue22058 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.TitleView)]
-	public void VerifyTimePickerTheme()
+	public async Task VerifyTimePickerTheme()
 	{
 		try
 		{
 			App.WaitForElement("ThemeChangeButton");
 			App.Tap("ThemeChangeButton");
-			Thread.Sleep(1000); // Slight delay to apply the theme change
+			await Task.Delay(1000); // Slight delay to apply the theme change
 
 #if WINDOWS // TimePicker pop up is only supported on Windows
 			App.Tap("TimePickerControl");
