@@ -67,10 +67,11 @@ public class EditorFeatureTests : UITest
 #endif
 
 	[Test, Order(1)]
-	public void VerifyEditorFocusedEvent()
+	public async Task VerifyEditorFocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
+		await Task.Delay(100);
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
