@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ResetButton");
 		}
 
-		// ── Color tests (Order 1–3) ──
 
+		// ── Color tests (Order 1–3) ──
 		[Test, Order(1)]
 		public void BoxView_Color()
 		{
