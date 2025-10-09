@@ -34,11 +34,11 @@ namespace MyApp
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		// Check it implements IQueryAttributable
 		Assert.That(generatedSource, Does.Contain("partial class MyPage : Microsoft.Maui.Controls.IQueryAttributable"));
 		Assert.That(generatedSource, Does.Contain("void Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)"));
-		
+
 		// Check URL decoding for string
 		Assert.That(generatedSource, Does.Contain("global::System.Net.WebUtility.UrlDecode"));
 		Assert.That(generatedSource, Does.Contain("Name = global::System.Net.WebUtility.UrlDecode"));
@@ -70,7 +70,7 @@ namespace MyApp
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		// Check both properties are handled
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"name\", out var nameValue))"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"location\", out var locationValue))"));
@@ -102,11 +102,11 @@ namespace MyApp
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		// Check type conversion
 		Assert.That(generatedSource, Does.Contain("Convert.ChangeType"));
 		Assert.That(generatedSource, Does.Contain("Count = (int)convertedValue"));
-		
+
 		// Should not use URL decoding for non-string
 		Assert.That(generatedSource, Does.Not.Contain("Count = global::System.Net.WebUtility.UrlDecode"));
 	}
@@ -133,7 +133,7 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		Assert.That(generatedSource, Does.Contain("Convert.ChangeType"));
 		Assert.That(generatedSource, Does.Contain("Price = (double)convertedValue"));
 	}
@@ -160,7 +160,7 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		Assert.That(generatedSource, Does.Contain("Convert.ChangeType"));
 		Assert.That(generatedSource, Does.Contain("IsActive = (bool)convertedValue"));
 	}
@@ -191,10 +191,10 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		// String uses URL decode
 		Assert.That(generatedSource, Does.Contain("Name = global::System.Net.WebUtility.UrlDecode"));
-		
+
 		// Non-strings use Convert.ChangeType
 		Assert.That(generatedSource, Does.Contain("Age = (int)convertedValue"));
 		Assert.That(generatedSource, Does.Contain("Price = (double)convertedValue"));
@@ -266,7 +266,7 @@ namespace MyApp
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		Assert.That(generatedSource, Does.Contain("partial class BearDetailPage : Microsoft.Maui.Controls.IQueryAttributable"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"Bear\", out var BearValue))"));
 	}
@@ -311,7 +311,7 @@ namespace MyApp
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		Assert.That(generatedSource, Does.Contain("partial class ElephantDetailPage : Microsoft.Maui.Controls.IQueryAttributable"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"name\", out var nameValue))"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"location\", out var locationValue))"));
@@ -365,7 +365,7 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		Assert.That(generatedSource, Does.Contain("Name = global::System.Net.WebUtility.UrlDecode"));
 	}
 
@@ -391,7 +391,7 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		Assert.That(generatedSource, Does.Contain("Count = (int?)convertedValue"));
 	}
 
@@ -414,7 +414,7 @@ public partial class MyPage : ContentPage
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		// Should not have namespace declaration
 		Assert.That(generatedSource, Does.Not.Contain("namespace "));
 		Assert.That(generatedSource, Does.Contain("partial class MyPage : Microsoft.Maui.Controls.IQueryAttributable"));
@@ -442,7 +442,7 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		
+
 		// Check that it tracks previous keys and clears properties
 		Assert.That(generatedSource, Does.Contain("var previousKeys = _queryPropertyKeys ?? new HashSet<string>()"));
 		Assert.That(generatedSource, Does.Contain("_queryPropertyKeys = new HashSet<string>()"));
@@ -474,7 +474,7 @@ namespace MyApp
 
 		Assert.That(result.Diagnostics, Is.Empty);
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
-		
+
 		var generatedSource = result.GeneratedTrees[0].ToString();
 		System.Console.WriteLine("===== GENERATED SOURCE =====");
 		System.Console.WriteLine(generatedSource);
@@ -512,13 +512,13 @@ namespace MyApp
 		// Verify key aspects of the generated code
 		Assert.That(generatedSource, Does.Contain("partial class PersonDetailsPage : Microsoft.Maui.Controls.IQueryAttributable"));
 		Assert.That(generatedSource, Does.Contain("void Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)"));
-		
+
 		// Verify string handling with URL decoding
 		Assert.That(generatedSource, Does.Contain("global::System.Net.WebUtility.UrlDecode"));
-		
+
 		// Verify int handling with type conversion
 		Assert.That(generatedSource, Does.Contain("Convert.ChangeType"));
-		
+
 		// Verify property tracking for clearing
 		Assert.That(generatedSource, Does.Contain("_queryPropertyKeys"));
 	}
@@ -544,13 +544,13 @@ namespace MyApp
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
 		Assert.That(result.Diagnostics, Is.Empty);
-		
+
 		// Add the generated source to the compilation and verify it compiles
 		compilation = compilation.AddSyntaxTrees(result.GeneratedTrees[0]);
-		
+
 		var compilationDiagnostics = compilation.GetDiagnostics();
 		var errors = compilationDiagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).ToArray();
-		
+
 		Assert.That(errors, Is.Empty, $"Generated code should compile without errors. Errors: {string.Join(Environment.NewLine, errors.Select(e => e.ToString()))}");
 	}
 }
