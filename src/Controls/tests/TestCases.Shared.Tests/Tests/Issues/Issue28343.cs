@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ProgressSpinnerWorksWhenReEnabled()
 		{
 			App.WaitForElement("SetToEnabled").Tap();
-			App.ScrollUp("CollectionView");
+			App.ScrollUp("CollectionView", ScrollStrategy.Gesture, swipePercentage:0.99, swipeSpeed:2500);
 			App.WaitForElement("RefreshTriggered");
 		}
 	}
