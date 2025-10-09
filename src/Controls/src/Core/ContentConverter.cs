@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls
 
 		static ContentLabel ConvertToLabel(string textContent, ContentPresenter presenter)
 		{
+			// Use ContentLabel instead of Label to avoid interference from implicit Label styles
 			var label = new ContentLabel
 			{
 				Text = textContent
