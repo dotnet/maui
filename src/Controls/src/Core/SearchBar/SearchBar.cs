@@ -159,6 +159,22 @@ namespace Microsoft.Maui.Controls
 			SearchButtonPressed?.Invoke(this, EventArgs.Empty);
 		}
 
+		protected override void OnTextChanged(string oldValue, string newValue)
+		{
+			base.OnTextChanged(oldValue, newValue);
+
+			// Execute SearchCommand when text becomes empty to support filtering scenarios
+			// where clearing the search should show all results
+			if (!string.IsNullOrEmpty(oldValue) && string.IsNullOrEmpty(newValue))
+			{
+				ICommand cmd = SearchCommand;
+				if (cmd != null && cmd.CanExecute(SearchCommandParameter))
+				{
+					cmd.Execute(SearchCommandParameter);
+				}
+			}
+		}
+
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, SearchBar> On<T>() where T : IConfigPlatform
 		{
