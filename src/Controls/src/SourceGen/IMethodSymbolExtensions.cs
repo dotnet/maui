@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class IMethodSymbolExtensions
 {
-	public static bool MatchXArguments(this IMethodSymbol method, ElementNode enode, SourceGenContext context, System.Func<INode, ITypeSymbol, ILocalValue>? getNodeValue, out IList<(INode node, ITypeSymbol type, ITypeSymbol? converter)>? parameters)
+	public static bool MatchXArguments(this IMethodSymbol method, ElementNode enode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out IList<(INode node, ITypeSymbol type, ITypeSymbol? converter)>? parameters)
 	{
 		parameters = null;
 		if (!enode.Properties.TryGetValue(XmlName.xArguments, out INode? value))
@@ -38,7 +38,9 @@ static class IMethodSymbolExtensions
 			//     paramType = (declaringTypeRef as INamedTypeSymbol).TypeArguments[index];
 			// }
 
-			var argType = getNodeValue?.Invoke(nodeparameters[i], paramType)?.Type ?? context.Variables[nodeparameters[i]].Type;
+			ILocalValue? localVar = null;
+			tryGetNodeValue?.Invoke(nodeparameters[i], paramType, out localVar);
+			var argType = localVar?.Type ?? context.Variables[nodeparameters[i]].Type;
 			if (!argType.InheritsFrom(paramType, context))
 			{
 				parameters = null;

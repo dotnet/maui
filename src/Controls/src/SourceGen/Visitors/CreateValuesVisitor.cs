@@ -33,7 +33,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//At this point, all MarkupNodes are expanded to ElementNodes
 	}
 
-	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyCaches xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
+	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyCaches xmlnsCache, SourceGenContext Context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null)
 	{
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var type) || type is null)
 			return;
@@ -125,7 +125,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
 		{
 			ctor = type.InstanceConstructors.FirstOrDefault(c
-				=> c.MatchXArguments(node, Context, getNodeValue, out parameters));
+				=> c.MatchXArguments(node, Context, tryGetNodeValue, out parameters));
 			if (ctor is null)
 #pragma warning disable RS0030 // Do not use banned APIs
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), type.ToDisplayString()));
@@ -139,7 +139,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 			factoryMethod = type.GetAllMethods(factoryMehodName!, Context).FirstOrDefault(m =>
 					   m.IsStatic
-					&& m.MatchXArguments(node, Context, getNodeValue, out parameters));
+					&& m.MatchXArguments(node, Context, tryGetNodeValue, out parameters));
 			if (factoryMethod is null)
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, factoryMehodName!), factoryMehodName));
 		}

@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.SourceGen.ValueProviders;
 using Microsoft.Maui.Controls.Xaml;
 
 using static System.String;
@@ -14,7 +15,35 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 internal class KnownMarkups
 {
-	public static bool ProvideValueForStaticExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	static readonly Dictionary<Compilation, Dictionary<INamedTypeSymbol, Lazy<ISGValueProvider>>> KnownValueProviders = [];
+
+	static Dictionary<INamedTypeSymbol, Lazy<ISGValueProvider>> GetKnownValueProviders(Compilation compilation)
+	{
+		if (!KnownValueProviders.TryGetValue(compilation, out var providers))
+		{
+			providers = new Dictionary<INamedTypeSymbol, Lazy<ISGValueProvider>>(SymbolEqualityComparer.Default)
+			{
+				{ compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new Lazy<ISGValueProvider>(() => new SetterValueProvider()) },
+			};
+			KnownValueProviders[compilation] = providers;
+		}
+		return providers;
+	}
+
+	public static bool TryGetValueProvider(INamedTypeSymbol type, Compilation compilation, out ISGValueProvider? valueProvider)
+	{
+		var providers = GetKnownValueProviders(compilation);
+		if (providers.TryGetValue(type, out var lazyProvider))
+		{
+			valueProvider = lazyProvider.Value;
+			return true;
+		}
+		valueProvider = null;
+		return false;
+	}
+	
+
+	public static bool ProvideValueForStaticExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.ObjectType;
 		if (!markupNode.Properties.TryGetValue(new XmlName("", "Member"), out INode ntype)
@@ -101,7 +130,7 @@ internal class KnownMarkups
 		return typeSymbol;
 	}
 
-	public static bool ProvideValueForTypeExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForTypeExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("System.Type")!;
 		var typeSymbol = GetTypeFromTypeExtension(node, context);
@@ -116,48 +145,26 @@ internal class KnownMarkups
 		return true;
 	}
 
-	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+		=> FallbackProvideValue(new SetterValueProvider(), node, writer, context, getNodeValue, out returnType, out value);
+
+	static bool FallbackProvideValue(ISGValueProvider valueProvider, ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
-
-		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out INode? valueNode) &&
-			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
-			node.CollectionItems.Count == 1)
-			valueNode = node.CollectionItems[0];
-
-		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
-		var bpRef = bpNode.GetBindableProperty(context);
-		var bprefType = bpRef.GetBPTypeAndConverter(context)?.type;
-
-		string targetsetter;
-		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
-			targetsetter = $"TargetName = \"{((ValueNode)targetNode).Value}\", ";
-		else
-			targetsetter = "";
-
-		if (valueNode is ValueNode vn)
+		//temporary fallback, while we migrate to value providers
+		tryGetNodeValue ??= ((n, _, out localVar) => context.Variables.TryGetValue(n, out localVar));
+		if (valueProvider.CanProvideValue(node, context, tryGetNodeValue!))
 		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
+			var localValue = valueProvider.ProvideDirectValue(node, writer, context, tryGetNodeValue!);
+			value = localValue.ValueAccessor;
+			returnType = localValue.Type;
 			return true;
 		}
-		else if (getNodeValue != null)
-		{
-			var lvalue = getNodeValue(valueNode, bprefType!);
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
-			return true;
-		}
-		else if (context.Variables.TryGetValue(valueNode, out var variable))
-		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.ValueAccessor}}}";
-			return true;
-		}
-
 		value = string.Empty;
-		//FIXME context.ReportDiagnostic
+		returnType = context.Compilation.ObjectType;
 		return false;
 	}
 
-	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
 		string? key = null;
@@ -172,7 +179,7 @@ internal class KnownMarkups
 		return true;
 	}
 
-	internal static bool ProvideValueForStyleSheetExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForStyleSheetExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.StyleSheets.StyleSheet")!;
 
@@ -221,17 +228,17 @@ internal class KnownMarkups
 		}
 	}
 
-	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: true, getNodeValue, out returnType, out value);
+		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: true, tryGetNodeValue, out returnType, out value);
 	}
 
-	internal static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: false, getNodeValue, out returnType, out value);
+		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: false, tryGetNodeValue, out returnType, out value);
 	}
 
-	private static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, bool isTemplateBinding,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	private static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, bool isTemplateBinding,  NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
@@ -281,10 +288,16 @@ internal class KnownMarkups
 				return true;
 			}
 		}
-		else //this is newer sourcegen, dependency first
+		else //this is newer sourcegen, lazy order, dependency first
 		{
-			if (getNodeValue is null)
-				throw new ArgumentNullException(nameof(getNodeValue));
+			if (tryGetNodeValue is null)
+				throw new ArgumentNullException(nameof(tryGetNodeValue));
+
+			var getNodeValue = (INode n, ITypeSymbol type) =>
+			{
+				tryGetNodeValue(n, type, out var localVar);
+				return localVar!;
+			};
 
 			string path = "\".\"";
 			if (markupNode.Properties.TryGetValue(new XmlName(null, "Path"), out var pnode))
@@ -450,29 +463,21 @@ internal class KnownMarkups
 			// - continue looking for x:DataType on the parent's parent...
 			ElementNode? skipNode = null;
 			if (IsBindingContextBinding(elementNode))
-			{
 				skipNode = GetParent(elementNode);
-			}
 
 			ElementNode? node = elementNode;
 			while (node is not null)
 			{
 				if (node != skipNode && node.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
-				{
 					return true;
-				}
 
 				if (DoesNotInheritDataType(node, context))
-				{
 					return false;
-				}
 
 				// When the binding is inside of a DataTemplate and the x:DataType is in the parent scope,
 				// it is usually a bug.
 				if (node.RepresentsType(XamlParser.MauiUri, "DataTemplate"))
-				{
 					isInOuterScope = true;
-				}
 
 				node = GetParent(node);
 			}
@@ -510,7 +515,7 @@ internal class KnownMarkups
 		}
 	}
 
-	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		// should be possible to return the right value, as soon as we no longer use the namescope
 		returnType = context.Compilation.ObjectType;
@@ -547,11 +552,11 @@ internal class KnownMarkups
 	/// Provides value for AppThemeBindingExtension by generating an AppThemeBinding instance
 	/// with Light, Dark, and Default properties set based on the markup extension's properties.
 	/// </summary>
-	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.AppThemeBinding")!;
 
-		if (getNodeValue is null)
+		if (tryGetNodeValue is null)
 		{
 			// Fallback when we don't have getNodeValue - shouldn't happen in normal flow
 			value = string.Empty;
@@ -579,28 +584,28 @@ internal class KnownMarkups
 		string? defaultValue = null;
 
 		// Check for Default property (can be in CollectionItems as it's the ContentProperty)
-		if (node.Properties.TryGetValue(new XmlName("", "Default"), out INode? defaultNode)
+		if (   node.Properties.TryGetValue(new XmlName("", "Default"), out INode? defaultNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Default"), out defaultNode)
 			|| (node.CollectionItems.Count == 1 && (defaultNode = node.CollectionItems[0]) != null))
 		{
-			var defaultLocal = getNodeValue(defaultNode, propertyType);
-			defaultValue = defaultLocal.ValueAccessor;
+			tryGetNodeValue(defaultNode, propertyType, out var defaultLocal);
+			defaultValue = defaultLocal!.ValueAccessor;
 		}
 
 		// Check for Light property
-		if (node.Properties.TryGetValue(new XmlName("", "Light"), out INode? lightNode)
+		if (   node.Properties.TryGetValue(new XmlName("", "Light"), out INode? lightNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Light"), out lightNode))
 		{
-			var lightLocal = getNodeValue(lightNode, propertyType);
-			lightValue = lightLocal.ValueAccessor;
+			tryGetNodeValue(lightNode, propertyType, out var lightLocal);
+			lightValue = lightLocal!.ValueAccessor;
 		}
 
 		// Check for Dark property
-		if (node.Properties.TryGetValue(new XmlName("", "Dark"), out INode? darkNode)
+		if (   node.Properties.TryGetValue(new XmlName("", "Dark"), out INode? darkNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Dark"), out darkNode))
 		{
-			var darkLocal = getNodeValue(darkNode, propertyType);
-			darkValue = darkLocal.ValueAccessor;
+			tryGetNodeValue(darkNode, propertyType, out var darkLocal);
+			darkValue = darkLocal!.ValueAccessor;
 		}
 
 		// At least one value must be set
@@ -630,7 +635,7 @@ internal class KnownMarkups
 	}
 
 	//all of this could/should be better, but is already slightly better than XamlC
-	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		// If the resource is defined locally, we can return the value directly
 		var eNode = (node as ElementNode)!;
@@ -649,21 +654,20 @@ internal class KnownMarkups
 		}
 
 		var resource = GetResourceNode(eNode, context, (string)keyValueNode.Value);
-		if (resource != null && getNodeValue != null)
+		if (resource != null && tryGetNodeValue != null)
 		{
-			var lvalue = getNodeValue(resource, context.Compilation.ObjectType);
-			value = lvalue.ValueAccessor;
+			tryGetNodeValue(resource, context.Compilation.ObjectType, out var lvalue);
+			value = lvalue!.ValueAccessor;
 			returnType = lvalue.Type;
 			return true;
 		}
-		
-		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
+
+		if (resource is null || !context.Variables.TryGetValue(resource, out _))
 		{
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
 		}
-
 
 		//if the resource is a string, try to convert it
 		if (resource.CollectionItems.Count == 1 && resource.CollectionItems[0] is ValueNode vn && vn.Value is string)
@@ -671,7 +675,7 @@ internal class KnownMarkups
 			if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
 			{
 				var localName = propertyName.LocalName;
-				var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);
+				var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out _, context, node as IXmlLineInfo);
 				var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 				var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
@@ -723,9 +727,8 @@ internal class KnownMarkups
 				continue;
 			}
 			//single resource in <Resources>
-			if (resourcesNode is ElementNode irn
+			if (   resourcesNode is ElementNode irn
 				&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-				&& context.Variables.ContainsKey(irn)
 				&& xKeyNode is ValueNode xKeyValueNode
 				&& xKeyValueNode.Value as string == key)
 			{
@@ -736,9 +739,8 @@ internal class KnownMarkups
 			{
 				foreach (var rn in lr.CollectionItems)
 				{
-					if (rn is ElementNode irn2
+					if (   rn is ElementNode irn2
 						&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-						&& context.Variables.ContainsKey(irn2)
 						&& xKeyNode2 is ValueNode xKeyValueNode2
 						&& xKeyValueNode2.Value as string == key)
 					{
@@ -747,15 +749,14 @@ internal class KnownMarkups
 				}
 			}
 			//explicit ResourceDictionary in Resources
-			else if (resourcesNode is ElementNode resourceDictionary
+			else if (  resourcesNode is ElementNode resourceDictionary
 					&& resourceDictionary.XmlType.Name == "ResourceDictionary")
 			{
 				foreach (var rn in resourceDictionary.CollectionItems)
 				{
-					if (rn is ElementNode irn3
+					if (   rn is ElementNode irn3
 						&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 						&& irn3.XmlType.Name != "OnPlatform"
-						&& context.Variables.ContainsKey(irn3)
 						&& xKeyNode3 is ValueNode xKeyValueNode3
 						&& xKeyValueNode3.Value as string == key)
 					{

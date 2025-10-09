@@ -97,7 +97,7 @@ static class InitializeComponentCodeWriter
 					using (newblock())
 					{
 						VisitForDependencyOrder(root, sgcontext);
-						new DependencyFirstInflator().Inflate(sgcontext, root, codeWriter);
+						DependencyFirstInflator.Inflate(sgcontext, root, codeWriter);
 					}
 				}
 				else

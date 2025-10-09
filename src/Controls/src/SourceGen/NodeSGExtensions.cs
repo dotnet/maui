@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -18,9 +19,9 @@ static class NodeSGExtensions
 {
 	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null);
 
-	public delegate ILocalValue GetNodeValueDelegate(INode node, ITypeSymbol toType);
+	public delegate bool TryGetNodeValueDelegate(INode node, ITypeSymbol toType, out ILocalValue? value);
 
-	public delegate bool ProvideValueDelegate(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value);
+	public delegate bool ProvideValueDelegate(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, TryGetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value);
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
@@ -643,6 +644,64 @@ static class NodeSGExtensions
 		return typeName!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache);
 	}
 
+	public static bool IsValueProvider(this ElementNode elementNode, SourceGenContext context, out bool acceptEmptyServiceProvider, out ImmutableArray<ITypeSymbol>? requiredServices)
+	{
+		acceptEmptyServiceProvider = true;
+		requiredServices = null;
+		var type = elementNode.XmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache);
+		if (type is null)
+			return false;
+
+		if (KnownMarkups.TryGetValueProvider(type, context.Compilation, out _))
+			return true;
+			
+		if (GetKnownLateMarkupExtensions(context).TryGetValue(type, out var provideValue))
+			return true;
+
+		if (GetKnownValueProviders(context).TryGetValue(type, out provideValue))
+			return true;
+
+		if (type.IsValueProvider(context, out _, out _, out acceptEmptyServiceProvider, out requiredServices))
+			return true;
+
+		return false;
+	}
+
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)
 		=> node is ElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
+
+	public static bool HasXName(this INode node, out string? xName)
+	{
+		xName = null;
+		if (node is ElementNode elementNode && elementNode.Properties.TryGetValue(XmlName.xName, out var xNameProp) && xNameProp is ValueNode xnpV && xnpV.Value is string xNameValue)
+		{
+			xName = xNameValue;
+			return true;
+		}
+		return false;
+	}
+
+	public static bool HasPropertiesRequiringParentObject(this ElementNode elementNode, SourceGenContext context, out IList<KeyValuePair<XmlName, INode>> properties)
+	{
+		var props = new List<KeyValuePair<XmlName, INode>>();
+		props.AddRange(elementNode.Properties.Where(p => !DependencyFirstInflator.Skips.Contains(p.Key) && !elementNode.SkipProperties.Contains(p.Key)));
+		if (   elementNode.CollectionItems != null
+			&& elementNode.CollectionItems.Count > 0)
+		{
+			var contentPropertyName = elementNode.XmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache)?.GetContentPropertyName(context);
+			props.AddRange(elementNode.CollectionItems.Select(child => new KeyValuePair<XmlName, INode>(new XmlName(null, contentPropertyName), child)));
+		}
+		properties = [];
+		foreach (var prop in props)
+		{
+			if (prop.Value is ElementNode en
+				&& en.IsValueProvider(context, out var acceptEmptyServiceProvider, out var requiredServices)
+				&& !acceptEmptyServiceProvider
+				&& requiredServices != null
+				&& requiredServices.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!, SymbolEqualityComparer.Default))
+				properties.Add(prop);
+
+		}
+		return properties.Count > 0;
+	}
 }

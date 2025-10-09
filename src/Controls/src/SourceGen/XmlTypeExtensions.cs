@@ -1,13 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
@@ -15,7 +9,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class XmlTypeExtensions
 {
-	public static ITypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache)
+	public static INamedTypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache)
 	{
 		if (TryResolveTypeSymbol(xmlType, reportDiagnostic, compilation, xmlnsCache, out var symbol))
 			return symbol!;

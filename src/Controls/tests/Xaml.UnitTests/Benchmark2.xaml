@@ -62,7 +62,7 @@
             <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
         </Style>
 
-        <!-- <Style TargetType="Button">
+        <Style TargetType="Button">
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Primary}}" />
             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
             <Setter Property="FontFamily" Value="OpenSansRegular"/>
@@ -439,8 +439,7 @@
             <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
             <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
             <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
-        </Style> -->
-
+        </Style>
     </ContentPage.Resources>
     <VerticalStackLayout>
         <Label 

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 class DependencyFirstInflator
 {
-	static readonly IList<XmlName> skips = [
+	public static readonly IList<XmlName> Skips = [
 		XmlName.xArguments,
 		XmlName.xClass,
 		XmlName.xClassModifier,
@@ -27,7 +27,7 @@ class DependencyFirstInflator
 		XmlName.mcIgnorable,
 	];
 
-	public void Inflate(SourceGenContext context, ElementNode root, IndentedTextWriter writer)
+	public static void Inflate(SourceGenContext context, ElementNode root, IndentedTextWriter writer)
 	{
 		var rootScope = new ScopeInfo(context.RootType.Name, "InitializeComponent", "this", "inflator", null);
 		var inflatorScope = new ScopeInfo($"{context.RootType.Name}Inflator", null, "this", "inflator", "__root");
@@ -57,10 +57,9 @@ class DependencyFirstInflator
 	static void SetValuesForNode(ElementNode node, (IndentedTextWriter localMethodWriter, IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ILocalValue parentVar, ILocalValue localVar, ImmutableArray<ScopeInfo> scopes, SourceGenContext context)
 	{
 		var properties = new List<KeyValuePair<XmlName, INode>>();
-		properties.AddRange(node.Properties.Where(p => !skips.Contains(p.Key) && !node.SkipProperties.Contains(p.Key)));
+		properties.AddRange(node.Properties.Where(p => !Skips.Contains(p.Key) && !node.SkipProperties.Contains(p.Key)));
 
-		var xNameProp = node.Properties.FirstOrDefault(p => p.Key == XmlName.xName);
-		if (xNameProp.Value is ValueNode valueNode && valueNode.Value is string xName)
+		if (node.HasXName(out var xName))
 		{
 			//set runtime name (VSG)
 			var runtimeNameAttr = localVar.Type.GetAllAttributes(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RuntimeNamePropertyAttribute")!, context).FirstOrDefault();
@@ -68,21 +67,21 @@ class DependencyFirstInflator
 				writers.localMethodWriter.WriteLine($"{localVar.ValueAccessor}.{name} = \"{xName}\";");
 
 			//set fields in InitializeComponent
-			writers.ICWriter?.WriteLine($"this.{EscapeIdentifier(xName)} = {parentVar.ValueAccessor};");
+			writers.ICWriter?.WriteLine($"this.{EscapeIdentifier(xName!)} = {parentVar.ValueAccessor};");
 
 			//register in namescope
 			var namescope = context.Scopes[node];
-			if (namescope.namesInScope.ContainsKey(xName))
+			if (namescope.namesInScope.ContainsKey(xName!))
 				//TODO send diagnostic instead
 				throw new Exception("dup x:Name");
-			namescope.namesInScope.Add(xName, parentVar);
+			namescope.namesInScope.Add(xName!, parentVar);
 			using (PrePost.NewConditional(writers.localMethodWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 			{
 				writers.localMethodWriter.WriteLine($"{namescope.namescope.ValueAccessor}.RegisterName(\"{xName}\", {parentVar.ValueAccessor});");
 			}
 			// SetStyleId((string)node.Value, Context.Variables[(ElementNode)parentNode]);
-
 		}
+
 		var contentPropertyName = node.XmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache)?.GetContentPropertyName(context);
 		if (   node.CollectionItems != null
 			&& node.CollectionItems.Count > 0
@@ -104,7 +103,7 @@ class DependencyFirstInflator
 
 	static void SetPropertyValue(KeyValuePair<XmlName, INode> prop, (IndentedTextWriter localMethodWriter, IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ILocalValue parentVar, ILocalValue localVar, ImmutableArray<ScopeInfo> scopes, SourceGenContext context, ILocalValue inflatorVar, bool asCollectionItem = false)
 	{
-		if (!CanBeSetDirectly(prop, writers.declarationWriter, context)) //we probably could inline the content of CanBeSetDirectly here
+		if (!CanBeSetDirectly(prop.Value, writers.declarationWriter, context)) 
 		{
 			if (prop.Value is ListNode listNode)
 			{
@@ -136,14 +135,17 @@ class DependencyFirstInflator
 			//xArray need a special syntax
 			else if (type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 				ArrayCreator(elementNode, (writers.declarationWriter, writers.ICWriter), scopes, context);
-			else if (IsValueProvider(elementNode, context))
+			else if (elementNode.IsValueProvider(context, out _, out _))
 				ValueProvider(elementNode, (writers.declarationWriter, writers.ICWriter), scopes, context);
 			else
-				ValueCreator((INamedTypeSymbol)type, elementNode, (writers.declarationWriter, writers.ICWriter), scopes, context);
+				ValueCreator(type, elementNode, (writers.declarationWriter, writers.ICWriter), scopes, context);
 		}
-		ILocalValue getNodeValue(INode node, ITypeSymbol toType) => GetNodeValue(node, (writers.declarationWriter, writers.ICWriter), scopes, context, toType!);
+		bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue? localVar) {
+			localVar = GetNodeValue(node, (writers.declarationWriter, writers.ICWriter), scopes, context, toType!);
+			return true;
+		};
 
-		SetPropertyHelpers.SetPropertyValue(writers.localMethodWriter, localVar, prop.Key, prop.Value, context, getNodeValue: getNodeValue, treeOrder: true, icWriter: writers.ICWriter, inflatorVar: inflatorVar, asCollectionItem: asCollectionItem);
+		SetPropertyHelpers.SetPropertyValue(writers.localMethodWriter, localVar, prop.Key, prop.Value, context, tryGetNodeValue: tryGetNodeValue, treeOrder: true, icWriter: writers.ICWriter, inflatorVar: inflatorVar, asCollectionItem: asCollectionItem);
 	}
 
 	static ILocalValue LoadTemplate(INode node, INamedTypeSymbol type, (IndentedTextWriter localMethodWriter, IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context)
@@ -162,16 +164,16 @@ class DependencyFirstInflator
 		return context.Variables[node] = templateContent.AsInflatorScoped(scopeInfo);
 	}
 
-	static ILocalValue PreserveNodeValue(INode node, ILocalValue value, SourceGenContext context)
+	public static ILocalValue PreserveNodeValue(INode node, ILocalValue value, SourceGenContext context)
 		=> context.Variables[node] = value;
 
-	static ILocalValue GetNodeValue(INode node, (IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context, ITypeSymbol toType)
+	public static ILocalValue GetNodeValue(INode node, (IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context, ITypeSymbol toType)
 	{
 		// writers.declarationWriter.WriteLine($"//GetNodeValue {node} as {toType.ToFQDisplayString()}");
 		if (context.Variables.TryGetValue(node, out var localVar))
 			return localVar;
 
-		if (CanBeSetDirectly(new KeyValuePair<XmlName, INode>(new XmlName(), node), writers.declarationWriter, context))
+		if (CanBeSetDirectly(node, writers.declarationWriter, context))
 		{
 			if (context.Variables.TryGetValue(node, out var localVar1))
 				return localVar1;
@@ -187,7 +189,7 @@ class DependencyFirstInflator
 			//xArray need a special syntax
 			if (elementType.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 				return ArrayCreator(elementNode, writers, scopes, context);
-			else if (IsValueProvider(elementNode, context))
+			else if (elementNode.IsValueProvider(context, out _, out _))
 				return ValueProvider(elementNode, writers, scopes, context);
 			else
 				return ValueCreator((INamedTypeSymbol)toType, elementNode, writers, scopes, context);
@@ -199,22 +201,43 @@ class DependencyFirstInflator
 	static ILocalValue ValueProvider(ElementNode elementNode, (IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context)
 	{
 		var type = elementNode.XmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache)!;
+		var hasXName = elementNode.HasXName(out _); //if there's a x:Name, we need to create a var for future references
+		bool hasPropertiesRequiringParentObject = elementNode.HasPropertiesRequiringParentObject(context, out _);
+		bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue localVar)
+		{
+			localVar = GetNodeValue(node, writers, scopes, context, toType!);
+			return true;
+		}
 
-		ILocalValue getNodeValue(INode node, ITypeSymbol toType) => GetNodeValue(node, writers, scopes, context, toType!);
+		//new thing
+		if (   KnownMarkups.TryGetValueProvider(type, context.Compilation, out var valueProvider)
+			&& valueProvider!.CanProvideValue(elementNode, context, tryGetNodeValue))
+        {
+			if (!hasXName && !hasPropertiesRequiringParentObject)
+				return PreserveNodeValue(elementNode, valueProvider.ProvideDirectValue(elementNode, writers.declarationWriter, context, tryGetNodeValue), context);
+			else
+				return PreserveNodeValue(elementNode, valueProvider.ProvideValue(elementNode, writers, scopes, context, tryGetNodeValue), context);
+        }
 
-		if (   NodeSGExtensions.GetKnownLateMarkupExtensions(context).TryGetValue(type, out var provideValue)
-			&& provideValue.Invoke(elementNode, writers.declarationWriter, context, getNodeValue, out var returnType0, out var value))
+
+		//FIXME: move all markup and value provider to the new registry
+		//old-ish one
+		if (NodeSGExtensions.GetKnownLateMarkupExtensions(context).TryGetValue(type, out var provideValue)
+			&& provideValue.Invoke(elementNode, writers.declarationWriter, context, tryGetNodeValue, out var returnType0, out var value))
 			return PreserveNodeValue(elementNode, new DirectValue(returnType0!, value), context);
 
-		if (   NodeSGExtensions.GetKnownValueProviders(context).TryGetValue(type, out provideValue)
-			&& provideValue.Invoke(elementNode, writers.declarationWriter, context, getNodeValue, out returnType0, out value))
+		if (NodeSGExtensions.GetKnownValueProviders(context).TryGetValue(type, out provideValue)
+			&& provideValue.Invoke(elementNode, writers.declarationWriter, context, tryGetNodeValue, out returnType0, out value))
 			return PreserveNodeValue(elementNode, new DirectValue(returnType0!, value), context);
 
 		type.IsValueProvider(context, out var returnType, out var iface, out var acceptEmptyServiceProvider, out var requiredServices);
 
+
+		//it's either a custom markup extnesion (or value provider) or we haven't implemented it yet. fallback to instanciating the extension, nd calling ProvideValue
+
 		if (acceptEmptyServiceProvider)
 			return PreserveNodeValue(elementNode, new DirectValue(returnType!, $"new {type.ToFQDisplayString()}().ProvideValue(null)"), context);
-
+		
 
 		//let's create something like this
 		// 	public global::Microsoft.Maui.Controls.Binding binding  {
@@ -258,7 +281,7 @@ class DependencyFirstInflator
 			writer.WriteLineNoTabs("");
 			using (PrePost.NewBlock(writer, $"static {returnType.ToFQDisplayString()} ProvideValue(ref {context.RootType.Name}Inflator inflator) {{", "}"))
 			{
-				CreateValuesVisitor.CreateValue(elementNode, writer, context.Variables, context.Compilation, context.XmlnsCache, context, getNodeValue);
+				CreateValuesVisitor.CreateValue(elementNode, writer, context.Variables, context.Compilation, context.XmlnsCache, context, tryGetNodeValue);
 				var localVar = context.Variables[elementNode];
 				SetValuesForNode(elementNode, (writer, writers.declarationWriter, writers.ICWriter), property, localVar, scopes, context);
 
@@ -365,8 +388,11 @@ class DependencyFirstInflator
 			var currentScope = scopes.Last();
 			using (PrePost.NewBlock(writer, $"static {type.ToFQDisplayString()} Create(ref {currentScope.type} inflator) {{", "}"))
 			{
-				ILocalValue getNodeValue(INode node, ITypeSymbol toType) => GetNodeValue(node, writers, scopes, context, toType!);
-				CreateValuesVisitor.CreateValue(elementNode, writer, context.Variables, context.Compilation, context.XmlnsCache, context, getNodeValue);
+				bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue? localVar) {
+					localVar = GetNodeValue(node, writers, scopes, context, toType!);
+					return true;
+				};
+				CreateValuesVisitor.CreateValue(elementNode, writer, context.Variables, context.Compilation, context.XmlnsCache, context, tryGetNodeValue);
 				var (namescope, namesInNamescope) = SetNamescope(elementNode, (writers.declarationWriter, writer), context);
 				writer.WriteLine($"return {context.Variables[elementNode].ValueAccessor};");
 			}
@@ -442,17 +468,17 @@ class DependencyFirstInflator
 	}
 
 	//check if we can use the value directly, or if we hhave to create a variable accessor for it
-	static bool CanBeSetDirectly(KeyValuePair<XmlName, INode> prop, IndentedTextWriter writer, SourceGenContext context)
+	static bool CanBeSetDirectly(INode propValue, IndentedTextWriter writer, SourceGenContext context)
 	{
-		if (prop.Value is ValueNode valueNode
+		if (propValue is ValueNode valueNode
 			&& valueNode.Value is string strValue)
 			return true;
 
 		//x2009 language primitives
-		if (prop.Value is ElementNode elementNode1
+		if (propValue is ElementNode elementNode1
 			&& CreateValuesVisitor.IsXaml2009LanguagePrimitive(elementNode1))
 		{
-			if (!(elementNode1.CollectionItems.Count == 1
+			if (   !(elementNode1.CollectionItems.Count == 1
 				&& elementNode1.CollectionItems[0] is ValueNode valueNode1
 				&& valueNode1.Value is string strValue1))
 				strValue1 = string.Empty;
@@ -463,7 +489,7 @@ class DependencyFirstInflator
 		}
 
 		//known early bound MarkupExtensions
-		if (prop.Value is ElementNode elementNode
+		if (   propValue is ElementNode elementNode
 			&& elementNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out var type) && type is not null
 			&& NodeSGExtensions.GetKnownEarlyMarkupExtensions(context).TryGetValue(type, out var provideValue)
 			&& provideValue(elementNode, writer, context, null, out var returnType, out strValue))
@@ -473,8 +499,8 @@ class DependencyFirstInflator
 		}
 
 		//elementnode with a single value, and has a typeconverter, like <Color>Red</Color>
-		//TODO should we restrict this to value types? or ref types without x:Names?
-		if (prop.Value is ElementNode elementNode2
+		if (   propValue is ElementNode elementNode2
+			&& !propValue.HasXName(out _)				//x:Name would mean we need a variable
 			&& elementNode2.CollectionItems.Count == 1
 			&& elementNode2.CollectionItems[0] is ValueNode valueNode2
 			&& valueNode2.Value is string strValue2
@@ -486,24 +512,6 @@ class DependencyFirstInflator
 			PreserveNodeValue(elementNode2, new DirectValue(converterInfo.returnType, converted), context);
 			return true;
 		}
-
-		return false;
-	}
-
-	static bool IsValueProvider(ElementNode elementNode, SourceGenContext context)
-	{
-		var type = elementNode.XmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache);
-		if (type is null)
-			return false;
-
-		if (NodeSGExtensions.GetKnownLateMarkupExtensions(context).TryGetValue(type, out var provideValue))
-			return true;
-
-		if (NodeSGExtensions.GetKnownValueProviders(context).TryGetValue(type, out provideValue))
-			return true;
-
-		if (type.IsValueProvider(context, out _, out _, out _, out _))
-			return true;
 
 		return false;
 	}

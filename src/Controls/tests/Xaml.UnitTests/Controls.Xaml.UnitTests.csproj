@@ -115,7 +115,8 @@
     <!-- <MauiXaml Update="DataTemplate.xaml" TreeOrder="true" /> -->
     <MauiXaml Update="VisualStateManagerTests.xaml" TreeOrder="true" />
     <MauiXaml Update="SetValue.xaml" TreeOrder="true" />
-    <MauiXaml Update="Benchmark.xaml" />
+    <MauiXaml Update="Benchmark.xaml" TreeOrder="false" />
+    <MauiXaml Update="Benchmark2.xaml" TreeOrder="true" />
   </ItemGroup>
 
 </Project>
