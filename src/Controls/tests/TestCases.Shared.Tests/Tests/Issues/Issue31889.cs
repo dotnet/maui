@@ -41,6 +41,9 @@ public class Issue31889 : _IssuesUITest
 
 		App.WaitForElement(TestEditorId);
 		App.ClearText(TestEditorId);
+#if MACCATALYST // On macOS, clearing the text in the Editor does not remove the full content.
+		App.ClearText(TestEditorId);
+#endif
 #if IOS
 		if (App.IsKeyboardShown())
 		{
