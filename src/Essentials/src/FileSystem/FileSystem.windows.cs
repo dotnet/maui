@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Storage;
@@ -90,15 +91,15 @@ namespace Microsoft.Maui.Storage
 		static readonly Dictionary<string, string> ExtensionToMimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
 		{
 			// Image formats
-			{ ".jpg", "image/jpeg" },
-			{ ".jpeg", "image/jpeg" },
+			{ ".jpg", MediaTypeNames.Image.Jpeg },
+			{ ".jpeg", MediaTypeNames.Image.Jpeg },
 			{ ".png", "image/png" },
-			{ ".gif", "image/gif" },
+			{ ".gif", MediaTypeNames.Image.Gif },
 			{ ".bmp", "image/bmp" },
 			{ ".svg", "image/svg+xml" },
 			{ ".webp", "image/webp" },
-			{ ".tiff", "image/tiff" },
-			{ ".tif", "image/tiff" },
+			{ ".tiff", MediaTypeNames.Image.Tiff },
+			{ ".tif", MediaTypeNames.Image.Tiff },
 			{ ".ico", "image/x-icon" },
 			
 			// Audio formats
@@ -119,26 +120,26 @@ namespace Microsoft.Maui.Storage
 			{ ".flv", "video/x-flv" },
 			
 			// Document formats
-			{ ".pdf", "application/pdf" },
+			{ ".pdf", MediaTypeNames.Application.Pdf },
 			{ ".doc", "application/msword" },
 			{ ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
 			{ ".xls", "application/vnd.ms-excel" },
 			{ ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
 			{ ".ppt", "application/vnd.ms-powerpoint" },
 			{ ".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
-			{ ".txt", "text/plain" },
-			{ ".rtf", "application/rtf" },
+			{ ".txt", MediaTypeNames.Text.Plain },
+			{ ".rtf", MediaTypeNames.Application.Rtf },
 			
 			// Web formats
-			{ ".html", "text/html" },
-			{ ".htm", "text/html" },
+			{ ".html", MediaTypeNames.Text.Html },
+			{ ".htm", MediaTypeNames.Text.Html },
 			{ ".css", "text/css" },
 			{ ".js", "application/javascript" },
 			{ ".json", "application/json" },
-			{ ".xml", "text/xml" },
+			{ ".xml", MediaTypeNames.Text.Xml },
 			
 			// Archive formats
-			{ ".zip", "application/zip" },
+			{ ".zip", MediaTypeNames.Application.Zip },
 			{ ".rar", "application/x-rar-compressed" },
 			{ ".7z", "application/x-7z-compressed" },
 			{ ".tar", "application/x-tar" },
