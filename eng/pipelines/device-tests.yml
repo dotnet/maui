@@ -180,13 +180,13 @@ stages:
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
           androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
-          iosVersions: [ 'simulator-18.4', 'ios-simulator-64' ]
+          iosVersions: [ 'simulator-18.4', 'latest' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
         ${{ else }}:
           androidApiLevels: [ 33, 23 ]
-          iosVersions: [ 'simulator-18.4', 'ios-simulator-64' ]
+          iosVersions: [ 'simulator-18.4', 'latest' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ not(parameters.UseProvisionator) }}
