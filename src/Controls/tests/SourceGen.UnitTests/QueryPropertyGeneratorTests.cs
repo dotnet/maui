@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
@@ -478,5 +479,78 @@ namespace MyApp
 		System.Console.WriteLine("===== GENERATED SOURCE =====");
 		System.Console.WriteLine(generatedSource);
 		System.Console.WriteLine("===========================");
+	}
+
+	[Test]
+	public void GeneratedImplementation_ContainsExpectedPatterns()
+	{
+		// Create a compilation with a class using QueryProperty
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	[QueryProperty(nameof(Age), ""age"")]
+	public partial class PersonDetailsPage : ContentPage
+	{
+		public string Name { get; set; }
+		public int Age { get; set; }
+	}
+}";
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
+
+		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+
+		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
+		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
+
+		var generatedSource = result.GeneratedTrees[0].ToString();
+
+		// Verify key aspects of the generated code
+		Assert.That(generatedSource, Does.Contain("partial class PersonDetailsPage : Microsoft.Maui.Controls.IQueryAttributable"));
+		Assert.That(generatedSource, Does.Contain("void Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)"));
+		
+		// Verify string handling with URL decoding
+		Assert.That(generatedSource, Does.Contain("global::System.Net.WebUtility.UrlDecode"));
+		
+		// Verify int handling with type conversion
+		Assert.That(generatedSource, Does.Contain("Convert.ChangeType"));
+		
+		// Verify property tracking for clearing
+		Assert.That(generatedSource, Does.Contain("_queryPropertyKeys"));
+	}
+
+	[Test]
+	public void GeneratedCode_CompilesSuccessfully()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public partial class TestPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
+
+		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+
+		Assert.That(result.Diagnostics, Is.Empty);
+		
+		// Add the generated source to the compilation and verify it compiles
+		compilation = compilation.AddSyntaxTrees(result.GeneratedTrees[0]);
+		
+		var compilationDiagnostics = compilation.GetDiagnostics();
+		var errors = compilationDiagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).ToArray();
+		
+		Assert.That(errors, Is.Empty, $"Generated code should compile without errors. Errors: {string.Join(Environment.NewLine, errors.Select(e => e.ToString()))}");
 	}
 }
