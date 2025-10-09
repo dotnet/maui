@@ -452,6 +452,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
 		{
+			if (goToPosition < 0)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
