@@ -131,5 +131,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
+	// Internal label type used by ContentPresenter to avoid interference from global Label styles.
 	class ContentLabel : Label { }
 }
