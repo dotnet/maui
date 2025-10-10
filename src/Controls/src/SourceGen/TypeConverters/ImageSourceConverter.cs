@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -6,11 +7,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ImageSourceConverter : ISGTypeConverter
+class ImageSourceConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "ImageSource", "Microsoft.Maui.Controls.ImageSource" };
+	public IEnumerable<string> SupportedTypes => ["ImageSource", "Microsoft.Maui.Controls.ImageSource"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here

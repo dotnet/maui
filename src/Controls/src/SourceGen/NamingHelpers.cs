@@ -15,10 +15,18 @@ static class NamingHelpers
 		while (context.ParentContext != null)
 			context = context.ParentContext;
 
-		return CreateUniqueVariableNameImpl(context, symbol);
+		return CreateUniqueVariableNameImpl(context, symbol, lowFirst: true);
 	}
 
-	internal static string CreateUniqueVariableNameImpl(object context, ISymbol symbol)
+	public static string CreateUniqueTypeName(SourceGenContext context, string baseName)
+	{
+		while (context.ParentContext != null)
+			context = context.ParentContext;
+			
+		return CreateUniqueVariableNameImpl(context, baseName, lowFirst: false);
+	}
+
+	internal static string CreateUniqueVariableNameImpl(object context, ISymbol symbol, bool lowFirst = true)
 	{
 		string suffix = "";
 		if (symbol is IArrayTypeSymbol arrayTypeSymbol)
@@ -38,13 +46,13 @@ static class NamingHelpers
 				SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		return CreateUniqueVariableNameImpl(context, symbol.ToDisplayString(ShortFormat) + suffix);
+		return CreateUniqueVariableNameImpl(context, symbol.ToDisplayString(ShortFormat) + suffix, lowFirst);
 #pragma warning restore RS0030 // Do not use banned APIs
 	}
 
-	static string CreateUniqueVariableNameImpl(object context, string baseName)
+	static string CreateUniqueVariableNameImpl(object context, string baseName, bool lowFirst)
 	{
-		baseName = CamelCase(baseName);
+		baseName = CamelCase(baseName, lowFirst);
 		if (!_lastId.TryGetValue(context, out var lastIdForContext))
 		{
 			lastIdForContext = new Dictionary<string, int>();
@@ -57,12 +65,13 @@ static class NamingHelpers
 		return lastId == 0 && SyntaxFacts.GetKeywordKind(baseName) == SyntaxKind.None ? baseName : $"{baseName}{lastId}";
 	}
 
-	static string CamelCase(string name)
+	static string CamelCase(string name, bool lowFirst)
 	{
 		name = name.Replace(".", "_");
 		if (string.IsNullOrEmpty(name))
 			return name;
 		name = Regex.Replace(name, "([A-Z])([A-Z]+)($|[A-Z])", m => m.Groups[1].Value + m.Groups[2].Value.ToLowerInvariant() + m.Groups[3].Value);
-		return char.ToLowerInvariant(name[0]) + name.Substring(1);
+		
+		return lowFirst ? char.ToLowerInvariant(name[0]) + name.Substring(1) : name;
 	}
 }

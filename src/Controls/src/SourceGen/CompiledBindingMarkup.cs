@@ -15,9 +15,9 @@ internal struct CompiledBindingMarkup
 	private readonly SourceGenContext _context;
 	private readonly ElementNode _node;
 	private readonly string _path;
-	private readonly LocalVariable _bindingExtension;
+	private readonly ILocalValue _bindingExtension;
 
-	public CompiledBindingMarkup(ElementNode node, string path, LocalVariable bindingExtension, SourceGenContext context)
+	public CompiledBindingMarkup(ElementNode node, string path, ILocalValue bindingExtension, SourceGenContext context)
 	{
 		_context = context;
 		_node = node;
@@ -56,13 +56,13 @@ internal struct CompiledBindingMarkup
 			IsPublic: false,
 			RequiresAllUnsafeGetters: true);
 
-		LocalVariable extVariable;
+		ILocalValue extVariable;
 		if (!_context.Variables.TryGetValue(_node, out extVariable))
 		{
 			throw new Exception("BindingExtension not found"); // TODO report diagnostic
 		}
 
-		var methodName = $"CreateTypedBindingFrom_{_bindingExtension.Name}";
+		var methodName = $"CreateTypedBindingFrom_{_bindingExtension.ValueAccessor}";
 
 		// TODO emit #line info?
 		// TODO move ShouldUseSetter methods to shared code (public in MAUI?) + the same for the BindingSourceGen?
@@ -104,7 +104,7 @@ internal struct CompiledBindingMarkup
 				""";
 
 		_context.AddLocalMethod(createBindingLocalMethod);
-		newBindingExpression = $"{methodName}({extVariable.Name})";
+		newBindingExpression = $"{methodName}({extVariable.ValueAccessor})";
 
 		return true;
 	}
