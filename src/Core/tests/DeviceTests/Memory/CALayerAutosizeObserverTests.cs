@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 		[InlineData(typeof(StaticCALayer))]
 		[InlineData(typeof(StaticCAGradientLayer))]
 		[InlineData(typeof(StaticCAShapeLayer))]
-		public async Task CALayerAutosizeObserver_DoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type sublayerType)
+		public async Task CALayerAutosizeObserver_DoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type sublayerType)
 		{
 			WeakReference viewReference = null;
 			WeakReference layerReference = null;
