@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -68,25 +69,25 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				navigationLayout ??=
+				navigationLayout =
 				   LayoutInflater
 					   .Inflate(Resource.Layout.navigationlayout, null)
 					   .JavaCast<CoordinatorLayout>();
 
+				// Set up the CoordinatorLayout with a local inset listener
+				if (navigationLayout != null && mauiContext.Context?.GetGlobalWindowInsetListener() is GlobalWindowInsetListener globalListener)
+				{
+					var localListener = new GlobalWindowInsetListener();
+					navigationLayout = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(navigationLayout, localListener);
+				}
+
 				_rootView = navigationLayout;
-			}
-
-			if (navigationLayout is CoordinatorLayout && mauiContext.Context is not null)
-            {
-                GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
-            }
-
-			// if the incoming view is a Drawer Layout then the Drawer Layout
-			// will be the root view and internally handle all if its view management
-			// this is mainly used for FlyoutView
-			//
-			// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
-			// and place the content there
+			}           // if the incoming view is a Drawer Layout then the Drawer Layout
+						// will be the root view and internally handle all if its view management
+						// this is mainly used for FlyoutView
+						//
+						// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
+						// and place the content there
 			if (DrawerLayout == null)
 			{
 				SetContentView(view);

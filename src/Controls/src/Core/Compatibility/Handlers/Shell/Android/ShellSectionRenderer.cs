@@ -15,6 +15,8 @@ using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
+using Google.Android.Material.AppBar;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -101,7 +103,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(root, this.Context);
+
+			// Set up the CoordinatorLayout with a local inset listener
+			if (context?.GetGlobalWindowInsetListener() is GlobalWindowInsetListener globalListener)
+			{
+				var localListener = new GlobalWindowInsetListener();
+				root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, localListener);
+			}
+
 			int actionBarHeight = context.GetActionBarHeight();
 
 			var shellToolbar = new Toolbar(shellSection);
