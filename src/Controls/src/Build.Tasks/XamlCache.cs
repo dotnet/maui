@@ -64,6 +64,7 @@ class XamlCache
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "ThicknessTypeConverter")), typeof(ThicknessTypeConverter) },
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "CornerRadiusTypeConverter")), typeof(CornerRadiusTypeConverter) },
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "EasingTypeConverter")), typeof(EasingTypeConverter) },
+		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "SafeAreaEdgesTypeConverter")), typeof(SafeAreaEdgesTypeConverter) },
 		{ module.ImportReference(this, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "ColorTypeConverter")), typeof(ColorTypeConverter) },
 		{ module.ImportReference(this, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "PointTypeConverter")), typeof(PointTypeConverter) },
 		{ module.ImportReference(this, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "RectTypeConverter")), typeof(RectangleTypeConverter) },
