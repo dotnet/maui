@@ -167,8 +167,8 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var rid = usesRidGraph ? "win10-x64" : "win-x64";
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}/AppPackages/{name}_1.0.0.1_Test");
+		var rid = usesRidGraph ? "win10-x64/" : "";
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}AppPackages/{name}_1.0.0.1_Test");
 
 		AssetExists($"{name}_1.0.0.1_x64.msix");
 
