@@ -174,11 +174,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
 		{
-			TimePickerDialog? currentDialog = _dialog;
-
-			if (currentDialog is not null && currentDialog.IsShowing)
+			if (_dialog is not null && _dialog.IsShowing)
 			{
-				currentDialog.Dismiss();
+				_dialog.Dismiss();
 
 				// Recreate dialog with stored current values to handle orientation change
 				ShowPickerDialog(_currentHour, _currentMinute);
