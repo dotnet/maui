@@ -10,6 +10,20 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 [TestFixture]
 public class QueryPropertyGeneratorTests
 {
+	private static void AssertGeneratedCode(string sourceCode, string expectedOutput)
+	{
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
+
+		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+
+		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
+		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
+
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		Assert.That(generatedSource, Is.EqualTo(expectedOutput), "Generated source should match expected output exactly");
+	}
+
 	[Test]
 	public void SingleStringProperty_GeneratesCorrectImplementation()
 	{
@@ -24,16 +38,6 @@ namespace MyApp
 		public string Name { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
-
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -87,7 +91,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -106,16 +110,6 @@ namespace MyApp
 		public string Location { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
-
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -183,7 +177,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -200,16 +194,6 @@ namespace MyApp
 		public int Count { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
-
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -264,7 +248,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -281,14 +265,6 @@ namespace MyApp
 		public double Price { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -343,7 +319,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -360,14 +336,6 @@ namespace MyApp
 		public bool IsActive { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -422,7 +390,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -443,14 +411,6 @@ namespace MyApp
 		public double Price { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -534,7 +494,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -599,13 +559,66 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
+		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
+		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
-		Assert.That(generatedSource, Does.Contain("partial class BearDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
-		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"Bear\", out var BearValue))"));
+		// Verify full generated output for documentation example
+		var expectedOutput = @"
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a .NET MAUI source generator.
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+
+namespace MyApp
+{
+	partial class BearDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable
+	{
+		/// <summary>
+		/// Applies query attributes from navigation parameters.
+		/// This method is generated by the QueryPropertyGenerator.
+		/// </summary>
+		void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query)
+		{
+			if (query == null)
+				return;
+
+			// Track which properties were set in previous navigation
+			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+
+			if (query.TryGetValue(""Bear"", out var BearValue))
+			{
+				_queryPropertyKeys.Add(""Bear"");
+				if (BearValue != null)
+				{
+					var convertedValue = global::System.Convert.ChangeType(BearValue, typeof(global::MyApp.Animal));
+					Bear = (global::MyApp.Animal)convertedValue;
+				}
+			}
+			else if (previousKeys.Contains(""Bear""))
+			{
+				// Clear property if it was set before but not in current query
+				// Property is not nullable, skipping clear
+			}
+
+		}
+
+		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+	}
+}
+";
+
+		Assert.That(generatedSource, Is.EqualTo(expectedOutput), "Generated source should match expected output exactly");
 	}
 
 	[Test]
@@ -644,16 +657,79 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
+		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
+		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
-		Assert.That(generatedSource, Does.Contain("partial class ElephantDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
-		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"name\", out var nameValue))"));
-		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"location\", out var locationValue))"));
-		Assert.That(generatedSource, Does.Contain("Name = global::System.Net.WebUtility.UrlDecode"));
-		Assert.That(generatedSource, Does.Contain("Location = global::System.Net.WebUtility.UrlDecode"));
+		// Verify full generated output for documentation example
+		var expectedOutput = @"
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a .NET MAUI source generator.
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+
+namespace MyApp
+{
+	partial class ElephantDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable
+	{
+		/// <summary>
+		/// Applies query attributes from navigation parameters.
+		/// This method is generated by the QueryPropertyGenerator.
+		/// </summary>
+		void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query)
+		{
+			if (query == null)
+				return;
+
+			// Track which properties were set in previous navigation
+			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+
+			if (query.TryGetValue(""name"", out var nameValue))
+			{
+				_queryPropertyKeys.Add(""name"");
+				if (nameValue != null)
+					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				else
+					Name = null;
+			}
+			else if (previousKeys.Contains(""name""))
+			{
+				// Clear property if it was set before but not in current query
+				Name = default;
+			}
+
+			if (query.TryGetValue(""location"", out var locationValue))
+			{
+				_queryPropertyKeys.Add(""location"");
+				if (locationValue != null)
+					Location = global::System.Net.WebUtility.UrlDecode(locationValue.ToString());
+				else
+					Location = null;
+			}
+			else if (previousKeys.Contains(""location""))
+			{
+				// Clear property if it was set before but not in current query
+				Location = default;
+			}
+
+		}
+
+		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+	}
+}
+";
+
+		Assert.That(generatedSource, Is.EqualTo(expectedOutput), "Generated source should match expected output exactly");
 	}
 
 	[Test]
@@ -675,6 +751,10 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
+		// Should generate diagnostic for non-existent property
+		Assert.That(result.Diagnostics, Is.Not.Empty, "Should produce diagnostic for non-existent property");
+		Assert.That(result.Diagnostics.Any(d => d.Id == "MAUI1201"), Is.True, "Should produce MAUI1201 diagnostic");
+
 		// Should not generate source for non-existent properties
 		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(0));
 	}
@@ -694,14 +774,6 @@ namespace MyApp
 		public string? Name { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -755,7 +827,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -772,14 +844,6 @@ namespace MyApp
 		public int? Count { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -834,7 +898,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -848,14 +912,6 @@ public partial class MyPage : ContentPage
 {
 	public string Name { get; set; }
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -906,7 +962,7 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -923,14 +979,6 @@ namespace MyApp
 		public string Name { get; set; }
 	}
 }";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		var expectedOutput = @"
 //------------------------------------------------------------------------------
@@ -984,80 +1032,7 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput));
-	}
-
-	[Test]
-	public void ViewCompleteGeneratedSource()
-	{
-		var sourceCode = @"
-using Microsoft.Maui.Controls;
-
-namespace MyApp
-{
-	[QueryProperty(nameof(Name), ""name"")]
-	[QueryProperty(nameof(Age), ""age"")]
-	public partial class MyPage : ContentPage
-	{
-		public string Name { get; set; }
-		public int Age { get; set; }
-	}
-}";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1));
-
-		var generatedSource = result.GeneratedTrees[0].ToString();
-		System.Console.WriteLine("===== GENERATED SOURCE =====");
-		System.Console.WriteLine(generatedSource);
-		System.Console.WriteLine("===========================");
-	}
-
-	[Test]
-	public void GeneratedImplementation_ContainsExpectedPatterns()
-	{
-		// Create a compilation with a class using QueryProperty
-		var sourceCode = @"
-using Microsoft.Maui.Controls;
-
-namespace MyApp
-{
-	[QueryProperty(nameof(Name), ""name"")]
-	[QueryProperty(nameof(Age), ""age"")]
-	public partial class PersonDetailsPage : ContentPage
-	{
-		public string Name { get; set; }
-		public int Age { get; set; }
-	}
-}";
-
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
-
-		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
-
-		var generatedSource = result.GeneratedTrees[0].ToString();
-
-		// Verify key aspects of the generated code
-		Assert.That(generatedSource, Does.Contain("partial class PersonDetailsPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
-		Assert.That(generatedSource, Does.Contain("void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query)"));
-
-		// Verify string handling with URL decoding
-		Assert.That(generatedSource, Does.Contain("global::System.Net.WebUtility.UrlDecode"));
-
-		// Verify int handling with type conversion
-		Assert.That(generatedSource, Does.Contain("Convert.ChangeType"));
-
-		// Verify property tracking for clearing
-		Assert.That(generatedSource, Does.Contain("_queryPropertyKeys"));
+		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
 	[Test]
@@ -1080,7 +1055,8 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty);
+		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
+		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
 
 		// Add the generated source to the compilation and verify it compiles
 		compilation = compilation.AddSyntaxTrees(result.GeneratedTrees[0]);
