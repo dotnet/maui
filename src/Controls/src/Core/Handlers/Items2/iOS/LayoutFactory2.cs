@@ -453,7 +453,7 @@ internal static class LayoutFactory2
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
 
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
