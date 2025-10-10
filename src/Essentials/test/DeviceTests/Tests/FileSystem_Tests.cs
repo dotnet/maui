@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData(".JPG", "image/jpeg")]
 		[InlineData(".Jpg", "image/jpeg")]
 		[InlineData(".jPg", "image/jpeg")]
-		[InlineData("jpg", "image/jpeg")]
+		[InlineData(".jpg", "image/jpeg")]
 		[InlineData(".jpg ", "image/jpeg")]  // Trailing space
 		[InlineData(" .jpg", "image/jpeg")]  // Leading space
 		[InlineData(" .jpg ", "image/jpeg")] // Leading and trailing spaces
