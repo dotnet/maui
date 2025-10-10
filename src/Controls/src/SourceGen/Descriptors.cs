@@ -211,6 +211,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor QueryPropertyAttributeInvalidArguments = new DiagnosticDescriptor(
+			id: "MAUI1203",
+			title: "QueryProperty attribute has invalid arguments",
+			messageFormat: "QueryProperty attribute on class '{0}' has invalid arguments - property name and query id must not be null or empty",
+			category: "QueryPropertyGenerator",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
 		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");
