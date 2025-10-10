@@ -457,7 +457,7 @@ internal static class LayoutFactory2
 				}
 			}
 		}
-		
+
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
 			var snapPointsType = _snapInfo.SnapType;
