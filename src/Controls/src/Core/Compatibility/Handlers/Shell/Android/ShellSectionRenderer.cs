@@ -101,7 +101,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
 
 			var context = Context;
-			var root = new MauiCoordinatorLayout(context);
+			var root = new CoordinatorLayout(context);
+
+			// Set up the CoordinatorLayout with a local inset listener
+			if (context?.GetGlobalWindowInsetListener() is GlobalWindowInsetListener globalListener)
+			{
+				var localListener = new GlobalWindowInsetListener();
+				root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, localListener);
+			}
 
 			// Create AppBarLayout directly instead of using PlatformInterop
 			var appbar = new AppBarLayout(context, null, Resource.Attribute.appBarLayoutStyle);

@@ -134,8 +134,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_page = ((IShellContentController)_shellContent).GetOrCreateContent();
 			}
 
-			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<MauiCoordinatorLayout>();
+			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
+			// Set up the CoordinatorLayout with a local inset listener
+			if (_root is CoordinatorLayout rootLayout && Context is AndroidX.Fragment.App.FragmentActivity context)
+			{
+				var localListener = new GlobalWindowInsetListener();
+				_root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(rootLayout, localListener);
+			}
 			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
 			Maui.IElement parentElement = (_shellContent as Maui.IElement) ?? _page;
@@ -145,9 +151,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
 
-			// No need to call TrySetGlobalWindowInsetListener since MauiCoordinatorLayout 
-			// automatically registers itself and its listener in the static registry
-
+			// No need to call TrySetGlobalWindowInsetListener since the CoordinatorLayout 
+			// is set up with its own local inset listener
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 

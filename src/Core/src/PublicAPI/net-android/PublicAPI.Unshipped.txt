@@ -76,13 +76,6 @@ Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Androi
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyleAttr, int defStyleRes) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Android.Content.Context? context, Microsoft.Maui.Platform.MauiScrollView! parentScrollView) -> void
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.Platform.MauiCoordinatorLayout
-Microsoft.Maui.Platform.MauiCoordinatorLayout.MauiCoordinatorLayout(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiCoordinatorLayout.MauiCoordinatorLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
-Microsoft.Maui.Platform.MauiCoordinatorLayout.MauiCoordinatorLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
-Microsoft.Maui.Platform.MauiCoordinatorLayout.MauiCoordinatorLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-override Microsoft.Maui.Platform.MauiCoordinatorLayout.OnAttachedToWindow() -> void
-override Microsoft.Maui.Platform.MauiCoordinatorLayout.OnDetachedFromWindow() -> void
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.get -> bool
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
 Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
