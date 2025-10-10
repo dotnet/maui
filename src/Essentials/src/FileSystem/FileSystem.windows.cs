@@ -2,6 +2,7 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -196,8 +197,6 @@ namespace Microsoft.Maui.Storage
 			if (ExtensionToMimeTypeMap.TryGetValue(extension, out var mimeType))
 				return mimeType;
 
-			// For compound extensions like .tar.gz, try to match longer extensions first
-			// This handles cases where we have both .gz and .tar.gz in our mapping
 			var fileName = Path.GetFileNameWithoutExtension(extension);
 			if (!string.IsNullOrEmpty(fileName) && fileName.Contains('.', StringComparison.Ordinal))
 			{
