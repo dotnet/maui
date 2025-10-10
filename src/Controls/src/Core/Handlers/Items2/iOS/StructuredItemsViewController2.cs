@@ -48,6 +48,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
+		internal void UpdateHeaderView()
+		{
+			// Clean up header view if no header content
+			if (ItemsView.Header is null && ItemsView.HeaderTemplate is null)
+			{
+				var headerView = CollectionView.ViewWithTag(HeaderTag);
+				headerView?.RemoveFromSuperview();
+			}
+		}
+
+		internal void UpdateFooterView()
+		{
+			// Clean up footer view if no footer content
+			if (ItemsView.Footer is null && ItemsView.FooterTemplate is null)
+			{
+				var footerView = CollectionView.ViewWithTag(FooterTag);
+				footerView?.RemoveFromSuperview();
+			}
+		}
+
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, NSString elementKind, NSIndexPath indexPath)
 		{
 			// We don't have a header or footer, so we don't need to do anything
