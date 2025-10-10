@@ -17,8 +17,6 @@ namespace Microsoft.Maui.Platform
 				if (trackColor != null)
 					aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
 			}
-			else
-				aSwitch.TrackDrawable?.ClearColorFilter();
 		}
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
