@@ -751,5 +751,64 @@ namespace Microsoft.Maui.DeviceTests
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
 		}
+
+		[Fact(DisplayName = "ShellFragmentContainer can be destroyed after context is disposed")]
+		public async Task ShellFragmentContainerCanBeDestroyedAfterContextDisposed()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "TestRoute",
+							Content = page
+						}
+					}
+				});
+			});
+
+			// Create a disposable context stub that we can dispose before the fragment
+			var mauiContextStub = ContextStub.CreateNew(MauiContext);
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Get the ShellContent to create a fragment
+				var shellContent = shell.CurrentItem.CurrentItem.Items.First();
+				
+				Exception exception = null;
+				ShellFragmentContainer fragmentContainer = null;
+				
+				try
+				{
+					// Create a ShellFragmentContainer instance with the disposable context
+					fragmentContainer = new ShellFragmentContainer(shellContent, mauiContextStub);
+					
+					// Dispose the context/service provider FIRST - this simulates the real bug scenario
+					// where the activity/context is destroyed before the fragment
+					mauiContextStub.Dispose();
+					
+					// Now try to destroy the fragment - the old code would throw ObjectDisposedException
+					// when trying to access _mauiContext.GetDispatcher() because the service provider is disposed
+					// The fix (removing OnDestroy override) allows this to work without exception
+					fragmentContainer.Dispose();
+				}
+				catch (Exception ex)
+				{
+					exception = ex;
+				}
+
+				// Verify no exception was thrown during fragment disposal
+				// This validates that the fragment can be destroyed even when the context is already disposed
+				Assert.Null(exception);
+			});
+		}
 	}
 }
