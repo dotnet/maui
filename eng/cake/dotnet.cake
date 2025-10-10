@@ -942,14 +942,13 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 $"console;verbosity=normal"
             },
         ResultsDirectory = GetTestResultsDirectory(),
-        //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
 
         ArgumentCustomization = args => 
         { 
             var loggerArg = GetMSBuildForwardingLoggerPath();
             if (loggerArg != null)
             {
-               args.Append(loggerArg);
+                args.Append(loggerArg);  
             }
 
             args.Append($"-bl:{binlog}");
@@ -957,13 +956,23 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             {
                args.Append($"-maxcpucount:{maxCpuCount}");
             }
-
-            if (argsExtra != null)
+            
+            var sourcesDir = Directory(EnvironmentVariable("BUILD_SOURCESDIRECTORY", "artifacts"));
+            var sourceFile = File($"{sourcesDir}/coverage.runsettings");
+            var rootSourceFile = File("./coverage.runsettings");
+            // Code coverage
+            if (FileExists(sourceFile))
             {
-                foreach (var prop in argsExtra)
-                {
-                    args.Append($"/p:{prop.Key}={prop.Value}");
-                }
+                args.Append($"--collect \"Code Coverage;Format=cobertura\" --settings \"{sourceFile}\"");
+            }
+            else if (FileExists(rootSourceFile))
+            {
+                args.Append($"--collect \"Code Coverage;Format=cobertura\" --settings \"{rootSourceFile}\"");
+            }
+            else
+            {
+                Warning($"coverage.runsettings file not found at {sourceFile} or {rootSourceFile}. Using default code coverage.");
+                args.Append($"--collect \"Code Coverage\"");
             }
 
             // https://github.com/microsoft/vstest/issues/5112
