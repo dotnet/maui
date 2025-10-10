@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.TypeConverters;
@@ -75,4 +76,151 @@ public partial class RowDefinitionCollectionConverterTests
         _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.GridLength")).Returns(mockGridLengthType.Object);
         _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.GridUnitType")).Returns(mockGridUnitType.Object);
     }
+
+    /// <summary>
+    /// Tests that Convert returns "default" and reports conversion failed when value is whitespace only.
+    /// Should call ReportConversionFailed and return "default" for whitespace-only input.
+    /// </summary>
+    [TestCase("   ")]
+    [TestCase("\t")]
+    [TestCase("\n")]
+    [TestCase("\r\n")]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void Convert_WhitespaceValue_ReturnsDefaultAndReportsFailure(string value)
+    {
+        // Arrange & Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.AreEqual("default", result);
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), value, It.IsAny<DiagnosticDescriptor>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that Convert processes multiple valid values correctly.
+    /// Should create multiple RowDefinitions with the converted GridLength values.
+    /// </summary>
+    [TestCase("100,*")]
+    [TestCase("Auto,100,*")]
+    [TestCase("100,2*,Auto")]
+    [TestCase("*,*,*")]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void Convert_MultipleValidValues_ReturnsCorrectRowDefinitionCollection(string value)
+    {
+        // Arrange
+        string[] expectedSegments = value.Split(',');
+        // Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.IsTrue(result.StartsWith("new Microsoft.Maui.Controls.RowDefinitionCollection(["));
+        Assert.IsTrue(result.EndsWith("])"));
+        // Count occurrences of "new RowDefinition(" should match number of segments
+        int rowDefinitionCount = result.Split("new RowDefinition(").Length - 1;
+        Assert.AreEqual(expectedSegments.Length, rowDefinitionCount);
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests that Convert handles values with empty segments from commas correctly.
+    /// Should process only non-empty segments and create corresponding RowDefinitions.
+    /// </summary>
+    [TestCase(",100")]
+    [TestCase("100,")]
+    [TestCase(",100,")]
+    [TestCase("100,,*")]
+    [TestCase(",,,")]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void Convert_ValueWithEmptySegments_HandlesCorrectly(string value)
+    {
+        // Arrange
+        string[] segments = value.Split(',');
+        int nonEmptySegments = 0;
+        foreach (string segment in segments)
+        {
+            if (!string.IsNullOrEmpty(segment))
+                nonEmptySegments++;
+        }
+
+        // Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.IsTrue(result.StartsWith("new Microsoft.Maui.Controls.RowDefinitionCollection(["));
+        Assert.IsTrue(result.EndsWith("])"));
+        // Count occurrences of "new RowDefinition(" should match number of non-empty segments
+        int rowDefinitionCount = result.Split("new RowDefinition(").Length - 1;
+        Assert.AreEqual(nonEmptySegments, rowDefinitionCount);
+    }
+
+    /// <summary>
+    /// Tests that Convert handles special characters and invalid values correctly.
+    /// Should process invalid segments that GridLengthConverter cannot handle.
+    /// </summary>
+    [TestCase("100,invalid,*")]
+    [TestCase("@#$,%^&")]
+    [TestCase("100,null,*")]
+    [TestCase("true,false")]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void Convert_ValueWithInvalidSegments_HandlesCorrectly(string value)
+    {
+        // Arrange
+        string[] segments = value.Split(',');
+        // Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.IsTrue(result.StartsWith("new Microsoft.Maui.Controls.RowDefinitionCollection(["));
+        Assert.IsTrue(result.EndsWith("])"));
+        // Should have same number of RowDefinitions as segments (GridLengthConverter handles invalid values)
+        int rowDefinitionCount = result.Split("new RowDefinition(").Length - 1;
+        Assert.AreEqual(segments.Length, rowDefinitionCount);
+    }
+
+    /// <summary>
+    /// Tests that Convert handles strings with special characters correctly.
+    /// Should process special characters that may be valid or invalid for GridLength conversion.
+    /// </summary>
+    [TestCase("100,@#$,*")]
+    [TestCase("Auto,unicode\u00A0test,100")]
+    [TestCase("100,\t\r\n,*")]
+    [TestCase("*,control\x01chars,Auto")]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void Convert_StringsWithSpecialCharacters_HandlesCorrectly(string value)
+    {
+        // Arrange & Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.IsTrue(result.StartsWith("new Microsoft.Maui.Controls.RowDefinitionCollection(["));
+        Assert.IsTrue(result.EndsWith("])"));
+        // Should create RowDefinitions for all segments (some may be default)
+        string[] segments = value.Split(',');
+        int rowDefinitionCount = result.Split("new RowDefinition(").Length - 1;
+        Assert.AreEqual(segments.Length, rowDefinitionCount);
+    }
+
+    /// <summary>
+    /// Tests that Convert handles collections with duplicate values correctly.
+    /// Should create separate RowDefinitions for each duplicate value.
+    /// </summary>
+    [TestCase("100,100,100")]
+    [TestCase("*,*")]
+    [TestCase("Auto,Auto,Auto,Auto")]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void Convert_CollectionWithDuplicates_CreatesAllRowDefinitions(string value)
+    {
+        // Arrange
+        string[] segments = value.Split(',');
+        // Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.IsTrue(result.StartsWith("new Microsoft.Maui.Controls.RowDefinitionCollection(["));
+        Assert.IsTrue(result.EndsWith("])"));
+        // Should create RowDefinitions for all segments, even duplicates
+        int rowDefinitionCount = result.Split("new RowDefinition(").Length - 1;
+        Assert.AreEqual(segments.Length, rowDefinitionCount);
+    }
+
 }

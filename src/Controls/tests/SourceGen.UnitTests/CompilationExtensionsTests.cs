@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
 using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 
 /// <summary>
 /// Unit tests for the CompilationExtensions class.
@@ -59,6 +61,7 @@ public class CompilationExtensionsTests
     [Test]
     [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     [Category("auto-generated")]
+    [Category("ProductionBugSuspected")]
     public void GetAllAssemblies_NullCompilation_ThrowsArgumentNullException()
     {
         // Arrange
@@ -92,6 +95,60 @@ public class CompilationExtensionsTests
         Assert.That(result.Length, Is.GreaterThanOrEqualTo(2));
         Assert.That(result, Contains.Item(compilation.Assembly));
         Assert.That(result, Contains.Item(compilation.ObjectType.ContainingAssembly));
+    }
+
+
+    /// <summary>
+    /// Tests GetAssembly method with null compilation parameter.
+    /// Should throw ArgumentNullException when compilation is null.
+    /// </summary>
+    [Test]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    [Category("ProductionBugSuspected")]
+    public void GetAssembly_NullCompilation_ThrowsArgumentNullException()
+    {
+        // Arrange
+        Compilation? compilation = null;
+        const string assemblyName = "TestAssembly";
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => compilation!.GetAssembly(assemblyName));
+    }
+
+    /// <summary>
+    /// Tests GetAssembly method with null assembly name parameter.
+    /// Input: Valid compilation, null assembly name.
+    /// Expected: Returns null as no assembly will have null as its name.
+    /// </summary>
+    [Test]
+    [Category("auto-generated")]
+    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
+    public void GetAssembly_NullAssemblyName_ReturnsNull()
+    {
+        // Arrange
+        var mockCompilation = new Mock<Compilation>();
+        var mockAssembly1 = new Mock<IAssemblySymbol>();
+        var mockAssembly2 = new Mock<IAssemblySymbol>();
+        var mockObjectType = new Mock<INamedTypeSymbol>();
+        var mockSourceModule = new Mock<IModuleSymbol>();
+        var mockIdentity1 = new Mock<AssemblyIdentity>("TestAssembly");
+        var mockIdentity2 = new Mock<AssemblyIdentity>("ObjectAssembly");
+
+        mockAssembly1.Setup(a => a.Identity).Returns(mockIdentity1.Object);
+        mockAssembly2.Setup(a => a.Identity).Returns(mockIdentity2.Object);
+
+        mockCompilation.Setup(c => c.Assembly).Returns(mockAssembly1.Object);
+        mockCompilation.Setup(c => c.ObjectType).Returns(mockObjectType.Object);
+        mockObjectType.Setup(ot => ot.ContainingAssembly).Returns(mockAssembly2.Object);
+        mockCompilation.Setup(c => c.SourceModule).Returns(mockSourceModule.Object);
+        mockSourceModule.Setup(sm => sm.ReferencedAssemblySymbols).Returns(ImmutableArray<IAssemblySymbol>.Empty);
+
+        // Act
+        var result = mockCompilation.Object.GetAssembly(null!);
+
+        // Assert
+        Assert.IsNull(result);
     }
 
 }

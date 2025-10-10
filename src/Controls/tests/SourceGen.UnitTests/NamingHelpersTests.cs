@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
@@ -11,6 +12,7 @@ using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 
 
 
@@ -70,5 +72,6 @@ public class TestClass<T>
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => NamingHelpers.CreateUniqueVariableName(null!, symbol));
     }
+
 
 }
