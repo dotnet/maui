@@ -11,12 +11,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-		<PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)">
+		<PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftCodeCoveragePackageVersion)">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-    <PackageReference Include="SkiaSharp" />
-    <PackageReference Include="SkiaSharp.Extended" />
+    	<PackageReference Include="SkiaSharp" />
+    	<PackageReference Include="SkiaSharp.Extended" />
 	</ItemGroup>
 
 	<ItemGroup>

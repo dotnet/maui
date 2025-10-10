@@ -24,7 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)"/>
+    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftCodeCoveragePackageVersion)">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
   </ItemGroup>
