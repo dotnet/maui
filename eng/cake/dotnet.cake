@@ -871,11 +871,13 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                     {
                         args.Append($"/p:{prop.Key}={prop.Value}");
                     }        
-                }        
-                    
+                }
+
                 // https://github.com/microsoft/vstest/issues/5112
                 args.Append($"/p:VStestUseMSBuildOutput=false");
-                
+
+                // Code coverage
+                args.Append($"--collect \"XPlat Code Coverage\" --settings \"./coverage.runsettings\"");
                 return args;
             }
         };
