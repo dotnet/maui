@@ -24,28 +24,32 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				//For some reason, using  TextBlock and getting the AlphaMask
-				//generates a shadow with a size more smaller than the control size. 
-				if (element is TextBlock textElement)
+				var visual = ElementCompositionPreview.GetElementVisual(element);
+				var isClipped = visual.Clip is not null;
+
+				if (!isClipped && element is TextBlock textElement)
 				{
 					return textElement.GetAlphaMask();
 				}
-				if (element is Image image)
+				if (!isClipped && element is Image image)
 				{
 					return image.GetAlphaMask();
 				}
-				if (element is Shape shape)
+				if (!isClipped && element is Shape shape)
 				{
 					return shape.GetAlphaMask();
 				}
-				else if (element is FrameworkElement frameworkElement)
+				if (!isClipped && element is ContentPanel contentPanel)
+				{
+					return contentPanel.BorderPath?.GetAlphaMask();
+				}
+				if (element is FrameworkElement frameworkElement)
 				{
 					var height = (int)frameworkElement.ActualHeight;
 					var width = (int)frameworkElement.ActualWidth;
 
 					if (height > 0 && width > 0)
 					{
-						var visual = ElementCompositionPreview.GetElementVisual(element);
 						var elementVisual = visual.Compositor.CreateSpriteVisual();
 						elementVisual.Size = element.RenderSize.ToVector2();
 						var bitmap = new RenderTargetBitmap();
