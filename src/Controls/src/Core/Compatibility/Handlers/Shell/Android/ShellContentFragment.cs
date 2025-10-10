@@ -150,9 +150,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
-
-			// No need to call TrySetGlobalWindowInsetListener since the CoordinatorLayout 
-			// is set up with its own local inset listener
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 

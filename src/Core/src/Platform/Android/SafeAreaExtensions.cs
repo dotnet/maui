@@ -62,6 +62,21 @@ internal static class SafeAreaExtensions
             var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
             var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
+            if (isKeyboardShowing &&
+                context.GetActivity()?.Window is Window window &&
+                window?.Attributes is WindowManagerLayoutParams attr)
+            {
+                // If the window is panned from the keyboard being open
+                // and there isn't a bottom inset to apply then just don't touch anything
+                var softInputMode = attr.SoftInputMode;
+                if (softInputMode == SoftInput.AdjustPan
+                    && bottom == 0
+                )
+                {
+                    return WindowInsetsCompat.Consumed;
+                }
+            }
+
             var globalWindowInsetsListener = context.GetGlobalWindowInsetListener();
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
 
