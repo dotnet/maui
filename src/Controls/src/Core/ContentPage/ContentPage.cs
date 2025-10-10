@@ -196,8 +196,8 @@ namespace Microsoft.Maui.Controls
 
 			#else
 			
-			// By default on android it was never edge to edge so we set this to container by default
-			return SafeAreaRegions.Container;
+			// Default to None (edge-to-edge) for consistent behavior across all platforms
+			return SafeAreaRegions.None;
 
 			#endif
 		}
