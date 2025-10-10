@@ -36,8 +36,8 @@ namespace MyApp
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		// Check it implements IQueryAttributable
-		Assert.That(generatedSource, Does.Contain("partial class MyPage : Microsoft.Maui.Controls.IQueryAttributable"));
-		Assert.That(generatedSource, Does.Contain("void Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)"));
+		Assert.That(generatedSource, Does.Contain("partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
+		Assert.That(generatedSource, Does.Contain("void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query)"));
 
 		// Check URL decoding for string
 		Assert.That(generatedSource, Does.Contain("global::System.Net.WebUtility.UrlDecode"));
@@ -267,7 +267,7 @@ namespace MyApp
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
-		Assert.That(generatedSource, Does.Contain("partial class BearDetailPage : Microsoft.Maui.Controls.IQueryAttributable"));
+		Assert.That(generatedSource, Does.Contain("partial class BearDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"Bear\", out var BearValue))"));
 	}
 
@@ -312,7 +312,7 @@ namespace MyApp
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
-		Assert.That(generatedSource, Does.Contain("partial class ElephantDetailPage : Microsoft.Maui.Controls.IQueryAttributable"));
+		Assert.That(generatedSource, Does.Contain("partial class ElephantDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"name\", out var nameValue))"));
 		Assert.That(generatedSource, Does.Contain("if (query.TryGetValue(\"location\", out var locationValue))"));
 		Assert.That(generatedSource, Does.Contain("Name = global::System.Net.WebUtility.UrlDecode"));
@@ -417,7 +417,7 @@ public partial class MyPage : ContentPage
 
 		// Should not have namespace declaration
 		Assert.That(generatedSource, Does.Not.Contain("namespace "));
-		Assert.That(generatedSource, Does.Contain("partial class MyPage : Microsoft.Maui.Controls.IQueryAttributable"));
+		Assert.That(generatedSource, Does.Contain("partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
 	}
 
 	[Test]
@@ -444,10 +444,10 @@ namespace MyApp
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		// Check that it tracks previous keys and clears properties
-		Assert.That(generatedSource, Does.Contain("var previousKeys = _queryPropertyKeys ?? new HashSet<string>()"));
-		Assert.That(generatedSource, Does.Contain("_queryPropertyKeys = new HashSet<string>()"));
+		Assert.That(generatedSource, Does.Contain("var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>()"));
+		Assert.That(generatedSource, Does.Contain("_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>()"));
 		Assert.That(generatedSource, Does.Contain("else if (previousKeys.Contains(\"name\"))"));
-		Assert.That(generatedSource, Does.Contain("private HashSet<string>? _queryPropertyKeys"));
+		Assert.That(generatedSource, Does.Contain("private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys"));
 	}
 
 	[Test]
@@ -510,8 +510,8 @@ namespace MyApp
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
 		// Verify key aspects of the generated code
-		Assert.That(generatedSource, Does.Contain("partial class PersonDetailsPage : Microsoft.Maui.Controls.IQueryAttributable"));
-		Assert.That(generatedSource, Does.Contain("void Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)"));
+		Assert.That(generatedSource, Does.Contain("partial class PersonDetailsPage : global::Microsoft.Maui.Controls.IQueryAttributable"));
+		Assert.That(generatedSource, Does.Contain("void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query)"));
 
 		// Verify string handling with URL decoding
 		Assert.That(generatedSource, Does.Contain("global::System.Net.WebUtility.UrlDecode"));
