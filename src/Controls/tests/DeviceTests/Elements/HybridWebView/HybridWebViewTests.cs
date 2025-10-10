@@ -369,6 +369,43 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("test_value", result2);
 			});
 
+		[Fact]
+		public Task SourcePropertyNavigatesCorrectly() =>
+			RunTest(async (hybridWebView) =>
+			{
+				// Set up initial navigation verification
+				await Task.Delay(1000); // Wait for initial load
+
+				// Get initial location
+				var initialLocation = await hybridWebView.EvaluateJavaScriptAsync("window.location.href");
+				Assert.NotNull(initialLocation);
+
+				// Set a hash-based route
+				hybridWebView.Source = "#/test-route";
+				await Task.Delay(1000); // Wait for navigation
+
+				// Verify the location changed
+				var newLocation = await hybridWebView.EvaluateJavaScriptAsync("window.location.href");
+				Assert.NotNull(newLocation);
+				Assert.Contains("#/test-route", newLocation);
+			});
+
+		[Fact]
+		public Task SourcePropertyHandlesSpecialCharacters() =>
+			RunTest(async (hybridWebView) =>
+			{
+				await Task.Delay(1000); // Wait for initial load
+
+				// Test with quotes and special characters
+				hybridWebView.Source = "#/test's-route";
+				await Task.Delay(1000);
+
+				var location = await hybridWebView.EvaluateJavaScriptAsync("window.location.href");
+				Assert.NotNull(location);
+				// Should handle the apostrophe without breaking JavaScript
+				Assert.Contains("test's-route", location);
+			});
+
 		[Theory]
 		[ClassData(typeof(InvokeJavaScriptAsyncTestData))]
 		public Task InvokeDotNet(string methodName, string expectedReturnValue) =>

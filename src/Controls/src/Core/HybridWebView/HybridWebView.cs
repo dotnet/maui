@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -19,6 +20,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HybridRootProperty =
 			BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
 
+		/// <summary>Bindable property for <see cref="Source"/>.</summary>
+		public static readonly BindableProperty SourceProperty =
+			BindableProperty.Create(nameof(Source), typeof(string), typeof(HybridWebView), defaultValue: null,
+				propertyChanged: OnSourcePropertyChanged);
+
 
 		/// <inheritdoc/>
 		public string? DefaultFile
@@ -32,6 +38,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(HybridRootProperty); }
 			set { SetValue(HybridRootProperty, value); }
+		}
+
+		/// <inheritdoc/>
+		public string? Source
+		{
+			get { return (string)GetValue(SourceProperty); }
+			set { SetValue(SourceProperty, value); }
 		}
 
 		/// <inheritdoc/>
@@ -156,6 +169,29 @@ namespace Microsoft.Maui.Controls
 				new EvaluateJavaScriptAsyncRequest(script));
 
 			return result;
+		}
+
+		static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is HybridWebView hybridWebView && newValue is string source && !string.IsNullOrEmpty(source))
+			{
+				// Navigate to the new source by setting window.location in JavaScript
+				// This allows navigation to specific routes within a SPA
+				Task.Run(async () =>
+				{
+					try
+					{
+						// Use the existing WebView helper to properly escape the source for JavaScript
+						var escapedSource = WebViewHelper.EscapeJsString(source);
+						await hybridWebView.EvaluateJavaScriptAsync($"window.location = '{escapedSource}';");
+					}
+					catch
+					{
+						// Ignore navigation errors - the web view may not be loaded yet
+						// or the source may be invalid
+					}
+				});
+			}
 		}
 	}
 }
