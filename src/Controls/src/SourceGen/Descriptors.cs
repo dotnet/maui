@@ -186,6 +186,31 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		//QueryPropertyGenerator
+		public static DiagnosticDescriptor QueryPropertyClassMustBePartial = new DiagnosticDescriptor(
+			id: "MAUI1200",
+			title: "Class with QueryProperty must be partial",
+			messageFormat: "Class '{0}' with QueryProperty attributes must be declared as partial to allow source generation",
+			category: "QueryPropertyGenerator",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor QueryPropertyNotFound = new DiagnosticDescriptor(
+			id: "MAUI1201",
+			title: "Property not found",
+			messageFormat: "Property '{0}' specified in QueryProperty attribute was not found in class '{1}'",
+			category: "QueryPropertyGenerator",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor QueryPropertySetterNotPublic = new DiagnosticDescriptor(
+			id: "MAUI1202",
+			title: "Property must have public setter",
+			messageFormat: "Property '{0}' in QueryProperty attribute must have a public setter",
+			category: "QueryPropertyGenerator",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
 		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");

@@ -7,56 +7,78 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using static GeneratorHelpers;
+
 [Generator(LanguageNames.CSharp)]
 public class QueryPropertyGenerator : IIncrementalGenerator
 {
+	const string QueryPropertyAttributeFullName = "Microsoft.Maui.Controls.QueryPropertyAttribute";
+
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		// Filter classes with QueryPropertyAttribute
+		// Use ForAttributeWithMetadataName for better performance when filtering by attribute
 		var classesWithQueryProperty = context.SyntaxProvider
-			.CreateSyntaxProvider(
-				predicate: static (node, _) => IsClassWithAttribute(node),
-				transform: static (ctx, _) => GetClassInfo(ctx))
-			.Where(static m => m is not null);
+			.ForAttributeWithMetadataName(
+				QueryPropertyAttributeFullName,
+				predicate: static (node, _) => node is ClassDeclarationSyntax,
+				transform: static (ctx, ct) => GetClassInfo(ctx, ct))
+			.Where(static m => m.HasValue);
 
 		// Generate source for each class
-		context.RegisterSourceOutput(classesWithQueryProperty, static (spc, classInfo) =>
+		context.RegisterSourceOutput(classesWithQueryProperty, static (spc, classInfoNullable) =>
 		{
-			if (classInfo is null)
+			if (!classInfoNullable.HasValue)
 				return;
 
-			var source = GenerateSource(classInfo.Value);
-			spc.AddSource($"{classInfo.Value.ClassName}_QueryProperty.g.cs", source);
+			var classInfo = classInfoNullable.Value;
+
+			// Report diagnostics
+			foreach (var diagnostic in classInfo.Diagnostics)
+			{
+				spc.ReportDiagnostic(diagnostic);
+			}
+
+			// Only generate if there are valid properties
+			if (classInfo.PropertyMappings.Length > 0)
+			{
+				var source = GenerateSource(classInfo);
+				spc.AddSource($"{classInfo.ClassName}_QueryProperty.g.cs", source);
+			}
 		});
 	}
 
-	private static bool IsClassWithAttribute(SyntaxNode node)
+	private static ClassInfo? GetClassInfo(GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken cancellationToken)
 	{
-		return node is ClassDeclarationSyntax classDecl && classDecl.AttributeLists.Count > 0;
-	}
+		var classDecl = (ClassDeclarationSyntax)context.TargetNode;
+		var classSymbol = context.TargetSymbol as INamedTypeSymbol;
 
-	private static ClassInfo? GetClassInfo(GeneratorSyntaxContext context)
-	{
-		var classDecl = (ClassDeclarationSyntax)context.Node;
-		var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDecl);
-		
 		if (classSymbol is null)
 			return null;
 
-		// Get all QueryPropertyAttribute instances
-		var queryPropertyAttributes = classSymbol.GetAttributes()
-			.Where(attr => attr.AttributeClass?.Name == "QueryPropertyAttribute" &&
-			               attr.AttributeClass?.ContainingNamespace?.ToString() == "Microsoft.Maui.Controls")
-			.ToImmutableArray();
+		var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
 
-		if (queryPropertyAttributes.IsEmpty)
-			return null;
+		// Check if the class is partial
+		var isPartial = classDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+		if (!isPartial)
+		{
+			var diagnostic = Diagnostic.Create(
+				Descriptors.QueryPropertyClassMustBePartial,
+				classDecl.Identifier.GetLocation(),
+				classSymbol.Name);
+			diagnostics.Add(diagnostic);
+			return new ClassInfo(classSymbol.Name, null, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
+		}
+
+		// Get all QueryPropertyAttribute instances on this class
+		var queryPropertyAttributes = context.Attributes;
 
 		// Extract property mappings
 		var propertyMappings = ImmutableArray.CreateBuilder<PropertyMapping>();
-		
+
 		foreach (var attr in queryPropertyAttributes)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
+
 			if (attr.ConstructorArguments.Length != 2)
 				continue;
 
@@ -72,20 +94,30 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				.FirstOrDefault();
 
 			if (property is null)
+			{
+				var diagnostic = Diagnostic.Create(
+					Descriptors.QueryPropertyNotFound,
+					classDecl.Identifier.GetLocation(),
+					propertyName,
+					classSymbol.Name);
+				diagnostics.Add(diagnostic);
 				continue;
+			}
+
+			if (property.SetMethod is null || property.SetMethod.DeclaredAccessibility != Accessibility.Public)
+			{
+				var diagnostic = Diagnostic.Create(
+					Descriptors.QueryPropertySetterNotPublic,
+					classDecl.Identifier.GetLocation(),
+					propertyName);
+				diagnostics.Add(diagnostic);
+				continue;
+			}
 
 			propertyMappings.Add(new PropertyMapping(propertyName!, queryId!, property.Type.ToFQDisplayString()));
 		}
 
 		var propertyMappingsArray = propertyMappings.ToImmutable();
-		
-		if (propertyMappingsArray.IsEmpty)
-			return null;
-
-		// Check if class already implements IQueryAttributable
-		var implementsIQueryAttributable = classSymbol.AllInterfaces
-			.Any(i => i.Name == "IQueryAttributable" &&
-			          i.ContainingNamespace?.ToString() == "Microsoft.Maui.Controls");
 
 		// Get namespace
 		var namespaceName = classSymbol.ContainingNamespace?.ToString();
@@ -96,19 +128,18 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			classSymbol.Name,
 			namespaceName,
 			propertyMappingsArray,
-			implementsIQueryAttributable);
+			diagnostics.ToImmutable());
 	}
 
 	private static string GenerateSource(ClassInfo classInfo)
 	{
 		var sb = new StringBuilder();
 
-		sb.AppendLine("// <auto-generated />");
+		sb.AppendLine(AutoGeneratedHeaderText);
 		sb.AppendLine("#nullable enable");
 		sb.AppendLine();
 		sb.AppendLine("using System;");
 		sb.AppendLine("using System.Collections.Generic;");
-		sb.AppendLine("using System.Linq;");
 		sb.AppendLine();
 
 		if (classInfo.Namespace is not null)
@@ -119,7 +150,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 		// Generate partial class
 		var indent = classInfo.Namespace is not null ? "\t" : "";
-		sb.AppendLine($"{indent}partial class {classInfo.ClassName} : Microsoft.Maui.Controls.IQueryAttributable");
+		sb.AppendLine($"{indent}partial class {classInfo.ClassName} : global::Microsoft.Maui.Controls.IQueryAttributable");
 		sb.AppendLine($"{indent}{{");
 
 		// Generate ApplyQueryAttributes method
@@ -127,7 +158,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		sb.AppendLine($"{indent}\t/// Applies query attributes from navigation parameters.");
 		sb.AppendLine($"{indent}\t/// This method is generated by the QueryPropertyGenerator.");
 		sb.AppendLine($"{indent}\t/// </summary>");
-		sb.AppendLine($"{indent}\tvoid Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)");
+		sb.AppendLine($"{indent}\tvoid global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query)");
 		sb.AppendLine($"{indent}\t{{");
 		sb.AppendLine($"{indent}\t\tif (query == null)");
 		sb.AppendLine($"{indent}\t\t\treturn;");
@@ -135,22 +166,23 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 		// Store old query keys for clearing
 		sb.AppendLine($"{indent}\t\t// Track which properties were set in previous navigation");
-		sb.AppendLine($"{indent}\t\tvar previousKeys = _queryPropertyKeys ?? new HashSet<string>();");
-		sb.AppendLine($"{indent}\t\t_queryPropertyKeys = new HashSet<string>();");
+		sb.AppendLine($"{indent}\t\tvar previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();");
+		sb.AppendLine($"{indent}\t\t_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();");
 		sb.AppendLine();
 
 		// Generate property setting code for each mapping
 		foreach (var mapping in classInfo.PropertyMappings)
 		{
-			sb.AppendLine($"{indent}\t\tif (query.TryGetValue(\"{mapping.QueryId}\", out var {mapping.QueryId}Value))");
+			var escapedQueryId = EscapeIdentifier(mapping.QueryId);
+			sb.AppendLine($"{indent}\t\tif (query.TryGetValue(\"{mapping.QueryId}\", out var {escapedQueryId}Value))");
 			sb.AppendLine($"{indent}\t\t{{");
 			sb.AppendLine($"{indent}\t\t\t_queryPropertyKeys.Add(\"{mapping.QueryId}\");");
-			
+
 			if (mapping.PropertyType == "string")
 			{
 				// For string properties, apply URL decoding
-				sb.AppendLine($"{indent}\t\t\tif ({mapping.QueryId}Value != null)");
-				sb.AppendLine($"{indent}\t\t\t\t{mapping.PropertyName} = global::System.Net.WebUtility.UrlDecode({mapping.QueryId}Value.ToString());");
+				sb.AppendLine($"{indent}\t\t\tif ({escapedQueryId}Value != null)");
+				sb.AppendLine($"{indent}\t\t\t\t{mapping.PropertyName} = global::System.Net.WebUtility.UrlDecode({escapedQueryId}Value.ToString());");
 				sb.AppendLine($"{indent}\t\t\telse");
 				sb.AppendLine($"{indent}\t\t\t\t{mapping.PropertyName} = null;");
 			}
@@ -159,9 +191,9 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				// For non-string properties, use Convert.ChangeType
 				sb.AppendLine($"{indent}\t\t\ttry");
 				sb.AppendLine($"{indent}\t\t\t{{");
-				sb.AppendLine($"{indent}\t\t\t\tif ({mapping.QueryId}Value != null)");
+				sb.AppendLine($"{indent}\t\t\t\tif ({escapedQueryId}Value != null)");
 				sb.AppendLine($"{indent}\t\t\t\t{{");
-				sb.AppendLine($"{indent}\t\t\t\t\tvar convertedValue = Convert.ChangeType({mapping.QueryId}Value, typeof({mapping.PropertyType}));");
+				sb.AppendLine($"{indent}\t\t\t\t\tvar convertedValue = global::System.Convert.ChangeType({escapedQueryId}Value, typeof({mapping.PropertyType}));");
 				sb.AppendLine($"{indent}\t\t\t\t\t{mapping.PropertyName} = ({mapping.PropertyType})convertedValue;");
 				sb.AppendLine($"{indent}\t\t\t\t}}");
 				sb.AppendLine($"{indent}\t\t\t}}");
@@ -170,12 +202,12 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				sb.AppendLine($"{indent}\t\t\t\t// Ignore conversion errors");
 				sb.AppendLine($"{indent}\t\t\t}}");
 			}
-			
+
 			sb.AppendLine($"{indent}\t\t}}");
 			sb.AppendLine($"{indent}\t\telse if (previousKeys.Contains(\"{mapping.QueryId}\"))");
 			sb.AppendLine($"{indent}\t\t{{");
 			sb.AppendLine($"{indent}\t\t\t// Clear property if it was set before but not in current query");
-			
+
 			if (IsNullableType(mapping.PropertyType))
 			{
 				sb.AppendLine($"{indent}\t\t\t{mapping.PropertyName} = default;");
@@ -184,16 +216,16 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			{
 				sb.AppendLine($"{indent}\t\t\t// Property is not nullable, skipping clear");
 			}
-			
+
 			sb.AppendLine($"{indent}\t\t}}");
 			sb.AppendLine();
 		}
 
 		sb.AppendLine($"{indent}\t}}");
 		sb.AppendLine();
-		
+
 		// Add field to track query keys
-		sb.AppendLine($"{indent}\tprivate HashSet<string>? _queryPropertyKeys;");
+		sb.AppendLine($"{indent}\tprivate global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;");
 
 		sb.AppendLine($"{indent}}}");
 
@@ -207,9 +239,9 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 	private static bool IsNullableType(string typeName)
 	{
-		return typeName == "string" || 
-		       typeName.EndsWith("?") ||
-		       typeName.Contains("System.Nullable<");
+		return typeName == "string" ||
+			   typeName.EndsWith("?") ||
+			   typeName.Contains("System.Nullable<");
 	}
 
 	private record struct PropertyMapping(string PropertyName, string QueryId, string PropertyType);
@@ -218,5 +250,5 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		string ClassName,
 		string? Namespace,
 		ImmutableArray<PropertyMapping> PropertyMappings,
-		bool AlreadyImplementsIQueryAttributable);
+		ImmutableArray<Diagnostic> Diagnostics);
 }

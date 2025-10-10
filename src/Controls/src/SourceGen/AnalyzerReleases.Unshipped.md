@@ -14,3 +14,6 @@ MAUIX2001 | XamlInflation | Error | Descriptors
 MAUIX2002 | XamlInflation | Error | Descriptors
 MAUIX2003 | XamlInflation | Error | Descriptors
 MAUIX2004 | XamlInflation | Error | Descriptors
+MAUI1200 | QueryPropertyGenerator | Error | QueryPropertyClassMustBePartial
+MAUI1201 | QueryPropertyGenerator | Warning | QueryPropertyNotFound
+MAUI1202 | QueryPropertyGenerator | Warning | QueryPropertySetterNotPublic
