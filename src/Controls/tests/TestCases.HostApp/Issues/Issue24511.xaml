@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue24511">
+        <CollectionView  BackgroundColor="Green"
+                         AutomationId="CV"
+                         x:Name="CV">
+                <CollectionView.ItemsLayout>
+                        <GridItemsLayout
+                                Orientation="Vertical"
+                                HorizontalItemSpacing="10"
+                                Span="3"
+                                VerticalItemSpacing="10"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                                <VerticalStackLayout BackgroundColor="Blue">
+                                        <Image
+                                                Source="dotnet_bot.png"
+                                                BackgroundColor="Red"
+                                                HorizontalOptions="Fill"/>
+                                        <Label Text="Hello, .NET MAUI!"/>
+                                </VerticalStackLayout>
+                        </DataTemplate>
+                </CollectionView.ItemTemplate>
+        </CollectionView>
+</ContentPage>
