@@ -10,6 +10,7 @@ public class Issue30597 : ContentPage
 			Placeholder = "Placeholder with AppThemeBinding - red/green"
 		};
 		searchBar3.SetAppThemeColor(SearchBar.PlaceholderColorProperty, Colors.Red, Colors.Green);
+		this.SetAppThemeColor(BackgroundProperty, Colors.White, Colors.Black);
 
 		Content = new StackLayout
 		{

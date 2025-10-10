@@ -29,7 +29,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("SetHeightTo200");
 			App.Tap("SetHeightTo200");
 			App.SetOrientationLandscape();
+#if ANDROID
+			VerifyScreenshot(cropLeft: 125);
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 	}

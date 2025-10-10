@@ -659,7 +659,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
 				{
-					if (pair.Item == args.Item)
+					if (Equals(pair.Item, args.Item))
 					{
 						return CollectionViewSource.View[n];
 					}

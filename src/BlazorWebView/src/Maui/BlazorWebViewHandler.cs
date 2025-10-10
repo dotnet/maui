@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
+#if WINDOWS
+            [nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
+
 		};
 
 		/// <summary>

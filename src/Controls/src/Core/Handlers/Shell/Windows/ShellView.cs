@@ -122,20 +122,34 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_flyoutGrouping = newGrouping;
 				var newItems = IterateItems(newGrouping).ToList();
+				var newItemsSet = new HashSet<object>(newItems);
+				var flyoutItemsSet = new HashSet<object>(FlyoutItems);
 
-				foreach (var item in newItems)
+				for (int index = 0; index < newItems.Count; index++)
 				{
-					if (!FlyoutItems.Contains(item))
+					var item = newItems[index];
+
+					if (!flyoutItemsSet.Contains(item))
 					{
-						FlyoutItems.Add(item);
+						// Use Insert when within bounds, otherwise Add
+						if (index < FlyoutItems.Count)
+						{
+							FlyoutItems.Insert(index, item);
+						}
+						else
+						{
+							FlyoutItems.Add(item);
+						}
 					}
 				}
 
 				for (var i = FlyoutItems.Count - 1; i >= 0; i--)
 				{
 					var item = FlyoutItems[i];
-					if (!newItems.Contains(item))
+					if (!newItemsSet.Contains(item))
+					{
 						FlyoutItems.RemoveAt(i);
+					}
 				}
 			}
 
