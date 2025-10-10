@@ -103,13 +103,29 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is not null)
+				{
 					VirtualView.IsFocused = true;
+					
+					// Notify VoiceOver that the time picker popup has appeared
+					if (sender is MauiTimePicker platformView && platformView.Picker is not null)
+					{
+						platformView.PostAccessibilityFocusNotification(platformView.Picker);
+					}
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is not null)
+				{
 					VirtualView.IsFocused = false;
+					
+					// Restore VoiceOver focus to the time picker field when the popup closes
+					if (sender is MauiTimePicker platformView)
+					{
+						platformView.PostAccessibilityFocusNotification();
+					}
+				}
 			}
 
 			void OnValueChanged(object? sender, EventArgs e)
