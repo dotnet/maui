@@ -35,3 +35,4 @@ MAUIX2016 | XamlParsing | Error | XCodeRequiresXClass
 MAUI1200 | QueryPropertyGenerator | Error | QueryPropertyClassMustBePartial
 MAUI1201 | QueryPropertyGenerator | Warning | QueryPropertyNotFound
 MAUI1202 | QueryPropertyGenerator | Warning | QueryPropertySetterNotPublic
+MAUI1203 | QueryPropertyGenerator | Warning | QueryPropertyAttributeInvalidArguments

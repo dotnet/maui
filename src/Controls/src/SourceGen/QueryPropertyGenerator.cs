@@ -21,17 +21,11 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			.ForAttributeWithMetadataName(
 				QueryPropertyAttributeFullName,
 				predicate: static (node, _) => node is ClassDeclarationSyntax,
-				transform: static (ctx, ct) => GetClassInfo(ctx, ct))
-			.Where(static m => m.HasValue);
+				transform: static (ctx, ct) => GetClassInfo(ctx, ct));
 
 		// Generate source for each class
-		context.RegisterSourceOutput(classesWithQueryProperty, static (spc, classInfoNullable) =>
+		context.RegisterSourceOutput(classesWithQueryProperty, static (spc, classInfo) =>
 		{
-			if (!classInfoNullable.HasValue)
-				return;
-
-			var classInfo = classInfoNullable.Value;
-
 			// Report diagnostics
 			foreach (var diagnostic in classInfo.Diagnostics)
 			{
@@ -47,13 +41,10 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		});
 	}
 
-	private static ClassInfo? GetClassInfo(GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken cancellationToken)
+	private static ClassInfo GetClassInfo(GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken cancellationToken)
 	{
 		var classDecl = (ClassDeclarationSyntax)context.TargetNode;
-		var classSymbol = context.TargetSymbol as INamedTypeSymbol;
-
-		if (classSymbol is null)
-			return null;
+		var classSymbol = (INamedTypeSymbol)context.TargetSymbol;
 
 		var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
 
@@ -86,7 +77,14 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			var queryId = attr.ConstructorArguments[1].Value as string;
 
 			if (string.IsNullOrEmpty(propertyName) || string.IsNullOrEmpty(queryId))
+			{
+				var diagnostic = Diagnostic.Create(
+					Descriptors.QueryPropertyAttributeInvalidArguments,
+					classDecl.Identifier.GetLocation(),
+					classSymbol.Name);
+				diagnostics.Add(diagnostic);
 				continue;
+			}
 
 			// Find the property to get its type
 			var property = classSymbol.GetMembers(propertyName!)
@@ -189,17 +187,10 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			else
 			{
 				// For non-string properties, use Convert.ChangeType
-				sb.AppendLine($"{indent}\t\t\ttry");
+				sb.AppendLine($"{indent}\t\t\tif ({escapedQueryId}Value != null)");
 				sb.AppendLine($"{indent}\t\t\t{{");
-				sb.AppendLine($"{indent}\t\t\t\tif ({escapedQueryId}Value != null)");
-				sb.AppendLine($"{indent}\t\t\t\t{{");
-				sb.AppendLine($"{indent}\t\t\t\t\tvar convertedValue = global::System.Convert.ChangeType({escapedQueryId}Value, typeof({mapping.PropertyType}));");
-				sb.AppendLine($"{indent}\t\t\t\t\t{mapping.PropertyName} = ({mapping.PropertyType})convertedValue;");
-				sb.AppendLine($"{indent}\t\t\t\t}}");
-				sb.AppendLine($"{indent}\t\t\t}}");
-				sb.AppendLine($"{indent}\t\t\tcatch");
-				sb.AppendLine($"{indent}\t\t\t{{");
-				sb.AppendLine($"{indent}\t\t\t\t// Ignore conversion errors");
+				sb.AppendLine($"{indent}\t\t\t\tvar convertedValue = global::System.Convert.ChangeType({escapedQueryId}Value, typeof({mapping.PropertyType}));");
+				sb.AppendLine($"{indent}\t\t\t\t{mapping.PropertyName} = ({mapping.PropertyType})convertedValue;");
 				sb.AppendLine($"{indent}\t\t\t}}");
 			}
 
