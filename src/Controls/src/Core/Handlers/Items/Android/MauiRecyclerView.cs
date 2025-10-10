@@ -15,7 +15,7 @@ using AViewCompat = AndroidX.Core.View.ViewCompat;
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 
-	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>
+	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerViewWithUpdates<TItemsView>
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -43,10 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		ItemTouchHelper _itemTouchHelper;
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
-		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
-		PropertyChangedEventHandler _layoutPropertyChanged;
 
-		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
+		//TODO: Remove this in .NET 10
+		~MauiRecyclerView() { }
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
 		{
@@ -59,13 +58,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void TearDownOldElement(TItemsView oldElement)
 		{
-			// Stop listening for layout property changes
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChanged = null;
-			}
-
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
@@ -292,16 +284,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
-
-			_layoutPropertyChangedProxy?.Unsubscribe();
+			
 			ItemsLayout = itemsLayout;
-
-			// Keep track of the ItemsLayout's property changes
-			if (ItemsLayout is not null)
-			{
-				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(ItemsLayout, _layoutPropertyChanged);
-			}
 
 			SetLayoutManager(SelectLayoutManager(ItemsLayout));
 
@@ -512,20 +496,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ScrollTo(args);
 		}
 
+		//TODO: Remove this in .NET 10
 		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
-			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
+		}
+
+		void IMauiRecyclerViewWithUpdates<TItemsView>.UpdateItemsLayoutProperties(PropertyChangedEventArgs args)
+		{
+
+			if (args.Is(GridItemsLayout.SpanProperty))
 			{
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
 				}
 			}
-			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
+			else if (args.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
 			{
 				UpdateSnapBehavior();
 			}
-			else if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
+			else if (args.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
 				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				UpdateItemSpacing();

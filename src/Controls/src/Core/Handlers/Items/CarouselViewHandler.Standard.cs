@@ -16,5 +16,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView) { }
 		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView) { }
 		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) { }
+		static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args){ }
 	}
 }
