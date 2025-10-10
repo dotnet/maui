@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.Maui.ManualTests.Categories;
 
@@ -16,7 +17,7 @@ public partial class I1_Layout : ContentPage
 		InitializeComponent();
 
 		NavigateCommand = new Command<Type>(
-				async (Type pageType) =>
+				async ([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type pageType) =>
 				{
 					Page page = (Page)Activator.CreateInstance(pageType);
 					await Navigation.PushAsync(page);

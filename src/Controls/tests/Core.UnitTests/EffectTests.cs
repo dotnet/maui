@@ -95,8 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public void RegisterEffect(Effect effect)
 			{
 				var e = effect as CustomEffect;
-				if (e != null)
-					e.Registered = true;
+				e?.Registered = true;
 			}
 		}
 
