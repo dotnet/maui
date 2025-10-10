@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Storage
 	{
 		// Static mapping for file extensions to MIME types
 		// Used as fallback when Windows StorageFile.ContentType doesn't provide correct MIME type
-		static readonly Dictionary<string, string> ExtensionToMimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
+		static readonly FrozenDictionary<string, string> ExtensionToMimeTypeMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 		{
 			// Image formats
 			{ ".jpg", MediaTypeNames.Image.Jpeg },
@@ -143,8 +144,9 @@ namespace Microsoft.Maui.Storage
 			{ ".rar", "application/x-rar-compressed" },
 			{ ".7z", "application/x-7z-compressed" },
 			{ ".tar", "application/x-tar" },
+			{ ".tar.gz", "application/gzip" },
 			{ ".gz", "application/gzip" }
-		};
+		}.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
 		internal FileBase(IStorageFile file)
 			: this(file?.Path)
@@ -182,11 +184,34 @@ namespace Microsoft.Maui.Storage
 			if (string.IsNullOrWhiteSpace(extension))
 				return null;
 
-			extension = extension.ToLowerInvariant();
+			// Trim whitespace and convert to lowercase for consistent matching
+			extension = extension.Trim().ToLowerInvariant();
+			if (string.IsNullOrEmpty(extension))
+				return null;
+
 			if (!extension.StartsWith("."))
 				extension = "." + extension;
 
-			return ExtensionToMimeTypeMap.TryGetValue(extension, out var mimeType) ? mimeType : null;
+			// Try exact match first
+			if (ExtensionToMimeTypeMap.TryGetValue(extension, out var mimeType))
+				return mimeType;
+
+			// For compound extensions like .tar.gz, try to match longer extensions first
+			// This handles cases where we have both .gz and .tar.gz in our mapping
+			var fileName = Path.GetFileNameWithoutExtension(extension);
+			if (!string.IsNullOrEmpty(fileName) && fileName.Contains('.', StringComparison.Ordinal))
+			{
+				// Try progressively longer extensions (e.g., .tar.gz, then .gz)
+				var parts = fileName.Split('.');
+				for (int i = parts.Length - 1; i >= 0; i--)
+				{
+					var compoundExtension = "." + string.Join(".", parts.Skip(i)) + extension;
+					if (ExtensionToMimeTypeMap.TryGetValue(compoundExtension, out mimeType))
+						return mimeType;
+				}
+			}
+
+			return null;
 		}
 
 		internal virtual Task<Stream> PlatformOpenReadAsync() =>

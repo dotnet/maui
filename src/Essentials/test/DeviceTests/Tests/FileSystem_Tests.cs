@@ -59,13 +59,25 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 
 #if WINDOWS
-		[Fact]
-		public async Task EnsureFileResultContentType()
+		[Theory]
+		[InlineData(".jpg", "image/jpeg")]
+		[InlineData(".JPG", "image/jpeg")]
+		[InlineData(".Jpg", "image/jpeg")]
+		[InlineData(".jPg", "image/jpeg")]
+		[InlineData("jpg", "image/jpeg")]
+		[InlineData(".jpg ", "image/jpeg")]  // Trailing space
+		[InlineData(" .jpg", "image/jpeg")]  // Leading space
+		[InlineData(" .jpg ", "image/jpeg")] // Leading and trailing spaces
+		[InlineData(".png", "image/png")]
+		[InlineData(".PNG", "image/png")]
+		[InlineData(".tar.gz", "application/gzip")]
+		[InlineData(".TAR.GZ", "application/gzip")]
+		public async Task EnsureFileResultContentType(string extension, string expectedMimeType)
 		{
-			string filePath = Path.Combine(FileSystem.CacheDirectory, "test.webp");
-			await File.WriteAllTextAsync(filePath, "File Content type is image/webp");
+			string filePath = Path.Combine(FileSystem.CacheDirectory, $"test{extension}");
+			await File.WriteAllTextAsync(filePath, $"File Content type is {expectedMimeType}");
 			FileResult fileResult = new FileResult(filePath);
-			Assert.Equal("image/webp", fileResult.ContentType);
+			Assert.Equal(expectedMimeType, fileResult.ContentType);
 			File.Delete(filePath);
 		}
 #endif
