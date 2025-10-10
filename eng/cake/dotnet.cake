@@ -875,9 +875,23 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
                 // https://github.com/microsoft/vstest/issues/5112
                 args.Append($"/p:VStestUseMSBuildOutput=false");
-                
+                var sourcesDir = Directory(EnvironmentVariable("BUILD_SOURCESDIRECTORY", "artifacts"));
+                var sourceFile = File($"{sourcesDir}/coverage.runsettings");
+                var rootSourceFile = File("./coverage.runsettings");
                 // Code coverage
-                args.Append($"--collect \"Code Coverage\"");
+                if (FileExists(sourceFile))
+                {
+                    args.Append($"--collect \"Code Coverage;Format=cobertura\" --settings \"{sourceFile}\"");
+                }
+                else if (FileExists(rootSourceFile))
+                {
+                    args.Append($"--collect \"Code Coverage;Format=cobertura\" --settings \"{rootSourceFile}\"");
+                }
+                else
+                {
+                    Warning($"coverage.runsettings file not found at {sourceFile} or {rootSourceFile}. Using default code coverage.");
+                    args.Append($"--collect \"Code Coverage\"");
+                }
                 return args;
             }
         };

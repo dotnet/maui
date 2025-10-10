@@ -28,6 +28,10 @@
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftCodeCoveragePackageVersion)">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
