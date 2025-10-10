@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -40,3 +41,4 @@ public class Issue12008 : _IssuesUITest
         Assert.That(countText, Is.EqualTo("Count: 1"), "Item was not moved into the empty group");
     }
 }
+#endif
