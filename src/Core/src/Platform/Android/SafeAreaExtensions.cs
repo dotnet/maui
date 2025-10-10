@@ -98,6 +98,13 @@ internal static class SafeAreaExtensions
                 var viewRight = viewLeft + view.MeasuredWidth;
                 var viewBottom = viewTop + view.MeasuredHeight;
 
+                // Adjust for view's position relative to parent (including margins) to calculate
+                // safe area insets relative to the parent's position, not the view's visual position.
+                // This ensures margins and safe area insets are additive rather than overlapping.
+                // For example: 20px margin + 30px safe area = 50px total offset
+                viewTop -= view.Top;
+                viewLeft -= view.Left;
+
                 // Get actual screen dimensions (including system UI)
                 var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
                 if (windowManager?.DefaultDisplay is not null)
