@@ -75,30 +75,6 @@ public static class Extensions
         return builder;
     }
 
-    /// <summary>
-    /// Disables the security check for ASP.NET development certificates.
-    /// This should only be used in development environments.
-    /// </summary>
-#if !DEBUG
-    [Obsolete("This method should only be used for development purposes.", true)]
-#endif
-    public static IHttpClientBuilder DisableDevCertSecurityCheck(this IHttpClientBuilder builder)
-    {
-        builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
-            {
-                if (cert is not null && cert.Issuer.Equals("CN=localhost", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                return errors == System.Net.Security.SslPolicyErrors.None;
-            }
-        });
-
-        return builder;
-    }
-
     private class OpenTelemetryInitializer : IMauiInitializeService
     {
         public void Initialize(IServiceProvider services)
