@@ -75,18 +75,12 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="url"> Url to navigate to, beginning the authentication flow.</param>
 		/// <param name="callbackUrl"> Expected callback url that the navigation flow will eventually redirect to.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
-#if !NETSTANDARD
-		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-#endif
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
 			=> Current.AuthenticateAsync(url, callbackUrl);
 
 		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.The start url and callbackUrl are specified in the webAuthenticatorOptions.</summary>
 		/// <param name="webAuthenticatorOptions">Options to configure the authentication request.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
-#if !NETSTANDARD
-		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-#endif
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
