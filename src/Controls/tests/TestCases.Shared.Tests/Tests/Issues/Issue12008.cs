@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS // The test fails on Windows because Drag and Drop with grouping is not supported on Windows
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
