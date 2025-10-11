@@ -802,7 +802,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void ViewDidLayoutSubviews()
 			{
 				foreach (var vc in ChildViewControllers)
+				{
+					if (vc.IsBeingDismissed ||
+					    (vc.PresentationController != null && vc.PresentationController.PresentedViewController == vc))
+						continue;
+
+					if (vc.View?.Superview != View)
+						continue;
+
+					if (vc.View == null)
+						continue;
+
 					vc.View.Frame = View.Bounds;
+				}
 			}
 		}
 
