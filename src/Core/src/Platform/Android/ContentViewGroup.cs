@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
 				_hasStoredOriginalPadding = true;
-			}			
+			}
 
 			return SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
 		}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -9,6 +10,7 @@ public class SjTimelineConverter : JsonConverter<Log>
 	public override bool CanConvert(Type objectType) =>
 		objectType == typeof(Log);
 
+	[RequiresUnreferencedCode()]
 	public override Log Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
 		// Check for null values

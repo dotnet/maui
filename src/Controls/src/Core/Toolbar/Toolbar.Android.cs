@@ -30,8 +30,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newHandler == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
+				_platformTitleView?.Child = null;
 
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,

@@ -83,8 +83,7 @@ namespace Maui.Controls.Sample.Issues
 			try
 			{
 				// Check if StatusLabel is available
-				if (StatusLabel != null)
-					StatusLabel.Text = "Loading images...";
+				StatusLabel?.Text = "Loading images...";
 
 				// Load original image from embedded resource  
 				OriginalSource = ImageSource.FromResource("Controls.TestCases.HostApp.Resources.Images.royals.png");
@@ -95,16 +94,14 @@ namespace Maui.Controls.Sample.Issues
 
 				if (stream == null)
 				{
-					if (StatusLabel != null)
-						StatusLabel.Text = "Error: Could not load royals.png resource";
+					StatusLabel?.Text = "Error: Could not load royals.png resource";
 					return;
 				}
 
 				var originalImage = PlatformImage.FromStream(stream);
 				if (originalImage == null)
 				{
-					if (StatusLabel != null)
-						StatusLabel.Text = "Error: Could not create IImage from stream";
+					StatusLabel?.Text = "Error: Could not create IImage from stream";
 					return;
 				}
 
@@ -115,8 +112,7 @@ namespace Maui.Controls.Sample.Issues
 				var downsizedImage = originalImage.Downsize(100);
 				if (downsizedImage == null)
 				{
-					if (StatusLabel != null)
-						StatusLabel.Text = "Error: Downsize operation failed";
+					StatusLabel?.Text = "Error: Downsize operation failed";
 					return;
 				}
 
@@ -129,13 +125,11 @@ namespace Maui.Controls.Sample.Issues
 
 				DownsizedSource = ImageSource.FromStream(() => new MemoryStream(downsizedStream.ToArray()));
 
-				if (StatusLabel != null)
-					StatusLabel.Text = "Images loaded. Compare for flipping/rotation issues in MAUI 9.0.80+";
+				StatusLabel?.Text = "Images loaded. Compare for flipping/rotation issues in MAUI 9.0.80+";
 			}
 			catch (Exception ex)
 			{
-				if (StatusLabel != null)
-					StatusLabel.Text = $"Error loading images: {ex.Message}";
+				StatusLabel?.Text = $"Error loading images: {ex.Message}";
 			}
 		}
 	}

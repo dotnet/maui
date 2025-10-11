@@ -24,7 +24,7 @@ internal class ListStringConverter : ISGTypeConverter
 			return $"new {constructedListType.ToFQDisplayString()} {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ListStringConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.ListStringConversionFailed);
 		return "default";
 	}
 }

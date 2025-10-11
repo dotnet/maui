@@ -10,8 +10,8 @@ using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -24,7 +24,7 @@ static class NodeSGExtensions
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
-		(value, node, toType, context, parentVar) => 
+		(value, node, toType, context, parentVar) =>
 			lazyConverters.GetOrAdd(typeof(T), _ => new T()).Convert(value, node, toType, context, parentVar);
 
 	static readonly ConcurrentDictionary<Type, ISGTypeConverter> lazyConverters = new();
@@ -32,7 +32,7 @@ static class NodeSGExtensions
 
 	// Lazy registry-based converter function (for non-source-gen converters)
 	private static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
-		(value, node, toType, context, parentVar) => 
+		(value, node, toType, context, parentVar) =>
 		{
 			var converter = lazyRegistryConverters.GetOrAdd(typeName, name => TypeConverterRegistry.GetConverter(name)!);
 			return converter?.Convert(value, node, toType, context, parentVar) ?? "default";
@@ -595,7 +595,7 @@ static class NodeSGExtensions
 		{
 			ITypeSymbol? typeSymbol = null;
 			var parent = node.Parent?.Parent as ElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as ElementNode;
-			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType( "Setter", "PropertyCondition"))
+			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType("Setter", "PropertyCondition"))
 			{
 				if (parent!.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style"))
 					typeSymbol = GetTargetTypeSymbol(parent, context);
@@ -630,8 +630,8 @@ static class NodeSGExtensions
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
-		if (   target.Parent is ListNode
-			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
+		if (target.Parent is ListNode
+			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType("VisualStateGroupList"))
 			target = (ElementNode)target.Parent.Parent;
 		else
 			target = (ElementNode)target.Parent;

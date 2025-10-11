@@ -266,8 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler]
 		void UpdateIsBounceEnabled()
 		{
-			if (_scrollViewer != null)
-				_scrollViewer.IsScrollInertiaEnabled = CarouselView.IsBounceEnabled;
+			_scrollViewer?.IsScrollInertiaEnabled = CarouselView.IsBounceEnabled;
 		}
 
 		void UpdateItemSpacing()

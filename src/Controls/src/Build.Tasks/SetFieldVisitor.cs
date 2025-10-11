@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static bool IsXNameProperty(ValueNode node, INode parentNode)
 		{
-			if (   parentNode is ElementNode parentElement
+			if (parentNode is ElementNode parentElement
 				&& parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode)
 				&& xNameNode == node)
 				return true;

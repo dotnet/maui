@@ -1,9 +1,9 @@
 ﻿#nullable disable
 using System;
 using Foundation;
+using Microsoft.Maui.Controls;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls;
 using PreserveAttribute = Microsoft.Maui.Controls.Internals.PreserveAttribute;
 
 namespace Microsoft.Maui.Controls.Platform.iOS;

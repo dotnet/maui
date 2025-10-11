@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Platform
 
 			var location = new int[2];
 			platformView.GetLocationOnScreen(location);
-			
+
 			return new Rect(
 				platformView.FromPixels(location[0]),
 				platformView.FromPixels(location[1]),

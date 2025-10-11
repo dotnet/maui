@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls
 
 			var previousPage = CurrentPage;
 			var navigationType = DetermineNavigationType();
-			
+
 			SendNavigating(navigationType, previousPage);
 			FireDisappearing(CurrentPage);
 			FireAppearing(page);
@@ -203,8 +203,8 @@ namespace Microsoft.Maui.Controls
 
 				if (args.Task != null)
 					await args.Task;
-			} 
-			
+			}
+
 			SendNavigated(previousPage, navigationType);
 			Pushed?.Invoke(this, args);
 		}

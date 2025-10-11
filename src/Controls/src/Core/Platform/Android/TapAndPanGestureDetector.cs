@@ -61,11 +61,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (disposing)
 			{
-				if (_listener != null)
-				{
-					_listener.Dispose();
-					_listener = null;
-				}
+				_listener?.Dispose();
+				_listener = null;
 				_pointerGestureHandler = null;
 			}
 		}

@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample;
+
 public partial class StackLayoutControlPage : NavigationPage
 {
 	private StackLayoutViewModel _viewModel;

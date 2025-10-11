@@ -36,7 +36,7 @@ internal class EasingConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.EasingConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.EasingConversionFailed);
 		return "default";
 	}
 }
