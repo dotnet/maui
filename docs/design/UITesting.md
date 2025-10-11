@@ -30,7 +30,7 @@ When working on a single test case it may be convenient to start the app by usin
 This can be easily achieved by creating a `MauiProgram.user.cs` file in the `src/Controls/tests/TestCases.HostApp` folder and adding the following code:
 
 ```csharp
-using Controls.TestCases.HostApp.Issues;
+using Maui.Controls.Sample.Issues;
 
 namespace Maui.Controls.Sample;
 
