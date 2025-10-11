@@ -26,7 +26,7 @@ public class Issue28986_ContentView : _IssuesUITest
 		// Verify that ContentView content starts at Y=0 when SafeAreaEdges is Default
 
 		Assert.That(contentViewWithDefaultSettings.Y, Is.EqualTo(0),
-		"ContentView should start at Y=0 when SafeAreaEdges is set to Default");		
+		"ContentView should start at Y=0 when SafeAreaEdges is set to Default");
 
 		// 2. Ensure SafeAreaEdges are set to All
 		App.Tap("ResetAllButton");

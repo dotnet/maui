@@ -71,8 +71,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)
 		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = e.HasFocus;
+			VirtualView?.IsFocused = e.HasFocus;
 		}
 
 		void OnPlatformViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)

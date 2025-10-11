@@ -784,10 +784,7 @@ public static class KeyboardAutoManagerScroll
 
 	static void AnimateRootView(CGRect rect)
 	{
-		if (ContainerView is not null)
-		{
-			ContainerView.Frame = rect;
-		}
+		ContainerView?.Frame = rect;
 	}
 
 	// Adjusts the ContentInset of our view that Scrolled so that we can still scroll to the top and bottom with the keyboard showing.

@@ -40,10 +40,7 @@ public partial class J3 : ContentPage
 
 		var window = Application.Current.Windows.FirstOrDefault();
 
-		if (window != null)
-		{
-			window.TitleBar = null;
-		}
+		window?.TitleBar = null;
 	}
 #endif
 

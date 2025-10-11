@@ -1,8 +1,8 @@
 #nullable disable
 using System;
+using System.Runtime.Versioning;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using System.Runtime.Versioning;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform

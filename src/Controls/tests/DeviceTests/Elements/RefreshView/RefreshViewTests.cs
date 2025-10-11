@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 			var refreshView = new RefreshView();
 			refreshView.IsRefreshing = true;
 			Assert.True(refreshView.IsRefreshing);
-			
+
 			refreshView.IsRefreshEnabled = false;
 			Assert.False(refreshView.IsRefreshing); // Should be automatically cleared
 		}
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 			var refreshView = new RefreshView();
 			refreshView.IsRefreshing = true;
 			Assert.True(refreshView.IsRefreshing);
-			
+
 			refreshView.IsRefreshEnabled = false;
 			Assert.False(refreshView.IsRefreshing);
 		}
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 			var refreshView = new RefreshView();
 			refreshView.IsRefreshing = true;
 			Assert.True(refreshView.IsRefreshing);
-			
+
 			refreshView.IsEnabled = false;
 			Assert.False(refreshView.IsRefreshing);
 		}

@@ -436,7 +436,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Reset();
 		}
-		
+
 		protected override void FixtureSetup()
 		{
 			int retries = 0;

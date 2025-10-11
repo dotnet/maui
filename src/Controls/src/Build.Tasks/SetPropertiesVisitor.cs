@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// continue compilation
 			}
 
-			if (   dataTypeNode is ElementNode enode
+			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{
