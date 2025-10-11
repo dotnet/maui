@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -7,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ConstraintConverter : ISGTypeConverter
+class ConstraintConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "Constraint", "Microsoft.Maui.Controls.Compatibility.Constraint" };
+	public IEnumerable<string> SupportedTypes => ["Constraint", "Microsoft.Maui.Controls.Compatibility.Constraint"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here

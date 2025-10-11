@@ -3,13 +3,11 @@ using System.CodeDom.Compiler;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
@@ -18,33 +16,35 @@ namespace Microsoft.Maui.Controls.SourceGen;
 using static LocationHelpers;
 static class NodeSGExtensions
 {
-	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
+	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null);
 
-	public delegate bool ProvideValueDelegate(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value);
+	public delegate ILocalValue GetNodeValueDelegate(INode node, ITypeSymbol toType);
+
+	public delegate bool ProvideValueDelegate(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value);
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
-		(value, node, toType, context, parentVar) => 
-			lazyConverters.GetOrAdd(typeof(T), _ => new T()).Convert(value, node, toType, context, parentVar);
+		(value, node, toType, writer, context, parentVar) => 
+			lazyConverters.GetOrAdd(typeof(T), _ => new T()).Convert(value, node, toType, writer, context, parentVar);
 
 	static readonly ConcurrentDictionary<Type, ISGTypeConverter> lazyConverters = new();
 	static readonly ConcurrentDictionary<string, ISGTypeConverter> lazyRegistryConverters = new();
 
 	// Lazy registry-based converter function (for non-source-gen converters)
-	private static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
-		(value, node, toType, context, parentVar) => 
+	static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
+		(value, node, toType, writer, context, parentVar) => 
 		{
 			var converter = lazyRegistryConverters.GetOrAdd(typeName, name => TypeConverterRegistry.GetConverter(name)!);
-			return converter?.Convert(value, node, toType, context, parentVar) ?? "default";
+			return converter?.Convert(value, node, toType, writer, context, parentVar) ?? "default";
 		};
 
 	// Lazy enum converter
-	private static readonly Lazy<EnumConverter> _lazyEnumConverter = new(() => new EnumConverter());
+	static readonly Lazy<EnumConverter> _lazyEnumConverter = new(() => new EnumConverter());
 
-	private static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null) =>
-		_lazyEnumConverter.Value.Convert(value, node, toType, context, parentVar);
+	static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null) =>
+		_lazyEnumConverter.Value.Convert(value, node, toType, writer, context, parentVar);
 
-	static Dictionary<ITypeSymbol, (ConverterDelegate converter, ITypeSymbol returnType)> GetKnownSGTypeConverters(SourceGenContext context)
+	public static Dictionary<ITypeSymbol, (ConverterDelegate converter, ITypeSymbol returnType)> GetKnownSGTypeConverters(SourceGenContext context)
 		=> context.knownSGTypeConverters ??= new(SymbolEqualityComparer.Default)
 	{
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, (CreateLazyConverter<RectConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!) },
@@ -62,6 +62,7 @@ static class NodeSGExtensions
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.GridLengthTypeConverter")!, (CreateLazyConverter<GridLengthConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, (CreateLazyConverter<ThicknessConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.ColumnDefinitionCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindablePropertyConverter")!, (CreateLazyConverter<BindablePropertyConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableProperty")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FlowDirectionConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.FlowDirection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FontSizeConverter")!, (CreateLazyRegistryConverter("System.Double"), context.Compilation.GetTypeByMetadataName("System.Double")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.GridLengthTypeConverter")!, (CreateLazyConverter<GridLengthConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
@@ -71,6 +72,7 @@ static class NodeSGExtensions
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary+RDSourceTypeConverter")!, (CreateLazyRegistryConverter("System.Uri"), context.Compilation.GetTypeByMetadataName("System.Uri")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.RowDefinitionCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollection")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PointCollectionConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.PointCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TypeTypeConverter")!, (CreateLazyConverter<TypeTypeConverter>(), context.Compilation.GetTypeByMetadataName("System.Type")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.ConstraintTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.Compatibility.Constraint"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.Constraint")!) },
         
         // TODO: PathFigureCollectionConverter (used for PathGeometry and StrokeShape) is very complex, skipping for now, apart from that one all other shapes work though
@@ -104,6 +106,7 @@ static class NodeSGExtensions
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")!, KnownMarkups.ProvideValueForTemplateBindingExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension")!, KnownMarkups.ProvideValueForReferenceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")!, KnownMarkups.ProvideValueForStaticResourceExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension")!, KnownMarkups.ProvideValueForAppThemeBindingExtension},
 	};
 
 	public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -131,24 +134,30 @@ static class NodeSGExtensions
 	public static bool IsResourceDictionary(this ElementNode node, SourceGenContext context)
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
-	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
+	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, out ITypeSymbol? converter)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
+		converter = typeandconverter?.converter;
 		if (typeandconverter == null)
 			return false;
 		return valueNode.CanConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context);
 	}
+	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
+		=> CanConvertTo(valueNode, bpFieldSymbol, context, out _);
 
-	public static bool CanConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
+	public static bool CanConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, out ITypeSymbol? converter)
 	{
 		List<AttributeData> attributes = [
 			.. property.GetAttributes().ToList(),
 			.. property.Type.GetAttributes()
 		];
 
-		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
-		return valueNode.CanConvertTo(property.Type, typeConverter, context);
+		converter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+		return valueNode.CanConvertTo(property.Type, converter, context);
 	}
+
+	public static bool CanConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
+			=> CanConvertTo(valueNode, property, context, out _);
 
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
@@ -207,15 +216,15 @@ static class NodeSGExtensions
 		return false;
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
 		if (typeandconverter == null)
 			return string.Empty;
-		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, parentVar);
+		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, writer, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		List<AttributeData> attributes = [
 			.. property.GetAttributes().ToList(),
@@ -223,34 +232,34 @@ static class NodeSGExtensions
 		];
 
 		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
-		return valueNode.ConvertTo(property.Type, typeConverter, context, parentVar);
+		return valueNode.ConvertTo(property.Type, typeConverter, writer, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		List<AttributeData> attributes = [.. toType.GetAttributes()];
 
 		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
 
-		return valueNode.ConvertTo(toType, typeConverter, context, parentVar);
+		return valueNode.ConvertTo(toType, typeConverter, writer, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 
 		if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converterAndReturnType))
 		{
-			var returntype = converterAndReturnType.Item2;
+			var returntype = converterAndReturnType.returnType;
 			if (!context.Compilation.HasImplicitConversion(returntype, toType))
 				//this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
 				//FIXME: better error message
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
-			return converterAndReturnType.Item1.Invoke(valueString, valueNode, toType, context, parentVar);
+			return converterAndReturnType.converter.Invoke(valueString, valueNode, toType, writer, context, parentVar);
 		}
 
 		if (typeConverter is not null)
-			return valueNode.ConvertWithConverter(typeConverter, toType, context, parentVar);
+			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar);
 
 		return ValueForLanguagePrimitive(valueString, toType, context, valueNode);
 	}
@@ -421,7 +430,7 @@ static class NodeSGExtensions
 		return SymbolDisplay.FormatLiteral(valueString, true);
 	}
 
-	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 		//TODO check if there's a SourceGen version of the converter
@@ -431,11 +440,11 @@ static class NodeSGExtensions
 			var (acceptEmptyServiceProvider, requiredServices) = typeConverter.GetServiceProviderAttributes(context);
 			if (!acceptEmptyServiceProvider)
 			{
-				var serviceProvider = valueNode.GetOrCreateServiceProvider(context.Writer, context, requiredServices);
+				var serviceProvider = valueNode.GetOrCreateServiceProvider(writer, context, requiredServices);
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
-					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name}) as {targetType.ToFQDisplayString()}";
+					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name})";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
 				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";
@@ -462,36 +471,9 @@ static class NodeSGExtensions
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
 
-		if (variable.Type.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
-		{
-			//HACK waiting for the ValueProvider to be compiled
-			if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!, context))
-				returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!;
-			//the following 2 should go away when https://github.com/dotnet/maui/pull/26671 is merged    
-			if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!, context))
-				returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!;
-			if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!, context))
-				returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!;
-		}
-		else if (variable.Type.ImplementsGeneric(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
-		{
-			iface = ((INamedTypeSymbol)iface).Construct(typeArg[0]);
-			returnType = typeArg[0];
-		}
-		else if (variable.Type.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension")!))
-		{
-		}
-		else
-			return false;
-
-		var requireServiceAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RequireServiceAttribute")!;
-		requiredServices = variable.Type.GetAttributes(requireServiceAttribute).FirstOrDefault()?.ConstructorArguments[0].Values.Where(ca => ca.Value is ITypeSymbol).Select(ca => (ca.Value as ITypeSymbol)!).ToImmutableArray() ?? null;
-
-		var acceptEmptyServiceProviderAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AcceptEmptyServiceProviderAttribute")!;
-		acceptEmptyServiceProvider = variable.Type.GetAttributes(acceptEmptyServiceProviderAttribute).Any();
-
-		return true;
+		return variable.Type.IsValueProvider( context, out returnType, out iface, out acceptEmptyServiceProvider, out requiredServices);
 	}
+
 
 	public static void ProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, ITypeSymbol returnType, ITypeSymbol valueProviderFace, bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices)
 	{
@@ -502,19 +484,19 @@ static class NodeSGExtensions
 		if (!acceptEmptyServiceProvider)
 		{
 			var serviceProviderVar = node.GetOrCreateServiceProvider(writer, context, requiredServices);
-			writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
+			writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.ValueAccessor}).ProvideValue({serviceProviderVar.ValueAccessor});");
 			context.Variables[node] = new LocalVariable(returnType, variableName);
 			node.RegisterSourceInfo(context, context.Writer, update: false);
 		}
 		else
 		{
-			writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue(null);");
+			writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.ValueAccessor}).ProvideValue(null);");
 			context.Variables[node] = new LocalVariable(returnType, variableName);
 			node.RegisterSourceInfo(context, context.Writer, update: false);
 		}
 	}
 
-	public static bool TryProvideValue(this ElementNode node, SourceGenContext context)
+	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context)
 	{
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
@@ -523,7 +505,7 @@ static class NodeSGExtensions
 			return false;
 
 		if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
-			&& provideValue.Invoke(node, context, out var returnType0, out var value))
+			&& provideValue.Invoke(node, writer, context, null, out var returnType0, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -534,7 +516,7 @@ static class NodeSGExtensions
 		}
 
 		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, context, out returnType0, out value))
+			&& provideValue.Invoke(node, writer, context, null, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -565,16 +547,28 @@ static class NodeSGExtensions
 
 		if (!update)
 		{
-			writer.WriteLine($"if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo({variable.Name}!) == null)");
+			writer.WriteLine($"if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo({variable.ValueAccessor}!) == null)");
 			writer.Indent++;
 		}
 		// on other inflators, we do not replace path separator, so keep the bug for compat
 		// filePath = new UriBuilder() { Path = filePath }.Path; // ensure the file use the right separator
-		writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+		writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.ValueAccessor}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
 		if (!update)
 			writer.Indent--;
 	}
 
+	public static (IFieldSymbol?, IPropertySymbol?) GetFieldOrBP(ITypeSymbol owner, XmlName name, SourceGenContext context)
+	{
+		var localName = name.LocalName;
+		var bpFieldSymbol = !string.IsNullOrEmpty(localName) ? owner.GetBindableProperty(name.NamespaceURI, ref localName, out _, context, null) : null;
+		if (bpFieldSymbol != null && !context.Compilation.IsSymbolAccessibleWithin(bpFieldSymbol, context.RootType))
+			bpFieldSymbol = null;
+		var property = owner.GetAllProperties(name.LocalName, context).FirstOrDefault();
+		if (property != null && !context.Compilation.IsSymbolAccessibleWithin(property, context.RootType))
+			property = null;
+		return (bpFieldSymbol, property);
+	}
+	
 	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
 	{
 		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
@@ -595,7 +589,7 @@ static class NodeSGExtensions
 		{
 			ITypeSymbol? typeSymbol = null;
 			var parent = node.Parent?.Parent as ElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as ElementNode;
-			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType( "Setter", "PropertyCondition"))
+			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType("Setter", "PropertyCondition"))
 			{
 				if (parent!.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style"))
 					typeSymbol = GetTargetTypeSymbol(parent, context);
