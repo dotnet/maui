@@ -23,17 +23,17 @@ namespace Microsoft.Maui.Converters
 			{
 				string[] parts = strValue.Split('.');
 
-				if (parts != null && parts.Length == 1 || (parts != null && parts.Length == 2 && parts[0] == "Keyboard"))
+				if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Keyboard"))
 				{
 					var kbType = typeof(Keyboard);
 
 					string keyboard = parts[parts.Length - 1];
-					FieldInfo? field = kbType.GetFields()?.FirstOrDefault(fi => fi.IsStatic && fi.Name == keyboard);
+					FieldInfo? field = kbType.GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == keyboard);
 					if (field?.GetValue(null) is Keyboard kb)
 						return kb;
 
-					PropertyInfo? property = kbType.GetProperties()?.FirstOrDefault(pi => pi != null && pi.Name == keyboard && pi.CanRead && (pi.GetMethod?.IsStatic ?? false));
-					if (property != null && property?.GetValue(null, null) is Keyboard propKb)
+					PropertyInfo? property = kbType.GetProperties().FirstOrDefault(pi => pi.Name == keyboard && pi.CanRead && (pi.GetMethod?.IsStatic ?? false));
+					if (property?.GetValue(null, null) is Keyboard propKb)
 						return propKb;
 				}
 			}
