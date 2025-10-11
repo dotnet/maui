@@ -580,7 +580,7 @@ namespace Microsoft.Maui.Platform
 
 				disposable?.Dispose();
 				disposable = null;
-				action();
+				view.Post(action);
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;
