@@ -875,8 +875,8 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
                 // https://github.com/microsoft/vstest/issues/5112
                 args.Append($"/p:VStestUseMSBuildOutput=false");
-
-                var sourceFolder = File("./coverage.runsettings");
+                var sourcesDir = Directory(EnvironmentVariable("BUILD_SOURCESDIRECTORY", "artifacts"));
+                var sourceFolder = File($"{sourcesDir}/coverage.runsettings");
                 // Code coverage
                 args.Append($"--collect \"XPlat Code Coverage\" --settings \"{sourceFolder}\"");
                 return args;
