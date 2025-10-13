@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -122,7 +123,7 @@ class StaticResourceValueProvider : ISGValueProvider
 		
 	}
 
-	public ILocalValue ProvideValue(ElementNode elementNode, (IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context, TryGetNodeValueDelegate getNodeValue)
+	public ILocalValue ProvideValue(ElementNode elementNode, (IndentedTextWriter declarationWriter, IndentedTextWriter? methodWriter) writers, ImmutableArray<Scope> scopes, SourceGenContext context, TryGetNodeValueDelegate getNodeValue)
 	{
 		throw new NotImplementedException();
 	}

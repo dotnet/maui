@@ -64,16 +64,16 @@ static class IMethodSymbolExtensions
 		return false;
 
 	}
-	public static IEnumerable<string> ToMethodParameters(this IEnumerable<(INode node, ITypeSymbol type, ITypeSymbol? converter)> parameters, IndentedTextWriter writer, SourceGenContext context)
+	public static IEnumerable<string> ToMethodParameters(this IEnumerable<(INode node, ITypeSymbol type, ITypeSymbol? converter)> parameters, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<Scope> scopes)
 	{
 		foreach (var p in parameters)
 		{
 			if (p.node is ValueNode vn)
-				yield return vn.ConvertTo(p.type, p.converter, writer, context);
+				yield return vn.ConvertTo(p.type, p.converter, writer, context, scopes: scopes);
 			else if (p.node is ElementNode en)
 			{
 				en.TryProvideValue(writer, context);
-				yield return context.Variables[en].ValueAccessor;
+				yield return context.Variables[en].AccessedFrom(scopes)!.ValueAccessor;
 			}
 			else
 				yield return "null";

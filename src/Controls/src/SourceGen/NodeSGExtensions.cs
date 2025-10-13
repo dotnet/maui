@@ -217,12 +217,12 @@ static class NodeSGExtensions
 		return false;
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
 		if (typeandconverter == null)
 			return string.Empty;
-		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, writer, context, parentVar);
+		return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, writer, context, parentVar, scopes);
 	}
 
 	public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
@@ -236,16 +236,16 @@ static class NodeSGExtensions
 		return valueNode.ConvertTo(property.Type, typeConverter, writer, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		List<AttributeData> attributes = [.. toType.GetAttributes()];
 
 		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
 
-		return valueNode.ConvertTo(toType, typeConverter, writer, context, parentVar);
+		return valueNode.ConvertTo(toType, typeConverter, writer, context, parentVar, scopes);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 
@@ -260,7 +260,7 @@ static class NodeSGExtensions
 		}
 
 		if (typeConverter is not null)
-			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar);
+			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar, scopes);
 
 		return ValueForLanguagePrimitive(valueString, toType, context, valueNode);
 	}
@@ -431,7 +431,7 @@ static class NodeSGExtensions
 		return SymbolDisplay.FormatLiteral(valueString, true);
 	}
 
-	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, ImmutableArray<Scope>? scopes = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
 		//TODO check if there's a SourceGen version of the converter
@@ -441,7 +441,7 @@ static class NodeSGExtensions
 			var (acceptEmptyServiceProvider, requiredServices) = typeConverter.GetServiceProviderAttributes(context);
 			if (!acceptEmptyServiceProvider)
 			{
-				var serviceProvider = valueNode.GetOrCreateServiceProvider(writer, context, requiredServices);
+				var serviceProvider = valueNode.GetOrCreateServiceProvider(writer, context, requiredServices, scopes);
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else

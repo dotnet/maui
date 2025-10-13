@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -13,7 +14,7 @@ using static LocationHelpers;
 
 static class SetPropertyHelpers
 {
-	public static void SetPropertyValue(IndentedTextWriter writer, ILocalValue parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null, bool treeOrder = false, IndentedTextWriter? icWriter = null, ILocalValue? inflatorVar = null, bool asCollectionItem = false)
+	public static void SetPropertyValue(IndentedTextWriter writer, ILocalValue parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null, bool treeOrder = false, IndentedTextWriter? icWriter = null, ILocalValue? inflatorVar = null, bool asCollectionItem = false, ImmutableArray<Scope>? scopes = null)
 	{
 		tryGetNodeValue ??= (node, toType, out localVariable) => context.Variables.TryGetValue(node, out localVariable);
 
@@ -54,7 +55,7 @@ static class SetPropertyHelpers
 		//If it's a BP, SetValue
 		if (!asCollectionItem && CanSetValue(bpFieldSymbol, valueNode, context, tryGetNodeValue))
 		{
-			SetValue(writer, parentVar, bpFieldSymbol!, valueNode, context, tryGetNodeValue);
+			SetValue(writer, parentVar, bpFieldSymbol!, valueNode, context, tryGetNodeValue, scopes);
 			return;
 		}
 
@@ -263,14 +264,14 @@ static class SetPropertyHelpers
 			|| bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!);
 	}
 
-	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue)
+	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue, ImmutableArray<Scope>? scopes = null)
 	{
 		var pType = bpFieldSymbol.GetBPTypeAndConverter(context)?.type;
 		if (node is ValueNode valueNode)
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var valueString = valueNode.ConvertTo(bpFieldSymbol, writer,context, parentVar);
+				var valueString = valueNode.ConvertTo(bpFieldSymbol, writer,context, parentVar, scopes);
 				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {valueString});");
 			}
 		}
@@ -278,6 +279,7 @@ static class SetPropertyHelpers
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
 				tryGetNodeValue(elementNode, context.Compilation.ObjectType, out var localVar);
+					
 				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {(HasDoubleImplicitConversion(localVar!.Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{localVar.ValueAccessor});");
 			}
 	}

@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
@@ -33,7 +34,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//At this point, all MarkupNodes are expanded to ElementNodes
 	}
 
-	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyCaches xmlnsCache, SourceGenContext Context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null)
+	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyCaches xmlnsCache, SourceGenContext Context, NodeSGExtensions.TryGetNodeValueDelegate? tryGetNodeValue = null, ImmutableArray<Scope> scopes = default)
 	{
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var type) || type is null)
 			return;
@@ -261,7 +262,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		else if (factoryMethod != null)
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
+			writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context, scopes) ?? [])});");
 			variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
 			node.RegisterSourceInfo(Context, writer);
 			return;
@@ -272,7 +273,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 			if (requiredPropAndFields.Any())
 			{
-				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])})");
+				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context, scopes) ?? [])})");
 				using (PrePost.NewBlock(writer, begin: "{", end: "};"))
 				{
 					foreach (var (name, propOrField, propType, propValue) in requiredPropertiesAndFields)
@@ -280,7 +281,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				}
 			}
 			else
-				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
+				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context, scopes) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
 			return;

@@ -16,7 +16,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	
 	public IndentedTextWriter? RefStructWriter { get; set; }
 
-	public Compilation Compilation => compilation;
+	public Compilation Compilation { get; set; } = compilation;
 	public AssemblyCaches XmlnsCache => assemblyCaches;
 	public ITypeSymbol RootType => rootType;
 	public IDictionary<XmlType, ITypeSymbol> TypeCache => typeCache;

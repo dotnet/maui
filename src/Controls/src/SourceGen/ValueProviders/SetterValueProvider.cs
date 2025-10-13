@@ -2,10 +2,12 @@ using System.CodeDom.Compiler;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
+using System;
 using Microsoft.Maui.Controls.Xaml;
 
 using static Microsoft.Maui.Controls.SourceGen.DependencyFirstInflator;
 using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.SourceGen.ValueProviders;
 
@@ -40,7 +42,7 @@ class SetterValueProvider : ISGValueProvider
 		return new DirectValue(returnType, $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue!.ValueAccessor}}}");
 	}
 
-	public ILocalValue ProvideValue(ElementNode node, (IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context, TryGetNodeValueDelegate tryGetNodeValue)
+	public ILocalValue ProvideValue(ElementNode node, (IndentedTextWriter declarationWriter, IndentedTextWriter? methodWriter) writers, ImmutableArray<Scope> scopes, SourceGenContext context, TryGetNodeValueDelegate tryGetNodeValue)
 	{
 		var type = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
 		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out INode? valueNode) &&
@@ -58,14 +60,19 @@ class SetterValueProvider : ISGValueProvider
 		else
 			targetsetter = "";
 
-		var property = new InflatorScopedVar(type, NamingHelpers.CreateUniqueVariableName(context, type));
+		var inflatorscope = scopes.GetInflatorScope();
+
+		var property = new ScopedVariable(type, NamingHelpers.CreateUniqueVariableName(context, type), inflatorscope);
 		PreserveNodeValue(node, property, context);
 				//create one writer per property, to flush them at once
 		var writer = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = writers.declarationWriter.Indent };
-		writer.WriteLine();
+		if (scopes.Last() is StaticMethodScope sms)
+			scopes = scopes.RemoveRange(scopes.Length - 2, 2);
+		scopes = scopes.Add(new PropertyScope(writer, type, property.Name));
+		writer.WriteLineNoTabs();
 
 		writer.WriteLine("[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]");
-		using (PrePost.NewBlock(writer, $"public {type.ToFQDisplayString()} {property.name}  {{", "}"))
+		using (PrePost.NewBlock(writer, $"public {type.ToFQDisplayString()} {property.Name}  {{", "}"))
 		using (PrePost.NewBlock(writer, "get {", "}"))
 		{
 			writer.WriteLine($"if (field != null)");
@@ -73,8 +80,10 @@ class SetterValueProvider : ISGValueProvider
 			writer.WriteLine($"return field;");
 			writer.Indent--;
 			writer.WriteLine($"field = new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}}};");
-			tryGetNodeValue(valueNode, bprefType!, out var localVar);
-			writer.WriteLine($"field.Value = {localVar?.Descoped().ValueAccessor};");
+			var localVar = GetNodeValue(valueNode, scopes, context, bprefType!);
+			if (localVar is ScopedVariable sv)
+				localVar = sv.AccessedFrom(scopes);
+			writer.WriteLine($"field.Value = {localVar?.ValueAccessor};");
 
 			writer.WriteLine($"return field;");
 		}

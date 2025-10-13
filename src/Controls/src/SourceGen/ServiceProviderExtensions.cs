@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class ServiceProviderExtensions
 {
-	public static ILocalValue GetOrCreateServiceProvider(this INode node, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<ITypeSymbol>? requiredServices)
+	public static ILocalValue GetOrCreateServiceProvider(this INode node, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<ITypeSymbol>? requiredServices, ImmutableArray<Scope>? scopes=null)
 	{
 		IFieldSymbol? bpFieldSymbol = null;
 		IPropertySymbol? propertySymbol = null;
@@ -31,17 +31,17 @@ static class ServiceProviderExtensions
 		var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(context, serviceProviderSymbol);
 
 		var rootVar = context.Variables.FirstOrDefault(kvp => kvp.Key is SGRootNode).Value;
-		writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToFQDisplayString()}({rootVar?.ValueAccessor ?? "this"});");
+		writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToFQDisplayString()}({rootVar?.AccessedFrom(scopes).ValueAccessor ?? "this"});");
 
-		node.AddServices(writer, serviceProviderVariableName, requiredServices, context, bpFieldSymbol, propertySymbol);
+		node.AddServices(writer, serviceProviderVariableName, requiredServices, context, bpFieldSymbol, propertySymbol, scopes);
 
 		return context.ServiceProviders[node] = new LocalVariable(serviceProviderSymbol, serviceProviderVariableName);
 	}
 
-	static void AddServices(this INode node, IndentedTextWriter writer, string serviceProviderVariableName, ImmutableArray<ITypeSymbol>? requiredServices, SourceGenContext context, IFieldSymbol? bpFieldSymbol, IPropertySymbol? propertySymbol)
+	static void AddServices(this INode node, IndentedTextWriter writer, string serviceProviderVariableName, ImmutableArray<ITypeSymbol>? requiredServices, SourceGenContext context, IFieldSymbol? bpFieldSymbol, IPropertySymbol? propertySymbol, ImmutableArray<Scope>? scopes=null)
 	{
 		var createAllServices = requiredServices is null;
-		var parentObjects = node.ParentObjects(context).Select(v => v.ValueAccessor).ToArray();
+		var parentObjects = node.ParentObjects(context).Select(v => v.AccessedFrom(scopes).ValueAccessor).ToArray();
 		if (parentObjects.Length == 0)
 			parentObjects = ["null"];
 		if (createAllServices
@@ -58,19 +58,19 @@ static class ServiceProviderExtensions
 				writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
 			if (context.Scopes.TryGetValue(node, out var scope))
 			{
-				List<string> scopes = [scope.namescope.ValueAccessor];
+				List<string> namescopes = [scope.namescope.ValueAccessor];
 				var values = context.ParentContext?.Scopes.Select(s => s.Value.namescope.ValueAccessor).Distinct();
-				scopes.AddRange(values ?? Enumerable.Empty<string>());
+				namescopes.AddRange(values ?? Enumerable.Empty<string>());
 				using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE", orElse: () => writer.WriteLine($"null,")))
 				{
-					writer.WriteLine($"new [] {{ {string.Join(", ", scopes)} }},");
+					writer.WriteLine($"new [] {{ {string.Join(", ", namescopes)} }},");
 				}
 			}
 			else
 				writer.WriteLine($"null,");
 				
 				var rootVar = context.Variables.FirstOrDefault(kvp => kvp.Key is SGRootNode).Value;
-				writer.WriteLine($"{rootVar?.ValueAccessor ?? "this"});");
+				writer.WriteLine($"{rootVar?.AccessedFrom(scopes).ValueAccessor ?? "this"});");
 				writer.Indent--;
 				writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), {simpleValueTargetProvider});");
 				writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), {simpleValueTargetProvider});");

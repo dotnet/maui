@@ -61,11 +61,10 @@ internal partial class TestPage
 	{
 		var inflator = new TestPageInflator() { __root = this };
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(inflator.__root, inflator.iNameScope);
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(this, inflator.iNameScope);
 #endif
-		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.button);
-
 		this.MyButton = inflator.button;
+		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.button);
 	}
 }
 
@@ -75,7 +74,6 @@ file ref struct TestPageInflator() {
 	public global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
 
-	
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Button button  {
 		get {
@@ -94,7 +92,7 @@ file ref struct TestPageInflator() {
 
 			static void SetProperties(global::Microsoft.Maui.Controls.Button local, ref TestPageInflator inflator) {
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-				inflator.iNameScope.RegisterName("MyButton", inflator.button);
+				inflator.iNameScope.RegisterName("MyButton", local);
 #endif
 				local.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
 			}
@@ -172,11 +170,10 @@ public partial class TestPage
 	{
 		var inflator = new TestPageInflator() { __root = this };
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(inflator.__root, inflator.iNameScope);
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(this, inflator.iNameScope);
 #endif
-		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.listView);
-
 		this.listView = inflator.listView;
+		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.listView);
 	}
 }
 
@@ -197,7 +194,7 @@ file ref struct TestPageInflator() {
 			};
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.ListView listView  {
 		get {
@@ -216,7 +213,7 @@ file ref struct TestPageInflator() {
 
 			static void SetProperties(global::Microsoft.Maui.Controls.ListView local, ref TestPageInflator inflator) {
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-				inflator.iNameScope.RegisterName("listView", inflator.listView);
+				inflator.iNameScope.RegisterName("listView", local);
 #endif
 				local.SetValue(global::Microsoft.Maui.Controls.ItemsView<global::Microsoft.Maui.Controls.Cell>.ItemsSourceProperty, inflator.stringArray);
 			}
@@ -298,14 +295,13 @@ public partial class TestPage
 	{
 		var inflator = new TestPageInflator() { __root = this };
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(inflator.__root, inflator.iNameScope);
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(this, inflator.iNameScope);
 #endif
 		this.Resources.Add(inflator.resourceDictionary);
 		this.Resources["mystring"] = "Hello";
 		this.Resources["purple"] = global::Microsoft.Maui.Graphics.Colors.Purple;
 		this.Resources["hotpink"] = global::Microsoft.Maui.Graphics.Colors.HotPink;
 		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.stackLayout);
-
 	}
 }
 
@@ -315,7 +311,6 @@ file ref struct TestPageInflator() {
 	public global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
 
-	
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.ResourceDictionary resourceDictionary  {
 		get {
@@ -336,7 +331,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Label label  {
 		get {
@@ -361,7 +356,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.StackLayout stackLayout  {
 		get {
@@ -469,7 +464,7 @@ public partial class TestPage
 	{
 		var inflator = new TestPageInflator() { __root = this };
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(inflator.__root, inflator.iNameScope);
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(this, inflator.iNameScope);
 #endif
 		this.Resources["Primary"] = new global::Microsoft.Maui.Graphics.Color(0.31764707f, 0.16862746f, 0.83137256f, 1f) /* #512BD4 */;
 		this.Resources["White"] = global::Microsoft.Maui.Graphics.Colors.White;
@@ -477,7 +472,6 @@ public partial class TestPage
 		this.Resources["Gray600"] = new global::Microsoft.Maui.Graphics.Color(0.2509804f, 0.2509804f, 0.2509804f, 1f) /* #404040 */;
 		this.Resources["Gray950"] = new global::Microsoft.Maui.Graphics.Color(0.078431375f, 0.078431375f, 0.078431375f, 1f) /* #141414 */;
 		this.Resources.Add(inflator.style);
-
 	}
 }
 
@@ -486,11 +480,10 @@ file ref struct TestPageInflator() {
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 	public global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
-
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 	global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.VisualState visualState  {
 		get {
@@ -507,14 +500,14 @@ file ref struct TestPageInflator() {
 			static void SetProperties(global::Microsoft.Maui.Controls.VisualState local, ref TestPageInflator inflator) {
 				local.Name = "Normal";
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-				inflator.iNameScope1.RegisterName("Normal", inflator.visualState);
+				inflator.iNameScope1.RegisterName("Normal", local);
 #endif
 			}
 
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.VisualState visualState2  {
 		get {
@@ -531,7 +524,7 @@ file ref struct TestPageInflator() {
 			static void SetProperties(global::Microsoft.Maui.Controls.VisualState local, ref TestPageInflator inflator) {
 				local.Name = "Disabled";
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-				inflator.iNameScope1.RegisterName("Disabled", inflator.visualState2);
+				inflator.iNameScope1.RegisterName("Disabled", local);
 #endif
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)local.Setters).Add((global::Microsoft.Maui.Controls.Setter)new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Button.TextColorProperty, Value = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = new global::Microsoft.Maui.Graphics.Color(0.078431375f, 0.078431375f, 0.078431375f, 1f) /* #141414 */, Dark = new global::Microsoft.Maui.Graphics.Color(0.78431374f, 0.78431374f, 0.78431374f, 1f) /* #C8C8C8 */ }});
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)local.Setters).Add((global::Microsoft.Maui.Controls.Setter)new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty, Value = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = new global::Microsoft.Maui.Graphics.Color(0.78431374f, 0.78431374f, 0.78431374f, 1f) /* #C8C8C8 */, Dark = new global::Microsoft.Maui.Graphics.Color(0.2509804f, 0.2509804f, 0.2509804f, 1f) /* #404040 */ }});
@@ -540,7 +533,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.VisualStateGroup visualStateGroup  {
 		get {
@@ -557,7 +550,7 @@ file ref struct TestPageInflator() {
 			static void SetProperties(global::Microsoft.Maui.Controls.VisualStateGroup local, ref TestPageInflator inflator) {
 				local.Name = "CommonStates";
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-				inflator.iNameScope1.RegisterName("CommonStates", inflator.visualStateGroup);
+				inflator.iNameScope1.RegisterName("CommonStates", local);
 #endif
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.VisualState>)local.States).Add((global::Microsoft.Maui.Controls.VisualState)inflator.visualState);
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.VisualState>)local.States).Add((global::Microsoft.Maui.Controls.VisualState)inflator.visualState2);
@@ -566,7 +559,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.VisualStateGroupList visualStateGroupList  {
 		get {
@@ -587,7 +580,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Style style  {
 		get {
@@ -733,14 +726,13 @@ public partial class TestPage
 	{
 		var inflator = new TestPageInflator() { __root = this };
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(inflator.__root, inflator.iNameScope);
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(this, inflator.iNameScope);
 #endif
 		this.Resources["reverseConverter"] = inflator.reverseConverter;
 		this.Resources.Add(inflator.style);
-		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.button);
-
 		this.MyButton = inflator.button;
 		inflator.button.Clicked += OnClicked;
+		this.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, inflator.button);
 	}
 }
 
@@ -750,7 +742,6 @@ file ref struct TestPageInflator() {
 	public global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
 
-	
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Test.ReverseConverter reverseConverter  {
 		get {
@@ -770,6 +761,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public Color color  {
 		get {
@@ -791,7 +783,7 @@ file ref struct TestPageInflator() {
 			}
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Setter setter  {
 		get {
@@ -802,7 +794,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Style style  {
 		get {
@@ -823,7 +815,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Button button  {
 		get {
@@ -842,7 +834,7 @@ file ref struct TestPageInflator() {
 
 			static void SetProperties(global::Microsoft.Maui.Controls.Button local, ref TestPageInflator inflator) {
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-				inflator.iNameScope.RegisterName("MyButton", inflator.button);
+				inflator.iNameScope.RegisterName("MyButton", local);
 #endif
 				local.SetBinding(global::Microsoft.Maui.Controls.Button.TextProperty, new global::Microsoft.Maui.Controls.Binding(".", converter: inflator.reverseConverter, converterParameter: new global::Test.FooExtension().ProvideValue(null)) {});
 			}
@@ -919,12 +911,11 @@ public partial class TestPage
 	{
 		var inflator = new TestPageInflator() { __root = this };
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(inflator.__root, inflator.iNameScope);
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(this, inflator.iNameScope);
 #endif
 		this.Resources["white"] = global::Microsoft.Maui.Graphics.Colors.White;
 		this.Resources["black"] = global::Microsoft.Maui.Graphics.Colors.Black;
 		this.Resources["myStyle"] = inflator.style;
-
 	}
 }
 
@@ -957,7 +948,7 @@ file ref struct TestPageInflator() {
 			}
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Setter setter  {
 		get {
@@ -968,7 +959,7 @@ file ref struct TestPageInflator() {
 			return field;
 		}
 	}
-	
+
 	[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]
 	public global::Microsoft.Maui.Controls.Style style  {
 		get {
