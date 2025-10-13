@@ -50,7 +50,7 @@ public static class MockSourceGenerator
 		return RunMauiSourceGenerator(compilation, new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd(), TargetFramework: targetFramework));
 	}
 
-	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
+	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 9)
 	{
 		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
 			return searchDirectory;
