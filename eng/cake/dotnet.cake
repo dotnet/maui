@@ -876,8 +876,9 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 // https://github.com/microsoft/vstest/issues/5112
                 args.Append($"/p:VStestUseMSBuildOutput=false");
 
+                var sourceFolder = MakeAbsolute(new DirectoryPath("./"));
                 // Code coverage
-                args.Append($"--collect \"XPlat Code Coverage\" --settings \"./coverage.runsettings\"");
+                args.Append($"--collect \"XPlat Code Coverage\" --settings \"{sourceFolder}/coverage.runsettings\"");
                 return args;
             }
         };
