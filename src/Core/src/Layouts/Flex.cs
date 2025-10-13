@@ -603,12 +603,6 @@ namespace Microsoft.Maui.Layouts.Flex
 
 					flex_layout.flex_layout_line line = layout.lines![i];
 
-					if (layout.reverse2)
-					{
-						pos -= line.size;
-						pos -= spacing;
-						old_pos -= line.size;
-					}
 
 					// Re-position the children of this line, honoring any child
 					// alignment previously set within the line.
@@ -631,7 +625,13 @@ namespace Microsoft.Maui.Layouts.Flex
 						child.Frame[layout.frame_pos2_i] = pos + (child.Frame[layout.frame_pos2_i] - old_pos);
 					}
 
-					if (!layout.reverse2)
+					if (layout.reverse2)
+					{
+						pos -= line.size;
+						pos -= spacing;
+						old_pos -= line.size;
+					}
+					else
 					{
 						pos += line.size;
 						pos += spacing;
