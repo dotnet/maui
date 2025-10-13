@@ -7,6 +7,7 @@ public class Issue22058 : ContentPage
 
 	public Issue22058()
 	{
+		this.SetAppThemeColor(BackgroundProperty, Colors.White, Colors.Black);
 		customTitleBar = new TitleBar
 		{
 			Title = "MauiApp1",
@@ -24,10 +25,7 @@ public class Issue22058 : ContentPage
 
 		button.Clicked += (sender, e) =>
 		{
-			if (Application.Current is not null)
-			{
-				Application.Current.UserAppTheme = AppTheme.Dark;
-			}
+			Application.Current?.UserAppTheme = AppTheme.Dark;
 		};
 
 		var resetThemeButton = new Button
@@ -40,10 +38,7 @@ public class Issue22058 : ContentPage
 
 		resetThemeButton.Clicked += (sender, e) =>
 		{
-			if (Application.Current is not null)
-			{
-				Application.Current.UserAppTheme = AppTheme.Unspecified;
-			}
+			Application.Current?.UserAppTheme = AppTheme.Unspecified;
 		};
 
 		var timePicker = new TimePicker
