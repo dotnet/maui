@@ -129,8 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler]
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
-			if (Element != null)
-				Element.SelectedIndex = Control.SelectedIndex;
+			Element?.SelectedIndex = Control.SelectedIndex;
 		}
 
 		void OnDropDownOpenStateChanged(object sender, object o)

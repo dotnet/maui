@@ -218,10 +218,8 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateButtonBackground()
 		{
-			if (_minus != null)
-				_minus.Background = ButtonBackground;
-			if (_plus != null)
-				_plus.Background = ButtonBackground;
+			_minus?.Background = ButtonBackground;
+			_plus?.Background = ButtonBackground;
 		}
 
 		void UpdateButtonBackgroundColor(Color value)
