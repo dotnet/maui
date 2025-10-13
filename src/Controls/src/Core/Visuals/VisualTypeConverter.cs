@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls
 			=> destinationType == typeof(string);
 
 		static Dictionary<string, IVisual> _visualTypeMappings;
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Assembly scanning optional; guarded by IsIVisualAssemblyScanningEnabled feature flag.")]
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
