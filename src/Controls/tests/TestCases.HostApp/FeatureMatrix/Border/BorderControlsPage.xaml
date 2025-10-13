@@ -4,7 +4,8 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:DataType="local:BorderViewModel"
              x:Class="Maui.Controls.Sample.BorderControlMainPage"
-             Title="ControlsPage">
+             Title="ControlsPage"
+             SafeAreaEdges="Container">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                      Clicked="NavigateToOptionsPage_Clicked"
