@@ -8,6 +8,7 @@
 		protected override void Init()
 		{
 			_entry = new Entry { AutomationId = "entry" };
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			// Initialize ui here instead of ctor
 			Content = new StackLayout
 			{
