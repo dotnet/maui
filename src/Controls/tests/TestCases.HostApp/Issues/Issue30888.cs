@@ -13,7 +13,7 @@ public class Issue30888 : TestFlyoutPage
 
 		flyoutPage.ToolbarItems.Add(new ToolbarItem
 		{
-			Text = "Send",
+			Text = "FlyoutItem",
 		});
 
 		flyoutPage.Content = new Grid
@@ -32,6 +32,11 @@ public class Issue30888 : TestFlyoutPage
 		{
 			Title = "Detail",
 		};
+
+		detailPage.ToolbarItems.Add(new ToolbarItem
+		{
+			Text = "DetailItem",
+		});
 
 		detailPage.Content = new Grid
 		{
