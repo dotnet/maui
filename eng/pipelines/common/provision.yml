@@ -212,12 +212,12 @@ steps:
 #               Provisioning Feeds               #
 ##################################################
 
-- ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
-  - template: ../../common/templates-official/steps/enable-internal-sources.yml
+# - ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
+#   - template: ../../common/templates-official/steps/enable-internal-sources.yml
 
-  - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
-    parameters:
-      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
-      outputVariableName: ${{ parameters.outputVariableName }}
-      expiryInHours: ${{ parameters.expiryInHours }}
-      base64Encode: ${{ parameters.base64Encode }}
+#   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
+#     parameters:
+#       federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+#       outputVariableName: ${{ parameters.outputVariableName }}
+#       expiryInHours: ${{ parameters.expiryInHours }}
+#       base64Encode: ${{ parameters.base64Encode }}
