@@ -506,32 +506,12 @@ namespace Microsoft.Maui.Handlers
 
 		bool LoadFile(string url)
 		{
-			try
+			if (PlatformView is null)
 			{
-				var file = Path.GetFileNameWithoutExtension(url);
-				var ext = Path.GetExtension(url);
-				var directory = Path.GetDirectoryName(url);
-
-				// // If there's a subdirectory, use the overload that accepts a subdirectory parameter else fallback to the original method if subdirectory method fails or if no subdirectory
-				NSUrl? nsUrl = string.IsNullOrEmpty(directory)
-					? NSBundle.MainBundle.GetUrlForResource(file, ext)
-					: NSBundle.MainBundle.GetUrlForResource(file, ext, directory);
-
-				if (nsUrl is null)
-				{
-					return false;
-				}
-
-				PlatformView?.LoadFileUrl(nsUrl, nsUrl);
-
-				return true;
-			}
-			catch (Exception)
-			{
-				MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning("Could not load {url} as local file", url);
+				return false;
 			}
 
-			return false;
+			return PlatformView.LoadFile(url, MauiContext?.CreateLogger<WebViewHandler>());
 		}
 
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
