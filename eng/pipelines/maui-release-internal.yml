@@ -75,7 +75,7 @@ extends:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     settings:
-      networkIsolationPolicy: Preferred
+      networkIsolationPolicy: Permissive
     pool: ${{ parameters.VM_IMAGE_HOST }}
     sdl:
       binskim:
