@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Platform;
 
-internal sealed class CharacterSpacingConverter : UI.Xaml.Data.IValueConverter
+internal sealed partial class CharacterSpacingConverter : UI.Xaml.Data.IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, string language)
 	{
