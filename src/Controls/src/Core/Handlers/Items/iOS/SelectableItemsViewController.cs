@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case SelectionMode.None:
 					break;
 				case SelectionMode.Single:
-					ItemsView.SelectedItem = GetItemAtIndex(indexPath);
+					var item = GetItemAtIndex(indexPath);
+					ItemsView.SetValueFromRenderer(SelectableItemsView.SelectedItemsProperty,item);
 					break;
 				case SelectionMode.Multiple:
 					ItemsView.SelectedItems.Add(GetItemAtIndex(indexPath));
