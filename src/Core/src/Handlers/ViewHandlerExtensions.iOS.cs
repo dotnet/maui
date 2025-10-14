@@ -102,6 +102,10 @@ namespace Microsoft.Maui
 			}
 			else
 			{
+				// Handle explicit dimensions for all view types (similar to Android's CreateMeasureSpec)
+				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
+				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
+
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
 
