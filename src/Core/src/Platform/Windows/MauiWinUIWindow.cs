@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 					titleBar.ExtendsContentIntoTitleBar = true;
 				}
 
-				_viewSettings.ColorValuesChanged += _viewSettings_ColorValuesChanged;
+				_viewSettings.ColorValuesChanged += ViewSettingsColorValuesChanged;
 				SetTileBarButtonColors();
 			}
 
@@ -104,7 +104,7 @@ namespace Microsoft.Maui
 			Activated -= OnActivated;
 			Closed -= OnClosedPrivate;
 			VisibilityChanged -= OnVisibilityChanged;
-			_viewSettings.ColorValuesChanged -= _viewSettings_ColorValuesChanged;
+			_viewSettings.ColorValuesChanged -= ViewSettingsColorValuesChanged;
 
 			if (_windowIcon != IntPtr.Zero)
 			{
@@ -216,7 +216,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void _viewSettings_ColorValuesChanged(ViewManagement.UISettings sender, object args)
+		void ViewSettingsColorValuesChanged(ViewManagement.UISettings sender, object args)
 		{
 			DispatcherQueue.TryEnqueue(SetTileBarButtonColors);
 		}
