@@ -9,7 +9,14 @@ namespace Microsoft.Maui.Controls
 	public partial class SwipeItem : MenuItem, Controls.ISwipeItem, Maui.ISwipeItemMenuItem
 	{
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null,
+			propertyChanged: OnBackgroundColorPropertyChanged);
+
+		static void OnBackgroundColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is SwipeItem swipeItem)
+				swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.Background));
+		}
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(SwipeItem), true);
@@ -30,7 +37,16 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Invoked;
 
-		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
+		Paint ISwipeItemMenuItem.Background
+		{
+			get
+			{
+				if (BackgroundColor.IsNotDefault())
+					return new SolidPaint(BackgroundColor);
+
+				return null;
+			}
+		}
 
 		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 
@@ -45,6 +61,25 @@ namespace Microsoft.Maui.Controls
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current is null)
+				return;
+
+			if (args.NewHandler is null || args.OldHandler is not null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			if (args.NewHandler is not null && args.OldHandler is null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			// Force refresh/re-evaluate AppTheme binding
+			this.RefreshPropertyValue(BackgroundColorProperty, BackgroundColor);
 		}
 	}
 }
