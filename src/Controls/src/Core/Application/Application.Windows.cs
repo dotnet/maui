@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_currentThemeForWindows is not null && window.Handler is not null)
 			{
-				TryApplyTheme();
+				TryApplyThemeToWindow(window);
 			}
 		}
 
@@ -32,47 +32,58 @@ namespace Microsoft.Maui.Controls
 			window.HandlerChanged -= OnWindowHandlerChanged;
 		}
 
-		void OnWindowHandlerChanged(object? sender, EventArgs e) => TryApplyTheme();
-
-		void TryApplyTheme()
+		void OnWindowHandlerChanged(object? sender, EventArgs e)
 		{
-			if (_currentThemeForWindows is AppTheme theme)
+			if (sender is Window window)
 			{
-				ApplyThemeToAllWindows(theme, UserAppTheme == AppTheme.Unspecified);
+				TryApplyThemeToWindow(window);
 			}
 		}
 
-		bool AnyWindowReady()
+		void TryApplyThemeToWindow(Window window)
 		{
-			foreach (var window in Windows)
+			if (_currentThemeForWindows is AppTheme theme)
 			{
-				var platformWindow = window?.Handler?.PlatformView as UI.Xaml.Window;
-				if (platformWindow?.Content is FrameworkElement)
+				var forcedElementTheme = GetElementTheme();
+
+				if (IsWindowReady(window))
 				{
-					return true;
+					ApplyThemeToWindow(window, UserAppTheme == AppTheme.Unspecified, forcedElementTheme);
 				}
 			}
-			return false;
+		}
+
+		bool IsWindowReady(Window window)
+		{
+			var platformWindow = window?.Handler?.PlatformView as UI.Xaml.Window;
+			return platformWindow?.Content is FrameworkElement;
 		}
 
 		void ApplyThemeToAllWindows(AppTheme newTheme, bool followSystem)
 		{
-			if (!AnyWindowReady())
-			{
-				return;
-			}
-
-			var forcedElementTheme = newTheme switch
-			{
-				AppTheme.Dark => ElementTheme.Dark,
-				AppTheme.Light => ElementTheme.Light,
-				_ => ElementTheme.Default
-			};
+			var forcedElementTheme = GetElementTheme();
 
 			foreach (var window in Windows)
 			{
-				ApplyThemeToWindow(window, followSystem, forcedElementTheme);
+				if (IsWindowReady(window))
+				{
+					ApplyThemeToWindow(window, followSystem, forcedElementTheme);
+				}
 			}
+		}
+
+		ElementTheme GetElementTheme()
+		{
+			if (_currentThemeForWindows is AppTheme theme)
+			{
+				return theme switch
+				{
+					AppTheme.Dark => ElementTheme.Dark,
+					AppTheme.Light => ElementTheme.Light,
+					_ => ElementTheme.Default
+				};
+			}
+			return ElementTheme.Default;
 		}
 
 		void ApplyThemeToWindow(Window? window, bool followSystem, ElementTheme forcedElementTheme)
