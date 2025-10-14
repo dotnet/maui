@@ -25,7 +25,10 @@ public class Issue22058 : ContentPage
 
 		button.Clicked += (sender, e) =>
 		{
-			Application.Current?.UserAppTheme = AppTheme.Dark;
+			if (Application.Current is not null)
+			{
+				Application.Current.UserAppTheme = AppTheme.Dark;
+			}
 		};
 
 		var resetThemeButton = new Button
@@ -38,7 +41,10 @@ public class Issue22058 : ContentPage
 
 		resetThemeButton.Clicked += (sender, e) =>
 		{
-			Application.Current?.UserAppTheme = AppTheme.Unspecified;
+			if (Application.Current is not null)
+			{
+				Application.Current.UserAppTheme = AppTheme.Unspecified;
+			}
 		};
 
 		var timePicker = new TimePicker
