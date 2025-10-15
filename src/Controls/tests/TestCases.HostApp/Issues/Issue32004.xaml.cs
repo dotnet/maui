@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 00000, "Entry crashes when setting Text in TextChanged event handler", PlatformAffected.Android)]
-public partial class EntryTextChangedCrash : ContentPage
+[Issue(IssueTracker.Github, 32004, "Entry crashes when setting Text in TextChanged event handler", PlatformAffected.Android)]
+public partial class Issue32004 : ContentPage
 {
-	public EntryTextChangedCrash()
+	public Issue32004()
 	{
 		InitializeComponent();
 	}

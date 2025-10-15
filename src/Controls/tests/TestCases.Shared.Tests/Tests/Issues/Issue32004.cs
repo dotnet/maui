@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class EntryTextChangedCrash : _IssuesUITest
+	public class Issue32004 : _IssuesUITest
 	{
-		public EntryTextChangedCrash(TestDevice testDevice) : base(testDevice)
+		public Issue32004(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
