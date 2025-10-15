@@ -576,12 +576,21 @@ namespace Microsoft.Maui.Controls
 			nameScope.RegisterName(UncheckedButton, normalEllipse);
 			nameScope.RegisterName(CheckedIndicator, checkMark);
 			nameScope.RegisterName("ContentPresenter", contentPresenter);
+			nameScope.RegisterName("Grid", grid);
 
 			VisualStateGroupList visualStateGroups = new VisualStateGroupList();
 
 			var common = new VisualStateGroup() { Name = "Common" };
 			common.States.Add(new VisualState() { Name = VisualStateManager.CommonStates.Normal });
-			common.States.Add(new VisualState() { Name = VisualStateManager.CommonStates.Disabled });
+			VisualState disabledVisualState = new VisualState() { Name = VisualStateManager.CommonStates.Disabled };
+            disabledVisualState.Setters.Add(
+                new Setter()
+                {
+                    Property = Grid.OpacityProperty,
+                    TargetName = "Grid",
+                    Value = 0.4f
+                });
+            common.States.Add(disabledVisualState);
 
 			visualStateGroups.Add(common);
 
