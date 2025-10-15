@@ -101,7 +101,7 @@ public class Issue20062_Item
 {
 	public string Name { get; set; }
 	public string Id { get; set; }
-} 
+}
 
 public class Issue20062ViewModel
 {

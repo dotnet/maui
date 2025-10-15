@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // When select an single item, the selection background is applied to all items.
+#if TEST_FAILS_ON_WINDOWS // When selecting a single item, the selection background is applied to all items.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
