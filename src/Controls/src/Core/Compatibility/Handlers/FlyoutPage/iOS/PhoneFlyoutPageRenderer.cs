@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				UpdatePresented(((FlyoutPage)Element).IsPresented);
 
-			UpdateLeftBarButton();
+			UpdateBarButton();
 		}
 
 		public override void ViewDidLoad()
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdatePresented(false);
 			}
 
-			UpdateLeftBarButton();
+			UpdateBarButton();
 		}
 
 		void UpdatePresented(bool newValue, bool animated = false)
@@ -339,7 +339,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
-				UpdateLeftBarButton();
+				UpdateBarButton();
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -361,6 +361,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
 					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdatePageSpecifics();
+			else if (e.Is(VisualElement.FlowDirectionProperty))
+				UpdateBarButton();
 		}
 
 		void LayoutChildren(bool animated)
@@ -570,7 +572,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdatePageSpecifics();
 		}
 
-		void UpdateLeftBarButton()
+		void UpdateBarButton()
 		{
 			var FlyoutPage = Element as FlyoutPage;
 			if (!(FlyoutPage?.Detail is NavigationPage))
@@ -582,7 +584,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
-				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
+				NavigationRenderer.SetFlyoutBarButton(firstPage, FlyoutPage, IsRTL);
 		}
 
 		void UpdateApplyShadow(bool value)
