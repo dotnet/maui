@@ -1,8 +1,22 @@
+﻿using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.IO;
+
+
+
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Maui.Controls.SourceGen;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
+using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
+
+
 
 
 public class NamingHelpersTests
@@ -42,4 +56,24 @@ public class TestClass<T>
 
 		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass+Nested")!), Is.EqualTo("nested"));
 	}
+
+	/// <summary>
+	/// Tests CreateUniqueVariableName with null context parameter.
+	/// Should throw ArgumentNullException when context is null.
+	/// </summary>
+	[Test]
+	[Category("ProductionBugSuspected")]
+	public void CreateUniqueVariableName_NullContext_ThrowsArgumentNullException()
+	{
+		// Arrange
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var symbol = compilation.GetTypeByMetadataName("Test.TestClass")!;
+
+		// Act & Assert
+		Assert.Throws<ArgumentNullException>(() => NamingHelpers.CreateUniqueVariableName(null!, symbol));
+	}
+
+
+
 }
