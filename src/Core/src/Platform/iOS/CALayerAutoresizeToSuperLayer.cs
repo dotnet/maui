@@ -1,5 +1,6 @@
 #if IOS || MACCATALYST
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CoreAnimation;
 using CoreGraphics;
@@ -11,13 +12,23 @@ namespace Microsoft.Maui.Platform;
 internal static class CALayerAutoresizeToSuperLayer
 {
 	static IntPtr _originalSetBoundsSelector;
+	static IntPtr _subLayersSelector;
+	static IntPtr _countSelector;
+	static IntPtr _boundsSelector;
+	static IntPtr _objectAtIndexSelector;
+	static IntPtr _setFrameSelector;
 	static readonly IntPtr _associatedObjectKey;
 	static bool _initialized;
+	static bool _useStret;
 
 	static CALayerAutoresizeToSuperLayer()
 	{
-		// Create a unique key for associated objects
+		// Create unique key for associated objects
 		_associatedObjectKey = Marshal.AllocHGlobal(1);
+		
+		// Determine which calling convention to use based on architecture
+		// ARM64 uses objc_msgSend for struct returns, x86_64 uses objc_msgSend_stret
+		_useStret = RuntimeInformation.ProcessArchitecture == Architecture.X64;
 	}
 
 	internal static void EnsureInitialized()
@@ -56,8 +67,13 @@ internal static class CALayerAutoresizeToSuperLayer
 			// Exchange implementations
 			method_exchangeImplementations(originalSetBoundsMethod, swizzledMethod);
 			
-			// After swizzling, the original implementation is now at maui_setBounds:
+			// Cache all selectors used in the hot path for fast access
 			_originalSetBoundsSelector = Selector.GetHandle("maui_setBounds:");
+			_subLayersSelector = Selector.GetHandle("sublayers");
+			_countSelector = Selector.GetHandle("count");
+			_boundsSelector = Selector.GetHandle("bounds");
+			_objectAtIndexSelector = Selector.GetHandle("objectAtIndex:");
+			_setFrameSelector = Selector.GetHandle("setFrame:");
 		}
 	}
 
@@ -72,26 +88,31 @@ internal static class CALayerAutoresizeToSuperLayer
 	[MonoPInvokeCallback(typeof(SetBoundsDelegate))]
 	private static void Maui_SetBounds(IntPtr self, IntPtr selector, CGRect bounds)
 	{
-		// Get the CALayer instance
-		var layer = Runtime.GetNSObject<CALayer>(self);
-			
-		if (layer == null)
+		// Fast check: do we have sublayers?
+		var sublayersArrayPtr = objc_msgSend(self, _subLayersSelector);
+		
+		if (sublayersArrayPtr != IntPtr.Zero)
 		{
-			return;
-		}
+			var sublayerCount = objc_msgSend_IntPtr(sublayersArrayPtr, _countSelector);
 
-		// Only if size has changed
-		var oldBounds = layer.Bounds;
-		if (!oldBounds.Equals(bounds))
-		{
-			var sublayers = layer.Sublayers;
-			if (sublayers != null)
+			if (sublayerCount > 0)
 			{
-				foreach (var sublayer in sublayers)
+				var currentBounds = GetBounds(self);
+				
+				// Only proceed if bounds actually changed
+				if (!currentBounds.Equals(bounds))
 				{
-					if (GetAutoresizeToSuperLayer(sublayer))
+					// Loop through sublayers once at native level
+					for (nint i = 0; i < sublayerCount; i++)
 					{
-						sublayer.Frame = bounds;
+						var sublayerPtr = objc_msgSend_nint(sublayersArrayPtr, _objectAtIndexSelector, i);
+						var flagPtr = objc_getAssociatedObject(sublayerPtr, _associatedObjectKey);
+						
+						// If this sublayer has autoresizing enabled, set its frame
+						if (flagPtr != IntPtr.Zero)
+						{
+							objc_msgSend_CGRect(sublayerPtr, _setFrameSelector, bounds);
+						}
 					}
 				}
 			}
@@ -101,22 +122,39 @@ internal static class CALayerAutoresizeToSuperLayer
 		objc_msgSend_CGRect(self, _originalSetBoundsSelector, bounds);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static CGRect GetBounds(IntPtr layerPtr)
+	{
+		// Use the appropriate calling convention based on architecture
+		return _useStret 
+			? objc_msgSend_stret_CGRect(layerPtr, _boundsSelector)
+			: objc_msgSend_CGRect_ret(layerPtr, _boundsSelector);
+	}
+
 	internal static bool GetAutoresizeToSuperLayer(CALayer layer)
 	{
-		var maskNumber = objc_getAssociatedObject(layer.Handle, _associatedObjectKey);
-		if (maskNumber == IntPtr.Zero)
+		var valuePointer = objc_getAssociatedObject(layer.Handle, _associatedObjectKey);
+		if (valuePointer == IntPtr.Zero)
 		{
 			return false;
 		}
 
-		var nsNumber = Runtime.GetNSObject<NSNumber>(maskNumber);
+		var nsNumber = Runtime.GetNSObject<NSNumber>(valuePointer);
 		return (nsNumber?.UInt32Value ?? 0) != 0;
 	}
 
 	internal static void SetAutoresizeToSuperLayer(CALayer layer, bool autoresize)
 	{
-		var maskNumber = NSNumber.FromUInt32(autoresize ? 1u : 0u);
-		objc_setAssociatedObject(layer.Handle, _associatedObjectKey, maskNumber.Handle, AssociationPolicy.RETAIN_NONATOMIC);
+		if (autoresize)
+		{
+			var maskNumber = NSNumber.FromUInt32(1);
+			objc_setAssociatedObject(layer.Handle, _associatedObjectKey, maskNumber.Handle, AssociationPolicy.RETAIN_NONATOMIC);
+		}
+		else
+		{
+			// Remove the associated object by passing nil/IntPtr.Zero
+			objc_setAssociatedObject(layer.Handle, _associatedObjectKey, IntPtr.Zero, AssociationPolicy.ASSIGN);
+		}
 	}
 
 	// Objective-C runtime P/Invoke declarations
@@ -138,6 +176,23 @@ internal static class CALayerAutoresizeToSuperLayer
 
 	[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
 	private static extern void objc_msgSend_CGRect(IntPtr receiver, IntPtr selector, CGRect arg1);
+	
+	[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+	private static extern IntPtr objc_msgSend(IntPtr receiver, IntPtr selector);
+	
+	[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+	private static extern IntPtr objc_msgSend_IntPtr(IntPtr receiver, IntPtr selector);
+	
+	[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+	private static extern IntPtr objc_msgSend_nint(IntPtr receiver, IntPtr selector, nint arg1);
+	
+	// On ARM64 (iOS, Apple Silicon Macs), structs are returned via registers
+	[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+	private static extern CGRect objc_msgSend_CGRect_ret(IntPtr receiver, IntPtr selector);
+	
+	// On x86_64 (Intel Macs), structs are returned via stret
+	[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend_stret")]
+	private static extern CGRect objc_msgSend_stret_CGRect(IntPtr receiver, IntPtr selector);
 
 	private enum AssociationPolicy
 	{
