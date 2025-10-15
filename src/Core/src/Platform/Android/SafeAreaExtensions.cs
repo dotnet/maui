@@ -2,7 +2,6 @@ using System;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
-using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Platform;
 
@@ -61,6 +60,7 @@ internal static class SafeAreaExtensions
             var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
             var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
+            bool isAdjustPan = false;
             if (isKeyboardShowing &&
                 context.GetActivity()?.Window is Window window &&
                 window?.Attributes is WindowManagerLayoutParams attr)
@@ -74,6 +74,9 @@ internal static class SafeAreaExtensions
                 {
                     return WindowInsetsCompat.Consumed;
                 }
+                
+                // Track if we're in AdjustPan mode for later logic
+                isAdjustPan = softInputMode == SoftInput.AdjustPan;
             }
 
             var globalWindowInsetsListener = context.GetGlobalWindowInsetListener();
@@ -90,76 +93,82 @@ internal static class SafeAreaExtensions
                     return windowInsets;
                 }
 
-                // Get view's position on screen
-                var viewLocation = new int[2];
-                view.GetLocationOnScreen(viewLocation);
-                var viewLeft = viewLocation[0];
-                var viewTop = viewLocation[1];
-                var viewRight = viewLeft + view.MeasuredWidth;
-                var viewBottom = viewTop + view.MeasuredHeight;
-
-                // Get actual screen dimensions (including system UI)
-                var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
-                if (windowManager?.DefaultDisplay is not null)
+                // When in AdjustPan mode with keyboard showing, skip position-based calculations
+                // because the window panning makes view coordinates unreliable for determining overlaps.
+                // Instead, trust the safe area values we already calculated.
+                if (!(isKeyboardShowing && isAdjustPan))
                 {
-                    var realMetrics = new global::Android.Util.DisplayMetrics();
-                    windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
-                    var screenWidth = realMetrics.WidthPixels;
-                    var screenHeight = realMetrics.HeightPixels;
+                    // Get view's position on screen
+                    var viewLocation = new int[2];
+                    view.GetLocationOnScreen(viewLocation);
+                    var viewLeft = viewLocation[0];
+                    var viewTop = viewLocation[1];
+                    var viewRight = viewLeft + view.MeasuredWidth;
+                    var viewBottom = viewTop + view.MeasuredHeight;
 
-                    // Calculate actual overlap for each edge
-                    // Top: how much the view extends into the top safe area
-                    // If the viewTop is < 0 that means that it's most likely
-                    // panned off the top of the screen so we don't want to apply any top inset
-                    if (top > 0 && viewTop < top && viewTop >= 0)
+                    // Get actual screen dimensions (including system UI)
+                    var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+                    if (windowManager?.DefaultDisplay is not null)
                     {
-                        // Calculate the actual overlap amount
-                        top = Math.Min(top - viewTop, top);
-                    }
-                    else
-                    {
-                        if (view.MeasuredHeight > 0 || hasTrackedViews)
-                            top = 0;
-                    }
+                        var realMetrics = new global::Android.Util.DisplayMetrics();
+                        windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
+                        var screenWidth = realMetrics.WidthPixels;
+                        var screenHeight = realMetrics.HeightPixels;
 
-                    // Bottom: how much the view extends into the bottom safe area
-                    if (bottom > 0 && viewBottom > (screenHeight - bottom))
-                    {
-                        // Calculate the actual overlap amount
-                        var bottomEdge = screenHeight - bottom;
-                        bottom = Math.Min(viewBottom - bottomEdge, bottom);
-                    }
-                    else
-                    {
-                        // if the view height is zero because it hasn't done the first pass
-                        // and we don't have any tracked views yet then we will apply the bottom inset
-                        if (view.MeasuredHeight > 0 || hasTrackedViews)
-                            bottom = 0;
-                    }
+                        // Calculate actual overlap for each edge
+                        // Top: how much the view extends into the top safe area
+                        // If the viewTop is < 0 that means that it's most likely
+                        // panned off the top of the screen so we don't want to apply any top inset
+                        if (top > 0 && viewTop < top && viewTop >= 0)
+                        {
+                            // Calculate the actual overlap amount
+                            top = Math.Min(top - viewTop, top);
+                        }
+                        else
+                        {
+                            if (view.MeasuredHeight > 0 || hasTrackedViews)
+                                top = 0;
+                        }
 
-                    // Left: how much the view extends into the left safe area
-                    if (left > 0 && viewLeft < left)
-                    {
-                        // Calculate the actual overlap amount
-                        left = Math.Min(left - viewLeft, left);
-                    }
-                    else
-                    {
-                        if (view.MeasuredWidth > 0 || hasTrackedViews)
-                            left = 0;
-                    }
+                        // Bottom: how much the view extends into the bottom safe area
+                        if (bottom > 0 && viewBottom > (screenHeight - bottom))
+                        {
+                            // Calculate the actual overlap amount
+                            var bottomEdge = screenHeight - bottom;
+                            bottom = Math.Min(viewBottom - bottomEdge, bottom);
+                        }
+                        else
+                        {
+                            // if the view height is zero because it hasn't done the first pass
+                            // and we don't have any tracked views yet then we will apply the bottom inset
+                            if (view.MeasuredHeight > 0 || hasTrackedViews)
+                                bottom = 0;
+                        }
 
-                    // Right: how much the view extends into the right safe area
-                    if (right > 0 && viewRight > (screenWidth - right))
-                    {
-                        // Calculate the actual overlap amount
-                        var rightEdge = screenWidth - right;
-                        right = Math.Min(viewRight - rightEdge, right);
-                    }
-                    else
-                    {
-                        if (view.MeasuredWidth > 0 || hasTrackedViews)
-                            right = 0;
+                        // Left: how much the view extends into the left safe area
+                        if (left > 0 && viewLeft < left)
+                        {
+                            // Calculate the actual overlap amount
+                            left = Math.Min(left - viewLeft, left);
+                        }
+                        else
+                        {
+                            if (view.MeasuredWidth > 0 || hasTrackedViews)
+                                left = 0;
+                        }
+
+                        // Right: how much the view extends into the right safe area
+                        if (right > 0 && viewRight > (screenWidth - right))
+                        {
+                            // Calculate the actual overlap amount
+                            var rightEdge = screenWidth - right;
+                            right = Math.Min(viewRight - rightEdge, right);
+                        }
+                        else
+                        {
+                            if (view.MeasuredWidth > 0 || hasTrackedViews)
+                                right = 0;
+                        }
                     }
                 }
 
