@@ -878,7 +878,15 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 var sourcesDir = Directory(EnvironmentVariable("BUILD_SOURCESDIRECTORY", "artifacts"));
                 var sourceFolder = File($"{sourcesDir}/coverage.runsettings");
                 // Code coverage
-                args.Append($"--collect \"XPlat Code Coverage\" --settings \"{sourceFolder}\"");
+                if (FileExists(sourceFolder))
+                {
+                    args.Append($"--collect \"XPlat Code Coverage\" --settings \"{sourceFolder}\"");
+                }
+                else
+                {
+                    Warning($"coverage.runsettings file not found at {sourceFolder}. Skipping --settings argument for code coverage.");
+                    args.Append($"--collect \"XPlat Code Coverage\"");
+                }
                 return args;
             }
         };
