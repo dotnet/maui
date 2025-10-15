@@ -17,7 +17,7 @@ public class Issue31117 : _IssuesUITest
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerYearFormat_InitialState_DisplaysFourDigitYear()
 	{
-		// Verify initial display shows 4-digit year for 2024-12-24
+		// Verify initial display shows 4-digit year for 2024-12-23
 		var datePickerText = App.WaitForElement("MyDatePicker").GetText();
 		Assert.That(datePickerText, Does.Contain("2024"), "DatePicker should display 4-digit year initially");
 		Assert.That(datePickerText, Does.Not.Contain("/24"), "DatePicker should not show 2-digit year pattern");

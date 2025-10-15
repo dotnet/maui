@@ -8,7 +8,7 @@
 		public Issue31117()
 		{
 			InitializeComponent();
-			MyDatePicker.Date = new DateTime(2024, 12, 24);
+			MyDatePicker.Date = new DateTime(2024, 12, 23);
 			UpdateDisplayLabel();
 		}
 
