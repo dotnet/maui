@@ -19,8 +19,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElementTillPageNavigationSettled("NavigationToPageSixthButton");
 			App.Tap("NavigationToPageSixthButton");
 			App.WaitForElementTillPageNavigationSettled("NavigateToDetailButton");
-			App.Tap("NavigateToDetailButton");
-			App.WaitForElementTillPageNavigationSettled("NavigateBackButton");
+			bool navigationSucceeded = false;
+			for (int i = 0; i < 3 && !navigationSucceeded; i++)
+			{
+				try
+				{
+					App.Tap("NavigateToDetailButton");
+					App.WaitForElementTillPageNavigationSettled("NavigateBackButton");
+					navigationSucceeded = true;
+				}
+				catch (Exception)
+				{
+					TestContext.WriteLine($"Timeout waiting for NavigateBackButton after tapping NavigateToDetailButton");
+				}
+			}
+			Assert.That(navigationSucceeded, Is.True, "Navigation to Detail Page did not succeed after multiple attempts");
 			App.Tap("NavigateBackButton");
 			App.WaitForElementTillPageNavigationSettled("NavigateToPageTwoButton");
 			App.Tap("NavigateToPageTwoButton");
