@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.EntryTextChangedCrash">
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Test Entry TextChanged crash" FontSize="18" FontAttributes="Bold"/>
+        <Label Text="1. Delete all text from the entry below" />
+        <Label Text="2. App should not crash" />
+        
+        <Entry x:Name="CartonsEntry" 
+               Text="0" 
+               Keyboard="Numeric" 
+               TextChanged="Quantity_TextChanged"
+               AutomationId="TestEntry" />
+        
+        <Label x:Name="StatusLabel" 
+               Text="Status: Ready" 
+               AutomationId="StatusLabel" />
+    </VerticalStackLayout>
+</ContentPage>
