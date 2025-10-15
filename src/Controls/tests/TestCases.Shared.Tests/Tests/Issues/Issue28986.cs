@@ -96,8 +96,7 @@ public class Issue28986 : _IssuesUITest
 		Assert.That(finalAllSettings, Does.Contain("All (Full safe area)"));
 		Assert.That(finalAllPosition.Y, Is.EqualTo(allPosition.Y), "Final All position should match initial All position");
 	}
-
-#if TEST_FAILS_ON_ANDROID
+	
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaPerEdgeValidation()
@@ -128,6 +127,5 @@ public class Issue28986 : _IssuesUITest
 			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		});
 	}
-	#endif
 }
 #endif
