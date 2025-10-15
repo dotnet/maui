@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.App;
 using Android.Views;
+using AndroidX.AppCompat.App;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		DatePickerDialog? _dialog;
+		int? _appTheme;
 
 		protected override MauiDatePicker CreatePlatformView()
 		{
@@ -65,6 +67,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
 		{
+			_appTheme = AppCompatDelegate.DefaultNightMode;
 			var dialog = new DatePickerDialog(Context!, (o, e) =>
 			{
 				if (VirtualView != null)
@@ -135,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 
 		void ShowPickerDialog(int year, int month, int day)
 		{
-			if (_dialog == null)
+			if (_dialog is null || _appTheme != AppCompatDelegate.DefaultNightMode)
 				_dialog = CreateDatePickerDialog(year, month, day);
 			else
 			{
