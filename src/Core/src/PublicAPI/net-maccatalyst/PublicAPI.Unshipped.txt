@@ -7,6 +7,8 @@ Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateMeasure
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiCALayer.Dispose(bool disposing) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiCALayer.RemoveFromSuperLayer() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection
