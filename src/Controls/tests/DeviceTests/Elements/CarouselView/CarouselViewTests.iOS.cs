@@ -30,13 +30,13 @@ namespace Microsoft.Maui.DeviceTests
 				weakCarouselView = new WeakReference(carouselView);
 
 				var handler = await CreateHandlerAsync<CarouselViewHandler2>(carouselView);
-				
+
 				// Verify handler is created
 				Assert.NotNull(handler);
-				
+
 				// Store weak reference to the handler
 				weakHandler = new WeakReference(handler);
-				
+
 				// Disconnect the handler
 				((IElementHandler)handler).DisconnectHandler();
 			});
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Verify the CarouselView was collected
 			Assert.False(weakCarouselView.IsAlive, "CarouselView should have been garbage collected");
-			
+
 			// Verify the handler was collected
 			Assert.False(weakHandler.IsAlive, "CarouselViewHandler2 should have been garbage collected");
 		}
