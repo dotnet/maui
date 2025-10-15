@@ -35,6 +35,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
+		bool _scrollEnabled;
+		bool _bounceVertical;
+		bool _bounceHorizontal;
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
@@ -552,6 +556,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (CollectionView is not null)
+			{
+				_scrollEnabled = CollectionView.ScrollEnabled;
+				_bounceVertical = CollectionView.AlwaysBounceVertical;
+				_bounceHorizontal = CollectionView.AlwaysBounceHorizontal;
+
+				// Disable all forms of user-driven movement
+				// When no items are visible, scroll/bounce serve no purpose and cause visual glitches
+				CollectionView.ScrollEnabled = false;
+				CollectionView.AlwaysBounceVertical = false;
+				CollectionView.AlwaysBounceHorizontal = false;
+			}
+
 			_emptyUIView.Tag = EmptyTag;
 			CollectionView.AddSubview(_emptyUIView);
 
@@ -574,6 +591,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.RemoveFromSuperview();
+
+			if (CollectionView is not null)
+			{
+				CollectionView.ScrollEnabled = _scrollEnabled;
+				CollectionView.AlwaysBounceVertical = _bounceVertical;
+				CollectionView.AlwaysBounceHorizontal = _bounceHorizontal;
+			}
 
 			_emptyViewDisplayed = false;
 		}
