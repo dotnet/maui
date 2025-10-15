@@ -1,26 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
-    <DataCollectionRunSettings>
-        <DataCollectors>
-            <DataCollector friendlyName="Code Coverage">
-                <Configuration>
-                    <CodeCoverage>
-                        <ModulePaths>
-                            <Include>
-                                <ModulePath>*Microsoft.Maui.*.dll</ModulePath>
-                                <ModulePath>*Microsoft.AspNetCore.Components.WebView.Maui.dll</ModulePath>
-                            </Include>
-                            <Exclude>
-                                <ModulePath>*Microsoft.Maui*.UnitTests.dll</ModulePath>
-                                <ModulePath>*Microsoft.Maui*.DeviceTests.dll</ModulePath>
-                                <ModulePath>*Microsoft.Maui*.Sample*.dll</ModulePath>
-                                <ModulePath>*Microsoft.Maui*.TestUtils*.dll</ModulePath>
-                                <ModulePath>*Microsoft.Maui*.Tests.dll</ModulePath>
-                            </Exclude>
-                        </ModulePaths>
-                    </CodeCoverage>
-                </Configuration>
-            </DataCollector>
-        </DataCollectors>
-    </DataCollectionRunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>      
+       <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Exclude>[xunit.*]*,[*Tests]*</Exclude> <!-- [Assembly-Filter]Type-Filter -->
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <SingleHit>false</SingleHit>
+        </Configuration>
+      </DataCollector>    
+    </DataCollectors>
+  </DataCollectionRunSettings>
 </RunSettings>
