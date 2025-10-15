@@ -7,8 +7,11 @@
                     <CodeCoverage>
                         <ModulePaths>
                             <Exclude>
-                                <ModulePath>.*Tests.dll</ModulePath>
+                                <ModulePath>*</ModulePath>
                             </Exclude>
+                            <Include>
+                                <Module name="Microsoft.Maui*.dll" />
+                            </Include>
                         </ModulePaths>
                     </CodeCoverage>
                 </Configuration>
