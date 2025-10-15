@@ -6,12 +6,17 @@
                 <Configuration>
                     <CodeCoverage>
                         <ModulePaths>
-                            <Exclude>
-                                <ModulePath>*</ModulePath>
-                            </Exclude>
                             <Include>
-                                <Module name="Microsoft.Maui*.dll" />
+                                <ModulePath>*Microsoft.Maui.*.dll</ModulePath>
+                                <ModulePath>*Microsoft.AspNetCore.Components.WebView.Maui.dll</ModulePath>
                             </Include>
+                            <Exclude>
+                                <ModulePath>*Microsoft.Maui*.UnitTests.dll</ModulePath>
+                                <ModulePath>*Microsoft.Maui*.DeviceTests.dll</ModulePath>
+                                <ModulePath>*Microsoft.Maui*.Sample*.dll</ModulePath>
+                                <ModulePath>*Microsoft.Maui*.TestUtils*.dll</ModulePath>
+                                <ModulePath>*Microsoft.Maui*.Tests.dll</ModulePath>
+                            </Exclude>
                         </ModulePaths>
                     </CodeCoverage>
                 </Configuration>
