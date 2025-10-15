@@ -173,6 +173,9 @@ namespace Microsoft.Maui.Animations
 
 		public static Lerp? GetLerp(Type type)
 		{
+			if (type == null)
+				return null;
+
 			Lerp? lerp;
 			if (Lerps.TryGetValue(type, out lerp))
 				return lerp;
@@ -190,6 +193,13 @@ namespace Microsoft.Maui.Animations
 				if (Lerps.TryGetValue(t, out lerp))
 					return lerp;
 			}
+
+			// For interface types or when no specific lerp is found, fall back to object lerp
+			if (lerp == null)
+			{
+				Lerps.TryGetValue(typeof(object), out lerp);
+			}
+
 			return lerp;
 		}
 

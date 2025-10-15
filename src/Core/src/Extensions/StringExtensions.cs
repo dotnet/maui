@@ -18,6 +18,11 @@ namespace Microsoft.Maui
 
 		public static int IndexOfChar(this string toSearch, char character)
 		{
+			if (toSearch == null)
+			{
+				throw new ArgumentNullException(nameof(toSearch));
+			}
+
 #if NETSTANDARD2_0
 			return toSearch.IndexOf(character);
 #else
