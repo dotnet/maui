@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded(object sender, RoutedEventArgs e)
 		{
+			// Unwire the event to ensure it only fires once
+			PlatformView.Loaded -= OnLoaded;
+
 			if (VirtualView is not null)
 			{
 				PlatformView.IsPaneOpen = VirtualView.IsPresented;
