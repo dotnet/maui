@@ -303,7 +303,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS || MACCATALYST
 	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
 #endif
-	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
+	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -374,7 +374,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(PointerGestureRecognizer))]
 	[InlineData(typeof(SwipeGestureRecognizer))]
 	[InlineData(typeof(TapGestureRecognizer))]
-	public async Task GestureDoesNotLeak(Type type)
+	public async Task GestureDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -432,7 +432,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
 #pragma warning restore CS0618 // Type or member is obsolete
-	public async Task CellsDoNotLeak(Type type)
+	public async Task CellsDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
