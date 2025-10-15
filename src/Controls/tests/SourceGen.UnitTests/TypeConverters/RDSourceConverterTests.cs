@@ -27,8 +27,6 @@ public partial class RDSourceConverterTests
     /// This test demonstrates the expected behavior but requires significant setup that cannot be easily mocked.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValueWithAssemblyReference_RequiresSourceGenContextSetup()
     {
         // Arrange
@@ -55,8 +53,6 @@ public partial class RDSourceConverterTests
     /// This test demonstrates the expected behavior but requires significant setup that cannot be easily mocked.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValueWithoutAssemblyReference_RequiresSourceGenContextSetup()
     {
         // Arrange
@@ -84,8 +80,6 @@ public partial class RDSourceConverterTests
     /// This test demonstrates the expected behavior but requires significant setup that cannot be easily mocked.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_InvalidResourcePath_RequiresSourceGenContextSetup()
     {
         // Arrange
@@ -112,8 +106,6 @@ public partial class RDSourceConverterTests
     /// This test demonstrates the expected behavior but requires significant setup that cannot be easily mocked.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValidResourcePathWithType_RequiresSourceGenContextSetup()
     {
         // Arrange
@@ -146,9 +138,7 @@ public partial class RDSourceConverterTests
     [TestCase("test.file.xaml")]
     [TestCase("../relative/path.xaml")]
     [TestCase("/absolute/path.xaml")]
-    [Category("auto-generated")]
     [Ignore("Requires complex SourceGenContext setup that cannot be mocked")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_SpecialCharactersInValue_RequiresSourceGenContextSetup(string value)
     {
         // NOTE: These tests would verify handling of various path formats and special characters.

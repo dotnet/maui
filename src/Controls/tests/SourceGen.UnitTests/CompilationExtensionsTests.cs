@@ -29,8 +29,6 @@ public class CompilationExtensionsTests
     [TestCase("Assembly.With.Dots", ExpectedResult = null, TestName = "GetAssembly_AssemblyNameWithDots_ReturnsNull")]
     [TestCase("Assembly-With-Dashes", ExpectedResult = null, TestName = "GetAssembly_AssemblyNameWithDashes_ReturnsNull")]
     [TestCase("Assembly_With_Underscores", ExpectedResult = null, TestName = "GetAssembly_AssemblyNameWithUnderscores_ReturnsNull")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public IAssemblySymbol? GetAssembly_EdgeCaseAssemblyNames_HandlesGracefully(string assemblyName)
     {
         // Arrange
@@ -59,8 +57,6 @@ public class CompilationExtensionsTests
     /// Tests that GetAllAssemblies throws ArgumentNullException when compilation parameter is null.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
     public void GetAllAssemblies_NullCompilation_ThrowsArgumentNullException()
     {
@@ -76,8 +72,6 @@ public class CompilationExtensionsTests
     /// Expected result: Returns immutable array containing only compilation assembly and object type assembly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllAssemblies_EmptyReferencedAssemblies_ReturnsCompilationAndObjectTypeAssemblies()
     {
         // Arrange
@@ -103,8 +97,6 @@ public class CompilationExtensionsTests
     /// Should throw ArgumentNullException when compilation is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     [Category("ProductionBugSuspected")]
     public void GetAssembly_NullCompilation_ThrowsArgumentNullException()
     {
@@ -122,8 +114,6 @@ public class CompilationExtensionsTests
     /// Expected: Returns null as no assembly will have null as its name.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAssembly_NullAssemblyName_ReturnsNull()
     {
         // Arrange

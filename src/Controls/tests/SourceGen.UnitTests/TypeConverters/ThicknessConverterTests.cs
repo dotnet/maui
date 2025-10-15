@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
@@ -13,12 +14,11 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 
+
 /// <summary>
 /// Unit tests for ThicknessConverter class.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-[Category("auto-generated")]
 public partial class ThicknessConverterTests
 {
     private ThicknessConverter _converter = null!;
@@ -36,8 +36,6 @@ public partial class ThicknessConverterTests
     [TestCase("10.5,20.5")]
     [TestCase("0,0")]
     [TestCase("123.456,789.012")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValidTwoValues_ReturnsThicknessConstructorWithTwoParameters(string value)
     {
         // Arrange & Act
@@ -59,8 +57,6 @@ public partial class ThicknessConverterTests
     [TestCase("10.5,20.5,30.5,40.5")]
     [TestCase("0,0,0,0")]
     [TestCase("123.456,789.012,345.678,901.234")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValidFourValues_ReturnsThicknessConstructorWithFourParameters(string value)
     {
         // Arrange & Act
@@ -81,8 +77,6 @@ public partial class ThicknessConverterTests
     [TestCase("  5  ")]
     [TestCase("  5  ,  10  ")]
     [TestCase("  5  ,  10  ,  15  ,  20  ")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValuesWithWhitespace_TrimsAndReturnsThicknessConstructor(string value)
     {
         // Arrange & Act
@@ -101,8 +95,6 @@ public partial class ThicknessConverterTests
     [TestCase("NaN")]
     [TestCase("Infinity")]
     [TestCase("-Infinity")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_SpecialDoubleValues_HandlesCorrectly(string value)
     {
         // Arrange & Act
@@ -130,8 +122,6 @@ public partial class ThicknessConverterTests
     [TestCase("1.7976931348623157E+308")] // double.MaxValue
     [TestCase("-1.7976931348623157E+308")] // double.MinValue
     [TestCase("4.94065645841247E-324")] // double.Epsilon
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ExtremeNumericValues_HandlesCorrectly(string value)
     {
         // Arrange & Act
@@ -161,8 +151,6 @@ public partial class ThicknessConverterTests
     [TestCase("   ")]
     [TestCase("--5")]
     [TestCase("5..5")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_InvalidSingleValues_ReportsConversionFailedAndReturnsDefault(string value)
     {
         // Arrange & Act
@@ -183,8 +171,6 @@ public partial class ThicknessConverterTests
     [TestCase("5,")]
     [TestCase(",5")]
     [TestCase("5,,5")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_InvalidTwoValues_ReportsConversionFailedAndReturnsDefault(string value)
     {
         // Arrange & Act
@@ -206,8 +192,6 @@ public partial class ThicknessConverterTests
     [TestCase("5,10,15,")]
     [TestCase(",10,15,20")]
     [TestCase("5,,15,20")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_InvalidFourValues_ReportsConversionFailedAndReturnsDefault(string value)
     {
         // Arrange & Act
@@ -225,8 +209,6 @@ public partial class ThicknessConverterTests
     [TestCase("5,10,15")] // 3 values - not supported
     [TestCase("5,10,15,20,25")] // 5 values - not supported
     [TestCase("5,10,15,20,25,30")] // 6 values - not supported
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_WrongNumberOfValues_ReportsConversionFailedAndReturnsDefault(string value)
     {
         // Arrange & Act
@@ -244,8 +226,6 @@ public partial class ThicknessConverterTests
     [TestCase("-5")]
     [TestCase("-5,-10")]
     [TestCase("-5,-10,-15,-20")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_NegativeValues_HandlesCorrectly(string value)
     {
         // Arrange & Act
@@ -264,8 +244,6 @@ public partial class ThicknessConverterTests
     [TestCase("1e5")]
     [TestCase("1.5e-3")]
     [TestCase("1E10")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ScientificNotation_HandlesCorrectly(string value)
     {
         // Arrange & Act
@@ -291,8 +269,6 @@ public partial class ThicknessConverterTests
     [TestCase("5,")]
     [TestCase(",")]
     [TestCase(" , ")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_SingleValueWithComma_ReportsConversionFailedAndReturnsDefault(string value)
     {
         // Arrange & Act
@@ -301,6 +277,73 @@ public partial class ThicknessConverterTests
         // Assert
         Assert.AreEqual("default", result);
         _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Once);
+    }
+
+
+    /// <summary>
+    /// Sets up test dependencies and mock objects before each test.
+    /// Configures the mock chain for proper dependency injection.
+    /// </summary>
+    [SetUp]
+    public void SetUp()
+    {
+        // Arrange
+        _converter = new ThicknessConverter();
+        _mockNode = new Mock<BaseNode>();
+        _mockToType = new Mock<ITypeSymbol>();
+        _mockContext = new Mock<SourceGenContext>();
+        _mockCompilation = new Mock<Compilation>();
+        _mockThicknessType = new Mock<INamedTypeSymbol>();
+
+        // Setup mock chain: context.Compilation returns compilation mock
+        _mockContext.Setup(x => x.Compilation).Returns(_mockCompilation.Object);
+
+        // Setup compilation to return thickness type mock
+        _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.Thickness"))
+                        .Returns(_mockThicknessType.Object);
+
+        // Setup thickness type to return fully qualified name
+        _mockThicknessType.Setup(x => x.ToFQDisplayString())
+                         .Returns("Microsoft.Maui.Thickness");
+
+        // Setup node to be castable to IXmlLineInfo
+        _mockNode.As<IXmlLineInfo>();
+    }
+
+    /// <summary>
+    /// Tests Convert method with null value input.
+    /// Should report conversion failed and return default when value is null.
+    /// </summary>
+    [Test]
+    public void Convert_NullValue_ReportsConversionFailedAndReturnsDefault()
+    {
+        // Arrange & Act
+        var result = _converter.Convert(null!, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual("default", result);
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with valid single uniform thickness value.
+    /// Should return proper Thickness constructor call with single parameter.
+    /// </summary>
+    [TestCase("5")]
+    [TestCase("10.5")]
+    [TestCase("0")]
+    [TestCase("123.456")]
+    public void Convert_ValidSingleValue_ReturnsThicknessConstructorWithSingleParameter(string value)
+    {
+        // Arrange & Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.IsTrue(result.StartsWith("new Microsoft.Maui.Thickness("));
+        Assert.IsTrue(result.EndsWith(")"));
+        var commaCount = result.Split(',').Length - 1;
+        Assert.AreEqual(0, commaCount, "Should have no commas for single parameter");
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
     }
 
 }

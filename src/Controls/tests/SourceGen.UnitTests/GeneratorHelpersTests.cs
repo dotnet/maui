@@ -11,6 +11,7 @@ using System.Threading;
 using System.Xml;
 
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 
 
+
 /// <summary>
 /// Unit tests for the GeneratorHelpers.ComputeXamlProjectItemForIC method.
 /// </summary>
@@ -37,8 +39,6 @@ public partial class GeneratorHelpersTests
     /// Should return null when cancellation is requested.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeProjectItem_WithCancelledToken_ReturnsNull()
     {
         // Arrange
@@ -59,8 +59,6 @@ public partial class GeneratorHelpersTests
     /// Should return null when the ProjectItem.Kind equals "None".
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeProjectItem_WithKindNone_ReturnsNull()
     {
         // Arrange
@@ -95,8 +93,6 @@ public partial class GeneratorHelpersTests
     [TestCase("")]
     [TestCase("   ")]
     [TestCase("CustomKind")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeProjectItem_WithKindNotNone_ReturnsProjectItem(string kindValue)
     {
         // Arrange
@@ -128,8 +124,6 @@ public partial class GeneratorHelpersTests
     /// Should return ProjectItem when cancellation is not requested and proper options are provided.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeProjectItem_WithNonCancelledTokenAndValidOptions_ReturnsProjectItem()
     {
         // Arrange
@@ -165,8 +159,6 @@ public partial class GeneratorHelpersTests
     /// Should throw appropriate exception when compilation is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAssemblyAttributes_WithNullCompilation_ThrowsException()
     {
         // Arrange
@@ -182,6 +174,7 @@ public partial class GeneratorHelpersTests
 
 
 
+
 /// <summary>
 /// Unit tests for the GeneratorHelpers.LoadXmlDocument method.
 /// </summary>
@@ -193,8 +186,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should throw XmlException when trying to parse empty XML content.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithEmptyText_ThrowsXmlException()
     {
         // Arrange
@@ -212,8 +203,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should throw XmlException when trying to parse whitespace-only content.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithWhitespaceOnlyText_ThrowsXmlException()
     {
         // Arrange
@@ -235,8 +224,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     [TestCase("<root><child></root>", Description = "Mismatched tags")]
     [TestCase("not xml at all", Description = "Non-XML content")]
     [TestCase("<", Description = "Incomplete XML")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithMalformedXml_ThrowsXmlException(string xmlContent)
     {
         // Arrange
@@ -254,8 +241,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should successfully parse valid XML and return root node with namespace manager.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithValidXmlAndImplicitXmlnsFalse_ReturnsRootNodeAndNamespaceManager()
     {
         // Arrange
@@ -279,8 +264,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should successfully parse valid XML with fragment conformance level.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithValidXmlAndImplicitXmlnsTrue_ReturnsRootNodeAndNamespaceManager()
     {
         // Arrange
@@ -305,8 +288,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// This test targets the "Not Covered" line 78 in the LoadXmlDocument method.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithObsoleteFormsUri_ThrowsExceptionWithMauiUriMessage()
     {
         // Arrange
@@ -329,8 +310,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should throw OperationCanceledException when cancellation is requested.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithCancelledToken_ThrowsOperationCanceledException()
     {
         // Arrange
@@ -350,8 +329,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should successfully parse XML with multiple levels and attributes.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithComplexXmlStructure_ReturnsCorrectRootNode()
     {
         // Arrange
@@ -383,8 +360,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should successfully parse XML with special characters, escape sequences, and CDATA sections.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithSpecialCharactersAndCdata_ReturnsCorrectRootNode()
     {
         // Arrange
@@ -413,8 +388,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should handle large XML documents without issues.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithLargeXmlContent_ReturnsCorrectRootNode()
     {
         // Arrange
@@ -450,8 +423,6 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
     /// Should handle complex namespace scenarios correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void LoadXmlDocument_WithMultipleNamespaces_ReturnsCorrectRootNodeAndNamespaceManager()
     {
         // Arrange
@@ -485,6 +456,7 @@ public partial class GeneratorHelpersLoadXmlDocumentTests
 
 
 
+
 /// <summary>
 /// Unit tests for the GeneratorHelpers.ComputeXamlProjectItemForIC method.
 /// </summary>
@@ -496,8 +468,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     /// Should return null when SourceText is null, exercising the "Not Covered" line 47.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithNullSourceText_ReturnsNull()
     {
         // Arrange
@@ -529,8 +499,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     [TestCase("not xml at all", Description = "Non-XML content")]
     [TestCase("<", Description = "Incomplete XML")]
     [TestCase("<root attr=\"unclosed>content</root>", Description = "Unclosed attribute")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithMalformedXaml_ReturnsXamlProjectItemWithException(string malformedXaml)
     {
         // Arrange
@@ -562,8 +530,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     /// Should return XamlProjectItemForIC with root node when well-formed XAML is provided.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithValidXaml_ReturnsXamlProjectItemWithRoot()
     {
         // Arrange
@@ -595,8 +561,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     /// Should handle cancellation appropriately when token is cancelled.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithCancelledToken_HandlesCancellation()
     {
         // Arrange
@@ -621,8 +585,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     /// Should handle empty XAML content by throwing exception and returning XamlProjectItemForIC with exception.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithEmptyXaml_ReturnsXamlProjectItemWithException()
     {
         // Arrange
@@ -654,8 +616,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     /// Should handle whitespace-only XAML content by throwing exception and returning XamlProjectItemForIC with exception.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithWhitespaceOnlyXaml_ReturnsXamlProjectItemWithException()
     {
         // Arrange
@@ -687,8 +647,6 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
     /// Should handle XAML with special characters and escape sequences correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ComputeXamlProjectItemForIC_WithSpecialCharactersXaml_ReturnsXamlProjectItemWithRoot()
     {
         // Arrange
@@ -718,6 +676,7 @@ public partial class GeneratorHelpersComputeXamlProjectItemForICTests
 
 
 
+
 /// <summary>
 /// Unit tests for the GeneratorHelpers.GetAssemblyAttributes method.
 /// Tests focus on edge cases, error conditions, and the specific uncovered code paths.
@@ -729,10 +688,50 @@ public partial class GeneratorHelpersGetAssemblyAttributesTests
 
 
 
+
 /// <summary>
 /// Unit tests for the GeneratorHelpers.ComputeXamlProjectItemForCB method.
 /// </summary>
 [TestFixture]
 public partial class GeneratorHelpersComputeXamlProjectItemForCBTests
 {
+    /// <summary>
+    /// Tests ComputeXamlProjectItemForCB when LoadXmlDocument throws an exception.
+    /// Should return XamlProjectItemForCB with exception when malformed XAML is provided.
+    /// This test targets the "Not Covered" line 71.
+    /// </summary>
+    [TestCase("<root><unclosed>", Description = "Unclosed XML tag")]
+    [TestCase("not xml at all", Description = "Non-XML content")]
+    [TestCase("<", Description = "Incomplete XML")]
+    [TestCase("<root attr=\"unclosed>content</root>", Description = "Unclosed attribute")]
+    public void ComputeXamlProjectItemForCB_WithMalformedXaml_ReturnsXamlProjectItemWithException(string malformedXaml)
+    {
+        // Arrange
+        var mockAdditionalText = new Mock<AdditionalText>();
+        var mockOptions = new Mock<AnalyzerConfigOptions>();
+        var mockTargetFramework = "net8.0";
+
+        mockOptions.Setup(x => x.GetValueOrNull("build_property.targetFramework"))
+                  .Returns(mockTargetFramework);
+
+        var sourceText = SourceText.From(malformedXaml);
+        mockAdditionalText.Setup(x => x.GetText(It.IsAny<CancellationToken>()))
+                         .Returns(sourceText);
+
+        var projectItem = new ProjectItem(mockAdditionalText.Object, mockOptions.Object);
+        var assemblyCaches = AssemblyCaches.Empty;
+        var itemAndCaches = (projectItem, assemblyCaches);
+        var cancellationToken = CancellationToken.None;
+
+        // Act
+        var result = GeneratorHelpers.ComputeXamlProjectItemForCB(itemAndCaches, cancellationToken);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.ProjectItem, Is.EqualTo(projectItem));
+        Assert.That(result.Exception, Is.Not.Null);
+        Assert.That(result.Root, Is.Null);
+        Assert.That(result.Nsmgr, Is.Null);
+    }
+
 }

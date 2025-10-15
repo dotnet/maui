@@ -4,14 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 
 
 
@@ -59,8 +62,6 @@ public class TestClass<T>
     /// Should throw ArgumentNullException when context is null.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
     public void CreateUniqueVariableName_NullContext_ThrowsArgumentNullException()
     {
@@ -72,6 +73,7 @@ public class TestClass<T>
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => NamingHelpers.CreateUniqueVariableName(null!, symbol));
     }
+
 
 
 }

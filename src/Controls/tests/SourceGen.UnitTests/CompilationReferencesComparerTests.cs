@@ -30,8 +30,6 @@ public class CompilationReferencesComparerTests
     /// Expected result: ArgumentNullException is thrown.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
     public void GetHashCode_NullCompilation_ThrowsArgumentNullException()
     {

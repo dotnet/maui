@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 
+
 #nullable disable
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
@@ -14,12 +15,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
+
 /// <summary>
 /// Unit tests for IMethodSymbolExtensions.MatchXArguments method.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-[Category("auto-generated")]
 public class IMethodSymbolExtensionsTests
 {
     /// <summary>
@@ -27,8 +27,6 @@ public class IMethodSymbolExtensionsTests
     /// Should return false and set out parameters to null regardless of input validity.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void MatchParameterAttributes_ValidParameters_ReturnsFalseAndSetsOutParametersToNull()
     {
         // Arrange
@@ -66,8 +64,6 @@ public class IMethodSymbolExtensionsTests
     /// Should return empty enumerable when no parameters are provided.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToMethodParameters_EmptyParameters_ReturnsEmptyEnumerable()
     {
         // Arrange
@@ -79,6 +75,31 @@ public class IMethodSymbolExtensionsTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.Count());
+    }
+
+
+    /// <summary>
+    /// Tests ToMethodParameters method with null node reference.
+    /// Should return "null" when node is null.
+    /// </summary>
+    [Test]
+    public void ToMethodParameters_NullNode_ReturnsNull()
+    {
+        // Arrange
+        var mockType = new Mock<ITypeSymbol>();
+        var mockConverter = new Mock<ITypeSymbol>();
+
+        var parameters = new List<(INode node, ITypeSymbol type, ITypeSymbol converter)>
+        {
+            (null, mockType.Object, mockConverter.Object)
+        };
+
+        // Act
+        var result = parameters.ToMethodParameters(null).ToList();
+
+        // Assert
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual("null", result[0]);
     }
 
 }

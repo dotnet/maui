@@ -22,8 +22,6 @@ public class ISymbolExtensionsTests
     /// Should throw NullReferenceException when symbol is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAttributes_NullSymbol_ThrowsNullReferenceException()
     {
         // Arrange
@@ -39,8 +37,6 @@ public class ISymbolExtensionsTests
     /// Should return empty ImmutableArray when symbol has no attributes.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAttributes_SymbolWithNoAttributes_ReturnsEmptyArray()
     {
         // Arrange
@@ -60,8 +56,6 @@ public class ISymbolExtensionsTests
     /// Should return empty ImmutableArray when no attributes match the specified name.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAttributes_NonMatchingAttributeName_ReturnsEmptyArray()
     {
         // Arrange
@@ -88,8 +82,6 @@ public class ISymbolExtensionsTests
     /// Should throw NotImplementedException when symbol is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_NullSymbol_ThrowsNullReferenceException()
     {
         // Arrange
@@ -104,8 +96,6 @@ public class ISymbolExtensionsTests
     /// Should return formatted string using FullyQualifiedFormat with IncludeContainingType.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_FieldSymbol_ReturnsFormattedString()
     {
         // Arrange
@@ -126,8 +116,6 @@ public class ISymbolExtensionsTests
     /// Should return formatted string using FullyQualifiedFormat with IncludeContainingType.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_PropertySymbol_ReturnsFormattedString()
     {
         // Arrange
@@ -148,8 +136,6 @@ public class ISymbolExtensionsTests
     /// Should return formatted string using FullyQualifiedFormat.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_TypeSymbol_ReturnsFormattedString()
     {
         // Arrange
@@ -170,8 +156,6 @@ public class ISymbolExtensionsTests
     /// Should return formatted string using FullyQualifiedFormat with IncludeContainingType.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_StaticMethodSymbol_ReturnsFormattedString()
     {
         // Arrange
@@ -193,8 +177,6 @@ public class ISymbolExtensionsTests
     /// Should throw NotImplementedException when method is not static.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_NonStaticMethodSymbol_ThrowsNotImplementedException()
     {
         // Arrange
@@ -210,8 +192,6 @@ public class ISymbolExtensionsTests
     /// Should throw NotImplementedException when symbol type is not supported.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_UnsupportedSymbolType_ThrowsNotImplementedException()
     {
         // Arrange
@@ -226,8 +206,6 @@ public class ISymbolExtensionsTests
     /// Should throw NotImplementedException when symbol is a namespace.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ToFQDisplayString_NamespaceSymbol_ThrowsNotImplementedException()
     {
         // Arrange

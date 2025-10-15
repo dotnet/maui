@@ -17,8 +17,6 @@ public partial class XamlProjectItemForCBTests
     /// Should create instance with Exception property set and ProjectItem property null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_WithValidExceptionAndNullProjectItem_SetsPropertiesCorrectly()
     {
         // Arrange
@@ -40,8 +38,6 @@ public partial class XamlProjectItemForCBTests
     /// Should create instance with both Exception and ProjectItem properties null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_WithNullExceptionAndNullProjectItem_SetsPropertiesCorrectly()
     {
         // Arrange
@@ -66,8 +62,6 @@ public partial class XamlProjectItemForCBTests
     [TestCase(typeof(InvalidOperationException))]
     [TestCase(typeof(NotSupportedException))]
     [TestCase(typeof(Exception))]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_WithDifferentExceptionTypes_SetsExceptionPropertyCorrectly(Type exceptionType)
     {
         // Arrange
@@ -90,8 +84,6 @@ public partial class XamlProjectItemForCBTests
     /// which are typically available in the context of a source generator.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_WithValidProjectItemAndException_SetsPropertiesCorrectly()
     {
         // Arrange
@@ -116,8 +108,6 @@ public partial class XamlProjectItemForCBTests
     /// Should preserve the complete exception hierarchy in the Exception property.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_WithExceptionContainingInnerException_PreservesExceptionHierarchy()
     {
         // Arrange

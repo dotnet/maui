@@ -19,8 +19,6 @@ public partial class PrePostTests
     /// Tests that NewDisableWarning can be used with using statement for automatic disposal.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void NewDisableWarning_UsedInUsingStatement_DisposesAutomatically()
     {
         // Arrange
@@ -45,8 +43,6 @@ public partial class PrePostTests
     /// Expected result: A valid PrePost instance is returned.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void NoBlock_WhenCalled_ReturnsNonNullPrePostInstance()
     {
         // Act
@@ -62,8 +58,6 @@ public partial class PrePostTests
     /// Expected result: The instance implements IDisposable interface.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void NoBlock_WhenCalled_ReturnsDisposableInstance()
     {
         // Act
@@ -78,8 +72,6 @@ public partial class PrePostTests
     /// Expected result: No exceptions are thrown during disposal.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void NoBlock_WhenDisposed_DoesNotThrowException()
     {
         // Arrange
@@ -94,8 +86,6 @@ public partial class PrePostTests
     /// Expected result: The using block completes without exceptions.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void NoBlock_InUsingStatement_CompletesWithoutException()
     {
         // Act & Assert
@@ -112,8 +102,6 @@ public partial class PrePostTests
     /// Expected result: Different object references are returned.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void NoBlock_MultipleCalls_ReturnsDifferentInstances()
     {
         // Act
@@ -129,8 +117,6 @@ public partial class PrePostTests
     /// Expected result: All instances can be disposed without exceptions.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void NoBlock_MultipleInstancesDisposed_DoesNotThrowException()
     {
         // Arrange

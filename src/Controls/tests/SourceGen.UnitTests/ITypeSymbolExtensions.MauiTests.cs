@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml;
 
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls;
@@ -16,6 +17,7 @@ using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 
 
 
@@ -36,8 +38,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase("")]
     [TestCase("P")]
     [TestCase("Propert")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetBPTypeAndConverter_FieldNameDoesNotEndWithProperty_ReturnsNull(string fieldName)
     {
         // Arrange
@@ -61,8 +61,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase("Property")]
     [TestCase("AProperty")]
     [TestCase("XProperty")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBPTypeAndConverter_EdgeCaseFieldNames_ProcessesCorrectly(string fieldName)
     {
         // Arrange
@@ -95,8 +93,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase(true, false, 1)] // Non-public
     [TestCase(true, true, 0)]  // Wrong parameter count (0)
     [TestCase(true, true, 2)]  // Wrong parameter count (2)
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBPTypeAndConverter_StaticGetterDoesNotMeetCriteria_ReturnsNull(bool isStatic, bool isPublic, int parameterCount)
     {
         // Arrange
@@ -133,8 +129,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Tests that GetBPTypeAndConverter handles property without getter method correctly.
     /// This test verifies the scenario where property exists but has no GetMethod.
     /// </summary>
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBPTypeAndConverter_PropertyWithoutGetter_ReturnsNull()
     {
         // Arrange
@@ -164,8 +158,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Tests that GetBPTypeAndConverter handles null context parameter correctly.
     /// This test verifies behavior when context parameter is null.
     /// </summary>
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBPTypeAndConverter_NullContext_HandledCorrectly()
     {
         // Arrange
@@ -184,8 +176,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Tests that GetBPTypeAndConverter handles null field symbol correctly.
     /// This test verifies behavior when fieldSymbol parameter is null.
     /// </summary>
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBPTypeAndConverter_NullFieldSymbol_ThrowsException()
     {
         // Arrange
@@ -200,8 +190,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Tests that GetBPTypeAndConverter handles multiple static getter methods correctly.
     /// This test verifies that the first matching static getter method is used.
     /// </summary>
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBPTypeAndConverter_MultipleStaticGetters_UsesFirstMatch()
     {
         // Arrange
@@ -245,6 +233,186 @@ public partial class ITypeSymbolExtensionsTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(mockReturnType1.Object, result.Value.type);
+        Assert.IsNull(result.Value.converter);
+    }
+}
+
+
+/// <summary>
+/// Additional unit tests for the GetBPTypeAndConverter method in ITypeSymbolExtensions.
+/// These tests specifically target uncovered code paths.
+/// </summary>
+[TestFixture]
+public partial class ITypeSymbolExtensionsGetBPTypeAndConverterTests
+{
+    /// <summary>
+    /// Tests that GetBPTypeAndConverter returns null for field names not ending with "Property".
+    /// This test specifically targets the uncovered return statement on line 34.
+    /// </summary>
+    [TestCase("FieldName")]
+    [TestCase("SomeOtherField")]
+    [TestCase("PropertyExtension")]
+    [TestCase("TestProp")]
+    [TestCase("")]
+    public void GetBPTypeAndConverter_FieldNameNotEndingWithProperty_ReturnsNull(string fieldName)
+    {
+        // Arrange
+        var mockFieldSymbol = new Mock<IFieldSymbol>();
+        var mockContext = new Mock<SourceGenContext>();
+
+        mockFieldSymbol.Setup(f => f.Name).Returns(fieldName);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetBPTypeAndConverter(mockFieldSymbol.Object, mockContext.Object);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    /// <summary>
+    /// Tests that GetBPTypeAndConverter returns null when no property is found and no static getter method exists.
+    /// This test specifically targets the uncovered return statement on line 43 where getter is null.
+    /// </summary>
+    public void GetBPTypeAndConverter_NoPropertyAndNoStaticGetter_ReturnsNull()
+    {
+        // Arrange
+        var mockFieldSymbol = new Mock<IFieldSymbol>();
+        var mockContext = new Mock<SourceGenContext>();
+        var mockContainingType = new Mock<INamedTypeSymbol>();
+
+        // Setup field with name ending in "Property"
+        mockFieldSymbol.Setup(f => f.Name).Returns("TestProperty");
+        mockFieldSymbol.Setup(f => f.ContainingType).Returns(mockContainingType.Object);
+
+        // Setup no properties found
+        mockContainingType.Setup(t => t.GetAllProperties("Test", mockContext.Object))
+            .Returns(new List<IPropertySymbol>());
+
+        // Setup no static getter methods found
+        mockContainingType.Setup(t => t.GetAllMethods("GetTest", mockContext.Object))
+            .Returns(new List<IMethodSymbol>());
+
+        // Act
+        var result = ITypeSymbolExtensions.GetBPTypeAndConverter(mockFieldSymbol.Object, mockContext.Object);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    /// <summary>
+    /// Tests that GetBPTypeAndConverter returns null when property exists but has null GetMethod and no static getter exists.
+    /// This test specifically targets the uncovered return statement on line 43 where getter is null.
+    /// </summary>
+    public void GetBPTypeAndConverter_PropertyWithNullGetMethodAndNoStaticGetter_ReturnsNull()
+    {
+        // Arrange
+        var mockFieldSymbol = new Mock<IFieldSymbol>();
+        var mockContext = new Mock<SourceGenContext>();
+        var mockContainingType = new Mock<INamedTypeSymbol>();
+        var mockProperty = new Mock<IPropertySymbol>();
+
+        // Setup field with name ending in "Property"
+        mockFieldSymbol.Setup(f => f.Name).Returns("TestProperty");
+        mockFieldSymbol.Setup(f => f.ContainingType).Returns(mockContainingType.Object);
+
+        // Setup property found but with null GetMethod
+        var properties = new List<IPropertySymbol> { mockProperty.Object };
+        mockContainingType.Setup(t => t.GetAllProperties("Test", mockContext.Object))
+            .Returns(properties);
+
+        mockProperty.Setup(p => p.GetMethod).Returns((IMethodSymbol)null);
+
+        // Setup no static getter methods found
+        mockContainingType.Setup(t => t.GetAllMethods("GetTest", mockContext.Object))
+            .Returns(new List<IMethodSymbol>());
+
+        // Act
+        var result = ITypeSymbolExtensions.GetBPTypeAndConverter(mockFieldSymbol.Object, mockContext.Object);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    /// <summary>
+    /// Tests successful path when property has valid getter method.
+    /// This test verifies the happy path that should return a valid tuple.
+    /// </summary>
+    public void GetBPTypeAndConverter_PropertyWithValidGetter_ReturnsValidTuple()
+    {
+        // Arrange
+        var mockFieldSymbol = new Mock<IFieldSymbol>();
+        var mockContext = new Mock<SourceGenContext>();
+        var mockContainingType = new Mock<INamedTypeSymbol>();
+        var mockProperty = new Mock<IPropertySymbol>();
+        var mockGetter = new Mock<IMethodSymbol>();
+        var mockReturnType = new Mock<ITypeSymbol>();
+
+        // Setup field with name ending in "Property"
+        mockFieldSymbol.Setup(f => f.Name).Returns("TestProperty");
+        mockFieldSymbol.Setup(f => f.ContainingType).Returns(mockContainingType.Object);
+
+        // Setup property with valid getter
+        var properties = new List<IPropertySymbol> { mockProperty.Object };
+        mockContainingType.Setup(t => t.GetAllProperties("Test", mockContext.Object))
+            .Returns(properties);
+
+        mockProperty.Setup(p => p.GetMethod).Returns(mockGetter.Object);
+        mockProperty.Setup(p => p.GetAttributes()).Returns(ImmutableArray.Create<AttributeData>());
+        mockProperty.Setup(p => p.Type.GetAttributes()).Returns(ImmutableArray.Create<AttributeData>());
+
+        mockGetter.Setup(g => g.ReturnType).Returns(mockReturnType.Object);
+        mockGetter.Setup(g => g.GetAttributes()).Returns(ImmutableArray.Create<AttributeData>());
+        mockReturnType.Setup(r => r.GetAttributes()).Returns(ImmutableArray.Create<AttributeData>());
+
+        // Act
+        var result = ITypeSymbolExtensions.GetBPTypeAndConverter(mockFieldSymbol.Object, mockContext.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(mockReturnType.Object, result.Value.type);
+        Assert.IsNull(result.Value.converter);
+    }
+
+    /// <summary>
+    /// Tests successful path when static getter method is found.
+    /// This test verifies the path where property is null but static getter exists.
+    /// </summary>
+    public void GetBPTypeAndConverter_StaticGetterFound_ReturnsValidTuple()
+    {
+        // Arrange
+        var mockFieldSymbol = new Mock<IFieldSymbol>();
+        var mockContext = new Mock<SourceGenContext>();
+        var mockContainingType = new Mock<INamedTypeSymbol>();
+        var mockGetter = new Mock<IMethodSymbol>();
+        var mockReturnType = new Mock<ITypeSymbol>();
+        var mockParameter = new Mock<IParameterSymbol>();
+
+        // Setup field with name ending in "Property"
+        mockFieldSymbol.Setup(f => f.Name).Returns("TestProperty");
+        mockFieldSymbol.Setup(f => f.ContainingType).Returns(mockContainingType.Object);
+
+        // Setup no properties found
+        mockContainingType.Setup(t => t.GetAllProperties("Test", mockContext.Object))
+            .Returns(new List<IPropertySymbol>());
+
+        // Setup static getter method found
+        var methods = new List<IMethodSymbol> { mockGetter.Object };
+        mockContainingType.Setup(t => t.GetAllMethods("GetTest", mockContext.Object))
+            .Returns(methods);
+
+        mockGetter.Setup(g => g.IsStatic).Returns(true);
+        mockGetter.Setup(g => g.IsPublic()).Returns(true);
+        mockGetter.Setup(g => g.Parameters).Returns(ImmutableArray.Create(mockParameter.Object));
+        mockGetter.Setup(g => g.ReturnType).Returns(mockReturnType.Object);
+        mockGetter.Setup(g => g.GetAttributes()).Returns(ImmutableArray.Create<AttributeData>());
+        mockReturnType.Setup(r => r.GetAttributes()).Returns(ImmutableArray.Create<AttributeData>());
+
+        // Act
+        var result = ITypeSymbolExtensions.GetBPTypeAndConverter(mockFieldSymbol.Object, mockContext.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(mockReturnType.Object, result.Value.type);
         Assert.IsNull(result.Value.converter);
     }
 }

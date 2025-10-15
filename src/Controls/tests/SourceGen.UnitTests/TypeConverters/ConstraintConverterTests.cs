@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml;
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
@@ -14,6 +15,7 @@ using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.TypeConverters;
+
 
 [TestFixture]
 public class ConstraintConverterTests
@@ -50,8 +52,6 @@ public class ConstraintConverterTests
     [TestCase("1.7976931348623157E+308", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(1.7976931348623157E+308)")]
     [TestCase("-1.7976931348623157E+308", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(-1.7976931348623157E+308)")]
     [TestCase("4.9406564584124654E-324", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(4.9406564584124654E-324)")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValidDoubleValue_ReturnsConstraintConstant(string value, string expected)
     {
         // Arrange
@@ -70,8 +70,6 @@ public class ConstraintConverterTests
     [TestCase("  42  ", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(42)")]
     [TestCase("\t123.45\n", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(123.45)")]
     [TestCase(" \r\n -99.9 \t ", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(-99.9)")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValidDoubleValueWithWhitespace_TrimsAndReturnsConstraintConstant(string value, string expected)
     {
         // Arrange
@@ -92,8 +90,6 @@ public class ConstraintConverterTests
     [TestCase("\n")]
     [TestCase("\r\n")]
     [TestCase(" \t \n \r ")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_WhitespaceOnlyValue_ReportsFailureAndReturnsDefault(string value)
     {
         // Arrange
@@ -123,8 +119,6 @@ public class ConstraintConverterTests
     [TestCase("1,234")]
     [TestCase("$123")]
     [TestCase("123%")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_InvalidNumericValue_ReportsFailureAndReturnsDefault(string value)
     {
         // Arrange
@@ -145,8 +139,6 @@ public class ConstraintConverterTests
     [TestCase("-Infinity")]
     [TestCase("PositiveInfinity")]
     [TestCase("NegativeInfinity")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_SpecialDoubleStringValues_ReportsFailureAndReturnsDefault(string value)
     {
         // Arrange
@@ -163,9 +155,7 @@ public class ConstraintConverterTests
     /// Should handle null constraint type gracefully.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_GetTypeByMetadataNameReturnsNull_ThrowsNullReferenceException()
     {
         // Arrange
@@ -180,9 +170,7 @@ public class ConstraintConverterTests
     /// Should throw InvalidCastException when casting null to IXmlLineInfo.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_NullNode_ThrowsInvalidCastException()
     {
         // Arrange
@@ -197,9 +185,7 @@ public class ConstraintConverterTests
     /// Should throw NullReferenceException when accessing context.Compilation.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_NullContext_ThrowsNullReferenceException()
     {
         // Arrange
@@ -218,8 +204,6 @@ public class ConstraintConverterTests
     [TestCase("4.9406564584124654E-324")] // double.Epsilon
     [TestCase("0")]
     [TestCase("-0")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_BoundaryDoubleValues_ReturnsConstraintConstant(string value)
     {
         // Arrange
@@ -231,6 +215,7 @@ public class ConstraintConverterTests
         Assert.That(result, Does.EndWith(")"));
         _mockContext.Verify(c => c.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
     }
+
     /// <summary>
     /// Tests Convert method with scientific notation values.
     /// Should successfully parse scientific notation and return constraint constant.
@@ -239,8 +224,6 @@ public class ConstraintConverterTests
     [TestCase("1.5e-10", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(1.5E-10)")]
     [TestCase("2.5E+5", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(250000)")]
     [TestCase("-3.14e2", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(-314)")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_ScientificNotation_ReturnsConstraintConstant(string value, string expected)
     {
         // Act
@@ -260,8 +243,6 @@ public class ConstraintConverterTests
     [TestCase(".5")]
     [TestCase("123.456789")]
     [TestCase("-0.001")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_DecimalFormats_ReturnsConstraintConstant(string value)
     {
         // Act
@@ -283,8 +264,6 @@ public class ConstraintConverterTests
     [TestCase("12\u20093")] // thin space
     [TestCase("±123")]
     [TestCase("×123")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_SpecialCharactersInStrings_ReportsFailureAndReturnsDefault(string value)
     {
         // Act
@@ -293,5 +272,75 @@ public class ConstraintConverterTests
         // Assert
         Assert.That(result, Is.EqualTo("default"));
         _mockContext.Verify(c => c.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), value, _mockToType.Object, It.IsAny<DiagnosticDescriptor>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with string containing only unicode whitespace characters.
+    /// Should trim to empty and report conversion failure.
+    /// </summary>
+    [TestCase("\u00A0")]    // Non-breaking space
+    [TestCase("\u2000")]    // En quad
+    [TestCase("\u2001")]    // Em quad  
+    [TestCase("\u2002")]    // En space
+    [TestCase("\u2003")]    // Em space
+    [TestCase("\u2004")]    // Three-per-em space
+    [TestCase("\u2005")]    // Four-per-em space
+    [TestCase("\u2006")]    // Six-per-em space
+    [TestCase("\u2007")]    // Figure space
+    [TestCase("\u2008")]    // Punctuation space
+    [TestCase("\u2009")]    // Thin space
+    [TestCase("\u200A")]    // Hair space
+    [TestCase("\u3000")]    // Ideographic space
+    public void Convert_UnicodeWhitespaceOnly_TrimsToEmptyAndReportsFailure(string value)
+    {
+        // Arrange
+        // SetUp already configures mocks
+
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual("default", result);
+        _mockContext.Verify(c => c.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), value, _mockToType.Object, It.IsAny<DiagnosticDescriptor>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with values that become empty after trimming unicode whitespace.
+    /// Should report conversion failure after trimming.
+    /// </summary>
+    [TestCase("\u00A0\u00A0")]        // Multiple non-breaking spaces
+    [TestCase("\u2000\u2001\u2002")]  // Mixed unicode spaces
+    [TestCase("\u3000\u3000")]        // Multiple ideographic spaces
+    public void Convert_MultipleUnicodeWhitespace_TrimsToEmptyAndReportsFailure(string value)
+    {
+        // Arrange
+        // SetUp already configures mocks
+
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual("default", result);
+        _mockContext.Verify(c => c.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), value, _mockToType.Object, It.IsAny<DiagnosticDescriptor>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with valid numeric values surrounded by unicode whitespace.
+    /// Should successfully trim unicode whitespace and parse the number.
+    /// </summary>
+    [TestCase("\u00A042\u00A0", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(42)")]
+    [TestCase("\u200042\u2000", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(42)")]
+    [TestCase("\u3000123.45\u3000", "Microsoft.Maui.Controls.Compatibility.Constraint.Constant(123.45)")]
+    public void Convert_ValidNumberWithUnicodeWhitespace_TrimsAndReturnsConstraintConstant(string value, string expected)
+    {
+        // Arrange
+        // SetUp already configures mocks
+
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+        _mockContext.Verify(c => c.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
     }
 }

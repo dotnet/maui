@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// Tests for ListStringConverter class functionality.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-[Category("auto-generated")]
 public class ListStringConverterTests
 {
     /// <summary>
@@ -27,9 +25,7 @@ public class ListStringConverterTests
     [TestCase("item1,item2,item3")]
     [TestCase("  item1  ,  item2  ,  item3  ")]
     [TestCase("item1, item2, item3")]
-    [Category("auto-generated")]
     [Ignore("Incomplete test due to complex dependency requirements")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_MultipleValues_ReturnsListCreationCodeWithMultipleItems(string value)
     {
         // Arrange
@@ -60,9 +56,7 @@ public class ListStringConverterTests
     [TestCase("item,with,commas,in,name")]
     [TestCase("item\"with\"quotes")]
     [TestCase("item\nwith\nnewlines")]
-    [Category("auto-generated")]
     [Ignore("Incomplete test due to complex dependency requirements")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValuesWithSpecialCharacters_HandlesSpecialCharacters(string value)
     {
         // Arrange
@@ -87,9 +81,7 @@ public class ListStringConverterTests
     [TestCase("item1,,item2")]
     [TestCase(",item1,item2,")]
     [TestCase("item1,,,item2")]
-    [Category("auto-generated")]
     [Ignore("Incomplete test due to complex dependency requirements")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_EmptyCommaSeparatedValues_FiltersEmptyEntries(string value)
     {
         // Arrange

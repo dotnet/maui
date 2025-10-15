@@ -34,8 +34,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         [TestCase("UPPERCASE_FEATURE")]
         [TestCase("lowercase_feature")]
         [TestCase("MixedCaseFeature")]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_ValidFeatureName_SetsFeatureNameProperty(string featureName)
         {
             // Act
@@ -51,8 +49,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// </summary>
         [TestCase("RefStructs")]
         [TestCase("RequiredMembers")]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_PredefinedConstants_SetsFeatureNameProperty(string constantValue)
         {
             // Act
@@ -67,8 +63,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// Should correctly assign the class constant values to the FeatureName property.
         /// </summary>
         [Test]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_RefStructsConstant_SetsFeatureNameProperty()
         {
             // Act
@@ -83,8 +77,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// Should correctly assign the RequiredMembers constant value to the FeatureName property.
         /// </summary>
         [Test]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_RequiredMembersConstant_SetsFeatureNameProperty()
         {
             // Act
@@ -99,8 +91,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// Should correctly assign empty string to the FeatureName property.
         /// </summary>
         [Test]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_EmptyString_SetsFeatureNameProperty()
         {
             // Arrange
@@ -123,8 +113,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         [TestCase("\r")]
         [TestCase("   ")]
         [TestCase("\t\n\r")]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_WhitespaceString_SetsFeatureNameProperty(string featureName)
         {
             // Act
@@ -160,8 +148,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         [TestCase("Feature~With~Tildes")]
         [TestCase("Feature`With`Backticks")]
         [TestCase("Feature^With^Carets")]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_SpecialCharacters_SetsFeatureNameProperty(string featureName)
         {
             // Act
@@ -183,8 +169,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         [TestCase("Feature中文")]
         [TestCase("Feature🚀")]
         [TestCase("Feature😀")]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_UnicodeCharacters_SetsFeatureNameProperty(string featureName)
         {
             // Act
@@ -199,8 +183,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// Should correctly assign very long string to the FeatureName property.
         /// </summary>
         [Test]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_VeryLongString_SetsFeatureNameProperty()
         {
             // Arrange
@@ -219,8 +201,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// Should correctly assign string with null character to the FeatureName property.
         /// </summary>
         [Test]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_StringWithNullCharacter_SetsFeatureNameProperty()
         {
             // Arrange
@@ -238,8 +218,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
         /// Should have default value of false for IsOptional property.
         /// </summary>
         [Test]
-        [Category("auto-generated")]
-        [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
         public void CompilerFeatureRequiredAttribute_Constructor_IsOptionalDefaultsFalse()
         {
             // Arrange

@@ -1,31 +1,32 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.IO;
+using System.Xml;
+
+using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
 using Microsoft.Maui.Controls.Xaml;
 using Moq;
 using NUnit.Framework;
-using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.IO;
-using System.Xml;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.TypeConverters;
+
 /// <summary>
 /// Unit tests for EasingConverter class.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent")]
-[Category("auto-generated")]
 public partial class EasingConverterTests
 {
-    private EasingConverter _converter = null !;
-    private Mock<BaseNode> _mockNode = null !;
-    private Mock<ITypeSymbol> _mockToType = null !;
-    private Mock<SourceGenContext> _mockContext = null !;
-    private Mock<Compilation> _mockCompilation = null !;
-    private Mock<INamedTypeSymbol> _mockEasingType = null !;
+    private EasingConverter _converter = null!;
+    private Mock<BaseNode> _mockNode = null!;
+    private Mock<ITypeSymbol> _mockToType = null!;
+    private Mock<SourceGenContext> _mockContext = null!;
+    private Mock<Compilation> _mockCompilation = null!;
+    private Mock<INamedTypeSymbol> _mockEasingType = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -55,8 +56,6 @@ public partial class EasingConverterTests
     [TestCase("BounceIn")]
     [TestCase("SpringIn")]
     [TestCase("SpringOut")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_ValidEasingName_ReturnsFullyQualifiedName(string easingName)
     {
         // Arrange & Act
@@ -73,8 +72,6 @@ public partial class EasingConverterTests
     [TestCase("linear")]
     [TestCase("SINOUT")]
     [TestCase("CuBiCiN")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_ValidEasingNameDifferentCase_ReturnsFullyQualifiedName(string easingName)
     {
         // Arrange & Act
@@ -91,8 +88,6 @@ public partial class EasingConverterTests
     [TestCase("InvalidEasing")]
     [TestCase("Unknown")]
     [TestCase("NotAnEasing")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_InvalidEasingName_ReturnsDefault(string easingName)
     {
         // Arrange & Act
@@ -109,8 +104,6 @@ public partial class EasingConverterTests
     [TestCase("Easing.Linear")]
     [TestCase("easing.SinOut")]
     [TestCase("EASING.CubicIn")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_EasingPrefixWithValidName_ReturnsFullyQualifiedName(string value)
     {
         // Arrange
@@ -128,8 +121,6 @@ public partial class EasingConverterTests
     /// </summary>
     [TestCase("Easing.InvalidEasing")]
     [TestCase("EASING.Unknown")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_EasingPrefixWithInvalidName_ReturnsDefault(string value)
     {
         // Arrange & Act
@@ -146,8 +137,6 @@ public partial class EasingConverterTests
     [TestCase("NotEasing.Linear")]
     [TestCase("Other.SinOut")]
     [TestCase("Prefix.CubicIn")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_NonEasingPrefix_ReturnsDefault(string value)
     {
         // Arrange & Act
@@ -164,8 +153,6 @@ public partial class EasingConverterTests
     [TestCase("Easing.Linear.Extra")]
     [TestCase("Prefix.Easing.Linear")]
     [TestCase("One.Two.Three.Four")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_MultipleDots_ReturnsDefault(string value)
     {
         // Arrange & Act
@@ -182,8 +169,6 @@ public partial class EasingConverterTests
     [TestCase("Linear.")]
     [TestCase(".Linear")]
     [TestCase(".")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_DotsWithoutTwoParts_ReturnsDefault(string value)
     {
         // Arrange & Act
@@ -198,8 +183,6 @@ public partial class EasingConverterTests
     /// Should work normally as parentVar is optional.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_NullParentVar_ProcessesNormally()
     {
         // Arrange
@@ -218,8 +201,6 @@ public partial class EasingConverterTests
     [TestCase("Sin Out")]
     [TestCase("Cubic-In")]
     [TestCase("Bounce_Out")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_EasingNameWithSpecialCharacters_ReturnsDefault(string easingName)
     {
         // Arrange & Act
@@ -230,20 +211,20 @@ public partial class EasingConverterTests
     }
 }
 
+
 /// <summary>
 /// Unit tests for EasingConverter class covering additional edge cases.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent")]
-[Category("auto-generated")]
 public partial class EasingConverterAdditionalTests
 {
-    private EasingConverter _converter = null !;
-    private Mock<BaseNode> _mockNode = null !;
-    private Mock<ITypeSymbol> _mockToType = null !;
-    private Mock<SourceGenContext> _mockContext = null !;
-    private Mock<Compilation> _mockCompilation = null !;
-    private Mock<INamedTypeSymbol> _mockEasingType = null !;
+    private EasingConverter _converter = null!;
+    private Mock<BaseNode> _mockNode = null!;
+    private Mock<ITypeSymbol> _mockToType = null!;
+    private Mock<SourceGenContext> _mockContext = null!;
+    private Mock<Compilation> _mockCompilation = null!;
+    private Mock<INamedTypeSymbol> _mockEasingType = null!;
+
     [SetUp]
     public void Setup()
     {
@@ -268,8 +249,6 @@ public partial class EasingConverterAdditionalTests
     [TestCase("\n")]
     [TestCase("\r\n")]
     [TestCase("   \t  \n  ")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_WhitespaceOnlyValue_ReturnsDefault(string whitespaceValue)
     {
         // Arrange & Act
@@ -287,8 +266,6 @@ public partial class EasingConverterAdditionalTests
     [TestCase("\tSinOut\t")]
     [TestCase("\nCubicIn\n")]
     [TestCase("  BounceOut  ")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValidEasingNameWithWhitespace_ReturnsDefault(string easingNameWithWhitespace)
     {
         // Arrange & Act
@@ -305,8 +282,6 @@ public partial class EasingConverterAdditionalTests
     [TestCase("Easing.")]
     [TestCase("easing.")]
     [TestCase("EASING.")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_EasingPrefixWithEmptyName_ReturnsDefault(string value)
     {
         // Arrange & Act
@@ -322,8 +297,6 @@ public partial class EasingConverterAdditionalTests
     /// </summary>
     [TestCase(".Linear")]
     [TestCase(".SinOut")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_EmptyPrefixWithValidName_ReturnsDefault(string value)
     {
         // Arrange & Act
@@ -341,8 +314,6 @@ public partial class EasingConverterAdditionalTests
     [TestCase("Линейный")]
     [TestCase("線形")]
     [TestCase("Linear🚀")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_UnicodeCharacters_ReturnsDefault(string unicodeEasingName)
     {
         // Arrange & Act
@@ -359,8 +330,6 @@ public partial class EasingConverterAdditionalTests
     [TestCase("Linear\0")]
     [TestCase("SinOut\u0001")]
     [TestCase("Cubic\u0010In")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ControlCharacters_ReturnsDefault(string easingNameWithControlChars)
     {
         // Arrange & Act
@@ -378,8 +347,6 @@ public partial class EasingConverterAdditionalTests
     [TestCase("sinOUT")]
     [TestCase("CuBiCiNoUt")]
     [TestCase("bOuNcEoUt")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_MixedCaseValidNames_ReturnsFullyQualifiedName(string mixedCaseEasingName)
     {
         // Arrange & Act
@@ -387,5 +354,86 @@ public partial class EasingConverterAdditionalTests
         // Assert
         Assert.IsTrue(result.StartsWith("global::Microsoft.Maui.Easing."));
         _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+}
+
+
+/// <summary>
+/// Additional unit tests for EasingConverter class to achieve full code coverage.
+/// </summary>
+[TestFixture]
+public partial class EasingConverterCoverageTests
+{
+    private EasingConverter _converter = null!;
+    private Mock<BaseNode> _mockNode = null!;
+    private Mock<ITypeSymbol> _mockToType = null!;
+    private Mock<SourceGenContext> _mockContext = null!;
+    private Mock<Compilation> _mockCompilation = null!;
+    private Mock<INamedTypeSymbol> _mockEasingType = null!;
+
+    [SetUp]
+    public void Setup()
+    {
+        _converter = new EasingConverter();
+        _mockNode = new Mock<BaseNode>(Mock.Of<IXmlNamespaceResolver>(), -1, -1);
+        _mockToType = new Mock<ITypeSymbol>();
+        _mockContext = new Mock<SourceGenContext>();
+        _mockCompilation = new Mock<Compilation>();
+        _mockEasingType = new Mock<INamedTypeSymbol>();
+        _mockContext.Setup(x => x.Compilation).Returns(_mockCompilation.Object);
+        _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.Easing")).Returns(_mockEasingType.Object);
+        _mockEasingType.Setup(x => x.ToFQDisplayString()).Returns("global::Microsoft.Maui.Easing");
+    }
+
+    /// <summary>
+    /// Tests Convert method to ensure all code paths for valid easing names are covered.
+    /// Should verify the internal flow of variable assignments and return fully qualified name.
+    /// </summary>
+    [TestCase("Linear")]
+    [TestCase("SinOut")]
+    public void Convert_ValidEasingName_CoverageFlow(string easingName)
+    {
+        // Arrange & Act
+        var result = _converter.Convert(easingName, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual($"global::Microsoft.Maui.Easing.{easingName}", result);
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+        _mockCompilation.Verify(x => x.GetTypeByMetadataName("Microsoft.Maui.Easing"), Times.Once);
+        _mockEasingType.Verify(x => x.ToFQDisplayString(), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with Easing prefix to ensure splitting logic coverage.
+    /// Should extract the easing name after the dot and return fully qualified name.
+    /// </summary>
+    [TestCase("Easing.Linear")]
+    [TestCase("easing.BounceOut")]
+    public void Convert_EasingPrefix_CoverageFlow(string value)
+    {
+        // Arrange & Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.IsTrue(result.StartsWith("global::Microsoft.Maui.Easing."));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+        _mockCompilation.Verify(x => x.GetTypeByMetadataName("Microsoft.Maui.Easing"), Times.Once);
+        _mockEasingType.Verify(x => x.ToFQDisplayString(), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with invalid easing name to ensure error path coverage.
+    /// Should call ReportConversionFailed and return "default".
+    /// </summary>
+    [TestCase("InvalidEasing")]
+    [TestCase("NotFound")]
+    public void Convert_InvalidEasingName_CoverageFlow(string easingName)
+    {
+        // Arrange & Act
+        var result = _converter.Convert(easingName, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual("default", result);
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<DiagnosticDescriptor>()), Times.Once);
     }
 }

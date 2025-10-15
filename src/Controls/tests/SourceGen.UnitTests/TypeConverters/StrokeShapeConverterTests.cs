@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.TypeConverters;
 /// and SourceGenContext that cannot be easily mocked without creating extensive fake implementations.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent")]
-[Category("auto-generated")]
 public class StrokeShapeConverterTests
 {
     /// <summary>
@@ -28,8 +26,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_NullValue_ReportsConversionFailedAndReturnsDefault()
     {
         // Arrange
@@ -52,8 +48,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_EmptyValue_ReportsConversionFailedAndReturnsDefault()
     {
         // Arrange
@@ -72,8 +66,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_WhitespaceOnlyValue_ReportsConversionFailedAndReturnsDefault()
     {
         // Arrange
@@ -95,8 +87,6 @@ public class StrokeShapeConverterTests
     [TestCase("ELLIPSE")]
     [TestCase("ELLipse")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_EllipseShapeType_CreatesEllipseInstance(string value)
     {
         // Note: This test cannot be completed due to SourceGenContext dependency.
@@ -117,8 +107,6 @@ public class StrokeShapeConverterTests
     [TestCase("rectangle")]
     [TestCase("RECTANGLE")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_RectangleShapeType_CreatesRectangleInstance(string value)
     {
         // Note: This test cannot be completed due to SourceGenContext dependency.
@@ -134,8 +122,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_LineWithoutCoordinates_CreatesDefaultLineInstance()
     {
         // Arrange
@@ -156,8 +142,6 @@ public class StrokeShapeConverterTests
     [TestCase("line 0,0")]
     [TestCase("LINE -5.5,15.7")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_LineWithTwoCoordinates_CreatesLineInstanceWithX1Y1(string value)
     {
         // Note: This test would verify that coordinates are parsed correctly
@@ -175,8 +159,6 @@ public class StrokeShapeConverterTests
     [TestCase("line 0.1,0.2,0.3,0.4")]
     [TestCase("LINE -1,-2,3,4")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_LineWithFourCoordinates_CreatesLineInstanceWithAllCoordinates(string value)
     {
         // Note: This test would verify that all four coordinates are parsed correctly
@@ -194,8 +176,6 @@ public class StrokeShapeConverterTests
     [TestCase("Line 1,2,3")]
     [TestCase("Line 1,2,3,4,5")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_LineWithInvalidCoordinateCount_CreatesDefaultLineInstance(string value)
     {
         // Note: This test would verify that invalid coordinate counts result in default Line instances.
@@ -212,8 +192,6 @@ public class StrokeShapeConverterTests
     [TestCase("Line 1.5,invalid")]
     [TestCase("Line valid,2.5,invalid,4.0")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_LineWithNonNumericCoordinates_CreatesDefaultLineInstance(string value)
     {
         // Note: This test would verify that non-numeric coordinates are handled gracefully.
@@ -230,8 +208,6 @@ public class StrokeShapeConverterTests
     [TestCase("Line -Infinity,1.7976931348623157E+308")]
     [TestCase("Line 4.94065645841247E-324,-1.7976931348623157E+308")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_LineWithSpecialNumericValues_HandlesSpecialValuesCorrectly(string value)
     {
         // Note: This test would verify that special double values like NaN and Infinity are handled.
@@ -248,8 +224,6 @@ public class StrokeShapeConverterTests
     [TestCase("Path")]
     [TestCase("Path some-path-data")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_PathShapeType_CreatesDefaultPathInstance(string value)
     {
         // Note: The current implementation has a TODO comment indicating incomplete path geometry conversion.
@@ -265,8 +239,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_PolygonWithoutPoints_CreatesDefaultPolygonInstance()
     {
         // Note: This test would verify that when "Polygon" is provided without points,
@@ -283,8 +255,6 @@ public class StrokeShapeConverterTests
     [TestCase("Polygon 0,0 1,1 2,0")]
     [TestCase("polygon 10,10 20,20 30,10")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_PolygonWithValidPoints_CreatesPolygonInstanceWithPoints(string value)
     {
         // Note: This test would verify that PointCollectionConverter is used correctly
@@ -300,8 +270,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_PolygonWhenPointCollectionConverterReturnsDefault_CreatesDefaultPolygonInstance()
     {
         // Note: This test would verify the fallback behavior when PointCollectionConverter
@@ -318,8 +286,6 @@ public class StrokeShapeConverterTests
     [TestCase("Polyline 0,0 1,1 2,0")]
     [TestCase("polyline 10,10 20,20 30,10")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_PolylineWithValidPoints_CreatesPolylineInstanceWithPoints(string value)
     {
         // Note: This test would verify Polyline creation similar to Polygon.
@@ -334,8 +300,6 @@ public class StrokeShapeConverterTests
     /// </summary>
     [Test]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_RoundRectangleWithoutCornerRadius_CreatesRoundRectangleWithDefaultCornerRadius()
     {
         // Note: This test would verify that when "RoundRectangle" is provided without corner radius,
@@ -352,8 +316,6 @@ public class StrokeShapeConverterTests
     [TestCase("RoundRectangle 5")]
     [TestCase("roundrectangle 1,2,3,4")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_RoundRectangleWithCornerRadius_CreatesRoundRectangleWithCornerRadius(string value)
     {
         // Note: This test would verify that CornerRadiusConverter is used correctly
@@ -372,8 +334,6 @@ public class StrokeShapeConverterTests
     [TestCase("Triangle")]
     [TestCase("")]
     [Category("ProductionBugSuspected")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_UnrecognizedShapeType_ReportsConversionFailedAndReturnsDefault(string value)
     {
         // Note: This test would verify that unrecognized shape types result in

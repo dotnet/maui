@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml;
 
+
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
@@ -15,12 +16,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
+
 /// <summary>
 /// Unit tests for PointCollectionConverter class.
 /// </summary>
 [TestFixture]
-[Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-[Category("auto-generated")]
 public partial class PointCollectionConverterTests
 {
     private PointCollectionConverter _converter = null!;
@@ -55,8 +55,6 @@ public partial class PointCollectionConverterTests
     /// </summary>
     [TestCase("1.7976931348623157E+308", "1.7976931348623157E+308", TestName = "MaxValue")]
     [TestCase("-1.7976931348623157E+308", "-1.7976931348623157E+308", TestName = "MinValue")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_ExtremeDoubleValues_ConvertsSuccessfully(string x, string y)
     {
         // Arrange
@@ -78,8 +76,6 @@ public partial class PointCollectionConverterTests
     [TestCase("1,Infinity", TestName = "Infinity_Y")]
     [TestCase("-Infinity,1", TestName = "NegativeInfinity_X")]
     [TestCase("1,-Infinity", TestName = "NegativeInfinity_Y")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_SpecialDoubleValues_ReportsFailure(string value)
     {
         // Act
@@ -94,8 +90,6 @@ public partial class PointCollectionConverterTests
     /// Should successfully convert single point.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_SinglePoint_ConvertsSuccessfully()
     {
         // Arrange
@@ -116,8 +110,6 @@ public partial class PointCollectionConverterTests
     [TestCase("\t", TestName = "Tab")]
     [TestCase("\n", TestName = "Newline")]
     [TestCase("\r\n", TestName = "CarriageReturnNewline")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_WhitespaceOnlyValue_ReportsFailure(string value)
     {
         // Act
@@ -138,8 +130,6 @@ public partial class PointCollectionConverterTests
     [TestCase("1,2.3.4", TestName = "InvalidDecimalY")]
     [TestCase("1e,2", TestName = "InvalidScientificX")]
     [TestCase("1,2e", TestName = "InvalidScientificY")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_InvalidNumberFormat_ReportsFailure(string value)
     {
         // Act
@@ -158,8 +148,6 @@ public partial class PointCollectionConverterTests
     [TestCase("1,2,3", TestName = "ThreeCoordinates")]
     [TestCase("1,2,3,4,5", TestName = "FiveCoordinates")]
     [TestCase("1 2 3", TestName = "ThreeSpaceSeparated")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_OddNumberOfCoordinates_ReportsFailure(string value)
     {
         // Act
@@ -170,4 +158,147 @@ public partial class PointCollectionConverterTests
         _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), value, _mockToType.Object, Descriptors.ConversionFailed), Times.Once);
     }
 
+
+    /// <summary>
+    /// Tests Convert method with empty string value.
+    /// Should report conversion failure and return default.
+    /// </summary>
+    [Test]
+    public void Convert_EmptyString_ReportsFailure()
+    {
+        // Act
+        var result = _converter.Convert("", _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.AreEqual("default", result);
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), "", _mockToType.Object, Descriptors.ConversionFailed), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests Convert method with multiple points.
+    /// Should successfully convert all points.
+    /// </summary>
+    [TestCase("1,2,3,4", TestName = "TwoPoints")]
+    [TestCase("0,0,10,10,20,20", TestName = "ThreePoints")]
+    [TestCase("1.5,2.5,3.7,4.8", TestName = "DecimalPoints")]
+    public void Convert_MultiplePoints_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with space-separated coordinates.
+    /// Should successfully convert space-separated points.
+    /// </summary>
+    [TestCase("1 2", TestName = "SinglePointSpaceSeparated")]
+    [TestCase("1 2 3 4", TestName = "TwoPointsSpaceSeparated")]
+    [TestCase("0 0 10 10", TestName = "ZeroAndNonZeroSpaceSeparated")]
+    public void Convert_SpaceSeparatedCoordinates_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with mixed separators (spaces and commas).
+    /// Should successfully convert with mixed separators.
+    /// </summary>
+    [TestCase("1,2 3,4", TestName = "CommaThenSpace")]
+    [TestCase("1 2,3 4", TestName = "SpaceThenComma")]
+    [TestCase("1, 2 , 3 , 4", TestName = "CommasWithSpaces")]
+    public void Convert_MixedSeparators_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with zero values.
+    /// Should successfully convert zero coordinates.
+    /// </summary>
+    [TestCase("0,0", TestName = "BothZero")]
+    [TestCase("0,5", TestName = "XZero")]
+    [TestCase("5,0", TestName = "YZero")]
+    public void Convert_ZeroValues_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with negative values.
+    /// Should successfully convert negative coordinates.
+    /// </summary>
+    [TestCase("-1,-2", TestName = "BothNegative")]
+    [TestCase("-5,10", TestName = "XNegative")]
+    [TestCase("5,-10", TestName = "YNegative")]
+    public void Convert_NegativeValues_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with extra whitespace around valid coordinates.
+    /// Should successfully parse coordinates ignoring whitespace.
+    /// </summary>
+    [TestCase("  1  ,  2  ", TestName = "SpacesAroundComma")]
+    [TestCase("\t1\t,\t2\t", TestName = "TabsAroundComma")]
+    [TestCase("  1   2  ", TestName = "SpacesAroundSpace")]
+    public void Convert_ExtraWhitespace_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with scientific notation.
+    /// Should successfully convert scientific notation numbers.
+    /// </summary>
+    [TestCase("1E+2,2E+3", TestName = "PositiveExponent")]
+    [TestCase("1E-2,2E-3", TestName = "NegativeExponent")]
+    [TestCase("1.5E+10,2.7E-5", TestName = "MixedExponents")]
+    public void Convert_ScientificNotation_ConvertsSuccessfully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Tests Convert method with consecutive separators.
+    /// Should handle consecutive separators by skipping empty entries.
+    /// </summary>
+    [TestCase("1,,2", TestName = "ConsecutiveCommas")]
+    [TestCase("1  2", TestName = "MultipleSpaces")]
+    [TestCase("1, ,2", TestName = "CommaSpaceComma")]
+    public void Convert_ConsecutiveSeparators_HandlesGracefully(string value)
+    {
+        // Act
+        var result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+        // Assert
+        Assert.That(result, Does.StartWith("new Microsoft.Maui.Controls.PointCollection(new[] {"));
+        _mockContext.Verify(x => x.ReportConversionFailed(It.IsAny<IXmlLineInfo>(), It.IsAny<string>(), It.IsAny<ITypeSymbol>(), It.IsAny<DiagnosticDescriptor>()), Times.Never);
+    }
 }

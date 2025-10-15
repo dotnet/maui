@@ -6,18 +6,21 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 
+
 #nullable disable
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.Xaml;
 using Moq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
 
 /// <summary>
 /// Unit tests for the CodeBehindCodeWriter class.
@@ -30,8 +33,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should return empty string when no processing instructions exist.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_EmptyXmlDocument_ReturnsEmptyString()
     {
         // Arrange
@@ -48,8 +49,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should extract and return the warning disable value.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_XamlCompWithWarningDisable_ReturnsWarningValue()
     {
         // Arrange
@@ -66,8 +65,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should extract and return the warning disable value when separated by space.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_XamlCompWithSpaceSeparator_ReturnsWarningValue()
     {
         // Arrange
@@ -84,8 +81,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should extract and return all warning disable values joined by comma and space.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_MultipleXamlCompInstructions_ReturnsJoinedWarnings()
     {
         // Arrange
@@ -102,8 +97,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should return empty string when warning-disable is not present.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_XamlCompWithoutWarningDisable_ReturnsEmptyString()
     {
         // Arrange
@@ -123,8 +116,6 @@ public partial class CodeBehindCodeWriterTests
     [TestCase("'CS1234'", "CS1234")]
     [TestCase("\"'CS1234'\"", "'CS1234'")]
     [TestCase("'\"CS1234\"'", "\"CS1234\"")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_WarningValueWithQuotes_TrimsQuotes(string input, string expected)
     {
         // Arrange
@@ -141,8 +132,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should handle the case where warning-disable is the last element gracefully.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_WarningDisableAsLastElement_ThrowsIndexOutOfRangeException()
     {
         // Arrange
@@ -157,8 +146,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should extract warning disable value from complex instruction with multiple attributes.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_ComplexProcessingInstruction_ExtractsCorrectValue()
     {
         // Arrange
@@ -175,8 +162,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should only process xaml-comp instructions and ignore others.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_MixedProcessingInstructions_OnlyProcessesXamlComp()
     {
         // Arrange
@@ -193,8 +178,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should handle empty values correctly.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_EmptyWarningDisableValue_HandlesEmptyValue()
     {
         // Arrange
@@ -211,8 +194,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should preserve whitespace in the warning value after trimming quotes.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     [Category("ProductionBugSuspected")]
     public void GetWarningDisable_WhitespaceWarningDisableValue_PreservesWhitespace()
     {
@@ -230,8 +211,6 @@ public partial class CodeBehindCodeWriterTests
     /// Should only return the first warning-disable value found.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void GetWarningDisable_MultipleWarningDisableInSingleInstruction_ReturnsFirstValue()
     {
         // Arrange
@@ -243,6 +222,7 @@ public partial class CodeBehindCodeWriterTests
         Assert.AreEqual("CS1234", result);
     }
 }
+
 
 
 /// <summary>
@@ -275,8 +255,6 @@ public partial class CodeBehindCodeWriterTryParseXamlTests
     [TestCase("Private", "private")]
     [TestCase("INTERNAL", "internal")]
     [TestCase("", "public")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void TryParseXaml_WithClassModifier_ParsesCorrectly(string classModifierValue, string expectedAccessModifier)
     {
         // Arrange
@@ -297,6 +275,7 @@ public partial class CodeBehindCodeWriterTryParseXamlTests
     }
 
 }
+
 
 
 /// <summary>
@@ -576,6 +555,7 @@ public partial class CodeBehindCodeWriterGenerateXamlCodeBehindTests
 
 
 
+
 /// <summary>
 /// Unit tests for the TryParseXaml method in CodeBehindCodeWriter class.
 /// Focus on achieving coverage of uncovered lines and edge cases.
@@ -604,8 +584,6 @@ public partial class CodeBehindCodeWriterTryParseXamlCoverageTests
     [TestCase("<?xaml-comp compile=\"true\" ?>", true)]
     [TestCase("<?xaml-comp compile=\"false\" ?>", false)]
     [TestCase("", true)]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void TryParseXaml_WithXamlCompilationProcessingInstruction_ParsesCorrectly(string processingInstruction, bool shouldGenerateCode)
     {
         // Arrange
@@ -653,6 +631,7 @@ public partial class CodeBehindCodeWriterTryParseXamlCoverageTests
 
 
 
+
 /// <summary>
 /// Additional unit tests for the GetWarningDisable method in CodeBehindCodeWriter class.
 /// </summary>
@@ -664,8 +643,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should handle malformed processing instructions gracefully.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_MalformedProcessingInstruction_HandlesGracefully()
     {
         // Arrange
@@ -687,8 +664,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     [TestCase("CS1234-456", "CS1234-456")]
     [TestCase("CS1234_456", "CS1234_456")]
     [TestCase("CS1234.456", "CS1234.456")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_WarningValueWithSpecialCharacters_PreservesCharacters(string warningValue, string expected)
     {
         // Arrange
@@ -707,8 +682,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should handle nested quotes correctly by trimming only outer quotes.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_NestedQuotesInWarningValue_TrimsOuterQuotesOnly()
     {
         // Arrange
@@ -727,8 +700,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should handle very long warning values without issues.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_VeryLongWarningValue_HandlesLongValues()
     {
         // Arrange
@@ -748,8 +719,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should preserve whitespace content after trimming quotes.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     [Category("ProductionBugSuspected")]
     public void GetWarningDisable_WhitespaceOnlyAfterTrimming_PreservesWhitespace()
     {
@@ -772,8 +741,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     [TestCase("WARNING-DISABLE", "")]
     [TestCase("warning-Disable", "")]
     [TestCase("Warning-disable", "")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_CaseVariationsOfKeyword_OnlyMatchesExactCase(string keyword, string expected)
     {
         // Arrange
@@ -792,8 +759,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should handle mixed space and equals separators correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_MixedSeparators_HandlesCorrectly()
     {
         // Arrange
@@ -812,8 +777,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should handle Unicode characters correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_UnicodeCharactersInWarningValue_HandlesUnicode()
     {
         // Arrange
@@ -833,8 +796,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should handle empty processing instruction data gracefully.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetWarningDisable_EmptyProcessingInstructionData_ReturnsEmpty()
     {
         // Arrange
@@ -853,8 +814,6 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
     /// Should process only xaml-comp instructions regardless of XML complexity.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     [Category("ProductionBugSuspected")]
     public void GetWarningDisable_ComplexXmlStructure_ProcessesOnlyXamlCompInstructions()
     {
@@ -878,4 +837,404 @@ public partial class CodeBehindCodeWriterGetWarningDisableAdditionalTests
         // Assert
         Assert.AreEqual("CS1234, CS5678", result);
     }
+}
+
+/// <summary>
+/// Unit tests for the GenerateXamlCodeBehind method in CodeBehindCodeWriter class.
+/// Focuses on achieving coverage of uncovered lines and edge cases.
+/// </summary>
+[TestFixture]
+public partial class CodeBehindCodeWriterGenerateXamlCodeBehindCoverageTests
+{
+    private Mock<Compilation> _compilationMock = null!;
+    private Mock<AssemblyCaches> _xmlnsCacheMock = null!;
+    private Mock<IDictionary<XmlType, ITypeSymbol>> _typeCacheMock = null!;
+    private Mock<Action<Diagnostic>> _reportDiagnosticMock = null!;
+    private Mock<INamedTypeSymbol> _namedTypeSymbolMock = null!;
+    private Mock<ITypeSymbol> _baseTypeSymbolMock = null!;
+    private CancellationToken _cancellationToken;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _compilationMock = new Mock<Compilation>();
+        _xmlnsCacheMock = new Mock<AssemblyCaches>();
+        _typeCacheMock = new Mock<IDictionary<XmlType, ITypeSymbol>>();
+        _reportDiagnosticMock = new Mock<Action<Diagnostic>>();
+        _namedTypeSymbolMock = new Mock<INamedTypeSymbol>();
+        _baseTypeSymbolMock = new Mock<ITypeSymbol>();
+        _cancellationToken = CancellationToken.None;
+
+        _compilationMock.SetupGet(c => c.AssemblyName).Returns("TestAssembly");
+        _baseTypeSymbolMock.Setup(b => b.ToFQDisplayString()).Returns("global::Microsoft.Maui.Controls.ContentPage");
+    }
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Helper method to create XamlProjectItemForCB with valid root.
+    /// </summary>
+    private XamlProjectItemForCB CreateXamlItemWithValidRoot(string manifestResourceName, string relativePath)
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns(manifestResourceName);
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns(relativePath);
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None")).Returns("Page");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\" x:Class=\"TestNamespace.TestPage\"></ContentPage>");
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to create XamlProjectItemForCB for XamlResourceIdOnly scenario.
+    /// </summary>
+    private XamlProjectItemForCB CreateXamlItemForResourceIdOnly()
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns("TestResource.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns("Views/TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("Views/TestPage.xaml");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\"></ContentPage>");
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to create valid XamlProjectItemForCB with warning disable.
+    /// </summary>
+    private XamlProjectItemForCB CreateValidXamlItemWithWarningDisable()
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns("TestResource.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns("Views/TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None")).Returns("Page");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><?xaml-comp warning-disable=\"CS1234\" ?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\" x:Class=\"TestNamespace.TestPage\"></ContentPage>");
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to create valid XamlProjectItemForCB with XamlC inflator.
+    /// </summary>
+    private XamlProjectItemForCB CreateValidXamlItemWithXamlCInflator()
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns("TestResource.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns("Views/TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None")).Returns("Page");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "")).Returns("XamlC");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\" x:Class=\"TestNamespace.TestPage\"></ContentPage>");
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to create valid XamlProjectItemForCB with Runtime inflator.
+    /// </summary>
+    private XamlProjectItemForCB CreateValidXamlItemWithRuntimeInflator()
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns("TestResource.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns("Views/TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None")).Returns("Page");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "")).Returns("Runtime");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\" x:Class=\"TestNamespace.TestPage\"></ContentPage>");
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to create valid XamlProjectItemForCB with named fields and Release configuration.
+    /// </summary>
+    private XamlProjectItemForCB CreateValidXamlItemWithNamedFieldsAndReleaseConfig()
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns("TestResource.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns("Views/TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None")).Returns("Page");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_property.Configuration", "Debug")).Returns("Release");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "")).Returns("SourceGen");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\" x:Class=\"TestNamespace.TestPage\"><Button x:Name=\"TestButton\" /></ContentPage>");
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to create valid XamlProjectItemForCB with multiple inflators.
+    /// </summary>
+    private XamlProjectItemForCB CreateValidXamlItemWithMultipleInflators(bool generateDefaultCtor)
+    {
+        var additionalTextMock = new Mock<AdditionalText>();
+        var analyzerConfigOptionsMock = new Mock<AnalyzerConfigOptions>();
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.ManifestResourceName")).Returns("TestResource.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrNull("build_metadata.additionalfiles.RelativePath")).Returns("Views/TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", It.IsAny<string>())).Returns("TestPage.xaml");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None")).Returns("Page");
+        analyzerConfigOptionsMock.Setup(o => o.GetValueOrDefault("build_metadata.additionalfiles.Inflator", "")).Returns("Runtime,XamlC,SourceGen");
+        var projectItem = new ProjectItem(additionalTextMock.Object, analyzerConfigOptionsMock.Object);
+
+        var xmlDoc = new XmlDocument();
+        if (generateDefaultCtor)
+        {
+            xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\"></ContentPage>");
+        }
+        else
+        {
+            xmlDoc.LoadXml("<?xml version=\"1.0\"?><ContentPage xmlns=\"http://schemas.microsoft.com/dotnet/2021/maui\" xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\" x:Class=\"TestNamespace.TestType\"></ContentPage>");
+        }
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
+
+        return new XamlProjectItemForCB(projectItem, xmlDoc.DocumentElement!, nsmgr);
+    }
+
+    /// <summary>
+    /// Helper method to setup compilation mock for successful parsing scenarios.
+    /// </summary>
+    private void SetupCompilationForSuccessfulParsing()
+    {
+        _compilationMock.Setup(c => c.GetTypeByMetadataName("TestNamespace.TestPage")).Returns(_namedTypeSymbolMock.Object);
+        _namedTypeSymbolMock.Setup(s => s.GetAttributes()).Returns(System.Collections.Immutable.ImmutableArray<AttributeData>.Empty);
+    }
+
+    /// <summary>
+    /// Helper method to setup compilation mock for unit tests assembly.
+    /// </summary>
+    private void SetupCompilationForUnitTestsAssembly()
+    {
+        _compilationMock.SetupGet(c => c.AssemblyName).Returns("Microsoft.Maui.Controls.Xaml.UnitTests");
+        _compilationMock.Setup(c => c.GetTypeByMetadataName("TestNamespace.TestType")).Returns(_namedTypeSymbolMock.Object);
+        _namedTypeSymbolMock.Setup(s => s.GetAttributes()).Returns(System.Collections.Immutable.ImmutableArray<AttributeData>.Empty);
+    }
+
+    #endregion
+}
+
+
+
+/// <summary>
+/// Additional unit tests for the GetWarningDisable method targeting uncovered code paths.
+/// </summary>
+[TestFixture]
+public partial class CodeBehindCodeWriterGetWarningDisableUncoveredTests
+{
+    /// <summary>
+    /// Tests GetWarningDisable method with a custom XmlDocument implementation that might return non-processing instruction nodes.
+    /// Attempts to trigger the uncovered continue statement when xamlCompNode is not XmlProcessingInstruction.
+    /// </summary>
+    [Test]
+    public void GetWarningDisable_WithCustomXmlDocumentReturningNonProcessingInstructions_HandlesGracefully()
+    {
+        // Arrange - Create a custom XmlDocument that might behave differently
+        var xmlDoc = new CustomXmlDocument();
+
+        // Act - This should handle any non-XmlProcessingInstruction nodes gracefully
+        var result = CodeBehindCodeWriter.GetWarningDisable(xmlDoc);
+
+        // Assert - Should return empty string without throwing exceptions
+        Assert.AreEqual("", result);
+    }
+
+    /// <summary>
+    /// Tests GetWarningDisable method with null value in warning-disable attribute.
+    /// Should handle null warning values without throwing exceptions.
+    /// </summary>
+    [Test]
+    public void GetWarningDisable_WithNullWarningDisableValue_HandlesGracefully()
+    {
+        // Arrange
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><?xaml-comp warning-disable=\"\"?><root></root>");
+
+        // Act
+        var result = CodeBehindCodeWriter.GetWarningDisable(xmlDoc);
+
+        // Assert
+        Assert.AreEqual("", result);
+    }
+
+    /// <summary>
+    /// Tests GetWarningDisable method with extremely malformed processing instruction data.
+    /// Should handle malformed data without throwing exceptions.
+    /// </summary>
+    [TestCase("<?xaml-comp =warning-disable=CS1234?>", "")]
+    [TestCase("<?xaml-comp warning-disable==CS1234?>", "")]
+    [TestCase("<?xaml-comp warning-disable CS1234 extra?>", "CS1234")]
+    [TestCase("<?xaml-comp warning-disable\tCS1234?>", "CS1234")]
+    [TestCase("<?xaml-comp warning-disable\nCS1234?>", "CS1234")]
+    public void GetWarningDisable_WithMalformedProcessingInstructionData_HandlesCorrectly(string processingInstruction, string expected)
+    {
+        // Arrange
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml($"<?xml version=\"1.0\"?>{processingInstruction}<root></root>");
+
+        // Act
+        var result = CodeBehindCodeWriter.GetWarningDisable(xmlDoc);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests GetWarningDisable method with various quote combinations and edge cases.
+    /// Should handle complex quote scenarios correctly.
+    /// </summary>
+    [TestCase("\"\"CS1234\"\"", "\"CS1234\"")]
+    [TestCase("''CS1234''", "'CS1234'")]
+    [TestCase("\"CS1234", "CS1234")]
+    [TestCase("CS1234\"", "CS1234")]
+    [TestCase("'CS1234", "CS1234")]
+    [TestCase("CS1234'", "CS1234")]
+    public void GetWarningDisable_WithComplexQuoteScenarios_TrimsCorrectly(string warningValue, string expected)
+    {
+        // Arrange
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml($"<?xml version=\"1.0\"?><?xaml-comp warning-disable={warningValue}?><root></root>");
+
+        // Act
+        var result = CodeBehindCodeWriter.GetWarningDisable(xmlDoc);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests GetWarningDisable method with multiple consecutive equals or spaces.
+    /// Should handle multiple separators correctly.
+    /// </summary>
+    [TestCase("<?xaml-comp warning-disable===CS1234?>", "")]
+    [TestCase("<?xaml-comp warning-disable   CS1234?>", "CS1234")]
+    [TestCase("<?xaml-comp   warning-disable=CS1234?>", "CS1234")]
+    public void GetWarningDisable_WithMultipleSeparators_HandlesCorrectly(string processingInstruction, string expected)
+    {
+        // Arrange
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml($"<?xml version=\"1.0\"?>{processingInstruction}<root></root>");
+
+        // Act
+        var result = CodeBehindCodeWriter.GetWarningDisable(xmlDoc);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests GetWarningDisable method with processing instruction containing only warning-disable keyword.
+    /// Should handle edge case where no value follows warning-disable.
+    /// </summary>
+    [Test]
+    public void GetWarningDisable_WithOnlyWarningDisableKeyword_ThrowsIndexOutOfRangeException()
+    {
+        // Arrange
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml("<?xml version=\"1.0\"?><?xaml-comp warning-disable?><root></root>");
+
+        // Act & Assert
+        Assert.Throws<IndexOutOfRangeException>(() => CodeBehindCodeWriter.GetWarningDisable(xmlDoc));
+    }
+
+    /// <summary>
+    /// Tests GetWarningDisable method with warning values containing control characters.
+    /// Should preserve control characters in warning values.
+    /// </summary>
+    [TestCase("CS1234\t\n\r", "CS1234\t\n\r")]
+    [TestCase("CS1234\u0000", "CS1234\u0000")]
+    [TestCase("CS1234\u001F", "CS1234\u001F")]
+    public void GetWarningDisable_WithControlCharacters_PreservesControlCharacters(string warningValue, string expected)
+    {
+        // Arrange
+        var xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml($"<?xml version=\"1.0\"?><?xaml-comp warning-disable=\"{warningValue}\"?><root></root>");
+
+        // Act
+        var result = CodeBehindCodeWriter.GetWarningDisable(xmlDoc);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Helper inner class that creates a custom XmlDocument to potentially trigger edge cases.
+    /// This attempts to create scenarios where SelectNodes might return unexpected node types.
+    /// </summary>
+    private class CustomXmlDocument : XmlDocument
+    {
+        public CustomXmlDocument()
+        {
+            try
+            {
+                // Load a basic XML structure
+                LoadXml("<?xml version=\"1.0\"?><root></root>");
+            }
+            catch
+            {
+                // If any issues occur, fall back to empty document
+            }
+        }
+
+    }
+}
+
+
+/// <summary>
+/// Unit tests for the TryParseXaml method in CodeBehindCodeWriter class.
+/// Tests comprehensive coverage of method logic and edge cases.
+/// </summary>
+[TestFixture]
+public partial class CodeBehindCodeWriterTryParseXamlComprehensiveTests
+{
+    private Mock<Compilation> _compilationMock = null!;
+    private Mock<IDictionary<XmlType, ITypeSymbol>> _typeCacheMock = null!;
+    private Mock<Action<Diagnostic>> _reportDiagnosticMock = null!;
+    private AssemblyCaches _xmlnsCache = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _compilationMock = new Mock<Compilation>();
+        _typeCacheMock = new Mock<IDictionary<XmlType, ITypeSymbol>>();
+        _reportDiagnosticMock = new Mock<Action<Diagnostic>>();
+        _xmlnsCache = AssemblyCaches.Empty;
+    }
+
 }

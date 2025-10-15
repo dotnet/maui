@@ -1,28 +1,31 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Maui.Controls.SourceGen;
-using Microsoft.Maui.Controls.SourceGen.TypeConverters;
-using Microsoft.Maui.Controls.Xaml;
-using Moq;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.SourceGen;
+using Microsoft.Maui.Controls.SourceGen.TypeConverters;
+using Microsoft.Maui.Controls.Xaml;
+using Moq;
+using NUnit.Framework;
+
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.TypeConverters;
+
 /// <summary>
 /// Tests for the RowDefinitionCollectionConverter class.
 /// </summary>
 public partial class RowDefinitionCollectionConverterTests
 {
-    private RowDefinitionCollectionConverter _converter = null !;
-    private Mock<BaseNode> _mockNode = null !;
-    private Mock<ITypeSymbol> _mockToType = null !;
-    private Mock<SourceGenContext> _mockContext = null !;
-    private Mock<Compilation> _mockCompilation = null !;
-    private Mock<INamedTypeSymbol> _mockRowDefinitionCollectionType = null !;
-    private Mock<GridLengthConverter> _mockGridLengthConverter = null !;
+    private RowDefinitionCollectionConverter _converter = null!;
+    private Mock<BaseNode> _mockNode = null!;
+    private Mock<ITypeSymbol> _mockToType = null!;
+    private Mock<SourceGenContext> _mockContext = null!;
+    private Mock<Compilation> _mockCompilation = null!;
+    private Mock<INamedTypeSymbol> _mockRowDefinitionCollectionType = null!;
+    private Mock<GridLengthConverter> _mockGridLengthConverter = null!;
+
     [SetUp]
     public void SetUp()
     {
@@ -46,8 +49,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase(",,,")]
     [TestCase("100,")]
     [TestCase(",100")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void Convert_ValueWithExtraCommas_HandlesCorrectly(string value)
     {
         // Arrange
@@ -85,8 +86,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase("\t")]
     [TestCase("\n")]
     [TestCase("\r\n")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_WhitespaceValue_ReturnsDefaultAndReportsFailure(string value)
     {
         // Arrange & Act
@@ -104,8 +103,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase("Auto,100,*")]
     [TestCase("100,2*,Auto")]
     [TestCase("*,*,*")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_MultipleValidValues_ReturnsCorrectRowDefinitionCollection(string value)
     {
         // Arrange
@@ -130,8 +127,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase(",100,")]
     [TestCase("100,,*")]
     [TestCase(",,,")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValueWithEmptySegments_HandlesCorrectly(string value)
     {
         // Arrange
@@ -161,8 +156,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase("@#$,%^&")]
     [TestCase("100,null,*")]
     [TestCase("true,false")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_ValueWithInvalidSegments_HandlesCorrectly(string value)
     {
         // Arrange
@@ -185,8 +178,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase("Auto,unicode\u00A0test,100")]
     [TestCase("100,\t\r\n,*")]
     [TestCase("*,control\x01chars,Auto")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_StringsWithSpecialCharacters_HandlesCorrectly(string value)
     {
         // Arrange & Act
@@ -207,8 +198,6 @@ public partial class RowDefinitionCollectionConverterTests
     [TestCase("100,100,100")]
     [TestCase("*,*")]
     [TestCase("Auto,Auto,Auto,Auto")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Convert_CollectionWithDuplicates_CreatesAllRowDefinitions(string value)
     {
         // Arrange
@@ -221,6 +210,100 @@ public partial class RowDefinitionCollectionConverterTests
         // Should create RowDefinitions for all segments, even duplicates
         int rowDefinitionCount = result.Split("new RowDefinition(").Length - 1;
         Assert.AreEqual(segments.Length, rowDefinitionCount);
+    }
+
+}
+
+
+/// <summary>
+/// Additional tests for the RowDefinitionCollectionConverter class to improve coverage.
+/// </summary>
+public partial class RowDefinitionCollectionConverterAdditionalTests
+{
+    private RowDefinitionCollectionConverter _converter = null!;
+    private Mock<BaseNode> _mockNode = null!;
+    private Mock<ITypeSymbol> _mockToType = null!;
+    private Mock<SourceGenContext> _mockContext = null!;
+    private Mock<Compilation> _mockCompilation = null!;
+    private Mock<INamedTypeSymbol> _mockRowDefinitionCollectionType = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _converter = new RowDefinitionCollectionConverter();
+        _mockNode = new Mock<BaseNode>();
+        _mockToType = new Mock<ITypeSymbol>();
+        _mockContext = new Mock<SourceGenContext>();
+        _mockCompilation = new Mock<Compilation>();
+        _mockRowDefinitionCollectionType = new Mock<INamedTypeSymbol>();
+
+        // Setup basic mocks
+        _mockContext.Setup(x => x.Compilation).Returns(_mockCompilation.Object);
+        _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollection")).Returns(_mockRowDefinitionCollectionType.Object);
+        _mockRowDefinitionCollectionType.Setup(x => x.ToFQDisplayString()).Returns("Microsoft.Maui.Controls.RowDefinitionCollection");
+
+        // Setup GridLength and GridUnitType for GridLengthConverter
+        var mockGridLengthType = new Mock<INamedTypeSymbol>();
+        var mockGridUnitType = new Mock<INamedTypeSymbol>();
+        mockGridLengthType.Setup(x => x.ToFQDisplayString()).Returns("Microsoft.Maui.GridLength");
+        mockGridUnitType.Setup(x => x.ToFQDisplayString()).Returns("Microsoft.Maui.GridUnitType");
+        _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.GridLength")).Returns(mockGridLengthType.Object);
+        _mockCompilation.Setup(x => x.GetTypeByMetadataName("Microsoft.Maui.GridUnitType")).Returns(mockGridUnitType.Object);
+    }
+
+    /// <summary>
+    /// Tests that Convert handles floating-point special values correctly.
+    /// Should process special floating-point values appropriately.
+    /// </summary>
+    [TestCase("NaN")]
+    [TestCase("Infinity")]
+    [TestCase("-Infinity")]
+    [TestCase("1.7976931348623157E+308")] // double.MaxValue
+    public void Convert_FloatingPointSpecialValues_HandlesCorrectly(string value)
+    {
+        // Arrange & Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        // These values might not be valid for GridLength, so we don't assert specific behavior
+        // The test ensures no exceptions are thrown and the method completes
+        Assert.IsNotNull(result);
+    }
+
+    /// <summary>
+    /// Tests that Convert handles negative numeric values correctly.
+    /// Should process negative values which may be invalid for GridLength.
+    /// </summary>
+    [TestCase("-100")]
+    [TestCase("-1")]
+    [TestCase("-2147483648")] // int.MinValue
+    public void Convert_NegativeNumericValues_HandlesCorrectly(string value)
+    {
+        // Arrange & Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        // Negative values may be processed or may result in default behavior
+        // The test ensures no exceptions are thrown
+    }
+
+    /// <summary>
+    /// Tests that Convert handles enum-like invalid values correctly.
+    /// Should process values that look like enums but are not valid for GridLength.
+    /// </summary>
+    [TestCase("Star,Absolute")]
+    [TestCase("GridUnitType.Star")]
+    [TestCase("Fill,Stretch")]
+    public void Convert_EnumLikeInvalidValues_HandlesCorrectly(string value)
+    {
+        // Arrange & Act
+        string result = _converter.Convert(value, _mockNode.Object, _mockToType.Object, _mockContext.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        // These enum-like values should be processed through GridLengthConverter
+        // which will handle them appropriately
     }
 
 }

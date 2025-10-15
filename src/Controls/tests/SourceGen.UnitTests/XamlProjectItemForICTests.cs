@@ -18,8 +18,6 @@ public partial class XamlProjectItemForICTests
     /// Should create instance with properties correctly assigned.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_ValidProjectItemAndException_SetsPropertiesCorrectly()
     {
         // Arrange
@@ -42,8 +40,6 @@ public partial class XamlProjectItemForICTests
     /// Should allow null assignment despite non-nullable annotation for testing runtime behavior.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_NullProjectItem_AssignsNullToProperty()
     {
         // Arrange
@@ -63,8 +59,6 @@ public partial class XamlProjectItemForICTests
     /// Should allow null assignment despite non-nullable annotation for testing runtime behavior.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_NullException_AssignsNullToProperty()
     {
         // Arrange
@@ -86,8 +80,6 @@ public partial class XamlProjectItemForICTests
     /// Should allow null assignment for both properties for testing runtime behavior.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_BothParametersNull_AssignsNullToBothProperties()
     {
         // Arrange
@@ -108,8 +100,6 @@ public partial class XamlProjectItemForICTests
     /// Should preserve exception details and message correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_ExceptionWithComplexMessage_PreservesExceptionDetails()
     {
         // Arrange
@@ -135,8 +125,6 @@ public partial class XamlProjectItemForICTests
     /// Should preserve inner exception information correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Constructor_ExceptionWithInnerException_PreservesInnerException()
     {
         // Arrange

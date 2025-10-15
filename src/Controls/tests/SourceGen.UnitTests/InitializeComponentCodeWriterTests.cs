@@ -26,8 +26,6 @@ public partial class InitializeComponentCodeWriterTests
     /// Should include assembly full name and version in the generated code attribute.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GeneratedCodeAttribute_ReturnsFormattedAttributeString()
     {
         // Act

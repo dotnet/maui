@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 
+
 #nullable disable
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
@@ -15,6 +16,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
+
 public partial class ITypeSymbolExtensionsTests
 {
     /// <summary>
@@ -22,8 +24,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should only return method symbols and exclude other symbol types from the result.
     /// </summary>
     [TestCase]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllMethods_MixedSymbolTypes_OnlyReturnsMethodSymbols()
     {
         // Arrange
@@ -65,8 +65,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase(1, 2, Description = "One field, multiple other symbols")]
     [TestCase(3, 4, Description = "Multiple fields, multiple other symbols")]
     [TestCase(5, 0, Description = "Only fields, no other symbols")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public static void GetAllFields_MixedSymbolTypes_ReturnsOnlyFieldSymbols(int fieldCount, int otherSymbolCount)
     {
         // Arrange
@@ -122,8 +120,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase(true, MethodKind.Ordinary, false, Description = "Static method should be excluded")]
     [TestCase(false, MethodKind.PropertyGet, false, Description = "Property getter should be excluded")]
     [TestCase(false, MethodKind.PropertySet, false, Description = "Property setter should be excluded")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_VariousMethodTypes_FiltersCorrectly(bool isStatic, MethodKind methodKind, bool shouldBeIncluded)
     {
         // Arrange
@@ -156,8 +152,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return empty enumerable when type has no members.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_EmptyMembers_ReturnsEmpty()
     {
         // Arrange
@@ -174,8 +168,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return empty enumerable when type has only non-method members.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_NonMethodMembers_ReturnsEmpty()
     {
         // Arrange
@@ -199,8 +191,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return all instance constructors when multiple exist.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_MultipleInstanceConstructors_ReturnsAll()
     {
         // Arrange
@@ -230,8 +220,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return only instance constructors and exclude static constructors.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_MixedConstructorTypes_ReturnsOnlyInstanceConstructors()
     {
         // Arrange
@@ -260,8 +248,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should work correctly even when context parameter is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_NullContext_WorksCorrectly()
     {
         // Arrange
@@ -286,8 +272,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return only instance constructors from a type with various member types.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetConstructors_ComplexMixedMembers_ReturnsOnlyInstanceConstructors()
     {
         // Arrange
@@ -324,8 +308,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return empty enumerable when GetAllMembers returns no symbols.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllEvents_NoMembers_ReturnsEmptyEnumerable()
     {
         // Arrange
@@ -345,8 +327,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return empty enumerable when all members are non-event symbols.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllEvents_NoEventSymbols_ReturnsEmptyEnumerable()
     {
         // Arrange
@@ -375,8 +355,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return all symbols when every member is an IEventSymbol.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllEvents_AllEventSymbols_ReturnsAllSymbols()
     {
         // Arrange
@@ -407,8 +385,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return event symbols from implemented interfaces.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllEvents_WithInterfaceEvents_ReturnsEventsFromInterfaces()
     {
         // Arrange
@@ -445,8 +421,6 @@ public partial class ITypeSymbolExtensionsTests
     /// This test verifies the main logic on line 73.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Implements_TypeDoesNotImplementInterface_ReturnsFalse()
     {
         // Arrange
@@ -467,8 +441,6 @@ public partial class ITypeSymbolExtensionsTests
     /// This test verifies the behavior when AllInterfaces is empty.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Implements_TypeImplementsNoInterfaces_ReturnsFalse()
     {
         // Arrange
@@ -488,8 +460,6 @@ public partial class ITypeSymbolExtensionsTests
     /// This test verifies the behavior with multiple interfaces but none matching the target.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Implements_TypeImplementsMultipleInterfacesButNotTarget_ReturnsFalse()
     {
         // Arrange
@@ -512,8 +482,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return false and set typeArguments to empty array when type implements no interfaces.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ImplementsGeneric_TypeWithNoInterfaces_ReturnsFalseAndEmptyTypeArguments()
     {
         // Arrange
@@ -535,8 +503,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return empty enumerable when there are no members at all.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllProperties_NoMembers_ReturnsEmptyEnumerable()
     {
         // Arrange
@@ -560,8 +526,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return empty enumerable when all members are non-property symbols.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllProperties_OnlyNonPropertySymbols_ReturnsEmptyEnumerable()
     {
         // Arrange
@@ -592,8 +556,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return all symbols when every member is a property symbol.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllProperties_OnlyPropertySymbols_ReturnsAllSymbols()
     {
         // Arrange
@@ -628,8 +590,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase(1, 2, Description = "One property, multiple other symbols")]
     [TestCase(3, 4, Description = "Multiple properties, multiple other symbols")]
     [TestCase(2, 0, Description = "Only properties, no other symbols")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllProperties_MixedSymbolTypes_OnlyReturnsPropertySymbols(int propertyCount, int otherSymbolCount)
     {
         // Arrange
@@ -681,8 +641,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should work correctly even when context parameter is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllProperties_NullContext_WorksCorrectly()
     {
         // Arrange
@@ -716,8 +674,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return property symbols from implemented interfaces through GetAllMembers.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllProperties_WithInterfaceProperties_ReturnsPropertiesFromInterfaces()
     {
         // Arrange
@@ -758,8 +714,6 @@ public partial class ITypeSymbolExtensionsTests
     [TestCase(3, 4, Description = "Multiple methods, multiple other symbols")]
     [TestCase(5, 0, Description = "Only methods, no other symbols")]
     [TestCase(0, 0, Description = "No symbols at all")]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetAllMethods_VariousSymbolCombinations_ReturnsOnlyMethodSymbols(int methodCount, int otherSymbolCount)
     {
         // Arrange
@@ -820,8 +774,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return false and set typeArguments to empty array when type is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ImplementsGeneric_NullType_ReturnsFalseAndEmptyTypeArguments()
     {
         // Arrange
@@ -841,8 +793,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return false and set typeArguments to empty array when iface is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ImplementsGeneric_NullIface_ReturnsFalseAndEmptyTypeArguments()
     {
         // Arrange
@@ -862,8 +812,6 @@ public partial class ITypeSymbolExtensionsTests
     /// Should return false and set typeArguments to empty array when both parameters are null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ImplementsGeneric_BothParametersNull_ReturnsFalseAndEmptyTypeArguments()
     {
         // Arrange & Act
@@ -880,8 +828,6 @@ public partial class ITypeSymbolExtensionsTests
     /// This test verifies the null check behavior on line 71.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Implements_TypeIsNull_ReturnsFalse()
     {
         // Arrange
@@ -900,8 +846,6 @@ public partial class ITypeSymbolExtensionsTests
     /// This test verifies the null check behavior on line 71.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Implements_InterfaceIsNull_ReturnsFalse()
     {
         // Arrange
@@ -920,8 +864,6 @@ public partial class ITypeSymbolExtensionsTests
     /// This test verifies the null check behavior on line 71.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void Implements_BothParametersNull_ReturnsFalse()
     {
         // Arrange
@@ -930,6 +872,399 @@ public partial class ITypeSymbolExtensionsTests
 
         // Act
         var result = ITypeSymbolExtensions.Implements(nullType, nullInterface);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+
+    /// <summary>
+    /// Tests GetAllMethods when GetAllMembers returns no symbols.
+    /// Should return empty enumerable when there are no members at all.
+    /// </summary>
+    [Test]
+    public void GetAllMethods_NoMembers_ReturnsEmptyEnumerable()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var emptyMembers = new List<ISymbol>();
+
+        // Setup the extension method call by mocking the underlying GetAllMembers dependencies
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray<ISymbol>.Empty);
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllMethods(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Any());
+    }
+
+    /// <summary>
+    /// Tests GetAllMethods when GetAllMembers returns only non-method symbols.
+    /// Should return empty enumerable when all members are non-method symbols.
+    /// </summary>
+    [Test]
+    public void GetAllMethods_OnlyNonMethodSymbols_ReturnsEmptyEnumerable()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockProperty = new Mock<IPropertySymbol>();
+        var mockField = new Mock<IFieldSymbol>();
+        var mockEvent = new Mock<IEventSymbol>();
+
+        var nonMethodMembers = new List<ISymbol>
+        {
+            mockProperty.Object,
+            mockField.Object,
+            mockEvent.Object
+        };
+
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray.CreateRange(nonMethodMembers));
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllMethods(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Any());
+    }
+
+    /// <summary>
+    /// Tests GetAllMethods when GetAllMembers returns only method symbols.
+    /// Should return all symbols when every member is a method symbol.
+    /// </summary>
+    [Test]
+    public void GetAllMethods_OnlyMethodSymbols_ReturnsAllSymbols()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockMethod1 = new Mock<IMethodSymbol>();
+        var mockMethod2 = new Mock<IMethodSymbol>();
+        var mockMethod3 = new Mock<IMethodSymbol>();
+
+        var methodMembers = new List<ISymbol>
+        {
+            mockMethod1.Object,
+            mockMethod2.Object,
+            mockMethod3.Object
+        };
+
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray.CreateRange(methodMembers));
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllMethods(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultList = result.ToList();
+        Assert.AreEqual(3, resultList.Count);
+        Assert.Contains(mockMethod1.Object, resultList);
+        Assert.Contains(mockMethod2.Object, resultList);
+        Assert.Contains(mockMethod3.Object, resultList);
+    }
+
+    /// <summary>
+    /// Tests GetAllMethods with null context parameter.
+    /// Should work correctly even when context parameter is null.
+    /// </summary>
+    [Test]
+    public void GetAllMethods_NullContext_WorksCorrectly()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockMethod1 = new Mock<IMethodSymbol>();
+        var mockMethod2 = new Mock<IMethodSymbol>();
+        var mockProperty = new Mock<IPropertySymbol>();
+
+        var mixedMembers = new List<ISymbol>
+        {
+            mockMethod1.Object,
+            mockProperty.Object,
+            mockMethod2.Object
+        };
+
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray.CreateRange(mixedMembers));
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllMethods(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultList = result.ToList();
+        Assert.AreEqual(2, resultList.Count);
+        Assert.Contains(mockMethod1.Object, resultList);
+        Assert.Contains(mockMethod2.Object, resultList);
+    }
+
+    /// <summary>
+    /// Tests GetAllMethods with methods from interfaces to verify inheritance handling.
+    /// Should return method symbols from implemented interfaces through GetAllMembers.
+    /// </summary>
+    [Test]
+    public void GetAllMethods_WithInterfaceMethods_ReturnsMethodsFromInterfaces()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockInterface = new Mock<INamedTypeSymbol>();
+        var mockDirectMethod = new Mock<IMethodSymbol>();
+        var mockInterfaceMethod = new Mock<IMethodSymbol>();
+        var mockProperty = new Mock<IPropertySymbol>();
+
+        // Setup direct members
+        var directMembers = new List<ISymbol> { mockDirectMethod.Object, mockProperty.Object };
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray.CreateRange(directMembers));
+
+        // Setup interface members
+        var interfaceMembers = new List<ISymbol> { mockInterfaceMethod.Object };
+        mockInterface.Setup(i => i.GetMembers()).Returns(ImmutableArray.CreateRange(interfaceMembers));
+
+        // Setup interfaces
+        var interfaces = new List<INamedTypeSymbol> { mockInterface.Object };
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray.CreateRange(interfaces));
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllMethods(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultList = result.ToList();
+        Assert.AreEqual(2, resultList.Count);
+        Assert.Contains(mockDirectMethod.Object, resultList);
+        Assert.Contains(mockInterfaceMethod.Object, resultList);
+    }
+
+    /// <summary>
+    /// Tests GetAllMethods with valid context parameter.
+    /// Should work correctly when context parameter is provided.
+    /// </summary>
+    [Test]
+    public void GetAllMethods_WithValidContext_WorksCorrectly()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockMethod = new Mock<IMethodSymbol>();
+        var mockField = new Mock<IFieldSymbol>();
+
+        var members = new List<ISymbol> { mockMethod.Object, mockField.Object };
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray.CreateRange(members));
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllMethods(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultList = result.ToList();
+        Assert.AreEqual(1, resultList.Count);
+        Assert.Contains(mockMethod.Object, resultList);
+    }
+
+    /// <summary>
+    /// Tests GetAllFields when GetAllMembers returns no symbols.
+    /// Should return empty enumerable when there are no members at all.
+    /// </summary>
+    [Test]
+    public void GetAllFields_NoMembers_ReturnsEmptyEnumerable()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        mockSymbol.Setup(s => s.GetMembers()).Returns(ImmutableArray<ISymbol>.Empty);
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllFields(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Any());
+    }
+
+    /// <summary>
+    /// Tests GetAllFields when GetAllMembers returns only non-field symbols.
+    /// Should return empty enumerable when all members are non-field symbols.
+    /// </summary>
+    [Test]
+    public void GetAllFields_OnlyNonFieldSymbols_ReturnsEmptyEnumerable()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockMethod = new Mock<IMethodSymbol>();
+        var mockProperty = new Mock<IPropertySymbol>();
+        var mockEvent = new Mock<IEventSymbol>();
+
+        var nonFieldMembers = ImmutableArray.Create<ISymbol>(
+            mockMethod.Object,
+            mockProperty.Object,
+            mockEvent.Object
+        );
+
+        mockSymbol.Setup(s => s.GetMembers()).Returns(nonFieldMembers);
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllFields(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Any());
+    }
+
+    /// <summary>
+    /// Tests GetAllFields when GetAllMembers returns only field symbols.
+    /// Should return all symbols when every member is a field symbol.
+    /// </summary>
+    [Test]
+    public void GetAllFields_OnlyFieldSymbols_ReturnsAllSymbols()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockField1 = new Mock<IFieldSymbol>();
+        var mockField2 = new Mock<IFieldSymbol>();
+
+        var fieldMembers = ImmutableArray.Create<ISymbol>(
+            mockField1.Object,
+            mockField2.Object
+        );
+
+        mockSymbol.Setup(s => s.GetMembers()).Returns(fieldMembers);
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllFields(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var fields = result.ToList();
+        Assert.AreEqual(2, fields.Count);
+        Assert.Contains(mockField1.Object, fields);
+        Assert.Contains(mockField2.Object, fields);
+    }
+
+    /// <summary>
+    /// Tests GetAllFields with non-null context parameter.
+    /// Should work correctly when context parameter is not null.
+    /// </summary>
+    [Test]
+    public void GetAllFields_NonNullContext_WorksCorrectly()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockField1 = new Mock<IFieldSymbol>();
+        var mockField2 = new Mock<IFieldSymbol>();
+        var mockMethod = new Mock<IMethodSymbol>();
+
+        var mixedMembers = ImmutableArray.Create<ISymbol>(
+            mockField1.Object,
+            mockMethod.Object,
+            mockField2.Object
+        );
+
+        mockSymbol.Setup(s => s.GetMembers()).Returns(mixedMembers);
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(ImmutableArray<INamedTypeSymbol>.Empty);
+
+        // Act - passing null for context since SourceGenContext is internal and cannot be mocked
+        var result = ITypeSymbolExtensions.GetAllFields(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var fields = result.ToList();
+        Assert.AreEqual(2, fields.Count);
+        Assert.Contains(mockField1.Object, fields);
+        Assert.Contains(mockField2.Object, fields);
+    }
+
+    /// <summary>
+    /// Tests GetAllFields with fields from interfaces to verify inheritance handling.
+    /// Should return field symbols from implemented interfaces through GetAllMembers.
+    /// </summary>
+    [Test]
+    public void GetAllFields_WithInterfaceFields_ReturnsFieldsFromInterfaces()
+    {
+        // Arrange
+        var mockSymbol = new Mock<ITypeSymbol>();
+        var mockInterface = new Mock<INamedTypeSymbol>();
+        var mockInterfaceField = new Mock<IFieldSymbol>();
+        var mockDirectField = new Mock<IFieldSymbol>();
+
+        // Setup direct members
+        var directMembers = ImmutableArray.Create<ISymbol>(mockDirectField.Object);
+        mockSymbol.Setup(s => s.GetMembers()).Returns(directMembers);
+
+        // Setup interface members
+        var interfaceMembers = ImmutableArray.Create<ISymbol>(mockInterfaceField.Object);
+        mockInterface.Setup(i => i.GetMembers()).Returns(interfaceMembers);
+
+        // Setup interfaces collection
+        var interfaces = ImmutableArray.Create(mockInterface.Object);
+        mockSymbol.Setup(s => s.AllInterfaces).Returns(interfaces);
+
+        // Act
+        var result = ITypeSymbolExtensions.GetAllFields(mockSymbol.Object, null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var fields = result.ToList();
+        Assert.AreEqual(2, fields.Count);
+        Assert.Contains(mockDirectField.Object, fields);
+        Assert.Contains(mockInterfaceField.Object, fields);
+    }
+
+    /// <summary>
+    /// Tests that InheritsFrom returns false when type parameter is null.
+    /// This test verifies the null check behavior on line 66.
+    /// </summary>
+    [Test]
+    public void InheritsFrom_TypeIsNull_ReturnsFalse()
+    {
+        // Arrange
+        ITypeSymbol nullType = null;
+        var mockBaseType = new Mock<ITypeSymbol>();
+        SourceGenContext mockContext = null;
+
+        // Act
+        var result = ITypeSymbolExtensions.InheritsFrom(nullType, mockBaseType.Object, mockContext);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    /// <summary>
+    /// Tests that InheritsFrom returns false when baseType parameter is null.
+    /// This test verifies the null check behavior on line 66.
+    /// </summary>
+    [Test]
+    public void InheritsFrom_BaseTypeIsNull_ReturnsFalse()
+    {
+        // Arrange
+        var mockType = new Mock<ITypeSymbol>();
+        ITypeSymbol nullBaseType = null;
+        SourceGenContext nullContext = null;
+
+        // Act
+        var result = ITypeSymbolExtensions.InheritsFrom(mockType.Object, nullBaseType, nullContext);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    /// <summary>
+    /// Tests that InheritsFrom returns false when both type and baseType parameters are null.
+    /// This test verifies the null check behavior on line 66.
+    /// </summary>
+    [Test]
+    public void InheritsFrom_BothParametersNull_ReturnsFalse()
+    {
+        // Arrange
+        ITypeSymbol nullType = null;
+        ITypeSymbol nullBaseType = null;
+
+        // Act
+        var result = ITypeSymbolExtensions.InheritsFrom(nullType, nullBaseType, null);
 
         // Assert
         Assert.IsFalse(result);

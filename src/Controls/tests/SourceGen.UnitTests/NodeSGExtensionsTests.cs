@@ -32,8 +32,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle null parentNode gracefully and not throw an exception.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void IsCollectionItem_NullParentNode_ReturnsFalse()
     {
         // Arrange
@@ -50,8 +48,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle null node gracefully and return false.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void IsCollectionItem_NullNode_ReturnsFalse()
     {
         // Arrange
@@ -70,8 +66,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle both null parameters gracefully and return false.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void IsCollectionItem_BothParametersNull_ReturnsFalse()
     {
         // Arrange
@@ -89,8 +83,6 @@ public partial class NodeSGExtensionsTests
     /// This test covers the uncovered line 77 in the source code.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void IsCollectionItem_ParentNodeNotIListNode_ReturnsFalse()
     {
         // Arrange
@@ -107,8 +99,6 @@ public partial class NodeSGExtensionsTests
     /// Should return false when CollectionItems is empty.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void IsCollectionItem_ParentListEmpty_ReturnsFalse()
     {
         // Arrange
@@ -127,8 +117,6 @@ public partial class NodeSGExtensionsTests
     /// Should return false when the node is not found among multiple CollectionItems.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void IsCollectionItem_ParentListWithMultipleItemsDoesNotContainNode_ReturnsFalse()
     {
         // Arrange
@@ -155,8 +143,6 @@ public partial class NodeSGExtensionsTests
     /// Should throw ArgumentNullException when context is null.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ConvertTo_NullContext_ThrowsArgumentNullException()
     {
         // Arrange
@@ -172,8 +158,6 @@ public partial class NodeSGExtensionsTests
     /// Should throw ArgumentNullException when toType is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertTo_NullToType_ThrowsArgumentNullException()
     {
         // Arrange
@@ -189,8 +173,6 @@ public partial class NodeSGExtensionsTests
     /// Should use the known converter and return the converted value.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertTo_TypeConverterInKnownConvertersWithValidConversion_UsesKnownConverter()
     {
         // Arrange
@@ -225,8 +207,6 @@ public partial class NodeSGExtensionsTests
     /// Should pass parentVar to the converter delegate correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertTo_WithParentVar_PassesParentVarToConverter()
     {
         // Arrange
@@ -262,8 +242,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle empty string value correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertTo_EmptyStringValue_HandlesCorrectly()
     {
         // Arrange
@@ -286,8 +264,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle whitespace-only string value correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertTo_WhitespaceOnlyValue_HandlesCorrectly()
     {
         // Arrange
@@ -310,8 +286,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle very long string value correctly.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertTo_VeryLongStringValue_HandlesCorrectly()
     {
         // Arrange
@@ -352,8 +326,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_SByteNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -372,8 +344,6 @@ public partial class NodeSGExtensionsTests
     [TestCase("127", "(sbyte)127")]
     [TestCase("-128", "(sbyte)-128")]
     [TestCase("0", "(sbyte)0")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_SByteValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -391,8 +361,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_ByteNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -410,8 +378,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("255", "(byte)255")]
     [TestCase("0", "(byte)0")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_ByteValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -429,8 +395,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_Int16NullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -448,8 +412,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("32767", "(short)32767")]
     [TestCase("-32768", "(short)-32768")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_Int16ValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -467,8 +429,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UInt16NullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -486,8 +446,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("65535", "(short)65535")]
     [TestCase("0", "(short)0")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UInt16ValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -505,8 +463,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UInt32NullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -524,8 +480,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("4294967295", "4294967295U")]
     [TestCase("0", "0U")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UInt32ValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -543,8 +497,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_Int64NullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -562,8 +514,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("9223372036854775807", "9223372036854775807L")]
     [TestCase("0", "0L")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_Int64ValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -581,8 +531,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UInt64NullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -600,8 +548,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("18446744073709551615", "18446744073709551615UL")]
     [TestCase("0", "0UL")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UInt64ValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -619,8 +565,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_SingleNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -638,8 +582,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("3.14", "3.14F")]
     [TestCase("0", "0F")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_SingleValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -657,8 +599,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_DoubleNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -676,8 +616,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("3.14159", "3.14159D")]
     [TestCase("0", "0D")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_DoubleValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -695,8 +633,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_BooleanNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -716,8 +652,6 @@ public partial class NodeSGExtensionsTests
     [TestCase("false", "false")]
     [TestCase("True", "true")]
     [TestCase("False", "false")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_BooleanValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -735,8 +669,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_CharNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -755,8 +687,6 @@ public partial class NodeSGExtensionsTests
     [TestCase("a", "'a'")]
     [TestCase("Z", "'Z'")]
     [TestCase("0", "'0'")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_CharValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -774,8 +704,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_DateTimeNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -792,8 +720,6 @@ public partial class NodeSGExtensionsTests
     /// Should return properly formatted DateTime constructor call.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_DateTimeValidValue_ReturnsFormattedConstructor()
     {
         // Arrange
@@ -813,8 +739,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_DecimalNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -832,8 +756,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase("123.45", "123.45M")]
     [TestCase("0", "0M")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_DecimalValidValues_ReturnsFormattedLiteral(string valueString, string expected)
     {
         // Arrange
@@ -851,8 +773,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_EnumNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -870,8 +790,6 @@ public partial class NodeSGExtensionsTests
     /// Should return properly formatted enum member access.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_EnumSingleValue_ReturnsFormattedEnumAccess()
     {
         // Arrange
@@ -891,8 +809,6 @@ public partial class NodeSGExtensionsTests
     /// </summary>
     [TestCase(null)]
     [TestCase("")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_TimeSpanNullOrEmpty_ReturnsDefault(string? valueString)
     {
         // Arrange
@@ -913,8 +829,6 @@ public partial class NodeSGExtensionsTests
     /// Should return properly formatted TimeSpan constructor call.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_TimeSpanValidValue_ReturnsFormattedConstructor()
     {
         // Arrange
@@ -936,8 +850,6 @@ public partial class NodeSGExtensionsTests
     /// Should return the string as a literal.
     /// </summary>
     [Test]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
-    [Category("auto-generated")]
     public void ValueForLanguagePrimitive_UnknownType_ReturnsStringLiteral()
     {
         // Arrange
@@ -962,8 +874,6 @@ public partial class NodeSGExtensionsTests
     /// Should return conversion code with direct cast.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertWithConverter_StringValueIExtendedTypeConverterValueType_ReturnsDirectCast()
     {
         // Arrange
@@ -988,8 +898,6 @@ public partial class NodeSGExtensionsTests
     /// Should return conversion code with direct cast and null-forgiving operator.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertWithConverter_RegularTypeConverterValueType_ReturnsDirectCastWithNullForgiving()
     {
         // Arrange
@@ -1010,8 +918,6 @@ public partial class NodeSGExtensionsTests
     /// Should return conversion code with 'as' cast.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertWithConverter_NullableAnnotatedTargetType_ReturnsAsConversion()
     {
         // Arrange
@@ -1032,8 +938,6 @@ public partial class NodeSGExtensionsTests
     /// Should convert value to string before processing.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertWithConverter_NonStringValue_ConvertsToString()
     {
         // Arrange
@@ -1054,8 +958,6 @@ public partial class NodeSGExtensionsTests
     /// Should process conversion normally regardless of parentVar value.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void ConvertWithConverter_WithParentVar_ProcessesNormally()
     {
         // Arrange
@@ -1077,8 +979,6 @@ public partial class NodeSGExtensionsTests
     /// Should throw an exception when property name has more than 2 parts separated by dots.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBindableProperty_InvalidPropertyNameFormat_ThrowsException()
     {
         // Arrange
@@ -1100,8 +1000,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle empty string appropriately.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBindableProperty_EmptyPropertyValue_HandlesEmptyString()
     {
         // Arrange
@@ -1120,8 +1018,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle whitespace-only strings appropriately.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBindableProperty_WhitespacePropertyValue_HandlesWhitespace()
     {
         // Arrange
@@ -1141,8 +1037,6 @@ public partial class NodeSGExtensionsTests
     /// Should handle multiple consecutive dots in property names.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void GetBindableProperty_MultipleConsecutiveDots_HandlesDotSeparation()
     {
         // Arrange
@@ -1164,8 +1058,6 @@ public partial class NodeSGExtensionsTests
     /// Should return false when the field name ends with Property but no getter is found.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void CanConvertTo_FieldNameEndsWithPropertyButNoGetter_ReturnsFalse()
     {
         // Arrange
@@ -1190,8 +1082,6 @@ public partial class NodeSGExtensionsTests
     /// Should throw ArgumentNullException when valueNode is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void CanConvertTo_NullValueNode_ThrowsArgumentNullException()
     {
         // Arrange
@@ -1207,8 +1097,6 @@ public partial class NodeSGExtensionsTests
     /// Should throw ArgumentNullException when bpFieldSymbol is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void CanConvertTo_NullFieldSymbol_ThrowsArgumentNullException()
     {
         // Arrange
@@ -1225,8 +1113,6 @@ public partial class NodeSGExtensionsTests
     /// Should throw ArgumentNullException when context is null.
     /// </summary>
     [Test]
-    [Category("auto-generated")]
-    [Author("Code Testing Agent 0.4.133-alpha+a413c4336c")]
     public void CanConvertTo_NullContext_ThrowsArgumentNullException()
     {
         // Arrange
