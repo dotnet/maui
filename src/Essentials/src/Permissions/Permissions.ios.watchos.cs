@@ -199,19 +199,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsWatchOSVersionAtLeast(4, 0))
 				{
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
-					switch (CMMotionActivityManager.AuthorizationStatus)
-					{
-						case CMAuthorizationStatus.Authorized:
-							return PermissionStatus.Granted;
-						case CMAuthorizationStatus.Denied:
-							return PermissionStatus.Denied;
-						case CMAuthorizationStatus.NotDetermined:
-							return PermissionStatus.Unknown;
-						case CMAuthorizationStatus.Restricted:
-							return PermissionStatus.Restricted;
-					}
-#pragma warning restore CA1416
+					return ConvertAuthorizationStatus(CMMotionActivityManager.AuthorizationStatus);
 				}
 
 				return PermissionStatus.Unknown;
@@ -227,6 +215,19 @@ namespace Microsoft.Maui.ApplicationModel
 					if (results != null)
 						return PermissionStatus.Granted;
 				}
+				catch (NSErrorException)
+				{
+					// Fall back to checking the authorization status directly when QueryActivityAsync fails.
+					// This can happen for several reasons:
+					// 1. Motion & Fitness permission has been denied by the user
+					// 2. The device doesn't support motion activity tracking (rare but possible)
+					// 3. System restrictions prevent access to motion data
+					// 4. Network or system errors during the query operation
+					// By falling back to AuthorizationStatus, we can still provide accurate permission
+					// state information even when the query method fails, ensuring the permission
+					// request flow completes properly and returns the correct PermissionStatus.
+					return ConvertAuthorizationStatus(CMMotionActivityManager.AuthorizationStatus);
+				}
 				catch (Exception ex)
 				{
 					Debug.WriteLine("Unable to query activity manager: " + ex.Message);
@@ -234,6 +235,18 @@ namespace Microsoft.Maui.ApplicationModel
 				}
 
 				return PermissionStatus.Unknown;
+			}
+
+			private static PermissionStatus ConvertAuthorizationStatus(CMAuthorizationStatus status)
+			{
+				return status switch
+				{
+					CMAuthorizationStatus.Authorized => PermissionStatus.Granted,
+					CMAuthorizationStatus.Denied => PermissionStatus.Denied,
+					CMAuthorizationStatus.NotDetermined => PermissionStatus.Unknown,
+					CMAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+					_ => PermissionStatus.Unknown,
+				};
 			}
 		}
 
