@@ -47,6 +47,7 @@ public class Bugzilla43663 : TestNavigationPage
 		};
 
 		var modalPage = new ContentPage();
+		modalPage.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		modalPage.Content = new StackLayout
 		{
 			Children =

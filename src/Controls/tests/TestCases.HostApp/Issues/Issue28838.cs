@@ -19,6 +19,7 @@ public class Issue28838Tab1 : ContentPage
 {
 	public Issue28838Tab1()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Title = "Tab 1";
 		var verticalStackLayout = new VerticalStackLayout
 		{
@@ -40,6 +41,7 @@ public class Issue28838Tab2 : ContentPage
 {
 	public Issue28838Tab2()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Title = "Tab 2";
 		var verticalStackLayout = new VerticalStackLayout
 		{
@@ -59,6 +61,7 @@ public class Issue28838Tab3 : ContentPage
 {
 	public Issue28838Tab3()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Title = "Tab 3";
 		var verticalStackLayout = new VerticalStackLayout
 		{

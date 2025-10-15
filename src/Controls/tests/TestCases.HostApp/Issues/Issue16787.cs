@@ -35,7 +35,7 @@
 					Text = "The value below this label should be a 1. That's how many times the BindingContext has changed on the Templated element"
 				}
 			};
-
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = cv;
 		}
 

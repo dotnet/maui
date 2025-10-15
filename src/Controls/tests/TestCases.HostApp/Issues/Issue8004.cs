@@ -47,7 +47,7 @@
 			grid.Children.Add(label);
 			grid.Children.Add(_boxView);
 			grid.Children.Add(button);
-
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = grid;
 		}
 

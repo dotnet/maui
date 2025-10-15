@@ -7,6 +7,7 @@ public class Issue29661 : ContentPage
 {
 	public Issue29661()
 	{
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		var label = new Label
 		{
 			Text = "Test for Border with StrokeDashArray",
