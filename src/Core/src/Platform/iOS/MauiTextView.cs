@@ -146,7 +146,9 @@ namespace Microsoft.Maui.Platform
 				var height = Frame.Height - (TextContainerInset.Top + TextContainerInset.Bottom);
 
 				_placeholderLabel.Frame = new CGRect(x, y, width, height);
-			}
+				 _placeholderLabel.SemanticContentAttribute = SemanticContentAttribute;
+				 _placeholderLabel.TextAlignment = TextAlignment;
+			};
 		}
 
 		void HidePlaceholderIfTextIsPresent(string? value)
