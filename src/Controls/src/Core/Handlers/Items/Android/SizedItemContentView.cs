@@ -36,11 +36,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (Content.VirtualView.Handler is IPlatformViewHandler pvh)
 			{
-				var widthSpec = Context.CreateMeasureSpec(targetWidth,
+				var (widthSpec, _, _) = Context.CreateMeasureSpec(targetWidth,
 					double.IsInfinity(targetWidth) ? double.NaN : targetWidth
 					, minimumSize: double.NaN, maximumSize: targetWidth);
 
-				var heightSpec = Context.CreateMeasureSpec(targetHeight, double.IsInfinity(targetHeight) ? double.NaN : targetHeight
+				var (heightSpec, _, _) = Context.CreateMeasureSpec(targetHeight, double.IsInfinity(targetHeight) ? double.NaN : targetHeight
 					, minimumSize: double.NaN, maximumSize: targetHeight);
 
 				var size = pvh.MeasureVirtualView(widthSpec, heightSpec);
