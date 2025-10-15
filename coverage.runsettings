@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- File name extension must be .runsettings -->
 <RunSettings>
   <DataCollectionRunSettings>
-    <DataCollectionProviders>
-      <DataCollectionProvider friendlyName="Code Coverage">
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" assemblyQualifiedName="Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector, Microsoft.VisualStudio.TraceCollector, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
         <Configuration>
-          <Module>
-            <Exclude>
-              <Module name="*" />
-            </Exclude>
-            <Include>
-              <Module name="Microsoft.Maui*.dll" />
-            </Include>
-          </Module>
+          <CodeCoverage>
+            <!-- Match assembly file paths: -->
+            <!-- Only include Microsoft.Maui assemblies for code coverage -->
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*Microsoft\.Maui.*\.dll$</ModulePath>
+              </Include>
+            </ModulePaths>
+          </CodeCoverage>
         </Configuration>
-      </DataCollectionProvider>
-    </DataCollectionProviders>
+      </DataCollector>
+    </DataCollectors>
   </DataCollectionRunSettings>
 </RunSettings>
