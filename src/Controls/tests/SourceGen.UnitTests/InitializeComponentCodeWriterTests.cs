@@ -21,20 +21,20 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 [TestFixture]
 public partial class InitializeComponentCodeWriterTests
 {
-    /// <summary>
-    /// Tests GeneratedCodeAttribute property returns correctly formatted attribute string.
-    /// Should include assembly full name and version in the generated code attribute.
-    /// </summary>
-    [Test]
-    public void GeneratedCodeAttribute_ReturnsFormattedAttributeString()
-    {
-        // Act
-        var result = InitializeComponentCodeWriter.GeneratedCodeAttribute;
+	/// <summary>
+	/// Tests GeneratedCodeAttribute property returns correctly formatted attribute string.
+	/// Should include assembly full name and version in the generated code attribute.
+	/// </summary>
+	[Test]
+	public void GeneratedCodeAttribute_ReturnsFormattedAttributeString()
+	{
+		// Act
+		var result = InitializeComponentCodeWriter.GeneratedCodeAttribute;
 
-        // Assert
-        Assert.That(result, Does.StartWith("[global::System.CodeDom.Compiler.GeneratedCodeAttribute("));
-        Assert.That(result, Does.Contain("Microsoft.Maui.Controls.SourceGen"));
-        Assert.That(result, Does.EndWith("\")]"));
-    }
+		// Assert
+		Assert.That(result, Does.StartWith("[global::System.CodeDom.Compiler.GeneratedCodeAttribute("));
+		Assert.That(result, Does.Contain("Microsoft.Maui.Controls.SourceGen"));
+		Assert.That(result, Does.EndWith("\")]"));
+	}
 
 }

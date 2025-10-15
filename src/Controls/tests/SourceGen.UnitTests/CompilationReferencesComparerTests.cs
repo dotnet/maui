@@ -16,28 +16,28 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 [TestFixture]
 public class CompilationReferencesComparerTests
 {
-    private CompilationReferencesComparer _comparer = null!;
+	private CompilationReferencesComparer _comparer = null!;
 
-    [SetUp]
-    public void SetUp()
-    {
-        _comparer = new CompilationReferencesComparer();
-    }
+	[SetUp]
+	public void SetUp()
+	{
+		_comparer = new CompilationReferencesComparer();
+	}
 
-    /// <summary>
-    /// Tests that GetHashCode throws ArgumentNullException when the compilation parameter is null.
-    /// Verifies proper null parameter validation.
-    /// Expected result: ArgumentNullException is thrown.
-    /// </summary>
-    [Test]
-    [Category("ProductionBugSuspected")]
-    public void GetHashCode_NullCompilation_ThrowsArgumentNullException()
-    {
-        // Arrange
-        Compilation nullCompilation = null!;
+	/// <summary>
+	/// Tests that GetHashCode throws ArgumentNullException when the compilation parameter is null.
+	/// Verifies proper null parameter validation.
+	/// Expected result: ArgumentNullException is thrown.
+	/// </summary>
+	[Test]
+	[Category("ProductionBugSuspected")]
+	public void GetHashCode_NullCompilation_ThrowsArgumentNullException()
+	{
+		// Arrange
+		Compilation nullCompilation = null!;
 
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => _comparer.GetHashCode(nullCompilation));
-    }
+		// Act & Assert
+		Assert.Throws<ArgumentNullException>(() => _comparer.GetHashCode(nullCompilation));
+	}
 
 }
