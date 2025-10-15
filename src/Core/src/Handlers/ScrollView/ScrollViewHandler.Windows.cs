@@ -168,37 +168,34 @@ namespace Microsoft.Maui.Handlers
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			var scrollView = VirtualView;
+			if (VirtualView is not { } scrollView)
+			{
+				return Size.Zero;
+			}
 
 			var padding = scrollView.Padding;
-			var presentedContent = scrollView.PresentedContent;
 
-			if (presentedContent == null)
+			if (scrollView.PresentedContent == null)
 			{
 				return new Size(padding.HorizontalThickness, padding.VerticalThickness);
 			}
 
-			// Exclude the padding while measuring the internal content ...
-			var measurementWidth = widthConstraint - padding.HorizontalThickness;
-			var measurementHeight = heightConstraint - padding.VerticalThickness;
-
-			var result = (scrollView as ICrossPlatformLayout).CrossPlatformMeasure(measurementWidth, measurementHeight);
-
-			// ... and add the padding back in to the final result
-			var fullSize = new Size(result.Width + padding.HorizontalThickness, result.Height + padding.VerticalThickness);
+			var scrollOrientation = scrollView.Orientation;
+			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
+			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
+			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint, !double.IsInfinity(contentWidthConstraint), !double.IsInfinity(contentHeightConstraint));
 
 			if (double.IsInfinity(widthConstraint))
 			{
-				widthConstraint = result.Width;
+				widthConstraint = contentSize.Width;
 			}
 
 			if (double.IsInfinity(heightConstraint))
 			{
-				heightConstraint = result.Height;
+				heightConstraint = contentSize.Height;
 			}
 
-			// If the presented content has LayoutAlignment Fill, we'll need to adjust the measurement to account for that
-			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
+			return contentSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
