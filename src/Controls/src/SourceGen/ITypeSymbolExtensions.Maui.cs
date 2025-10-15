@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -66,5 +67,43 @@ static partial class ITypeSymbolExtensions
 
 		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
 		return (getter.ReturnType, typeConverter);
+	}
+
+	public static bool IsValueProvider(this ITypeSymbol variableType, SourceGenContext context,
+			out ITypeSymbol returnType,
+			out ITypeSymbol? iface,
+			out bool acceptEmptyServiceProvider,
+			out ImmutableArray<ITypeSymbol>? requiredServices)
+	{
+		returnType = context.Compilation.ObjectType;
+
+		iface = null;
+		acceptEmptyServiceProvider = false;
+		requiredServices = null;
+
+		if (variableType.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
+		{
+			//HACK waiting for the ValueProvider to be compiled
+			if (variableType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!, context))
+				returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!;
+		}
+		else if (variableType.ImplementsGeneric(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
+		{
+			iface = ((INamedTypeSymbol)iface).Construct(typeArg[0]);
+			returnType = typeArg[0];
+		}
+		else if (variableType.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension")!))
+		{
+		}
+		else
+			return false;
+
+		var requireServiceAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RequireServiceAttribute")!;
+		requiredServices = variableType.GetAttributes(requireServiceAttribute).FirstOrDefault()?.ConstructorArguments[0].Values.Where(ca => ca.Value is ITypeSymbol).Select(ca => (ca.Value as ITypeSymbol)!).ToImmutableArray() ?? null;
+
+		var acceptEmptyServiceProviderAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AcceptEmptyServiceProviderAttribute")!;
+		acceptEmptyServiceProvider = variableType.GetAttributes(acceptEmptyServiceProviderAttribute).Any();
+
+		return true;
 	}
 }
