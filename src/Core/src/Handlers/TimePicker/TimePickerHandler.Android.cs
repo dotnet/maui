@@ -164,7 +164,6 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 
 				// Recreate dialog with current values to handle orientation change
-				// This is necessary because Android dialogs don't automatically adapt to orientation changes
 				ShowPickerDialog(_currentHour, _currentMinute);
 			}
 		}
