@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 30575, "FlowDirection RightToLeft causes mirrored content in WebView", PlatformAffected.UWP, isInternetRequired: true)]
+[Issue(IssueTracker.Github, 30575, "FlowDirection RightToLeft causes mirrored content in WebView", PlatformAffected.UWP)]
 public class Issue30575 : ContentPage
 {
 	public Issue30575()
