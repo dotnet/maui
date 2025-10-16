@@ -31,7 +31,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var platformView = view.ToPlatform();
 			ContentView.AddSubview(platformView);
 			platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+
+			platformView.IsAccessibilityElement = true;
+
 			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
+
+			// Also set Button trait on the cell itself
+			this.AccessibilityTraits |= UIAccessibilityTrait.Button;
 
 			var margin = view.Margin;
 			var constraints = new NSLayoutConstraint[]

@@ -86,6 +86,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 			}
 
+			TableView.AccessibilityTraits = UIAccessibilityTrait.None;
+
+			TableView.AccessibilityLabel = StringResources.NavigationFlyoutMenuLabel;
+			TableView.AccessibilityValue = StringResources.NavigationFlyoutMenuValue;
+			TableView.AccessibilityHint = StringResources.NavigationFlyoutMenuHint;
+			TableView.IsAccessibilityElement = false;
+			TableView.AccessibilityElementsHidden = false;
+
 			TableView.Source = _source;
 			ShellFlyoutContentManager.ViewDidLoad();
 		}
