@@ -35,12 +35,18 @@ public partial class FlexLayoutControlMainPage : ContentPage
 
     private void AddChildButton_Clicked(object sender, EventArgs e)
     {
-        for (int i = 0; i < 3; i++)
+        int n;
+#if MACCATALYST || WINDOWS
+        n = 15;
+#else
+        n = 3;
+#endif
+        for (int i = 0; i < n; i++)
         {
             var newBorder = new Border
             {
                 AutomationId = $"Child{_boxCounter}",
-                BackgroundColor = ExtraColors[i],
+                BackgroundColor = ExtraColors[i % 3],
                 StrokeThickness = 0,
                 StrokeShape = new RoundRectangle { CornerRadius = 8 }
             };
@@ -67,7 +73,13 @@ public partial class FlexLayoutControlMainPage : ContentPage
 
     private void RemoveChildButton_Clicked(object sender, EventArgs e)
     {
-        for (int i = 0; i < 3; i++)
+        int n;
+#if MACCATALYST || WINDOWS
+        n = 15;
+#else
+        n = 3;
+#endif
+        for (int i = 0; i < n; i++)
         {
             if (MainFlexLayout.Children.Count > 0)
             {

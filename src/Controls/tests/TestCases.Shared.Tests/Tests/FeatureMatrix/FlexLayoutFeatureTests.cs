@@ -334,8 +334,10 @@ public class FlexLayoutFeatureTests : UITest
     [Test, Order(20)]
     public void FlexLayout_DirectionColumn()
     {
+#if ANDROID || IOS
         App.WaitForElement("RemoveChildrenButton");
         App.Tap("RemoveChildrenButton");
+#endif
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("DirectionColumnButton");
@@ -364,8 +366,10 @@ public class FlexLayoutFeatureTests : UITest
     [Test, Order(22)]
     public void FlexLayout_JustifyContentCenter()
     {
+#if ANDROID || IOS
         App.WaitForElement("AddChildrenButton");
         App.Tap("AddChildrenButton");
+#endif
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("JustifyContentCenterButton");
@@ -516,6 +520,10 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("HeightAndWidthRequestButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+#if MACCATALYST || WINDOWS
+        App.WaitForElement("AddChildrenButton");
+        App.Tap("AddChildrenButton");
+#endif
         App.WaitForElementTillPageNavigationSettled("ChildShrinkLabel");
         Assert.That(App.FindElement("ChildShrinkLabel").GetText(), Is.EqualTo("10"));
         VerifyScreenshot();
@@ -524,6 +532,10 @@ public class FlexLayoutFeatureTests : UITest
     [Test, Order(33)]
     public void FlexLayout_Child1Order()
     {
+#if MACCATALYST || WINDOWS
+        App.WaitForElement("RemoveChildrenButton");
+        App.Tap("RemoveChildrenButton");
+#endif
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("Child1OrderEntry");
@@ -641,8 +653,10 @@ public class FlexLayoutFeatureTests : UITest
     [Test, Order(40)]
     public void FlexLayout_BasisAuto_DirectionColumn()
     {
+#if ANDROID || IOS
         App.WaitForElement("RemoveChildrenButton");
         App.Tap("RemoveChildrenButton");
+#endif
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("DirectionColumnButton");
@@ -683,6 +697,10 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("DirectionColumnButton");
         App.WaitForElement("Child1BasisPercent50Button");
         App.Tap("Child1BasisPercent50Button");
+#if MACCATALYST || WINDOWS
+        App.WaitForElement("SpecificHeightButton");
+        App.Tap("SpecificHeightButton");
+#endif
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
@@ -734,6 +752,10 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("DirectionColumnReverseButton");
         App.WaitForElement("Child1BasisPercent50Button");
         App.Tap("Child1BasisPercent50Button");
+#if MACCATALYST || WINDOWS
+        App.WaitForElement("SpecificHeightButton");
+        App.Tap("SpecificHeightButton");
+#endif
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
