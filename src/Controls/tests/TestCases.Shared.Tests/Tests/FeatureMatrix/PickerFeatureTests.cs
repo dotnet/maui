@@ -4,19 +4,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class PickerFeatureTests : UITest
+	public class PickerFeatureTests : _GalleryUITest
 	{
 		public const string PickerFeatureMatrix = "Picker Feature Matrix";
+		public override string GalleryPageName => PickerFeatureMatrix;
 
 		public PickerFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(PickerFeatureMatrix);
 		}
 
 		public void VerifyPickerScreenshot()

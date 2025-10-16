@@ -6,9 +6,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class IndicatorViewFeatureTests : UITest
+public class IndicatorViewFeatureTests : _GalleryUITest
 {
 	private const string IndicatorViewFeatureMatrix = "IndicatorView Feature Matrix";
+	public override string GalleryPageName => IndicatorViewFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string IndicatorColorBrownButton = "IndicatorColorBrownButton";
@@ -36,12 +37,6 @@ public class IndicatorViewFeatureTests : UITest
 	public IndicatorViewFeatureTests(TestDevice device)
 	: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(IndicatorViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]

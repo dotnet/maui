@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public const string EditorGallery = "Editor Gallery";
 
+		public override string GalleryPageName => EditorGallery;
+
 		public EditorUITests(TestDevice device)
 			: base(device)
 		{

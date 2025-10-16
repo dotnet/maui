@@ -5,19 +5,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class TwoPaneViewFeatureTests : UITest
+	public class TwoPaneViewFeatureTests : _GalleryUITest
 	{
 		public const string TwoPaneViewFeatureMatrix = "TwoPaneView Feature Matrix";
+		public override string GalleryPageName => TwoPaneViewFeatureMatrix;
 
 		public TwoPaneViewFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(TwoPaneViewFeatureMatrix);
 		}
 
 		// The test cases below are divided based on platform-specific UI behaviors and layout logic.
