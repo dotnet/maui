@@ -14,7 +14,7 @@
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.Extended" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
+  <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftCodeCoveragePackageVersion)" />
     <PackageReference Include="Svg.Skia" />
   </ItemGroup>
 
