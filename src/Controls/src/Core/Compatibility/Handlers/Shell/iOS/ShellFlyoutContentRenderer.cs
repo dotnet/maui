@@ -226,6 +226,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillLayoutSubviews();
 			UpdateFooterPosition();
 			UpdateFlyoutContent();
+			// Whenever the layout changes, the background needs to be redrawn to match the new view dimensions. This is especially important for gradients.
+			UpdateBackground();
 		}
 
 		protected virtual void UpdateBackground()
@@ -337,7 +339,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uIViews[BlurIndex] = _blurView;
 			_uIViews[BackgroundImageIndex] = _bgImage;
 
-			UpdateBackground();
 			UpdateFlowDirection();
 		}
 
