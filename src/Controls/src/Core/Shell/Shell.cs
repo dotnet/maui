@@ -1229,13 +1229,13 @@ namespace Microsoft.Maui.Controls
 			HashSet<string> routes = new HashSet<string>();
 
 			var flyoutItems = FlyoutItems;
-			foreach (var item in flyoutItems)
+			foreach (var flyoutItem in flyoutItems)
 			{
-				if (item is IEnumerable enumerable)
+				if (flyoutItem is IEnumerable enumerableItem)
 				{
-					foreach (var inner in enumerable)
+					foreach (var innerItem in enumerableItem)
 					{
-						if (inner is ShellItem shellItem && shellItem.CurrentItem != null)
+						if (innerItem is ShellItem shellItem && shellItem.CurrentItem != null)
 						{
 							var route = shellItem.CurrentItem.Route;
 							if (!string.IsNullOrEmpty(route) && !routes.Add(route))
