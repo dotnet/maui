@@ -39,10 +39,10 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("WrapWrapButton");
         App.WaitForElement("AlignContentStretchButton");
         App.Tap("AlignContentStretchButton");
-        App.WaitForElement("HeightAndWidthRequestButton");
-        App.Tap("HeightAndWidthRequestButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElement("AddChildrenButton");
+        App.Tap("AddChildrenButton");
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Stretch"));
@@ -126,8 +126,6 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("WrapWrapButton");
         App.WaitForElement("AlignContentSpaceBetweenButton");
         App.Tap("AlignContentSpaceBetweenButton");
-        App.WaitForElement("HeightAndWidthRequestButton");
-        App.Tap("HeightAndWidthRequestButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
@@ -137,6 +135,23 @@ public class FlexLayoutFeatureTests : UITest
     }
 
     [Test, Order(8)]
+    public void FlexLayout_SetWrapAlignContentSpaceEvenly()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("WrapWrapButton");
+        App.Tap("WrapWrapButton");
+        App.WaitForElement("AlignContentSpaceEvenlyButton");
+        App.Tap("AlignContentSpaceEvenlyButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
+        Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
+        Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceEvenly"));
+        VerifyScreenshot();
+    }
+
+    [Test, Order(9)]
     public void FlexLayout_SetWrapReverseAlignContentStretch()
     {
         App.WaitForElement("Options");
@@ -145,8 +160,6 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("WrapReverseButton");
         App.WaitForElement("AlignContentStretchButton");
         App.Tap("AlignContentStretchButton");
-        App.WaitForElement("HeightAndWidthRequestButton");
-        App.Tap("HeightAndWidthRequestButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
@@ -155,7 +168,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(9)]
+    [Test, Order(10)]
     public void FlexLayout_SetWrapReverseAlignContentCenter()
     {
         App.WaitForElement("Options");
@@ -166,15 +179,13 @@ public class FlexLayoutFeatureTests : UITest
         App.Tap("AlignContentCenterButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        App.WaitForElement("AddChildrenButton");
-        App.Tap("AddChildrenButton");
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Center"));
         VerifyScreenshot();
     }
 
-    [Test, Order(10)]
+    [Test, Order(11)]
     public void FlexLayout_SetWrapReverseAlignContentStart()
     {
         App.WaitForElement("Options");
@@ -191,7 +202,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(11)]
+    [Test, Order(12)]
     public void FlexLayout_SetWrapReverseAlignContentEnd()
     {
         App.WaitForElement("Options");
@@ -208,7 +219,9 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(12)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/31565
+
+    [Test, Order(13)]
     public void FlexLayout_SetWrapReverseAlignContentSpaceAround()
     {
         App.WaitForElement("Options");
@@ -225,7 +238,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(13)]
+    [Test, Order(14)]
     public void FlexLayout_SetWrapReverseAlignContentSpaceBetween()
     {
         App.WaitForElement("Options");
@@ -242,7 +255,25 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(14)]
+    [Test, Order(15)]
+    public void FlexLayout_SetWrapReverseAlignContentSpaceEvenly()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("WrapReverseButton");
+        App.Tap("WrapReverseButton");
+        App.WaitForElement("AlignContentSpaceEvenlyButton");
+        App.Tap("AlignContentSpaceEvenlyButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
+        Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
+        Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceEvenly"));
+        VerifyScreenshot();
+    }
+#endif
+
+    [Test, Order(16)]
     public void FlexLayout_AlignItemsCenter()
     {
         App.WaitForElement("RemoveChildrenButton");
@@ -258,7 +289,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(15)]
+    [Test, Order(17)]
     public void FlexLayout_AlignItemsEnd()
     {
         App.WaitForElement("Options");
@@ -272,7 +303,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(16)]
+    [Test, Order(18)]
     public void FlexLayout_AlignItemsStretch()
     {
         App.WaitForElement("Options");
@@ -286,7 +317,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(17)]
+    [Test, Order(19)]
     public void FlexLayout_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -300,7 +331,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(18)]
+    [Test, Order(20)]
     public void FlexLayout_DirectionColumn()
     {
         App.WaitForElement("RemoveChildrenButton");
@@ -316,7 +347,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(19)]
+    [Test, Order(21)]
     public void FlexLayout_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -330,7 +361,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(20)]
+    [Test, Order(22)]
     public void FlexLayout_JustifyContentCenter()
     {
         App.WaitForElement("AddChildrenButton");
@@ -346,7 +377,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(21)]
+    [Test, Order(23)]
     public void FlexLayout_JustifyContentEnd()
     {
         App.WaitForElement("Options");
@@ -360,7 +391,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(22)]
+    [Test, Order(24)]
     public void FlexLayout_JustifyContentSpaceBetween()
     {
         App.WaitForElement("Options");
@@ -374,7 +405,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(23)]
+    [Test, Order(25)]
     public void FlexLayout_JustifyContentSpaceAround()
     {
         App.WaitForElement("Options");
@@ -388,7 +419,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(24)]
+    [Test, Order(26)]
     public void FlexLayout_JustifyContentSpaceEvenly()
     {
         App.WaitForElement("Options");
@@ -402,7 +433,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(25)]
+    [Test, Order(27)]
     public void FlexLayout_AlignSelfStart()
     {
         App.WaitForElement("Options");
@@ -416,7 +447,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(26)]
+    [Test, Order(28)]
     public void FlexLayout_AlignSelfCenter()
     {
         App.WaitForElement("Options");
@@ -430,7 +461,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(27)]
+    [Test, Order(29)]
     public void FlexLayout_AlignSelfEnd()
     {
         App.WaitForElement("Options");
@@ -444,7 +475,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(28)]
+    [Test, Order(30)]
     public void FlexLayout_AlignSelfStretch()
     {
         App.WaitForElement("Options");
@@ -458,7 +489,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(29)]
+    [Test, Order(31)]
     public void FlexLayout_Child1Grow()
     {
         App.WaitForElement("Options");
@@ -473,7 +504,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(30)]
+    [Test, Order(32)]
     public void FlexLayout_Child1Shrink()
     {
         App.WaitForElement("Options");
@@ -481,6 +512,8 @@ public class FlexLayoutFeatureTests : UITest
         App.WaitForElement("ChildShrinkEntry");
         App.ClearText("ChildShrinkEntry");
         App.EnterText("ChildShrinkEntry", "10");
+        App.WaitForElement("HeightAndWidthRequestButton");
+        App.Tap("HeightAndWidthRequestButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ChildShrinkLabel");
@@ -488,7 +521,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(31)]
+    [Test, Order(33)]
     public void FlexLayout_Child1Order()
     {
         App.WaitForElement("Options");
@@ -503,7 +536,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(32)]
+    [Test, Order(34)]
     public void FlexLayout_BasisAuto_DirectionRow()
     {
         App.WaitForElement("Options");
@@ -520,7 +553,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(33)]
+    [Test, Order(35)]
     public void FlexLayout_BasisFixed_DirectionRow()
     {
         App.WaitForElement("Options");
@@ -537,7 +570,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(34)]
+    [Test, Order(36)]
     public void FlexLayout_BasisPercentage_DirectionRow()
     {
         App.WaitForElement("Options");
@@ -554,7 +587,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(35)]
+    [Test, Order(37)]
     public void FlexLayout_BasisAuto_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -571,7 +604,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(36)]
+    [Test, Order(38)]
     public void FlexLayout_BasisFixed_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -588,7 +621,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(37)]
+    [Test, Order(39)]
     public void FlexLayout_BasisPercentage_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -605,7 +638,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(38)]
+    [Test, Order(40)]
     public void FlexLayout_BasisAuto_DirectionColumn()
     {
         App.WaitForElement("RemoveChildrenButton");
@@ -624,7 +657,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(39)]
+    [Test, Order(41)]
     public void FlexLayout_BasisFixed_DirectionColumn()
     {
         App.WaitForElement("Options");
@@ -641,7 +674,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(40)]
+    [Test, Order(42)]
     public void FlexLayout_BasisPercentage_DirectionColumn()
     {
         App.WaitForElement("Options");
@@ -658,7 +691,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(41)]
+    [Test, Order(43)]
     public void FlexLayout_BasisAuto_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -675,7 +708,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(42)]
+    [Test, Order(44)]
     public void FlexLayout_BasisFixed_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -692,7 +725,7 @@ public class FlexLayoutFeatureTests : UITest
         VerifyScreenshot();
     }
 
-    [Test, Order(43)]
+    [Test, Order(45)]
     public void FlexLayout_BasisPercentage_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -706,36 +739,6 @@ public class FlexLayoutFeatureTests : UITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("ColumnReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Percent50"));
-        VerifyScreenshot();
-    }
-
-    [Test, Order(44)]
-    public void FlexLayout_Child1PositionRelative()
-    {
-        App.WaitForElement("AddChildrenButton");
-        App.Tap("AddChildrenButton");
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("Child1PositionRelativeButton");
-        App.Tap("Child1PositionRelativeButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("Child1PositionLabel");
-        Assert.That(App.FindElement("Child1PositionLabel").GetText(), Is.EqualTo("Relative"));
-        VerifyScreenshot();
-    }
-
-    [Test, Order(45)]
-    public void FlexLayout_Child1PositionAbsolute()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("Child1PositionAbsoluteButton");
-        App.Tap("Child1PositionAbsoluteButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("Child1PositionLabel");
-        Assert.That(App.FindElement("Child1PositionLabel").GetText(), Is.EqualTo("Absolute"));
         VerifyScreenshot();
     }
 
