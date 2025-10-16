@@ -1,4 +1,5 @@
 #if ANDROID
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,6 +24,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Clear the entry text - this should trigger the TextChanged event
 			// which will set Text to "0", previously causing a crash
 			App.ClearText("TestEntry");
+
+			// Wait a moment for the deferred text update to complete
+			Task.Delay(100).Wait();
 
 			// If we reach here without crashing, the fix is working
 			// Verify that the status label updated
