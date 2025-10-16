@@ -2,9 +2,10 @@
 <RunSettings>
     <DataCollectionRunSettings>
         <DataCollectors>
-            <DataCollector friendlyName="Code Coverage">
+            <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0">
                 <Configuration>
                     <CodeCoverage>
+                        <Format>cobertura</Format>
                         <ModulePaths>
                             <Exclude>
                                 <ModulePath>.*Tests.dll</ModulePath>

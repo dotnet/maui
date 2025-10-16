@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)"/>
+  <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftCodeCoveragePackageVersion)" />
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
   </ItemGroup>

@@ -880,12 +880,12 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 // Code coverage
                 if (FileExists(sourceFolder))
                 {
-                    args.Append($"--collect \"XPlat Code Coverage\" --settings \"{sourceFolder}\"");
+                    args.Append($"--collect \"Code Coverage;Format=cobertura\"");
                 }
                 else
                 {
                     Warning($"coverage.runsettings file not found at {sourceFolder}. Skipping --settings argument for code coverage.");
-                    args.Append($"--collect \"XPlat Code Coverage\"");
+                    args.Append($"--collect \"Code Coverage\"");
                 }
                 return args;
             }
