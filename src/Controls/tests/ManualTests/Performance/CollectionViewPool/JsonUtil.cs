@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json;
 
 namespace PoolMath;
@@ -21,9 +22,11 @@ public static class JsonUtil
 	public readonly static System.Text.Json.JsonSerializerOptions SerializerOptions
 		= SetOptions(new JsonSerializerOptions());
 
+	[RequiresUnreferencedCode()]
 	public static string Serialize<T>(T obj)
 		=> JsonSerializer.Serialize<T>(obj, SerializerOptions);
 
+	[RequiresUnreferencedCode()]
 	public static T Deserialize<T>(string json)
 		=> JsonSerializer.Deserialize<T>(json, SerializerOptions);
 

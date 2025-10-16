@@ -140,8 +140,7 @@ namespace Microsoft.Maui
 
 		partial void OnDisableUITouchEventPassthroughSet()
 		{
-			if (_graphicsView != null)
-				_graphicsView.IsHitTestVisible = DisableUITouchEventPassthrough;
+			_graphicsView?.IsHitTestVisible = DisableUITouchEventPassthrough;
 		}
 	}
 }
