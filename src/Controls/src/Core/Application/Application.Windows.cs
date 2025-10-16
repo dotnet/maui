@@ -96,6 +96,12 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if (platformWindow.DispatcherQueue is null)
+			{
+				System.Diagnostics.Debug.WriteLine("ApplyThemeToWindow: platformWindow.DispatcherQueue is null. Unable to apply theme to the root element.");
+				return;
+			}
+
 			platformWindow.DispatcherQueue.TryEnqueue(() =>
 			{
 				if (platformWindow.Content is not FrameworkElement root)
