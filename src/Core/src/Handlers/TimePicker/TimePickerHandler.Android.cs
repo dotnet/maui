@@ -131,10 +131,6 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			// Check if dialog is already showing to avoid recreating unnecessarily
-			if (_dialog is not null && _dialog.IsShowing)
-				return;
-
 			var time = VirtualView.Time;
 			ShowPickerDialog(time.Hours, time.Minutes);
 		}
