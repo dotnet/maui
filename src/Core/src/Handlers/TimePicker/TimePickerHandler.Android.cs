@@ -145,10 +145,8 @@ namespace Microsoft.Maui.Handlers
 
 		void ShowPickerDialog()
 		{
-			if (VirtualView is null)
-			{
+			if (VirtualView == null)
 				return;
-			}
 
 
 			ShowPickerDialog(VirtualView.Time);
