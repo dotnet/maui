@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 32017, "Image shifts downward when window is resized smaller", PlatformAffected.WinUI)]
+	[Issue(IssueTracker.Github, 32017, "Image shifts downward when window is resized smaller", PlatformAffected.UWP)]
 	public class Issue32017 : TestContentPage
 	{
 		protected override void Init()
@@ -33,9 +33,9 @@ namespace Maui.Controls.Sample.Issues
 			// Create sample recipe data
 			var recipes = new[]
 			{
-				new { ImageUrl = "https://aka.ms/campus.jpg", Name = "Recipe 1" },
-				new { ImageUrl = "https://aka.ms/campus.jpg", Name = "Recipe 2" },
-				new { ImageUrl = "https://aka.ms/campus.jpg", Name = "Recipe 3" }
+				new { ImageUrl = "dotnet_bot.png", Name = "Recipe 1" },
+				new { ImageUrl = "dotnet_bot.png", Name = "Recipe 2" },
+				new { ImageUrl = "dotnet_bot.png", Name = "Recipe 3" }
 			};
 
 			carouselView.ItemsSource = recipes;
@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample.Issues
 				var image = new Image
 				{
 					AutomationId = "RecipeImage",
-					Aspect = Aspect.AspectFill, // This is key - same as in MyRecipesPage.xaml
+					Aspect = Aspect.AspectFill, // This is key, same as in MyRecipesPage.xaml
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill
 				};
