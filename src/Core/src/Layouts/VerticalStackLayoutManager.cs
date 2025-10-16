@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -13,9 +14,13 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = Stack.Padding;
 
+			// If explicit dimensions are set, use them instead of the passed constraints
+			var effectiveWidthConstraint = Dimension.IsExplicitSet(Stack.Width) ? Stack.Width : widthConstraint;
+			var effectiveHeightConstraint = Dimension.IsExplicitSet(Stack.Height) ? Stack.Height : heightConstraint;
+
 			double measuredHeight = 0;
 			double measuredWidth = 0;
-			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
+			double childWidthConstraint = effectiveWidthConstraint - padding.HorizontalThickness;
 			int spacingCount = 0;
 
 			for (int n = 0; n < Stack.Count; n++)
@@ -37,8 +42,8 @@ namespace Microsoft.Maui.Layouts
 			measuredHeight += padding.VerticalThickness;
 			measuredWidth += padding.HorizontalThickness;
 
-			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measuredHeight, Stack.MinimumHeight, Stack.MaximumHeight);
-			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measuredWidth, Stack.MinimumWidth, Stack.MaximumWidth);
+			var finalHeight = ResolveConstraints(effectiveHeightConstraint, Stack.Height, measuredHeight, Stack.MinimumHeight, Stack.MaximumHeight);
+			var finalWidth = ResolveConstraints(effectiveWidthConstraint, Stack.Width, measuredWidth, Stack.MinimumWidth, Stack.MaximumWidth);
 
 			return new Size(finalWidth, finalHeight);
 		}
