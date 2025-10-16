@@ -804,6 +804,22 @@ namespace Microsoft.Maui.Controls
 			if (args.NavigationType == NavigationType.Pop ||
 				args.NavigationType == NavigationType.PopToRoot)
 			{
+				// Don't dispose Handlers too early on iOS!
+				// iOS aggressively cleans up page Handlers during navigation, but if the page
+				// is still in Shell's navigation stack, users can navigate back to it.
+				// Disposing the Handler makes the page invisible.
+				// So only dispose Handler if page not in current Shell stack
+				if (Shell.Current != null)
+				{
+					// Check if this page is still referenced in Shell's navigation stack
+					var currentStack = Shell.Current.CurrentItem?.CurrentItem?.Stack;
+					if (currentStack?.Contains(this) == true)
+					{
+						// Page is still in navigation stack, don't dispose Handler
+						return;
+					}
+				}
+				
 				if (!this.IsLoaded)
 				{
 					this.DisconnectHandlers();
