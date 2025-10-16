@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+		public const SKFilterQuality DefaultFilterQuality = SKFilterQuality.High;
+
 		public string? ItemSpec { get; set; }
 
 		public string? Alias { get; set; }
@@ -49,6 +51,8 @@ namespace Microsoft.Maui.Resizetizer
 		public bool ForegroundIsVector => IsVectorFilename(ForegroundFilename);
 
 		public double ForegroundScale { get; set; } = 1.0;
+
+		public SKFilterQuality FilterQuality { get; set; } = DefaultFilterQuality;
 
 		private static bool IsVectorFilename(string? filename)
 			=> IsVectorExtension(Path.GetExtension(filename));
@@ -123,6 +127,9 @@ namespace Microsoft.Maui.Resizetizer
 
 				info.ForegroundFilename = fgFileInfo.FullName;
 			}
+
+			if (Enum.TryParse<SKFilterQuality>(image.GetMetadata("FilterQuality"), out var filterQuality))
+				info.FilterQuality = filterQuality;
 
 			// make sure the image is a foreground if this is an icon
 			if (info.IsAppIcon && string.IsNullOrEmpty(info.ForegroundFilename))
