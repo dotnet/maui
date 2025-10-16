@@ -128,15 +128,12 @@ namespace Microsoft.Maui.Handlers
 
 		void ShowPickerDialog()
 		{
-			if (VirtualView is null)
-			{
+			if (VirtualView == null)
 				return;
-			}
 
+			// Check if dialog is already showing to avoid recreating unnecessarily
 			if (_dialog is not null && _dialog.IsShowing)
-			{
 				return;
-			}
 
 			var time = VirtualView.Time;
 			ShowPickerDialog(time.Hours, time.Minutes);
@@ -147,17 +144,7 @@ namespace Microsoft.Maui.Handlers
 		// to be lost). Not useful until we have orientation changed events.
 		void ShowPickerDialog(int hour, int minute)
 		{
-			if (_dialog is null)
-			{
-				_dialog = CreateTimePickerDialog(hour, minute);
-			}
-			else
-			{
-				// Update the dialog with new values (for orientation changes)
-				_dialog.Dispose();
-				_dialog = CreateTimePickerDialog(hour, minute);
-			}
-
+			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
 		}
 
@@ -173,11 +160,15 @@ namespace Microsoft.Maui.Handlers
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
 		{
+			// Only handle orientation changes when dialog is actually showing
 			if (_dialog is not null && _dialog.IsShowing)
 			{
+				// Dismiss the current dialog and clear reference
 				_dialog.Dismiss();
+				_dialog = null;
 
-				// Recreate dialog with stored current values to handle orientation change
+				// Recreate dialog with current values to handle orientation change
+				// This is necessary because Android dialogs don't automatically adapt to orientation changes
 				ShowPickerDialog(_currentHour, _currentMinute);
 			}
 		}
