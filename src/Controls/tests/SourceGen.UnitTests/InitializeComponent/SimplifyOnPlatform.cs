@@ -19,7 +19,7 @@ public class SimplifyOnPlatform : SourceGenXamlInitializeComponentTestBase
 	x:Class="Test.TestPage">
     <ContentPage.Resources>
         <Style TargetType="Label" x:Key="style">
-            <Setter Property="TextColor" Value="Pink" />
+            <Setter Property="TextColor" Value="Pink " />
             <Setter Property="IsVisible" Value="{OnPlatform Android=True, iOS=False}" />
         </Style>
     </ContentPage.Resources>
@@ -120,7 +120,7 @@ public partial class TestPage
 		setter.Property = ((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new global::Microsoft.Maui.Controls.BindablePropertyConverter()).ConvertFromInvariantString("TextColor", xamlServiceProvider1) as global::Microsoft.Maui.Controls.BindableProperty;
 #line default
 #line 8 "{{testXamlFilePath}}"
-		setter.Value = "Pink";
+		setter.Value = "Pink ";
 #line default
 		var setter2 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter2!) == null)
