@@ -1,3 +1,5 @@
+using System;
+
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(ImageSource))]
@@ -28,7 +30,13 @@ namespace Microsoft.Maui.Controls
 		public override bool Equals(object? obj) =>
 			obj is ImageBrush dest && ImageSource == dest.ImageSource;
 
-		public override int GetHashCode() =>
-			-1234567890 + (ImageSource?.GetHashCode() ?? 0);
+		public override int GetHashCode()
+		{
+#if NETSTANDARD
+			return (int)(374761393U + 3266489917U ^ (ImageSource?.GetHashCode() ?? 0));
+#else
+			return HashCode.Combine(ImageSource);
+#endif
+		}
 	}
 }
