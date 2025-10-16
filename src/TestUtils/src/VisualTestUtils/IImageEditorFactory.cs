@@ -4,7 +4,7 @@
     {
         /// <summary>
         /// Create an image editor, to update the specified image snapshot.
-        /// The original image snpashot is unchanged. After making edits,
+        /// The original image snapshot is unchanged. After making edits,
         /// call IImageEditor.GetImageSnapshot to get a new image snapshot
         /// width the updates.
         /// </summary>
