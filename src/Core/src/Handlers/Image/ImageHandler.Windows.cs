@@ -66,8 +66,16 @@ namespace Microsoft.Maui.Handlers
 			// is set to Auto when the container is introduced.
 			if (handler.ContainerView is FrameworkElement container)
 			{
-				container.Height = view.Height;
-				handler.PlatformView.Height = Primitives.Dimension.Unset;
+				// Only update container height if it actually changed to prevent layout instability during layout cycles
+				if (container.Height != view.Height)
+				{
+					container.Height = view.Height;
+				}
+				
+				if (handler.PlatformView.Height != Primitives.Dimension.Unset)
+				{
+					handler.PlatformView.Height = Primitives.Dimension.Unset;
+				}
 			}
 			else
 			{
@@ -84,7 +92,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.ContainerView is FrameworkElement container)
 			{
-				container.Width = view.Width;
+				// Only update container width if it actually changed to prevent layout instability during layout cycles
+				if (container.Width != view.Width)
+				{
+					container.Width = view.Width;
+				}
 			}
 			else
 			{
