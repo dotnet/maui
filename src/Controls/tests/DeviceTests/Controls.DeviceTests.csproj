@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
+    <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png" BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />
     <None Remove="Resources\Images\red-embedded.png" />
     <EmbeddedResource Include="Resources\Images\red-embedded.png" LogicalName="red-embedded.png" />

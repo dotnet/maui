@@ -52,6 +52,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 			appHostBuilder.Logging.AddConsole();
 
+			appHostBuilder.Services.AddTransient(svc => new MicrosoftPlatformEntryPoint());
+
 			return appHostBuilder;
 		}
 

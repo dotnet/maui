@@ -64,6 +64,28 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			TestsCompleted += OnTestsCompleted;
 
+
+
+			string cacheDir = global::Android.App.Application.Context.CacheDir!.AbsolutePath;
+
+			var builder = await Microsoft.Testing.Platform.Builder.TestApplication.CreateServerModeBuilderAsync(new[] {
+				"--results-directory", cacheDir,
+			});
+			//buider.ServerMode.ConnectToTcpClient("localhost", 6000);
+
+			//_ = Task.Run(() => {
+			//    Thread.Sleep(5000);
+			//    var tcpClient = new TcpClient();
+			//    // Note: Specify the port of the test runner process here.
+			//    tcpClient.Connect(new IPEndPoint(IPAddress.Loopback, 6000));
+			//});
+
+			//buider.AddTestAnywhereTestFramework(new TestTemplate.SourceGeneratedTestNodesBuilder());
+
+		
+			var testApp = await builder.BuildAsync();
+			var exitCode = await testApp.RunAsync();
+
 			await RunAsync();
 
 			TestsCompleted -= OnTestsCompleted;
