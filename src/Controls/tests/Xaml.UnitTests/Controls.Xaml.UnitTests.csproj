@@ -76,13 +76,44 @@
     <MauiXaml Update="**\*.xc.xaml" Inflator="XamlC" />
     <MauiXaml Update="**\*.rtsg.xaml" Inflator="Runtime;SourceGen" />
     <MauiXaml Update="**\*.rtxc.xaml" Inflator="Runtime;XamlC" />
-    <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />    
+    <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />
 
     <MauiXaml Update="FontSize.xaml" NoWarn="0612;0618" />
     <MauiXaml Update="Issues\Bz55343.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
+
+    <MauiXaml Update="**\A*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\B*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\C*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\D*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\E*.xaml" TreeOrder="true" />
+    <MauiXaml Update="**\F*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\G*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\H*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\I*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\J*.xaml" TreeOrder="true" />
+    <MauiXaml Update="**\K*.xaml" TreeOrder="true" />
+    <MauiXaml Update="**\L*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\M*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\N*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\O*.xaml" TreeOrder="true" /> -->
+    <!-- <MauiXaml Update="**\P*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\Q*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\R*.xaml" TreeOrder="true" /> -->
+    <!-- <MauiXaml Update="**\S*.xaml" TreeOrder="true" /> -->
+    <!-- <MauiXaml Update="**\T*.xaml" TreeOrder="true" /> -->
+    <!-- <MauiXaml Update="**\U*.xaml" TreeOrder="true" /> -->
+    <!-- <MauiXaml Update="**\V*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\W*.xaml" TreeOrder="true" />
+    <!-- <MauiXaml Update="**\X*.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="**\Y*.xaml" TreeOrder="true" />
+    <MauiXaml Update="**\Z*.xaml" TreeOrder="true" />
+
+    <!-- <MauiXaml Update="DataTemplate.xaml" TreeOrder="true" /> -->
+    <MauiXaml Update="SetValue.xaml" TreeOrder="true" />
+    <MauiXaml Update="Benchmark.xaml" />
   </ItemGroup>
 
 </Project>
