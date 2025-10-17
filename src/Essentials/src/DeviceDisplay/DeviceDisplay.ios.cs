@@ -1,7 +1,9 @@
 #nullable enable
 using System;
+using System.Runtime.InteropServices;
 using Foundation;
 using UIKit;
+using ObjCRuntime;
 
 namespace Microsoft.Maui.Devices
 {
@@ -9,11 +11,97 @@ namespace Microsoft.Maui.Devices
 	{
 		NSObject? observer;
 
+#if MACCATALYST
+		const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
+#endif
+
+#if MACCATALYST
+		// Core Graphics P/Invoke declarations for Mac Catalyst
+		// Returns the display ID of the main display
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern uint CGMainDisplayID();
+
+		// Returns information about a display’s current configuration
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern IntPtr CGDisplayCopyDisplayMode(uint display);
+
+		// Releases a Core Graphics display mode
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern void CGDisplayModeRelease(IntPtr mode);
+
+		// Returns the width of the specified display mode
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern nuint CGDisplayModeGetWidth(IntPtr mode);
+
+		// Returns the height of the specified display mode
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern nuint CGDisplayModeGetHeight(IntPtr mode);
+
+		// Returns the refresh rate of the specified display mode
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern double CGDisplayModeGetRefreshRate(IntPtr mode);
+
+		// Returns the rotation angle of a display in degrees
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern double CGDisplayRotation(uint display);
+
+#endif
+
 		protected override bool GetKeepScreenOn() => UIApplication.SharedApplication.IdleTimerDisabled;
 
 		protected override void SetKeepScreenOn(bool keepScreenOn) => UIApplication.SharedApplication.IdleTimerDisabled = keepScreenOn;
 
 		protected override DisplayInfo GetMainDisplayInfo()
+		{
+#if MACCATALYST
+			// On Mac Catalyst, bypass UIScreen entirely and use Core Graphics APIs
+			// This gets fresh, non-cached screen information directly from the system
+			var displayId = CGMainDisplayID();
+			var mode = CGDisplayCopyDisplayMode(displayId);
+			
+			if (mode == IntPtr.Zero)
+			{
+				return GetFallbackDisplayInfo();
+			}
+
+			var width = (double)CGDisplayModeGetWidth(mode);
+			var height = (double)CGDisplayModeGetHeight(mode);
+			var refreshRate = CGDisplayModeGetRefreshRate(mode);
+
+			// Release the display mode to avoid memory leaks
+			CGDisplayModeRelease(mode);
+
+			// Get rotation from Core Graphics
+			var rotationDegrees = CGDisplayRotation(displayId);
+			var rotation = ConvertRotationDegreesToDisplayRotation(rotationDegrees);
+
+			// Get scale factor from UIScreen as a fallback (this is usually stable)
+			var scale = UIScreen.MainScreen.Scale;
+
+			return new DisplayInfo(
+				width: width,
+				height: height,
+				density: scale,
+				orientation: DisplayOrientation.Portrait,
+				rotation: rotation,
+				rate: (float)refreshRate);
+#else
+			// iOS implementation
+			return GetFallbackDisplayInfo();
+#endif
+		}
+
+		static DisplayRotation ConvertRotationDegreesToDisplayRotation(double degrees) =>
+			degrees switch
+			{
+				0 => DisplayRotation.Rotation0,
+				90 => DisplayRotation.Rotation90,
+				180 => DisplayRotation.Rotation180,
+				270 => DisplayRotation.Rotation270,
+				_ => DisplayRotation.Rotation0
+			};
+
+		DisplayInfo GetFallbackDisplayInfo()
 		{
 			var bounds = UIScreen.MainScreen.Bounds;
 			var scale = UIScreen.MainScreen.Scale;
@@ -35,8 +123,16 @@ namespace Microsoft.Maui.Devices
 		protected override void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
+
+#if MACCATALYST
+			// On Mac Catalyst, use multiple notifications to cover all display changes
+			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
+			observer = notificationCenter.AddObserver(new NSString(NSApplicationDidChangeScreenParametersNotification), OnMainDisplayInfoChanged);
+#else
+			// On iOS, use status bar orientation changes (deprecated but still works)
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
 			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
+#endif
 		}
 
 		protected override void StopScreenMetricsListeners()
