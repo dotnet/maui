@@ -299,3 +299,7 @@ Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
 Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
 ~Microsoft.Maui.Controls.Binding.DataType.get -> System.Type
 ~Microsoft.Maui.Controls.Binding.DataType.set -> void
+Microsoft.Maui.Controls.BoxView.~BoxView() -> void
+~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.BoxView.Fill.set -> void
+~static readonly Microsoft.Maui.Controls.BoxView.FillProperty -> Microsoft.Maui.Controls.BindableProperty

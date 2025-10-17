@@ -5,19 +5,47 @@ namespace Maui.Controls.Sample;
 
 public class BoxViewViewModel : INotifyPropertyChanged
 {
-	private Color _color = Colors.Blue;
-	private double _width = 200;
-	private double _height = 100;
-	private bool _isVisible = true;
-	private double _opacity = 1.0;
-	private CornerRadius _cornerRadius;
-	private bool _isRedChecked = false;
-	private bool _isBlueChecked = true;
-	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	Color _color = Colors.Blue;
+	Brush _fill = null;
+	LinearGradientBrush _linearGradientBrush = new LinearGradientBrush()
+	{
+		StartPoint = new Point(0, 0),
+		EndPoint = new Point(1, 1),
+		GradientStops =
+		[
+			new GradientStop { Color = Colors.Purple, Offset = 0.0f },
+			new GradientStop { Color = Colors.Pink, Offset = 0.3f },
+			new GradientStop { Color = Colors.Orange, Offset = 0.7f },
+			new GradientStop { Color = Colors.Red, Offset = 1.0f }
+		]
+	};
+
+	RadialGradientBrush _radialGradientBrush = new RadialGradientBrush()
+	{
+		Center = new Point(0.5, 0.5),
+		Radius = 0.5,
+		GradientStops =
+		[
+			new GradientStop { Color = Colors.Yellow, Offset = 0.0f },
+			new GradientStop { Color = Colors.Green, Offset = 1.0f }
+		]
+	};
+
+	double _width = 200;
+	double _height = 100;
+	bool _isVisible = true;
+	double _opacity = 1.0;
+	CornerRadius _cornerRadius;
+	bool _isRedChecked = false;
+	bool _isBlueChecked = true;
+	bool _isSolidChecked = false;
+	bool _isLinearChecked = false;
+	bool _isRadialChecked = false;
+	FlowDirection _flowDirection = FlowDirection.LeftToRight;
 
 
-	private string _cornerRadiusEntryText = null;
-	private string _opacityEntryText = null;
+	string _cornerRadiusEntryText = null;
+	string _opacityEntryText = null;
 
 	public string CornerRadiusEntryText
 	{
@@ -28,7 +56,10 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_cornerRadiusEntryText = value;
 				if (double.TryParse(value, out double radius))
+				{
 					CornerRadius = radius;
+				}
+
 				OnPropertyChanged();
 			}
 		}
@@ -43,7 +74,64 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_opacityEntryText = value;
 				if (double.TryParse(value, out double opacity))
+				{
 					Opacity = opacity;
+				}
+
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsSolidChecked
+	{
+		get => _isSolidChecked;
+		set
+		{
+			if (_isSolidChecked != value)
+			{
+				_isSolidChecked = value;
+				if (value)
+				{
+					Fill = Colors.Red.AsPaint();
+				}
+
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsLinearChecked
+	{
+		get => _isLinearChecked;
+		set
+		{
+			if (_isLinearChecked != value)
+			{
+				_isLinearChecked = value;
+				if (value)
+				{
+					Fill = _linearGradientBrush;
+				}
+
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsRadialChecked
+	{
+		get => _isRadialChecked;
+		set
+		{
+			if (_isRadialChecked != value)
+			{
+				_isRadialChecked = value;
+				if (value)
+				{
+					Fill = _radialGradientBrush;
+				}
+
 				OnPropertyChanged();
 			}
 		}
@@ -58,7 +146,10 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isRedChecked = value;
 				if (value)
+				{
 					Color = Colors.Red;
+				}
+
 				OnPropertyChanged();
 			}
 		}
@@ -73,7 +164,10 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isBlueChecked = value;
 				if (value)
+				{
 					Color = Colors.Blue;
+				}
+
 				OnPropertyChanged();
 			}
 		}
@@ -111,8 +205,8 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			OnPropertyChanged();
 		}
 	}
-	private bool _hasShadow = false;
-	private Shadow _boxShadow = null;
+	bool _hasShadow = false;
+	Shadow _boxShadow = null;
 
 	public bool HasShadow
 	{
@@ -139,7 +233,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	public Shadow BoxShadow
 	{
 		get => _boxShadow;
-		private set
+		set
 		{
 			if (_boxShadow != value)
 			{
@@ -153,6 +247,12 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	{
 		get => _color;
 		set { _color = value; OnPropertyChanged(); }
+	}
+
+	public Brush Fill
+	{
+		get => _fill;
+		set { _fill = value; OnPropertyChanged(); }
 	}
 
 	public double Width
