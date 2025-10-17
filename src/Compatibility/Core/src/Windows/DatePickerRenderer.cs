@@ -150,8 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler]
 		void UpdateDate(DateTime? date)
 		{
-			if (Control != null)
-				Control.Date = new DateTimeOffset(new DateTime(date?.Ticks ?? 0, DateTimeKind.Unspecified));
+			Control?.Date = new DateTimeOffset(new DateTime(date?.Ticks ?? 0, DateTimeKind.Unspecified));
 
 			UpdateDay();
 			UpdateMonth();

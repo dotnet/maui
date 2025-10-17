@@ -37,9 +37,6 @@ public class Issue19997 : TestContentPage
 
 	void Button_Clicked(object sender, EventArgs e)
 	{
-		if (Application.Current != null)
-		{
-			Application.Current.UserAppTheme = Application.Current.UserAppTheme != AppTheme.Dark ? AppTheme.Dark : AppTheme.Light;
-		}
+		Application.Current?.UserAppTheme = Application.Current.UserAppTheme != AppTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 	}
 }

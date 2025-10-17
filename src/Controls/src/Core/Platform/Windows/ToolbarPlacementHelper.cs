@@ -115,10 +115,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdateIsInValidLocation()
 		{
 			var MauiCommandBar = _commandBar as MauiCommandBar;
-			if (MauiCommandBar != null)
-			{
-				MauiCommandBar.IsInValidLocation = ShouldShowToolBar;
-			}
+			MauiCommandBar?.IsInValidLocation = ShouldShowToolBar;
 		}
 	}
 }
