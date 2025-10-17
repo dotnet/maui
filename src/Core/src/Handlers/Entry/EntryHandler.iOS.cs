@@ -137,6 +137,9 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd += OnEditingEnded;
 				platformView.TextPropertySet += OnTextPropertySet;
 				platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+#if IOS26_0_OR_GREATER
+				platformView.ShouldChangeCharactersInRanges += ShouldChangeCharactersInRanges;
+#endif
 			}
 
 			public void Disconnect(MauiTextField platformView)
@@ -149,6 +152,9 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd -= OnEditingEnded;
 				platformView.TextPropertySet -= OnTextPropertySet;
 				platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
+#if IOS26_0_OR_GREATER
+				platformView.ShouldChangeCharactersInRanges -= ShouldChangeCharactersInRanges;
+#endif
 
 				if (_set)
 					platformView.SelectionChanged -= OnSelectionChanged;
@@ -213,6 +219,15 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
+#if IOS26_0_OR_GREATER
+			bool ShouldChangeCharactersInRanges(UITextField textField, NSValue[] ranges, string replacementString)
+			{
+				if (ranges is { Length: > 0 })
+					return VirtualView?.TextWithinMaxLength(textField.Text, ranges[0].RangeValue, replacementString) ?? true;
+
+				return true;
+			}
+#endif
 			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
 				VirtualView?.TextWithinMaxLength(textField.Text, range, replacementString) ?? false;
 
