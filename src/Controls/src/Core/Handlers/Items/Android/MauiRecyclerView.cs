@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
 	{
+		const int InvalidPosition = -1;
+
 		protected TAdapter ItemsViewAdapter;
 
 		protected TItemsView ItemsView;
@@ -400,6 +402,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (position < 0)
 			{
+				System.Diagnostics.Debug.WriteLine($"Invalid scroll request: position = {position}");
 				return;
 			}
 
@@ -448,7 +451,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					if (item is null)
 					{
-						return -1;
+						return InvalidPosition;
 					}
 				}
 			}
