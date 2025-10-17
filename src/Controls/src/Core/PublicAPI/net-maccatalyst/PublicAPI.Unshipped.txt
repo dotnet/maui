@@ -33,6 +33,48 @@ Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeArea
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.IControlsElement
+Microsoft.Maui.Controls.IControlsElement.HandlerChanged -> System.EventHandler?
+Microsoft.Maui.Controls.IControlsElement.HandlerChanging -> System.EventHandler<Microsoft.Maui.Controls.HandlerChangingEventArgs!>?
+Microsoft.Maui.Controls.IControlsView
+Microsoft.Maui.Controls.IControlsVisualElement
+Microsoft.Maui.Controls.IControlsVisualElement.PlatformContainerViewChanged -> System.EventHandler?
+Microsoft.Maui.Controls.IControlsVisualElement.Window.get -> Microsoft.Maui.Controls.Window?
+Microsoft.Maui.Controls.IControlsVisualElement.WindowChanged -> System.EventHandler?
+Microsoft.Maui.Controls.Platform.AlertManager
+Microsoft.Maui.Controls.Platform.AlertManager.AlertManager(Microsoft.Maui.Controls.Window! window) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.IAlertManagerSubscription
+Microsoft.Maui.Controls.Platform.AlertManager.IAlertManagerSubscription.OnActionSheetRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.ActionSheetArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.IAlertManagerSubscription.OnAlertRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.RequestActionSheet(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.ActionSheetArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.RequestAlert(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.RequestPageBusy(Microsoft.Maui.Controls.Page! page, bool isBusy) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.RequestPrompt(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.AlertManager.Subscribe() -> void
+Microsoft.Maui.Controls.Platform.AlertManager.Subscription.get -> Microsoft.Maui.Controls.Platform.AlertManager.IAlertManagerSubscription?
+Microsoft.Maui.Controls.Platform.AlertManager.Unsubscribe() -> void
+Microsoft.Maui.Controls.Platform.AlertManager.Window.get -> Microsoft.Maui.Controls.Window!
+Microsoft.Maui.Controls.Platform.GestureManager
+Microsoft.Maui.Controls.Platform.GestureManager.GestureManager(Microsoft.Maui.Controls.IControlsView! view) -> void
+Microsoft.Maui.Controls.Platform.GestureManager.GesturePlatformManager.get -> Microsoft.Maui.Controls.Platform.GesturePlatformManager?
+Microsoft.Maui.Controls.Platform.GestureManager.IsConnected.get -> bool
+Microsoft.Maui.Controls.Platform.GesturePlatformManager
+Microsoft.Maui.Controls.Platform.GesturePlatformManager.Dispose() -> void
+Microsoft.Maui.Controls.Platform.GesturePlatformManager.GesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> void
+Microsoft.Maui.Controls.Platform.ModalNavigationManager
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.ModalNavigationManager(Microsoft.Maui.Controls.Window! window) -> void
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.ModalStack.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Page!>!
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.PageAttachedHandler() -> void
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.PopModalAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page?>!
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.PopModalAsync(bool animated) -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page?>!
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.PushModalAsync(Microsoft.Maui.Controls.Page! modal) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.Platform.ModalNavigationManager.PushModalAsync(Microsoft.Maui.Controls.Page! modal, bool animated) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.Window.AlertManager.get -> Microsoft.Maui.Controls.Platform.AlertManager!
+Microsoft.Maui.Controls.Window.ModalNavigationManager.get -> Microsoft.Maui.Controls.Platform.ModalNavigationManager!
+virtual Microsoft.Maui.Controls.Platform.GesturePlatformManager.GetPlatformRecognizer(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> System.Collections.Generic.List<UIKit.UIGestureRecognizer?>?
+virtual Microsoft.Maui.Controls.Platform.GesturePlatformManager.PlatformView.get -> UIKit.UIView?
 ~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness

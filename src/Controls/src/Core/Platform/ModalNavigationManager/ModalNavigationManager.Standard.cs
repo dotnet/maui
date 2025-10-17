@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	public partial class ModalNavigationManager
 	{
 		Task<Page> PopModalPlatformAsync(bool animated)
 		{
