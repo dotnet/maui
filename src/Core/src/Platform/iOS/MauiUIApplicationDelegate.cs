@@ -29,9 +29,6 @@ namespace Microsoft.Maui
 		{
 			Current = this;
 			IPlatformApplication.Current = this;
-			
-			// Initialize CALayer autoresize to super layer support
-			CALayerAutoresizeToSuperLayer.EnsureInitialized();
 		}
 
 		/// <summary>

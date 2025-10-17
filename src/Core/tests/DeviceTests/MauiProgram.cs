@@ -20,9 +20,6 @@ namespace Microsoft.Maui.DeviceTests
 		public static MauiApp CreateMauiApp() =>
 			MauiProgramDefaults.CreateMauiApp((sp) =>
 			{
-#if IOS || MACCATALYST
-				CALayerAutoresizeToSuperLayer.EnsureInitialized();
-#endif
 				var options = new TestOptions
 				{
 					Assemblies = new List<Assembly>()
