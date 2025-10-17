@@ -5,7 +5,7 @@ using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	public partial class ModalNavigationManager
 	{
 		NavigationStack _modalStack => WindowMauiContext.GetModalStack();
 		IPageController CurrentPageController => CurrentPage!;

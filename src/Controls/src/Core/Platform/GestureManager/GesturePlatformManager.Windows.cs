@@ -15,7 +15,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	public class GesturePlatformManager : IDisposable
 	{
 		readonly IPlatformViewHandler _handler;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
