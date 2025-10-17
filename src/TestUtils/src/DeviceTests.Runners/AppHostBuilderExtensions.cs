@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -8,6 +9,8 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner;
+using Microsoft.Testing.Platform.Builder;
+using Microsoft.Testing.Platform.Services;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
@@ -69,5 +72,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			return appHostBuilder;
 		}
 #endif
+	}
+
+
+	public static class TestingFrameworkExtensions
+	{
+	
 	}
 }

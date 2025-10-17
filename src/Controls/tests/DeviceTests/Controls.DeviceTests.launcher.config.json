@@ -1,0 +1,9 @@
+{
+  "program": "C:\\windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "args": [
+    "./xharness.ps1"
+  ],
+  //"testRunnerPort": "12345",
+  "logLevel": "Trace",
+  "logDirectory": "..\\..\\..\\Logs"
+}
