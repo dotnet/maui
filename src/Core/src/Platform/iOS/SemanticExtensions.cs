@@ -58,20 +58,29 @@ namespace Microsoft.Maui.Platform
 		internal static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
 		{
 			// TODO: Make public for .NET 11.
-			
-			if (inputView == null)
+
+			if (inputView is null || !UIAccessibility.IsVoiceOverRunning)
 			{
 				return;
 			}
 
-			// Post notification with a delay to ensure the InputView is fully displayed in the window hierarchy
-			platformView.BeginInvokeOnMainThread(() =>
+			// By the time EditingDidBegin is called, the InputView should be ready
+			// If InputView is not in window yet, post with minimal delay
+			if (inputView.Window is not null)
 			{
-				if (UIAccessibility.IsVoiceOverRunning && inputView.Window is not null)
+				UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, inputView);
+			}
+			else
+			{
+				// Use DispatchQueue with minimal delay if not in window yet
+				Foundation.NSRunLoop.Main.BeginInvokeOnMainThread(() =>
 				{
-					UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, inputView);
-				}
-			});
+					if (inputView.Window is not null)
+					{
+						UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, inputView);
+					}
+				});
+			}
 		}
 		
 		internal static void UpdateSemantics(this UIView platformView, Semantics? semantics)
