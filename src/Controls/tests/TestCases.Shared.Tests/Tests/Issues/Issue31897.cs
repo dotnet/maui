@@ -17,7 +17,19 @@ public class Issue31897 : _IssuesUITest
 	{
 		App.WaitForElement("GetHeightButton");
 		App.Tap("GetHeightButton");
-		var label = App.WaitForElement("HeightLabel");
-		Assert.That(label.GetText(), Is.EqualTo("250"));
+		var heightLabel = App.WaitForElement("HeightLabel");
+		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
+		App.Tap("RemoveItemsButton");
+		App.Tap("GetHeightButton");
+		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
+		App.Tap("RemoveItemsButton");
+		App.Tap("GetHeightButton");
+		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
+		App.Tap("AddItemsButton");
+		App.Tap("GetHeightButton");
+		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
+		App.Tap("UpdateNewItemsButton");
+		App.Tap("GetHeightButton");
+		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
 	}
 }
