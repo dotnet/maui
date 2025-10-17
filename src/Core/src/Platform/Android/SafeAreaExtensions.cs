@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Platform;
 internal static class SafeAreaExtensions
 {
     internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
-                layout switch
-                {
-                    ISafeAreaView2 sav2 => sav2,
-                    IElementHandler { VirtualView: ISafeAreaView2 virtualSav2 } => virtualSav2,
-                    _ => null
-                };
+        layout switch
+        {
+            ISafeAreaView2 sav2 => sav2,
+            IElementHandler { VirtualView: ISafeAreaView2 virtualSav2 } => virtualSav2,
+            _ => null
+        };
 
     internal static ISafeAreaView? GetSafeAreaView(object? layout) =>
         layout switch
@@ -51,6 +51,7 @@ internal static class SafeAreaExtensions
 
         var layout = crossPlatformLayout;
         var safeAreaView2 = GetSafeAreaView2(layout);
+        var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
 
         if (safeAreaView2 is not null)
         {
@@ -85,7 +86,10 @@ internal static class SafeAreaExtensions
             // Check intersection with view bounds to determine which edges actually need padding
             // If we don't have any tracked views yet we will find the first view to pad
             // in order to limit duplicate measures
-            if ((view.MeasuredHeight > 0 && view.MeasuredWidth > 0) || !hasTrackedViews)
+            var viewWidth = view.Width > 0 ? view.Width : view.MeasuredWidth;
+            var viewHeight = view.Height > 0 ? view.Height : view.MeasuredHeight;
+
+            if ((viewHeight > 0 && viewWidth > 0) || !hasTrackedViews)
             {
                 if (left == 0 && right == 0 && top == 0 && bottom == 0)
                 {
@@ -93,19 +97,33 @@ internal static class SafeAreaExtensions
                     return windowInsets;
                 }
 
+                // Get view's position on screen
+                var viewLocation = new int[2];
+                view.GetLocationOnScreen(viewLocation);
+                var viewLeft = viewLocation[0];
+                var viewTop = viewLocation[1];
+                var viewRight = viewLeft + viewWidth;
+                var viewBottom = viewTop + viewHeight;
+
+                // Adjust for view's position relative to parent (including margins) to calculate
+                // safe area insets relative to the parent's position, not the view's visual position.
+                // This ensures margins and safe area insets are additive rather than overlapping.
+                // For example: 20px margin + 30px safe area = 50px total offset
+                // We only take the margins into account if the Width and Height are set
+                // If the Width and Height aren't set it means the layout pass hasn't happen yet
+                if (view.Width > 0 && view.Height > 0)
+                {
+                    viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
+                    viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
+                    viewRight += (int)context.ToPixels(margins.Right);
+                    viewBottom += (int)context.ToPixels(margins.Bottom);
+                }
+
                 // When in AdjustPan mode with keyboard showing, skip position-based calculations
                 // because the window panning makes view coordinates unreliable for determining overlaps.
                 // Instead, trust the safe area values we already calculated.
                 if (!(isKeyboardShowing && isAdjustPan))
                 {
-                    // Get view's position on screen
-                    var viewLocation = new int[2];
-                    view.GetLocationOnScreen(viewLocation);
-                    var viewLeft = viewLocation[0];
-                    var viewTop = viewLocation[1];
-                    var viewRight = viewLeft + view.MeasuredWidth;
-                    var viewBottom = viewTop + view.MeasuredHeight;
-
                     // Get actual screen dimensions (including system UI)
                     var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
                     if (windowManager?.DefaultDisplay is not null)
@@ -126,7 +144,7 @@ internal static class SafeAreaExtensions
                         }
                         else
                         {
-                            if (view.MeasuredHeight > 0 || hasTrackedViews)
+                            if (viewHeight > 0 || hasTrackedViews)
                                 top = 0;
                         }
 
@@ -141,7 +159,7 @@ internal static class SafeAreaExtensions
                         {
                             // if the view height is zero because it hasn't done the first pass
                             // and we don't have any tracked views yet then we will apply the bottom inset
-                            if (view.MeasuredHeight > 0 || hasTrackedViews)
+                            if (viewHeight > 0 || hasTrackedViews)
                                 bottom = 0;
                         }
 
@@ -153,7 +171,7 @@ internal static class SafeAreaExtensions
                         }
                         else
                         {
-                            if (view.MeasuredWidth > 0 || hasTrackedViews)
+                            if (viewWidth > 0 || hasTrackedViews)
                                 left = 0;
                         }
 
@@ -166,7 +184,7 @@ internal static class SafeAreaExtensions
                         }
                         else
                         {
-                            if (view.MeasuredWidth > 0 || hasTrackedViews)
+                            if (viewWidth > 0 || hasTrackedViews)
                                 right = 0;
                         }
                     }

@@ -55,7 +55,7 @@ public class Issue1414 : TestContentPage
 
 			tableView.Root.Add(section);
 		}
-
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = tableView;
 	}
 }
