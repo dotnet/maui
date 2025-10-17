@@ -32,7 +32,11 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsFalse("build_metadata.additionalfiles.EnableDiagnostics"))
 				return false;
-			return Options.IsTrue("build_property.EnableMauiXamlDiagnostics");
+			if (Options.IsTrue("build_property.EnableMauiXamlDiagnostics"))
+				return true;
+			if (Options.IsFalse("build_property.EnableMauiXamlDiagnostics"))
+				return false;
+			return !Configuration.Equals("Release", StringComparison.OrdinalIgnoreCase);
 		}
 	}
 
