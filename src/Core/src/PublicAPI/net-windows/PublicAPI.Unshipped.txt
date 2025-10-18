@@ -41,6 +41,8 @@ Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.IInitializationAwareWebView
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
+Microsoft.Maui.IPicker.BorderColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.IPicker.BorderThickness.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
@@ -153,10 +155,10 @@ override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertFrom(System.
 override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-override Microsoft.Maui.Handlers.ImageHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.ImageHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Handlers.LayoutHandlerUpdate.ToString() -> string!

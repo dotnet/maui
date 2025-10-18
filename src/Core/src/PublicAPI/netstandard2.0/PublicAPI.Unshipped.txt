@@ -41,6 +41,8 @@ Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.IInitializationAwareWebView
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
+Microsoft.Maui.IPicker.BorderColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.IPicker.BorderThickness.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool

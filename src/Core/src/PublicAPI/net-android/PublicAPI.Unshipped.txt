@@ -23,15 +23,6 @@ Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersis
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
 Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
 Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
-Microsoft.Maui.PlatformViewGroup
-override Microsoft.Maui.PlatformViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
-override Microsoft.Maui.PlatformViewGroup.ThresholdClass.get -> nint
-override Microsoft.Maui.PlatformViewGroup.ThresholdType.get -> System.Type!
-Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context) -> void
-Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
-Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
-Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle, int defStyleRes) -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.set -> void
@@ -53,6 +44,8 @@ Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.IInitializationAwareWebView
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
+Microsoft.Maui.IPicker.BorderColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.IPicker.BorderThickness.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
@@ -95,6 +88,12 @@ Microsoft.Maui.Platform.StackNavigationManager.NavGraph.get -> AndroidX.Navigati
 Microsoft.Maui.Platform.StackNavigationManager.NavHost.get -> AndroidX.Navigation.Fragment.NavHostFragment!
 Microsoft.Maui.Platform.StackNavigationManager.SetNavigationViewFragmentType(System.Type! type) -> void
 Microsoft.Maui.Platform.StackNavigationManager.ToolbarElement.get -> Microsoft.Maui.IToolbarElement?
+Microsoft.Maui.PlatformViewGroup
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle, int defStyleRes) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 *REMOVED*Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.SafeAreaEdges.Bottom.get -> Microsoft.Maui.SafeAreaRegions
@@ -214,6 +213,7 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyDown(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool
@@ -244,8 +244,10 @@ override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnMeasure(int widthMeasu
 *REMOVED*override Microsoft.Maui.Platform.MauiTextView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void
-static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiTimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
+override Microsoft.Maui.PlatformViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformViewGroup.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformViewGroup.ThresholdType.get -> System.Type!
 override Microsoft.Maui.SafeAreaEdges.Equals(object? obj) -> bool
 override Microsoft.Maui.SafeAreaEdges.GetHashCode() -> int
 override Microsoft.Maui.SafeAreaEdges.ToString() -> string!
@@ -300,6 +302,7 @@ static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonBackground(this
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonStroke(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IButtonStroke! button) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateRippleColor(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.Graphics.Color! rippleColor) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiTimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.SafeAreaEdges.All.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.Default.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.None.get -> Microsoft.Maui.SafeAreaEdges
@@ -394,4 +397,3 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
-override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void

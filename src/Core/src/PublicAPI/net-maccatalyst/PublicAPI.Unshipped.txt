@@ -1,10 +1,6 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.Converters.GridLengthTypeConverter
 Microsoft.Maui.Converters.GridLengthTypeConverter.GridLengthTypeConverter() -> void
-Microsoft.Maui.Platform.IPlatformMeasureInvalidationController
-Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() -> void
-Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating = false) -> bool
-virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
@@ -45,6 +41,8 @@ Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.IInitializationAwareWebView
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationCompleted(Microsoft.Maui.WebViewInitializationCompletedEventArgs! args) -> void
 Microsoft.Maui.IInitializationAwareWebView.WebViewInitializationStarted(Microsoft.Maui.WebViewInitializationStartedEventArgs! args) -> void
+Microsoft.Maui.IPicker.BorderColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.IPicker.BorderThickness.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.IPicker.IsOpen.get -> bool
 Microsoft.Maui.IPicker.IsOpen.set -> void
 Microsoft.Maui.IRefreshView.IsRefreshEnabled.get -> bool
@@ -60,14 +58,17 @@ Microsoft.Maui.IWindow.IsMaximizable.get -> bool
 Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 Microsoft.Maui.Platform.IAutoSizableCALayer
 Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
+Microsoft.Maui.Platform.IPlatformMeasureInvalidationController
+Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() -> void
+Microsoft.Maui.Platform.IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating = false) -> bool
 Microsoft.Maui.Platform.MauiRefreshView.UpdateIsRefreshEnabled(bool isRefreshEnabled) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
+Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint, Microsoft.Maui.Graphics.Size measuredSize) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
-Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint, Microsoft.Maui.Graphics.Size measuredSize) -> void
 Microsoft.Maui.Platform.TextInputExtensions
 Microsoft.Maui.Platform.UIApplicationExtensions
 Microsoft.Maui.SafeAreaEdges
@@ -237,6 +238,7 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? other) -> bool
