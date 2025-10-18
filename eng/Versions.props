@@ -211,7 +211,7 @@
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>10.0.100-rc.2</DotNetMaciOSManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_260PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet100_260PackageVersion)</MicrosoftmacOSSdkPackageVersion>
