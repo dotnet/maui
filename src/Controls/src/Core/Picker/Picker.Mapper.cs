@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 #elif WINDOWS
 			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.HorizontalOptions), MapHorizontalOptions);
 			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.VerticalOptions), MapVerticalOptions);
+			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.BorderColor), MapBorderColor);
 #endif
 			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.ItemsSource), MapItemsSource);
 		}
