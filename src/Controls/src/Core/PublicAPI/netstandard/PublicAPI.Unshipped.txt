@@ -10,6 +10,10 @@ Microsoft.Maui.Controls.Border.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.Controls.Border.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
+~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.CheckBox.Command.set -> void
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.set -> void
 *REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer
 *REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 *REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.set -> void
@@ -30,11 +34,6 @@ Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeArea
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
-override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
-~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.CheckBox.Command.set -> void
-~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object
-~Microsoft.Maui.Controls.CheckBox.CommandParameter.set -> void
 ~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
@@ -129,6 +128,10 @@ Microsoft.Maui.Controls.NavigationType.Replace = 5 -> Microsoft.Maui.Controls.Na
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Controls.Picker.BorderColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Picker.BorderColor.set -> void
+Microsoft.Maui.Controls.Picker.BorderThickness.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.Picker.BorderThickness.set -> void
 Microsoft.Maui.Controls.Picker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
 Microsoft.Maui.Controls.Picker.IsOpen.get -> bool
 Microsoft.Maui.Controls.Picker.IsOpen.set -> void
@@ -251,6 +254,7 @@ override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.CanConvertFrom(Syst
 override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.CarouselLayoutTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
@@ -422,12 +426,12 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.CheckBox.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.CheckBox.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPage.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -436,6 +440,8 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 static readonly Microsoft.Maui.Controls.DisplayRotationStateTrigger.RotationProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.Layout.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.MenuItem.AcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Picker.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Picker.BorderThicknessProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Picker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty
