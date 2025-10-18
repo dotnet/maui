@@ -86,11 +86,14 @@ namespace Microsoft.Maui.Platform
             {
                 if (appBarLayoutContainsSomething)
                 {
-                    appBarLayout.SetPadding(leftInset, topInset, rightInset, 0);
+                    // Pad the AppBarLayout to avoid the navigation bar in landscape orientation and system UI in portrait.
+                    // In landscape, the navigation bar is on the left or right edge; in portrait, we account for the status bar and display cutouts.
+                    // Without this padding, the AppBarLayout would extend behind these system UI elements and be partially hidden or non-interactive.
+                    appBarLayout.SetPadding(systemBars?.Left ?? 0, topInset, systemBars?.Right ?? 0, 0);
                 }
                 else
                 {
-                    appBarLayout.SetPadding(leftInset, 0, rightInset, 0);
+                    appBarLayout.SetPadding(0, 0, 0, 0);
                 }
             }
 
