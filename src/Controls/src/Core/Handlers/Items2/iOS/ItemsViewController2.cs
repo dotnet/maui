@@ -449,6 +449,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
+		internal UICollectionViewScrollDirection GetScrollDirection()
+		{
+			return ScrollDirection;
+		}
+
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
