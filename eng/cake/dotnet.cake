@@ -952,7 +952,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                args.Append(loggerArg);
             }
 
-            args.Append($"/bl:{binlog}");
+            args.Append($"-bl:{binlog}");
             if(maxCpuCount > 0)
             {
                args.Append($"-maxcpucount:{maxCpuCount}");
