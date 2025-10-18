@@ -32,6 +32,7 @@
     <!-- dotnet/sdk -->
     <MicrosoftNETSdkPackageVersion>10.0.100-rtm.25517.104</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
+    <MonoPackageVersion>10.0.100</MonoPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
@@ -209,7 +210,7 @@
     <MonoVersionBand>10.0.100</MonoVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>10.0.100-rc.2</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>10.0.100-rc.2</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_260PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
