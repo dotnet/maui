@@ -1,83 +1,589 @@
-using System;
+ï»¿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.IO;
+
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class PathFigureCollectionConverterTests
-	{
-		private readonly PathFigureCollectionConverter _converter = new();
+    public class PathFigureCollectionConverterTests
+    {
+        private readonly PathFigureCollectionConverter _converter = new();
 
-		[Fact]
-		public void ConvertNullTest()
-		{
-			var result = _converter.ConvertFromInvariantString(null) as PathFigureCollection;
-			var resultPath = _converter.ConvertToInvariantString(result);
+        [Fact]
+        public void ConvertNullTest()
+        {
+            var result = _converter.ConvertFromInvariantString(null) as PathFigureCollection;
+            var resultPath = _converter.ConvertToInvariantString(result);
 
-			Assert.NotNull(result);
-			Assert.Empty(result);
+            Assert.NotNull(result);
+            Assert.Empty(result);
 
-			Assert.NotNull(resultPath);
-			Assert.Equal("", resultPath);
-		}
+            Assert.NotNull(resultPath);
+            Assert.Equal("", resultPath);
+        }
 
-		[Theory]
-		[InlineData("M10,100 C100,0 200,200 300,100", "Waveform")]
-		public void ConvertStringToPathFigureCollectionTest(string path, string name)
-		{
-			Console.WriteLine(name);
-			PathFigureCollection result = _converter.ConvertFromInvariantString(path) as PathFigureCollection;
-			string resultPath = _converter.ConvertToInvariantString(result);
+        [Theory]
+        [InlineData("M10,100 C100,0 200,200 300,100", "Waveform")]
+        public void ConvertStringToPathFigureCollectionTest(string path, string name)
+        {
+            Console.WriteLine(name);
+            PathFigureCollection result = _converter.ConvertFromInvariantString(path) as PathFigureCollection;
+            string resultPath = _converter.ConvertToInvariantString(result);
 
-			Assert.NotNull(result);
-			Assert.NotNull(resultPath);
-			Assert.Single(result);
-			Assert.Equal(path, resultPath, ignoreCase: true, ignoreWhiteSpaceDifferences: true, ignoreAllWhiteSpace: true);
-		}
+            Assert.NotNull(result);
+            Assert.NotNull(resultPath);
+            Assert.Single(result);
+            Assert.Equal(path, resultPath, ignoreCase: true, ignoreWhiteSpaceDifferences: true, ignoreAllWhiteSpace: true);
+        }
 
-		[Theory]
-		[InlineData("l 16", "Move left (relative) with no initial position")]
-		[InlineData("L 16", "Move left with no initial position")]
-		[InlineData("h 16", "Move horizontally (relative) with no initial position")]
-		[InlineData("H 16", "Move horizontally with no initial position")]
-		[InlineData("v 16", "Move vertically (relative) with no initial position")]
-		[InlineData("V 16", "Move vertically with no initial position")]
-		[InlineData("L 100,0", "Line with no initial position")]
-		[InlineData("a 5 3 20 0 1 8 8", "Arc (relative) with no initial position")]
-		[InlineData("A 5 3 20 0 1 8 8", "Arc no initial position")]
-		[InlineData("C 8.4580019,26.747002 10.050002,27.758995 12.013003,27.758995", "Bézier curve with no initial position")]
-		[InlineData("q 8,2 8,8", "Quadratic Bézier curve (relative) with no initial position")]
-		[InlineData("Q 8,2 8,8", "Quadratic Bézier curve with no initial position")]
-		[InlineData("s 7,8 8,4", "Smooth Bézier curve (relative) with no initial position")]
-		[InlineData("S 7,8 8,4", "Smooth Bézier curve with no initial position")]
-		public void InvalidInputTest(string path, string name)
-		{
-			Console.WriteLine(name);
-			var e = Assert.Throws<FormatException>(() => _converter.ConvertFromInvariantString(path));
-			Assert.StartsWith("UnexpectedToken ", e.Message, StringComparison.Ordinal);
-		}
+        [Theory]
+        [InlineData("l 16", "Move left (relative) with no initial position")]
+        [InlineData("L 16", "Move left with no initial position")]
+        [InlineData("h 16", "Move horizontally (relative) with no initial position")]
+        [InlineData("H 16", "Move horizontally with no initial position")]
+        [InlineData("v 16", "Move vertically (relative) with no initial position")]
+        [InlineData("V 16", "Move vertically with no initial position")]
+        [InlineData("L 100,0", "Line with no initial position")]
+        [InlineData("a 5 3 20 0 1 8 8", "Arc (relative) with no initial position")]
+        [InlineData("A 5 3 20 0 1 8 8", "Arc no initial position")]
+        [InlineData("C 8.4580019,26.747002 10.050002,27.758995 12.013003,27.758995", "Bï¿½zier curve with no initial position")]
+        [InlineData("q 8,2 8,8", "Quadratic Bï¿½zier curve (relative) with no initial position")]
+        [InlineData("Q 8,2 8,8", "Quadratic Bï¿½zier curve with no initial position")]
+        [InlineData("s 7,8 8,4", "Smooth Bï¿½zier curve (relative) with no initial position")]
+        [InlineData("S 7,8 8,4", "Smooth Bï¿½zier curve with no initial position")]
+        public void InvalidInputTest(string path, string name)
+        {
+            Console.WriteLine(name);
+            var e = Assert.Throws<FormatException>(() => _converter.ConvertFromInvariantString(path));
+            Assert.StartsWith("UnexpectedToken ", e.Message, StringComparison.Ordinal);
+        }
 
-		[Theory]
-		[InlineData("M8.4580019,25.5 C8.4580019,26.747002 10.050002,27.758995 12.013003,27.758995 C13.977001,27.758995 15.569004,26.747002 15.569004,25.5 Z M19.000005,10 C16.861005,9.9469986 14.527004,12.903999 14.822002,22.133995 C14.822002,22.133995 26.036002,15.072998 20.689,10.681999 C20.183003,10.265999 19.599004,10.014999 19.000005,10 Z M4.2539991,10 C3.6549998,10.014999 3.0710002,10.265999 2.5649996,10.681999 C-2.7820019,15.072998 8.4320009,22.133995 8.4320009,22.133995 C8.7270001,12.903999 6.3929995,9.9469986 4.2539991,10 Z M11.643,0 C18.073003,0 23.286002,5.8619995 23.286002,13.091995 C23.286002,20.321999 18.684003,32 12.254,32 C5.8239992,32 1.8224728E-07,20.321999 0,13.091995 C1.8224728E-07,5.8619995 5.2129987,0 11.643,0 Z", "AlienPathTest")]
-		[InlineData("M16.484421,0.73799322 C20.831404,0.7379931 24.353395,1.1259904 24.353395,1.6049905 C24.353395,2.0839829 20.831404,2.4719803 16.484421,2.47198 C12.138443,2.4719803 8.6154527,2.0839829 8.6154527,1.6049905 C8.6154527,1.1259904 12.138443,0.7379931 16.484421,0.73799322 Z M1.9454784,0.061995983 C2.7564723,5.2449602 12.246436,11.341911 12.246436,11.341911 C13.248431,19.240842 9.6454477,17.915854 9.6454477,17.915854 C7.9604563,18.897849 6.5314603,17.171859 6.5314603,17.171859 C4.1084647,18.29585 3.279473,15.359877 3.2794733,15.359877 C0.82348057,15.291876 1.2804796,11.362907 1.2804799,11.362907 C-1.573514,10.239915 1.2344746,6.3909473 1.2344746,6.3909473 C-1.3255138,4.9869594 1.9454782,0.061996057 1.9454784,0.061995983 Z M30.054371,0 C30.054371,9.8700468E-08 33.325355,4.9249634 30.765367,6.3289513 C30.765367,6.3289513 33.574364,10.177919 30.71837,11.30191 C30.71837,11.30191 31.175369,15.22988 28.721384,15.297872 C28.721384,15.297872 27.892376,18.232854 25.468389,17.110862 C25.468389,17.110862 24.040392,18.835847 22.355402,17.853852 C22.355402,17.853852 18.752417,19.178845 19.753414,11.279907 C19.753414,11.279907 29.243385,5.1829566 30.054371,0 Z", "AngelPathTest")]
-		[InlineData("M16.000002,21.077007 L20.708025,23.275002 L19.86202,25.086996 L16.000002,23.284 L12.136983,25.086996 L11.291979,23.275002 Z M19.94001,15.458007 C21.018013,15.458007 21.892015,16.312004 21.892015,17.366001 C21.892015,18.419998 21.018013,19.273996 19.94001,19.273996 C18.862009,19.273996 17.988007,18.419998 17.988007,17.366001 C17.988007,16.312004 18.862009,15.458007 19.94001,15.458007 Z M12.059019,15.458007 C13.137022,15.458007 14.011024,16.312004 14.011024,17.366001 C14.011024,18.419998 13.137022,19.273996 12.059019,19.273996 C10.981017,19.273996 10.107016,18.419998 10.107016,17.366001 C10.107016,16.312004 10.981017,15.458007 12.059019,15.458007 Z M7.827992,9.5650053 L16.000006,14.811005 L24.172022,9.5650053 L25.252024,11.249004 L16.000006,17.188004 L6.7479901,11.249004 Z M16,2 C8.2799683,2 2,8.2799988 2,16 C2,23.720001 8.2799683,30 16,30 C23.719971,30 30,23.720001 30,16 C30,8.2799988 23.719971,2 16,2 Z M16,0 C24.82196,0 32,7.1779938 32,16 C32,24.821991 24.82196,32 16,32 C7.1779785,32 0,24.821991 0,16 C0,7.1779938 7.1779785,0 16,0 Z", "AngryPathTest")]
-		[InlineData("M13.952596,15.068143 C13.767538,15.066144 13.583578,15.095151 13.403586,15.157148 C12.252587,15.553147 11.725549,17.163162 12.224572,18.753189 C12.725547,20.342192 14.062582,21.309212 15.211566,20.914204 C16.362564,20.518204 16.889541,18.908188 16.390579,17.318163 C15.968584,15.977162 14.95058,15.077146 13.952596,15.068143 Z M7.7945876,6.1100698 C7.2026091,6.0760732 6.4365583,6.7850791 5.9736071,7.8550807 C5.4445558,9.0761004 5.5105953,10.302109 6.1215563,10.590106 C6.7316013,10.881108 7.65555,10.126112 8.1855779,8.9070922 C8.7145686,7.6860881 8.6485896,6.4610711 8.036592,6.1710754 C7.9606028,6.1350642 7.8795486,6.1150752 7.7945876,6.1100698 Z M15.404559,5.9590679 C15.383563,5.9580608 15.362566,5.9580608 15.34157,5.960075 C14.674579,6.0020671 14.194539,7.1220723 14.275593,8.4590903 C14.354573,9.7981063 14.962543,10.848119 15.631547,10.802114 C16.300554,10.759113 16.778579,9.6401005 16.700576,8.3020907 C16.622573,7.006074 16.049577,5.980064 15.404559,5.9590679 Z M12.317589,1.4699259E-05 C15.527545,0.0050196948 18.757579,1.2870288 21.236579,3.8010436 C24.038576,6.6430793 25.533567,12.005127 25.825559,15.861164 C26.09155,19.371191 27.844537,19.518194 30.765552,22.228211 C31.592515,22.995216 33.904521,25.825243 28.733512,26.053242 C26.619564,26.146244 25.60156,25.739243 21.732549,22.850226 C21.235542,22.545214 20.664558,22.733219 20.373542,22.885214 C20.017526,23.07122 19.741586,23.925232 19.851572,24.215227 C20.16456,25.583237 22.25855,25.135235 23.427553,26.313253 C24.41156,27.305252 22.795536,29.807287 18.926586,29.29027 C18.926586,29.29027 16.343582,28.587277 13.853597,25.258236 C11.910547,25.242245 9.6305823,25.258236 9.6305823,25.258236 C9.6305823,25.258236 9.6025672,26.705256 9.6425452,27.10626 C10.271573,27.256254 10.777553,27.021252 13.298544,27.736271 C14.150593,27.978262 16.663589,31.170292 8.7236018,30.424282 C7.0135832,30.263287 7.1875944,30.721283 5.2576051,26.025242 C4.2626119,23.604229 2.0076115,22.396212 0.6345674,17.082169 C-0.27241354,14.207143 -0.21040192,11.068107 0.84159805,8.2280856 C0.97556992,7.8450862 1.1235799,7.5130826 1.2786091,7.1980773 C1.8406196,6.0020671 2.5815849,4.8720523 3.5156043,3.863056 C5.9166007,1.2680314 9.107573,-0.0049901602 12.317589,1.4699259E-05 Z", "GhostPathTest")]
-		[InlineData("M27.915988,16.084991 C24.186011,18.076004 19.902995,19.220001 15.330003,19.220001 C11.187978,19.220001 7.2869802,18.263 3.8149987,16.608994 C4.2960163,22.921997 9.4639798,27.914001 15.840012,27.914001 C22.389993,27.914001 27.694005,22.651001 27.915988,16.084991 Z M20.936015,7.0749969 C19.574994,7.0749969 18.467023,8.3109894 18.467023,9.8430023 C18.467023,11.371002 19.574994,12.612 20.936015,12.612 C22.299966,12.612 23.405984,11.371002 23.405984,9.8430023 C23.405984,8.3109894 22.299966,7.0749969 20.936015,7.0749969 Z M10.57903,7.0749969 C9.2150183,7.0749969 8.1099778,8.3109894 8.1099778,9.8430023 C8.1099778,11.371002 9.2150183,12.612 10.57903,12.612 C11.941029,12.612 13.048022,11.371002 13.048022,9.8430023 C13.048022,8.3109894 11.941029,7.0749969 10.57903,7.0749969 Z M15.840988,0 C24.587989,0 31.681001,7.1649933 31.681001,16 C31.681001,24.835999 24.587989,32 15.840988,32 C7.0920344,32 -5.1397365E-08,24.835999 0,16 C-5.1397365E-08,7.1649933 7.0920344,0 15.840988,0 Z", "HappyPathTest")]
-		[InlineData("M7.4559937,18.497009 C7.4559937,18.497009 10.204987,19.944 16,19.944 C21.794983,19.944 24.543976,18.497009 24.543976,18.497009 C24.543976,22.527008 21.667999,27.041992 16,27.041992 C10.332001,27.041992 7.4559937,22.527008 7.4559937,18.497009 Z M20.994995,11.005005 C22.372986,11.005005 24.741974,12.721985 24.741974,13.502014 C24.741974,14.28299 22.372986,13.502014 20.994995,13.502014 C19.616974,13.502014 18.497986,14.380005 18.497986,13.502014 C18.497986,12.623993 19.616974,11.005005 20.994995,11.005005 Z M11.004974,11.005005 C12.382996,11.005005 13.502991,12.623993 13.502991,13.502014 C13.502991,14.380005 12.382996,13.502014 11.004974,13.502014 C9.6269836,13.502014 7.2589722,14.28299 7.2589722,13.502014 C7.2589722,12.721985 9.6269836,11.005005 11.004974,11.005005 Z M16,2.4970093 C8.5549927,2.4970093 2.4979858,8.5549927 2.4979858,16 C2.4979858,23.445007 8.5549927,29.502991 16,29.502991 C23.444977,29.502991 29.502991,23.445007 29.502991,16 C29.502991,8.5549927 23.444977,2.4970093 16,2.4970093 Z M16,0 C24.836975,0 32,7.1629944 32,16 C32,24.837006 24.836975,32 16,32 C7.1629944,32 0,24.837006 0,16 C0,7.1629944 7.1629944,0 16,0 Z", "LaughPathTest")]
-		[InlineData("M8.52891,4.1079743 C7.8829048,4.1079743 7.2528914,4.2500036 6.6538837,4.531986 C5.5498646,5.0479777 4.71184,5.9749806 4.286846,7.1420043 C3.8638666,8.3079903 3.9078734,9.5739825 4.4118479,10.704995 C5.4078944,12.945995 11.830959,20.130998 15.987023,24.54302 C21.348061,18.870012 26.721182,12.65501 27.5882,10.704995 C28.092173,9.5739825 28.137158,8.3079903 27.712164,7.1420043 C27.289183,5.9749806 26.449145,5.0479777 25.345125,4.531986 C24.748133,4.2500036 24.117142,4.1079743 23.470099,4.1079743 C21.820113,4.1079743 20.734099,5.0509989 19.500073,6.5119984 L16.001,10.18998 L12.499975,6.5119984 C11.245928,5.038975 10.180911,4.1079743 8.52891,4.1079743 Z M8.5309241,0 C11.559959,-1.7678713E-07 14.463015,1.6680005 16.001,4.5209997 C18.138054,0.55099513 22.921141,-1.1230175 27.007197,0.79498353 C31.297236,2.8069785 33.186238,8.0069955 31.227228,12.411997 C29.274197,16.804 15.998009,30.38 15.998009,30.38 C15.917014,30.327022 2.7268267,16.804 0.77379643,12.411997 C-1.1852157,8.0069955 0.70378798,2.8069785 4.9918731,0.79498353 C6.1408761,0.25497441 7.3459104,-1.7678713E-07 8.5309241,0 Z", "LovePathTest")]
-		[InlineData("M16,19.85202 C19.743988,19.85202 23.047974,21.71701 25.048981,24.563019 C22.498993,22.729004 19.380981,21.637024 16,21.637024 C12.618988,21.637024 9.5009766,22.729004 6.9509888,24.563019 C8.9519958,21.71701 12.255981,19.85202 16,19.85202 Z M20.994995,11.005005 C22.372986,11.005005 23.492981,12.123016 23.492981,13.503021 C23.492981,14.882019 22.372986,16 20.994995,16 C19.616974,16 18.497986,14.882019 18.497986,13.503021 C18.497986,12.123016 19.616974,11.005005 20.994995,11.005005 Z M11.004974,11.005005 C12.382996,11.005005 13.502991,12.123016 13.502991,13.503021 C13.502991,14.882019 12.382996,16 11.004974,16 C9.6269836,16 8.5069885,14.882019 8.5069885,13.503021 C8.5069885,12.123016 9.6269836,11.005005 11.004974,11.005005 Z M16,2.4970093 C8.5549927,2.4970093 2.4979858,8.5550232 2.4979858,16 C2.4979858,23.445007 8.5549927,29.503021 16,29.503021 C23.444977,29.503021 29.502991,23.445007 29.502991,16 C29.502991,8.5550232 23.444977,2.4970093 16,2.4970093 Z M16,0 C24.836975,0 32,7.1629944 32,16 C32,24.837006 24.836975,32 16,32 C7.1629944,32 0,24.837006 0,16 C0,7.1629944 7.1629944,0 16,0 Z", "SadPathTest")]
-		public void ComplexPathTest(string path, string name)
-		{
-			Console.WriteLine(name);
-			PathFigureCollection result = _converter.ConvertFromInvariantString(path) as PathFigureCollection;
+        [Theory]
+        [InlineData("M8.4580019,25.5 C8.4580019,26.747002 10.050002,27.758995 12.013003,27.758995 C13.977001,27.758995 15.569004,26.747002 15.569004,25.5 Z M19.000005,10 C16.861005,9.9469986 14.527004,12.903999 14.822002,22.133995 C14.822002,22.133995 26.036002,15.072998 20.689,10.681999 C20.183003,10.265999 19.599004,10.014999 19.000005,10 Z M4.2539991,10 C3.6549998,10.014999 3.0710002,10.265999 2.5649996,10.681999 C-2.7820019,15.072998 8.4320009,22.133995 8.4320009,22.133995 C8.7270001,12.903999 6.3929995,9.9469986 4.2539991,10 Z M11.643,0 C18.073003,0 23.286002,5.8619995 23.286002,13.091995 C23.286002,20.321999 18.684003,32 12.254,32 C5.8239992,32 1.8224728E-07,20.321999 0,13.091995 C1.8224728E-07,5.8619995 5.2129987,0 11.643,0 Z", "AlienPathTest")]
+        [InlineData("M16.484421,0.73799322 C20.831404,0.7379931 24.353395,1.1259904 24.353395,1.6049905 C24.353395,2.0839829 20.831404,2.4719803 16.484421,2.47198 C12.138443,2.4719803 8.6154527,2.0839829 8.6154527,1.6049905 C8.6154527,1.1259904 12.138443,0.7379931 16.484421,0.73799322 Z M1.9454784,0.061995983 C2.7564723,5.2449602 12.246436,11.341911 12.246436,11.341911 C13.248431,19.240842 9.6454477,17.915854 9.6454477,17.915854 C7.9604563,18.897849 6.5314603,17.171859 6.5314603,17.171859 C4.1084647,18.29585 3.279473,15.359877 3.2794733,15.359877 C0.82348057,15.291876 1.2804796,11.362907 1.2804799,11.362907 C-1.573514,10.239915 1.2344746,6.3909473 1.2344746,6.3909473 C-1.3255138,4.9869594 1.9454782,0.061996057 1.9454784,0.061995983 Z M30.054371,0 C30.054371,9.8700468E-08 33.325355,4.9249634 30.765367,6.3289513 C30.765367,6.3289513 33.574364,10.177919 30.71837,11.30191 C30.71837,11.30191 31.175369,15.22988 28.721384,15.297872 C28.721384,15.297872 27.892376,18.232854 25.468389,17.110862 C25.468389,17.110862 24.040392,18.835847 22.355402,17.853852 C22.355402,17.853852 18.752417,19.178845 19.753414,11.279907 C19.753414,11.279907 29.243385,5.1829566 30.054371,0 Z", "AngelPathTest")]
+        [InlineData("M16.000002,21.077007 L20.708025,23.275002 L19.86202,25.086996 L16.000002,23.284 L12.136983,25.086996 L11.291979,23.275002 Z M19.94001,15.458007 C21.018013,15.458007 21.892015,16.312004 21.892015,17.366001 C21.892015,18.419998 21.018013,19.273996 19.94001,19.273996 C18.862009,19.273996 17.988007,18.419998 17.988007,17.366001 C17.988007,16.312004 18.862009,15.458007 19.94001,15.458007 Z M12.059019,15.458007 C13.137022,15.458007 14.011024,16.312004 14.011024,17.366001 C14.011024,18.419998 13.137022,19.273996 12.059019,19.273996 C10.981017,19.273996 10.107016,18.419998 10.107016,17.366001 C10.107016,16.312004 10.981017,15.458007 12.059019,15.458007 Z M7.827992,9.5650053 L16.000006,14.811005 L24.172022,9.5650053 L25.252024,11.249004 L16.000006,17.188004 L6.7479901,11.249004 Z M16,2 C8.2799683,2 2,8.2799988 2,16 C2,23.720001 8.2799683,30 16,30 C23.719971,30 30,23.720001 30,16 C30,8.2799988 23.719971,2 16,2 Z M16,0 C24.82196,0 32,7.1779938 32,16 C32,24.821991 24.82196,32 16,32 C7.1779785,32 0,24.821991 0,16 C0,7.1779938 7.1779785,0 16,0 Z", "AngryPathTest")]
+        [InlineData("M13.952596,15.068143 C13.767538,15.066144 13.583578,15.095151 13.403586,15.157148 C12.252587,15.553147 11.725549,17.163162 12.224572,18.753189 C12.725547,20.342192 14.062582,21.309212 15.211566,20.914204 C16.362564,20.518204 16.889541,18.908188 16.390579,17.318163 C15.968584,15.977162 14.95058,15.077146 13.952596,15.068143 Z M7.7945876,6.1100698 C7.2026091,6.0760732 6.4365583,6.7850791 5.9736071,7.8550807 C5.4445558,9.0761004 5.5105953,10.302109 6.1215563,10.590106 C6.7316013,10.881108 7.65555,10.126112 8.1855779,8.9070922 C8.7145686,7.6860881 8.6485896,6.4610711 8.036592,6.1710754 C7.9606028,6.1350642 7.8795486,6.1150752 7.7945876,6.1100698 Z M15.404559,5.9590679 C15.383563,5.9580608 15.362566,5.9580608 15.34157,5.960075 C14.674579,6.0020671 14.194539,7.1220723 14.275593,8.4590903 C14.354573,9.7981063 14.962543,10.848119 15.631547,10.802114 C16.300554,10.759113 16.778579,9.6401005 16.700576,8.3020907 C16.622573,7.006074 16.049577,5.980064 15.404559,5.9590679 Z M12.317589,1.4699259E-05 C15.527545,0.0050196948 18.757579,1.2870288 21.236579,3.8010436 C24.038576,6.6430793 25.533567,12.005127 25.825559,15.861164 C26.09155,19.371191 27.844537,19.518194 30.765552,22.228211 C31.592515,22.995216 33.904521,25.825243 28.733512,26.053242 C26.619564,26.146244 25.60156,25.739243 21.732549,22.850226 C21.235542,22.545214 20.664558,22.733219 20.373542,22.885214 C20.017526,23.07122 19.741586,23.925232 19.851572,24.215227 C20.16456,25.583237 22.25855,25.135235 23.427553,26.313253 C24.41156,27.305252 22.795536,29.807287 18.926586,29.29027 C18.926586,29.29027 16.343582,28.587277 13.853597,25.258236 C11.910547,25.242245 9.6305823,25.258236 9.6305823,25.258236 C9.6305823,25.258236 9.6025672,26.705256 9.6425452,27.10626 C10.271573,27.256254 10.777553,27.021252 13.298544,27.736271 C14.150593,27.978262 16.663589,31.170292 8.7236018,30.424282 C7.0135832,30.263287 7.1875944,30.721283 5.2576051,26.025242 C4.2626119,23.604229 2.0076115,22.396212 0.6345674,17.082169 C-0.27241354,14.207143 -0.21040192,11.068107 0.84159805,8.2280856 C0.97556992,7.8450862 1.1235799,7.5130826 1.2786091,7.1980773 C1.8406196,6.0020671 2.5815849,4.8720523 3.5156043,3.863056 C5.9166007,1.2680314 9.107573,-0.0049901602 12.317589,1.4699259E-05 Z", "GhostPathTest")]
+        [InlineData("M27.915988,16.084991 C24.186011,18.076004 19.902995,19.220001 15.330003,19.220001 C11.187978,19.220001 7.2869802,18.263 3.8149987,16.608994 C4.2960163,22.921997 9.4639798,27.914001 15.840012,27.914001 C22.389993,27.914001 27.694005,22.651001 27.915988,16.084991 Z M20.936015,7.0749969 C19.574994,7.0749969 18.467023,8.3109894 18.467023,9.8430023 C18.467023,11.371002 19.574994,12.612 20.936015,12.612 C22.299966,12.612 23.405984,11.371002 23.405984,9.8430023 C23.405984,8.3109894 22.299966,7.0749969 20.936015,7.0749969 Z M10.57903,7.0749969 C9.2150183,7.0749969 8.1099778,8.3109894 8.1099778,9.8430023 C8.1099778,11.371002 9.2150183,12.612 10.57903,12.612 C11.941029,12.612 13.048022,11.371002 13.048022,9.8430023 C13.048022,8.3109894 11.941029,7.0749969 10.57903,7.0749969 Z M15.840988,0 C24.587989,0 31.681001,7.1649933 31.681001,16 C31.681001,24.835999 24.587989,32 15.840988,32 C7.0920344,32 -5.1397365E-08,24.835999 0,16 C-5.1397365E-08,7.1649933 7.0920344,0 15.840988,0 Z", "HappyPathTest")]
+        [InlineData("M7.4559937,18.497009 C7.4559937,18.497009 10.204987,19.944 16,19.944 C21.794983,19.944 24.543976,18.497009 24.543976,18.497009 C24.543976,22.527008 21.667999,27.041992 16,27.041992 C10.332001,27.041992 7.4559937,22.527008 7.4559937,18.497009 Z M20.994995,11.005005 C22.372986,11.005005 24.741974,12.721985 24.741974,13.502014 C24.741974,14.28299 22.372986,13.502014 20.994995,13.502014 C19.616974,13.502014 18.497986,14.380005 18.497986,13.502014 C18.497986,12.623993 19.616974,11.005005 20.994995,11.005005 Z M11.004974,11.005005 C12.382996,11.005005 13.502991,12.623993 13.502991,13.502014 C13.502991,14.380005 12.382996,13.502014 11.004974,13.502014 C9.6269836,13.502014 7.2589722,14.28299 7.2589722,13.502014 C7.2589722,12.721985 9.6269836,11.005005 11.004974,11.005005 Z M16,2.4970093 C8.5549927,2.4970093 2.4979858,8.5549927 2.4979858,16 C2.4979858,23.445007 8.5549927,29.502991 16,29.502991 C23.444977,29.502991 29.502991,23.445007 29.502991,16 C29.502991,8.5549927 23.444977,2.4970093 16,2.4970093 Z M16,0 C24.836975,0 32,7.1629944 32,16 C32,24.837006 24.836975,32 16,32 C7.1629944,32 0,24.837006 0,16 C0,7.1629944 7.1629944,0 16,0 Z", "LaughPathTest")]
+        [InlineData("M8.52891,4.1079743 C7.8829048,4.1079743 7.2528914,4.2500036 6.6538837,4.531986 C5.5498646,5.0479777 4.71184,5.9749806 4.286846,7.1420043 C3.8638666,8.3079903 3.9078734,9.5739825 4.4118479,10.704995 C5.4078944,12.945995 11.830959,20.130998 15.987023,24.54302 C21.348061,18.870012 26.721182,12.65501 27.5882,10.704995 C28.092173,9.5739825 28.137158,8.3079903 27.712164,7.1420043 C27.289183,5.9749806 26.449145,5.0479777 25.345125,4.531986 C24.748133,4.2500036 24.117142,4.1079743 23.470099,4.1079743 C21.820113,4.1079743 20.734099,5.0509989 19.500073,6.5119984 L16.001,10.18998 L12.499975,6.5119984 C11.245928,5.038975 10.180911,4.1079743 8.52891,4.1079743 Z M8.5309241,0 C11.559959,-1.7678713E-07 14.463015,1.6680005 16.001,4.5209997 C18.138054,0.55099513 22.921141,-1.1230175 27.007197,0.79498353 C31.297236,2.8069785 33.186238,8.0069955 31.227228,12.411997 C29.274197,16.804 15.998009,30.38 15.998009,30.38 C15.917014,30.327022 2.7268267,16.804 0.77379643,12.411997 C-1.1852157,8.0069955 0.70378798,2.8069785 4.9918731,0.79498353 C6.1408761,0.25497441 7.3459104,-1.7678713E-07 8.5309241,0 Z", "LovePathTest")]
+        [InlineData("M16,19.85202 C19.743988,19.85202 23.047974,21.71701 25.048981,24.563019 C22.498993,22.729004 19.380981,21.637024 16,21.637024 C12.618988,21.637024 9.5009766,22.729004 6.9509888,24.563019 C8.9519958,21.71701 12.255981,19.85202 16,19.85202 Z M20.994995,11.005005 C22.372986,11.005005 23.492981,12.123016 23.492981,13.503021 C23.492981,14.882019 22.372986,16 20.994995,16 C19.616974,16 18.497986,14.882019 18.497986,13.503021 C18.497986,12.123016 19.616974,11.005005 20.994995,11.005005 Z M11.004974,11.005005 C12.382996,11.005005 13.502991,12.123016 13.502991,13.503021 C13.502991,14.882019 12.382996,16 11.004974,16 C9.6269836,16 8.5069885,14.882019 8.5069885,13.503021 C8.5069885,12.123016 9.6269836,11.005005 11.004974,11.005005 Z M16,2.4970093 C8.5549927,2.4970093 2.4979858,8.5550232 2.4979858,16 C2.4979858,23.445007 8.5549927,29.503021 16,29.503021 C23.444977,29.503021 29.502991,23.445007 29.502991,16 C29.502991,8.5550232 23.444977,2.4970093 16,2.4970093 Z M16,0 C24.836975,0 32,7.1629944 32,16 C32,24.837006 24.836975,32 16,32 C7.1629944,32 0,24.837006 0,16 C0,7.1629944 7.1629944,0 16,0 Z", "SadPathTest")]
+        public void ComplexPathTest(string path, string name)
+        {
+            Console.WriteLine(name);
+            PathFigureCollection result = _converter.ConvertFromInvariantString(path) as PathFigureCollection;
 
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
 
-			string resultPath = _converter.ConvertToInvariantString(result);
+            string resultPath = _converter.ConvertToInvariantString(result);
 
-			Assert.NotNull(resultPath);
-			Assert.Equal(path, resultPath, ignoreCase: true, ignoreWhiteSpaceDifferences: true, ignoreAllWhiteSpace: true);
-		}
-	}
+            Assert.NotNull(resultPath);
+            Assert.Equal(path, resultPath, ignoreCase: true, ignoreWhiteSpaceDifferences: true, ignoreAllWhiteSpace: true);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertTo returns true when destinationType is typeof(string).
+        /// </summary>
+        [Fact]
+        public void CanConvertTo_WithStringType_ReturnsTrue()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var context = Substitute.For<ITypeDescriptorContext>();
+
+            // Act
+            var result = converter.CanConvertTo(context, typeof(string));
+
+            // Assert
+            Assert.True(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertTo returns true when destinationType is typeof(string) and context is null.
+        /// </summary>
+        [Fact]
+        public void CanConvertTo_WithStringTypeAndNullContext_ReturnsTrue()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act
+            var result = converter.CanConvertTo(null, typeof(string));
+
+            // Assert
+            Assert.True(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertTo returns false when destinationType is null.
+        /// </summary>
+        [Fact]
+        public void CanConvertTo_WithNullDestinationType_ReturnsFalse()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var context = Substitute.For<ITypeDescriptorContext>();
+
+            // Act
+            var result = converter.CanConvertTo(context, null);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertTo returns false when destinationType is null and context is null.
+        /// </summary>
+        [Fact]
+        public void CanConvertTo_WithBothParametersNull_ReturnsFalse()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act
+            var result = converter.CanConvertTo(null, null);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertTo returns false for various non-string types.
+        /// </summary>
+        /// <param name="destinationType">The destination type to test.</param>
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(object))]
+        [InlineData(typeof(bool))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(PathFigureCollection))]
+        [InlineData(typeof(PathFigureCollectionConverter))]
+        [InlineData(typeof(Type))]
+        [InlineData(typeof(ITypeDescriptorContext))]
+        public void CanConvertTo_WithNonStringTypes_ReturnsFalse(Type destinationType)
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var context = Substitute.For<ITypeDescriptorContext>();
+
+            // Act
+            var result = converter.CanConvertTo(context, destinationType);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertTo returns false for various non-string types when context is null.
+        /// </summary>
+        /// <param name="destinationType">The destination type to test.</param>
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(object))]
+        [InlineData(typeof(bool))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(PathFigureCollection))]
+        public void CanConvertTo_WithNonStringTypesAndNullContext_ReturnsFalse(Type destinationType)
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act
+            var result = converter.CanConvertTo(null, destinationType);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with null input.
+        /// Should create empty collection without throwing exception.
+        /// </summary>
+        [Fact]
+        public void ParseStringToPathFigureCollection_NullInput_CreatesEmptyCollection()
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, null);
+
+            // Assert
+            Assert.Empty(collection);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with empty string input.
+        /// Should create empty collection without throwing exception.
+        /// </summary>
+        [Fact]
+        public void ParseStringToPathFigureCollection_EmptyString_CreatesEmptyCollection()
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, "");
+
+            // Assert
+            Assert.Empty(collection);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with whitespace-only string.
+        /// Should create empty collection after skipping whitespace.
+        /// </summary>
+        [Theory]
+        [InlineData("   ")]
+        [InlineData("\t")]
+        [InlineData("\n")]
+        [InlineData("\r")]
+        [InlineData("  \t \n \r  ")]
+        public void ParseStringToPathFigureCollection_WhitespaceOnly_CreatesEmptyCollection(string pathString)
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, pathString);
+
+            // Assert
+            Assert.Empty(collection);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with path strings that start with whitespace.
+        /// Should successfully parse the path after skipping leading whitespace.
+        /// </summary>
+        [Theory]
+        [InlineData("   M10,10 L20,20")]
+        [InlineData("\t\nM10,10 L20,20")]
+        [InlineData("\r\n  M10,10 L20,20")]
+        public void ParseStringToPathFigureCollection_LeadingWhitespace_ParsesSuccessfully(string pathString)
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, pathString);
+
+            // Assert
+            Assert.Single(collection);
+            Assert.Equal(new Point(10, 10), collection[0].StartPoint);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with valid fillrule prefix 'F0'.
+        /// Should successfully parse the fillrule and continue with path data.
+        /// </summary>
+        [Fact]
+        public void ParseStringToPathFigureCollection_ValidFillruleF0_ParsesSuccessfully()
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, "F0 M10,10 L20,20");
+
+            // Assert
+            Assert.Single(collection);
+            Assert.Equal(new Point(10, 10), collection[0].StartPoint);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with valid fillrule prefix 'F1'.
+        /// Should successfully parse the fillrule and continue with path data.
+        /// </summary>
+        [Fact]
+        public void ParseStringToPathFigureCollection_ValidFillruleF1_ParsesSuccessfully()
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, "F1 M10,10 L20,20");
+
+            // Assert
+            Assert.Single(collection);
+            Assert.Equal(new Point(10, 10), collection[0].StartPoint);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with fillrule prefix followed by whitespace.
+        /// Should successfully parse with whitespace between fillrule and value.
+        /// </summary>
+        [Theory]
+        [InlineData("F 0 M10,10 L20,20")]
+        [InlineData("F\t1 M10,10 L20,20")]
+        [InlineData("F \n 0 M10,10 L20,20")]
+        public void ParseStringToPathFigureCollection_FillruleWithWhitespace_ParsesSuccessfully(string pathString)
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, pathString);
+
+            // Assert
+            Assert.Single(collection);
+            Assert.Equal(new Point(10, 10), collection[0].StartPoint);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with invalid fillrule - 'F' only.
+        /// Should throw FormatException with "IllegalToken" message.
+        /// </summary>
+        [Fact]
+        public void ParseStringToPathFigureCollection_InvalidFillruleOnly_ThrowsFormatException()
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act & Assert
+            var exception = Assert.Throws<FormatException>(() =>
+                PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, "F"));
+
+            Assert.Equal("IllegalToken", exception.Message);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with invalid fillrule - 'F' followed by whitespace only.
+        /// Should throw FormatException with "IllegalToken" message.
+        /// </summary>
+        [Theory]
+        [InlineData("F ")]
+        [InlineData("F\t")]
+        [InlineData("F\n")]
+        [InlineData("F   \t \n")]
+        public void ParseStringToPathFigureCollection_InvalidFillruleWhitespaceOnly_ThrowsFormatException(string pathString)
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act & Assert
+            var exception = Assert.Throws<FormatException>(() =>
+                PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, pathString));
+
+            Assert.Equal("IllegalToken", exception.Message);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with invalid fillrule values.
+        /// Should throw FormatException with "IllegalToken" message.
+        /// </summary>
+        [Theory]
+        [InlineData("F2")]
+        [InlineData("F-1")]
+        [InlineData("Fa")]
+        [InlineData("FX")]
+        [InlineData("F 2")]
+        [InlineData("F\ta")]
+        public void ParseStringToPathFigureCollection_InvalidFillruleValues_ThrowsFormatException(string pathString)
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act & Assert
+            var exception = Assert.Throws<FormatException>(() =>
+                PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, pathString));
+
+            Assert.Equal("IllegalToken", exception.Message);
+        }
+
+        /// <summary>
+        /// Tests ParseStringToPathFigureCollection with combined whitespace and fillrule scenarios.
+        /// Should successfully parse paths that start with whitespace followed by valid fillrule.
+        /// </summary>
+        [Theory]
+        [InlineData("  F0 M10,10")]
+        [InlineData("\tF1 M10,10")]
+        [InlineData("\n F 0 M10,10")]
+        public void ParseStringToPathFigureCollection_WhitespaceAndFillrule_ParsesSuccessfully(string pathString)
+        {
+            // Arrange
+            var collection = new PathFigureCollection();
+
+            // Act
+            PathFigureCollectionConverter.ParseStringToPathFigureCollection(collection, pathString);
+
+            // Assert
+            Assert.Single(collection);
+            Assert.Equal(new Point(10, 10), collection[0].StartPoint);
+        }
+
+        /// <summary>
+        /// Tests that ConvertTo throws InvalidDataException when value is null.
+        /// </summary>
+        [Fact]
+        public void ConvertTo_NullValue_ThrowsInvalidDataException()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidDataException>(() =>
+                converter.ConvertTo(null, null, null, typeof(string)));
+
+            Assert.Equal("Value is not of type PathFigureCollection", exception.Message);
+        }
+
+        /// <summary>
+        /// Tests that ConvertTo throws InvalidDataException when value is of incorrect type.
+        /// </summary>
+        [Theory]
+        [InlineData("string value")]
+        [InlineData(42)]
+        [InlineData(3.14)]
+        [InlineData(true)]
+        public void ConvertTo_IncorrectValueType_ThrowsInvalidDataException(object value)
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidDataException>(() =>
+                converter.ConvertTo(null, null, value, typeof(string)));
+
+            Assert.Equal("Value is not of type PathFigureCollection", exception.Message);
+        }
+
+        /// <summary>
+        /// Tests that ConvertTo returns string when value is PathFigureCollection.
+        /// </summary>
+        [Fact]
+        public void ConvertTo_ValidPathFigureCollection_ReturnsString()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var pathFigureCollection = new PathFigureCollection();
+
+            // Act
+            var result = converter.ConvertTo(null, null, pathFigureCollection, typeof(string));
+
+            // Assert
+            Assert.IsType<string>(result);
+        }
+
+        /// <summary>
+        /// Tests that ConvertTo works with different context and culture parameters.
+        /// </summary>
+        [Fact]
+        public void ConvertTo_WithContextAndCulture_ThrowsInvalidDataExceptionForInvalidValue()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var context = NSubstitute.Substitute.For<ITypeDescriptorContext>();
+            var culture = CultureInfo.InvariantCulture;
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidDataException>(() =>
+                converter.ConvertTo(context, culture, "invalid", typeof(string)));
+
+            Assert.Equal("Value is not of type PathFigureCollection", exception.Message);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertFrom returns true when sourceType is typeof(string).
+        /// Input: sourceType = typeof(string), context = null
+        /// Expected: true
+        /// </summary>
+        [Fact]
+        public void CanConvertFrom_StringType_ReturnsTrue()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act
+            var result = converter.CanConvertFrom(null, typeof(string));
+
+            // Assert
+            Assert.True(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertFrom returns false for non-string types.
+        /// Input: Various non-string types with null context
+        /// Expected: false for all non-string types
+        /// </summary>
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(bool))]
+        [InlineData(typeof(object))]
+        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(PathFigureCollection))]
+        [InlineData(typeof(List<string>))]
+        [InlineData(typeof(string[]))]
+        [InlineData(typeof(ITypeDescriptorContext))]
+        public void CanConvertFrom_NonStringTypes_ReturnsFalse(Type sourceType)
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act
+            var result = converter.CanConvertFrom(null, sourceType);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertFrom throws ArgumentNullException when sourceType is null.
+        /// Input: sourceType = null, context = null
+        /// Expected: ArgumentNullException or NullReferenceException
+        /// </summary>
+        [Fact]
+        public void CanConvertFrom_NullSourceType_ThrowsException()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+
+            // Act & Assert
+            Assert.Throws<NullReferenceException>(() => converter.CanConvertFrom(null, null));
+        }
+
+        /// <summary>
+        /// Tests that CanConvertFrom behavior is independent of the context parameter.
+        /// Input: sourceType = typeof(string) with mocked context
+        /// Expected: true (same as with null context)
+        /// </summary>
+        [Fact]
+        public void CanConvertFrom_WithMockedContext_StringType_ReturnsTrue()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var mockContext = Substitute.For<ITypeDescriptorContext>();
+
+            // Act
+            var result = converter.CanConvertFrom(mockContext, typeof(string));
+
+            // Assert
+            Assert.True(result);
+        }
+
+        /// <summary>
+        /// Tests that CanConvertFrom behavior is independent of the context parameter for non-string types.
+        /// Input: sourceType = typeof(int) with mocked context
+        /// Expected: false (same as with null context)
+        /// </summary>
+        [Fact]
+        public void CanConvertFrom_WithMockedContext_NonStringType_ReturnsFalse()
+        {
+            // Arrange
+            var converter = new PathFigureCollectionConverter();
+            var mockContext = Substitute.For<ITypeDescriptorContext>();
+
+            // Act
+            var result = converter.CanConvertFrom(mockContext, typeof(int));
+
+            // Assert
+            Assert.False(result);
+        }
+    }
 }

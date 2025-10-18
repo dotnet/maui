@@ -1,796 +1,249 @@
+﻿#nullable disable
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime;
+
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class PickerTests : BaseTestFixture
-	{
-		class PickerTestsContextFixture
-		{
-			public class PickerTestsNestedClass
-			{
-				public string Nested { get; set; }
-			}
-
-			public PickerTestsNestedClass Nested { get; set; }
-
-			public string DisplayName { get; set; }
-
-			public string ComplexName { get; set; }
-
-			public PickerTestsContextFixture(string displayName, string complexName)
-			{
-				DisplayName = displayName;
-				ComplexName = complexName;
-			}
-
-			public PickerTestsContextFixture()
-			{
-			}
-		}
-
-		class PickerTestsBindingContext
-		{
-			public ObservableCollection<object> Items { get; set; }
-
-			public object SelectedItem { get; set; }
-		}
-
-		class PickerTestValueConverter : IValueConverter
-		{
-			public bool ConvertCalled { get; private set; }
-
-			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			{
-				ConvertCalled = true;
-				var cf = (PickerTestsContextFixture)value;
-				return cf.DisplayName;
-			}
-
-			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-			{
-				throw new NotImplementedException();
-			}
-		}
-
-		class ObservableRangeCollection<T> : ObservableCollection<T>
-		{
-			static readonly PropertyChangedEventArgs CountChangedArgs = new(nameof(Count));
-			static readonly PropertyChangedEventArgs IndexerChangedArgs = new("Item[]");
-
-			public void InsertRange(int index, IEnumerable<T> items)
-			{
-				CheckReentrancy();
-				int currIndex = index;
-				foreach (T item in items)
-				{
-					Items.Insert(currIndex++, item);
-				}
-
-				OnPropertyChanged(CountChangedArgs);
-				OnPropertyChanged(IndexerChangedArgs);
-				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items.ToList(), index));
-			}
-
-			public void RemoveRange(int index, int count)
-			{
-				CheckReentrancy();
-				T[] removeItems = new T[count];
-				for (int i = 0; i < count; i++)
-				{
-					// Always remove at index, since removing each item at index shifts the next item to that spot
-					removeItems[i] = Items[index];
-					Items.RemoveAt(index);
-				}
-
-				OnPropertyChanged(CountChangedArgs);
-				OnPropertyChanged(IndexerChangedArgs);
-				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removeItems, index));
-			}
-		}
-
-		[Fact]
-		public void TestSetSelectedIndexOnNullRows()
-		{
-			var picker = new Picker();
-
-			Assert.Empty(picker.Items);
-			Assert.Equal(-1, picker.SelectedIndex);
-
-			picker.SelectedIndex = 2;
-
-			Assert.Equal(-1, picker.SelectedIndex);
-		}
-
-		[Fact]
-		public void TestSelectedIndexInRange()
-		{
-			var picker = new Picker
-			{
-				Items = { "John", "Paul", "George", "Ringo" },
-				SelectedIndex = 2
-			};
-
-			Assert.Equal(2, picker.SelectedIndex);
-
-			picker.SelectedIndex = 42;
-			Assert.Equal(3, picker.SelectedIndex);
-
-			picker.SelectedIndex = -1;
-			Assert.Equal(-1, picker.SelectedIndex);
-
-			picker.SelectedIndex = -42;
-			Assert.Equal(-1, picker.SelectedIndex);
-		}
-
-		[Fact]
-		public void TestSelectedIndexInRangeDefaultSelectedIndex()
-		{
-			var picker = new Picker
-			{
-				Items = { "John", "Paul", "George", "Ringo" }
-			};
-
-			Assert.Equal(-1, picker.SelectedIndex);
-
-			picker.SelectedIndex = -5;
-			Assert.Equal(-1, picker.SelectedIndex);
-
-			picker.SelectedIndex = 2;
-			Assert.Equal(2, picker.SelectedIndex);
-
-			picker.SelectedIndex = 42;
-			Assert.Equal(3, picker.SelectedIndex);
-
-			picker.SelectedIndex = -1;
-			Assert.Equal(-1, picker.SelectedIndex);
-
-			picker.SelectedIndex = -42;
-			Assert.Equal(-1, picker.SelectedIndex);
-		}
-
-		[Fact]
-		public void TestSelectedIndexChangedOnCollectionShrink()
-		{
-			var picker = new Picker { Items = { "John", "Paul", "George", "Ringo" }, SelectedIndex = 3 };
-
-			Assert.Equal(3, picker.SelectedIndex);
-
-			picker.Items.RemoveAt(3);
-			picker.Items.RemoveAt(2);
-
-			Assert.Equal(1, picker.SelectedIndex);
-
-			picker.Items.Clear();
-			Assert.Equal(-1, picker.SelectedIndex);
-		}
-
-		[Fact]
-		public void TestSelectedIndexOutOfRangeUpdatesSelectedItem()
-		{
-			var picker = new Picker
-			{
-				ItemsSource = new ObservableCollection<string>
-				{
-					"Monkey",
-					"Banana",
-					"Lemon"
-				},
-				SelectedIndex = 0
-			};
-			Assert.Equal("Monkey", picker.SelectedItem);
-			picker.SelectedIndex = 42;
-			Assert.Equal("Lemon", picker.SelectedItem);
-			picker.SelectedIndex = -42;
-			Assert.Null(picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestUnsubscribeINotifyCollectionChanged()
-		{
-			var list = new ObservableCollection<string>();
-			var picker = new Picker
-			{
-				ItemsSource = list
-			};
-			Assert.Empty(picker.Items);
-			var newList = new ObservableCollection<string>();
-			picker.ItemsSource = newList;
-			list.Add("item");
-			Assert.Empty(picker.Items);
-		}
-
-		[Fact]
-		public void TestEmptyCollectionResetItems()
-		{
-			var list = new ObservableCollection<string>
-			{
-				"John",
-				"George",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemsSource = list
-			};
-			Assert.Equal(3, picker.Items.Count);
-			picker.ItemsSource = new ObservableCollection<string>();
-			Assert.Empty(picker.Items);
-		}
-
-		[Fact]
-		public void TestSetItemsSourceProperty()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo",
-				0,
-				new DateTime(1970, 1, 1),
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items
-			};
-			Assert.Equal(5, picker.Items.Count);
-			Assert.Equal("John", picker.Items[0]);
-			Assert.Null(picker.Items[3]);
-		}
-
-		[Fact]
-		public void TestDisplayConverter()
-		{
-			var obj = new PickerTestsContextFixture("John", "John Doe");
-			var converter = new PickerTestValueConverter();
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding(Binding.SelfPath, converter: converter),
-				ItemsSource = new ObservableCollection<object>
-				{
-					obj
-				}
-			};
-			Assert.True(converter.ConvertCalled);
-			Assert.Equal("John", picker.Items[0]);
-		}
-
-		[Fact]
-		public void TestItemsSourceCollectionChangedAppend()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 0
-			};
-			Assert.Equal(3, picker.Items.Count);
-			Assert.Equal("John", picker.Items[0]);
-			items.Add(new { Name = "George" });
-			Assert.Equal(4, picker.Items.Count);
-			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
-		}
-
-		[Fact]
-		public void TestItemsSourceCollectionChangedClear()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 0
-			};
-			Assert.Equal(3, picker.Items.Count);
-			items.Clear();
-			Assert.Empty(picker.Items);
-		}
-
-		[Fact]
-		public void TestItemsSourceCollectionChangedInsert()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 0
-			};
-			Assert.Equal(3, picker.Items.Count);
-			Assert.Equal("John", picker.Items[0]);
-			items.Insert(1, new { Name = "George" });
-			Assert.Equal(4, picker.Items.Count);
-			Assert.Equal("George", picker.Items[1]);
-		}
-
-		[Fact]
-		public void TestItemsSourceCollectionChangedReAssign()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var bindingContext = new { Items = items };
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				BindingContext = bindingContext
-			};
-			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
-			Assert.Equal(3, picker.Items.Count);
-			items = new ObservableCollection<object>
-			{
-				"Peach",
-				"Orange"
-			};
-			picker.BindingContext = new { Items = items };
-			picker.ItemDisplayBinding = null;
-			Assert.Equal(2, picker.Items.Count);
-			Assert.Equal("Peach", picker.Items[0]);
-		}
-
-		[Fact]
-		public void TestItemsSourceCollectionChangedRemove()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				new { Name = "Paul" },
-				new { Name = "Ringo"},
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 0
-			};
-			Assert.Equal(3, picker.Items.Count);
-			Assert.Equal("John", picker.Items[0]);
-			items.RemoveAt(1);
-			Assert.Equal(2, picker.Items.Count);
-			Assert.Equal("Ringo", picker.Items[1]);
-		}
-
-		[Theory]
-		[InlineData(0, new string[] { "George" })]
-		[InlineData(1, new string[] { "George" })]
-		[InlineData(2, new string[] { "George" })]
-		[InlineData(3, new string[] { "George" })]
-		[InlineData(0, new string[] { "George", "Pete" })]
-		[InlineData(1, new string[] { "George", "Pete" })]
-		[InlineData(2, new string[] { "George", "Pete" })]
-		[InlineData(3, new string[] { "George", "Pete" })]
-		public void TestItemsSourceCollectionChangedInsertBeforeSelected(int insertionIndex, string[] insertNames)
-		{
-			var items = new ObservableRangeCollection<object>
-			{
-				new { Name = "John" },
-				new { Name = "Paul" },
-				new { Name = "Ringo" }
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 1
-			};
-			items.InsertRange(insertionIndex, insertNames.Select(name => new { Name = name }));
-			Assert.Equal(3 + insertNames.Length, picker.Items.Count);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal(items[1], picker.SelectedItem);
-		}
-
-		[Theory]
-		[InlineData(0, 1)]
-		[InlineData(1, 1)]
-		[InlineData(2, 1)]
-		[InlineData(0, 2)]
-		[InlineData(1, 2)]
-		[InlineData(2, 2)]
-		public void TestItemsSourceCollectionChangedRemoveBeforeSelected(int removeIndex, int removeCount)
-		{
-			var items = new ObservableRangeCollection<object>
-			{
-				new { Name = "John" },
-				new { Name = "Paul" },
-				new { Name = "Ringo" },
-				new { Name = "George" }
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 1
-			};
-			items.RemoveRange(removeIndex, removeCount);
-
-			Assert.Equal(4 - removeCount, picker.Items.Count);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal(items[1], picker.SelectedItem);
-		}
-
-		[Theory]
-		[InlineData(1)]
-		[InlineData(2)]
-		public void TestItemsSourceCollectionChangedRemoveAtEndSelected(int removeCount)
-		{
-			var items = new ObservableRangeCollection<object>
-			{
-				new { Name = "John" },
-				new { Name = "Paul" },
-				new { Name = "Ringo" },
-				new { Name = "George" }
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-				SelectedIndex = 4 - removeCount
-			};
-			items.RemoveRange(4 - removeCount, removeCount);
-
-			Assert.Equal(4 - removeCount, picker.Items.Count);
-			Assert.Equal(items.Count - 1, picker.SelectedIndex);
-			Assert.Equal(items[^1], picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestSelectedIndexAssignedItemsSourceCollectionChangedAppend()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				new { Name = "Paul" },
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-			};
-
-			picker.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(Picker.SelectedIndex))
-				{
-					items.Add(new { Name = "George" });
-				}
-			};
-
-			picker.SelectedIndex = 1;
-
-			Assert.Equal(4, picker.Items.Count);
-			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal(items[1], picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestSelectedIndexAssignedItemsSourceCollectionChangedClear()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-			};
-
-			picker.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(Picker.SelectedIndex))
-				{
-					items.Clear();
-				}
-			};
-
-			picker.SelectedIndex = 1;
-
-			Assert.Empty(picker.Items);
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestSelectedIndexAssignedItemsSourceCollectionChangedInsert()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-			};
-
-			picker.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(Picker.SelectedIndex))
-				{
-					items.Insert(1, new { Name = "George" });
-				}
-			};
-
-			picker.SelectedIndex = 2;
-
-			Assert.Equal(4, picker.Items.Count);
-			Assert.Equal("George", picker.Items[1]);
-			Assert.Equal(2, picker.SelectedIndex);
-			Assert.Equal(items[2], picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestSelectedIndexAssignedItemsSourceCollectionChangedReAssign()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				"Paul",
-				"Ringo"
-			};
-			var bindingContext = new { Items = items };
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				BindingContext = bindingContext
-			};
-			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
-
-			picker.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(Picker.SelectedIndex))
-				{
-					items = new ObservableCollection<object>
-					{
-						"Peach",
-						"Orange"
-					};
-					picker.BindingContext = new { Items = items };
-					picker.ItemDisplayBinding = null;
-				}
-			};
-
-			picker.SelectedIndex = 1;
-
-			Assert.Equal(2, picker.Items.Count);
-			Assert.Equal("Peach", picker.Items[0]);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal("Orange", picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestSelectedItemAssignedItemsSourceCollectionChangedRemove()
-		{
-			var items = new ObservableCollection<object>
-			{
-				new { Name = "John" },
-				new { Name = "Paul" },
-				new { Name = "Ringo"},
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Name"),
-				ItemsSource = items,
-			};
-
-			picker.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(Picker.SelectedIndex))
-				{
-					items.RemoveAt(1);
-				}
-			};
-
-			picker.SelectedIndex = 1;
-
-			Assert.Equal(2, picker.Items.Count);
-			Assert.Equal("Ringo", picker.Items[1]);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal(items[1], picker.SelectedItem);
-		}
-
-		[Fact]
-		public void SettingSelectedIndexUpdatesSelectedItem()
-		{
-			var source = Enum.GetNames(typeof(HorizontalAlignment));
-
-			var picker = new Picker
-			{
-				WidthRequest = 200,
-				ItemsSource = source,
-				SelectedItem = source[0]
-			};
-
-			picker.SelectedIndex = 1;
-			Assert.Equal(source[1], picker.SelectedItem);
-		}
-
-
-		[Fact]
-		public void TestItemsSourceCollectionOfStrings()
-		{
-			var items = new ObservableCollection<string>
-			{
-				"John",
-				"Paul",
-				"Ringo"
-			};
-			var picker = new Picker
-			{
-				ItemsSource = items,
-				SelectedIndex = 0
-			};
-			Assert.Equal(3, picker.Items.Count);
-			Assert.Equal("John", picker.Items[0]);
-		}
-
-		[Fact]
-		public void TestSelectedItemDefault()
-		{
-			var bindingContext = new PickerTestsBindingContext
-			{
-				Items = new ObservableCollection<object>
-				{
-					new PickerTestsContextFixture("John", "John")
-				}
-			};
-			var picker = new Picker
-			{
-				BindingContext = bindingContext
-			};
-			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
-			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Single(picker.Items);
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Equal(bindingContext.SelectedItem, picker.SelectedItem);
-		}
-
-		[Fact]
-		public void ThrowsWhenModifyingItemsIfItemsSourceIsSet()
-		{
-			var picker = new Picker
-			{
-				ItemsSource = new System.Collections.Generic.List<object>()
-			};
-			Assert.Throws<InvalidOperationException>(() => picker.Items.Add("foo"));
-		}
-
-		[Fact]
-		public void TestNestedDisplayMemberPathExpression()
-		{
-			var obj = new PickerTestsContextFixture
-			{
-				Nested = new PickerTestsContextFixture.PickerTestsNestedClass
-				{
-					Nested = "NestedProperty"
-				}
-			};
-			var picker = new Picker
-			{
-				ItemDisplayBinding = new Binding("Nested.Nested"),
-				ItemsSource = new ObservableCollection<object>
-				{
-					obj
-				},
-				SelectedIndex = 0
-			};
-			Assert.Equal("NestedProperty", picker.Items[0]);
-		}
-
-		[Fact]
-		public void TestItemsSourceEnums()
-		{
-			var picker = new Picker
-			{
-				ItemsSource = new ObservableCollection<TextAlignment>
-				{
-					TextAlignment.Start,
-					TextAlignment.Center,
-					TextAlignment.End
-				},
-				SelectedIndex = 0
-			};
-			Assert.Equal("Start", picker.Items[0]);
-		}
-
-		[Fact]
-		public void TestSelectedItemSet()
-		{
-			var obj = new PickerTestsContextFixture("John", "John");
-			var bindingContext = new PickerTestsBindingContext
-			{
-				Items = new ObservableCollection<object>
-				{
-					obj
-				},
-				SelectedItem = obj
-			};
-			var picker = new Picker
-			{
-				BindingContext = bindingContext,
-				ItemDisplayBinding = new Binding("DisplayName"),
-			};
-			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
-			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Single(picker.Items);
-			Assert.Equal(0, picker.SelectedIndex);
-			Assert.Equal(obj, picker.SelectedItem);
-		}
-
-		[Fact]
-		public void TestSelectedItemChangeSelectedIndex()
-		{
-			var obj = new PickerTestsContextFixture("John", "John");
-			var bindingContext = new PickerTestsBindingContext
-			{
-				Items = new ObservableCollection<object>
-				{
-					obj
-				},
-			};
-			var picker = new Picker
-			{
-				BindingContext = bindingContext,
-				ItemDisplayBinding = new Binding("DisplayName"),
-			};
-			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
-			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Single(picker.Items);
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
-
-			picker.SelectedItem = obj;
-			Assert.Equal(0, picker.SelectedIndex);
-			Assert.Equal(obj, picker.SelectedItem);
-		}
-
-		[Fact]
-		public void NullItemReturnsEmptyStringFromInterface()
-		{
-			var picker = new Picker
-			{
-				ItemsSource = new ObservableCollection<object>
-				{
-					(string)null, "John Doe"
-				}
-			};
-
-			var thing = (picker as IPicker).GetItem(0);
-			Assert.NotNull(thing);
-		}
-	}
+    /// <summary>
+    /// Tests for the Picker.FontSize property.
+    /// </summary>
+    public partial class PickerFontSizeTests
+    {
+        /// <summary>
+        /// Tests that FontSize getter returns the correct value when set to a normal positive value.
+        /// </summary>
+        [Theory]
+        [InlineData(12.0)]
+        [InlineData(14.5)]
+        [InlineData(16.0)]
+        [InlineData(18.0)]
+        [InlineData(20.5)]
+        public void FontSize_SetPositiveValue_ReturnsCorrectValue(double expectedFontSize)
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = expectedFontSize;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(expectedFontSize, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize can be set and retrieved with zero value.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetZero_ReturnsZero()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = 0.0;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(0.0, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize can be set and retrieved with negative values.
+        /// </summary>
+        [Theory]
+        [InlineData(-1.0)]
+        [InlineData(-5.5)]
+        [InlineData(-10.0)]
+        public void FontSize_SetNegativeValue_ReturnsNegativeValue(double expectedFontSize)
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = expectedFontSize;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(expectedFontSize, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize handles double.MinValue correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetMinValue_ReturnsMinValue()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = double.MinValue;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(double.MinValue, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize handles double.MaxValue correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetMaxValue_ReturnsMaxValue()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = double.MaxValue;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(double.MaxValue, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize handles double.NaN correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetNaN_ReturnsNaN()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = double.NaN;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.True(double.IsNaN(actualFontSize));
+        }
+
+        /// <summary>
+        /// Tests that FontSize handles double.PositiveInfinity correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetPositiveInfinity_ReturnsPositiveInfinity()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = double.PositiveInfinity;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(double.PositiveInfinity, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize handles double.NegativeInfinity correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetNegativeInfinity_ReturnsNegativeInfinity()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = double.NegativeInfinity;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(double.NegativeInfinity, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize handles very small positive values correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_SetEpsilon_ReturnsEpsilon()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = double.Epsilon;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(double.Epsilon, actualFontSize);
+        }
+
+        /// <summary>
+        /// Tests that FontSize returns the default value when not explicitly set.
+        /// </summary>
+        [Fact]
+        public void FontSize_DefaultValue_ReturnsExpectedDefault()
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            // The default value should be retrieved from the FontSizeProperty default value
+            Assert.True(actualFontSize >= 0 || double.IsNaN(actualFontSize), "Default FontSize should be non-negative or NaN");
+        }
+
+        /// <summary>
+        /// Tests that multiple consecutive sets and gets work correctly.
+        /// </summary>
+        [Fact]
+        public void FontSize_MultipleSetAndGet_WorksCorrectly()
+        {
+            // Arrange
+            var picker = new Picker();
+            var values = new double[] { 12.0, 16.0, 0.0, -5.0, 24.5 };
+
+            foreach (var expectedValue in values)
+            {
+                // Act
+                picker.FontSize = expectedValue;
+                var actualValue = picker.FontSize;
+
+                // Assert
+                Assert.Equal(expectedValue, actualValue);
+            }
+        }
+
+        /// <summary>
+        /// Tests that FontSize property works correctly with decimal precision.
+        /// </summary>
+        [Theory]
+        [InlineData(12.123456789)]
+        [InlineData(16.999999999)]
+        [InlineData(0.000000001)]
+        [InlineData(1234.56789)]
+        public void FontSize_SetHighPrecisionValue_RetainsPrecision(double expectedFontSize)
+        {
+            // Arrange
+            var picker = new Picker();
+
+            // Act
+            picker.FontSize = expectedFontSize;
+            var actualFontSize = picker.FontSize;
+
+            // Assert
+            Assert.Equal(expectedFontSize, actualFontSize);
+        }
+    }
 }

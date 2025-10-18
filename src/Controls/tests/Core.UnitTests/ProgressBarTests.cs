@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
