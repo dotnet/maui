@@ -59,6 +59,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "Date Picker Gallery"),
 			new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 			new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
+			new GalleryPageFactory(() => new FlexLayoutControlPage(), "FlexLayout Feature Matrix"),
 			new GalleryPageFactory(() => new FrameCoreGalleryPage(), "Frame Gallery"),
 			new GalleryPageFactory(() => new ImageButtonCoreGalleryPage(), "Image Button Gallery"),
 			new GalleryPageFactory(() => new ImageCoreGalleryPage(), "Image Gallery"),
