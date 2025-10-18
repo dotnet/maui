@@ -143,6 +143,8 @@ namespace Microsoft.Maui.Platform
 			return SafeAreaRegions.None;
 		}
 
+		// Note: This method was changed from static to instance to access _isKeyboardShowing field
+		// which is needed to determine if SoftInput padding should be applied
 		double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge)
 		{
 			// Edge-to-edge content - no safe area padding
@@ -161,7 +163,7 @@ namespace Microsoft.Maui.Platform
 			// All other regions respect safe area in some form
 			// This includes:
 			// - Default: Platform default behavior
-			// - All: Obey all safe area insets (includes SoftInput when keyboard)
+			// - All: Obey all safe area insets
 			// - SoftInput: Always pad for keyboard/soft input
 			// - Container: Content flows under keyboard but stays out of bars/notch
 			// - Any combination of the above flags
