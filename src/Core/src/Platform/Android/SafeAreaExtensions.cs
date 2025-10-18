@@ -237,7 +237,7 @@ internal static class SafeAreaExtensions
         }
         else
         {
-            newWindowInsets = windowInsets;            
+            newWindowInsets = windowInsets;
         }
 
         // Fallback: return the base safe area for legacy views
