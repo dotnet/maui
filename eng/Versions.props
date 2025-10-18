@@ -5,14 +5,14 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel>ci.net10</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel></PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <WorkloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PreReleaseVersionIteration)' == ''">-$(PreReleaseVersionLabel)</WorkloadVersionSuffix>
     <WorkloadVersionSuffix Condition="'$(WorkloadVersionSuffix)' == '' and '$(DotNetFinalVersionKind)' != 'release'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</WorkloadVersionSuffix>
