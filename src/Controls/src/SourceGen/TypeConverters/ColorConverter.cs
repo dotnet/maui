@@ -17,6 +17,7 @@ internal class ColorConverter : ISGTypeConverter
 
 	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
+		value = value.Trim();
 		if (ColorUtils.TryParse(value, out float red, out float green, out float blue, out float alpha))
 		{
 			var colorType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!;
