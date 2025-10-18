@@ -8,6 +8,7 @@
              x:Class="MauiApp._1.Pages.ProjectListPage"
              x:Name="ProjectList"
              x:DataType="pageModels:ProjectListPageModel"
+             x:Name="ProjectList"
              Title="Projects">
 
 

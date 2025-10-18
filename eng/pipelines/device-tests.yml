@@ -179,7 +179,7 @@ stages:
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
         ${{ else }}:
-          androidApiLevels: [ 33, 23 ]
+          androidApiLevels: [ 35, 23 ]
           iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]

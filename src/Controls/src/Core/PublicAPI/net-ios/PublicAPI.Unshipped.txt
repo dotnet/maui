@@ -70,6 +70,7 @@ Microsoft.Maui.Controls.DisplayRotationStateTrigger
 Microsoft.Maui.Controls.DisplayRotationStateTrigger.DisplayRotationStateTrigger() -> void
 Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation.get -> Microsoft.Maui.Devices.DisplayRotation
 Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation.set -> void
+*REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView

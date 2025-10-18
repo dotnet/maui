@@ -18,14 +18,10 @@ namespace Microsoft.Maui.Controls
 			var strValue = value?.ToString();
 
 			if (strValue == "HorizontalList")
-			{
-				return LinearItemsLayout.CarouselDefault;
-			}
+				return LinearItemsLayout.CreateCarouselHorizontalDefault();
 
 			if (strValue == "VerticalList")
-			{
-				return LinearItemsLayout.CarouselVertical;
-			}
+				return LinearItemsLayout.CreateCarouselVerticalDefault();
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LinearItemsLayout)}");
 		}
