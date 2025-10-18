@@ -1,5 +1,4 @@
-#nullable enable
-virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
+﻿#nullable enable
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.LayoutHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IView! View) -> void
@@ -12,6 +11,7 @@ Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Deconstruct(out int Index
 Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.MenuFlyoutSubItemHandlerUpdate(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersistedState? State) -> void
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
+Microsoft.Maui.Handlers.ViewHandler.ContainerView.set -> void
 Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
 Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
@@ -84,6 +84,7 @@ static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSw
 static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
 static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? other) -> bool
@@ -108,6 +109,7 @@ virtual Microsoft.Maui.Handlers.OpenWindowRequest.<Clone>$() -> Microsoft.Maui.H
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.Equals(Microsoft.Maui.Handlers.OpenWindowRequest? other) -> bool
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Handlers.ViewHandler.OnCreateContainer() -> Microsoft.Maui.Platform.WrapperView?
 virtual Microsoft.Maui.ScrollToRequest.<Clone>$() -> Microsoft.Maui.ScrollToRequest!
 virtual Microsoft.Maui.ScrollToRequest.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.ScrollToRequest.Equals(Microsoft.Maui.ScrollToRequest? other) -> bool
