@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -399,6 +400,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
 				UpdateTabBarHidden();
+				UpdateLargeTitles();
 			}
 		}
 
@@ -406,6 +408,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				UpdateTabBarHidden();
+		}
+
+
+		void UpdateLargeTitles()
+		{
+			var page = _displayedPage;
+			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
+				return;
+
+			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
+
+			if (SelectedViewController is UINavigationController navigationController)
+			{
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
+				var top = navigationController.TopViewController;
+				if (top is not null)
+				{
+					top.NavigationItem.LargeTitleDisplayMode = largeTitleDisplayMode switch
+					{
+						LargeTitleDisplayMode.Always => UINavigationItemLargeTitleDisplayMode.Always,
+						LargeTitleDisplayMode.Automatic => UINavigationItemLargeTitleDisplayMode.Automatic,
+						_ => UINavigationItemLargeTitleDisplayMode.Never
+					};
+				}
+			}
 		}
 
 		void RemoveRenderer(IShellSectionRenderer renderer)
@@ -441,6 +468,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewWillLayoutSubviews()
 		{
 			UpdateTabBarHidden();
+			UpdateLargeTitles();
 			base.ViewWillLayoutSubviews();
 		}
 
