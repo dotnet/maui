@@ -1,7 +1,0 @@
-{
-  "author": "Майкрософт",
-  "name": ".NET MAUI ContentPage (XAML)",
-  "description": "Страница для отображения содержимого на XAML.",
-  "postActions/openInEditor/description": "Открывает NewPage1.xaml в редакторе.",
-  "symbols/namespace/description": "пространство имен для созданного кода"
-}

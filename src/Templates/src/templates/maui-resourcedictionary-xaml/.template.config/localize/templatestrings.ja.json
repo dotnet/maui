@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ResourceDictionary (XAML)",
-  "description": ".NET MAUI アプリで使用されるリソースのリポジトリです。ResourceDictionary に格納される一般的なリソースには、スタイル、コントロール テンプレート、データ テンプレート、コンバーター、色が含まれます。",
-  "postActions/openInEditor/description": "Dictionary1.xaml をエディターで開きます。",
-  "symbols/namespace/description": "生成されたコードの名前空間。"
-}

@@ -1,7 +1,0 @@
-{
-  "author": "Майкрософт",
-  "name": ".NET MAUI ContentView (XAML)",
-  "description": "Представление для отображения содержимого с помощью XAML. Это очень удобно для создания ваших собственных и повторно используемых элементов управления.",
-  "postActions/openInEditor/description": "Открывает NewContent1.xaml в редакторе.",
-  "symbols/namespace/description": "Пространство имен для созданного кода."
-}

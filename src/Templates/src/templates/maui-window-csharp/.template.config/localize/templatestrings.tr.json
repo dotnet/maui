@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI Window (C#)",
-  "description": "C# kullanarak sayfa görüntüleme penceresi.",
-  "postActions/openInEditor/description": "Düzenleyicide NewWindow1.cs dosyasını açar.",
-  "symbols/namespace/description": "Oluşturulan kod için ad alanı."
-}

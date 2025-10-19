@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML)",
-  "description": "XAML kullanarak içeriğin görüntülendiği bir görünüm. Bu, kendi özel ve yeniden kullanılabilir denetimlerinizi oluşturmak için son derece uygundur.",
-  "postActions/openInEditor/description": "Düzenleyicide NewContent1.xaml dosyasını açar.",
-  "symbols/namespace/description": "Oluşturulan kod için ad alanı."
-}

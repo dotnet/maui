@@ -1,8 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": "Bibliothèque de .NET MAUI Class",
-  "description": "Projet de création d’une bibliothèque de classes .NET MAUI",
-  "postActions/openInEditor/description": "Ouvre Class1.cs dans l’éditeur.",
-  "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE cible"
-}

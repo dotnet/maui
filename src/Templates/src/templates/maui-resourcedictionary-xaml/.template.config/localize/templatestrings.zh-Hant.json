@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ResourceDictionary (XAML)",
-  "description": ".NET MAUI 應用程式所使用資源的存放庫。儲存在 ResourceDictionary 中的一般資源，包括樣式、控制範本、資料範本、轉換程式和色彩。",
-  "postActions/openInEditor/description": "在編輯器中開啟 Dictionary1.xaml。",
-  "symbols/namespace/description": "適用於產生之程式碼的命名空間。"
-}

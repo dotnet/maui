@@ -1,7 +1,0 @@
-{
-  "author": "Майкрософт",
-  "name": ".NET MAUI ContentPage (C#)",
-  "description": "Страница для отображения содержимого на C#.",
-  "postActions/openInEditor/description": "Открывает NewPage1.cs в редакторе.",
-  "symbols/namespace/description": "Пространство имен для созданного кода."
-}

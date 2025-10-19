@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copy of slide_in_left from android -->
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-  <translate android:fromXDelta="-50%p" android:toXDelta="0"
-            android:duration="@android:integer/config_mediumAnimTime"/>
-  <alpha android:fromAlpha="0.0" android:toAlpha="1.0"
-            android:duration="@android:integer/config_mediumAnimTime" />
-</set>

@@ -1,8 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI Class Kitaplığı",
-  "description": ".NET MAUI sınıf kitaplığı oluşturmaya yönelik proje",
-  "postActions/openInEditor/description": "Düzenleyicide Class1.cs dosyasını açar.",
-  "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE"
-}
