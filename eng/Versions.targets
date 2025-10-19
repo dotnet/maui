@@ -48,7 +48,7 @@
     <PropertyGroup>
       <PackageReferenceVersion>$(PackageVersion)</PackageReferenceVersion>
       <VSComponentVersion Condition="'$(PreReleaseVersionLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).$(BUILDVERSION)</VSComponentVersion>
-      <VSComponentVersion Condition="'$(PreReleaseVersionLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
+      <VSComponentVersion Condition="'$(PreReleaseVersionLabel)' == ''">$(MajorVersion).$(MinorVersion).0.$(PatchVersion)</VSComponentVersion>
     </PropertyGroup>
 
     <PropertyGroup>
