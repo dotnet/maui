@@ -1,11 +1,11 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class ResourceDictionary : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void ResourceDictionaryWithoutXClass()
     {
         var xaml =
@@ -51,9 +51,9 @@ public partial class __TypeDBD64C1C77CDA760
 """;
 
 		var (result, generated) = RunGenerator(xaml, "", path: "Styles.xaml");
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
-		Assert.AreEqual(expected, generated);
+		Assert.Equal(expected, generated);
 		
     }
 }
