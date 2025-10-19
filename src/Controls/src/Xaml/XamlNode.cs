@@ -56,9 +56,9 @@ class ValueNode(object value, IXmlNamespaceResolver namespaceResolver, int linen
 
 	public override INode Clone()
 		=> new ValueNode(Value, NamespaceResolver, LineNumber, LinePosition)
-			{
-				IgnorablePrefixes = IgnorablePrefixes
-			};
+		{
+			IgnorablePrefixes = IgnorablePrefixes
+		};
 }
 
 [DebuggerDisplay("{MarkupString}")]
@@ -71,13 +71,13 @@ class MarkupNode(string markupString, IXmlNamespaceResolver namespaceResolver, i
 
 	public override INode Clone()
 		=> new MarkupNode(MarkupString, NamespaceResolver, LineNumber, LinePosition)
-			{
-				IgnorablePrefixes = IgnorablePrefixes
-			};
+		{
+			IgnorablePrefixes = IgnorablePrefixes
+		};
 }
 
 static class XmlNameExtensions
-{ 
+{
 	public static bool TryGetValue(this Dictionary<XmlName, INode> properties, string name, out INode node, out XmlName xmlName)
 	{
 		xmlName = new XmlName("", name);

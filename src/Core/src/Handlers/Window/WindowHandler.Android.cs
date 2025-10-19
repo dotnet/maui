@@ -1,13 +1,13 @@
 using System;
 using Android.App;
+using Android.Content.Res;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Google.Android.Material.AppBar;
-using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
-using Android.Content.Res;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {

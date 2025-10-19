@@ -1320,8 +1320,7 @@ namespace Microsoft.Maui.Platform
 
 		void EnableParentGesture(bool isGestureEnabled)
 		{
-			if (_viewPagerParent != null)
-				_viewPagerParent.EnableGesture = isGestureEnabled;
+			_viewPagerParent?.EnableGesture = isGestureEnabled;
 		}
 
 		internal void OnOpenRequested(SwipeViewOpenRequest e)

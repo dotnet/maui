@@ -257,10 +257,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				e.PropertyName == RowSpanProperty.PropertyName)
 			{
 				var child = sender as View;
-				if (child != null)
-				{
-					child.ComputedConstraint = ComputeConstraintForView(child);
-				}
+				child?.ComputedConstraint = ComputeConstraintForView(child);
 
 				InvalidateLayout();
 			}

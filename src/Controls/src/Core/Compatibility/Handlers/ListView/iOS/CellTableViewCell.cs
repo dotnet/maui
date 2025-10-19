@@ -101,8 +101,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				contextCell.Update(tableView, cell, platformCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
-				if (viewTableCell != null)
-					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
+				viewTableCell?.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
 				platformCell = contextCell;
 			}
 
