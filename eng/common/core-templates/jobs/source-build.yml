@@ -15,6 +15,9 @@ parameters:
   # one job runs on 'defaultManagedPlatform'.
   platforms: []
 
+  # Optional list of directories to ignore for component governance scans.
+  componentGovernanceIgnoreDirectories: []
+
   is1ESPipeline: ''
 
   # If set to true and running on a non-public project,
@@ -31,6 +34,7 @@ jobs:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
       jobNamePrefix: ${{ parameters.jobNamePrefix }}
       platform: ${{ platform }}
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
       enableInternalSources: ${{ parameters.enableInternalSources }}
 
 - ${{ if eq(length(parameters.platforms), 0) }}:
@@ -39,4 +43,5 @@ jobs:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
       jobNamePrefix: ${{ parameters.jobNamePrefix }}
       platform: ${{ parameters.defaultManagedPlatform }}
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
       enableInternalSources: ${{ parameters.enableInternalSources }}

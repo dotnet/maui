@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 
 #if IOS
-			VerifyScreenshot(cropBottom: 1080);
+			VerifyScreenshot(cropBottom: 1140);
 #else
 			VerifyScreenshot();
 #endif
