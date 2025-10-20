@@ -9,23 +9,23 @@ namespace Maui.Controls.Sample
 		{
 			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterBugzilla;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterNone;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterGitHub;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterManual;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			string _filter;
 
@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample
 				return navigationAction;
 			}
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
 				Justification = "ActivatePage method is only called in non-NativeAOT builds where reflection-based test discovery is enabled.")]
 			Page ActivatePage([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			{
@@ -152,7 +152,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			readonly List<IssueModel> _issues;
 
@@ -340,7 +340,7 @@ namespace Maui.Controls.Sample
 				ItemsSource = issues;
 			}
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			HashSet<string> _exemptNames = new HashSet<string> { };
 
