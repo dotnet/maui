@@ -28,13 +28,13 @@ steps:
     xcrun xcode-select --print-path
     xcodebuild -version
     sudo xcodebuild -license accept
-    if [[ ${XCODE_VERSION/\.*/} -ge 26 ]]; then
+    if [[ ${REQUIRED_XCODE/\.*/} -ge 26 ]]; then
       sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
     else
       sudo xcodebuild -downloadPlatform iOS
     fi
     sudo xcodebuild -runFirstLaunch
-  displayName: Select Xcode Version
+  displayName: 'Setup Xcode $(REQUIRED_XCODE)'
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
   timeoutInMinutes: 30
 
