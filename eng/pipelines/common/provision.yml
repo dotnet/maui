@@ -86,11 +86,7 @@ steps:
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-      if [[ ${XCODE_VERSION/\.*/} -ge 26 ]]; then
-        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
-      else
-        sudo xcodebuild -downloadPlatform iOS
-      fi
+      sudo xcodebuild -downloadPlatform iOS -buildVersion 26.0 -architectureVariant universal
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
