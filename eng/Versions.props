@@ -5,7 +5,8 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel></PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>
+    </PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
@@ -57,15 +58,15 @@
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet100_260PackageVersion>26.0.11007</MicrosoftMacCatalystSdknet100_260PackageVersion>
-    <MicrosoftmacOSSdknet100_260PackageVersion>26.0.11007</MicrosoftmacOSSdknet100_260PackageVersion>
-    <MicrosoftiOSSdknet100_260PackageVersion>26.0.11007</MicrosoftiOSSdknet100_260PackageVersion>
-    <MicrosofttvOSSdknet100_260PackageVersion>26.0.11007</MicrosofttvOSSdknet100_260PackageVersion>
+    <MicrosoftMacCatalystSdknet100_260PackageVersion>26.0.11008</MicrosoftMacCatalystSdknet100_260PackageVersion>
+    <MicrosoftmacOSSdknet100_260PackageVersion>26.0.11008</MicrosoftmacOSSdknet100_260PackageVersion>
+    <MicrosoftiOSSdknet100_260PackageVersion>26.0.11008</MicrosoftiOSSdknet100_260PackageVersion>
+    <MicrosofttvOSSdknet100_260PackageVersion>26.0.11008</MicrosofttvOSSdknet100_260PackageVersion>
     <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet90_260PackageVersion>26.0.9757</MicrosoftMacCatalystSdknet90_260PackageVersion>
-    <MicrosoftmacOSSdknet90_260PackageVersion>26.0.9757</MicrosoftmacOSSdknet90_260PackageVersion>
-    <MicrosoftiOSSdknet90_260PackageVersion>26.0.9757</MicrosoftiOSSdknet90_260PackageVersion>
-    <MicrosofttvOSSdknet90_260PackageVersion>26.0.9757</MicrosofttvOSSdknet90_260PackageVersion>
+    <MicrosoftMacCatalystSdknet90_260PackageVersion>26.0.9758</MicrosoftMacCatalystSdknet90_260PackageVersion>
+    <MicrosoftmacOSSdknet90_260PackageVersion>26.0.9758</MicrosoftmacOSSdknet90_260PackageVersion>
+    <MicrosoftiOSSdknet90_260PackageVersion>26.0.9758</MicrosoftiOSSdknet90_260PackageVersion>
+    <MicrosofttvOSSdknet90_260PackageVersion>26.0.9758</MicrosofttvOSSdknet90_260PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- wasdk -->
