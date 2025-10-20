@@ -53,7 +53,7 @@ public static class Extensions
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
-                // Uncomment the following line to enable reporting metrics coming from the .NET MAUI SDK, this might cause for a lot of added telemetry
+                // Uncomment the following line to enable reporting metrics coming from the .NET MAUI SDK, this might cause a lot of added telemetry
                 //metrics.AddMeter("Microsoft.Maui");
                 
                 metrics.AddHttpClientInstrumentation()
@@ -61,7 +61,7 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                // Uncomment the following line to enable reporting tracing coming from the .NET MAUI SDK, this might cause for a lot of added telemetry
+                // Uncomment the following line to enable reporting tracing coming from the .NET MAUI SDK, this might cause a lot of added telemetry
                 //tracing.AddSource("Microsoft.Maui");
                 
                 tracing.AddSource(builder.Environment.ApplicationName)
