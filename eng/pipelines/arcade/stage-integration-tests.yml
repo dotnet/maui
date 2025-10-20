@@ -31,8 +31,9 @@ stages:
           project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
           arguments: '-c ${{ parameters.buildConfig }} --filter "Category=${{ job.testCategory }}" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests'
           useExitCodeForErrors: true
-          ${{ if eq(job.testCategory, 'RunOniOS') }}:
-            envVariables:
+          envVariables:
+            DCP_IP_VERSION_PREFERENCE: ipv4
+            ${{ if eq(job.testCategory, 'RunOniOS') }}:
               IOS_TEST_DEVICE: ios-simulator-64_18.0
 
       - task: PublishTestResults@2

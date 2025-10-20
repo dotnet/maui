@@ -638,6 +638,7 @@ void SetDotNetEnvironmentVariables(string dotnetDir = null)
     SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
+    SetEnvironmentVariable("DCP_IP_VERSION_PREFERENCE", "ipv4");
 
     // Get "full" .binlog in Project System Tools
     if (HasArgument("dbg"))
