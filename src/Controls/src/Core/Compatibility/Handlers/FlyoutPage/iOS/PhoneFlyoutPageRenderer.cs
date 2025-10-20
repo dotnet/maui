@@ -806,11 +806,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (vc.IsBeingDismissed ||
 					    (vc.PresentationController != null && vc.PresentationController.PresentedViewController == vc))
 						continue;
-
-					if (vc.View?.Superview != View)
-						continue;
-
+					
 					if (vc.View == null)
+						continue;
+					
+					if (vc.View?.Superview != View)
 						continue;
 
 					vc.View.Frame = View.Bounds;
