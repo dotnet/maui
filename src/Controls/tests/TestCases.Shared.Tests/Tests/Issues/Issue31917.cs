@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS || MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -39,3 +40,4 @@ public class Issue31917 : _IssuesUITest
 		}
 	}
 }
+#endif
