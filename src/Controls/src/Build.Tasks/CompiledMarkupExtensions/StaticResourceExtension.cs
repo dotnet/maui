@@ -31,18 +31,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					//single resource in <Resources>
 					if (resourcesNode is IElementNode irn
 						&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-						&& context.Variables.ContainsKey(irn)
+						&& context.Variables.TryGetValue(irn, out VariableDefinition variable1)
 						&& xKeyNode is ValueNode xKeyValueNode
 						&& xKeyValueNode.Value as string == keyValueNode.Value as string)
 					{
-						if (context.Variables[irn].VariableType.FullName == "System.String")
+						if (variable1.VariableType.FullName == "System.String")
 						{
 							foreach (var instruction in TryConvert(irn.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 								yield return instruction;
 							yield break;
 						}
 
-						vardefref.VariableDefinition = context.Variables[irn];
+						vardefref.VariableDefinition = variable1;
 						yield break;
 					}
 					//multiple resources in <Resources>
@@ -52,18 +52,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						{
 							if (rn is IElementNode irn2
 								&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-								&& context.Variables.ContainsKey(irn2)
+								&& context.Variables.TryGetValue(irn2, out VariableDefinition variable2)
 								&& xKeyNode2 is ValueNode xKeyValueNode2
 								&& xKeyValueNode2.Value as string == keyValueNode.Value as string)
 							{
-								if (context.Variables[irn2].VariableType.FullName == "System.String")
+								if (variable2.VariableType.FullName == "System.String")
 								{
 									foreach (var instruction in TryConvert(irn2.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
 
-								vardefref.VariableDefinition = context.Variables[irn2];
+								vardefref.VariableDefinition = variable2;
 								yield break;
 							}
 						}
@@ -77,18 +77,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							if (rn is IElementNode irn3
 								&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 								&& irn3.XmlType.Name != "OnPlatform"
-								&& context.Variables.ContainsKey(irn3)
+								&& context.Variables.TryGetValue(irn3, out VariableDefinition variable3)
 								&& xKeyNode3 is ValueNode xKeyValueNode3
 								&& xKeyValueNode3.Value as string == keyValueNode.Value as string)
 							{
-								if (context.Variables[irn3].VariableType.FullName == "System.String")
+								if (variable3.VariableType.FullName == "System.String")
 								{
 									foreach (var instruction in TryConvert(irn3.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
 
-								vardefref.VariableDefinition = context.Variables[irn3];
+								vardefref.VariableDefinition = variable3;
 								yield break;
 							}
 						}

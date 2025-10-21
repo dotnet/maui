@@ -58,8 +58,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (node.XmlType.Name == nameof(TypeExtension) && node.XmlType.NamespaceUri == XamlParser.X2009Uri)
 				{
 					XmlName typeNameXmlName = new("", "TypeName");
-					if (node.Properties.ContainsKey(typeNameXmlName)
-						&& node.Properties[typeNameXmlName] is ValueNode { Value: string } propertyValueNode)
+					if (node.Properties.TryGetValue(typeNameXmlName, out INode value)
+						&& value is ValueNode { Value: string } propertyValueNode)
 					{
 						typeNameValueNode = propertyValueNode;
 						return true;

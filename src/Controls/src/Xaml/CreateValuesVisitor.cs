@@ -242,13 +242,13 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			object[] arguments = CreateArgumentsArray(node);
 
-			if (!node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			if (!node.Properties.TryGetValue(XmlName.xFactoryMethod, out INode property))
 			{
 				//non-default ctor
 				return Activator.CreateInstance(nodeType, arguments);
 			}
 
-			var factoryMethod = ((string)((ValueNode)node.Properties[XmlName.xFactoryMethod]).Value);
+			var factoryMethod = (string)((ValueNode)property).Value;
 			Type[] types = arguments == null ? Array.Empty<Type>() : arguments.Select(a => a.GetType()).ToArray();
 
 			bool isMatch(MethodInfo m)
@@ -283,9 +283,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public object[] CreateArgumentsArray(IElementNode enode)
 		{
-			if (!enode.Properties.ContainsKey(XmlName.xArguments))
+			if (!enode.Properties.TryGetValue(XmlName.xArguments, out INode node))
 				return null;
-			var node = enode.Properties[XmlName.xArguments];
 			if (node is ElementNode elementNode)
 			{
 				var array = new object[1];
