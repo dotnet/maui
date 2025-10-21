@@ -62,20 +62,6 @@ internal static class SafeAreaExtensions
             var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
             var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
-            if (isKeyboardShowing &&
-                context.GetActivity()?.Window is Window window &&
-                window?.Attributes is WindowManagerLayoutParams attr)
-            {
-                // If the window is panned from the keyboard being open
-                // and there isn't a bottom inset to apply then just don't touch anything
-                var softInputMode = attr.SoftInputMode;
-                if (softInputMode == SoftInput.AdjustPan
-                    && bottom == 0
-                )
-                {
-                    return WindowInsetsCompat.Consumed;
-                }
-            }
 
             var globalWindowInsetsListener = context.GetGlobalWindowInsetListener();
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
@@ -255,12 +241,18 @@ internal static class SafeAreaExtensions
         // Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
         if (isKeyboardShowing && edge == 3)
         {
+            // Always apply keyboard insets when keyboard is showing to prevent content overlap
+            // Use keyboard height or original safe area, whichever is larger
+            var keyboardInset = keyBoardInsets.Bottom;
             if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-                return keyBoardInsets.Bottom;
+                return Math.Max(keyboardInset, originalSafeArea);
 
-            // if they keyboard is showing then we will just return 0 for the bottom inset
-            // because that part of the view is covered by the keyboard so we don't want to pad the view
-            return 0;
+            // For non-SoftInput regions, still apply keyboard padding to prevent overlap
+            // unless explicitly set to None region
+            if (safeAreaRegion != SafeAreaRegions.None)
+                return Math.Max(keyboardInset, originalSafeArea);
+
+            return keyboardInset;
         }
 
         // All other regions respect safe area in some form
