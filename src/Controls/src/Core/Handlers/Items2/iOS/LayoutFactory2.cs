@@ -343,7 +343,19 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				var page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
+				// Calculate page index accounting for ItemSpacing
+				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
+				double page;
+				if (isHorizontal)
+				{
+					var effectiveItemWidth = env.Container.ContentSize.Width - sectionMargin * 2 + itemSpacing;
+					page = (offset.X + sectionMargin) / effectiveItemWidth;
+				}
+				else
+				{
+					var effectiveItemHeight = env.Container.ContentSize.Height - sectionMargin * 2 + itemSpacing;
+					page = (offset.Y + sectionMargin) / effectiveItemHeight;
+				}
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
