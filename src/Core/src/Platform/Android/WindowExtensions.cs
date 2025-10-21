@@ -42,6 +42,7 @@ namespace Microsoft.Maui
 				.SetSoftInputMode(inputMode);
 		}
 
+		//TODO : Make it public in NET 11.
 		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
 			if (window is null)
@@ -55,7 +56,7 @@ namespace Microsoft.Maui
 			{
 				// Automatically adjust icon/text colors based on app theme
 				var configuration = activity.Resources?.Configuration;
-				var isLightTheme = configuration != null &&
+				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
 				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
