@@ -128,6 +128,6 @@ public class Issue28986 : _IssuesUITest
 			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		});
 	}
-	#endif
+#endif
 }
 #endif

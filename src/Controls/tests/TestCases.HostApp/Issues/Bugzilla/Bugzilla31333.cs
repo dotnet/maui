@@ -162,10 +162,7 @@ public class Bugzilla31333 : TestContentPage
 		button.Clicked += (sender, args) =>
 		{
 			var item = data[0];
-			if (item != null)
-			{
-				item.IsFocused = !item.IsFocused;
-			}
+			item?.IsFocused = !item.IsFocused;
 		};
 
 		return new StackLayout() { Children = { button, listView } };

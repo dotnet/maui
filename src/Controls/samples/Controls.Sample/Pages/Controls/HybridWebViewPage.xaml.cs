@@ -86,7 +86,7 @@ namespace Maui.Controls.Sample.Pages
 					SampleInvokeJsContext.Default.String,
 					[],
 					[]);
-				
+
 				statusResult += Environment.NewLine + "JavaScript function unexpectedly succeeded with result: " + result;
 			}
 			catch (Exception ex)
@@ -109,7 +109,7 @@ namespace Maui.Controls.Sample.Pages
 					SampleInvokeJsContext.Default.String,
 					[],
 					[]);
-				
+
 				statusResult += Environment.NewLine + "Async JavaScript function unexpectedly succeeded with result: " + result;
 			}
 			catch (Exception ex)
