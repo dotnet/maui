@@ -92,14 +92,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			TableView.AccessibilityTraits = UIAccessibilityTrait.None;
-
-			TableView.AccessibilityLabel = StringResources.NavigationFlyoutMenuLabel;
-			TableView.AccessibilityValue = StringResources.NavigationFlyoutMenuValue;
-			TableView.AccessibilityHint = StringResources.NavigationFlyoutMenuHint;
-			TableView.IsAccessibilityElement = false;
-			TableView.AccessibilityElementsHidden = false;
-
+			TableView.AccessibilityElementsHidden = true;
 			TableView.Source = _source;
 #pragma warning restore CS0618 // Type or member is obsolete
 			ShellFlyoutContentManager.ViewDidLoad();
