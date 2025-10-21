@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="icon" href="data:,">
+    <script src="_framework/hybridwebview.js"></script>
+    <script>
+        // Test helper functions that will be called from C# tests
+        var testResult = null;
+
+        function GetTestResult() {
+            var result = testResult;
+            testResult = null;
+            return result;
+        }
+
+        function SetStatusDone() {
+            document.getElementById('status').innerHTML = "Done!";
+        }
+
+        function TestGetRequestIsBlocked() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'GET'
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestGetRequestWithHeaderIsBlocked() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'GET',
+                headers: {
+                    'X-Maui-Invoke-Token': 'HybridWebView'
+                }
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestMissingTokenHeader() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                body: JSON.stringify({ test: 'data' })
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestInvalidTokenHeader() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: {
+                    'X-Maui-Invoke-Token': 'InvalidValue'
+                },
+                body: JSON.stringify({ test: 'data' })
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestMissingBodyHeader() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: {
+                    'X-Maui-Invoke-Token': 'HybridWebView'
+                },
+                body: JSON.stringify({ test: 'data' })
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestEmptyBody() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: {
+                    'X-Maui-Invoke-Token': 'HybridWebView',
+                    'X-Maui-Request-Body': ''
+                },
+                body: ''
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        Hybrid fails test!
+    </div>
+    <div id="htmlLoaded"></div>
+    <div id="status"></div>
+</body>
+</html>

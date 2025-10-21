@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Handlers
 					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
 
 					// 2.a. Check if the request is for a local resource
-					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, logger);
+					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
 
 					// 2.b. Return the response header
 					using var dic = new NSMutableDictionary<NSString, NSString>();
@@ -216,14 +216,13 @@ namespace Microsoft.Maui.Handlers
 				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, ILogger? logger)
+			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
 			{
 				if (Handler is null)
 				{
 					return (null, ContentType: null, StatusCode: 404);
 				}
 
-				var fullUrl = url;
 				url = WebUtils.RemovePossibleQueryString(url);
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
@@ -248,9 +247,47 @@ namespace Microsoft.Maui.Handlers
 					{
 						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
-						var fullUri = new Uri(fullUrl!);
-						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-						var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
+						// Only accept requests from HybridWebView
+						var hasExpectedTokenHeader = false;
+						if (request.Headers is not null)
+						{
+							foreach (var header in request.Headers)
+							{
+								if (string.Equals(header.Key?.ToString(), InvokeDotNetTokenHeaderName, StringComparison.OrdinalIgnoreCase) &&
+									string.Equals(header.Value?.ToString(), InvokeDotNetTokenHeaderValue, StringComparison.OrdinalIgnoreCase))
+								{
+									hasExpectedTokenHeader = true;
+									break;
+								}
+							}
+						}
+						if (!hasExpectedTokenHeader)
+						{
+							logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+							return (null, null, StatusCode: 403);
+						}
+
+						// Only accept POST requests
+						if (!string.Equals(request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase))
+						{
+							logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.HttpMethod);
+							return (null, null, StatusCode: 405);
+						}
+
+						// Read the request body
+						Stream requestBody;
+						if (request.Body is NSData bodyData && bodyData.Length > 0)
+						{
+							requestBody = bodyData.AsStream();
+						}
+						else
+						{
+							logger?.LogError("InvokeDotNet request body is empty");
+							return (null, null, StatusCode: 400);
+						}
+
+						// Invoke the method
+						var contentBytes = await Handler.InvokeDotNetAsync(streamBody: requestBody);
 						if (contentBytes is not null)
 						{
 							return (NSData.FromArray(contentBytes), "application/json", StatusCode: 200);

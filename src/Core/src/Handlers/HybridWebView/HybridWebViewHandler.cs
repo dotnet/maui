@@ -69,6 +69,11 @@ namespace Microsoft.Maui.Handlers
 		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
 		internal const string HybridWebViewDotJsPath = "_framework/hybridwebview.js";
 
+		internal const string InvokeDotNetTokenHeaderName = "X-Maui-Invoke-Token";
+		internal const string InvokeDotNetTokenHeaderValue = "HybridWebView";
+		internal const string InvokeDotNetBodyHeaderName = "X-Maui-Request-Body";
+
+
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS
@@ -172,23 +177,26 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal async Task<byte[]?> InvokeDotNetAsync(NameValueCollection invokeQueryString)
+		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
 			try
 			{
 				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
 				var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
 
-				var invokeDataString = invokeQueryString["data"];
-				if (string.IsNullOrEmpty(invokeDataString))
+				JSInvokeMethodData? invokeData = null;
+				if (streamBody is not null)
 				{
-					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
+					invokeData = await JsonSerializer.DeserializeAsync<JSInvokeMethodData>(streamBody, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
 				}
-
-				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
+				else if (!string.IsNullOrWhiteSpace(stringBody))
+				{
+					invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(stringBody, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
+				}
+				
 				if (invokeData?.MethodName is null)
 				{
-					throw new ArgumentException("The invoke data did not provide a method name.", nameof(invokeQueryString));
+					throw new InvalidOperationException("The invoke data did not provide a method name.");
 				}
 
 				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
@@ -201,7 +209,7 @@ namespace Microsoft.Maui.Handlers
 			catch (Exception ex)
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
-				
+
 				// Return error response instead of null so JavaScript can handle the error
 				var errorResult = CreateErrorResult(ex);
 				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);

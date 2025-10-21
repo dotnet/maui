@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 				using var deferral = eventArgs.GetDeferral();
 
 				// 2.b. Check if the request is for a local resource
-				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri, logger);
+				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(url, eventArgs.Request, logger);
 
 				// 2.c. Create the response header
 				var headers = "";
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Handlers
 			logger?.LogDebug("Request for {Url} was not handled.", url);
 		}
 
-		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url, ILogger? logger)
+		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url, CoreWebView2WebResourceRequest request, ILogger? logger)
 		{
 			var requestUri = WebUtils.RemovePossibleQueryString(url);
 
@@ -186,9 +186,47 @@ namespace Microsoft.Maui.Handlers
 				{
 					logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
-					var fullUri = new Uri(url);
-					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-					var contentBytes = await InvokeDotNetAsync(invokeQueryString);
+					// Only accept requests from HybridWebView
+					var hasExpectedTokenHeader = false;
+					if (request.Headers is not null)
+					{
+						foreach (var header in request.Headers)
+						{
+							if (string.Equals(header.Key?.ToString(), InvokeDotNetTokenHeaderName, StringComparison.OrdinalIgnoreCase) &&
+								string.Equals(header.Value?.ToString(), InvokeDotNetTokenHeaderValue, StringComparison.OrdinalIgnoreCase))
+							{
+								hasExpectedTokenHeader = true;
+								break;
+							}
+						}
+					}
+					if (!hasExpectedTokenHeader)
+					{
+						logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+						return (Stream: null, ContentType: null, StatusCode: 403, Reason: "Forbidden");
+					}
+
+					// Only accept POST requests
+					if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+					{
+						logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.Method);
+						return (Stream: null, ContentType: null, StatusCode: 405, Reason: "Method Not Allowed");
+					}
+
+					// Read the request body
+					Stream requestBody;
+					if (request.Content is { } bodyStream && bodyStream.Size > 0)
+					{
+						requestBody = bodyStream.AsStreamForRead();
+					}
+					else
+					{
+						logger?.LogError("InvokeDotNet request body is empty");
+						return (Stream: null, ContentType: null, StatusCode: 400, Reason: "Bad Request");
+					}
+
+					// Invoke the method
+					var contentBytes = await InvokeDotNetAsync(streamBody: requestBody);
 					if (contentBytes is not null)
 					{
 						var ras = await CopyContentToRandomAccessStreamAsync(contentBytes.AsBuffer());
