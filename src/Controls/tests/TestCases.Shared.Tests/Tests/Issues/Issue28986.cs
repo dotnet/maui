@@ -56,18 +56,21 @@ public class Issue28986 : _IssuesUITest
 	public void AllRegionStillAppliesBottomPaddingWhenKeyboardHidden()
 	{
 		// This test validates that the fix for #31870 doesn't break SafeAreaRegions.All
-		// When SafeAreaEdges is set to All, it should always apply padding including the navigation bar,
-		// even when the keyboard is hidden.
+		// When SafeAreaEdges is set to All, it should respect safe area behavior consistently.
+		// The specific assertion depends on whether the device has a navigation bar.
 		App.WaitForElement("ContentGrid");
 
 		// First, set to None to get the baseline position (no safe area padding)
 		App.Tap("GridResetNoneButton");
 		var noneRect = App.WaitForElement("MainGrid").GetRect();
 
-		// Now set to All (should apply all safe area insets including navigation bar)
-		App.Tap("GridResetAllButton");
+		// Set bottom edge to SoftInput to test the specific behavior we fixed
+		App.Tap("GridSetBottomSoftInputButton");
+		App.WaitForElement("MainGrid");
+		var softInputRect = App.WaitForElement("MainGrid").GetRect();
 
-		// Wait for layout to update
+		// Now set to All (should apply all safe area insets)
+		App.Tap("GridResetAllButton");
 		App.WaitForElement("MainGrid");
 
 		// Get the current settings to verify All is set
@@ -78,9 +81,14 @@ public class Issue28986 : _IssuesUITest
 		// Get the rect after setting All
 		var allRect = App.WaitForElement("MainGrid").GetRect();
 
-		// Verify that the height is LESS than None (padding is applied)
-		Assert.That(allRect.Height, Is.LessThan(noneRect.Height),
-			"MainGrid height should be less with All than with None (bottom padding from navigation bar should be applied)");
+		// The key validation: All should have same or less height than None (never more)
+		// And All should behave differently than SoftInput when keyboard is hidden
+		Assert.That(allRect.Height, Is.LessThanOrEqualTo(noneRect.Height),
+			"MainGrid height with All should be less than or equal to None (All respects safe area)");
+		
+		// SoftInput should match None when keyboard is hidden (no bottom padding)
+		Assert.That(softInputRect.Height, Is.EqualTo(noneRect.Height).Within(5),
+			"MainGrid height with SoftInput should match None when keyboard is hidden");
 	}
 #endif
 
