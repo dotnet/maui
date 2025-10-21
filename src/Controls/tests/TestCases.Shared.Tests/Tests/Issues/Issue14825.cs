@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,11 +17,10 @@ public class Issue14825 : _IssuesUITest
 	public void ValidateWebViewScreenshot()
 	{
 		App.WaitForElement("TestInstructions");
-
-		// Click the capture button to capture a WebView screenshot.
+		Thread.Sleep(2000); // Wait for the WebView to load
+							// Click the capture button to capture a WebView screenshot.
 		App.Click("Capture");
-
+		App.WaitForElement("TestInstructions", timeout: TimeSpan.FromSeconds(2));
 		VerifyScreenshot();
 	}
 }
-#endif

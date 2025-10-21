@@ -28,9 +28,9 @@ parameters:
   default: true
 
 - name: pushPackages
-  displayName: "Controls the script, allows for dry run"
+  displayName: "If false does dry run"
   type: boolean
-  default: false
+  default: true
 
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to include"
@@ -56,9 +56,10 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
+
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
-- group: DotNet-Maui-Release
+- group: maui-nuget-release # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
 
 resources:
   repositories:
@@ -73,6 +74,8 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive
     pool: ${{ parameters.VM_IMAGE_HOST }}
     sdl:
       binskim:
@@ -129,7 +132,7 @@ extends:
                   exit 1
                 }
                 Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose
                 Write-Host "List downloaded artifacts"
                 Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
                 $manifestPack = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs\shipping\packages\" -Filter "*.Manifest-*.nupkg" | Select-Object -First 1
@@ -194,6 +197,7 @@ extends:
 
           - task: AzureCLI@2
             displayName: Get build for commit
+            continueOnError: true
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
@@ -211,13 +215,13 @@ extends:
                   exit 1
                 }
                 Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose  
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
 
           - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}"
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}" -NuGetOrgApiKey2 "$(pat--nuget--xamarinc--push--wildcard-1)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard-2)" 
             displayName: Push workload packs to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}
@@ -261,6 +265,7 @@ extends:
 
           - task: AzureCLI@2
             displayName: Get build for commit
+            continueOnError: true
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
@@ -278,7 +283,7 @@ extends:
                   exit 1
                 }
                 Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose  
+                & $darc gather-drop --ci --id $barId --asset-filter "^Microsoft.*Manifest" -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
 
           - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
             displayName: list downloaded artifacts

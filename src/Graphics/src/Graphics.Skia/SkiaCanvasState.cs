@@ -4,6 +4,9 @@ using Color = SkiaSharp.SKColor;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Represents the state of a <see cref="SkiaCanvas"/>, maintaining properties like colors, fonts, and transformations.
+	/// </summary>
 	public class SkiaCanvasState : CanvasState, IBlurrableCanvas
 	{
 		public float Alpha = 1;
@@ -29,10 +32,17 @@ namespace Microsoft.Maui.Graphics.Skia
 		private Color _fillColor = Colors.White;
 		private Color _fontColor = Colors.Black;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaCanvasState"/> class.
+		/// </summary>
 		public SkiaCanvasState()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaCanvasState"/> class with properties copied from another state.
+		/// </summary>
+		/// <param name="prototype">The state to copy from.</param>
 		public SkiaCanvasState(SkiaCanvasState prototype) : base(prototype)
 		{
 			_strokeColor = prototype._strokeColor;
@@ -60,12 +70,21 @@ namespace Microsoft.Maui.Graphics.Skia
 			_shadowBlur = prototype._shadowBlur;
 		}
 
+		/// <summary>
+		/// Gets or sets the stroke color.
+		/// </summary>
 		public Color StrokeColor
 		{
 			get => _strokeColor;
 			set => _strokeColor = value;
 		}
 
+		/// <summary>
+		/// Gets or sets the fill color.
+		/// </summary>
+		/// <remarks>
+		/// Setting this property resets any shader that might have been set.
+		/// </remarks>
 		public Color FillColor
 		{
 			get => _fillColor;
@@ -76,6 +95,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the font color.
+		/// </summary>
 		public Color FontColor
 		{
 			get => _fontColor;
@@ -89,6 +111,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the stroke line cap style.
+		/// </summary>
+		/// <value>The line cap style to apply to the ends of stroked lines.</value>
 		public LineCap StrokeLineCap
 		{
 			set
@@ -102,6 +128,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the stroke line join style.
+		/// </summary>
+		/// <value>The line join style to apply at the corners of stroked lines.</value>
 		public LineJoin StrokeLineJoin
 		{
 			set
@@ -115,11 +145,21 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the miter limit for stroked lines with miter joins.
+		/// </summary>
+		/// <value>The miter limit value.</value>
 		public float MiterLimit
 		{
 			set => StrokePaint.StrokeMiter = value;
 		}
 
+		/// <summary>
+		/// Sets the stroke dash pattern.
+		/// </summary>
+		/// <param name="pattern">An array of values that specify the lengths of alternating dashes and gaps.</param>
+		/// <param name="strokeDashOffset">The distance into the dash pattern to start the dash.</param>
+		/// <param name="strokeSize">The stroke width to scale the pattern by.</param>
 		public void SetStrokeDashPattern(float[] pattern, float strokeDashOffset, float strokeSize)
 		{
 			if (pattern == null || pattern.Length == 0 || strokeSize == 0)

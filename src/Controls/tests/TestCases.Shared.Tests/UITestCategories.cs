@@ -67,6 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string DisplayPrompt = "DisplayPrompt";
 		public const string IndicatorView = "IndicatorView";
 		public const string RadioButton = "RadioButton";
+		public const string Shadow = "Shadow";
 		public const string Shape = "Shape";
 		public const string Accessibility = "Accessibility";
 		public const string Brush = "Brush";

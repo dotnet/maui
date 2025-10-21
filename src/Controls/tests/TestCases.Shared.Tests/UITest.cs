@@ -1,6 +1,8 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using ImageMagick;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -122,8 +124,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			int cropLeft = 0,
+			int cropRight = 0,
 			int cropTop = 0,
-			int cropBottom = 0
+			int cropBottom = 0,
+			double tolerance = 0.0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -131,7 +136,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropTop, cropBottom
+				VerifyScreenshot(name, retryDelay, cropLeft, cropRight, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -143,11 +148,46 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		/// <summary>
+		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
+		/// </summary>
+		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
+		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
+		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
+		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
+		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
+#if MACUITEST || WINTEST
+/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+#endif
+		/// <remarks>
+		/// This method immediately throws an exception if the screenshot verification fails.
+		/// For batch verification of multiple screenshots, consider using <see cref="VerifyScreenshotOrSetException"/> instead.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// // Exact match (no tolerance)
+		/// VerifyScreenshot("LoginScreen");
+		/// 
+		/// // Allow 2% difference for dynamic content
+		/// VerifyScreenshot("DashboardWithTimestamp", tolerance: 2.0);
+		/// 
+		/// // Allow 5% difference for animations or slight rendering variations
+		/// VerifyScreenshot("ButtonHoverState", tolerance: 5.0);
+		/// 
+		/// // Combined with cropping and tolerance
+		/// VerifyScreenshot("HeaderSection", cropTop: 50, cropBottom: 100, tolerance: 3.0);
+		/// </code>
+		/// </example>
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			int cropLeft = 0,
+			int cropRight = 0,
 			int cropTop = 0,
-			int cropBottom = 0
+			int cropBottom = 0,
+			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -188,9 +228,12 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					case TestDevice.Android:
 						environmentName = "android";
-						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
-						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
-						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+						var deviceApiLevel = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")
+							?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
+						var deviceScreenSize = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")
+							?? throw new InvalidOperationException("deviceScreenSize capability is missing or null.");
+						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
+							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
 
 						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
@@ -199,8 +242,10 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.iOS:
-						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
-						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
+							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
+							?? throw new InvalidOperationException("deviceName capability is missing or null.");
 
 						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
 						{
@@ -278,21 +323,90 @@ namespace Microsoft.Maui.TestCases.Tests
 					_ => 0,
 				};
 
+				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
+				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
+				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
+				int cropFromLeft = 0;
+				int cropFromRight = 0;
+
+				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
+				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
 				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
 				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
-				if (cropFromTop > 0 || cropFromBottom > 0)
+				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
+					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
 
-				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+				// Apply tolerance if specified
+				if (tolerance > 0)
+				{
+					VerifyWithTolerance(name!, actualImage, environmentName, tolerance);
+				}
+				else
+				{
+					_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+				}
 			}
+		}
+
+		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, double tolerance)
+		{
+			if (tolerance > 15)
+			{
+				throw new ArgumentException($"Tolerance {tolerance}% exceeds the acceptable limit. Please review whether this requires a different test or if it is a bug.");
+			}
+
+			try
+			{
+				_visualRegressionTester.VerifyMatchesSnapshot(name, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+			catch (Exception ex) when (IsVisualDifferenceException(ex))
+			{
+				var difference = ExtractDifferencePercentage(ex);
+				if (difference <= tolerance)
+				{
+					// Log warning but pass test
+					TestContext.WriteLine($"Visual difference {difference}% within tolerance {tolerance}% for '{name}' on {environmentName}");
+					return;
+				}
+				throw; // Re-throw if exceeds tolerance
+			}
+		}
+
+		bool IsVisualDifferenceException(Exception ex)
+		{
+			// Check if this is a visual regression failure
+			return ex.GetType().Name.Contains("Assert", StringComparison.Ordinal) ||
+				   ex.Message.Contains("Snapshot different", StringComparison.Ordinal) ||
+				   ex.Message.Contains("baseline", StringComparison.Ordinal) ||
+				   ex.Message.Contains("different", StringComparison.Ordinal);
+		}
+
+		double ExtractDifferencePercentage(Exception ex)
+		{
+			var message = ex.Message;
+
+			// Extract percentage from pattern: "X,XX% difference"
+			var match = Regex.Match(message, @"(\d+,\d+)%\s*difference", RegexOptions.IgnoreCase);
+			if (match.Success)
+			{
+				var percentageString = match.Groups[1].Value.Replace(',', '.');
+				if (double.TryParse(percentageString, System.Globalization.NumberStyles.Float,
+					System.Globalization.CultureInfo.InvariantCulture, out var percentage))
+				{
+					return percentage;
+				}
+			}
+
+			// If can't extract specific percentage, throw an exception to indicate failure
+			throw new InvalidOperationException("Unable to extract difference percentage from exception message.");
 		}
 
 		protected void VerifyInternetConnectivity()

@@ -7,10 +7,12 @@
     <AssemblyName>Microsoft.Maui.Graphics.Skia</AssemblyName>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0026;RS0027;RS0041</NoWarn>
+    <NoWarn>$(NoWarn);RS0026;RS0027;RS0041</NoWarn>
+    <WarningsAsErrors>CS1591</WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <IsAotCompatible>true</IsAotCompatible>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>

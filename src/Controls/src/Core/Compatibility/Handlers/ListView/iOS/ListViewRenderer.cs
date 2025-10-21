@@ -446,8 +446,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 						this.BeginInvokeOnMainThread(() =>
 						{
-							if (Control != null /*&& !_disposed*/)
-								Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
+							Control?.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
 						});
 					else
 						Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
@@ -535,8 +534,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateIsRefreshing()
 		{
 			var refreshing = Element.IsRefreshing;
-			if (_tableViewController != null)
-				_tableViewController.UpdateIsRefreshing(refreshing);
+			_tableViewController?.UpdateIsRefreshing(refreshing);
 		}
 
 		void UpdateItems(NotifyCollectionChangedEventArgs e, int section, bool resetWhenGrouped)
@@ -756,8 +754,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var color = Element.RefreshControlColor;
 
-			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
+			_tableViewController?.UpdateRefreshControlColor(color?.ToPlatform());
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -1115,7 +1112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				PreserveActivityIndicatorState(cell);
 				Performance.Stop(reference);
 
-				if(platformCell is ContextActionsCell contextActionsCell)
+				if (platformCell is ContextActionsCell contextActionsCell)
 					_contextActionsCells.Add(contextActionsCell);
 
 				return platformCell;

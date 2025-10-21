@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// This contains the messaging required to communicate with legacy renderers
-	/// <include file="../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
 	public partial class NavigationPage : INavigationPageController
 	{
 		async Task<Page> PopAsyncInner(
@@ -43,9 +43,6 @@ namespace Microsoft.Maui.Controls
 
 			FireDisappearing(page);
 
-			if (InternalChildren.Last() == page)
-				FireAppearing((Page)InternalChildren[NavigationPageController.StackDepth - 2]);
-
 			var args = new NavigationRequestedEventArgs(page, animated);
 
 			var removed = true;
@@ -62,7 +59,13 @@ namespace Microsoft.Maui.Controls
 			if (!removed && !fast)
 				return CurrentPage;
 
+			bool isLastPage = InternalChildren.Last() == page;
 			RemoveFromInnerChildren(page);
+
+			if (isLastPage && InternalChildren.Count > 0)
+			{
+				FireAppearing((Page)InternalChildren.Last());
+			}
 
 			CurrentPage = (Page)InternalChildren.Last();
 

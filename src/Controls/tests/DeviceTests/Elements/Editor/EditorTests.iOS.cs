@@ -1,5 +1,4 @@
-﻿using UIKit;
-using Xunit;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -7,8 +6,9 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using UIKit;
+using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {

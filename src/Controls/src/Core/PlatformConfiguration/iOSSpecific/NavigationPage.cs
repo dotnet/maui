@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.NavigationPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage']/Docs/*" />
+	/// <summary>The navigation page instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
 	public static class NavigationPage
 	{
 		#region Translucent
@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create("IsNavigationBarTranslucent", typeof(bool),
 			typeof(NavigationPage), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetIsNavigationBarTranslucent']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</returns>
 		public static bool GetIsNavigationBarTranslucent(BindableObject element)
 		{
 			return (bool)element.GetValue(IsNavigationBarTranslucentProperty);
@@ -25,7 +27,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(IsNavigationBarTranslucentProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='IsNavigationBarTranslucent']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</returns>
 		public static bool IsNavigationBarTranslucent(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetIsNavigationBarTranslucent(config.Element);
@@ -38,14 +42,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='EnableTranslucentNavigationBar']/Docs/*" />
+		/// <summary>Makes the navigation bar translucent on the platform-specific element.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> EnableTranslucentNavigationBar(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			SetIsNavigationBarTranslucent(config.Element, true);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='DisableTranslucentNavigationBar']/Docs/*" />
+		/// <summary>Makes the navigation bar opaque on the platform-specific element.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> DisableTranslucentNavigationBar(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			SetIsNavigationBarTranslucent(config.Element, false);
@@ -90,7 +98,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for <see cref="PrefersLargeTitles"/>.</summary>
 		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetPrefersLargeTitles']/Docs/*" />
+		/// <summary>Returns the large title preference of <paramref name="element"/>.</summary>
+		/// <param name="element">The element whose large title preference to get.</param>
+		/// <returns>The large title preference of <paramref name="element"/>.</returns>
 		public static bool GetPrefersLargeTitles(BindableObject element)
 		{
 			return (bool)element.GetValue(PrefersLargeTitlesProperty);
@@ -109,7 +119,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='PrefersLargeTitles']/Docs/*" />
+		/// <summary>Returns a value that indicates the element's preference for large titles.</summary>
+		/// <param name="config">The element whose large title preference to get.</param>
+		/// <returns>A value that indicates the element's preference for large titles.</returns>
 		public static bool PrefersLargeTitles(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPrefersLargeTitles(config.Element);
@@ -120,7 +132,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for <see cref="HideNavigationBarSeparator"/>.</summary>
 		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetHideNavigationBarSeparator']/Docs/*" />
+		/// <summary>Returns <see langword="true"/> if the separator is hidden. Otherwise, returns <see langword="false"/>.</summary>
+		/// <param name="element">The element for which to return whether the navigation bar separator is hidden.</param>
+		/// <returns>see langword="true" /> if the separator is hidden. Otherwise, <see langword="false"/></returns>
 		public static bool GetHideNavigationBarSeparator(BindableObject element)
 		{
 			return (bool)element.GetValue(HideNavigationBarSeparatorProperty);
@@ -139,7 +153,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='HideNavigationBarSeparator']/Docs/*" />
+		/// <summary>Returns <see langword="true"/> if the separator is hidden. Otherwise, returns <see langword="false"/>.</summary>
+		/// <param name="config">The platform configuration for the element for which to return whether the navigation bar separator is hidden.</param>
+		/// <returns><see langword="true"/> if the separator is hidden. Otherwise, <see langword="false"/></returns>
 		public static bool HideNavigationBarSeparator(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetHideNavigationBarSeparator(config.Element);

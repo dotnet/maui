@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Border
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+xmlns:local="clr-namespace:PoolMathApp.Xaml"
+x:Class="PoolMathApp.Xaml.TestResultBoxView"
+    Background="{DynamicResource PageBackgroundColor}"
+    Stroke="{DynamicResource FreeChlorineAccentColor}"
+    StrokeThickness="1"
+    StrokeShape="{RoundRectangle CornerRadius=17}">
+    <Grid
+	RowDefinitions="*,*"
+	Padding="0,6,0,4">
+
+	<Label x:Name="labelValue" Grid.Row="0" Margin="14,0,14,0"  FontSize="18" FontFamily="DefaultStronger" HorizontalOptions="Center" VerticalOptions="End" TextColor="{DynamicResource PrimaryTextColor}" />
+	<Label x:Name="labelTitle" Grid.Row="1" Margin="8,0,8,0" FontSize="16" FontFamily="DefaultStrong" TextColor="{DynamicResource FreeChlorineAccentColor}" HorizontalOptions="Center" VerticalOptions="Start" />
+
+</Grid>
+</Border>

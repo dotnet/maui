@@ -6,6 +6,12 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Implements a canvas that uses SkiaSharp for rendering graphics.
+	/// </summary>
+	/// <remarks>
+	/// SkiaCanvas provides a implementation of the standard canvas drawing operations using the SkiaSharp graphics library.
+	/// </remarks>
 	public class SkiaCanvas : AbstractCanvas<SkiaCanvasState>, IBlurrableCanvas
 	{
 		private readonly SkiaCanvasStateService _stateService;
@@ -14,6 +20,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		private float _displayScale = 1;
 		private SKShader _shader;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaCanvas"/> class.
+		/// </summary>
 		public SkiaCanvas()
 			: base(CreateStateService(out var stateService), new SkiaStringSizeService())
 		{
@@ -23,14 +32,26 @@ namespace Microsoft.Maui.Graphics.Skia
 		static SkiaCanvasStateService CreateStateService(out SkiaCanvasStateService stateService) =>
 			stateService = new SkiaCanvasStateService();
 
+		/// <summary>
+		/// Releases all resources used by the <see cref="SkiaCanvas"/> instance.
+		/// </summary>
 		public override void Dispose()
 		{
 			_stateService.Dispose();
 			base.Dispose();
 		}
 
+		/// <summary>
+		/// Gets the display scale factor used by the canvas.
+		/// </summary>
 		public override float DisplayScale => _displayScale;
 
+		/// <summary>
+		/// Gets or sets the underlying SkiaSharp canvas.
+		/// </summary>
+		/// <remarks>
+		/// Setting a new canvas will reset the current state.
+		/// </remarks>
 		public SKCanvas Canvas
 		{
 			get => _canvas;
@@ -42,6 +63,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets a value indicating whether anti-aliasing is enabled.
+		/// </summary>
 		public override bool Antialias
 		{
 			set => CurrentState.AntiAlias = value;
@@ -208,6 +232,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Sets the display scale factor for the canvas.
+		/// </summary>
+		/// <param name="value">The display scale factor to set.</param>
 		public void SetDisplayScale(float value)
 		{
 			_displayScale = value;
@@ -221,6 +249,15 @@ namespace Microsoft.Maui.Graphics.Skia
 			CurrentState.SetStrokeDashPattern(strokePattern, strokeDashOffset, strokeSize);
 		}
 
+		/// <summary>
+		/// Sets the fill paint for the canvas.
+		/// </summary>
+		/// <param name="paint">The paint to use for filling. If null, white color will be used.</param>
+		/// <param name="rectangle">The rectangle that defines the coordinate space for the paint.</param>
+		/// <remarks>
+		/// This method handles different types of paints including SolidPaint, LinearGradientPaint, 
+		/// RadialGradientPaint, PatternPaint, and ImagePaint.
+		/// </remarks>
 		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
@@ -442,6 +479,16 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Fills an arc within the specified rectangle from the start angle to the end angle.
+		/// </summary>
+		/// <param name="x">The x-coordinate of the upper-left corner of the rectangle that contains the arc.</param>
+		/// <param name="y">The y-coordinate of the upper-left corner of the rectangle that contains the arc.</param>
+		/// <param name="width">The width of the rectangle that contains the arc.</param>
+		/// <param name="height">The height of the rectangle that contains the arc.</param>
+		/// <param name="startAngle">The starting angle in degrees.</param>
+		/// <param name="endAngle">The ending angle in degrees.</param>
+		/// <param name="clockwise">A value indicating whether the arc is drawn clockwise or counterclockwise.</param>
 		public override void FillArc(
 			float x,
 			float y,
@@ -494,6 +541,13 @@ namespace Microsoft.Maui.Graphics.Skia
 			_canvas.DrawRect(rectX, rectY, rectWidth, rectHeight, CurrentState.StrokePaintWithAlpha);
 		}
 
+		/// <summary>
+		/// Fills a rectangle at the specified coordinates with the current fill paint.
+		/// </summary>
+		/// <param name="x">The x-coordinate of the upper-left corner of the rectangle.</param>
+		/// <param name="y">The y-coordinate of the upper-left corner of the rectangle.</param>
+		/// <param name="width">The width of the rectangle.</param>
+		/// <param name="height">The height of the rectangle.</param>
 		public override void FillRectangle(
 			float x,
 			float y,

@@ -207,23 +207,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var collectionView = CollectionView;
 			var visibleCells = collectionView.VisibleCells;
-			List<NSIndexPath> invalidatedPaths = null;
+			List<TemplatedCell2> invalidatedCells = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
-					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
-					var path = collectionView.IndexPathForCell(cell);
-					invalidatedPaths.Add(path);
+					invalidatedCells ??= [];
+					invalidatedCells.Add(cell);
 				}
 			}
 
-			if (invalidatedPaths != null)
+			if (invalidatedCells is not null)
 			{
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
+				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
@@ -287,7 +286,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateFlowDirection()
 		{
-			CollectionView.UpdateFlowDirection(ItemsView);
+			if (ItemsView.Handler.PlatformView is UIView itemsView)
+			{
+				itemsView.UpdateFlowDirection(ItemsView);
+				if (ItemsView.ItemTemplate is not null)
+				{
+					foreach (var child in ItemsView.LogicalChildrenInternal)
+					{
+						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
+						{
+							view.UpdateFlowDirection(ve);
+						}
+					}
+				}
+				else
+				{
+					// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
+					if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+					{
+						foreach (var cell in visibleCells.OfType<DefaultCell2>())
+						{
+							cell.Label.UpdateFlowDirection(ItemsView);
+						}
+					}
+				}
+			}
 
 			if (_emptyViewDisplayed)
 			{
@@ -564,11 +587,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_emptyViewFormsElement = null;
 		}
 
-		void LayoutEmptyView()
+		virtual internal CGRect LayoutEmptyView()
 		{
 			if (!_initialized || _emptyUIView == null || _emptyUIView.Superview == null)
 			{
-				return;
+				return CGRect.Empty;
 			}
 
 			var frame = DetermineEmptyViewFrame();
@@ -577,6 +600,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
 				_emptyViewFormsElement.Layout(frame.ToRectangle());
+
+			return frame;
 		}
 
 		internal protected virtual void UpdateVisibility()

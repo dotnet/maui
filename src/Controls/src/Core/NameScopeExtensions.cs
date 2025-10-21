@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/NameScopeExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.NameScopeExtensions']/Docs/*" />
+	/// <summary>Extension methods for <see cref="Microsoft.Maui.Controls.Element"/>  that adds a strongly-typed FindByName method.</summary>
 	public static class NameScopeExtensions
 	{
 		public static T FindByName<T>(this Element element, string name)

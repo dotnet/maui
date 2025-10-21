@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Opacity;
 			});
 		}
-		
+
 		[Fact]
 		[Description("The IsEnabled of a SearchBar should match with native IsEnabled")]
 		public async Task VerifySearchBarIsEnabledProperty()

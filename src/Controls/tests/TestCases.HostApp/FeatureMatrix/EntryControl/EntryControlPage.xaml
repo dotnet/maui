@@ -1,0 +1,117 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:EntryViewModel"
+             x:Class="Maui.Controls.Sample.EntryControlMainPage">
+       <VerticalStackLayout Padding="20"
+                            Spacing="8">
+              <Label Text="Entry Control"
+                     FontSize="20"
+                     Margin="0,0,0,50"
+                     HorizontalOptions="Center"/>
+
+              <local:UITestEntry x:Name="EntryControl"
+                                 IsCursorVisible="False"
+                                 Text="{Binding Text}"
+                                 Placeholder="{Binding Placeholder}"
+                                 PlaceholderColor="{Binding PlaceholderColor}"
+                                 TextColor="{Binding TextColor}"
+                                 ClearButtonVisibility="{Binding ClearButtonVisibility}"
+                                 HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+                                 VerticalTextAlignment="{Binding VerticalTextAlignment}"
+                                 IsPassword="{Binding IsPassword}"
+                                 FontSize="{Binding FontSize}"
+                                 CharacterSpacing="{Binding CharacterSpacing}"
+                                 IsReadOnly="{Binding IsReadOnly}"
+                                 IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
+                                 IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
+                                 Shadow="{Binding EntryShadow}"
+                                 MaxLength="{Binding MaxLength}"
+                                 SelectionLength="{Binding SelectionLength}"
+                                 CursorPosition="{Binding CursorPosition, Mode=TwoWay}"
+                                 ReturnType="{Binding ReturnType}"
+                                 ReturnCommand="{Binding ReturnCommand}"
+                                 ReturnCommandParameter="{Binding Text}"
+                                 Keyboard="{Binding Keyboard}"
+                                 FontFamily="{Binding FontFamily}"
+                                 IsVisible="{Binding IsVisible}"
+                                 IsEnabled="{Binding IsEnabled}"
+                                 FlowDirection="{Binding FlowDirection}"
+                                 HeightRequest="{Binding HeightRequest}"
+                                 FontAttributes="{Binding FontAttributes}"
+                                 TextTransform="{Binding TextTransform}"
+                                 TextChanged="EntryControl_TextChanged"
+                                 Completed="EntryControl_Completed"
+                                 Focused="EntryControl_Focused"
+                                 Unfocused="EntryControl_Unfocused"
+                                 AutomationId="TestEntry"/>
+
+              <Grid HeightRequest="130"/>
+
+              <Button Text="Options"
+                      FontSize="11"
+                      Clicked="NavigateToOptionsPage_Clicked"
+                      AutomationId="OptionsButton"/>
+
+              <Grid ColumnSpacing="10"
+                    Margin="0,10,0,10">
+                     <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                     </Grid.RowDefinitions>
+                     <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                     </Grid.ColumnDefinitions>
+
+                     <!-- Row 1: Labels -->
+                     <Label Text="Selection Length:"
+                            FontSize="11"
+                            Grid.Row="0"
+                            Grid.Column="0"/>
+                     <Label Text="Cursor position:"
+                            FontSize="11"
+                            Grid.Row="0"
+                            Grid.Column="1"/>
+
+                     <!-- Row 2: Entries -->
+                     <local:UITestEntry x:Name="SelectionLengthEntry"
+                                        Text="{Binding SelectionLength}"
+                                        AutomationId="SelectionLengthEntry"
+                                        IsCursorVisible="False"
+                                        TextChanged="SelectionLength_Clicked"
+                                        Grid.Row="1"
+                                        Grid.Column="0"/>
+                     <local:UITestEntry x:Name="CursorPositionEntry"
+                                        Text="{Binding CursorPosition}"
+                                        AutomationId="CursorPositionEntry"
+                                        IsCursorVisible="False"
+                                        Grid.Row="1"
+                                        Grid.Column="1"/>
+              </Grid>
+
+              <Button Text="Update Cursor Selection"
+                      FontSize="11"
+                      Clicked="OnUpdateCursorAndSelectionClicked"
+                      AutomationId="UpdateCursorAndSelectionButton"/>
+
+              <Label Text="Events:"
+                     FontSize="11"/>
+              <Label x:Name="TextChangedLabel"
+                     Text="{Binding TextChangedText}"
+                     AutomationId="TextChangedLabel"
+                     FontSize="11"/>
+              <Label x:Name="CompletedLabel"
+                     Text="{Binding CompletedText}"
+                     AutomationId="CompletedLabel"
+                     FontSize="11"/>
+              <Label x:Name="FocusedLabel"
+                     Text="{Binding FocusedText}"
+                     AutomationId="FocusedLabel"
+                     FontSize="11"/>
+              <Label x:Name="UnfocusedLabel"
+                     Text="{Binding UnfocusedText}"
+                     AutomationId="UnfocusedLabel"
+                     FontSize="11"/>
+       </VerticalStackLayout>
+</ContentPage>

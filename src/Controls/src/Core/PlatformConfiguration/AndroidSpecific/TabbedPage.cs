@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	using System;
 	using FormsElement = Maui.Controls.TabbedPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage']/Docs/*" />
+	/// <summary>The tabbed page instance that Microsoft.Maui.Controls created on the Android platform.</summary>
 	public static class TabbedPage
 	{
 		/// <summary>Bindable property for <see cref="IsSwipePagingEnabled"/>.</summary>
@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			BindableProperty.Create("IsSwipePagingEnabled", typeof(bool),
 			typeof(TabbedPage), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetIsSwipePagingEnabled']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether swiped paging is enabled.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether swipe paging is enabled.</returns>
 		public static bool GetIsSwipePagingEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(IsSwipePagingEnabledProperty);
@@ -24,7 +26,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(IsSwipePagingEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='IsSwipePagingEnabled']/Docs/*" />
+		/// <summary>Gets a Boolean value that controls whether swipe paging is enabled.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns><see langword="true"/> if swiped paging is enabled. Otherwise, <see langword="false"/>.</returns>
 		public static bool IsSwipePagingEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetIsSwipePagingEnabled(config.Element);
@@ -37,14 +41,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='EnableSwipePaging']/Docs/*" />
+		/// <summary>Enables swiped paging.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The updated element on the Android platform.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> EnableSwipePaging(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			SetIsSwipePagingEnabled(config.Element, true);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='DisableSwipePaging']/Docs/*" />
+		/// <summary>Disables swiped paging.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The updated element on the Android platform.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> DisableSwipePaging(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			SetIsSwipePagingEnabled(config.Element, false);
@@ -56,7 +64,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			BindableProperty.Create("IsSmoothScrollEnabled", typeof(bool),
 			typeof(TabbedPage), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetIsSmoothScrollEnabled']/Docs/*" />
+		/// <summary>Gets whether smooth scrolling is enabled for <paramref name="element"/>.</summary>
+		/// <param name="element">The element parameter.</param>
 		public static bool GetIsSmoothScrollEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(IsSmoothScrollEnabledProperty);
@@ -68,7 +77,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(IsSmoothScrollEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='IsSmoothScrollEnabled']/Docs/*" />
+		/// <summary>Gets whether smooth scrolling is enabled for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
+		/// <param name="config">The config parameter.</param>
 		public static bool IsSmoothScrollEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetIsSmoothScrollEnabled(config.Element);
@@ -81,14 +91,16 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='EnableSmoothScroll']/Docs/*" />
+		/// <summary>Turns on smooth scrolling for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
+		/// <param name="config">The config parameter.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> EnableSmoothScroll(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			SetIsSmoothScrollEnabled(config.Element, true);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='DisableSmoothScroll']/Docs/*" />
+		/// <summary>Turns off smooth scrolling for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>
+		/// <param name="config">The config parameter.</param>
 		public static IPlatformElementConfiguration<Android, FormsElement> DisableSmoothScroll(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			SetIsSmoothScrollEnabled(config.Element, false);
@@ -100,7 +112,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			BindableProperty.Create("OffscreenPageLimit", typeof(int),
 			typeof(TabbedPage), 3, validateValue: (binding, value) => (int)value >= 0);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetOffscreenPageLimit']/Docs/*" />
+		/// <summary>Returns the number of offscreen pages are cached in memory.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>The number of offscreen pages are cached in memory.</returns>
 		public static int GetOffscreenPageLimit(BindableObject element)
 		{
 			return (int)element.GetValue(OffscreenPageLimitProperty);
@@ -112,7 +126,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(OffscreenPageLimitProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='OffscreenPageLimit']/Docs/*" />
+		/// <summary>Returns the number of offscreen pages are cached in memory.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The number of offscreen pages are cached in memory.</returns>
 		public static int OffscreenPageLimit(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetOffscreenPageLimit(config.Element);

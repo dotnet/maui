@@ -48,18 +48,18 @@ namespace Microsoft.Maui.Platform
 
 		RectangleF AlignVertical(RectangleF rect)
 		{
-			var frameSize = Frame.Size;
-			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
+			var availableSize = rect.Size;
+			var requiredHeight = Lines == 1 ? Font.LineHeight : base.SizeThatFits(rect.Size).Height;
 
-			if (height < frameSize.Height)
+			if (requiredHeight < availableSize.Height)
 			{
 				if (_verticalAlignment == UIControlContentVerticalAlignment.Top)
 				{
-					rect.Height = height;
+					rect.Height = requiredHeight;
 				}
 				else if (_verticalAlignment == UIControlContentVerticalAlignment.Bottom)
 				{
-					rect = new RectangleF(rect.X, rect.Bottom - height, rect.Width, height);
+					rect = new RectangleF(rect.X, rect.Bottom - requiredHeight, rect.Width, requiredHeight);
 				}
 			}
 
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Platform
 			var requestedSize = base.SizeThatFits(new SizeF(adjustedWidth, adjustedHeight));
 
 			// Let's be sure the label is not larger than the container
-			return AddInsets(new Size()
+			return AddInsets(new Size
 			{
 				Width = nfloat.Min(requestedSize.Width, size.Width),
 				Height = nfloat.Min(requestedSize.Height, size.Height),

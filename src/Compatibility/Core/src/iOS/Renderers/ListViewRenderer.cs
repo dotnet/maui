@@ -561,8 +561,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateIsRefreshing()
 		{
 			var refreshing = Element.IsRefreshing;
-			if (_tableViewController != null)
-				_tableViewController.UpdateIsRefreshing(refreshing);
+			_tableViewController?.UpdateIsRefreshing(refreshing);
 		}
 
 		void UpdateItems(NotifyCollectionChangedEventArgs e, int section, bool resetWhenGrouped)
@@ -779,8 +778,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var color = Element.RefreshControlColor;
 
-			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
+			_tableViewController?.UpdateRefreshControlColor(color?.ToPlatform());
 		}
 
 		void UpdateVerticalScrollBarVisibility()

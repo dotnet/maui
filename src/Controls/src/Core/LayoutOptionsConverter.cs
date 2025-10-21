@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.LayoutOptionsConverter']/Docs/*" />
+	/// <summary>Class that takes a string representation of a <see cref="Microsoft.Maui.Controls.LayoutOptions"/> and returns a corresponding <see cref="Microsoft.Maui.Controls.LayoutOptions"/>.</summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{

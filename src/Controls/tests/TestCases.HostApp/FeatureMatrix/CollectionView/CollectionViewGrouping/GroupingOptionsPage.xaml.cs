@@ -1,7 +1,7 @@
 using System;
-using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
 using Maui.Controls.Sample.CollectionViewGalleries;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
 

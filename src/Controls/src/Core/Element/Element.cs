@@ -333,30 +333,39 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
+		Element TryGetRealParent(bool logWarningIfParentHasBeenCollected = true)
+		{
+			var realParent = _realParent;
+			if (realParent is null)
+			{
+				return null;
+			}
+			if (realParent.TryGetTarget(out var parent))
+			{
+				return parent;
+			}
+			else
+			{
+				// Clear the weak reference since the target has been garbage collected
+				// This prevents repeated checks and warnings on subsequent accesses
+				_realParent = null;
+				if (logWarningIfParentHasBeenCollected)
+				{
+					Application.Current?
+										.FindMauiContext()?
+										.CreateLogger<Element>()?
+										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+			}
+
+			return null;
+		}
+
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent
 		{
-			get
-			{
-				if (_realParent is null)
-				{
-					return null;
-				}
-				if (_realParent.TryGetTarget(out var parent))
-				{
-					return parent;
-				}
-				else
-				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
-				}
-
-				return null;
-			}
+			get => TryGetRealParent();
 			private set
 			{
 				if (value is null)
@@ -386,7 +395,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element realParent = RealParent;
+			Element realParent = TryGetRealParent(false);
 
 			if (realParent == value)
 			{
@@ -504,14 +513,31 @@ namespace Microsoft.Maui.Controls
 
 		//this is only used by XAMLC, not added to public API
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public INameScope transientNamescope;
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
-		/// <returns>The element that has the specified name.</returns>
+		/// <returns>The element that has the specified name, or <see langword="null"/> if no element with the specified name is found.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
+		/// <remarks>
+		/// <para>
+		/// This method searches for named elements within the current namescope. The search scope is determined by
+		/// traversing up the visual tree from the current element until a namescope is found. Typically, each
+		/// page, content view, or data template defines its own namescope.
+		/// </para>
+		/// <para>
+		/// The search is limited to elements that have been registered in the same namescope, which includes:
+		/// </para>
+		/// <list type="bullet">
+		/// <item><description>Elements with x:Name attributes defined in XAML within the same namescope</description></item>
+		/// <item><description>Elements manually registered using <see cref="INameScope.RegisterName(string, object)"/></description></item>
+		/// <item><description>Child elements and their descendants within the same namescope boundary</description></item>
+		/// </list>
+		/// <para>
+		/// Elements in different namescopes (such as different pages or data templates) are not accessible
+		/// from each other through this method.
+		/// </para>
+		/// </remarks>
 		public object FindByName(string name)
 		{
 			var namescope = GetNameScope() ?? transientNamescope;

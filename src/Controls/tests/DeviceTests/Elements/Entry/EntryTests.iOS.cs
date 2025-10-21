@@ -1,6 +1,4 @@
-﻿using UIKit;
-using Xunit;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -10,6 +8,8 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using UIKit;
+using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
@@ -66,6 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class ScrollTests : ControlsHandlerTestBase
 		{
 			[Fact]
@@ -126,6 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class NextKeyboardTests : ControlsHandlerTestBase
 		{
 			void SetupNextBuilder()

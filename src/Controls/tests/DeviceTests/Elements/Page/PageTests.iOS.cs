@@ -4,15 +4,16 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.Page)]
 	public partial class PageTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()

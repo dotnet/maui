@@ -8,8 +8,10 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  timeoutInMinutes: 180
   skipProvisioning: true
-  agentPoolAccessToken: ''
+  BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
+  RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -30,7 +32,7 @@ parameters:
     - 'ScrollView,SearchBar,Shape,Slider,SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'ViewBaseTests,Visual,WebView,Window'
+    - 'Shadow,ViewBaseTests,Visual,WebView,Window'
 
   projects:
     - name: name
@@ -58,7 +60,8 @@ stages:
                 runtimeVariant: "Mono"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
-  - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
+  - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests Sample App NativeAOT
       dependsOn: []
@@ -125,9 +128,14 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Android snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -143,7 +151,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -166,10 +174,15 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -180,7 +193,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -203,13 +216,62 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS CV2'
+                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+  - stage: ios_ui_tests_mono_carv2
+    displayName: iOS UITests Mono CarouselView2
+    dependsOn: build_ui_tests
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - ${{ each version in parameters.iosVersions }}:
+            - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+              - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                pool: ${{ parameters.iosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: ios
+                      ${{ if eq(version, 'latest') }}:
+                        version: 16.4
+                      ${{ if ne(version, 'latest') }}:
+                        version: ${{ version }}
+                      path: ${{ project.ios }}
+                      app: ${{ project.app }}
+                      ${{ if eq(version, 'latest') }}:
+                        device: ios-simulator-64
+                      ${{ if ne(version, 'latest') }}:
+                        device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      runtimeVariant : "Mono"
+                      testFilter: "CarouselView"
+                      testConfigurationArgs: "CollectionView2"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CARV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS CARV2'
+                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.JobName)-$(System.JobAttempt)'
+
+  # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
+  - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot
@@ -224,7 +286,7 @@ stages:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
-                  timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                  timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -247,7 +309,6 @@ stages:
                         ${{ if ne(version, 'latest') }}:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
                         skipProvisioning: ${{ parameters.skipProvisioning }}
@@ -264,7 +325,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -280,9 +341,14 @@ stages:
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Windows snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Windows'
+                      artifactName: 'uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -296,7 +362,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -313,6 +379,11 @@ stages:
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Mac snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Mac'
+                      artifactName: 'uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)'

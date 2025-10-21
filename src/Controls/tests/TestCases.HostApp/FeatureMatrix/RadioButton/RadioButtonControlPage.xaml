@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.RadioButtonControlMainPage"
+             x:DataType="local:RadioButtonViewModel"
+             Title="RadioButtonFeature">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid Padding="20"
+             RowDefinitions="*, Auto, Auto, Auto, Auto"
+             ColumnDefinitions="0.5*, 0.5*"
+             RowSpacing="10">
+
+              <!-- RadioButton Control -->
+
+              <VerticalStackLayout HorizontalOptions="Center"
+                                   Grid.ColumnSpan="2"
+                                   Grid.Row="0"
+                                   Grid.Column="0">
+                     <Label Text="Theme Preferences"/>
+                     <VerticalStackLayout RadioButtonGroup.SelectedValue="{Binding SelectedValue}"
+                                          RadioButtonGroup.GroupName="{Binding GroupName}">
+                            <RadioButton  CheckedChanged="RadioButton_CheckedChanged"
+                                          Content="{Binding Content}"
+                                          IsChecked="{Binding IsChecked}"
+                                          IsVisible="{Binding IsVisible}"
+                                          IsEnabled="{Binding IsEnabled}"
+                                          GroupName="{Binding GroupName}"
+                                          Value="One"
+                                          BorderColor="{Binding BorderColor}"
+                                          BorderWidth="{Binding BorderWidth}"
+                                          CharacterSpacing="{Binding CharacterSpacing}"
+                                          CornerRadius="{Binding CornerRadius}"
+                                          FlowDirection="{Binding FlowDirection}"
+                                          FontAttributes="{Binding FontAttributes}"
+                                          FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+                                          FontFamily="{Binding FontFamily}"
+                                          FontSize="{Binding FontSize}"
+                                          TextColor="{Binding TextColor}"
+                                          TextTransform="{Binding TextTransform}"
+                                          Margin="10"
+                                          VerticalOptions="Center"
+                                          AutomationId="RadioButtonControlOne"/>
+
+                            <RadioButton x:Name="RadioButtonControlTwo"
+                                         CheckedChanged="RadioButton_CheckedChanged"
+                                         Content="Light Mode"
+                                         GroupName="{Binding GroupName}"
+                                         IsEnabled="{Binding IsEnabled}"
+                                         Margin="10"
+                                         Value="Two"
+                                         VerticalOptions="Center"
+                                         AutomationId="RadioButtonControlTwo"/>
+
+                            <RadioButton x:Name="RadioButtonControlThree"
+                                         Content="System Default"
+                                         GroupName="{Binding GroupName}"
+                                         CheckedChanged="RadioButton_CheckedChanged"
+                                         IsEnabled="{Binding IsEnabled}"
+                                         Margin="10"
+                                         Value="Three"
+                                         VerticalOptions="Center"
+                                         AutomationId="RadioButtonControlThree"/>
+                     </VerticalStackLayout>
+
+                     <Label Text="Notification Settings"/>
+                     <VerticalStackLayout>
+                            <RadioButton x:Name="RadioButtonControlFour"
+                                         Content="All Notifications"
+                                         GroupName="Notification"
+                                         CheckedChanged="RadioButton_CheckedChanged"
+                                         Margin="10"
+                                         VerticalOptions="Center"
+                                         AutomationId="RadioButtonControlFour"/>
+
+                            <RadioButton x:Name="RadioButtonControlFive"
+                                         Content="Important Only"
+                                         GroupName="Notification"
+                                         Margin="10"
+                                         CheckedChanged="RadioButton_CheckedChanged"
+                                         VerticalOptions="Center"
+                                         AutomationId="RadioButtonControlFive"/>
+                     </VerticalStackLayout>
+              </VerticalStackLayout>
+
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     Text="Selected Theme:"
+                     FontSize="16"
+                     VerticalTextAlignment="Start"
+                     HorizontalTextAlignment="Start"
+                     Margin="0,0,10,10"/>
+              <Label Grid.Row="3"
+                     Grid.Column="1"
+                     x:Name="SelectedValueLabelOne"
+                     FontSize="16"
+                     AutomationId="SelectedValueLabelOne"/>
+
+              <Label Grid.Row="4"
+                     Grid.Column="0"
+                     Text="Selected Notification Level:"
+                     FontSize="16"
+                     VerticalTextAlignment="Start"
+                     HorizontalTextAlignment="Start"
+                     Margin="0,0,10,10"/>
+              <Label Grid.Row="4"
+                     Grid.Column="1"
+                     x:Name="SelectedValueLabelTwo"
+                     FontSize="16"
+                     AutomationId="SelectedValueLabelTwo"/>
+       </Grid>
+</ContentPage>

@@ -1,66 +1,134 @@
 #nullable enable
-Microsoft.Maui.ElementHandlerExtensions
-Microsoft.Maui.HandlerDisconnectPolicy
-Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
-Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
-Microsoft.Maui.Handlers.HybridWebViewHandler
-Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler() -> void
-Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Handlers.IHybridPlatformWebView
-Microsoft.Maui.Handlers.IHybridPlatformWebView.SendRawMessage(string! rawMessage) -> void
-Microsoft.Maui.Handlers.IHybridWebViewHandler
-Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> object!
-Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
-Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
-Microsoft.Maui.HybridWebViewRawMessage
-Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
-Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
-Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
-Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
-Microsoft.Maui.IHybridWebView
-Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
-Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
-Microsoft.Maui.IHybridWebView.HybridRoot.get -> string?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
-Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
-Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
-Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
-Microsoft.Maui.ITitleBar
-Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
-Microsoft.Maui.ITitleBar.Subtitle.get -> string?
-Microsoft.Maui.ITitleBar.Title.get -> string?
-Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
-*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
-Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
-Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
-Microsoft.Maui.WebProcessTerminatedEventArgs
-Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
-override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> object!
-static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
-static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
-static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
-static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
-static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
-static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
-static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
-static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.Handlers.LayoutHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IView! View) -> void
+Microsoft.Maui.Handlers.LayoutHandlerUpdate.LayoutHandlerUpdate(Microsoft.Maui.Handlers.LayoutHandlerUpdate! original) -> void
+Microsoft.Maui.Handlers.MenuBarHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuBarItem! MenuBarItem) -> void
+Microsoft.Maui.Handlers.MenuBarHandlerUpdate.MenuBarHandlerUpdate(Microsoft.Maui.Handlers.MenuBarHandlerUpdate! original) -> void
+Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.MenuBarItemHandlerUpdate(Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate! original) -> void
+Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.MenuFlyoutSubItemHandlerUpdate(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate! original) -> void
+Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersistedState? State) -> void
+Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
+Microsoft.Maui.ScrollToRequest.Deconstruct(out double HorizontalOffset, out double VerticalOffset, out bool Instant) -> void
+Microsoft.Maui.ScrollToRequest.ScrollToRequest(Microsoft.Maui.ScrollToRequest! original) -> void
+Microsoft.Maui.SwipeViewCloseRequest.Deconstruct(out bool Animated) -> void
+Microsoft.Maui.SwipeViewCloseRequest.SwipeViewCloseRequest(Microsoft.Maui.SwipeViewCloseRequest! original) -> void
+Microsoft.Maui.SwipeViewOpenRequest.Deconstruct(out Microsoft.Maui.OpenSwipeItem OpenSwipeItem, out bool Animated) -> void
+Microsoft.Maui.SwipeViewOpenRequest.SwipeViewOpenRequest(Microsoft.Maui.SwipeViewOpenRequest! original) -> void
+Microsoft.Maui.SwipeViewSwipeChanging.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection, out double Offset) -> void
+Microsoft.Maui.SwipeViewSwipeChanging.SwipeViewSwipeChanging(Microsoft.Maui.SwipeViewSwipeChanging! original) -> void
+Microsoft.Maui.SwipeViewSwipeEnded.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection, out bool IsOpen) -> void
+Microsoft.Maui.SwipeViewSwipeEnded.SwipeViewSwipeEnded(Microsoft.Maui.SwipeViewSwipeEnded! original) -> void
+Microsoft.Maui.SwipeViewSwipeStarted.Deconstruct(out Microsoft.Maui.SwipeDirection SwipeDirection) -> void
+Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeViewSwipeStarted! original) -> void
+override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(object? obj) -> bool
+override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.GetHashCode() -> int
+override Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.LayoutHandlerUpdate.Equals(object? obj) -> bool
+override Microsoft.Maui.Handlers.LayoutHandlerUpdate.GetHashCode() -> int
+override Microsoft.Maui.Handlers.LayoutHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.MenuBarHandlerUpdate.Equals(object? obj) -> bool
+override Microsoft.Maui.Handlers.MenuBarHandlerUpdate.GetHashCode() -> int
+override Microsoft.Maui.Handlers.MenuBarHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.Equals(object? obj) -> bool
+override Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.GetHashCode() -> int
+override Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Equals(object? obj) -> bool
+override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.GetHashCode() -> int
+override Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
+override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
+override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
+override Microsoft.Maui.ScrollToRequest.Equals(object? obj) -> bool
+override Microsoft.Maui.ScrollToRequest.GetHashCode() -> int
+override Microsoft.Maui.ScrollToRequest.ToString() -> string!
+override Microsoft.Maui.SwipeViewCloseRequest.Equals(object? obj) -> bool
+override Microsoft.Maui.SwipeViewCloseRequest.GetHashCode() -> int
+override Microsoft.Maui.SwipeViewCloseRequest.ToString() -> string!
+override Microsoft.Maui.SwipeViewOpenRequest.Equals(object? obj) -> bool
+override Microsoft.Maui.SwipeViewOpenRequest.GetHashCode() -> int
+override Microsoft.Maui.SwipeViewOpenRequest.ToString() -> string!
+override Microsoft.Maui.SwipeViewSwipeChanging.Equals(object? obj) -> bool
+override Microsoft.Maui.SwipeViewSwipeChanging.GetHashCode() -> int
+override Microsoft.Maui.SwipeViewSwipeChanging.ToString() -> string!
+override Microsoft.Maui.SwipeViewSwipeEnded.Equals(object? obj) -> bool
+override Microsoft.Maui.SwipeViewSwipeEnded.GetHashCode() -> int
+override Microsoft.Maui.SwipeViewSwipeEnded.ToString() -> string!
+override Microsoft.Maui.SwipeViewSwipeStarted.Equals(object? obj) -> bool
+override Microsoft.Maui.SwipeViewSwipeStarted.GetHashCode() -> int
+override Microsoft.Maui.SwipeViewSwipeStarted.ToString() -> string!
+static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? left, Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.LayoutHandlerUpdate.operator !=(Microsoft.Maui.Handlers.LayoutHandlerUpdate? left, Microsoft.Maui.Handlers.LayoutHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.LayoutHandlerUpdate.operator ==(Microsoft.Maui.Handlers.LayoutHandlerUpdate? left, Microsoft.Maui.Handlers.LayoutHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.MenuBarHandlerUpdate.operator !=(Microsoft.Maui.Handlers.MenuBarHandlerUpdate? left, Microsoft.Maui.Handlers.MenuBarHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.MenuBarHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuBarHandlerUpdate? left, Microsoft.Maui.Handlers.MenuBarHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator !=(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.operator ==(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? left, Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? right) -> bool
+static Microsoft.Maui.Handlers.OpenWindowRequest.operator !=(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
+static Microsoft.Maui.Handlers.OpenWindowRequest.operator ==(Microsoft.Maui.Handlers.OpenWindowRequest? left, Microsoft.Maui.Handlers.OpenWindowRequest? right) -> bool
+static Microsoft.Maui.ScrollToRequest.operator !=(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
+static Microsoft.Maui.ScrollToRequest.operator ==(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
+static Microsoft.Maui.SwipeViewCloseRequest.operator !=(Microsoft.Maui.SwipeViewCloseRequest? left, Microsoft.Maui.SwipeViewCloseRequest? right) -> bool
+static Microsoft.Maui.SwipeViewCloseRequest.operator ==(Microsoft.Maui.SwipeViewCloseRequest? left, Microsoft.Maui.SwipeViewCloseRequest? right) -> bool
+static Microsoft.Maui.SwipeViewOpenRequest.operator !=(Microsoft.Maui.SwipeViewOpenRequest? left, Microsoft.Maui.SwipeViewOpenRequest? right) -> bool
+static Microsoft.Maui.SwipeViewOpenRequest.operator ==(Microsoft.Maui.SwipeViewOpenRequest? left, Microsoft.Maui.SwipeViewOpenRequest? right) -> bool
+static Microsoft.Maui.SwipeViewSwipeChanging.operator !=(Microsoft.Maui.SwipeViewSwipeChanging? left, Microsoft.Maui.SwipeViewSwipeChanging? right) -> bool
+static Microsoft.Maui.SwipeViewSwipeChanging.operator ==(Microsoft.Maui.SwipeViewSwipeChanging? left, Microsoft.Maui.SwipeViewSwipeChanging? right) -> bool
+static Microsoft.Maui.SwipeViewSwipeEnded.operator !=(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
+static Microsoft.Maui.SwipeViewSwipeEnded.operator ==(Microsoft.Maui.SwipeViewSwipeEnded? left, Microsoft.Maui.SwipeViewSwipeEnded? right) -> bool
+static Microsoft.Maui.SwipeViewSwipeStarted.operator !=(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+static Microsoft.Maui.SwipeViewSwipeStarted.operator ==(Microsoft.Maui.SwipeViewSwipeStarted? left, Microsoft.Maui.SwipeViewSwipeStarted? right) -> bool
+virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
+virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate!
+virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate? other) -> bool
+virtual Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Handlers.LayoutHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.LayoutHandlerUpdate!
+virtual Microsoft.Maui.Handlers.LayoutHandlerUpdate.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Handlers.LayoutHandlerUpdate.Equals(Microsoft.Maui.Handlers.LayoutHandlerUpdate? other) -> bool
+virtual Microsoft.Maui.Handlers.LayoutHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Handlers.MenuBarHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.MenuBarHandlerUpdate!
+virtual Microsoft.Maui.Handlers.MenuBarHandlerUpdate.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Handlers.MenuBarHandlerUpdate.Equals(Microsoft.Maui.Handlers.MenuBarHandlerUpdate? other) -> bool
+virtual Microsoft.Maui.Handlers.MenuBarHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate!
+virtual Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate? other) -> bool
+virtual Microsoft.Maui.Handlers.MenuBarItemHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.<Clone>$() -> Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate!
+virtual Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.Equals(Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate? other) -> bool
+virtual Microsoft.Maui.Handlers.MenuFlyoutSubItemHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Handlers.OpenWindowRequest.<Clone>$() -> Microsoft.Maui.Handlers.OpenWindowRequest!
+virtual Microsoft.Maui.Handlers.OpenWindowRequest.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Handlers.OpenWindowRequest.Equals(Microsoft.Maui.Handlers.OpenWindowRequest? other) -> bool
+virtual Microsoft.Maui.Handlers.OpenWindowRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.ScrollToRequest.<Clone>$() -> Microsoft.Maui.ScrollToRequest!
+virtual Microsoft.Maui.ScrollToRequest.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.ScrollToRequest.Equals(Microsoft.Maui.ScrollToRequest? other) -> bool
+virtual Microsoft.Maui.ScrollToRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.SwipeViewCloseRequest.<Clone>$() -> Microsoft.Maui.SwipeViewCloseRequest!
+virtual Microsoft.Maui.SwipeViewCloseRequest.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.SwipeViewCloseRequest.Equals(Microsoft.Maui.SwipeViewCloseRequest? other) -> bool
+virtual Microsoft.Maui.SwipeViewCloseRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.SwipeViewOpenRequest.<Clone>$() -> Microsoft.Maui.SwipeViewOpenRequest!
+virtual Microsoft.Maui.SwipeViewOpenRequest.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.SwipeViewOpenRequest.Equals(Microsoft.Maui.SwipeViewOpenRequest? other) -> bool
+virtual Microsoft.Maui.SwipeViewOpenRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.SwipeViewSwipeChanging.<Clone>$() -> Microsoft.Maui.SwipeViewSwipeChanging!
+virtual Microsoft.Maui.SwipeViewSwipeChanging.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.SwipeViewSwipeChanging.Equals(Microsoft.Maui.SwipeViewSwipeChanging? other) -> bool
+virtual Microsoft.Maui.SwipeViewSwipeChanging.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.SwipeViewSwipeEnded.<Clone>$() -> Microsoft.Maui.SwipeViewSwipeEnded!
+virtual Microsoft.Maui.SwipeViewSwipeEnded.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.SwipeViewSwipeEnded.Equals(Microsoft.Maui.SwipeViewSwipeEnded? other) -> bool
+virtual Microsoft.Maui.SwipeViewSwipeEnded.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeViewSwipeStarted!
+virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
+virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool

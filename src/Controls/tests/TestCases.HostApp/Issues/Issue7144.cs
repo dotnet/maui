@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 7144, "IndicatorView using templated icons not working", PlatformAffected.UWP)]
 public class Issue7144 : ContentPage
@@ -49,7 +49,8 @@ public class Issue7144 : ContentPage
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center
 				};
-				label.SetBinding(Label.TextProperty, ".");;
+				label.SetBinding(Label.TextProperty, ".");
+				;
 
 				stackLayout.Children.Add(label);
 

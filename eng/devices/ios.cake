@@ -146,7 +146,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		ArgumentCustomization = args =>
 		{
 			args
-				.Append("/p:BuildIpa=true")
+				.Append("/p:CodesignRequireProvisioningProfile=false")
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
@@ -171,47 +171,42 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
 	}
 
+	// Use longer launch timeout for CI builds to handle problematic conditions
+	var launchTimeout = IsCIBuild() ? "00:10:00" : "00:06:00";
+	Information($"Using launch timeout: {launchTimeout} (CI: {IsCIBuild()})");
+
 	Information($"Testing App: {testApp}");
 
-	var settings = new DotNetToolSettings
+	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
 	{
-		ToolPath = toolPath,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args =>
+		return new DotNetToolSettings
 		{
-			args.Append("run xharness apple test " +
-				$"--app=\"{testApp}\" " +
-				$"--targets=\"{device}\" " +
-				$"--output-directory=\"{resultsDir}\" " +
-				$"--timeout=01:15:00 " +
-				$"--launch-timeout=00:06:00 " +
-				xcode_args +
-				$"--verbosity=\"Debug\" ");
-
-			if (device.Contains("device"))
+			ToolPath = toolPath,
+			DiagnosticOutput = true,
+			ArgumentCustomization = args =>
 			{
-				if (string.IsNullOrEmpty(DEVICE_UDID))
-				{
-					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
-				}
-				args.Append($"--device=\"{DEVICE_UDID}\" ");
-			}
-			return args;
-		}
-	};
+				args.Append("run xharness apple test " +
+					$"--app=\"{testApp}\" " +
+					$"--targets=\"{device}\" " +
+					$"--output-directory=\"{resultsDir}\" " +
+					$"--timeout=01:15:00 " +
+					$"--launch-timeout={launchTimeout} " +
+					xcode_args +
+					$"--verbosity=\"Debug\" " +
+					$"--set-env=\"TestFilter={category}\" ");
 
-	bool testsFailed = true;
-	try
-	{
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	}
-	finally
-	{
-		HandleTestResults(resultsDir, testsFailed, true);
-	}
-	
-	Information("Testing completed.");
+				if (device.Contains("device"))
+				{
+					if (string.IsNullOrEmpty(DEVICE_UDID))
+					{
+						throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+					}
+					args.Append($"--device=\"{DEVICE_UDID}\" ");
+				}
+				return args;
+			}
+		};
+	});
 }
 
 void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)

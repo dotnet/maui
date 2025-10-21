@@ -1,11 +1,11 @@
 ﻿#nullable enable
-using Xunit;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Xunit;
 using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
@@ -75,6 +75,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(expectedAlignment, nativeAlignment);
+		}
+
+		[Fact]
+		[Description("Password entry should refresh obfuscation when identical text is pasted")]
+		public async Task PasswordEntryObfuscatesIdenticalPastedText()
+		{
+			var entry = new Entry
+			{
+				Text = "password123",
+				IsPassword = true
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformControl = GetPlatformControl(handler);
+				var passwordTextBox = platformControl as Microsoft.Maui.Platform.MauiPasswordTextBox;
+
+				Assert.NotNull(passwordTextBox);
+				Assert.True(passwordTextBox.IsPassword);
+
+				// Verify the text is initially obfuscated
+				Assert.Equal(new string('●', entry.Text.Length), passwordTextBox.Text);
+
+				// Simulate pasting the same text by setting the same text value
+				passwordTextBox.Text = "password123";
+
+				// This is equivalent to what happens when a user pastes identical text via Ctrl+V
+				passwordTextBox.GetType().GetMethod("UpdatePasswordIfNeeded",
+					System.Reflection.BindingFlags.NonPublic |
+					System.Reflection.BindingFlags.Instance)?.Invoke(passwordTextBox, null);
+
+
+				// Verify the text is still properly obfuscated after the "paste" operation
+				Assert.Equal(new string('●', entry.Text.Length), passwordTextBox.Text);
+			});
 		}
 	}
 }

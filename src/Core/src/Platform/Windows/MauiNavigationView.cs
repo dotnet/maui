@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
@@ -64,6 +65,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ScrollViewer))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(Grid))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(StackPanel))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(SplitView))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ItemsRepeater))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(Button))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ColumnDefinition))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(RowDefinition))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ContentControl))]
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
@@ -170,9 +180,6 @@ namespace Microsoft.Maui.Platform
 			{
 				case FlyoutBehavior.Flyout:
 					IsPaneToggleButtonVisible = true;
-					// Workaround for
-					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
 					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 					break;
 				case FlyoutBehavior.Locked:

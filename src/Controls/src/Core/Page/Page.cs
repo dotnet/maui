@@ -465,7 +465,6 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// <para>Application developers can override this method to provide behavior when the back button is pressed. 
 		/// When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
-		/// <para>This only works on Android and UWP for the hardware back button. On iOS, this method will never be called because there is no hardware back button.</para>
 		/// </remarks>
 		protected virtual bool OnBackButtonPressed()
 		{

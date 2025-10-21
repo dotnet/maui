@@ -44,9 +44,9 @@
     <Compile Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.android.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <AndroidResource Include="Resources\xml\*.xml" />
-    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.8" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.9" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.2-alpha06" />
-    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" Version="1.16.0.1" />
+    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" Version="1.17.0.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <Compile Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

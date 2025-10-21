@@ -42,10 +42,10 @@ public class AppiumWindowsAlertActions : ICommandExecutionGroup
 	CommandResponse GetAlerts(IDictionary<string, object> parameters)
 	{
 		var result = _appiumApp.Driver.FindElements(By.XPath("//Window[@ClassName=\"Popup\"][@IsModal=\"True\"]"));
-	
+
 		if (result is null || result.Count == 0)
 			return CommandResponse.FailedEmptyResponse;
-		
+
 		var alerts = result.Select(e => new AppiumDriverElement(e, _appiumApp)).ToList();
 
 		return new CommandResponse(alerts, CommandResponseResult.Success);

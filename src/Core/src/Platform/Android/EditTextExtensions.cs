@@ -3,10 +3,12 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -41,10 +43,25 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor)
 		{
-			if (textColor != null)
+			if (textColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				editText.SetTextColor(c);
+			else if (textColor is null)
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
-					editText.SetTextColor(c);
+				// Fallback to system default color
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
+				{
+					using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
+					var cs = ta.GetColorStateList(0);
+
+					if (cs is not null)
+					{
+						int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
+						int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
+						var state = editText.Enabled ? EnabledState : DisabledState;
+						var color = new Android.Graphics.Color(cs.GetColorForState(state, Colors.Black.ToPlatform()));
+						editText.SetTextColor(color);
+					}
+				}
 			}
 		}
 
@@ -132,10 +149,19 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor)
 		{
-			if (placeholderTextColor != null)
+			if (placeholderTextColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+				editText.SetHintTextColor(c);
+			else if (placeholderTextColor is null)
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
-					editText.SetHintTextColor(c);
+				// Fallback to system default color
+				var typedValue = new TypedValue();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
+					editText.Context?.Theme is Resources.Theme theme &&
+					theme.ResolveAttribute(Android.Resource.Attribute.TextColorHint, typedValue, true) &&
+					editText.Resources?.GetColor(typedValue.ResourceId, theme) is Android.Graphics.Color color)
+				{
+					editText.SetHintTextColor(color);
+				}
 			}
 		}
 
@@ -196,6 +222,18 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				entryHandler.HideClearButton();
+			}
+		}
+
+		internal static void UpdateClearButtonColor(this EditText editText, Graphics.Color textColor, Drawable? clearButtonDrawable)
+		{
+			if (textColor is not null)
+			{
+				clearButtonDrawable?.SetColorFilter(textColor.ToPlatform(), FilterMode.SrcIn);
+			}
+			else
+			{
+				clearButtonDrawable?.ClearColorFilter();
 			}
 		}
 
@@ -416,7 +454,7 @@ namespace Microsoft.Maui.Platform
 			// The horizontal location of the button depends on the layout direction
 			var flowDirection = platformView.LayoutDirection;
 
-			if (flowDirection == LayoutDirection.Ltr)
+			if (flowDirection == Android.Views.LayoutDirection.Ltr)
 			{
 				var rightEdge = platformView.Width - platformView.PaddingRight;
 				var leftEdge = rightEdge - buttonRect.Width();

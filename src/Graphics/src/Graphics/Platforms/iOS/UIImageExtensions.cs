@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				target.Draw(CGPoint.Empty);
 			});
 
+
 			if (disposeOriginal)
 			{
 				target.Dispose();

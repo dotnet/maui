@@ -14,8 +14,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <IsAotCompatible>true</IsAotCompatible>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
+
+    <!-- This project implements generic WinRT interfaces which requires generated code using unsafe for trimming and AOT compatibility if passed across the WinRT ABI. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
@@ -48,13 +52,13 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" />
     <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.2" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.26" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.8.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.8.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.3" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.8" />
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.27" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.9.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.8.9.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.8.9.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.8.9.1" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />
@@ -71,13 +75,31 @@
     <None Include="nuget\buildTransitive\net-windows\**" PackagePath="buildTransitive\net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" Pack="true" />
   </ItemGroup>
 
+  <!-- TypeScript compilation -->
+  <PropertyGroup>
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
+    <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptCompileBlocked Condition=" '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
+  </ItemGroup>
+
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" SubFolder="" Exclude="nuget\**\*.in.*;nuget\**\net-*\*" />
       <_CopyItems Include="nuget\buildTransitive\net-windows\**" SubFolder="net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" />
       <_CopyItems Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" SubFolder="" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(SubFolder)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(SubFolder)%(RecursiveDir)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

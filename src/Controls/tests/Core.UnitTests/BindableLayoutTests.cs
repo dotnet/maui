@@ -625,17 +625,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				proxyRef = new WeakReference(proxy);
 			}
 
-			// First GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			Assert.False(controllerRef.IsAlive, "BindableLayoutController should not be alive!");
-
-			// Second GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
+			Assert.False(await controllerRef.WaitForCollect(), "BindableLayoutController should not be alive!");
+			Assert.False(await proxyRef.WaitForCollect(), "WeakCollectionChangedProxy should not be alive!");
 		}
 
 		[Fact("BindableLayout Still Updates after a GC")]
@@ -648,9 +639,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, layout.Children.Count);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			list.Add("Baz");
 			Assert.Equal(3, layout.Children.Count);

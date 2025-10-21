@@ -95,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 #pragma warning disable CS0618 // Type or member is obsolete
 				var drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
 #pragma warning restore CS0618 // Type or member is obsolete
-				Assert.NotNull(drawables[matchingDrawableIndex]);
+				Assert.NotNull(drawables?[matchingDrawableIndex]);
 			});
 		}
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a Button should match with native ScaleX")]
 		public async Task ScaleXConsistent()
@@ -189,6 +189,26 @@ namespace Microsoft.Maui.DeviceTests
 			var platformButton = GetPlatformButton(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformButton.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Button should match with native Translation")]
+		public async Task ButtonTranslationConsistent()
+		{
+			var button = new Button()
+			{
+				Text = "Button Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			var nativeView = GetPlatformButton(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, button.TranslationX, button.TranslationY);
+			});
 		}
 	}
 }

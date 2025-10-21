@@ -286,12 +286,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateLayoutManager()
 		{
-			_layoutPropertyChangedProxy?.Unsubscribe();
+			var itemsLayout = _getItemsLayout();
 
-			ItemsLayout = _getItemsLayout();
+			if (itemsLayout == ItemsLayout)
+			{
+				return;
+			}
+
+			_layoutPropertyChangedProxy?.Unsubscribe();
+			ItemsLayout = itemsLayout;
 
 			// Keep track of the ItemsLayout's property changes
-			if (ItemsLayout != null)
+			if (ItemsLayout is not null)
 			{
 				_layoutPropertyChanged ??= LayoutPropertyChanged;
 				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(ItemsLayout, _layoutPropertyChanged);
@@ -576,7 +582,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SwapAdapter(_emptyViewAdapter, true);
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
-				SetLayoutManager(new LinearLayoutManager(Context));
+				SetLayoutManager(SelectLayoutManager(ItemsLayout));
 				UpdateEmptyView();
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)

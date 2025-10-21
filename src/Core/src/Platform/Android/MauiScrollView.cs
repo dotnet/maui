@@ -97,7 +97,10 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_hScrollView == null)
 				{
-					_hScrollView = new MauiHorizontalScrollView(Context, this);
+					_hScrollView = new MauiHorizontalScrollView(Context, this)
+					{
+						FillViewport = true
+					};
 					_hScrollView.HorizontalFadingEdgeEnabled = HorizontalFadingEdgeEnabled;
 					_hScrollView.SetFadingEdgeLength(HorizontalFadingEdgeLength);
 					SetHorizontalScrollBarVisibility(_horizontalScrollVisibility);
@@ -127,8 +130,7 @@ namespace Microsoft.Maui.Platform
 				if (_content != null && _content.Parent != this)
 				{
 					_content.RemoveFromParent();
-					if (_hScrollView != null)
-						_hScrollView.RemoveFromParent();
+					_hScrollView?.RemoveFromParent();
 					AddView(_content);
 				}
 			}
@@ -317,7 +319,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 #pragma warning disable CA1822 // DO NOT REMOVE! Needed because dotnet format will else try to make this static and break things
-		void IOnScrollChangeListener.OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+		void IOnScrollChangeListener.OnScrollChange(NestedScrollView? v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 #pragma warning restore CA1822
 		{
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);

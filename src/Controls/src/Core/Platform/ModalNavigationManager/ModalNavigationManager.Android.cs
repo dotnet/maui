@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
-using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
@@ -23,8 +19,6 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		ViewGroup? _modalParentView;
-		bool _navAnimationInProgress;
-		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
@@ -94,23 +88,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return _modalParentView ??
 				_window?.PlatformActivity?.Window?.DecorView as ViewGroup ??
 				throw new InvalidOperationException("Root View Needs to be set");
-		}
-
-		// AFAICT this is specific to ListView and Context Items
-		internal bool NavAnimationInProgress
-		{
-			get { return _navAnimationInProgress; }
-			set
-			{
-				if (_navAnimationInProgress == value)
-					return;
-				_navAnimationInProgress = value;
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				if (value)
-					MessagingCenter.Send(this, CloseContextActionsSignalName);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
 		}
 
 		Task<Page> PopModalPlatformAsync(bool animated)
@@ -207,21 +184,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				NavAnimationInProgress = true;
 				dialogFragment!.AnimationEnded += OnAnimationEnded;
 
 				await animationCompletionSource.Task;
 			}
 			else
 			{
-				NavAnimationInProgress = false;
 				animationCompletionSource.TrySetResult(true);
 			}
 
 			void OnAnimationEnded(object? sender, EventArgs e)
 			{
 				dialogFragment!.AnimationEnded -= OnAnimationEnded;
-				NavAnimationInProgress = false;
 				animationCompletionSource.SetResult(true);
 			}
 		}
@@ -256,11 +230,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
-				var attributes = Context?.GetActivity()?.Window?.Attributes;
+				var mainActivityWindow = Context?.GetActivity()?.Window;
+				var attributes = mainActivityWindow?.Attributes;
 
 				if (attributes is not null)
 				{
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
+				}
+
+				if (mainActivityWindow is not null)
+				{
+					var navigationBarColor = mainActivityWindow.NavigationBarColor;
+					var statusBarColor = mainActivityWindow.StatusBarColor;
+#pragma warning disable CA1422
+					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
+					dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
+#pragma warning restore CA1422
 				}
 
 				return dialog;
@@ -323,8 +308,31 @@ namespace Microsoft.Maui.Controls.Platform
 
 				UpdateBackgroundColor();
 
-				return _navigationRootManager?.RootView ??
+				var rootView = _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
+
+				if (IsAnimated)
+				{
+					_ = new GenericGlobalLayoutListener((listener, view) =>
+					{
+						listener.Invalidate();
+						if (view is not null)
+						{
+							var animation = AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
+							view.StartAnimation(animation);
+							animation.AnimationEnd += OnAnimationEnded;
+						}
+					}, _navigationRootManager.RootView);
+				}
+				return rootView;
+			}
+			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+			{
+				if (sender is not AAnimation animation)
+					return;
+
+				animation.AnimationEnd -= OnAnimationEnded;
+				FireAnimationEnded();
 			}
 
 			public override void OnCreate(Bundle? savedInstanceState)
@@ -345,25 +353,6 @@ namespace Microsoft.Maui.Controls.Platform
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
-
-				if (IsAnimated)
-				{
-					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-					View.StartAnimation(animation);
-
-					animation.AnimationEnd += OnAnimationEnded;
-				}
-
-				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
-				{
-					if (sender is not AAnimation animation)
-					{
-						return;
-					}
-
-					animation.AnimationEnd -= OnAnimationEnded;
-					FireAnimationEnded();
-				}
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
@@ -426,45 +415,14 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
-						Window? window = activity.GetWindow() as Window;
-						EventHandler? eventHandler = null;
-						eventHandler = OnPopCanceled;
-						if (window is not null)
-						{
-							window.PopCanceled += eventHandler;
-						}
-
-						var preventBackPropagation = false;
-
 						try
 						{
 							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
 							{
-								preventBackPropagation = del(activity) || preventBackPropagation;
+								del(activity);
 							});
 						}
-						finally
-						{
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
-
-						if (!preventBackPropagation)
-						{
-							customComponentDialog.OnBackPressedDispatcher.OnBackPressed();
-						}
-
-						eventHandler = null;
-						void OnPopCanceled(object? sender, EventArgs e)
-						{
-							preventBackPropagation = true;
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
+						finally { }
 					}
 				}
 			}

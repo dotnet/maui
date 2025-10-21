@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.StepperFeaturePage"
+             Title="StepperFeature">
+
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Apply"
+                 Clicked="ApplyButton_Clicked"
+                 AutomationId="Apply"/>
+  </ContentPage.ToolbarItems>
+
+  <Grid Padding="10"
+        ColumnDefinitions="Auto, *"
+        RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+        RowSpacing="10"
+        ColumnSpacing="15">
+    <!-- Minimum Value -->
+    <Label Grid.Row="0"
+           Grid.Column="0"
+           Text="Minimum:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <Entry Grid.Row="0"
+           Grid.Column="1"
+           x:Name="MinimumEntry"
+           AutomationId="MinimumEntry"
+           TextChanged="OnMinimumChanged"
+           Keyboard="Numeric"
+           HorizontalOptions="Start"
+           WidthRequest="100"/>
+
+    <!-- Maximum Value -->
+    <Label Grid.Row="1"
+           Grid.Column="0"
+           Text="Maximum:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <Entry Grid.Row="1"
+           Grid.Column="1"
+           x:Name="MaximumEntry"
+           AutomationId="MaximumEntry"
+           TextChanged="OnMaximumChanged"
+           Keyboard="Numeric"
+           HorizontalOptions="Start"
+           WidthRequest="100"/>
+
+    <!-- Increment -->
+    <Label Grid.Row="2"
+           Grid.Column="0"
+           Text="Increment:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <Entry Grid.Row="2"
+           Grid.Column="1"
+           x:Name="IncrementEntry"
+           AutomationId="IncrementEntry"
+           TextChanged="OnIncrementChanged"
+           Keyboard="Numeric"
+           HorizontalOptions="Start"
+           WidthRequest="100"/>
+
+    <!-- Current Value -->
+    <Label Grid.Row="3"
+           Grid.Column="0"
+           Text="Value:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <Entry Grid.Row="3"
+           Grid.Column="1"
+           x:Name="ValueEntry"
+           AutomationId="ValueEntry"
+           TextChanged="OnValueChanged"
+           Keyboard="Numeric"
+           HorizontalOptions="Start"
+           WidthRequest="100"/>
+
+    <!-- Is Enabled -->
+    <Label Grid.Row="4"
+           Grid.Column="0"
+           Text="Is Enabled:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <StackLayout Grid.Row="4"
+                 Grid.Column="1"
+                 Orientation="Horizontal"
+                 Spacing="10">
+      <RadioButton x:Name="IsEnabledTrueRadio"
+                   AutomationId="IsEnabledTrueRadio"
+                   GroupName="IsEnabled"
+                   Content="True"
+                   IsChecked="True"
+                   FontSize="14"
+                   CheckedChanged="OnIsEnabledCheckedChanged"/>
+      <RadioButton x:Name="IsEnabledFalseRadio"
+                   AutomationId="IsEnabledFalseRadio"
+                   GroupName="IsEnabled"
+                   Content="False"
+                   FontSize="14"
+                   CheckedChanged="OnIsEnabledCheckedChanged"/>
+    </StackLayout>
+
+    <!-- Is Visible -->
+    <Label Grid.Row="5"
+           Grid.Column="0"
+           Text="Is Visible:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <StackLayout Grid.Row="5"
+                 Grid.Column="1"
+                 Orientation="Horizontal"
+                 Spacing="10">
+      <RadioButton x:Name="IsVisibleTrueRadio"
+                   AutomationId="IsVisibleTrueRadio"
+                   GroupName="IsVisible"
+                   Content="True"
+                   IsChecked="True"
+                   FontSize="14"
+                   CheckedChanged="OnIsVisibleCheckedChanged"/>
+      <RadioButton x:Name="IsVisibleFalseRadio"
+                   AutomationId="IsVisibleFalseRadio"
+                   GroupName="IsVisible"
+                   Content="False"
+                   FontSize="14"
+                   CheckedChanged="OnIsVisibleCheckedChanged"/>
+    </StackLayout>
+
+    <!-- Flow Direction -->
+    <Label Grid.Row="8"
+           Grid.Column="0"
+           Text="Flow Direction:"
+           FontSize="15"
+           VerticalTextAlignment="Center"/>
+    <StackLayout Grid.Row="8"
+                 Grid.Column="1"
+                 Orientation="Horizontal"
+                 Spacing="10">
+      <RadioButton x:Name="FlowDirectionLTRRadio"
+                   AutomationId="FlowDirectionLTRRadio"
+                   GroupName="FlowDirection"
+                   Content="LeftToRight"
+                   IsChecked="True"
+                   FontSize="14"
+                   CheckedChanged="OnFlowDirectionChanged"/>
+      <RadioButton x:Name="FlowDirectionRTLRadio"
+                   AutomationId="FlowDirectionRTLRadio"
+                   GroupName="FlowDirection"
+                   Content="RightToLeft"
+                   FontSize="14"
+                   CheckedChanged="OnFlowDirectionChanged"/>
+    </StackLayout>
+  </Grid>
+</ContentPage>

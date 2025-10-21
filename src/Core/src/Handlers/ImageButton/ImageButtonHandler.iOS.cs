@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 				wrapperView.CrossPlatformLayout = VirtualView as ICrossPlatformLayout;
 			}
 		}
-		
+
 		protected override UIButton CreatePlatformView()
 		{
 			var platformView = new UIButton(UIButtonType.System)

@@ -6,7 +6,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoxView']/Docs/*" />
+	/// <summary>
+	/// A <see cref="View" /> used to draw a solid colored rectangle.
+	/// </summary>
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>, IShapeView, IShape
 	{
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
@@ -17,20 +19,29 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<BoxView>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the BoxView class.
+		/// </summary>
 		public BoxView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BoxView>>(() => new PlatformConfigurationRegistry<BoxView>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="//Member[@MemberName='Color']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color which will fill the rectangle. This is a bindable property.
+		/// </summary>
+		/// <value>The color that is used to fill the rectangle.</value>
 		public Color Color
 		{
 			get => (Color)GetValue(ColorElement.ColorProperty);
 			set => SetValue(ColorElement.ColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="//Member[@MemberName='CornerRadius']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the corner radius for the box view.
+		/// </summary>
+		/// <value>The corner radius for the box view.</value>
+		/// <remarks>When specifying corner radii, the order of values is top left, top right, bottom left, and bottom right.</remarks>
 		public CornerRadius CornerRadius
 		{
 			get => (CornerRadius)GetValue(CornerElement.CornerRadiusProperty);

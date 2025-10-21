@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="7.0.0" />
+    <PackageReference Include="Appium.WebDriver" Version="8.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>

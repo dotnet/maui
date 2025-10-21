@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		readonly IList _internalCollection;
 		readonly IDispatcher _dispatcher;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <param name="list">The list parameter.</param>
 		public MarshalingObservableCollection(IList list)
 		{
 			if (!(list is INotifyCollectionChanged incc))

@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.Settings.DomStorageEnabled = true;
 			platformView.Settings.SetSupportMultipleWindows(true);
 
+			if (OperatingSystem.IsAndroidVersionAtLeast(23) && Context?.ApplicationInfo?.Flags.HasFlag(Android.Content.PM.ApplicationInfoFlags.HardwareAccelerated) == false)
+			{
+				platformView.SetLayerType(Android.Views.LayerType.Software, null);
+			}
+
 			return platformView;
 		}
 

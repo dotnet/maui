@@ -143,7 +143,10 @@ Task("dotnet-build")
         }
         else
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            // On macOS, for this type of build we don't need to ensure that the provisioning profile is required
+            var properties = new Dictionary<string, string>();
+            properties["CodesignRequireProvisioningProfile"] = "false";
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", properties);
         }
     });
 
@@ -486,7 +489,26 @@ Task("VSCode")
 
         UseLocalNuGetCacheFolder();
 
-        StartVisualStudioCodeForDotNet();
+        StartVisualStudioCodeForDotNet(false);
+    });
+
+Task("Insiders")
+    .Description("Provisions .NET, and launches an instance of Visual Studio Code using it.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally
+    .Does(() =>
+    {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioCodeForDotNet(true);
     });
 
 // Tasks for Local Development
@@ -585,6 +607,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
     envVariables.Add("DOTNET_ROOT", dotnet);
     envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+    envVariables.Add("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     envVariables.Add("MSBuildEnableWorkloadResolver", "true");
 
     var existingPath = EnvironmentVariable("PATH");
@@ -601,12 +624,18 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
     var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
-    
+    var dotnetHostPath = IsRunningOnWindows() ? $"{dotnet}/dotnet.exe" : $"{dotnet}/dotnet";
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+    if (IsRunningOnWindows())
+    { 
+        //workaround for dev18 
+        SetEnvironmentVariable("DOTNET_HOST_PATH", dotnetHostPath);
+    }
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
@@ -632,7 +661,7 @@ void UseLocalNuGetCacheFolder(bool reset = false)
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
-void StartVisualStudioCodeForDotNet()
+void StartVisualStudioCodeForDotNet(bool useInsiders)
 {
     if (IsCIBuild())
     {
@@ -645,7 +674,9 @@ void StartVisualStudioCodeForDotNet()
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    string codeProcessName = useInsiders ? "code-insiders" : "code";
+
+    StartProcess(codeProcessName, new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()
@@ -727,6 +758,12 @@ void RunMSBuildWithDotNet(
         
        // .SetVerbosity(Verbosity.Diagnostic)
         ;
+
+    var loggerArg = GetMSBuildForwardingLoggerPath();
+    if (loggerArg != null)
+    {
+        msbuildSettings.WithArgumentCustomization(args => args.Append(loggerArg));
+    }
 
     if (warningsAsError)
     {
@@ -816,6 +853,12 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
+                var loggerArg = GetMSBuildForwardingLoggerPath();
+                if (loggerArg != null)
+                {
+                    args.Append(loggerArg);
+                }
+
                 args.Append($"-bl:{binlog}");
                 if(maxCpuCount > 0)
                 {
@@ -916,4 +959,26 @@ void ProcessTFMSwitches()
         if (FileExists("Directory.Build.Override.props"))
             DeleteFile("Directory.Build.Override.props");
     }
+}
+
+string GetMSBuildForwardingLoggerPath()
+{
+    if (!IsCIBuild())
+        return null;
+
+    // Download and extract MSBuild logger
+    var loggerUrl = "https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msbuildlogger.zip";
+    var loggerDir = MakeAbsolute(Directory("./artifacts/msbuildlogger"));
+    EnsureDirectoryExists(loggerDir);
+    var loggerZip = loggerDir.CombineWithFilePath("msbuildlogger.zip");
+
+    if (!FileExists(loggerZip))
+    {
+        DownloadFile(loggerUrl, loggerZip.FullPath);
+        Unzip(loggerZip.FullPath, loggerDir.FullPath);
+    }
+
+    var loggerArg = $"-dl:CentralLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"*ForwardingLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"";
+
+    return loggerArg;
 }

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.ListView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView']/Docs/*" />
+	/// <summary>Platform-specific properties for list view controls on UWP.</summary>
 	public static class ListView
 	{
 		#region SelectionMode
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		#endregion
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListViewSelectionMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode']/Docs/*" />
+	/// <summary>Selection modes for list view controls on UWP.</summary>
 	public enum ListViewSelectionMode
 	{
 		/// <summary>

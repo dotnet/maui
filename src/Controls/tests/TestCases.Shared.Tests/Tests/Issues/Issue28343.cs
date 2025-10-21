@@ -22,12 +22,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshNotTriggered");
 			App.WaitForElement("ListItem0");
 			App.ScrollUp("CollectionView");
+			Thread.Sleep(1000);
 			App.WaitForElement("RefreshNotTriggered");
+			App.WaitForElement("ScrollToUpButton");
+			App.Tap("ScrollToUpButton");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
 
 		}
 
-		#if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/28361
+#if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/28361
 		[Test]
 		public void ProgressSpinnerRemainsDisabledAfterSwappingContent()
 		{
@@ -39,7 +42,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshNotTriggered");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
 		}
-		#endif
+#endif
 
 		[Test]
 		public void ProgressSpinnerWorksWhenReEnabled()

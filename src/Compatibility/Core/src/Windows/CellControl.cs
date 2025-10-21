@@ -128,10 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// Children still need measure called on them
 			global::Windows.Foundation.Size result = base.MeasureOverride(availableSize);
 
-			if (lv != null)
-			{
-				lv.SetValue(MeasuredEstimateProperty, result.Height);
-			}
+			lv?.SetValue(MeasuredEstimateProperty, result.Height);
 
 			SetDefaultSwitchColor();
 

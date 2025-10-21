@@ -155,22 +155,22 @@ namespace Microsoft.Maui.Handlers
 
 				var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
 
-					using (var dic = new NSMutableDictionary<NSString, NSString>())
+				using (var dic = new NSMutableDictionary<NSString, NSString>())
+				{
+					dic.Add((NSString)"Content-Length", (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture));
+					dic.Add((NSString)"Content-Type", (NSString)contentType);
+					// Disable local caching. This will prevent user scripts from executing correctly.
+					dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
+
+					if (urlSchemeTask.Request.Url != null)
 					{
-						dic.Add((NSString)"Content-Length", (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture));
-						dic.Add((NSString)"Content-Type", (NSString)contentType);
-						// Disable local caching. This will prevent user scripts from executing correctly.
-						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
-
-						if (urlSchemeTask.Request.Url != null)
-						{
-							using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-							urlSchemeTask.DidReceiveResponse(response);
-						}
+						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+						urlSchemeTask.DidReceiveResponse(response);
 					}
+				}
 
-					urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
-					urlSchemeTask.DidFinish();
+				urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+				urlSchemeTask.DidFinish();
 			}
 
 			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytesAsync(string? url)

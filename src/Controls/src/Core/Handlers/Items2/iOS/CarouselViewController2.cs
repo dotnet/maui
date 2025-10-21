@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return cell;
 		}
 
-		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.LoopCount;
+		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.Loop ? LoopItemsSource.LoopCount : LoopItemsSource.ItemCount;
 
 		void InitializeCarouselViewLoopManager()
 		{
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return 0;
 			}
-			
+
 			return ItemsView.ItemsUpdatingScrollMode switch
 			{
 				ItemsUpdatingScrollMode.KeepItemsInView => 0,
@@ -496,6 +496,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (ItemsView is not CarouselView carousel)
 			{
+				return;
+			}
+
+			if (!ItemsView.IsVisible)
+			{
+				// If the CarouselView is not visible we don't want to set the initial position
+				// since it will be set when the CarouselView becomes visible
 				return;
 			}
 

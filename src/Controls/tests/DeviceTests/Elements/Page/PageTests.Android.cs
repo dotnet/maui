@@ -1,14 +1,15 @@
 using System.Threading.Tasks;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AView = Android.Views.View;
-using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.Page)]
 	public partial class PageTests : ControlsHandlerTestBase
 	{
 		//src/Compatibility/Core/tests/Android/EmbeddingTests.cs

@@ -13,6 +13,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.UAP.UnitTests")]

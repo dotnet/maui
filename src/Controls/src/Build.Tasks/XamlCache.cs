@@ -42,7 +42,7 @@ class XamlCache
 	public TypeReference GetOrAddTypeReference(ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type) => GetOrAdd(_typeReferenceCache, (module, type.ToString()), x =>
 	{
 		if (type.typeName.EndsWith("[]", StringComparison.InvariantCultureIgnoreCase))
-			return x.module.GetTypeDefinition(this, (type.assemblyName, type.clrNamespace, type.typeName.Substring(0, type.typeName.Length-2))).MakeArrayType();
+			return x.module.GetTypeDefinition(this, (type.assemblyName, type.clrNamespace, type.typeName.Substring(0, type.typeName.Length - 2))).MakeArrayType();
 		else
 			return x.module.ImportReference(x.module.GetTypeDefinition(this, type));
 	});

@@ -6,92 +6,90 @@ parameters:
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   skipProvisioning: true
-  configuration : "Release"
+  configuration: "Release"
   testFilter: ''
   runtimeVariant: 'Mono'
 
 steps:
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-      displayName: 'Clean bot'
-      continueOnError: true
-      timeoutInMinutes: 60
-
-  - template: provision.yml
-    parameters:
-      # FIXME: 'Build the MSBuild Tasks' step fails for net9.0-android35 without API 35
-      skipAndroidSdks: false
-      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if parameters.skipProvisioning }}:
-        skipProvisionator: true
-      ${{ else }}:  
-        skipProvisionator: false
-        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-      
-  - task: PowerShell@2
-    condition: ne('${{ parameters.platform }}' , 'windows')
-    inputs:
-      targetType: 'inline'
-      script: |
-        defaults write -g NSAutomaticCapitalizationEnabled -bool false
-        defaults write -g NSAutomaticTextCompletionEnabled -bool false
-        defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
-    displayName: "Modify defaults"
-    continueOnError: true
-
-  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
-    displayName: 'Install .NET'
-    retryCountOnTaskFailure: 2
-    env:
-      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
-
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: 'Add .NET to PATH'
-
-  - pwsh: |
-      Get-Content $PSCommandPath
-      ./build.ps1 --target=uitests-apphost --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant="${{ parameters.runtimeVariant }}"
-    displayName: 'Build the samples'
-
+- ${{ if eq(parameters.platform, 'ios')}}:
   - bash: |
-      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-    displayName: Delete Old Simulator Logs
-    condition: ${{ eq(parameters.platform, 'ios') }}
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    displayName: 'Clean bot'
     continueOnError: true
+    timeoutInMinutes: 60
 
-  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), succeeded())
-    artifact: ui-tests-samples
-  
-  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'), succeeded())
-    artifact: ui-tests-samples-nativeaot
+- template: provision.yml
+  parameters:
+    # FIXME: 'Build the MSBuild Tasks' step fails for net9.0-android35 without API 35
+    skipAndroidSdks: false
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+    ${{ if parameters.skipProvisioning }}:
+      skipProvisionator: true
+    ${{ else }}:
+      skipProvisionator: false
 
-  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: and(eq('${{ parameters.platform }}' , 'windows'), succeeded())
-    artifact: ui-tests-samples-windows
+- task: PowerShell@2
+  condition: ne('${{ parameters.platform }}' , 'windows')
+  inputs:
+    targetType: 'inline'
+    script: |
+      defaults write -g NSAutomaticCapitalizationEnabled -bool false
+      defaults write -g NSAutomaticTextCompletionEnabled -bool false
+      defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+  displayName: "Modify defaults"
+  continueOnError: true
 
-  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), failed())
-    artifact: ui-tests-samples_failed_$(System.JobAttempt)
+- pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+  displayName: 'Install .NET'
+  retryCountOnTaskFailure: 2
+  env:
+    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+    PRIVATE_BUILD: $(PrivateBuild)
 
-  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'), failed())
-    artifact: ui-tests-samples-nativeaot_failed_$(System.JobAttempt)
+- pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+  displayName: 'Add .NET to PATH'
 
-  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())
-    artifact: ui-tests-samples-windows_failed_$(System.JobAttempt)
+- pwsh: |
+    Get-Content $PSCommandPath
+    ./build.ps1 --target=uitests-apphost --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant="${{ parameters.runtimeVariant }}"
+  displayName: 'Build the samples'
 
-  - task: PublishBuildArtifacts@1
-    displayName: Publish Artifacts
-    condition: always()
-    inputs:
-      artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+- bash: |
+    if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+    if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+  displayName: Delete Old Simulator Logs
+  condition: ${{ eq(parameters.platform, 'ios') }}
+  continueOnError: true
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), succeeded())
+  artifact: ui-tests-samples
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'), succeeded())
+  artifact: ui-tests-samples-nativeaot
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(eq('${{ parameters.platform }}' , 'windows'), succeeded())
+  artifact: ui-tests-samples-windows
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), failed())
+  artifact: ui-tests-samples_failed_$(System.JobAttempt)
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'), failed())
+  artifact: ui-tests-samples-nativeaot_failed_$(System.JobAttempt)
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())
+  artifact: ui-tests-samples-windows_failed_$(System.JobAttempt)
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  condition: always()
+  inputs:
+    artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
-				_dialog.Hide();
+				_dialog.Dismiss();
 				_dialog = null;
 			}
 		}
@@ -105,10 +105,7 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			if (_dialog != null)
-			{
-				_dialog.Hide();
-			}
+			_dialog?.Hide();
 
 			_dialog = null;
 		}

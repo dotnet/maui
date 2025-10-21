@@ -1,42 +1,44 @@
+#if TEST_FAILS_ON_WINDOWS // EmptyView Elements not accessible via Automation on Windows, Issue Link: https://github.com/dotnet/maui/issues/28022
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-#if IOS
-    public class CollectionViewEmptyViewTests : CollectionViewUITests
-    {
-        protected override bool ResetAfterEachTest => true;
 
-        public CollectionViewEmptyViewTests(TestDevice device)
-            : base(device)
-        {
-        }
+	public class CollectionViewEmptyViewTests : CollectionViewUITests
+	{
+		protected override bool ResetAfterEachTest => true;
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void EmptyViewItemsSourceNullStringWorks()
-        {
-            VisitInitialGallery("EmptyView");
+		public CollectionViewEmptyViewTests(TestDevice device)
+			: base(device)
+		{
+		}
 
-            VisitSubGallery("EmptyView (null ItemsSource)");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void EmptyViewItemsSourceNullStringWorks()
+		{
+			VisitInitialGallery("EmptyView");
 
-            // EmptyView string
-            App.WaitForElement("Nothing to display.");
-        }
+			VisitSubGallery("EmptyView (null ItemsSource)");
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void EmptyViewItemsSourceNullViewWorks()
-        {
-            VisitInitialGallery("EmptyView");
+			// EmptyView string
+			App.WaitForElement("Nothing to display.");
+		}
 
-            VisitSubGallery("EmptyView (null ItemsSource) View");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void EmptyViewItemsSourceNullViewWorks()
+		{
+			VisitInitialGallery("EmptyView");
 
-            // EmptyView string
-            App.WaitForElement("Nothing to display.");
-        }
-    }
-#endif
+			VisitSubGallery("EmptyView (null ItemsSource) View");
+
+			// EmptyView string
+			App.WaitForElement("Nothing to display.");
+		}
+	}
+
 }
+#endif

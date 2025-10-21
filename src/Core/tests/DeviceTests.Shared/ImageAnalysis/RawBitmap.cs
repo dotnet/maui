@@ -82,8 +82,8 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			{
 				var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
 				{
-				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
+					Opaque = false,
+					Scale = UIScreen.MainScreen.Scale,
 				});
 
 				using var image = renderer.CreateImage((context) =>

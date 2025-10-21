@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellToolbarTracker : Java.Lang.Object, AView.IOnClickListener, IShellToolbarTracker, IFlyoutBehaviorObserver
 	{
+		const int _placeholderMenuItemId = 100;
 		#region IFlyoutBehaviorObserver
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -136,7 +137,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_tintColor = value;
 				if (Page != null)
 				{
-					UpdateToolbarItems();
+					UpdateToolbarItemsTintColors();
 					UpdateLeftBarButtonItem();
 				}
 			}
@@ -409,8 +410,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var backButtonHandler = Shell.GetBackButtonBehavior(page);
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+			var backButtonVisibleFromBehavior = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true);
 			bool isEnabled = _shell.Toolbar.BackButtonEnabled;
-			var image = GetFlyoutIcon(backButtonHandler, page);
+			//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
+			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : null;
 			var backButtonVisible = _toolbar.BackButtonVisible;
 
 			DrawerArrowDrawable icon = null;
@@ -478,7 +481,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
-				if (backButtonVisible)
+				if (backButtonVisibleFromBehavior && (backButtonVisible || !defaultDrawerArrowDrawable))
 					toolbar.NavigationIcon = icon;
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
@@ -628,6 +631,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
 		}
 
+		private void UpdateToolbarItemsTintColors(AToolbar toolbar)
+		{
+			var menu = toolbar.Menu;
+			if (menu.FindItem(_placeholderMenuItemId) is IMenuItem item)
+			{
+				using (var icon = item.Icon)
+					icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+			}
+		}
+
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
@@ -649,8 +662,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
+					menu.RemoveItem(_placeholderMenuItemId);
+
 					var placeholder = new Java.Lang.String(SearchHandler.Placeholder);
-					var item = menu.Add(placeholder);
+					var item = menu.Add(0, _placeholderMenuItemId, 0, placeholder);
 					placeholder.Dispose();
 
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
@@ -723,6 +738,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateToolbarItems()
 		{
 			UpdateToolbarItems(_platformToolbar, Page);
+		}
+
+		void UpdateToolbarItemsTintColors()
+		{
+			UpdateToolbarItemsTintColors(_platformToolbar);
 		}
 
 		class FlyoutIconDrawerDrawable : DrawerArrowDrawable

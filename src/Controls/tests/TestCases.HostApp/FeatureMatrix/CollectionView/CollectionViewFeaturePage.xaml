@@ -27,5 +27,20 @@
                 HorizontalOptions="Center"
                 AutomationId="ScrollingButton"
                 WidthRequest="400"/>
+        <Button Text="Selection FeaturePage"
+                Clicked="OnSelectionButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="SelectionPageButton"
+                WidthRequest="400"/>
+        <Button Text="ItemsSource Feature"
+                Clicked="OnItemsSourceButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ItemsSourceButton"
+                WidthRequest="400"/>
+         <Button Text="CollectionViewDynamicChangesPage"
+                Clicked="OnDynamicChangesButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="DynamicButton"
+                WidthRequest="400"/>    
     </VerticalStackLayout>
 </ContentPage>

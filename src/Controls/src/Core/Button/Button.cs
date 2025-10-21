@@ -598,7 +598,7 @@ namespace Microsoft.Maui.Controls
 				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
 
 				if (spacingIndex > -1)
-					spacing = double.Parse(parts[spacingIndex]);
+					spacing = double.Parse(parts[spacingIndex], CultureInfo.InvariantCulture);
 
 				if (positionIndex > -1)
 					position = (ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
@@ -616,5 +616,7 @@ namespace Microsoft.Maui.Controls
 			var commandText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, false);
 			return $"{base.GetDebuggerDisplay()}, {textString}, {commandText}";
 		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
 	}
 }

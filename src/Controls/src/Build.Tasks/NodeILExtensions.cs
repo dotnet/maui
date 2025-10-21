@@ -655,9 +655,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 					else
 						yield return Create(Ldnull);
-						
+
 					yield return Create(Newobj, module.ImportCtorReference(context.Cache,
-						type: ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), 
+						type: ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"),
 						parameterTypes: [
 							("mscorlib", "System", "Object[]"),
 							("mscorlib", "System", "Object"),
@@ -677,7 +677,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 					yield return Create(Ldloc, refProvider);
 					yield return Create(Callvirt, addService);
-					
+
 					yield return Create(Dup); //Keep the serviceProvider on the stack
 					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IRootObjectProvider")));
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));

@@ -142,7 +142,8 @@ internal class PathParser
 		if (typeInfo == null)
 		{
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castTo.GetLocation()));
-		};
+		}
+		;
 
 		leftResult.Value.Add(new Cast(typeInfo.CreateTypeDescription(_enabledNullable)));
 
@@ -161,7 +162,8 @@ internal class PathParser
 		if (typeInfo == null)
 		{
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castExpression.GetLocation()));
-		};
+		}
+		;
 
 		result.Value.Add(new Cast(typeInfo.CreateTypeDescription(_enabledNullable)));
 

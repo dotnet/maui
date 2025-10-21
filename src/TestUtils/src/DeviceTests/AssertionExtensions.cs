@@ -1,9 +1,9 @@
 using System;
+using System.Net.Http;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
@@ -15,35 +15,68 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static async Task Collect()
+		{
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			await Task.Yield();
+		}
+
+
+		public static async Task<bool> WaitForCollect(this WeakReference reference)
+		{
+			for (int i = 0; i < 40 && reference.IsAlive; i++)
+			{
+				await Collect();
+			}
+
+			return reference.IsAlive;
+		}
+
+		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
+		{
+			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
+			{
+				await Collect();
+			}
+
+			return reference.TryGetTarget(out _);
+		}
+
+		public static async Task<bool> WaitForCollect(params WeakReference[] references)
+		{
+			bool allCollected = true;
+			foreach (var reference in references)
+			{
+				Assert.NotNull(reference);
+				var taskCollect = reference.WaitForCollect();
+				try
+				{
+					await AssertEventuallyAsync(async () => await taskCollect);
+				}
+				catch (XunitException)
+				{
+					var isAlive = await taskCollect;
+					if (isAlive)
+					{
+						allCollected = false;
+					}
+				}
+			}
+			return allCollected; // Only true if all references are collected
+		}
+
 		public static async Task WaitForGC(params WeakReference[] references)
 		{
 			Assert.NotEmpty(references);
 
-			bool referencesCollected()
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+			var collectResult = await WaitForCollect(references);
 
-				foreach (var reference in references)
-				{
-					Assert.NotNull(reference);
-					if (reference.IsAlive)
-					{
-						return false;
-					}
-				}
-
-				return true;
-			}
-
-			try
-			{
-				await AssertEventually(referencesCollected, timeout: 10000);
-			}
-			catch (XunitException ex)
-			{
-				throw new XunitException(ListLivingReferences(references), ex);
-			}
+			Assert.True(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
 		}
 
 		static string ListLivingReferences(WeakReference[] references)
@@ -267,39 +300,60 @@ namespace Microsoft.Maui.DeviceTests
 				throw new XunitException(message);
 			}
 		}
+
+		public static async Task AssertEventuallyAsync(this Func<Task<bool>> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		{
+			do
+			{
+				if (await assertion())
+				{
+					return;
+				}
+
+				await Task.Delay(interval);
+				timeout -= interval;
+
+			}
+			while (timeout >= 0);
+
+			if (!await assertion())
+			{
+				throw new XunitException(message);
+			}
+		}
 		// Add these methods to AssertionExtensions class
- 		/// <summary>
- 		/// Checks if internet connection is available by making an HTTP request
- 		/// </summary>
- 		/// <returns>True if internet connection is available</returns>
- 		public static async Task<bool> HasInternetConnection()
- 		{
- 			try
- 			{
- 				using var httpClient = new HttpClient();
- 				httpClient.Timeout = TimeSpan.FromSeconds(5);
- 				using var response = await httpClient.GetAsync("https://1.1.1.1");
- 				return response.IsSuccessStatusCode;
- 			}
- 			catch
- 			{
- 				return false;
- 			}
- 		}
- 
- 		/// <summary>
- 		/// Skips the current test if no internet connection is available
- 		/// </summary>
- 		/// <param name="message">Custom message to display when skipping the test</param>
- 		/// <returns>True if test should be skipped (no internet), false if test can continue</returns>
- 		public static async Task<bool> SkipTestIfNoInternetConnection(string message = "Test requires internet connection")
- 		{
- 			if (!await HasInternetConnection())
- 			{
- 				Assert.True(true, $"TEST SKIPPED: {message}");
- 				return true; // Test should be skipped
- 			}
- 			return false; // Test can proceed
- 		}
+		/// <summary>
+		/// Checks if internet connection is available by making an HTTP request
+		/// </summary>
+		/// <returns>True if internet connection is available</returns>
+		public static async Task<bool> HasInternetConnection()
+		{
+			try
+			{
+				using var httpClient = new HttpClient();
+				httpClient.Timeout = TimeSpan.FromSeconds(5);
+				using var response = await httpClient.GetAsync("https://1.1.1.1");
+				return response.IsSuccessStatusCode;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Skips the current test if no internet connection is available
+		/// </summary>
+		/// <param name="message">Custom message to display when skipping the test</param>
+		/// <returns>True if test should be skipped (no internet), false if test can continue</returns>
+		public static async Task<bool> SkipTestIfNoInternetConnection(string message = "Test requires internet connection")
+		{
+			if (!await HasInternetConnection())
+			{
+				Assert.True(true, $"TEST SKIPPED: {message}");
+				return true; // Test should be skipped
+			}
+			return false; // Test can proceed
+		}
 	}
 }

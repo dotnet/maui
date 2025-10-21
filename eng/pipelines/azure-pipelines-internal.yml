@@ -27,28 +27,30 @@ schedules:
     include:
     - main
     - net10.0
-    
+    - inflight/current
+  always: true
+
 variables:
-  - template: /eng/common/templates/variables/pool-providers.yml@self 
-  - template: /eng/pipelines/common/variables.yml@self
-  - template: /eng/pipelines/arcade/variables.yml@self
-  - group: DotNetBuilds storage account read tokens
-  - group: AzureDevOps-Artifact-Feeds-Pats
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
+- group: DotNetBuilds storage account read tokens
+- group: AzureDevOps-Artifact-Feeds-Pats
 
 parameters:
-  - name: VM_IMAGE_HOST
-    type: object
-    default:
-      name: NetCore1ESPool-Internal
-      image: 1es-windows-2022
-      os: windows
+- name: VM_IMAGE_HOST
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    image: 1es-windows-2022
+    os: windows
 
 resources:
   repositories:
-    - repository: 1ESPipelineTemplates
-      type: git
-      name: 1ESPipelineTemplates/1ESPipelineTemplates
-      ref: refs/tags/release
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
 extends:
   ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
@@ -73,7 +75,7 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-      
+
     - template: /eng/pipelines/arcade/stage-pack.yml@self
       parameters:
         pool: ${{ parameters.VM_IMAGE_HOST }}
@@ -83,19 +85,25 @@ extends:
           sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
           binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
         prepareSteps:
-          - template: /eng/pipelines/common/provision.yml@self
-            parameters:
-              checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-              skipJdk: false
-              skipAndroidCommonSdks: false
-              skipAndroidPlatformApis: false
-              onlyAndroidPlatformDefaultApis: true
-              skipAndroidEmulatorImages: true
-              skipAndroidCreateAvds: true
-              skipProvisioning: true
-              skipXcode: true
+        - template: /eng/pipelines/common/provision.yml@self
+          parameters:
+            checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+            skipJdk: false
+            skipAndroidCommonSdks: false
+            skipAndroidPlatformApis: false
+            onlyAndroidPlatformDefaultApis: true
+            skipAndroidEmulatorImages: true
+            skipAndroidCreateAvds: true
+            skipProvisioning: true
+            skipXcode: true
 
-      # Publish and validation steps. Only run in official builds
+    - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/net10.0'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+      - template: /eng/pipelines/arcade/stage-api-scan.yml@self
+        parameters:
+          pool: ${{ parameters.VM_IMAGE_HOST }}
+          dependsOnStage: Pack
+
+    # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
         publishingInfraVersion: 3

@@ -112,7 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 		private class TestWrapperView : UIView
 		{
 			private readonly TaskCompletionSource _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-			
+
 			public Task WaitForLayoutPassAsync() => _tcs.Task;
 
 			public override void LayoutSubviews()
@@ -121,10 +121,10 @@ namespace Microsoft.Maui.DeviceTests
 				_tcs.TrySetResult();
 			}
 		}
-		
+
 		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
-			var currentView = FindContentView();
+			var currentView = await FindContentView();
 
 			// MauiView has optimization code that won't fire a remeasure of the child view
 			// Check LayoutSubviews inside MauiView.cs for more details. 
@@ -175,12 +175,22 @@ namespace Microsoft.Maui.DeviceTests
 
 		private static UIView? _contentView;
 		private static readonly object _contentViewLock = new();
-		public static UIView FindContentView()
+
+		public static Task<UIView> FindContentView() => FindContentView(0);
+
+		public static async Task<UIView> FindContentView(int retryCount)
 		{
 			if (_contentView is not null)
 			{
 				return _contentView;
 			}
+
+			if (retryCount > 0)
+				await Task.Delay(1000);
+			else
+				await Task.Yield();
+
+			UIWindow? window = null;
 
 			lock (_contentViewLock)
 			{
@@ -188,21 +198,31 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					return _contentView;
 				}
-				
-				if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
+
+				window = GetKeyWindow(UIApplication.SharedApplication);
+
+				if (retryCount > 4 || window is not null)
 				{
-					throw new InvalidOperationException("Could not attach view - unable to find UIWindow");
+					if (window is null)
+					{
+						throw new InvalidOperationException($"Could not attach view - unable to find UIWindow.");
+					}
+
+					if (window?.RootViewController is not UIViewController viewController)
+					{
+						throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
+					}
+
+					var rootView = viewController.View ?? throw new InvalidOperationException("Could not attach view - root view is null");
+
+					return _contentView = rootView;
 				}
-
-				if (window.RootViewController is not UIViewController viewController)
-				{
-					throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
-				}
-
-				var rootView = viewController.View ?? throw new InvalidOperationException("Could not attach view - root view is null");
-
-				return _contentView = rootView;
 			}
+
+			// If we don't have a window yet, wait a bit and try again
+			Console.WriteLine($"Retrying to find content view. Retry count: {retryCount}");
+
+			return await FindContentView(retryCount + 1).ConfigureAwait(false);
 		}
 
 		public static Task<UIImage> ToBitmap(this UIView view, IMauiContext mauiContext)

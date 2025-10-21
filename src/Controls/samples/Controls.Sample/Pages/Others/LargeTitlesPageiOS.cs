@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Pages
 					{
 						Text = "Tooggle UseLargeTitles on Navigation",
 						Command = new Command( () =>{
-							var navPage = (Parent as NavigationPage)!;
+							var navPage = (NavigationPage)Parent;
 							navPage.On<iOS>().SetPrefersLargeTitles(!navPage.On<iOS>().PrefersLargeTitles());
 						} )
 					},
@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Pages
 					{
 						Text = "UseLargeTitles on Navigation with safe Area",
 						Command = new Command( () =>{
-							var navPage = (Parent as NavigationPage)!;
+							var navPage = (NavigationPage)Parent;
 							navPage.On<iOS>().SetPrefersLargeTitles(true);
 							var page = new ContentPage { Title = "New Title", BackgroundColor = Colors.Red };
 							page.On<iOS>().SetUseSafeArea(true);

@@ -1,22 +1,46 @@
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides extension methods for the <see cref="ICanvas"/> interface.
+	/// </summary>
 	public static class CanvasExtensions
 	{
+		/// <summary>
+		/// Draws a line between two points.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="point1">The starting point of the line.</param>
+		/// <param name="point2">The ending point of the line.</param>
 		public static void DrawLine(this ICanvas target, PointF point1, PointF point2)
 		{
 			target.DrawLine(point1.X, point1.Y, point2.X, point2.Y);
 		}
 
+		/// <summary>
+		/// Draws the outline of a rectangle.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="rect">The rectangle to draw.</param>
 		public static void DrawRectangle(this ICanvas target, Rect rect)
 		{
 			target.DrawRectangle((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
 		}
 
+		/// <summary>
+		/// Draws the outline of a rectangle.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="rect">The rectangle to draw.</param>
 		public static void DrawRectangle(this ICanvas target, RectF rect)
 		{
 			target.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
+		/// <summary>
+		/// Fills a rectangle with the current brush.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="rect">The rectangle to fill.</param>
 		public static void FillRectangle(this ICanvas target, Rect rect)
 		{
 			target.FillRectangle((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
@@ -128,11 +152,48 @@ namespace Microsoft.Maui.Graphics
 			target.DrawPath(path);
 		}
 
+		/// <summary>
+		/// Fills the specified path using the current fill color and the non-zero winding rule.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="path">The path to fill.</param>
+		/// <exception cref="System.ArgumentException">
+		/// Thrown when the path is invalid for fill operations. This can occur when:
+		/// <list type="bullet">
+		/// <item><description>The path is empty or contains no drawable segments</description></item>
+		/// <item><description>The path contains invalid coordinates or operations</description></item>
+		/// <item><description>The path is not properly formed for the underlying graphics implementation</description></item>
+		/// </list>
+		/// </exception>
+		/// <remarks>
+		/// For best results with fill operations, ensure the path represents a closed shape by calling
+		/// <see cref="PathF.Close()"/> or manually connecting the end point back to the start point.
+		/// Unclosed paths may produce unexpected results or exceptions depending on the graphics backend.
+		/// </remarks>
 		public static void FillPath(this ICanvas target, PathF path)
 		{
 			target.FillPath(path, WindingMode.NonZero);
 		}
 
+		/// <summary>
+		/// Fills the specified path using the current fill color and the specified winding rule.
+		/// </summary>
+		/// <param name="target">The canvas to draw on.</param>
+		/// <param name="path">The path to fill.</param>
+		/// <param name="windingMode">The winding rule to use for determining which areas are inside the path.</param>
+		/// <exception cref="System.ArgumentException">
+		/// Thrown when the path is invalid for fill operations. This can occur when:
+		/// <list type="bullet">
+		/// <item><description>The path is empty or contains no drawable segments</description></item>
+		/// <item><description>The path contains invalid coordinates or operations</description></item>
+		/// <item><description>The path is not properly formed for the underlying graphics implementation</description></item>
+		/// </list>
+		/// </exception>
+		/// <remarks>
+		/// For best results with fill operations, ensure the path represents a closed shape by calling
+		/// <see cref="PathF.Close()"/> or manually connecting the end point back to the start point.
+		/// Unclosed paths may produce unexpected results or exceptions depending on the graphics backend.
+		/// </remarks>
 		public static void FillPath(this ICanvas target, PathF path, WindingMode windingMode)
 		{
 			target.FillPath(path, windingMode);

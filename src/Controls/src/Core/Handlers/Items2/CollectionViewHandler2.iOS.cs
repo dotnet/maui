@@ -93,6 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
 		{
 			handler.Controller?.UpdateItemsSource();
+			handler.UpdateLayout();
 		}
 
 		bool WillNeedScrollAdjustment(ScrollToRequestEventArgs args)

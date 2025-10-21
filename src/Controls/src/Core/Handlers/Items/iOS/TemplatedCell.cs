@@ -4,9 +4,9 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -97,8 +97,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
 			if (_measureInvalidated ||
-			    !AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
-			    !preferredAttributes.Frame.Size.IsCloseTo(_size))
+				!AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
+				!preferredAttributes.Frame.Size.IsCloseTo(_size))
 			{
 				// Measure this cell (including the Forms element) if there is no constrained size
 				var size = ConstrainedSize == default ? Measure() : ConstrainedSize;

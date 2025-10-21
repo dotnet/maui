@@ -12,7 +12,7 @@ using WShape = Microsoft.UI.Xaml.Shapes.Shape;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiPageControl : ItemsControl
+	public partial class MauiPageControl : ItemsControl
 	{
 		IIndicatorView? _indicatorView;
 		const int DefaultPadding = 4;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal void UpdateIndicatorsColor()
-		{	
+		{
 			if (UseShapeIndicator)
 			{
 				return;

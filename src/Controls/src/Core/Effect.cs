@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="Type[@FullName='Microsoft.Maui.Controls.Effect']/Docs/*" />
+	/// <summary>A collection of styles and properties that can be added to an element at run time.</summary>
 	public abstract class Effect
 	{
 		internal Effect()
@@ -15,20 +15,24 @@ namespace Microsoft.Maui.Controls
 
 		internal PlatformEffect PlatformEffect { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="//Member[@MemberName='Element']/Docs/*" />
+		/// <summary>Gets the element to which the style is attached.</summary>
 		public Element Element { get; internal set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="//Member[@MemberName='IsAttached']/Docs/*" />
+		/// <summary>Gets a value that tells whether the effect is attached to an element.</summary>
 		public bool IsAttached { get; private set; }
 
 #pragma warning disable CS1734 // XML comment on 'Effect.ResolveId' has a paramref tag for 'name', but there is no parameter by that name
-		/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="//Member[@MemberName='ResolveId']/Docs/*" />
+		/// <summary>Gets the ID that is used to resolve this effect at runtime.</summary>
+		/// <remarks>Developers must supply a name to
+		/// This property returns the string that developers pass to</remarks>
 #pragma warning restore CS1734
 		public string ResolveId { get; internal set; }
 
 		#region Statics
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="//Member[@MemberName='Resolve']/Docs/*" />
+		/// <summary>Returns an <see cref="Microsoft.Maui.Controls.Effect"/> for the specified name, which is of the form <c>ResolutionGroupName.ExportEffect</c>.</summary>
+		/// <param name="name">The name of the effect to get.</param>
+		/// <returns>The uniquely identified effect.</returns>
 		public static Effect Resolve(string name)
 		{
 			Effect result = null;
