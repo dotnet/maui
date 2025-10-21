@@ -22,7 +22,6 @@ public class Issue28986_NavigationPage : _IssuesUITest
 		App.SetOrientationLandscape();
 		App.WaitForElement("ContentGrid");
 		VerifyScreenshot();
-		App.SetOrientationPortrait();
 	}
 }
 #endif
