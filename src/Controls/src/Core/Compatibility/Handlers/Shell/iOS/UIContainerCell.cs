@@ -30,14 +30,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var platformView = view.ToPlatform();
 			ContentView.AddSubview(platformView);
-			platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 
-			platformView.IsAccessibilityElement = true;
-
+			platformView.IsAccessibilityElement = false;
 			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 
-			// Also set Button trait on the cell itself
-			this.AccessibilityTraits |= UIAccessibilityTrait.Button;
+			IsAccessibilityElement = true;
+			AccessibilityTraits = UIAccessibilityTrait.Button;	
 
 			var margin = view.Margin;
 			var constraints = new NSLayoutConstraint[]
@@ -151,5 +149,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateVisualState();
 			}
 		}
+
+		public override bool CanBecomeFirstResponder => true;
+
+		public override bool CanBecomeFocused => true;
 	}
 }

@@ -72,44 +72,9 @@ namespace Microsoft.Maui.Controls.Compatibility.iOS.Resources {
         /// <summary>
         ///   Looks up a localized string similar to More.
         /// </summary>
-        internal static string More
-        {
-            get
-            {
+        internal static string More {
+            get {
                 return ResourceManager.GetString("More", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Navigation Flyout Menu.
-        /// </summary>
-        internal static string NavigationFlyoutMenuLabel
-        {
-            get
-            {
-                return ResourceManager.GetString("NavigationFlyoutMenuLabel", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Expanded.
-        /// </summary>
-        internal static string NavigationFlyoutMenuValue
-        {
-            get
-            {
-                return ResourceManager.GetString("NavigationFlyoutMenuValue", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Swipe right to navigate to menu items.
-        /// </summary>
-        internal static string NavigationFlyoutMenuHint
-        {
-            get
-            {
-                return ResourceManager.GetString("NavigationFlyoutMenuHint", resourceCulture);
             }
         }
     }
