@@ -86,7 +86,13 @@ steps:
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-      sudo xcodebuild -downloadPlatform iOS -buildVersion 26.0 -architectureVariant universal
+      # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
+      # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
+      if [[ "$(REQUIRED_XCODE)" =~ ^26[.]0.*$ ]]; then
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
+      else
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
+      fi
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
