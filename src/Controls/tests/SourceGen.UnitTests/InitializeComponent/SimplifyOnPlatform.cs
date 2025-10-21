@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class SimplifyOnPlatform : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void Test()
 	{
 		var xaml =
@@ -166,8 +166,8 @@ public partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
-		Assert.AreEqual(expected, generated);
+		Assert.Equal(expected, generated);
 	}
 }

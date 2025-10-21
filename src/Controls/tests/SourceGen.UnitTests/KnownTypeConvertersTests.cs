@@ -1,26 +1,24 @@
+using System;
 using System.Globalization;
-using NUnit.Framework;
 using Microsoft.CodeAnalysis;
 using System.Linq;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests
 {
-	[TestFixture]
-	[NonParallelizable]
-	public class KnownTypeConvertersTests : SourceGenXamlInitializeComponentTestBase
+	[Collection("CultureTests")]
+	public class KnownTypeConvertersTests : SourceGenXamlInitializeComponentTestBase, IDisposable
 	{
-		private CultureInfo? _originalCulture;
-		private CultureInfo? _originalUICulture;
+		private readonly CultureInfo? _originalCulture;
+		private readonly CultureInfo? _originalUICulture;
 
-		[SetUp]
-		public void SetUp()
+		public KnownTypeConvertersTests()
 		{
 			_originalCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_originalUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
 		}
 
-		[TearDown]
-		public void TearDown()
+		void IDisposable.Dispose()
 		{
 			if (_originalCulture is not null)
 			{
@@ -33,11 +31,12 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests
 			}
 		}
 
-		[TestCase("en-US", "1.5*")]
-		[TestCase("fr-FR", "2.5*")]
-		[TestCase("de-DE", "3.14*")]
-		[TestCase("es-ES", "0.75*")]
-		[TestCase("ru-RU", "1.414*")]
+		[Theory]
+		[InlineData("en-US", "1.5*")]
+		[InlineData("fr-FR", "2.5*")]
+		[InlineData("de-DE", "3.14*")]
+		[InlineData("es-ES", "0.75*")]
+		[InlineData("ru-RU", "1.414*")]
 		public void GridLengthTypeConverter_StarValues_ProducesConsistentOutput_AcrossCultures(string cultureName, string gridLengthValue)
 		{
 			// Set both current and UI cultures to test locale
@@ -75,27 +74,29 @@ public partial class TestPage : ContentPage
 				var (result, generated) = RunGenerator(xaml, code);
 				
 				// Should not have any diagnostics/errors
-				Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+
+				Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 					$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
 				// The generated code should contain a properly formatted GridLength with period as decimal separator
 				// regardless of the current culture
-				Assert.IsNotNull(generated, "Generated code should not be null");
+				Assert.NotNull(generated);
 			// Extract the numeric value from the input (e.g., "2.5*" -> "2.5")
 			var numericPart = gridLengthValue.Substring(0, gridLengthValue.Length - 1);
 			
 			// The generated code should use period as decimal separator (culture-invariant)
 			// and should contain the GridLength constructor with Star unit type
-			Assert.That(generated, Does.Contain($"new global::Microsoft.Maui.GridLength({numericPart}, global::Microsoft.Maui.GridUnitType.Star)"),
+			Assert.True(generated!.Contains($"new global::Microsoft.Maui.GridLength({numericPart}, global::Microsoft.Maui.GridUnitType.Star)", StringComparison.Ordinal),
 				$"Generated code should contain culture-invariant GridLength with value {numericPart}. Generated code: {generated}");
 		}
 
-		[TestCase("en-US", "100.5")]
-		[TestCase("fr-FR", "200.25")]
-		[TestCase("de-DE", "50.75")]
-		[TestCase("es-ES", "150.125")]
-		[TestCase("ru-RU", "75.875")]
-		public void GridLengthTypeConverter_AbsoluteValues_ProducesConsistentOutput_AcrossCultures(string cultureName, string gridLengthValue)
+			[Theory]
+			[InlineData("en-US", "100.5")]
+			[InlineData("fr-FR", "200.25")]
+			[InlineData("de-DE", "50.75")]
+			[InlineData("es-ES", "150.125")]
+			[InlineData("ru-RU", "75.875")]
+			public void GridLengthTypeConverter_AbsoluteValues_ProducesConsistentOutput_AcrossCultures(string cultureName, string gridLengthValue)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
 			System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(cultureName);
@@ -130,22 +131,23 @@ public partial class TestPage : ContentPage
 
 				var (result, generated) = RunGenerator(xaml, code);
 				
-				Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+				Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 					$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
-				Assert.IsNotNull(generated, "Generated code should not be null");
+				Assert.NotNull(generated);
 				
 				// The generated code should use period as decimal separator and Absolute unit type
-				Assert.That(generated, Does.Contain($"new global::Microsoft.Maui.GridLength({gridLengthValue}, global::Microsoft.Maui.GridUnitType.Absolute)"),
+				Assert.True(generated!.Contains($"new global::Microsoft.Maui.GridLength({gridLengthValue}, global::Microsoft.Maui.GridUnitType.Absolute)", StringComparison.Ordinal),
 					$"Generated code should contain culture-invariant GridLength with absolute value {gridLengthValue}. Generated code: {generated}");
 		}
 
-		[TestCase("en-US")]
-		[TestCase("fr-FR")]
-		[TestCase("de-DE")]
-		[TestCase("es-ES")]
-		[TestCase("ru-RU")]
-		public void GridLengthTypeConverter_SpecialValues_ProducesConsistentOutput_AcrossCultures(string cultureName)
+			[Theory]
+			[InlineData("en-US")]
+			[InlineData("fr-FR")]
+			[InlineData("de-DE")]
+			[InlineData("es-ES")]
+			[InlineData("ru-RU")]
+			public void GridLengthTypeConverter_SpecialValues_ProducesConsistentOutput_AcrossCultures(string cultureName)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
 			System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(cultureName);
@@ -185,19 +187,19 @@ public partial class TestPage : ContentPage
 
 				var (result, generated) = RunGenerator(xaml, code);
 				
-				Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+				Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 					$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
-				Assert.IsNotNull(generated, "Generated code should not be null");
+				Assert.NotNull(generated);
 				
 				// Check for special values that should be culture-independent
-				Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Star"),
+				Assert.True(generated!.Contains("global::Microsoft.Maui.GridLength.Star", StringComparison.Ordinal),
 					"Generated code should contain GridLength.Star for '*' values");
-				Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Auto"),
+				Assert.True(generated.Contains("global::Microsoft.Maui.GridLength.Auto", StringComparison.Ordinal),
 					"Generated code should contain GridLength.Auto for 'Auto' values");
 		}
 
-		[Test]
+			[Fact]
 		public void GridLengthTypeConverter_StarValue_GeneratesGridLengthStar()
 		{
 			const string xaml = """
@@ -233,17 +235,17 @@ public partial class TestPage : ContentPage
 
 			var (result, generated) = RunGenerator(xaml, code);
 			
-			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+			Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
-			Assert.IsNotNull(generated, "Generated code should not be null");
+			Assert.NotNull(generated);
 			
 			// Should generate GridLength.Star for "*" value
-			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Star"),
+			Assert.True(generated!.Contains("global::Microsoft.Maui.GridLength.Star", StringComparison.Ordinal),
 				"Generated code should contain GridLength.Star for '*' value");
 		}
 
-		[Test]
+			[Fact]
 		public void GridLengthTypeConverter_AutoValue_GeneratesGridLengthAuto()
 		{
 			const string xaml = """
@@ -279,17 +281,17 @@ public partial class TestPage : ContentPage
 
 			var (result, generated) = RunGenerator(xaml, code);
 			
-			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+			Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
-			Assert.IsNotNull(generated, "Generated code should not be null");
+			Assert.NotNull(generated);
 			
 			// Should generate GridLength.Auto for "Auto" value
-			Assert.That(generated, Does.Contain("global::Microsoft.Maui.GridLength.Auto"),
+			Assert.True(generated!.Contains("global::Microsoft.Maui.GridLength.Auto", StringComparison.Ordinal),
 				"Generated code should contain GridLength.Auto for 'Auto' value");
 		}
 
-		[Test]
+			[Fact]
 		public void EnumTypeConverter()
 		{
 			const string xaml = """
@@ -321,13 +323,13 @@ public partial class TestPage : ContentPage
 
 			var (result, generated) = RunGenerator(xaml, code);
 			
-			Assert.IsFalse(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), 
+			Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
 				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
 
-			Assert.IsNotNull(generated, "Generated code should not be null");
+			Assert.NotNull(generated);
 			
 			// Should generate FlexDirection.Row for "Row" value
-			Assert.That(generated, Does.Contain("flexLayout.SetValue(global::Microsoft.Maui.Controls.FlexLayout.DirectionProperty, global::Microsoft.Maui.Layouts.FlexDirection.Row);"),
+			Assert.True(generated!.Contains("flexLayout.SetValue(global::Microsoft.Maui.Controls.FlexLayout.DirectionProperty, global::Microsoft.Maui.Layouts.FlexDirection.Row);", StringComparison.Ordinal),
 				"Generated code should contain FlexDirection.Row for 'Row' value");
 		}
 	}

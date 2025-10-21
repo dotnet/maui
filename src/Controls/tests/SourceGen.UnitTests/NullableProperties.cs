@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class NullableProperties : SourceGenXamlInitializeComponentTestBase
 {
 
-	[Test]
+	[Fact]
 	public void NullableStringPropertyShouldWork()
 	{
 		var xaml =
@@ -52,9 +52,9 @@ public class EventToCommandBehavior : Behavior
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
-		Assert.IsTrue(generated?.Contains("Test.EventToCommandBehavior", StringComparison.Ordinal));
-		Assert.IsTrue(generated?.Contains("eventToCommandBehavior.SetValue(global::Test.EventToCommandBehavior.EventNameProperty", StringComparison.Ordinal));
+		Assert.True(generated?.Contains("Test.EventToCommandBehavior", StringComparison.Ordinal) ?? false);
+		Assert.True(generated?.Contains("eventToCommandBehavior.SetValue(global::Test.EventToCommandBehavior.EventNameProperty", StringComparison.Ordinal) ?? false);
 	}
 }

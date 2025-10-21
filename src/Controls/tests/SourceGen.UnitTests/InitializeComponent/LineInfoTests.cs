@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 {
-    [Test]
+    [Fact]
     public void DiagnosticShowsLocationInInputXamlFile()
     {
         var xaml =
@@ -31,6 +31,6 @@ public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 
         var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
         var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
-        Assert.IsTrue(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
+        Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
     }
 }
