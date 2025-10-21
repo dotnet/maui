@@ -1,14 +1,20 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = WebKit.WKWebView;
+using HeaderPairType = Foundation.NSObject;
 #elif MONOANDROID
 using PlatformView = Android.Webkit.WebView;
+using HeaderPairType = System.String;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
+using HeaderPairType = System.String;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
+using HeaderPairType = System.String;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
+using HeaderPairType = System.String;
 #endif
+
 #if __ANDROID__
 using Android.Webkit;
 #elif __IOS__
@@ -18,6 +24,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.Maui.Devices;
@@ -68,6 +75,11 @@ namespace Microsoft.Maui.Handlers
 
 		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
 		internal const string HybridWebViewDotJsPath = "_framework/hybridwebview.js";
+
+		internal const string InvokeDotNetTokenHeaderName = "X-Maui-Invoke-Token";
+		internal const string InvokeDotNetTokenHeaderValue = "HybridWebView";
+		internal const string InvokeDotNetBodyHeaderName = "X-Maui-Request-Body";
+
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
@@ -172,23 +184,26 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal async Task<byte[]?> InvokeDotNetAsync(NameValueCollection invokeQueryString)
+		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
 			try
 			{
 				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
 				var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
 
-				var invokeDataString = invokeQueryString["data"];
-				if (string.IsNullOrEmpty(invokeDataString))
+				JSInvokeMethodData? invokeData = null;
+				if (streamBody is not null)
 				{
-					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
+					invokeData = await JsonSerializer.DeserializeAsync<JSInvokeMethodData>(streamBody, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
+				}
+				else if (stringBody is not null && !string.IsNullOrWhiteSpace(stringBody))
+				{
+					invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(stringBody, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
 				}
 
-				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
 				if (invokeData?.MethodName is null)
 				{
-					throw new ArgumentException("The invoke data did not provide a method name.", nameof(invokeQueryString));
+					throw new InvalidOperationException("The invoke data did not provide a method name.");
 				}
 
 				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
@@ -201,7 +216,7 @@ namespace Microsoft.Maui.Handlers
 			catch (Exception ex)
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
-				
+
 				// Return error response instead of null so JavaScript can handle the error
 				var errorResult = CreateErrorResult(ex);
 				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
@@ -514,6 +529,46 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return assembly.GetManifestResourceStream(resourceName);
+		}
+
+		private static bool IsExpectedHeader((string? Name, string? Value) header, (string Name, string Value) expected) =>
+			string.Equals(header.Name, expected.Name, StringComparison.OrdinalIgnoreCase) &&
+			string.Equals(header.Value, expected.Value, StringComparison.OrdinalIgnoreCase);
+
+		internal static bool HasExpectedHeaders(IEnumerable<KeyValuePair<HeaderPairType, HeaderPairType>>? headers)
+		{
+			if (headers is null)
+				return false;
+
+			var expectedOrigin = AppOrigin.TrimEnd('/');
+
+			var hasExpectedToken = false;
+			var hasExpectedOrigin = false;
+			var hasExpectedReferer = false;
+
+			foreach (var header in headers)
+			{
+#if IOS || MACCATALYST
+				var name = header.Key?.ToString();
+				var value = header.Value?.ToString();
+#else
+				var name = header.Key;
+				var value = header.Value;
+#endif
+
+				// Is this from the script
+				hasExpectedToken = hasExpectedToken || IsExpectedHeader((name, value), (InvokeDotNetTokenHeaderName, InvokeDotNetTokenHeaderValue));
+
+				// Is this from a local script
+				var urlValue = value?.TrimEnd('/');
+				hasExpectedOrigin = hasExpectedOrigin || IsExpectedHeader((name, urlValue), ("Origin", expectedOrigin));
+				hasExpectedReferer = hasExpectedReferer || IsExpectedHeader((name, urlValue), ("Referer", expectedOrigin));
+
+				if (hasExpectedToken && (hasExpectedOrigin || hasExpectedReferer))
+					return true;
+			}
+
+			return false;
 		}
 
 #if !NETSTANDARD

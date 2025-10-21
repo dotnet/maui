@@ -82,7 +82,7 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
     <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
     <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptCompileBlocked Condition=" '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
+    <TypeScriptCompileBlocked Condition=" '$(TypeScriptCompileBlocked)' == '' and '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
