@@ -186,24 +186,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
-					// Only accept requests from HybridWebView
-					var hasExpectedTokenHeader = false;
-					if (request.Headers is not null)
-					{
-						foreach (var header in request.Headers)
-						{
-							if (string.Equals(header.Key?.ToString(), InvokeDotNetTokenHeaderName, StringComparison.OrdinalIgnoreCase) &&
-								string.Equals(header.Value?.ToString(), InvokeDotNetTokenHeaderValue, StringComparison.OrdinalIgnoreCase))
-							{
-								hasExpectedTokenHeader = true;
-								break;
-							}
-						}
-					}
-					if (!hasExpectedTokenHeader)
+					// Only accept requests that have the expected headers
+					if (!HasExpectedHeaders(request.Headers))
 					{
 						logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
-						return (Stream: null, ContentType: null, StatusCode: 403, Reason: "Forbidden");
+						return (Stream: null, ContentType: null, StatusCode: 400, Reason: "Bad Request");
 					}
 
 					// Only accept POST requests

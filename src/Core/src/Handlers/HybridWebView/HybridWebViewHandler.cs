@@ -1,14 +1,20 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = WebKit.WKWebView;
+using HeaderPairType = Foundation.NSObject;
 #elif MONOANDROID
 using PlatformView = Android.Webkit.WebView;
+using HeaderPairType = System.String;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
+using HeaderPairType = System.String;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
+using HeaderPairType = System.String;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
+using HeaderPairType = System.String;
 #endif
+
 #if __ANDROID__
 using Android.Webkit;
 #elif __IOS__
@@ -18,6 +24,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.Maui.Devices;
@@ -189,11 +196,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					invokeData = await JsonSerializer.DeserializeAsync<JSInvokeMethodData>(streamBody, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
 				}
-				else if (!string.IsNullOrWhiteSpace(stringBody))
+				else if (stringBody is not null && !string.IsNullOrWhiteSpace(stringBody))
 				{
 					invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(stringBody, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
 				}
-				
+
 				if (invokeData?.MethodName is null)
 				{
 					throw new InvalidOperationException("The invoke data did not provide a method name.");
@@ -522,6 +529,46 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return assembly.GetManifestResourceStream(resourceName);
+		}
+
+		private static bool IsExpectedHeader((string? Name, string? Value) header, (string Name, string Value) expected) =>
+			string.Equals(header.Name, expected.Name, StringComparison.OrdinalIgnoreCase) &&
+			string.Equals(header.Value, expected.Value, StringComparison.OrdinalIgnoreCase);
+
+		internal static bool HasExpectedHeaders(IEnumerable<KeyValuePair<HeaderPairType, HeaderPairType>>? headers)
+		{
+			if (headers is null)
+				return false;
+
+			var expectedOrigin = AppOrigin.TrimEnd('/');
+
+			var hasExpectedToken = false;
+			var hasExpectedOrigin = false;
+			var hasExpectedReferer = false;
+
+			foreach (var header in headers)
+			{
+#if IOS || MACCATALYST
+				var name = header.Key?.ToString();
+				var value = header.Value?.ToString();
+#else
+				var name = header.Key;
+				var value = header.Value;
+#endif
+
+				// Is this from the script
+				hasExpectedToken = hasExpectedToken || IsExpectedHeader((name, value), (InvokeDotNetTokenHeaderName, InvokeDotNetTokenHeaderValue));
+
+				// Is this from a local script
+				var urlValue = value?.TrimEnd('/');
+				hasExpectedOrigin = hasExpectedOrigin || IsExpectedHeader((name, urlValue), ("Origin", expectedOrigin));
+				hasExpectedReferer = hasExpectedReferer || IsExpectedHeader((name, urlValue), ("Referer", expectedOrigin));
+
+				if (hasExpectedToken && (hasExpectedOrigin || hasExpectedReferer))
+					return true;
+			}
+
+			return false;
 		}
 
 #if !NETSTANDARD
