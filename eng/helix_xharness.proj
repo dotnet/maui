@@ -3,8 +3,8 @@
         <HelixType>test/devices/</HelixType>
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.Open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.maui.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.maui.open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>
