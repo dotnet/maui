@@ -81,6 +81,8 @@ extends:
         pool: ${{ parameters.VM_IMAGE_HOST }}
         enableSourceIndex: false
         runAsPublic: false
+        enableMicrobuild: true
+        publishAssets: true
         sourceIndexParams:
           sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
           binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
@@ -118,21 +120,3 @@ extends:
         # This is to enable SDL runs part of Post-Build Validation Stage
         SDLValidationParameters:
           enable: false
-
-    - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
-      - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
-        parameters:
-          jobMatrix:
-          - name: win_unit_tests
-            displayName: Windows Unit Tests
-            pool: ${{ parameters.VM_IMAGE_HOST }}
-            timeout: 120
-            testOS: Windows
-          - name: mac_unit_tests
-            displayName: macOS Unit Tests
-            pool:
-              name: Azure Pipelines
-              vmImage: $(HostedMacImage)
-              os: macOS
-            timeout: 120
-            testOS: macOS

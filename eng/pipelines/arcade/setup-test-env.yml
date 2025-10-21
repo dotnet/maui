@@ -24,6 +24,19 @@ steps:
     skipXcode: true
 
 - script: |
+    echo Remove old Xamarin Settings
+    rm -f ~/Library/Preferences/Xamarin/Settings.plist
+    rm -f ~/Library/Preferences/maui/Settings.plist
+    echo Mac OS version:
+    sw_vers -productVersion
+    echo
+    echo Installed Xcode versions:
+    ls /Applications | grep 'Xcode'
+    echo
+    echo currently selected xcode:
+    xcrun xcode-select --print-path
+    echo
+    echo selecting latest xcode...
     sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
     xcrun xcode-select --print-path
     xcodebuild -version

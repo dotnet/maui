@@ -17,6 +17,12 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
 - name: runAsPublic
   type: boolean
   default: true
@@ -30,9 +36,9 @@ stages:
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
-      enableMicrobuild: true
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}

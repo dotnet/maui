@@ -15,6 +15,12 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
 - name: runAsPublic
   type: boolean
   default: true
@@ -35,20 +41,9 @@ parameters:
   default:
   - Debug
   - Release
-- name: buildPlatforms
+- name: helixPool
   type: object
-  default:
-  - name: NetCore-Public
-    image: 1es-windows-2022
-    os: Windows
-    buildScript: $(_helixScript)
-    sln: $(buildProjects)
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
-    os: macOS
-    buildScript: $(_helixScriptMacOS)
-    sln: $(buildProjectsMac)
-
+ 
 stages:
 - stage: HelixTests
   displayName: Run Helix Unit Tests
@@ -58,19 +53,16 @@ stages:
     - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml@self', '/eng/common/templates-official/jobs/jobs.yml@self') }}
       parameters:
         helixRepo: dotnet/maui
-        pool:
-          name: NetCore-Public
-          vmImage: 1es-windows-2022
-          os: windows
-        enableMicrobuild: true
+        pool: ${{ parameters.helixPool }}
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
         enablePublishUsingPipelines: true
-        enablePublishBuildAssets: true
+        enablePublishBuildAssets: ${{ parameters.publishAssets }}
         enableTelemetry: true
         enableSourceBuild: ${{ parameters.enableSourceBuild }}
         enableSourceIndex: ${{ parameters.enableSourceIndex }}
         sourceIndexParams: ${{ parameters.sourceIndexParams }}
         publishAssetsImmediately: true
-        enablePublishBuildArtifacts: true
+        enablePublishBuildArtifacts: false
         enablePublishTestResults: true
         workspace:
           clean: all
