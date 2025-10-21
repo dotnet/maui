@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
+    <!-- <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants> -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
+    <ProjectReference Include="..\..\..\src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests.csproj" />
+    <ProjectReference Include="..\..\..\src\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Controls\src\Core\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\src\Core\src\Core.csproj" />
+    
+    
+</ItemGroup>
+</Project>

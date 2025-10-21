@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if (parentNode is ElementNode && ((ElementNode)parentNode).SkipProperties.Contains(propertyName))
 				return;
-			if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
+			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
