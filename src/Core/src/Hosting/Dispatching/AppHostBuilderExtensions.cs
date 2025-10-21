@@ -50,16 +50,15 @@ namespace Microsoft.Maui.Hosting
 			// If the file not exists, we will use the default environment variables which is less stable
 			if (OperatingSystem.IsAndroid() && System.IO.File.Exists(androidEnvVarFilePath))
 			{
-				var envVarLines = System.IO.File.ReadAllLines(androidEnvVarFilePath);
-
-				var fileEnvironmentVariables = envVarLines
-					.Select(line => line.Split('=', 2))
-					.ToDictionary(parts => parts[0], parts => parts[1]);
-
-				// Merge file environment variables into the existing environment variables
-				foreach (var kvp in fileEnvironmentVariables)
+				foreach (var line in System.IO.File.ReadLines(androidEnvVarFilePath))
 				{
-					environmentVariables[kvp.Key] = kvp.Value;
+					int index = line.IndexOf('=', StringComparison.Ordinal);
+					if (index > 0)
+					{
+						string key = line.Substring(0, index);
+						string value = line.Substring(index + 1); // May be empty for values like "KEY="
+						environmentVariables[key] = value;
+					}
 				}
 			}
 #endif
