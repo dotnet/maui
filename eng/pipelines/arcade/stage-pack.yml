@@ -1,4 +1,4 @@
-x# Template for build + pack on dnceng
+# Template for build + pack on dnceng
 parameters:
 - name: prepareSteps
   type: stepList
