@@ -86,7 +86,27 @@ steps:
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-      sudo xcodebuild -downloadPlatform iOS -buildVersion 26.0 -architectureVariant universal
+      # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
+      # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
+      if [[ "$(REQUIRED_XCODE)" =~ ^26[.]0.*$ ]]; then
+        if ! sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0; then
+          echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
+          sudo xcrun simctl runtime delete all
+          # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+          for i in $(seq 1 60); do
+            sleep 1
+            C=$(xcrun simctl runtime list -j | jq '. | length')
+            if [[ $C == 0 ]]; then
+              echo "    still $C simulators left..."
+              break
+            fi
+          done
+          echo "Re-trying simulator runtime installation"
+          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
+        fi
+      else
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
+      fi
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
