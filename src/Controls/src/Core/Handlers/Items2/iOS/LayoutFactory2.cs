@@ -412,41 +412,7 @@ internal static class LayoutFactory2
 		return layout;
 	}
 #nullable enable
-
-	public static bool IsIndexPathValid(NSIndexPath indexPath, UICollectionView collectionView)
-	{
-		try
-		{
-			if (indexPath is null || collectionView is null || collectionView.Handle == IntPtr.Zero || collectionView.Superview is null)
-			{
-				return false;
-			}
-
-			if (indexPath.Item < 0 || indexPath.Section < 0)
-			{
-				return false;
-			}
-
-			if (indexPath.Section >= collectionView.NumberOfSections())
-			{
-				return false;
-			}
-
-			if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
-			{
-				return false;
-			}
-
-			return true;
-		}
-		catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
-		{
-			var logger = Application.Current?.FindMauiContext()?.Services?.GetService<ILoggerFactory>()?.CreateLogger("Microsoft.Maui.Controls.Handlers.Items2.LayoutFactory2");
-			logger?.LogWarning($"IsIndexPathValid caught exception: {ex.GetType().Name} - {ex.Message}");
-			return false;
-		}
-	}
-	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
+	internal class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
@@ -594,6 +560,11 @@ internal static class LayoutFactory2
 
 			return Items.SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
 				Configuration.ScrollDirection);
+		}
+
+		public void UpdateItemsUpdatingScrollMode(ItemsUpdatingScrollMode itemsUpdatingScrollMode)
+		{
+			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
 		}
 	}
 
