@@ -480,7 +480,10 @@ internal class KnownMarkups
 				value = $"{namescope.namesInScope[name!].Name}";
 				return true;
 			}
-			node = node.Parent as ElementNode;
+			INode n = node;
+			while (n.Parent is ListNode ln)
+				n = ln.Parent;
+			node = n.Parent as ElementNode;
 		}
 
 		//TODO report diagnostic
