@@ -10,14 +10,19 @@ public class ChartDataLabelConverter : IValueConverter
     {
         if (value is CategoryChartData categoryData && parameter is string parameterValue)
         {
-            return parameterValue?.ToLower() switch
+            if (string.Equals(parameterValue, "title", StringComparison.OrdinalIgnoreCase))
             {
-                "title" => categoryData.Title,
-                "count" => categoryData.Count.ToString(),
-                _ => value?.ToString()
-            };
+                return categoryData.Title;
+            }
+
+            if (string.Equals(parameterValue, "count", StringComparison.OrdinalIgnoreCase))
+            {
+                return categoryData.Count.ToString();
+            }
+
+            return value?.ToString();
         }
-        
+
         return value?.ToString();
     }
 

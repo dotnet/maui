@@ -18,10 +18,9 @@ public static class MauiProgram
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
-#endif
+//-:cnd:noEmit
 			.ConfigureMauiHandlers(handlers =>
 			{
-//-:cnd:noEmit
 #if WINDOWS
 				Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView", (handler, view) =>
 				{
@@ -36,9 +35,8 @@ public static class MauiProgram
                 	}
             	});
 #endif
-//+:cnd:noEmit
             })
-#if (IncludeSampleContent)
+//+:cnd:noEmit
 #endif
 			.ConfigureFonts(fonts =>
 			{

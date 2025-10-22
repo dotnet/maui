@@ -227,7 +227,6 @@ public class TagRepository
 	async Task<bool> IsAssociated(Tag item, int projectID)
 	{
 		await Init();
-		await SaveItemAsync(item);
 
 		await using var connection = new SqliteConnection(Constants.DatabasePath);
 		await connection.OpenAsync();
