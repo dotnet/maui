@@ -852,6 +852,7 @@ namespace Microsoft.Maui.Controls
 			if (args.NavigationType == NavigationType.Pop ||
 				args.NavigationType == NavigationType.PopToRoot)
 			{
+#if IOS
 				// Don't dispose Handlers too early on iOS!
 				// iOS aggressively cleans up page Handlers during navigation, but if the page
 				// is still in Shell's navigation stack, users can navigate back to it.
@@ -867,6 +868,7 @@ namespace Microsoft.Maui.Controls
 						return;
 					}
 				}
+#endif
 				
 				if (!this.IsLoaded)
 				{
