@@ -18,7 +18,6 @@ public static class MauiProgram
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
-#endif
 			.ConfigureMauiHandlers(handlers =>
 			{
 #if WINDOWS
@@ -36,6 +35,7 @@ public static class MauiProgram
             	});
 #endif
             })
+#endif
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
