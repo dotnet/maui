@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 
             if (v is MaterialToolbar)
             {
-                v.SetPadding(leftInset, 0, rightInset, 0);
+                v.SetPadding(displayCutout?.Left ?? 0, 0, displayCutout?.Right ?? 0, 0);
                 return WindowInsetsCompat.Consumed;
             }
 
