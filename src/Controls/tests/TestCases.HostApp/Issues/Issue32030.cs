@@ -8,16 +8,15 @@ public class Issue32030 : ContentPage
 
     public Issue32030()
     {
-
         // Create Grid
         var grid = new Grid
         {
             RowDefinitions = new RowDefinitionCollection
-                {
-                    new RowDefinition { Height = new GridLength(50) },
-                    new RowDefinition { Height = GridLength.Star },
-                    new RowDefinition { Height = new GridLength(50) }
-                }
+            {
+                new RowDefinition { Height = new GridLength(50) },
+                new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = new GridLength(50) }
+            }
         };
 
         // Create "above webview" Label
@@ -54,7 +53,6 @@ public class Issue32030 : ContentPage
 
     async void WebView_Navigated(object sender, WebNavigatedEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine($"Navigated to: {e.Url}");
         await DisplayAlert("Navigation Completed", $"WebView navigated to: {e.Url}", "OK");
     }
 }

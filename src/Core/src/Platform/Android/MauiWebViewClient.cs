@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
-			if (navigate && !IsAboutBlankNavigation(url))
+			if (navigate && !IsBlankNavigation(url))
 				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
 
 			handler.SyncPlatformCookiesToVirtualView(url);
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 		bool NavigatingCanceled(string? url) =>
 			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url);
 
-		static bool IsAboutBlankNavigation(string? url)
+		static bool IsBlankNavigation(string? url)
 		{
 			if (string.IsNullOrWhiteSpace(url))
 				return false;
