@@ -18,6 +18,7 @@ public static class MauiProgram
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
+//-:cnd:noEmit
 			.ConfigureMauiHandlers(handlers =>
 			{
 #if WINDOWS
@@ -35,6 +36,7 @@ public static class MauiProgram
             	});
 #endif
             })
+//+:cnd:noEmit
 #endif
 			.ConfigureFonts(fonts =>
 			{
