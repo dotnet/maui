@@ -246,7 +246,7 @@ public class Issue31897 : ContentPage
 		public void AddItems(int count)
 		{
 			var currentProjects = new List<Issue31897Project>(_projects);
-			
+
 			for (int i = 0; i < count; i++)
 			{
 				currentProjects.Add(new Issue31897Project
@@ -264,7 +264,7 @@ public class Issue31897 : ContentPage
 		public void RemoveItems(int count)
 		{
 			var currentProjects = new List<Issue31897Project>(_projects);
-			
+
 			int itemsToRemove = Math.Min(count, currentProjects.Count);
 			for (int i = 0; i < itemsToRemove; i++)
 			{
