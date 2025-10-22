@@ -95,14 +95,6 @@ public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 			Assert.Equal(error, target.TestResult);
 		});
 
-#if !IOS && !MACCATALYST // 
-	[Fact]
-	public Task RedirectIsBlocked() =>
-		RunJavaScriptTest(async (hybridWebView, target) =>
-		{
-	});
-#endif
-
 	private Task RunJavaScriptTest(Func<HybridWebView, InvokeTarget, Task> validateResult, [CallerMemberName] string? jsMethodName = null) =>
 		RunTest("invokedotnetfails.html", async (hybridWebView) =>
 		{
