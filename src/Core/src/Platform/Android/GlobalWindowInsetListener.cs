@@ -55,6 +55,12 @@ namespace Microsoft.Maui.Platform
             var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
             var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
+            if (v is MaterialToolbar)
+            {
+                v.SetPadding(leftInset, 0, rightInset, 0);
+                return WindowInsetsCompat.Consumed;
+            }
+
             // Handle special cases
             var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 
@@ -305,7 +311,7 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <param name="context">The Android context to get the listener from</param>
     public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
     {
-        if (view.FindParent(
+        if (view is not MaterialToolbar && view.FindParent(
             (parent) =>
                 parent is NestedScrollView ||
                 parent is AppBarLayout ||
