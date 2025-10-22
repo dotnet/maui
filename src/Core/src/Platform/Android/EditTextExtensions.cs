@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			// User Types => VirtualView Updated => Triggers Native Update
 			// Then it will cause the cursor to reset to position zero as the user typed
 			editText.Text = entry.Text;
-			
+
 			// Ensure the selection position doesn't exceed the actual text length
 			// to prevent crashes when text is modified by text watchers (e.g., EmojiCompat)
 			int selectionPosition = Math.Min(editText.Text?.Length ?? 0, editText.Length());
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
 			editText.Text = editor.Text;
-			
+
 			// Ensure the selection position doesn't exceed the actual text length
 			// to prevent crashes when text is modified by text watchers (e.g., EmojiCompat)
 			int selectionPosition = Math.Min(editText.Text?.Length ?? 0, editText.Length());
