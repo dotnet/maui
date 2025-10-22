@@ -7,6 +7,7 @@
     <link rel="icon" href="data:,">
     <script src="_framework/hybridwebview.js"></script>
     <script>
+
         // Test helper functions that will be called from C# tests
         var testResult = null;
 
@@ -20,7 +21,14 @@
             document.getElementById('status').innerHTML = "Done!";
         }
 
-        function TestGetRequestIsBlocked() {
+        const RequestMessage = JSON.stringify({
+            methodName: 'TestMethod',
+            parameters: ['Test Value']
+        });
+
+        // Test functions
+
+        function TestGetRequestsAreBlocked() {
             fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
                 method: 'GET'
             }).then(response => {
@@ -36,6 +44,53 @@
             fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
                 method: 'GET',
                 headers: {
+                    'X-Maui-Invoke-Token': 'HybridWebView',
+                    'X-Maui-Request-Body': RequestMessage
+                }
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestMissingTokenHeaderIsBlocked() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                body: RequestMessage
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestInvalidTokenHeaderIsBlocked() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: {
+                    'X-Maui-Invoke-Token': 'InvalidValue',
+                    'X-Maui-Request-Body': RequestMessage
+                },
+                body: RequestMessage
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        // Android specific test
+        function TestMissingBodyHeaderIsBlocked() {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: {
                     'X-Maui-Invoke-Token': 'HybridWebView'
                 }
             }).then(response => {
@@ -47,52 +102,7 @@
             });
         }
 
-        function TestMissingTokenHeader() {
-            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
-                method: 'POST',
-                body: JSON.stringify({ test: 'data' })
-            }).then(response => {
-                testResult = response.status.toString();
-                SetStatusDone();
-            }).catch(error => {
-                testResult = `error: ${error.message}`;
-                SetStatusDone();
-            });
-        }
-
-        function TestInvalidTokenHeader() {
-            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
-                method: 'POST',
-                headers: {
-                    'X-Maui-Invoke-Token': 'InvalidValue'
-                },
-                body: JSON.stringify({ test: 'data' })
-            }).then(response => {
-                testResult = response.status.toString();
-                SetStatusDone();
-            }).catch(error => {
-                testResult = `error: ${error.message}`;
-                SetStatusDone();
-            });
-        }
-
-        function TestMissingBodyHeader() {
-            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
-                method: 'POST',
-                headers: {
-                    'X-Maui-Invoke-Token': 'HybridWebView'
-                },
-                body: JSON.stringify({ test: 'data' })
-            }).then(response => {
-                testResult = response.status.toString();
-                SetStatusDone();
-            }).catch(error => {
-                testResult = `error: ${error.message}`;
-                SetStatusDone();
-            });
-        }
-
-        function TestEmptyBody() {
+        function TestEmptyBodyIsBlocked() {
             fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
                 method: 'POST',
                 headers: {
@@ -107,6 +117,61 @@
                 testResult = `error: ${error.message}`;
                 SetStatusDone();
             });
+        }
+
+        function TestValidRequestIsNotBlocked() {
+
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: {
+                    'X-Maui-Invoke-Token': 'HybridWebView',
+                    'X-Maui-Request-Body': RequestMessage
+                },
+                body: RequestMessage
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestIframeRequestIsBlocked() {
+            // Create an iframe and load JSFiddle embed
+            const iframe = document.createElement('iframe');
+            iframe.width = '100%';
+            iframe.height = '300';
+            iframe.src = 'https://mattleibow.github.io/maui-test-host/maui/hybridwebview/iframe-content-v1.html';
+            // iframe.frameBorder = '0';
+            // iframe.loading = 'lazy';
+            // iframe.allowTransparency = 'true';
+            // iframe.allowFullscreen = 'true';
+            document.body.appendChild(iframe);
+            
+            // Listen for messages from iframe
+            const messageHandler = (event) => {
+                if (event.data && event.data.type === 'iframe-test-result') {
+                    if (event.data.success) {
+                        testResult = `iframe:success:${event.data.origin}:${event.data.status}`;
+                    } else {
+                        testResult = `iframe:error:${event.data.origin}:${event.data.error}`;
+                    }
+                    SetStatusDone();
+                    
+                    // Cleanup
+                    window.removeEventListener('message', messageHandler);
+                    if (iframe.parentNode) {
+                        iframe.parentNode.removeChild(iframe);
+                    }
+                }
+            };
+            
+            window.addEventListener('message', messageHandler);
+        }
+
+        function TestRedirectIsBlocked() {
+            window.location.href = 'https://mattleibow.github.io/maui-test-host/maui/hybridwebview/iframe-content-v1.html';
         }
 
     </script>
