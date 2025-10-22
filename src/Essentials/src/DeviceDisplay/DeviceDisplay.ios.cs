@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Runtime.InteropServices;
+using CoreFoundation;
 using Foundation;
 using UIKit;
 
@@ -8,10 +10,35 @@ namespace Microsoft.Maui.Devices
 	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
+#if MACCATALYST
+		uint keepScreenOnId = 0;
 
+		protected override bool GetKeepScreenOn() => keepScreenOnId != 0;
+
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			if (GetKeepScreenOn() == keepScreenOn)
+			{
+				return;
+			}
+
+			if (keepScreenOn)
+			{
+				IOKit.PreventUserIdleDisplaySleep("KeepScreenOn", out keepScreenOnId);
+			}
+			else
+			{
+				if (IOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
+				{
+					keepScreenOnId = 0;
+				}
+			}
+		}
+#else
 		protected override bool GetKeepScreenOn() => UIApplication.SharedApplication.IdleTimerDisabled;
 
 		protected override void SetKeepScreenOn(bool keepScreenOn) => UIApplication.SharedApplication.IdleTimerDisabled = keepScreenOn;
+#endif
 
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
@@ -68,4 +95,45 @@ namespace Microsoft.Maui.Devices
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 	}
+
+#if MACCATALYST
+	internal static class IOKit
+	{
+		const string IOKitLibrary = "/System/Library/Frameworks/IOKit.framework/IOKit";
+		const uint kIOPMAssertionLevelOn = 255;
+		static readonly CFString kIOPMAssertionTypePreventUserIdleDisplaySleep = "PreventUserIdleDisplaySleep";
+
+		[DllImport(IOKitLibrary)]
+		static extern uint IOPMAssertionCreateWithName(IntPtr type, uint level, IntPtr name, out uint id);
+
+		[DllImport(IOKitLibrary)]
+		static extern uint IOPMAssertionRelease(uint id);
+
+		internal static bool PreventUserIdleDisplaySleep(CFString name, out uint id)
+		{
+			var result = IOPMAssertionCreateWithName(
+				kIOPMAssertionTypePreventUserIdleDisplaySleep.Handle,
+				kIOPMAssertionLevelOn,
+				name.Handle,
+				out var newId);
+
+			if (result == 0)
+			{
+				id = newId;
+			}
+			else
+			{
+				id = 0;
+			}
+
+			return result == 0;
+		}
+
+		internal static bool AllowUserIdleDisplaySleep(uint id)
+		{
+			var result = IOPMAssertionRelease(id);
+			return result == 0;
+		}
+	}
+#endif
 }
