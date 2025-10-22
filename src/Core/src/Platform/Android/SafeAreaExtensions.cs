@@ -223,7 +223,7 @@ internal static class SafeAreaExtensions
         }
         else
         {
-            newWindowInsets = windowInsets;            
+            newWindowInsets = windowInsets;
         }
 
         // Fallback: return the base safe area for legacy views
@@ -234,33 +234,28 @@ internal static class SafeAreaExtensions
     {
         // Edge-to-edge content - no safe area padding
         if (safeAreaRegion == SafeAreaRegions.None)
-        {
             return 0;
-        }
 
-        // Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
-        if (isKeyboardShowing && edge == 3)
+        // Handle SoftInput specifically for bottom edge when keyboard is showing
+        if (edge == 3 && SafeAreaEdges.IsSoftInput(safeAreaRegion))
         {
-            // Always apply keyboard insets when keyboard is showing to prevent content overlap
-            // Use keyboard height or original safe area, whichever is larger
-            var keyboardInset = keyBoardInsets.Bottom;
-            if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-                return Math.Max(keyboardInset, originalSafeArea);
-
-            // For non-SoftInput regions, still apply keyboard padding to prevent overlap
-            // unless explicitly set to None region
-            if (safeAreaRegion != SafeAreaRegions.None)
-                return Math.Max(keyboardInset, originalSafeArea);
-
-            return keyboardInset;
+            return HandleSoftInputRegion(safeAreaRegion, originalSafeArea, isKeyboardShowing, keyBoardInsets);
         }
 
-        // All other regions respect safe area in some form
-        // This includes:
-        // - Default: Platform default behavior
-        // - All: Obey all safe area insets  
-        // - Container: Content flows under keyboard but stays out of bars/notch
-        // - Any combination of the above flags
+        // All other regions respect safe area (Default, All, Container, etc.)
         return originalSafeArea;
+    }
+
+    static double HandleSoftInputRegion(SafeAreaRegions safeAreaRegion, double originalSafeArea, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
+    {
+        if (!isKeyboardShowing)
+        {
+            // When keyboard is hidden, only apply safe area for "All" regions
+            return safeAreaRegion == SafeAreaRegions.All ? originalSafeArea : 0;
+        }
+
+        // When keyboard is showing, use the larger of keyboard inset or original safe area
+        var keyboardInset = keyBoardInsets.Bottom;
+        return Math.Max(keyboardInset, originalSafeArea);
     }
 }

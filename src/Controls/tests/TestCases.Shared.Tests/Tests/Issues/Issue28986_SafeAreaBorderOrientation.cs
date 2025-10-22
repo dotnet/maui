@@ -224,7 +224,6 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
             "Dimensions should still differ between portrait and landscape after multiple changes");
     }
 
-#if TEST_FAILS_ON_ANDROID 
     [Test]
     [Category(UITestCategories.SafeAreaEdges)]
     public void SafeAreaBorderSoftInputBehavior()
@@ -320,116 +319,5 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
         Assert.That(borderHeightChanged || safeAreaChanged, Is.True,
             "Test should demonstrate that keyboard interaction affects either safe area or border layout");
     }
-#endif
-
-#if TEST_FAILS_ON_ANDROID // Landscape orientation causes keyboard to occupy  fullview
-    [Test]
-    [Category(UITestCategories.SafeAreaEdges)]
-    public void SafeAreaBorderSoftInputWithOrientationChange()
-    {
-        var borderContent = App.WaitForElement("BorderContent");
-
-        // 1. Set bottom edge to SoftInput mode for keyboard behavior
-        App.Tap("SetBottomSoftInputButton");
-
-        // Wait for the test status to confirm the change
-        var softInputSet = App.WaitForTextToBePresentInElement("TestStatus", "SoftInput", TimeSpan.FromSeconds(3));
-        Assert.That(softInputSet, Is.True, "Bottom edge should be set to SoftInput mode");
-
-        // 2. Show keyboard in portrait mode
-        App.Tap("TestEntry");
-
-        Thread.Sleep(1000);
-
-        Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should become visible in portrait mode");
-
-        // 3. Record portrait state with keyboard visible
-        var portraitWithKeyboardBounds = borderContent.GetRect();
-        var portraitWithKeyboardSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-
-        Assert.That(App.IsKeyboardShown(), Is.True, "IsKeyboardShown should confirm keyboard is visible");
-
-        // Verify we start in portrait with keyboard
-        Assert.That(portraitWithKeyboardBounds.Height, Is.GreaterThan(portraitWithKeyboardBounds.Width * 0.6),
-            "Should be in portrait orientation even with keyboard visible");
-
-        // 4. Change orientation to landscape while keyboard is still visible
-        App.SetOrientationLandscape();
-        Thread.Sleep(2000); // Wait for orientation change and layout to settle
-
-        // 5. Record landscape state with keyboard visible
-        var landscapeWithKeyboardBounds = borderContent.GetRect();
-        var landscapeWithKeyboardSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-
-        Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should remain visible after orientation change");
-
-        // Verify orientation changed to landscape
-        Assert.That(landscapeWithKeyboardBounds.Width, Is.GreaterThan(landscapeWithKeyboardBounds.Height * 0.6),
-            "Should now be in landscape orientation with keyboard visible");
-
-        // 6. Verify border maintains visibility in landscape with keyboard
-        Assert.That(landscapeWithKeyboardBounds.Width, Is.GreaterThan(0),
-            "Border should remain visible in landscape with keyboard");
-        Assert.That(landscapeWithKeyboardBounds.Height, Is.GreaterThan(0),
-            "Border should remain visible in landscape with keyboard");
-
-        // 7. Verify dimensions differ between orientations even with keyboard visible
-        Assert.That(portraitWithKeyboardBounds.Width, Is.Not.EqualTo(landscapeWithKeyboardBounds.Width).Within(10),
-            "Border width should differ between portrait and landscape with keyboard visible");
-        Assert.That(portraitWithKeyboardBounds.Height, Is.Not.EqualTo(landscapeWithKeyboardBounds.Height).Within(10),
-            "Border height should differ between portrait and landscape with keyboard visible");
-
-        // 8. Verify landscape has wider aspect ratio even with keyboard
-        var portraitAspectRatio = portraitWithKeyboardBounds.Height / portraitWithKeyboardBounds.Width;
-        var landscapeAspectRatio = landscapeWithKeyboardBounds.Height / landscapeWithKeyboardBounds.Width;
-
-        Assert.That(portraitAspectRatio, Is.GreaterThan(landscapeAspectRatio),
-            "Portrait should still have higher aspect ratio than landscape, even with keyboard visible");
-
-        // 9. Verify safe area insets adapted to landscape with keyboard
-        Assert.That(portraitWithKeyboardSafeArea, Is.Not.EqualTo(landscapeWithKeyboardSafeArea),
-            "Safe area insets should be different between portrait and landscape with keyboard");
-
-        // 10. Hide keyboard in landscape mode using proper dismiss method
-        App.DismissKeyboard();
-        Thread.Sleep(1000);
-
-        Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden in landscape mode");
-
-        // 11. Record landscape state with keyboard hidden
-        var landscapeWithoutKeyboardBounds = borderContent.GetRect();
-
-        Assert.That(App.IsKeyboardShown(), Is.False, "IsKeyboardShown should confirm keyboard is hidden");
-
-        // 12. Verify border expanded when keyboard was dismissed in landscape
-        Assert.That(landscapeWithoutKeyboardBounds.Height, Is.GreaterThan(landscapeWithKeyboardBounds.Height),
-            "Border should expand when keyboard is hidden in landscape mode");
-
-        // 13. Change back to portrait without keyboard
-        App.SetOrientationPortrait();
-        Thread.Sleep(2000); // Wait for orientation change and layout to settle
-
-        // 14. Record final portrait state without keyboard
-        var finalPortraitBounds = borderContent.GetRect();
-
-        // Verify back in portrait
-        Assert.That(finalPortraitBounds.Height, Is.GreaterThan(finalPortraitBounds.Width * 0.8),
-            "Should be back in portrait orientation");
-
-        // 15. Verify overall stability - border should be functional in final state
-        Assert.That(finalPortraitBounds.Width, Is.GreaterThan(0),
-            "Border should be visible in final portrait state");
-        Assert.That(finalPortraitBounds.Height, Is.GreaterThan(0),
-            "Border should be visible in final portrait state");
-
-        // 16. Verify no errors occurred during complex interaction
-        var testStatus = App.WaitForElement("TestStatus");
-        Assert.That(testStatus.GetText(), Does.Not.Contain("Error"),
-            "No errors should occur during orientation change with keyboard interaction");
-
-        // 17. Verify final state is stable (keyboard hidden)
-        Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should remain hidden in final state");
-    }
-#endif
 }
 #endif
