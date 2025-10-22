@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Platform
 		public MauiShapeView()
 		{
 			BackgroundColor = UIColor.Clear;
+			// Redraw the shape when bounds change to prevent blur during resizing in container layouts.
+			ContentMode = UIViewContentMode.Redraw;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
