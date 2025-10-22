@@ -5,10 +5,11 @@
         xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
+        xmlns:models="clr-namespace:MauiApp._1.Models"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
+        x:DataType="pageModels:MainPageModel"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
-        x:DataType="pageModels:MainPageModel"
         Style="{StaticResource CardStyle}">
     <shimmer:SfShimmer
         AutomationProperties.IsInAccessibleTree="False"
@@ -29,7 +30,7 @@
                 <chart:SfCircularChart.Resources>
                     <controls:ChartDataLabelConverter x:Key="ChartDataLabelConverter"/>
                 </chart:SfCircularChart.Resources>
-                <chart:DoughnutSeries
+                <chart:DoughnutSeries 
                     ItemsSource="{Binding TodoCategoryData}"
                     PaletteBrushes="{Binding TodoCategoryColors}"
                     XBindingPath="Title"
@@ -43,7 +44,7 @@
                         <DataTemplate>
                             <HorizontalStackLayout x:DataType="chart:ChartDataLabel">
                                 <Label Text="{Binding Item, Converter={StaticResource ChartDataLabelConverter}, ConverterParameter='title'}"
-                                        TextColor="{AppThemeBinding
+                                        TextColor="{AppThemeBinding 
                                     Light={StaticResource DarkOnLightBackground},
                                     Dark={StaticResource LightOnDarkBackground}}"
                                         FontSize="{OnIdiom 18, Phone=14}"/>

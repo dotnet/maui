@@ -200,6 +200,12 @@ public class TagRepository
 		await Init();
 		await SaveItemAsync(item);
 
+		var isAssociated = await IsAssociated(item, projectID);
+		if (isAssociated)
+		{
+			return 0; // No need to save again if already associated
+		}
+
 		await using var connection = new SqliteConnection(Constants.DatabasePath);
 		await connection.OpenAsync();
 
@@ -210,6 +216,33 @@ public class TagRepository
 		saveCmd.Parameters.AddWithValue("@tagID", item.ID);
 
 		return await saveCmd.ExecuteNonQueryAsync();
+	}
+
+	/// <summary>
+	/// Checks if a tag is already associated with a specific project.
+	/// </summary>
+	/// <param name="item">The tag to save.</param>
+	/// <param name="projectID">The ID of the project.</param>
+	/// <returns>If tag is already associated with this project</returns>
+	async Task<bool> IsAssociated(Tag item, int projectID)
+	{
+		await Init();
+		await SaveItemAsync(item);
+
+		await using var connection = new SqliteConnection(Constants.DatabasePath);
+		await connection.OpenAsync();
+
+		// First check if the association already exists
+		var checkCmd = connection.CreateCommand();
+		checkCmd.CommandText = @"
+			SELECT COUNT(*) FROM ProjectsTags 
+			WHERE ProjectID = @projectID AND TagID = @tagID";
+		checkCmd.Parameters.AddWithValue("@projectID", projectID);
+		checkCmd.Parameters.AddWithValue("@tagID", item.ID);
+
+		int existingCount = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
+
+		return existingCount != 0;
 	}
 
 	/// <summary>

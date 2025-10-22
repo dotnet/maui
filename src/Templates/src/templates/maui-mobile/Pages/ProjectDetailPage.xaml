@@ -11,49 +11,6 @@
              x:DataType="pageModels:ProjectDetailPageModel"
              Title="Project">
 
-    <ContentPage.Resources>
-        <DataTemplate x:Key="NormalTagTemplate" x:DataType="models:Tag">
-                <Border StrokeShape="RoundRectangle 22" 
-                        HeightRequest="44" 
-                        StrokeThickness="0"
-                        Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}" 
-                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
-                        SemanticProperties.Description="{Binding Title}">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
-                        </Border.GestureRecognizers>
-                        <Label Text="{Binding Title}"
-                            TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"
-                            FontSize="{OnIdiom 16,Desktop=18}" 
-                            VerticalOptions="Center"
-                            VerticalTextAlignment="Center"/>
-                </Border>
-        </DataTemplate>
-
-        <DataTemplate x:Key="SelectedTagTemplate" x:DataType="models:Tag">
-            <Border StrokeShape="RoundRectangle 22" 
-                        HeightRequest="44" 
-                        StrokeThickness="0"
-                        Background="{Binding DisplayColor}" 
-                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
-                        SemanticProperties.Description="{Binding Title}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
-                </Border.GestureRecognizers>
-                <Label Text="{Binding Title}"
-                    TextColor="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}" 
-                    FontSize="{OnIdiom 16,Desktop=18}" 
-                    VerticalOptions="Center"
-                    VerticalTextAlignment="Center"/>
-            </Border>
-        </DataTemplate>
-
-        <controls:ChipDataTemplateSelector 
-            x:Key="ChipDataTemplateSelector"
-            NormalTagTemplate="{StaticResource NormalTagTemplate}"
-            SelectedTagTemplate="{StaticResource SelectedTagTemplate}"/>
-    </ContentPage.Resources>
-
     <ContentPage.ToolbarItems>
         <ToolbarItem
             Text="Delete"
@@ -91,13 +48,15 @@
                     Style="{StaticResource Title2}"/>
                 <CollectionView 
                     HeightRequest="44" Margin="0,0,0,15"
-                    SelectionMode="Single"
-                    
+                    SelectionMode="Single" 
                     SelectedItem="{Binding Icon}"
+                    SelectionChangedCommand="{Binding IconSelectedCommand}"
+                    SelectionChangedCommandParameter="{Binding Icon}"
                     ItemsSource="{Binding Icons}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:IconData">
-                            <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}">
+                            <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}"
+                                 SemanticProperties.Description="{Binding Description}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">
@@ -117,14 +76,12 @@
                                 </VisualStateManager.VisualStateGroups>
                                 
                                 <Label 
-                                    Text="{Binding Icon}" 
+                                    Text="{Binding Icon}"
                                     x:Name="IconImage"
                                     FontFamily="{x:Static fonts:FluentUI.FontFamily}" 
                                     FontSize="24" 
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
-                                    SemanticProperties.Description="{Binding Description}"
-                                    SemanticProperties.Hint="Icon representing the type of task . Tap to select"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator" Color="{StaticResource Primary}" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
                             </Grid>                            
@@ -139,17 +96,59 @@
                 <Label 
                     Text="Tags" 
                     Style="{StaticResource Title2}"/>
-                <ScrollView Orientation="Horizontal">
-                    <HorizontalStackLayout 
-                        Spacing="{StaticResource LayoutSpacing}" 
-                        HeightRequest="44" 
-                        Margin="0,0,0,15"
-                        BindableLayout.ItemsSource="{Binding AllTags}" 
-                        BindableLayout.ItemTemplateSelector="{StaticResource ChipDataTemplateSelector}"/>
-                </ScrollView>
+
+                <!-- TODO This is still a little jumpy when changing selection -->
+                <CollectionView
+                    ItemsSource="{Binding AllTags}"
+                    SelectionMode="Multiple"
+                    HeightRequest="44"
+                    Margin="0,0,0,15"
+                    SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
+                    SelectionChangedCommand="{Binding SelectionChangedCommand}"
+                    SelectionChangedCommandParameter="{Binding SelectedTags}"
+                    SemanticProperties.Description="Tags Collection">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="{StaticResource LayoutSpacing}" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Tag">
+                            <Border StrokeShape="RoundRectangle 22" 
+                                HeightRequest="44" 
+                                VerticalOptions="Center"
+                                BackgroundColor="Transparent"
+                                Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
+                                SemanticProperties.Description="{Binding Title}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal">
+                                            <VisualState.Setters>
+                                                <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"/>
+                                                <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Selected">
+                                            <VisualState.Setters>
+                                                <Setter Property="Background" Value="{Binding DisplayColor}"/>
+                                                <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <Label x:Name="TagLabel"
+                                    Text="{Binding Title}"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}" 
+                                    FontSize="{OnIdiom 16,Desktop=18}" 
+                                    VerticalOptions="Center"
+                                    VerticalTextAlignment="Center">
+                                </Label>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                
 
                 <Button Text="Save" 
-                    HeightRequest="{OnIdiom 44, Desktop=60}"
+                    MinimumHeightRequest="{OnIdiom 44, Desktop=60}"
                     Command="{Binding SaveCommand}" />
 
                 <Grid HeightRequest="44">
