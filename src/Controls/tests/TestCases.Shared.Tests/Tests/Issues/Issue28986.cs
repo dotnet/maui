@@ -83,6 +83,9 @@ public class Issue28986 : _IssuesUITest
 
 		// The key validation: All should have same or less height than None (never more)
 		// And All should behave differently than SoftInput when keyboard is hidden
+		// Note: Using LessThanOrEqualTo instead of LessThan because some test devices (e.g., emulators
+		// without navigation bars) have no bottom safe area padding, resulting in equal heights.
+		// This test validates behavior consistency rather than assuming specific padding values.
 		Assert.That(allRect.Height, Is.LessThanOrEqualTo(noneRect.Height),
 			"MainGrid height with All should be less than or equal to None (All respects safe area)");
 		
