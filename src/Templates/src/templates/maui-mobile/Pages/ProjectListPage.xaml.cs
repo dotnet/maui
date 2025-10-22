@@ -6,5 +6,6 @@ public partial class ProjectListPage : ContentPage
 	{
 		BindingContext = model;
 		InitializeComponent();
+		AppearingBehavior.BindingContext = model;
 	}
 }
