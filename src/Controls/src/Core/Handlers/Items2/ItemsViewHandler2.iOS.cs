@@ -126,9 +126,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
 			{
-				if (itemsLayout.ItemsUpdatingScrollMode != itemsView.ItemsUpdatingScrollMode && handler.Controller?.CollectionView?.CollectionViewLayout is CustomUICollectionViewCompositionalLayout customLayout)
+				itemsLayout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
+				if (handler.Controller?.CollectionView?.CollectionViewLayout is CustomUICollectionViewCompositionalLayout customLayout)
 				{
-					itemsLayout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
 					customLayout.UpdateItemsUpdatingScrollMode(itemsView.ItemsUpdatingScrollMode);
 				}
 			}
