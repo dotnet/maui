@@ -101,7 +101,6 @@
                     Text="Tags" 
                     Style="{StaticResource Title2}"/>
 
-                <!-- TODO This is still a little jumpy when changing selection -->
                 <CollectionView
                     ItemsSource="{Binding AllTags}"
                     SelectionMode="Multiple"
