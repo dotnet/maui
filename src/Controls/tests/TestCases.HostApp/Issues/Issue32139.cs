@@ -2,15 +2,15 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14141, "CarouselView scrolls to last item when Loop is enabled and CurrentItem is set to an item not in the list", PlatformAffected.iOS)]
-public class Issue14141 : ContentPage
+[Issue(IssueTracker.Github, 32139, "CarouselView scrolls to last item when Loop is enabled and CurrentItem is set to an item not in the list", PlatformAffected.iOS)]
+public class Issue32139 : ContentPage
 {
 	const string InitialItem = "0";
 	const string InvalidItem = "14";
 
 	Label selectedItemLabel;
 	CarouselView carouselView;
-	public Issue14141()
+	public Issue32139()
 	{
 		carouselView = new CarouselView
 		{
@@ -42,7 +42,7 @@ public class Issue14141 : ContentPage
 
 		Button selectButton = new Button
 		{
-			AutomationId = "14141SelectBtn",
+			AutomationId = "Issue32139SelectBtn",
 			Text = $"Select item {InvalidItem}",
 			FontSize = 12
 		};

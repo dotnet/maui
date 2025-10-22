@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue14141 : _IssuesUITest
+public class Issue32139 : _IssuesUITest
 {
-	public Issue14141(TestDevice device) : base(device)
+	public Issue32139(TestDevice device) : base(device)
 	{
 	}
 
@@ -17,8 +17,8 @@ public class Issue14141 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void ValidateNoScrollOnInvalidItemWithLoop()
 	{
-		App.WaitForElement("14141SelectBtn");
-		App.Tap("14141SelectBtn");
+		App.WaitForElement("Issue32139SelectBtn");
+		App.Tap("Issue32139SelectBtn");
 
 		VerifyScreenshot();
 	}
