@@ -535,7 +535,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				// iOS 26+ requires images to use AlwaysTemplate rendering mode for tint colors to work on unselected items
+				UIImage? tabIcon = icon?.Value;
+				if (tabIcon != null && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+				{
+					tabIcon = tabIcon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				}
+
+				TabBarItem = new UITabBarItem(ShellSection.Title, tabIcon, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}

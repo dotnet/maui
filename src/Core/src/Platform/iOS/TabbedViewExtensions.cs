@@ -117,6 +117,16 @@ namespace Microsoft.Maui.Platform
 
 			// Set the TabBarAppearance
 			tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = _tabBarAppearance;
+
+			// iOS 26+ has a bug where IconColor in UITabBarAppearance doesn't work for unselected items
+			// Workaround: Set UnselectedItemTintColor directly on the UITabBar
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsTvOSVersionAtLeast(26))
+			{
+				if (unselectedTabColor is not null)
+				{
+					tabBar.UnselectedItemTintColor = unselectedTabColor.ToPlatform();
+				}
+			}
 		}
 	}
 }
