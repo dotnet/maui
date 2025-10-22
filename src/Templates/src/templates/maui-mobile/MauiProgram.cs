@@ -21,6 +21,7 @@ public static class MauiProgram
 #endif
 			.ConfigureMauiHandlers(handlers =>
 			{
+//-:cnd:noEmit
 #if WINDOWS
 				Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView", (handler, view) =>
 				{
@@ -35,6 +36,7 @@ public static class MauiProgram
                 	}
             	});
 #endif
+//+:cnd:noEmit
 //-:cnd:noEmit
 #if IOS || MACCATALYST
 				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
