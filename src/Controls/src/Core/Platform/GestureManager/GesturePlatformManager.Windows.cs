@@ -400,6 +400,25 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
+
+			// Reset tab stop state when clearing gesture handlers for border layouts
+			UpdateContentPanelIsTapStop(false);
+		}
+
+		// Sets or resets the IsTabStop property on ContentPanel when gesture recognizers are added or removed for border
+		void UpdateContentPanelIsTapStop(bool isEnabled)
+		{
+			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
+			{
+				if (isEnabled && !contentPanel.IsTabStop)
+				{
+					contentPanel.IsTabStop = true;
+				}
+				else if (!isEnabled && contentPanel.IsTabStop)
+				{
+					contentPanel.IsTabStop = false;
+				}
+			}
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -434,6 +453,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_control.DoubleTapped -= HandleDoubleTapped;
 				}
+
+				// Reset tab stop state when clearing gesture handlers for border layouts
+				UpdateContentPanelIsTapStop(false);
 			}
 
 			Control = null;
@@ -973,6 +995,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_container.RightTapped += OnTap;
+
+				// Set tab stop state when adding gesture handlers for border layouts
+				UpdateContentPanelIsTapStop(true);
 			}
 			else
 			{

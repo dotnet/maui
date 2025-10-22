@@ -36,8 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new ContentPanel
 			{
-				CrossPlatformLayout = VirtualView,
-				IsTabStop = true
+				CrossPlatformLayout = VirtualView
 			};
 
 			return view;
