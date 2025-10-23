@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			// Set appropriate system bar appearance for readability
+			// Set appropriate system bar appearance for readability using API 30+ methods
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{

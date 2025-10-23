@@ -240,11 +240,22 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
 
-				// Configure translucent system bars for modal pages on Android API 36+
-				if (OperatingSystem.IsAndroidVersionAtLeast(36) && Context?.GetActivity() is global::Android.App.Activity activity)
+				// Configure translucent system bars for modal pages on Android API 30+
+				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
 				{
 					dialog.Window.ConfigureTranslucentSystemBars(activity);
 				}
+				else if (mainActivityWindow is not null)
+				{
+					// Fallback for API < 30: Apply legacy translucent behavior
+					var navigationBarColor = mainActivityWindow.NavigationBarColor;
+					var statusBarColor = mainActivityWindow.StatusBarColor;
+#pragma warning disable CA1422
+					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
+					dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
+#pragma warning restore CA1422
+				}
+
 
 				return dialog;
 			}
