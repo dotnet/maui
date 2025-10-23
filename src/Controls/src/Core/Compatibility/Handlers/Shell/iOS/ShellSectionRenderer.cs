@@ -536,7 +536,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
 				// iOS 26+ requires images to use AlwaysTemplate rendering mode for tint colors to work on unselected items
-				UIImage? tabIcon = icon?.Value;
+				UIImage tabIcon = icon?.Value;
 				if (tabIcon != null && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 				{
 					tabIcon = tabIcon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
