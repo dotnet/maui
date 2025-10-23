@@ -19,6 +19,10 @@ public class Issue17664 : _IssuesUITest
 		App.WaitForElement("Issue17664ScrollBtn");
 		App.Tap("Issue17664ScrollBtn");
 
+#if WINDOWS
+		Thread.Sleep(1000);
+#endif
+
 		var resultItem = App.WaitForElement("Issue17664DescriptionLabel").GetText();
 		Assert.That(resultItem, Is.EqualTo("Category C item #2"));
 	}
