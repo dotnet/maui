@@ -16,7 +16,7 @@ public class Issue31961 : Shell
 		var mainPage = new ShellContent
 		{
 			Title = "Main",
-			Content = new MainPage1(),
+			Content = new Issue31961MainPage(),
 			Route = "MainPage"
 		};
 
@@ -25,10 +25,10 @@ public class Issue31961 : Shell
 		Items.Add(tabBar);
 
 		// Register routes for navigation
-		Routing.RegisterRoute("Page1", typeof(Page1));
-		Routing.RegisterRoute("Page2", typeof(Page2));
-		Routing.RegisterRoute("Page3", typeof(Page3));
-		Routing.RegisterRoute("ModalPage", typeof(ModalPage));
+		Routing.RegisterRoute("Issue31961FirstPage", typeof(Issue31961FirstPage));
+		Routing.RegisterRoute("Issue31961SecondPage", typeof(Issue31961SecondPage));
+		Routing.RegisterRoute("Issue31961ThirdPage", typeof(Issue31961ThirdPage));
+		Routing.RegisterRoute("Issue31961ModalPage", typeof(Issue31961ModalPage));
 	}
 
 	protected override void OnNavigated(ShellNavigatedEventArgs args)
@@ -42,11 +42,11 @@ public class Issue31961 : Shell
 	}
 }
 
-public partial class MainPage1 : ContentPage
+public partial class Issue31961MainPage : ContentPage
 {
 	public Command NavigateToPage1Command { get; }
 
-	public MainPage1()
+	public Issue31961MainPage()
 	{
 		// Initialize command
 		NavigateToPage1Command = new Command(async () => await NavigateToPage1Async());
@@ -66,18 +66,18 @@ public partial class MainPage1 : ContentPage
 
 	async Task NavigateToPage1Async()
 	{
-		await Shell.Current.GoToAsync("Page1");
+		await Shell.Current.GoToAsync("Issue31961FirstPage");
 	}
 }
 
-public class Page1 : ContentPage, INavigationAware
+public class Issue31961FirstPage : ContentPage, INavigationAware
 {
 	bool _wasModalShown = false;
 
 	public Command OpenModalCommand { get; }
 	public Command NavigateToPage2Command { get; }
 
-	public Page1()
+	public Issue31961FirstPage()
 	{
 		Title = "Page 1";
 		BindingContext = this; // Set binding context to enable INavigationAware
@@ -100,12 +100,12 @@ public class Page1 : ContentPage, INavigationAware
 	async Task OpenModalAsync()
 	{
 		_wasModalShown = true;
-		await Shell.Current.GoToAsync("ModalPage");
+		await Shell.Current.GoToAsync("Issue31961ModalPage");
 	}
 
 	async Task NavigateToPage2Async()
 	{
-		await Shell.Current.GoToAsync("Page2");
+		await Shell.Current.GoToAsync("Issue31961SecondPage");
 	}
 
 	public void OnShellNavigated(ShellNavigatedEventArgs args)
@@ -120,11 +120,11 @@ public class Page1 : ContentPage, INavigationAware
 	}
 }
 
-public class ModalPage : ContentPage
+public class Issue31961ModalPage : ContentPage
 {
 	public Command CloseModalCommand { get; }
 
-	public ModalPage()
+	public Issue31961ModalPage()
 	{
 		Title = "Modal Page";
 		BackgroundColor = Colors.LightGray;
@@ -148,11 +148,11 @@ public class ModalPage : ContentPage
 	}
 }
 
-public class Page2 : ContentPage
+public class Issue31961SecondPage : ContentPage
 {
 	public Command NavigateToPage3Command { get; }
 
-	public Page2()
+	public Issue31961SecondPage()
 	{
 		Title = "Page 2";
 
@@ -171,13 +171,13 @@ public class Page2 : ContentPage
 
 	async Task NavigateToPage3Async()
 	{
-		await Shell.Current.GoToAsync("Page3");
+		await Shell.Current.GoToAsync("Issue31961ThirdPage");
 	}
 }
 
-public class Page3 : ContentPage
+public class Issue31961ThirdPage : ContentPage
 {
-	public Page3()
+	public Issue31961ThirdPage()
 	{
 		Title = "Page 3";
 
