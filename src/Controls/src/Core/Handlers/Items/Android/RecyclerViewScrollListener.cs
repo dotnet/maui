@@ -116,8 +116,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				centerItemIndex--;
 			}
 
-			firstVisibleItemIndex = Math.Max(0, firstVisibleItemIndex);
-			lastVisibleItemIndex = Math.Max(0, lastVisibleItemIndex);
+			int maxValidIndex = Math.Max(0, itemsSource.Count - 1);
+			firstVisibleItemIndex = Math.Clamp(firstVisibleItemIndex, 0, maxValidIndex);
+			lastVisibleItemIndex = Math.Clamp(lastVisibleItemIndex, 0, maxValidIndex);
+			centerItemIndex = Math.Clamp(centerItemIndex, 0, maxValidIndex);
 
 			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
 		}
