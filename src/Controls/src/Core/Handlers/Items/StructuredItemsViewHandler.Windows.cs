@@ -120,6 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (header)
 			{
 				case null:
+					ListViewBase.HeaderTemplate = null;
 					ListViewBase.Header = null;
 					break;
 
@@ -131,7 +132,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case View view:
 					ListViewBase.HeaderTemplate = ViewTemplate;
 					_currentHeader = view;
-					Element.AddLogicalChild(_currentHeader);
+					if (view.Parent != Element)
+					{
+						Element.AddLogicalChild(_currentHeader);
+					}
 					ListViewBase.Header = view;
 					break;
 
@@ -169,6 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (footer)
 			{
 				case null:
+					ListViewBase.FooterTemplate = null;
 					ListViewBase.Footer = null;
 					break;
 
@@ -180,7 +185,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case View view:
 					ListViewBase.FooterTemplate = ViewTemplate;
 					_currentFooter = view;
-					Element.AddLogicalChild(_currentFooter);
+					if (view.Parent != Element)
+					{
+						Element.AddLogicalChild(_currentFooter);
+					}
 					ListViewBase.Footer = view;
 					break;
 

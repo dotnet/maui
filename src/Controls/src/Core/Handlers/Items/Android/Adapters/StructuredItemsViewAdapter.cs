@@ -35,13 +35,46 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty))
 			{
+				var hadHeader = ItemsSource.HasHeader;
 				UpdateHasHeader();
-				NotifyDataSetChanged();
+				
+				if (hadHeader && !ItemsSource.HasHeader)
+				{
+					// Header was removed
+					NotifyItemRemoved(0);
+				}
+				else if (!hadHeader && ItemsSource.HasHeader)
+				{
+					// Header was added
+					NotifyItemInserted(0);
+				}
+				else
+				{
+					// Header was changed (but still exists)
+					NotifyItemChanged(0);
+				}
 			}
 			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty))
 			{
+				var hadFooter = ItemsSource.HasFooter;
+				var oldCount = ItemsSource.Count;
 				UpdateHasFooter();
-				NotifyDataSetChanged();
+				
+				if (hadFooter && !ItemsSource.HasFooter)
+				{
+					// Footer was removed (use old count since it's already updated)
+					NotifyItemRemoved(oldCount - 1);
+				}
+				else if (!hadFooter && ItemsSource.HasFooter)
+				{
+					// Footer was added
+					NotifyItemInserted(ItemsSource.Count - 1);
+				}
+				else
+				{
+					// Footer was changed (but still exists)
+					NotifyItemChanged(ItemsSource.Count - 1);
+				}
 			}
 		}
 
