@@ -8,7 +8,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
-using static Microsoft.Maui.Controls.Handlers.Items2.LayoutFactory2;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -127,7 +126,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
 			{
 				itemsLayout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
-				if (handler.Controller?.CollectionView?.CollectionViewLayout is CustomUICollectionViewCompositionalLayout customLayout)
+				if (handler.Controller?.CollectionView?.CollectionViewLayout is LayoutFactory2.CustomUICollectionViewCompositionalLayout customLayout)
 				{
 					customLayout.UpdateItemsUpdatingScrollMode(itemsView.ItemsUpdatingScrollMode);
 				}
