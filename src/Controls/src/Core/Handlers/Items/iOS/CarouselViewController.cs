@@ -486,6 +486,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (goToPosition < 0)
 			{
+				System.Diagnostics.Debug.WriteLine($"CarouselViewController.ScrollToPosition: Skipping scroll due to invalid goToPosition ({goToPosition})");
 				return;
 			}
 
