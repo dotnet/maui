@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
@@ -14,7 +14,7 @@ public class SourceGenXamlTests : SourceGenTestsBase
 	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
 		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework);
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_BasicXaml()
 	{
 		var xaml =
@@ -30,14 +30,14 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+		Assert.Contains("Microsoft.Maui.Controls.Button MyButton", generated, StringComparison.Ordinal);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_LocalXaml()
 	{
 		var xaml =
@@ -54,14 +54,14 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
+		Assert.Contains("Test.TestControl MyTestControl", generated, StringComparison.Ordinal);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_CompilationClone()
 	{
 		var xaml =
@@ -83,8 +83,8 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		var output1 = result1.GeneratedSources.Single().SourceText.ToString();
 		var output2 = result2.GeneratedSources.Single().SourceText.ToString();
 
-		Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
-		Assert.AreEqual(output1, output2);
+		Assert.True(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
+		Assert.Equal(output1, output2);
 
 		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
 		{
@@ -104,7 +104,7 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		VerifyStepRunReasons(result2, expectedReasons);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_ReferenceAdded()
 	{
 		var xaml =
@@ -126,8 +126,8 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		var output1 = result1.GeneratedSources.Single().SourceText.ToString();
 		var output2 = result2.GeneratedSources.Single().SourceText.ToString();
 
-		Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
-		Assert.AreEqual(output1, output2);
+		Assert.True(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
+		Assert.Equal(output1, output2);
 
 		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
 		{
@@ -147,7 +147,7 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		VerifyStepRunReasons(result2, expectedReasons);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_ModifiedXaml()
 	{
 		var xaml =
@@ -180,13 +180,13 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		var output1 = result1.GeneratedSources.Single().SourceText.ToString();
 		var output2 = result2.GeneratedSources.Single().SourceText.ToString();
 
-		Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
-		Assert.AreNotEqual(output1, output2);
+		Assert.True(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
+		Assert.NotEqual(output1, output2);
 
-		Assert.IsTrue(output1.Contains("MyButton", StringComparison.Ordinal));
-		Assert.IsFalse(output1.Contains("MyButton2", StringComparison.Ordinal));
-		Assert.IsTrue(output2.Contains("MyButton", StringComparison.Ordinal));
-		Assert.IsTrue(output2.Contains("MyButton2", StringComparison.Ordinal));
+		Assert.Contains("MyButton", output1, StringComparison.Ordinal);
+		Assert.DoesNotContain("MyButton2", output1, StringComparison.Ordinal);
+		Assert.Contains("MyButton", output2, StringComparison.Ordinal);
+		Assert.Contains("MyButton2", output2, StringComparison.Ordinal);
 
 		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
 		{

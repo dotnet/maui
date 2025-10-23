@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetSelectedValue(object radioButtonValue)
 		{
-			if(object.Equals(_selectedValue, radioButtonValue))
+			if (object.Equals(_selectedValue, radioButtonValue))
 			{
 				return;
 			}
@@ -143,8 +143,8 @@ namespace Microsoft.Maui.Controls
 			_selectedValue = radioButtonValue;
 
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
-					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
+			MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
+				new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		}

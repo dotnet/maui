@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
-#if WINDOWS || ANDROID || TIZEN
-		const bool UseMauiHandler = true;
-#else
+#if IOS || MACCATALYST
 		const bool UseMauiHandler = false;
+#else
+		const bool UseMauiHandler = true;
 #endif
 
 		bool _setForMaui;
