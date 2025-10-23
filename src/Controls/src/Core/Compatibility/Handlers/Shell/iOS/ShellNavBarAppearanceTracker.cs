@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navigationBarAppearance.ConfigureWithTransparentBackground();
 				navBar.Translucent = true;
 			}
-			else
+			else if (!OperatingSystem.IsIOSVersionAtLeast(26) || appearance.BackgroundColor is not null)
 			{
 				navigationBarAppearance.ConfigureWithOpaqueBackground();
 				navBar.Translucent = false;
