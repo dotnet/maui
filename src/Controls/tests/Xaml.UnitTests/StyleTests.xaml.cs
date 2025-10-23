@@ -1,7 +1,10 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -88,6 +91,30 @@ public partial class StyleTests : ContentPage
 
 			Assert.AreEqual(50, label.FontSize);
 			Assert.AreEqual(Colors.Red, label.TextColor);
+		}
+
+				[Test]
+		public void StyleCtorIsInvokedWithType([Values(XamlInflator.SourceGen)] XamlInflator inflator)
+		{
+			var result = CreateMauiCompilation()
+				.WithAdditionalSource(
+"""
+using System.Linq;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
+using NUnit.Framework;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class StyleTests : ContentPage
+{
+	public StyleTests() => InitializeComponent();
+}
+""")
+				.RunMauiSourceGenerator(typeof(StyleTests));
+			Assert.IsFalse(result.Diagnostics.Any());
+			var initComp = result.GeneratedInitializeComponent();
+			Assert.That(initComp.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", StringComparison.InvariantCulture));
 		}
 	}
 }
