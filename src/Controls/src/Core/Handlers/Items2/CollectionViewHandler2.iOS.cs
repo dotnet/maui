@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2
 	{
+		private int _currentSpan = -1;
 
 		public CollectionViewHandler2() : base(Mapper)
 		{
@@ -206,14 +207,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				itemsLayout.PropertyChanged += (sender, args) =>
 				{
-					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+					// Handle Span property changes with optimization
+					if (args.PropertyName == nameof(GridItemsLayout.Span))
+					{
+						// Only update layout if span actually changed
+						if (itemsLayout is GridItemsLayout gridLayout)
+						{
+							var newSpan = gridLayout.Span;
+							if (_currentSpan != newSpan)
+							{
+								_currentSpan = newSpan;
+								UpdateLayout();
+							}
+						}
+					}
+					else if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
 						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
 						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
 						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.Span) ||
 						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-
 					{
+						// For other properties, update layout directly
 						UpdateLayout();
 					}
 				};
