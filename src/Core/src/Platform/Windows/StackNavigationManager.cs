@@ -65,11 +65,8 @@ namespace Microsoft.Maui.Platform
 			_navigationFrame = null;
 			NavigationView = null;
 
-			if (_previousContent is not null)
-			{
-				_previousContent.Content = null;
-				_previousContent = null;
-			}
+			_previousContent?.Content = null;
+			_previousContent = null;
 		}
 
 		public virtual void NavigateTo(NavigationRequest args)
@@ -201,11 +198,8 @@ namespace Microsoft.Maui.Platform
 				};
 
 				// Clear the content just in case the previous page didn't unload
-				if (_previousContent is not null)
-				{
-					_previousContent.Content = null;
-					_previousContent = null;
-				}
+				_previousContent?.Content = null;
+				_previousContent = null;
 
 				page.Content = presenter;
 			}
