@@ -42,12 +42,10 @@ namespace Microsoft.Maui.Platform
 			else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorHint, out var color))
 			{
 				editText.SetHintTextColor(color);
-
-				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-				searchMagIconImage?.Drawable?.SetTint(color);
+				ApplyDecorColor(searchView, color);
 			}
 		}
-
+		
 		internal static void UpdateTextColor(this SearchView searchView, ITextStyle entry)
 		{
 			if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color) &&
@@ -56,9 +54,18 @@ namespace Microsoft.Maui.Platform
 				if (entry.TextColor is null)
 					editText.SetTextColor(color);
 
-				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-				searchMagIconImage?.Drawable?.SetTint(color);
+				ApplyDecorColor(searchView, color);
 			}
+		}
+
+		// Tints the magnifier icon and the underline
+		static void ApplyDecorColor(SearchView searchView, Color color)
+		{
+			var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
+			searchMagIconImage?.Drawable?.SetTint(color);
+
+			var searchPlate = searchView.FindViewById(Resource.Id.search_plate);
+			searchPlate?.Background?.SetTint(color);
 		}
 
 		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText = null)
