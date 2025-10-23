@@ -31,10 +31,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (result == UIKit.UIModalPresentationStyle.FullScreen)
 					{
-						Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
+						var modalPage = (Page)_modal.VirtualView;
+						Color modalBkgndColor = modalPage.BackgroundColor;
+						Brush modalBackground = modalPage.Background;
 
-						if (modalBkgndColor?.Alpha < 1)
+						if (modalBkgndColor?.Alpha < 1 || Brush.IsTransparent(modalBackground))
+						{
 							result = UIKit.UIModalPresentationStyle.OverFullScreen;
+						}
 					}
 					ModalPresentationStyle = result;
 				}
