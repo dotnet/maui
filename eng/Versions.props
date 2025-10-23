@@ -32,7 +32,7 @@
     <!-- dotnet/sdk -->
     <MicrosoftNETSdkPackageVersion>10.0.100-rtm.25518.102</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
-    <MonoPackageVersion>10.0.100</MonoPackageVersion>
+    <MonoPackageVersion>10.0.0</MonoPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
