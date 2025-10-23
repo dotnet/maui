@@ -35,10 +35,8 @@
                         SemanticProperties.Hint="Indicates if this task is completed" />
                 </sf:SfTextInputLayout>
 
-                 <sf:SfTextInputLayout
-                    IsVisible="{Binding IsExistingProject}"
-                    SemanticProperties.Description="ComboBox to select Project"
-                    SemanticProperties.Hint="State Collapsed"
+                <sf:SfTextInputLayout 
+                    IsVisible="{Binding IsExistingProject}" 
                     Hint="Project">
                     <Picker 
                         ItemsSource="{Binding Projects}"

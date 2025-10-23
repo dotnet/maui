@@ -1,8 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MauiApp._1.Models;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 
 namespace MauiApp._1.PageModels;
 
@@ -35,8 +33,6 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 
 	[ObservableProperty]
 	private List<Tag> _allTags = [];
-
-	public IList<object> SelectedTags { get; set; } = new List<object>();
 
 	[ObservableProperty]
 	private IconData _icon;
@@ -139,10 +135,6 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			foreach (var tag in allTags)
 			{
 				tag.IsSelected = _project.Tags.Any(t => t.ID == tag.ID);
-				if (tag.IsSelected)
-				{
-					SelectedTags.Add(tag);
-				}
 			}
 			AllTags = new(allTags);
 		}
@@ -164,6 +156,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		OnPropertyChanged(nameof(HasCompletedTasks));
 	}
 
+
 	[RelayCommand]
 	private async Task Save()
 	{
@@ -181,11 +174,14 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_project.Icon = Icon.Icon ?? FluentUI.ribbon_24_regular;
 		await _projectRepository.SaveItemAsync(_project);
 
-		foreach (var tag in AllTags)
+		if (_project.IsNullOrNew())
 		{
-			if (tag.IsSelected)
+			foreach (var tag in AllTags)
 			{
-				await _tagRepository.SaveItemAsync(tag, _project.ID);
+				if (tag.IsSelected)
+				{
+					await _tagRepository.SaveItemAsync(tag, _project.ID);
+				}
 			}
 		}
 
@@ -240,7 +236,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		Shell.Current.GoToAsync($"task?id={task.ID}");
 
 	[RelayCommand]
-	internal async Task ToggleTag(Tag tag)
+	private async Task ToggleTag(Tag tag)
 	{
 		tag.IsSelected = !tag.IsSelected;
 
@@ -257,7 +253,6 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		}
 
 		AllTags = new(AllTags);
-		SemanticScreenReader.Announce($"{tag.Title} {(tag.IsSelected ? "selected" : "unselected")}");
 	}
 
 	[RelayCommand]
@@ -273,35 +268,5 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		Tasks = new(Tasks);
 		OnPropertyChanged(nameof(HasCompletedTasks));
 		await AppShell.DisplayToastAsync("All cleaned up!");
-	}
-
-	[RelayCommand]
-	private async Task SelectionChanged(object parameter)
-	{
-		if (parameter is IEnumerable<object> enumerableParameter)
-		{
-			var currentSelection = enumerableParameter.OfType<Tag>().ToList();
-			var previousSelection = AllTags.Where(t => t.IsSelected).ToList();
-
-			// Handle newly selected tags
-			foreach (var tag in currentSelection.Except(previousSelection))
-			{
-				tag.IsSelected = true;
-				if (!_project.IsNullOrNew())
-				{
-					await _tagRepository.SaveItemAsync(tag, _project.ID);
-				}
-			}
-
-			// Handle deselected tags
-			foreach (var tag in previousSelection.Except(currentSelection))
-			{
-				tag.IsSelected = false;
-				if (!_project.IsNullOrNew())
-				{
-					await _tagRepository.DeleteItemAsync(tag, _project.ID);
-				}
-			}
-		}
 	}
 }

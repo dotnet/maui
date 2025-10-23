@@ -35,9 +35,6 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 	[ObservableProperty]
 	private string _today = DateTime.Now.ToString("dddd, MMM d");
 
-	[ObservableProperty]
-	private Project? selectedProject;
-
 	public bool HasCompletedTasks
 		=> Tasks?.Any(t => t.IsCompleted) ?? false;
 

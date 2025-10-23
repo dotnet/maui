@@ -18,25 +18,14 @@ public static class MauiProgram
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
-//-:cnd:noEmit
 			.ConfigureMauiHandlers(handlers =>
 			{
-#if WINDOWS
-				Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView", (handler, view) =>
-				{
-					handler.PlatformView.SingleSelectionFollowsFocus = false;
-				});
-
-            	Microsoft.Maui.Handlers.ContentViewHandler.Mapper.AppendToMapping(nameof(Pages.Controls.CategoryChart), (handler, view) =>
-            	{
-	                if (view is Pages.Controls.CategoryChart && handler.PlatformView is ContentPanel contentPanel)
-                	{
-                    	contentPanel.IsTabStop = true;
-                	}
-            	});
+//-:cnd:noEmit
+#if IOS || MACCATALYST
+				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 #endif
-            })
 //+:cnd:noEmit
+			})
 #endif
 			.ConfigureFonts(fonts =>
 			{

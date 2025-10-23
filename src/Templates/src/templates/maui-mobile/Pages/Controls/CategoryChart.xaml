@@ -2,76 +2,49 @@
 <Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         xmlns:chart="clr-namespace:Syncfusion.Maui.Toolkit.Charts;assembly=Syncfusion.Maui.Toolkit"
-        xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
+        xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls" 
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
-        xmlns:models="clr-namespace:MauiApp._1.Models"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
-        x:DataType="pageModels:MainPageModel"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
-        Style="{StaticResource CardStyle}">
+        Style="{StaticResource CardStyle}"
+        x:DataType="pageModels:MainPageModel">
     <shimmer:SfShimmer
-        AutomationProperties.IsInAccessibleTree="False"
         BackgroundColor="Transparent"
-        VerticalOptions="Fill"
-        IsActive="{Binding IsBusy}">
+        VerticalOptions="FillAndExpand"
+        IsActive ="{Binding IsBusy}">
         <shimmer:SfShimmer.CustomView>
             <Grid>
-                <BoxView
+                <BoxView 
                     CornerRadius="12"
-                    VerticalOptions="Fill"
+                    VerticalOptions="FillAndExpand"
                     Style="{StaticResource ShimmerCustomViewStyle}"/>
             </Grid>
         </shimmer:SfShimmer.CustomView>
         <shimmer:SfShimmer.Content>
-            <chart:SfCircularChart x:Name="Chart"
-                    SemanticProperties.Description="Task Categories Chart">
-                <chart:SfCircularChart.Resources>
-                    <controls:ChartDataLabelConverter x:Key="ChartDataLabelConverter"/>
-                </chart:SfCircularChart.Resources>
-                <chart:DoughnutSeries 
+            <chart:SfCircularChart x:Name="Chart">
+                <chart:SfCircularChart.Legend>
+                    <controls:LegendExt Placement="Right">
+                        <chart:ChartLegend.LabelStyle>
+                            <chart:ChartLegendLabelStyle 
+                                TextColor="{AppThemeBinding 
+                                Light={StaticResource DarkOnLightBackground},
+                                Dark={StaticResource LightOnDarkBackground}}" 
+                                Margin="5" 
+                                FontSize="18" />
+                        </chart:ChartLegend.LabelStyle>
+                    </controls:LegendExt>
+                </chart:SfCircularChart.Legend>
+                <chart:RadialBarSeries 
                     ItemsSource="{Binding TodoCategoryData}"
                     PaletteBrushes="{Binding TodoCategoryColors}"
                     XBindingPath="Title"
-                    YBindingPath="Count"
+                    YBindingPath="Count" 
                     ShowDataLabels="True"
-                    EnableTooltip="False"
-                    x:Name="doughnutSeries"
-                    Radius="{OnIdiom 0.6, Phone=0.5}"
-                    InnerRadius="0.7">
-                    <chart:DoughnutSeries.LabelTemplate>
-                        <DataTemplate>
-                            <HorizontalStackLayout x:DataType="chart:ChartDataLabel">
-                                <Label Text="{Binding Item, Converter={StaticResource ChartDataLabelConverter}, ConverterParameter='title'}"
-                                        TextColor="{AppThemeBinding 
-                                    Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}"
-                                        FontSize="{OnIdiom 18, Phone=14}"/>
-                                <Label Text=": "
-                                        TextColor="{AppThemeBinding
-                                    Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}"
-                                        FontSize="{OnIdiom 18, Phone=14}"/>
-                                <Label Text="{Binding Item, Converter={StaticResource ChartDataLabelConverter}, ConverterParameter='count'}"
-                                        TextColor="{AppThemeBinding
-                                    Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}"
-                                        FontSize="{OnIdiom 18, Phone=14}"/>
-                            </HorizontalStackLayout>
-                        </DataTemplate>
-                    </chart:DoughnutSeries.LabelTemplate>
-
-                    <chart:DoughnutSeries.DataLabelSettings>
-                        <chart:CircularDataLabelSettings LabelPosition="Outside"
-                                SmartLabelAlignment="Shift">
-                            <chart:CircularDataLabelSettings.ConnectorLineSettings>
-                                <chart:ConnectorLineStyle ConnectorType="Line"
-                                        StrokeWidth="3"></chart:ConnectorLineStyle>
-                            </chart:CircularDataLabelSettings.ConnectorLineSettings>
-                        </chart:CircularDataLabelSettings>
-                    </chart:DoughnutSeries.DataLabelSettings>
-                </chart:DoughnutSeries>
+                    EnableTooltip="True" 
+                    TrackFill="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+                    CapStyle = "BothCurve"/>
             </chart:SfCircularChart>
         </shimmer:SfShimmer.Content>
     </shimmer:SfShimmer>

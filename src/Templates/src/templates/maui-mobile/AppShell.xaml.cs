@@ -14,9 +14,6 @@ public partial class AppShell : Shell
 		var currentTheme = Application.Current!.RequestedTheme;		
 		ThemeSegmentedControl.SelectedIndex = currentTheme == AppTheme.Light ? 0 : 1;
 #endif
-#if ANDROID || WINDOWS
-		SemanticProperties.SetDescription(ThemeSegmentedControl, "Theme selection");
-#endif
 	}
 #if (IncludeSampleContent)
 	public static async Task DisplaySnackbarAsync(string message)

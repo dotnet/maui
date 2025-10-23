@@ -13,35 +13,33 @@
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
-                x:Name="AppearingBehavior"
                 BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectList}, x:DataType=ContentPage}"
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
     <Grid>
-        <CollectionView ItemsSource="{Binding Projects}"
-            Margin="{StaticResource LayoutPadding}"
-            x:Name="ProjectsCollectionView"
-            SelectionMode="Single"
-            SelectedItem="{Binding SelectedProject}"
-            SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}"
-            SelectionChangedCommandParameter="{Binding SelectedProject}">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="7.5"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
+      <ScrollView>
+        <VerticalStackLayout 
+            BindableLayout.ItemsSource="{Binding Projects}" 
+            Margin="{StaticResource LayoutPadding}" 
+            Spacing="{StaticResource LayoutSpacing}">
+            <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
-                    <Border SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
+                    <Border>
                         <VerticalStackLayout Padding="10">
                             <Label Text="{Binding Name}" FontSize="24" />
                             <Label Text="{Binding Description}" />
                         </VerticalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}" CommandParameter="{Binding .}"/>
+                        </Border.GestureRecognizers>
                     </Border>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+      </ScrollView>
 
-        <controls:AddButton
-        Command="{Binding AddProjectCommand}" />
+        <controls:AddButton 
+            Command="{Binding AddProjectCommand}" />
     </Grid>
 </ContentPage>
