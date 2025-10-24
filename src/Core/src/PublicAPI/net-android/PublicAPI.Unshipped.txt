@@ -24,6 +24,7 @@ Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handl
 Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
 Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
 Microsoft.Maui.PlatformViewGroup
+override Microsoft.Maui.Handlers.ToolbarHandler.ConnectHandler(Google.Android.Material.AppBar.MaterialToolbar! platformView) -> void
 override Microsoft.Maui.PlatformViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformViewGroup.ThresholdClass.get -> nint
 override Microsoft.Maui.PlatformViewGroup.ThresholdType.get -> System.Type!
