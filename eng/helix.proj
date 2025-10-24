@@ -11,6 +11,10 @@
     <FailOnTestFailure>true</FailOnTestFailure>
   </PropertyGroup>
 
+  <PropertyGroup>
+     <HelixTargetQueues Condition="'$(HelixInternal)' == 'True'">Windows.10.Amd64;osx.15.arm64</HelixTargetQueues>
+  </PropertyGroup>
+
   <!-- Local build outside of Azure Pipeline -->
   <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
     <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">

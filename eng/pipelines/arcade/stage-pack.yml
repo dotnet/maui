@@ -73,12 +73,12 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - ${{ if parameters.runAsPublic }}:
+        - ${{ if not(parameters.enableMicrobuild) }}:
           - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if and(not(parameters.runAsPublic) , notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - ${{ if and(not(parameters.runAsPublic) , parameters.enableMicrobuild) }}:
           - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack, Sign
 

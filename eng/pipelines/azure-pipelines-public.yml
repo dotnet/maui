@@ -98,9 +98,12 @@ stages:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       helixPool: ${{ parameters.PackPlatformPublic }}
       runAsPublic: true
+      helixInternal: 'False'
     ${{ else }}:
       helixPool: ${{ parameters.PackPlatform }}
       runAsPublic: false
+      helixInternal: 'True'
+      HelixAccessToken: $(HelixApiAccessToken)
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
