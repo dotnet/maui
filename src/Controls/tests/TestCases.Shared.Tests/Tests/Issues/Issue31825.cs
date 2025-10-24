@@ -11,11 +11,11 @@ public class Issue31825 : _IssuesUITest
 	public override string Issue => "[iOS, macOS]CollectionView KeepLastItemInView not updating correctly when items are added";
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public async Task UpdateItemScrollModeDynamically()
+	public void UpdateItemScrollModeDynamically()
 	{
 		App.WaitForElement("ItemsUpdatingScrollModeButton");
 		App.Tap("ItemsUpdatingScrollModeButton");
-		await Task.Delay(2000); // Allow time for the CollectionView to update
+		App.Tap("AddItemButton");
 		App.WaitForElement("Gelada");
 	}
 }
