@@ -55,6 +55,7 @@
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>moderate</NuGetAuditLevel>
     <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
+    <UseLocalVisualTestUtils>true</UseLocalVisualTestUtils>
   </PropertyGroup>
 
   <PropertyGroup>
