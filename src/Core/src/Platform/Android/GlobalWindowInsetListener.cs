@@ -55,6 +55,12 @@ namespace Microsoft.Maui.Platform
             var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
             var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
+            if (v is MaterialToolbar)
+            {
+                v.SetPadding(displayCutout?.Left ?? 0, 0, displayCutout?.Right ?? 0, 0);
+                return WindowInsetsCompat.Consumed;
+            }
+
             // Handle special cases
             var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 
@@ -86,11 +92,14 @@ namespace Microsoft.Maui.Platform
             {
                 if (appBarLayoutContainsSomething)
                 {
-                    appBarLayout.SetPadding(leftInset, topInset, rightInset, 0);
+                    // Pad the AppBarLayout to avoid the navigation bar in landscape orientation and system UI in portrait.
+                    // In landscape, the navigation bar is on the left or right edge; in portrait, we account for the status bar and display cutouts.
+                    // Without this padding, the AppBarLayout would extend behind these system UI elements and be partially hidden or non-interactive.
+                    appBarLayout.SetPadding(systemBars?.Left ?? 0, topInset, systemBars?.Right ?? 0, 0);
                 }
                 else
                 {
-                    appBarLayout.SetPadding(leftInset, 0, rightInset, 0);
+                    appBarLayout.SetPadding(0, 0, 0, 0);
                 }
             }
 
@@ -302,7 +311,7 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <param name="context">The Android context to get the listener from</param>
     public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
     {
-        if (view.FindParent(
+        if (view is not MaterialToolbar && view.FindParent(
             (parent) =>
                 parent is NestedScrollView ||
                 parent is AppBarLayout ||
