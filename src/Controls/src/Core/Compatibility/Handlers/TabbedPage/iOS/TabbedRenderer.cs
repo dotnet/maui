@@ -94,8 +94,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateBarTextColor();
 			UpdateSelectedTabColors();
 			UpdateBarTranslucent();
-			UpdateFlowDirection();
 			UpdatePageSpecifics();
+			UpdateFlowDirection();
 		}
 
 		public UIViewController ViewController
