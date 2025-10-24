@@ -92,7 +92,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			TableView.AccessibilityElementsHidden = true;
 			TableView.Source = _source;
 #pragma warning restore CS0618 // Type or member is obsolete
 			ShellFlyoutContentManager.ViewDidLoad();
