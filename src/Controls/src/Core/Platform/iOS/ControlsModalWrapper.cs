@@ -202,6 +202,33 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateBackgroundColor();
 		}
 
+		static bool HasTransparentBackground(Brush? background)
+		{
+			if (Brush.IsNullOrEmpty(background))
+			{
+				return false;
+			}
+
+			if (background is SolidColorBrush solidColorBrush)
+			{
+				return solidColorBrush.Color?.Alpha < 1;
+			}
+
+			if (background is GradientBrush gradientBrush && gradientBrush.GradientStops is not null)
+			{
+				// Check if any gradient stop has transparency
+				foreach (var stop in gradientBrush.GradientStops)
+				{
+					if (stop.Color?.Alpha < 1)
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
 		void UpdateBackgroundColor()
 		{
 			if (_isDisposed)
