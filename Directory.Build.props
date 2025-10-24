@@ -52,10 +52,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NuGetAuditMode>all</NuGetAuditMode>
-    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
     <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
-    <UseLocalVisualTestUtils>true</UseLocalVisualTestUtils>
   </PropertyGroup>
 
   <PropertyGroup>
