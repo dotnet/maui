@@ -307,6 +307,12 @@ stages:
 
         - task: NuGetAuthenticate@1
 
+        # Populate internal runtime variables.
+        - template: /eng/common/templates/steps/enable-internal-sources.yml
+          parameters:
+            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+        - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+
         - task: AzureCLI@2
           displayName: Publish Using Darc
           inputs:
@@ -323,3 +329,5 @@ stages:
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
               -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
+              -runtimeSourceFeed https://ci.dot.net/Internal
+              -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
