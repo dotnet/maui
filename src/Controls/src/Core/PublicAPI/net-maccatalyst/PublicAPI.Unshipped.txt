@@ -1,80 +1,8 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
-*REMOVED*Microsoft.Maui.Controls.Accelerator
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
-*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter
-*REMOVED*Microsoft.Maui.Controls.AcceleratorTypeConverter.AcceleratorTypeConverter() -> void
-Microsoft.Maui.Controls.Border.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
-Microsoft.Maui.Controls.Border.SafeAreaEdges.set -> void
-Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
-Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Buttons.set -> void
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.ClickGestureRecognizer() -> void
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.Clicked -> System.EventHandler
-*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.get -> System.Windows.Input.ICommand
-*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.Command.set -> void
-*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameter.get -> object
-*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.CommandParameter.set -> void
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.get -> int
-*REMOVED*Microsoft.Maui.Controls.ClickGestureRecognizer.NumberOfClicksRequired.set -> void
-*REMOVED*~Microsoft.Maui.Controls.ClickGestureRecognizer.SendClicked(Microsoft.Maui.Controls.View sender, Microsoft.Maui.Controls.ButtonsMask buttons) -> void
-*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs
-*REMOVED*Microsoft.Maui.Controls.ClickedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-*REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.ClickedEventArgs(Microsoft.Maui.Controls.ButtonsMask buttons, object commandParameter) -> void
-*REMOVED*~Microsoft.Maui.Controls.ClickedEventArgs.Parameter.get -> object
-*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.INavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
-*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.NavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Platform.NavigationPageExtensions.UpdateIsNavigationBarTranslucent(this UIKit.UINavigationController platformView, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
-Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
-Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
-Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
-Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
-~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
-~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
-Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
-Microsoft.Maui.Controls.ContentPresenter.Padding.set -> void
-~Microsoft.Maui.Controls.ContentPresenter.RaiseChild(Microsoft.Maui.Controls.View view) -> void
-Microsoft.Maui.Controls.ContentPresenter.UpdateChildrenLayout() -> void
-Microsoft.Maui.Controls.ContentView.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
-Microsoft.Maui.Controls.ContentView.SafeAreaEdges.set -> void
-override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
-~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.CheckBox.Command.set -> void
-~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object
-~Microsoft.Maui.Controls.CheckBox.CommandParameter.set -> void
-*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
-Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
-*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
-Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime?
-*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime
-Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime?
-Microsoft.Maui.Controls.DatePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.DatePickerClosedEventArgs>
-*REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
-Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
-Microsoft.Maui.Controls.DatePicker.IsOpen.get -> bool
-Microsoft.Maui.Controls.DatePicker.IsOpen.set -> void
-*REMOVED*Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
-Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
-*REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
-Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
-Microsoft.Maui.Controls.DatePicker.Opened -> System.EventHandler<Microsoft.Maui.Controls.DatePickerOpenedEventArgs>
-Microsoft.Maui.Controls.DatePickerClosedEventArgs
-Microsoft.Maui.Controls.DatePickerClosedEventArgs.DatePickerClosedEventArgs() -> void
-Microsoft.Maui.Controls.DatePickerOpenedEventArgs
-Microsoft.Maui.Controls.DatePickerOpenedEventArgs.DatePickerOpenedEventArgs() -> void
-Microsoft.Maui.Controls.DisplayRotationStateTrigger
-Microsoft.Maui.Controls.DisplayRotationStateTrigger.DisplayRotationStateTrigger() -> void
-Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation.get -> Microsoft.Maui.Devices.DisplayRotation
-Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation.set -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.CanBecomeFocused.get -> bool
-override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.CanBecomeFirstResponder.get -> bool
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
 ~override Microsoft.Maui.Controls.ContentPresenter.ShouldInvalidateOnChildAdded(Microsoft.Maui.Controls.View child) -> bool
 ~override Microsoft.Maui.Controls.ContentPresenter.ShouldInvalidateOnChildRemoved(Microsoft.Maui.Controls.View child) -> bool
