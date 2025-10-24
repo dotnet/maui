@@ -13,8 +13,14 @@ public class Issue31121 : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageFlowDirectionUpdatesOnRuntimeChange()
 	{
+		Exception? exception = null;
+		App.WaitForElement("LeftToRightButton");
+		VerifyScreenshotOrSetException(ref exception, "TabbedPageFlowDirection_DefaultRightToLeftLayout");
+		App.Tap("LeftToRightButton");
+		VerifyScreenshotOrSetException(ref exception, "TabbedPageFlowDirection_AfterChangingToLeftToRight");
 		App.WaitForElement("RightToLeftButton");
 		App.Tap("RightToLeftButton");
-		VerifyScreenshot();
+		App.Tap("LeftToRightButton");
+		VerifyScreenshotOrSetException(ref exception, "TabbedPageFlowDirection_AfterChangingBackToLeftToRight");
 	}
 }

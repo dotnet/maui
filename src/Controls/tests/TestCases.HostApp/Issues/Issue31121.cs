@@ -21,6 +21,18 @@ public class Issue31121_FirstTab : ContentPage
 		Title = "FlowDirection Test";
 		BindingContext = vm;
 
+		var leftToRightButton = new Button
+		{
+			Text = "Set LeftToRight",
+			BackgroundColor = Colors.Blue,
+			TextColor = Colors.White
+		};
+		leftToRightButton.AutomationId = "LeftToRightButton";
+		leftToRightButton.Clicked += (s, e) =>
+		{
+			vm.FlowDirection = FlowDirection.LeftToRight;
+		};
+
 		var rightToLeftButton = new Button
 		{
 			Text = "Set RightToLeft",
@@ -52,6 +64,7 @@ public class Issue31121_FirstTab : ContentPage
 			{
 				instructionLabel,
 				currentDirectionLabel,
+				leftToRightButton,
 				rightToLeftButton
 			}
 		};
@@ -68,7 +81,7 @@ public class Issue31121_SecondTab : ContentPage
 
 public class Issue31121_ViewModel : BindableObject
 {
-	FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	FlowDirection _flowDirection = FlowDirection.RightToLeft;
 	public FlowDirection FlowDirection
 	{
 		get => _flowDirection;
