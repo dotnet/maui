@@ -2196,8 +2196,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								value.Width = (value.X - xSpace) + value.Width;
 								value.X = xSpace;
 							}
+
+							if (_child?.VirtualView is IView view)
+							{
+								var margin = view.Margin;
+								value = new RectangleF(value.X + (nfloat)margin.Left, value.Y + (nfloat)margin.Top, value.Width - (nfloat)(margin.Left + margin.Right), value.Height + (nfloat)(margin.Top + margin.Bottom));
+							}
 						}
-						;
 
 						value.Height = ToolbarHeight;
 					}
