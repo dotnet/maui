@@ -64,7 +64,7 @@ variables:
     value: true
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
     - name: PrivateBuild
-      value: false
+      value: true
     - name: _RunAsPublic
       value: false
     - name: _RunAsInternal
