@@ -18,35 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         {
 
             App.WaitForElement("Issue30957ToggleButton");
-
-            var buttonRectsInitial = new[] {
-                App.WaitForElement("Issue30957Button1").GetRect(),
-                App.WaitForElement("Issue30957Button2").GetRect(),
-                App.WaitForElement("Issue30957Button3").GetRect()
-            };
-
-            for (int i = 0; i < buttonRectsInitial.Length - 1; i++)
-            {
-                Assert.That(buttonRectsInitial[i+1].X, Is.GreaterThan(buttonRectsInitial[i].X), $"Button{i+2} should be right of Button{i+1} (initial)");
-                Assert.That(Math.Abs(buttonRectsInitial[i].Y - buttonRectsInitial[i+1].Y), Is.LessThan(10), $"Button{i+1} and Button{i+2} should be on the same row (initial)");
-            }
-
             App.Tap("Issue30957ToggleButton");
-
-            var buttonRectsFinal = new[] {
-                App.WaitForElement("Issue30957Button1").GetRect(),
-                App.WaitForElement("Issue30957Button2").GetRect(),
-                App.WaitForElement("Issue30957Button3").GetRect()
-            };
-
-            for (int i = 0; i < buttonRectsFinal.Length - 1; i++)
-            {
-                Assert.That(Math.Abs(buttonRectsFinal[i].Y - buttonRectsFinal[i+1].Y), Is.LessThan(10), $"Button{i+1} and Button{i+2} should remain on the same row after font change");
-                Assert.That(buttonRectsFinal[i+1].X, Is.GreaterThan(buttonRectsFinal[i].X), $"Button{i+2} should be right of Button{i+1} after font change");
-            }
-
-            var statusText = App.WaitForElement("Issue30957StatusLabel").GetText();
-            Assert.That(statusText, Does.Contain("Font toggled"), "Status label should indicate font was toggled");
+            App.WaitForElement("Issue30957Button1");
+            App.WaitForElement("Issue30957Button2");
+            App.WaitForElement("Issue30957Button3");
+            VerifyScreenshot();
         }
     }
 }
