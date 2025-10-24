@@ -58,7 +58,6 @@ steps:
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if eq(parameters.skipProvisioning, false) }}:
       skipProvisionator: false
-    skipInternalFeeds: true
 
 ##################################################
 #                Provision .NET                  #
