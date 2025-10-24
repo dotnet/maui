@@ -204,6 +204,8 @@ jobs:
             -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
             -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
+            -runtimeSourceFeed https://ci.dot.net/Internal
+            -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
 
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/core-templates/steps/publish-logs.yml
