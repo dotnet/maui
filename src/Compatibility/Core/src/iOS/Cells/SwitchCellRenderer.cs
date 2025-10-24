@@ -113,8 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			cell.TextLabel.Enabled = switchCell.IsEnabled;
 			cell.DetailTextLabel.Enabled = switchCell.IsEnabled;
 			var uiSwitch = cell.AccessoryView as UISwitch;
-			if (uiSwitch != null)
-				uiSwitch.Enabled = switchCell.IsEnabled;
+			uiSwitch?.Enabled = switchCell.IsEnabled;
 		}
 #pragma warning restore CA1416, CA1422
 

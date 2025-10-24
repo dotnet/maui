@@ -32,7 +32,7 @@ public partial class Maui29334 : ContentPage
 		public void OnIdiomGridLength([Values] bool useCompiledXaml)
 		{
 			var page = new Maui29334(useCompiledXaml);
-			
+
 		}
 	}
 }
