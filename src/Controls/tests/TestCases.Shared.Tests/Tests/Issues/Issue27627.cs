@@ -16,7 +16,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Border)]
 		public void VerifyBorderAutomationPeer()
 		{
+			// Check whether the parent Border is found or not
 			App.WaitForElement("TestBorder");
+
+			// Check whether the nested Border is found or not
+			App.WaitForElement("NestedBorder");
+
+			// Check whether the Label inside the nested Border is found or not
+			App.WaitForElement("TestLabel");
 		}
 	}
 }
