@@ -38,7 +38,7 @@ steps:
 #               Provisioning Feeds               #
 ##################################################
 
-- ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
+- ${{ if ne(parameters.skipInternalFeeds, 'true') }}:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
       legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
