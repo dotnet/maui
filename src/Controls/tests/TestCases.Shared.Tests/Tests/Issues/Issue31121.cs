@@ -22,5 +22,10 @@ public class Issue31121 : _IssuesUITest
 		App.Tap("RightToLeftButton");
 		App.Tap("LeftToRightButton");
 		VerifyScreenshotOrSetException(ref exception, "TabbedPageFlowDirection_AfterChangingBackToLeftToRight");
+
+		if (exception != null)
+		{
+			throw exception; 
+		}
 	}
 }
