@@ -91,6 +91,14 @@ parameters:
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
 
+- name: MacTestPlatform
+  type: object
+  default:
+    name: MAUI
+    vmImage: MAUI
+
+  
+
 stages:
 
 - template: /eng/pipelines/arcade/stage-helix-tests.yml@self
@@ -198,10 +206,7 @@ stages:
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacTestPlatform }}
       timeout: 120
       testCategory: Samples
 
@@ -233,10 +238,7 @@ stages:
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacTestPlatform }}
       timeout: 240
       testCategory: Build
 
@@ -250,10 +252,7 @@ stages:
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacTestPlatform }}
       timeout: 120
       testCategory: Blazor
 
@@ -267,27 +266,18 @@ stages:
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacTestPlatform }}
       timeout: 120
       testCategory: MultiProject
 
     # TODO: macOSTemplates and AOT template categories
 
     - name: mac_runandroid_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacTestPlatform }}
       timeout: 180
       testCategory: RunOnAndroid
 
     - name: mac_runios_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacTestPlatform }}
       timeout: 180
       testCategory: RunOniOS
