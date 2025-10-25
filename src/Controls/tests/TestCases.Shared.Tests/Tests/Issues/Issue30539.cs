@@ -17,31 +17,40 @@ public class Issue30539 : _IssuesUITest
 	public void TargetBlankLinkShouldTriggerNavigatingEvent()
 	{
 		App.WaitForElement("TestInstructions");
-		
-		// Wait for WebView to load
-		Thread.Sleep(3000);
-		
-		// The WebView content should be loaded with links
-		App.WaitForElement("TestWebView");
-		
-		// Tap on the link within the WebView
-		// Note: Since we can't directly tap on elements inside a WebView with Appium,
-		// we'll tap on the WebView area where the link should be
-		App.Tap("TestWebView");
-		
-		// Wait a bit for the navigation event to be processed
-		Thread.Sleep(1000);
-		
-		// Verify that the Navigating event was triggered
+
+		// Wait for the WebView to load and the JavaScript to trigger the click
+		// The page will automatically click the target="_blank" link once loaded
+		// We need to wait for the Navigating event to be triggered and the label to update
+
+		// Wait for the NavigatingLabel to change from "not triggered" to "triggered"
+		// Using a polling approach with retries instead of Thread.Sleep
+		var maxAttempts = 30; // 30 attempts * 500ms = 15 seconds max
 		var navigatingLabel = App.WaitForElement("NavigatingLabel");
+
+		for (int i = 0; i < maxAttempts; i++)
+		{
+			var text = navigatingLabel.GetText();
+			if (text.Contains("Navigating event triggered"))
+			{
+				break;
+			}
+
+			if (i < maxAttempts - 1)
+			{
+				Thread.Sleep(500);
+				navigatingLabel = App.WaitForElement("NavigatingLabel");
+			}
+		}
+
+		// Verify that the Navigating event was triggered
 		Assert.That(navigatingLabel.GetText(), Is.EqualTo("Navigating event triggered"));
-		
+
 		// Verify that the URL was captured
 		var urlLabel = App.WaitForElement("UrlLabel");
 		var urlText = urlLabel.GetText();
 		Assert.That(urlText, Does.Contain("URL:"));
 		Assert.That(urlText, Does.Contain("microsoft.com").Or.Contains("github.com"));
-		
+
 		// Verify that navigation can be cancelled
 		var cancelLabel = App.WaitForElement("CancelLabel");
 		Assert.That(cancelLabel.GetText(), Does.Contain("Can cancel: Yes"));

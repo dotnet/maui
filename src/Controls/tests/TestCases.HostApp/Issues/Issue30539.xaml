@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue30539">
     <VerticalStackLayout Spacing="10" Padding="10">
         <Label 
-            Text="Target _blank link should trigger Navigating event"
+            Text="target=&quot;_blank&quot; link should trigger Navigating event"
             AutomationId="TestInstructions"
             FontAttributes="Bold"
             Margin="0,0,0,10"/>
