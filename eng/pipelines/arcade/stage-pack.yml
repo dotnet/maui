@@ -32,7 +32,7 @@ stages:
       pool: ${{ parameters.pool }}
       enableMicrobuild: true
       enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
+      enablePublishBuildAssets: false
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}
