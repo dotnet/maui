@@ -97,6 +97,8 @@ extends:
             skipAndroidCreateAvds: true
             skipProvisioning: true
             skipXcode: true
+            base64Encode: true
+            outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
     - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/net10.0'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
       - template: /eng/pipelines/arcade/stage-api-scan.yml@self
