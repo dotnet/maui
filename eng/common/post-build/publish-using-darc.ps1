@@ -46,6 +46,16 @@ try {
     $optionalParams.Add("--skip-assets-publishing") | Out-Null
   }
 
+  if ("" -ne $runtimeSourceFeed) {
+    $optionalParams.Add("--runtime-source-feed") | Out-Null
+    $optionalParams.Add($runtimeSourceFeed) | Out-Null
+  }
+
+  if ("" -ne $runtimeSourceFeedKey) {
+    $optionalParams.Add("--runtime-source-feed-key") | Out-Null
+    $optionalParams.Add($runtimeSourceFeedKey) | Out-Null
+  }
+
   & $darc add-build-to-channel `
     --id $buildId `
     --publishing-infra-version $PublishingInfraVersion `
