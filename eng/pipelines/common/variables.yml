@@ -8,9 +8,9 @@ variables:
 - name: DOTNET_VERSION
   value: 9.0.100
 - name: REQUIRED_XCODE
-  value: 16.4.0
+  value: 16.4
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 16.4.0
+  value: 16.4
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Localization variables
