@@ -44,7 +44,7 @@ public partial class Issue30539 : ContentPage
 	{
 		// When the initial page loads, trigger a click on the target="_blank" link via JavaScript
 		// This simulates a user clicking on the link
-		if (e.Result == WebNavigationResult.Success && e.Url.Contains("about:blank") == false && !e.Url.Contains("microsoft.com"))
+		if (e.Result == WebNavigationResult.Success && e.Url.Contains("about:blank", StringComparison.Ordinal) == false && !e.Url.Contains("microsoft.com", StringComparison.Ordinal))
 		{
 			// Small delay to ensure the page is fully loaded
 			await Task.Delay(500);
