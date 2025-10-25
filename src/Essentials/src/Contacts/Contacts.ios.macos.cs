@@ -37,11 +37,8 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				})
 			};
 
-			if (picker.PresentationController != null)
-			{
-				picker.PresentationController.Delegate =
+			picker.PresentationController?.Delegate =
 					new UIPresentationControllerDelegate(() => source?.TrySetResult(null));
-			}
 
 			vc.PresentViewController(picker, true, null);
 

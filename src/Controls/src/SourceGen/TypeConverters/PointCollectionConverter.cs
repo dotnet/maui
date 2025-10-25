@@ -42,23 +42,23 @@ internal class PointCollectionConverter : ISGTypeConverter
 				}
 				else
 				{
-					context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+					context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 					return "default";
 				}
 			}
 
 			if (hasX)
 			{
-				context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+				context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 				return "default";
 			}
 
 			var pointCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!;
-			
+
 			return $"new {pointCollectionType.ToFQDisplayString()}(new[] {{ {string.Join(", ", pointCollection)} }})";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }
