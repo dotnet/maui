@@ -135,12 +135,13 @@ jobs:
         scriptLocation: scriptPath
         scriptPath: $(System.DefaultWorkingDirectory)/eng/common/sdk-task.ps1
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
+          -runtimeSourceFeed https://ci.dot.net/internal 
+          -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
           /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
           /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:OfficialBuildId=$(OfficialBuildId)
-          -runtimeSourceFeed https://ci.dot.net/internal 
-          -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
+
 
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
