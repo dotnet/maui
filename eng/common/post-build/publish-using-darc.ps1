@@ -8,8 +8,8 @@ param(
   [Parameter(Mandatory=$false)][string] $SymbolPublishingAdditionalParameters,
   [Parameter(Mandatory=$false)][string] $RequireDefaultChannels,
   [Parameter(Mandatory=$false)][string] $SkipAssetsPublishing,
-  [Parameter(Mandatory=$false)][string] $runtimeSourceFeed,
-  [Parameter(Mandatory=$false)][string] $runtimeSourceFeedKey
+  [string] $runtimeSourceFeed = '',
+  [string] $runtimeSourceFeedKey = ''
 )
 
 try {
@@ -44,16 +44,6 @@ try {
 
   if ("true" -eq $SkipAssetsPublishing) {
     $optionalParams.Add("--skip-assets-publishing") | Out-Null
-  }
-
-  if ("" -ne $runtimeSourceFeed) {
-    $optionalParams.Add("--runtime-source-feed") | Out-Null
-    $optionalParams.Add($runtimeSourceFeed) | Out-Null
-  }
-
-  if ("" -ne $runtimeSourceFeedKey) {
-    $optionalParams.Add("--runtime-source-feed-key") | Out-Null
-    $optionalParams.Add($runtimeSourceFeedKey) | Out-Null
   }
 
   & $darc add-build-to-channel `
