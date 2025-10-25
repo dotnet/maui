@@ -7,7 +7,7 @@ public partial class Issue30539 : ContentPage
 	public Issue30539()
 	{
 		InitializeComponent();
-		
+
 		webView.Navigating += WebView_Navigating;
 		webView.Navigated += WebView_Navigated;
 	}
@@ -16,22 +16,22 @@ public partial class Issue30539 : ContentPage
 	{
 		var navigatingLabel = this.FindByName<Label>("NavigatingLabel");
 		var urlLabel = this.FindByName<Label>("UrlLabel");
-		
+
 		if (navigatingLabel != null)
 		{
 			navigatingLabel.Text = "Navigating event triggered";
 			navigatingLabel.TextColor = Colors.Green;
 		}
-		
+
 		if (urlLabel != null)
 		{
 			urlLabel.Text = $"URL: {e.Url}";
 		}
-		
+
 		// Cancel the navigation to prevent opening external browser
 		// This tests that the developer can control the behavior
 		e.Cancel = true;
-		
+
 		var cancelLabel = this.FindByName<Label>("CancelLabel");
 		if (cancelLabel != null)
 		{
@@ -40,8 +40,17 @@ public partial class Issue30539 : ContentPage
 		}
 	}
 
-	private void WebView_Navigated(object? sender, WebNavigatedEventArgs e)
+	private async void WebView_Navigated(object? sender, WebNavigatedEventArgs e)
 	{
-		// This should not be called when we cancel the navigation
+		// When the initial page loads, trigger a click on the target="_blank" link via JavaScript
+		// This simulates a user clicking on the link
+		if (e.Result == WebNavigationResult.Success && e.Url.Contains("about:blank") == false && !e.Url.Contains("microsoft.com"))
+		{
+			// Small delay to ensure the page is fully loaded
+			await Task.Delay(500);
+
+			// Trigger a click on the first link
+			await webView.EvaluateJavaScriptAsync("document.getElementById('testLink').click();");
+		}
 	}
 }
