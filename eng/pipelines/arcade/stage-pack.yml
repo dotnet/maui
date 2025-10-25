@@ -37,7 +37,7 @@ stages:
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
+      publishAssetsImmediately: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
       templateContext:
