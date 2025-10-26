@@ -102,9 +102,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
 				var holder = _currentViewHolders[i];
-				if (holder.BindingAdapterPosition >= 0)
+				var position = holder.BindingAdapterPosition;
+				if (position >= 0 && !ItemsSource.IsHeader(position) && !ItemsSource.IsFooter(position))
 				{
-					var item = ItemsSource.GetItem(holder.BindingAdapterPosition);
+					var item = ItemsSource.GetItem(position);
 					bool shouldBeSelected = _selectedSet.Contains(item);
 
 					if (holder.IsSelected != shouldBeSelected)
