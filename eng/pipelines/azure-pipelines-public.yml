@@ -91,16 +91,28 @@ parameters:
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
 
+- name: WindowsPool
+  type: object
+  default:
+    internal:
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2022
+      os: windows
+    public:
+      name: NetCore-Public
+      image: 1es-windows-2022
+      os: windows
+
 stages:
 
 - template: /eng/pipelines/arcade/stage-helix-tests.yml@self
   parameters:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-      helixPool: ${{ parameters.PackPlatformPublic }}
+      helixPool: ${{ parameters.WindowsPool.public }}
       runAsPublic: true
       helixInternal: 'False'
     ${{ else }}:
-      helixPool: ${{ parameters.PackPlatform }}
+      helixPool: ${{ parameters.WindowsPool.internal }}
       runAsPublic: false
       helixInternal: 'True'
       HelixAccessToken: $(HelixApiAccessToken)
@@ -120,10 +132,10 @@ stages:
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-      pool: ${{ parameters.PackPlatformPublic }}
+      pool: ${{ parameters.WindowsPool.public }}
       runAsPublic: true
     ${{ else }}:
-      pool: ${{ parameters.PackPlatform }}
+      pool: ${{ parameters.WindowsPool.internal }}
       runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
