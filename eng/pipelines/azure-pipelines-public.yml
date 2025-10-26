@@ -43,19 +43,6 @@ variables:
 - template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
-- name: PackPlatform
-  type: object
-  default:
-    name: NetCore1ESPool-Internal
-    image: 1es-windows-2022
-    os: windows
-
-- name: PackPlatformPublic
-  type: object
-  default:
-    name: NetCore-Public
-    image: 1es-windows-2022
-    os: windows
 
 - name: BuildConfigurations
   type: object
@@ -178,10 +165,10 @@ stages:
     - name: win_unit_tests
       displayName: Windows Unit Tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.PackPlatformPublic }}
+        pool: ${{ parameters.WindowsPool.public }}
         runAsPublic: true
       ${{ else }}:
-        pool: ${{ parameters.PackPlatform }}
+        pool: ${{ parameters.WindowsPool.internal }}
         runAsPublic: false
       timeout: 90
       testOS: Windows
@@ -202,10 +189,10 @@ stages:
     jobMatrix:
     - name: win_sample_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.PackPlatformPublic }}
+        pool: ${{ parameters.WindowsPool.public }}
         runAsPublic: true
       ${{ else }}:
-        pool: ${{ parameters.PackPlatform }}
+        pool: ${{ parameters.WindowsPool.internal }}
         runAsPublic: false
       timeout: 120
       testCategory: Samples
@@ -219,10 +206,10 @@ stages:
 
     - name: win_wintemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.PackPlatformPublic }}
+        pool: ${{ parameters.WindowsPool.public }}
         runAsPublic: true
       ${{ else }}:
-        pool: ${{ parameters.PackPlatform }}
+        pool: ${{ parameters.WindowsPool.internal }}
         runAsPublic: false
       timeout: 120
       testCategory: WindowsTemplates
@@ -237,10 +224,10 @@ stages:
 
     - name: win_buildtemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.PackPlatformPublic }}
+        pool: ${{ parameters.WindowsPool.public }}
         runAsPublic: true
       ${{ else }}:
-        pool: ${{ parameters.PackPlatform }}
+        pool: ${{ parameters.WindowsPool.internal }}
         runAsPublic: false
       timeout: 120
       testCategory: Build
@@ -254,10 +241,10 @@ stages:
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.PackPlatformPublic }}
+        pool: ${{ parameters.WindowsPool.public }}
         runAsPublic: true
       ${{ else }}:
-        pool: ${{ parameters.PackPlatform }}
+        pool: ${{ parameters.WindowsPool.internal }}
         runAsPublic: false
       timeout: 120
       testCategory: Blazor
@@ -271,10 +258,10 @@ stages:
 
     - name: win_multitemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.PackPlatformPublic }}
+        pool: ${{ parameters.WindowsPool.public }}
         runAsPublic: true
       ${{ else }}:
-        pool: ${{ parameters.PackPlatform }}
+        pool: ${{ parameters.WindowsPool.internal }}
         runAsPublic: false
       timeout: 120
       testCategory: MultiProject
