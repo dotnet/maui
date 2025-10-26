@@ -144,7 +144,7 @@ internal class StrokeShapeConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.StrokeShapeConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.StrokeShapeConversionFailed);
 		return "default";
 	}
 }

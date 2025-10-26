@@ -198,7 +198,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			var contentPropertyName = type.GetContentPropertyName(Context);
 			foreach (var req in requiredPropAndFields)
 			{
-				XmlName propXmlName ;
+				XmlName propXmlName;
 				INode propNode;
 				if (req.Name == contentPropertyName && node.CollectionItems.Count == 1)
 				{
@@ -231,7 +231,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					en.TryProvideValue(Context);
 					propValue = Context.Variables[en].Name;
 				}
-				
+
 				requiredPropertiesAndFields.Add((req.Name, req, pType, propValue));
 				if (!node.SkipProperties.Contains(new XmlName("", req.Name)))
 					node.SkipProperties.Add(new XmlName("", req.Name));
@@ -282,7 +282,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					foreach (var (name, propOrField, propType, propValue) in requiredPropertiesAndFields)
 						Writer.WriteLine($"{name} = ({propType.ToFQDisplayString()}){propValue},");
 				}
-			}			
+			}
 			else
 				Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
 			Context.Variables[node] = new LocalVariable(type, variableName);

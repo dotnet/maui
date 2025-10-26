@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Issues
 #if IOS || MACCATALYST
 		async void OpenNewWindow()
 		{
-			
+
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
 			if (keyWindow?.WindowLevel == UIWindowLevel.Normal)
 				keyWindow.WindowLevel = -1;

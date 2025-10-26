@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		readonly Label _scrollInfoLabel = new Label();
 		readonly ItemsLayoutOrientation _orientation;
 
+		[RequiresUnreferencedCode("Calls Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleries.CarouselCodeGallery.GetReadOnlyInfo(CarouselView)")]
 		public CarouselCodeGallery(ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Horizontal)
 		{
 			//On<iOS>().SetLargeTitleDisplay(LargeTitleDisplayMode.Never);
