@@ -81,12 +81,12 @@ parameters:
 - name: WindowsPool
   type: object
   default:
-    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-      name: NetCore-Public
+    internal:
+      name: NetCore1ESPool-Internal
       image: 1es-windows-2022
       os: windows
-    ${{ else }}:
-      name: NetCore1ESPool-Internal
+    public:
+      name: NetCore-Public
       image: 1es-windows-2022
       os: windows
 
@@ -97,18 +97,18 @@ parameters:
     vmImage: $(HostedMacImage)
     os: macOS
 
-- name: IsPublicBuild
-  type: boolean
-  default: ${{ eq(variables['Build.DefinitionName'], 'maui-pr') }}
-
 stages:
 
 - template: /eng/pipelines/arcade/stage-helix-tests.yml@self
   parameters:
-    helixPool: ${{ parameters.WindowsPool }}
-    runAsPublic: ${{ parameters.IsPublicBuild }}
-    helixInternal: ${{ not(parameters.IsPublicBuild) }}
-    ${{ if not(parameters.IsPublicBuild) }}:
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      helixPool: ${{ parameters.WindowsPool.public }}
+      runAsPublic: true
+      helixInternal: 'False'
+    ${{ else }}:
+      helixPool: ${{ parameters.WindowsPool.internal }}
+      runAsPublic: false
+      helixInternal: 'True'
       HelixAccessToken: $(HelixApiAccessToken)
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
@@ -125,8 +125,12 @@ stages:
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    pool: ${{ parameters.WindowsPool }}
-    runAsPublic: ${{ parameters.IsPublicBuild }}
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      pool: ${{ parameters.WindowsPool.public }}
+      runAsPublic: true
+    ${{ else }}:
+      pool: ${{ parameters.WindowsPool.internal }}
+      runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
@@ -143,8 +147,12 @@ stages:
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
     buildConfigurations: ${{ parameters.BuildConfigurations }}
-    buildPlatforms: ${{ parameters.IsPublicBuild && parameters.BuildPlatformsPublic || parameters.BuildPlatforms }}
-    runAsPublic: ${{ parameters.IsPublicBuild }}
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      buildPlatforms: ${{ parameters.BuildPlatformsPublic }}
+      runAsPublic: true
+    ${{ else }}:
+      buildPlatforms: ${{ parameters.BuildPlatforms }}
+      runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
@@ -163,8 +171,12 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool: ${{ parameters.WindowsPool }}
-      runAsPublic: ${{ parameters.IsPublicBuild }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 90
       testOS: Windows
     - name: mac_unit_tests
@@ -180,8 +192,12 @@ stages:
     publishTaskPrefix: ''
     jobMatrix:
     - name: win_sample_tests
-      pool: ${{ parameters.WindowsPool }}
-      runAsPublic: ${{ parameters.IsPublicBuild }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
@@ -190,8 +206,12 @@ stages:
       testCategory: Samples
 
     - name: win_wintemplate_tests
-      pool: ${{ parameters.WindowsPool }}
-      runAsPublic: ${{ parameters.IsPublicBuild }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: WindowsTemplates
 
@@ -201,8 +221,12 @@ stages:
     #   testCategory: WindowsTemplates
 
     - name: win_buildtemplate_tests
-      pool: ${{ parameters.WindowsPool }}
-      runAsPublic: ${{ parameters.IsPublicBuild }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
@@ -211,8 +235,12 @@ stages:
       testCategory: Build
 
     - name: win_blazortemplate_tests
-      pool: ${{ parameters.WindowsPool }}
-      runAsPublic: ${{ parameters.IsPublicBuild }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
@@ -221,8 +249,12 @@ stages:
       testCategory: Blazor
 
     - name: win_multitemplate_tests
-      pool: ${{ parameters.WindowsPool }}
-      runAsPublic: ${{ parameters.IsPublicBuild }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
