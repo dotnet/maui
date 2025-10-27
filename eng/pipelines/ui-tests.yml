@@ -67,13 +67,13 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
   
   - name: androidPoolLinux
     type: object
     default:
-      name: NetCore-Public
+      name: $(1ESPTPool)
       vmImage: $(androidTestsVmImage)
       demands:
         - ImageOverride -equals 1ESPT-Ubuntu22.04
@@ -81,19 +81,19 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
   
   - name: windowsBuildPool
     type: object
     default:
-      name: MAUI-DNCENG
+      name: $(windowsVmPool)
       vmImage: $(windowsVmImage)
 
   - name: windowsPool
     type: object
     default:
-      name: MAUI-DNCENG
+      name: $(windowsTestsVmPool)
       vmImage: $(windowsTestsVmImage)
 
   - name: macosPool
