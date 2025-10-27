@@ -41,8 +41,8 @@ pr:
     - README.md
     - THIRD-PARTY-NOTICES.TXT
 
-# variables:
-#   - template: /eng/pipelines/common/variables.yml@self
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
 
 parameters:
 
