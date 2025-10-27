@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class=" Maui.Controls.Sample.VisualTransformControlMainPage"
+             Title="VisualTransformControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+              <ToolbarItem Text="Reset"
+                           Command="{Binding ResetCommand}"
+                           AutomationId="Reset"/>
+       </ContentPage.ToolbarItems>
+
+       <ContentView>
+              <Grid Padding="20">
+                     <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                     </Grid.RowDefinitions>
+
+                     <!-- Header -->
+                     <Label Grid.Row="0"
+                            Text="Transform Feature Matrix"
+                            FontSize="24"
+                            FontAttributes="Bold"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,20"/>
+
+                     <!-- Transform Demo Area -->
+                     <Border x:Name="TransformableFrame"
+                             Grid.Row="1"
+                             BackgroundColor="DeepSkyBlue"
+                             WidthRequest="120"
+                             HeightRequest="120"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             StrokeThickness="0"
+                             Stroke="Transparent"
+                             Rotation="{Binding Rotation}"
+                             RotationX="{Binding RotationX}"
+                             RotationY="{Binding RotationY}"
+                             Scale="{Binding Scale}"
+                             ScaleX="{Binding ScaleX}"
+                             ScaleY="{Binding ScaleY}"
+                             TranslationX="{Binding TranslationX}"
+                             TranslationY="{Binding TranslationY}"
+                             AnchorX="{Binding AnchorX}"
+                             AnchorY="{Binding AnchorY}"
+                             AutomationId="TransformableElement">
+                            <Border.StrokeShape>
+                                   <RoundRectangle CornerRadius="10"/>
+                            </Border.StrokeShape>
+                            <Border.Shadow>
+                                   <Shadow Brush="Black"
+                                           Offset="2,2"
+                                           Radius="5"
+                                           Opacity="0.3"/>
+                            </Border.Shadow>
+
+                            <StackLayout Orientation="Vertical"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center">
+                                   <Label Text="TRANSFORM"
+                                          FontSize="14"
+                                          FontAttributes="Bold"
+                                          TextColor="White"
+                                          HorizontalOptions="Center"/>
+                                   <Label Text="DEMO"
+                                          FontSize="12"
+                                          TextColor="White"
+                                          HorizontalOptions="Center"/>
+                            </StackLayout>
+                     </Border>
+
+                     <!-- Property Values Display -->
+                     <StackLayout Grid.Row="2"
+                                  Margin="0,20,0,0">
+                            <Label Text="Current Transform Values:"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   Margin="0,0,0,10"/>
+
+                            <Grid>
+                                   <Grid.RowDefinitions>
+                                          <RowDefinition Height="Auto"/>
+                                          <RowDefinition Height="Auto"/>
+                                          <RowDefinition Height="Auto"/>
+                                          <RowDefinition Height="Auto"/>
+                                          <RowDefinition Height="Auto"/>
+                                   </Grid.RowDefinitions>
+                                   <Grid.ColumnDefinitions>
+                                          <ColumnDefinition Width="*"/>
+                                          <ColumnDefinition Width="*"/>
+                                   </Grid.ColumnDefinitions>
+
+                                   <!-- Core Transform Properties -->
+                                   <StackLayout Grid.Row="0"
+                                                Grid.Column="0"
+                                                AutomationId="CoreTransformDisplay">
+                                          <Label Text="Core Transforms"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkBlue"/>
+                                          <Label Text="{Binding Rotation, StringFormat='Rotation: {0:F1}°'}"
+                                                 AutomationId="RotationValueLabel"/>
+                                          <Label Text="{Binding RotationX, StringFormat='RotationX: {0:F1}°'}"
+                                                 AutomationId="RotationXValueLabel"/>
+                                          <Label Text="{Binding RotationY, StringFormat='RotationY: {0:F1}°'}"
+                                                 AutomationId="RotationYValueLabel"/>
+                                          <Label Text="{Binding Scale, StringFormat='Scale: {0:F2}'}"
+                                                 AutomationId="ScaleValueLabel"/>
+                                   </StackLayout>
+
+                                   <StackLayout Grid.Row="0"
+                                                Grid.Column="1"
+                                                AutomationId="ScalePositionDisplay">
+                                          <Label Text="Scale &amp; Position"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkGreen"/>
+                                          <Label Text="{Binding ScaleX, StringFormat='ScaleX: {0:F2}'}"
+                                                 AutomationId="ScaleXValueLabel"/>
+                                          <Label Text="{Binding ScaleY, StringFormat='ScaleY: {0:F2}'}"
+                                                 AutomationId="ScaleYValueLabel"/>
+                                          <Label Text="{Binding TranslationX, StringFormat='TranslationX: {0:F1}'}"
+                                                 AutomationId="TranslationXValueLabel"/>
+                                          <Label Text="{Binding TranslationY, StringFormat='TranslationY: {0:F1}'}"
+                                                 AutomationId="TranslationYValueLabel"/>
+                                   </StackLayout>
+
+                                   <StackLayout Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                AutomationId="AnchorPointsDisplay">
+                                          <Label Text="Anchor Points"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkRed"/>
+                                          <StackLayout Orientation="Horizontal">
+                                                 <Label Text="{Binding AnchorX, StringFormat='AnchorX: {0:F2}'}"
+                                                        AutomationId="AnchorXValueLabel"/>
+                                                 <Label Text="  "/>
+                                                 <Label Text="{Binding AnchorY, StringFormat='AnchorY: {0:F2}'}"
+                                                        AutomationId="AnchorYValueLabel"/>
+                                          </StackLayout>
+                                   </StackLayout>
+
+                                   <StackLayout Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                AutomationId="CSSTransformDisplay">
+                                          <Label Text="CSS Transform String"
+                                                 FontAttributes="Bold"
+                                                 TextColor="Purple"/>
+                                          <Label Text="{Binding Transform, StringFormat='Transform: {0}'}"
+                                                 LineBreakMode="WordWrap"
+                                                 AutomationId="CSSTransformValueLabel"/>
+                                   </StackLayout>
+                            </Grid>
+                     </StackLayout>
+              </Grid>
+       </ContentView>
+</ContentPage>
