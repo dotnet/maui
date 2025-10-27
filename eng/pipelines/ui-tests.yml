@@ -77,7 +77,7 @@ parameters:
   - name: androidPoolLinux
     type: object
     default:
-      name: $(1ESPTPool)
+      name: NetCore-Public
       vmImage: $(androidTestsVmImage)
       demands:
         - ImageOverride -equals 1ESPT-Ubuntu22.04
@@ -95,13 +95,13 @@ parameters:
   - name: windowsBuildPool
     type: object
     default:
-      name: $(windowsVmPool)
+      name: MAUI-DNCENG
       vmImage: $(windowsVmImage)
 
   - name: windowsPool
     type: object
     default:
-      name: $(windowsTestsVmPool)
+      name: MAUI-DNCENG
       vmImage: $(windowsTestsVmImage)
 
   - name: macosPool
