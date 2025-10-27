@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			_handlerRef = new WeakReference<IMapHandler>(handler);
 			OverlayRenderer = GetViewForOverlayDelegate;
+			// Assign custom annotation view delegate to enable gesture recognition on annotation callouts.
 			base.GetViewForAnnotation = GetViewForAnnotation;
 		}
 
