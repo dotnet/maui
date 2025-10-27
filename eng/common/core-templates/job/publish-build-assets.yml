@@ -118,14 +118,14 @@ jobs:
           condition: ${{ parameters.condition }}
           continueOnError: ${{ parameters.continueOnError }}
 
+    - task: NuGetAuthenticate@1
+
     # Populate internal runtime variables.
     - template: /eng/common/templates/steps/enable-internal-sources.yml
       parameters:
         legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
     
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-
-    - task: NuGetAuthenticate@1
 
     - task: AzureCLI@2
       displayName: Publish Build Assets
@@ -135,11 +135,13 @@ jobs:
         scriptLocation: scriptPath
         scriptPath: $(System.DefaultWorkingDirectory)/eng/common/sdk-task.ps1
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
+          -runtimeSourceFeed https://ci.dot.net/internal 
+          -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
           /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
           /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:OfficialBuildId=$(OfficialBuildId)
-          -runtimeSourceFeed https://ci.dot.net/internal -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
+
 
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
@@ -204,6 +206,8 @@ jobs:
             -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
             -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
+            -runtimeSourceFeed https://ci.dot.net/internal
+            -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
 
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/core-templates/steps/publish-logs.yml
