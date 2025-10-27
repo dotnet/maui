@@ -198,6 +198,8 @@ Task("uitests-apphost")
 
         var properties = new Dictionary<string, string>();
 
+        properties["RuntimeIdentifiers"] = "maccatalyst-x64;maccatalyst-arm64";
+
         if(useNuget)
         {
             properties = new Dictionary<string, string> {
