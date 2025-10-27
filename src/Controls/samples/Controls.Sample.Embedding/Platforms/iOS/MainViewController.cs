@@ -86,7 +86,6 @@ public class MainViewController : UIViewController
 		var windowIcon = UIImage.GetSystemImage("macwindow.badge.plus") ?? throw new InvalidOperationException("Unable to load system image 'macwindow.badge.plus'");
 
 		var addNewWindowButton = new UIBarButtonItem(
-			UIImage.GetSystemImage("macwindow.badge.plus"),
 			windowIcon,
 			UIBarButtonItemStyle.Plain,
 			(sender, e) => RequestSession());
