@@ -9,6 +9,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
     public class Issue13123 : _IssuesUITest
     {
+        const int InfoWindowOffsetFromCenter = 30;
+        
         public Issue13123(TestDevice testDevice) : base(testDevice)
         {
         }
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             var rect = mapElement.GetRect();
 #if IOS
             var centerX = rect.X + rect.Width / 2;
-            var infoWindowY = rect.Y + rect.Height / 2 - 30;
+            var infoWindowY = rect.Y + rect.Height / 2 - InfoWindowOffsetFromCenter;
              App.TapCoordinates(centerX, infoWindowY);
 #elif MACCATALYST
             var centerX = rect.X + rect.Width / 2 + 20;
