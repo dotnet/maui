@@ -8,8 +8,8 @@ param(
   [Parameter(Mandatory=$false)][string] $SymbolPublishingAdditionalParameters,
   [Parameter(Mandatory=$false)][string] $RequireDefaultChannels,
   [Parameter(Mandatory=$false)][string] $SkipAssetsPublishing,
-  [string] $runtimeSourceFeed = '',
-  [string] $runtimeSourceFeedKey = ''
+  [Parameter(Mandatory=$false)][string] $runtimeSourceFeed,
+  [Parameter(Mandatory=$false)][string] $runtimeSourceFeedKey
 )
 
 try {
