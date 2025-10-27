@@ -330,5 +330,5 @@ stages:
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
               -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
-              -runtimeSourceFeed https://ci.dot.net/Internal
+              -runtimeSourceFeed https://ci.dot.net/internal
               -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
