@@ -41,10 +41,8 @@ pr:
     - README.md
     - THIRD-PARTY-NOTICES.TXT
 
-variables:
-  - template: /eng/pipelines/common/variables.yml@self
-  - name: AgentPoolAccessToken
-    value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
+# variables:
+#   - template: /eng/pipelines/common/variables.yml@self
 
 parameters:
 
