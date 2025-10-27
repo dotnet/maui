@@ -100,13 +100,14 @@ steps:
   displayName: 'Add .NET to PATH'
 
 # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
-# - task: ScreenResolutionUtility@1
-#   condition: eq('${{ parameters.platform }}' , 'windows')
-#   inputs:
-#     displaySettings: 'specific'
-#     width: '1920'
-#     height: '1080'
-#   displayName: "Set screen resolution"
+- ${{ if ne(variables['Build.DefinitionName'], 'maui-pr-uitests') }}:
+  - task: ScreenResolutionUtility@1
+    condition: eq('${{ parameters.platform }}' , 'windows')
+    inputs:
+      displaySettings: 'specific'
+      width: '1920'
+      height: '1080'
+    displayName: "Set screen resolution"
 
 - task: UseNode@1
   inputs:
