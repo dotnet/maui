@@ -46,8 +46,10 @@ public class MainViewController : UIViewController
 		// create the view and (maybe) the window
 		var window = ParentViewController?.View?.Window;
 		if (window is null)
+		{
 			throw new InvalidOperationException("Unable to get window from parent view controller");
-			
+		}
+
 		(_mauiView, _nativeView) = _scenario.Embed(window);
 
 		// add the new view to the UI
@@ -80,10 +82,9 @@ public class MainViewController : UIViewController
 
 	private void AddNavBarButtons()
 	{
-		var windowIcon = UIImage.GetSystemImage("macwindow.badge.plus");
-		if (windowIcon is null)
-			throw new InvalidOperationException("Unable to load system image 'macwindow.badge.plus'");
-			
+		var windowIcon = UIImage.GetSystemImage("macwindow.badge.plus") ?? throw new InvalidOperationException("Unable to load system image 'macwindow.badge.plus'");
+
+
 		var addNewWindowButton = new UIBarButtonItem(
 			windowIcon,
 			UIBarButtonItemStyle.Plain,
