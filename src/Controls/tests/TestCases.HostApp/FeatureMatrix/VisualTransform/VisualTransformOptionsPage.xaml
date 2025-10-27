@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualTransformOptionsPage"
+             Title="VisualTransformOptionsPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+              <ToolbarItem Text="Reset"
+                           Command="{Binding ResetCommand}"
+                           AutomationId="Reset"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid Padding="10"
+             RowSpacing="5"
+             ColumnSpacing="10">
+              <Grid.RowDefinitions>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <!-- Core Transform Properties -->
+              <Label Grid.Row="0"
+                     Grid.ColumnSpan="4"
+                     Text="Transform Properties"
+                     FontSize="18"
+                     FontAttributes="Bold"
+                     HorizontalOptions="Center"
+                     TextColor="DarkBlue"/>
+
+              <!-- Row 1: Rotation Properties -->
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0"
+                           Spacing="2">
+                     <Label Text="Rotation (Z)"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkBlue"/>
+                     <Entry Text="{Binding Rotation, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="RotationEntry"/>
+                     <Label Text="degrees"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                           Spacing="2">
+                     <Label Text="RotationX"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkBlue"/>
+                     <Entry Text="{Binding RotationX, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="RotationXEntry"/>
+                     <Label Text="degrees"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2"
+                           Spacing="2">
+                     <Label Text="RotationY"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkBlue"/>
+                     <Entry Text="{Binding RotationY, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="RotationYEntry"/>
+                     <Label Text="degrees"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="1"
+                           Grid.Column="3"
+                           Spacing="2">
+                     <Label Text="Scale"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkBlue"/>
+                     <Entry Text="{Binding Scale, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="ScaleEntry"/>
+                     <Label Text="factor"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <!-- Row 2: Scale Properties -->
+              <StackLayout Grid.Row="2"
+                           Grid.Column="0"
+                           Spacing="2">
+                     <Label Text="ScaleX"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkGreen"/>
+                     <Entry Text="{Binding ScaleX, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="ScaleXEntry"/>
+                     <Label Text="factor"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="2"
+                           Grid.Column="1"
+                           Spacing="2">
+                     <Label Text="ScaleY"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkGreen"/>
+                     <Entry Text="{Binding ScaleY, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="ScaleYEntry"/>
+                     <Label Text="factor"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="2"
+                           Grid.Column="2"
+                           Spacing="2">
+                     <Label Text="TranslationX"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkOrange"/>
+                     <Entry Text="{Binding TranslationX, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="TranslationXEntry"/>
+                     <Label Text="pixels"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="2"
+                           Grid.Column="3"
+                           Spacing="2">
+                     <Label Text="TranslationY"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkOrange"/>
+                     <Entry Text="{Binding TranslationY, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            AutomationId="TranslationYEntry"/>
+                     <Label Text="pixels"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <!-- Row 3: Anchor Properties -->
+              <StackLayout Grid.Row="3"
+                           Grid.Column="0"
+                           Spacing="2">
+                     <Label x:Name="AnchorXLabel"
+                            Text="AnchorX: 0.00"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkRed"/>
+                     <Entry x:Name="AnchorXEntry"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            Text="0"
+                            TextChanged="OnAnchorXChanged"
+                            AutomationId="AnchorXEntry"/>
+                     <Label Text="0.0-1.0"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <StackLayout Grid.Row="3"
+                           Grid.Column="1"
+                           Spacing="2">
+                     <Label x:Name="AnchorYLabel"
+                            Text="AnchorY: 0.00"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="DarkRed"/>
+                     <Entry x:Name="AnchorYEntry"
+                            Keyboard="Numeric"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"
+                            Text="0"
+                            TextChanged="OnAnchorYChanged"
+                            AutomationId="AnchorYEntry"/>
+                     <Label Text="0.0-1.0"
+                            FontSize="10"
+                            HorizontalOptions="Center"/>
+              </StackLayout>
+
+              <!-- CSS Transform String -->
+              <StackLayout Grid.Row="3"
+                           Grid.Column="2"
+                           Grid.ColumnSpan="2"
+                           Spacing="2">
+                     <Label Text="CSS Transform"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="Purple"/>
+                     <Entry Text="{Binding Transform, Mode=TwoWay}"
+                            Placeholder="CSS transform string"
+                            FontSize="12"
+                            AutomationId="CSSTransformEntry"/>
+              </StackLayout>
+
+              <!-- Quick Presets Section -->
+              <Label Grid.Row="4"
+                     Grid.ColumnSpan="4"
+                     Text="Quick Presets"
+                     FontSize="16"
+                     FontAttributes="Bold"
+                     HorizontalOptions="Center"
+                     TextColor="Gray"
+                     Margin="0,10,0,5"/>
+
+              <!-- Row 5: Preset Buttons Row 1 -->
+              <Button Grid.Row="5"
+                      Grid.Column="0"
+                      Text="45° Rotate"
+                      Clicked="Preset45Rotate_Clicked"
+                      FontSize="11"
+                      Padding="5"
+                      AutomationId="Preset45RotateButton"/>
+
+              <Button Grid.Row="5"
+                      Grid.Column="1"
+                      Text="2x Scale"
+                      Clicked="Preset2xScale_Clicked"
+                      FontSize="11"
+                      Padding="5"
+                      AutomationId="Preset2xScaleButton"/>
+
+              <Button Grid.Row="5"
+                      Grid.Column="2"
+                      Text="Flip X"
+                      Clicked="PresetFlipX_Clicked"
+                      FontSize="11"
+                      Padding="5"
+                      AutomationId="PresetFlipXButton"/>
+
+              <Button Grid.Row="5"
+                      Grid.Column="3"
+                      Text="Skew Demo"
+                      Clicked="PresetSkew_Clicked"
+                      FontSize="11"
+                      Padding="5"
+                      AutomationId="PresetSkewButton"/>
+
+              <!-- Row 6: Preset Buttons Row 2 -->
+              <Button Grid.Row="6"
+                      Grid.Column="0"
+                      Text="3D Cube"
+                      Clicked="Preset3DCube_Clicked"
+                      FontSize="11"
+                      Padding="5"
+                      AutomationId="Preset3DCubeButton"/>
+
+              <Button Grid.Row="6"
+                      Grid.Column="1"
+                      Text="Reset All"
+                      Command="{Binding ResetCommand}"
+                      FontSize="11"
+                      Padding="5"
+                      AutomationId="PresetResetAllButton"/>
+
+              <!-- Empty cells for better spacing -->
+              <BoxView Grid.Row="6"
+                       Grid.Column="2"
+                       BackgroundColor="Transparent"/>
+              <BoxView Grid.Row="6"
+                       Grid.Column="3"
+                       BackgroundColor="Transparent"/>
+
+       </Grid>
+</ContentPage>
