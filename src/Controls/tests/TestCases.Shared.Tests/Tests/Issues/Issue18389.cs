@@ -20,5 +20,16 @@ public class Issue18389 : _IssuesUITest
 		App.Tap("Issue18389_ScrollToBtn");
 
 		App.WaitForElement("Item 20");
+
+		App.WaitForElement("Issue18389_ResetBtn");
+		App.Tap("Issue18389_ResetBtn");
+
+		App.WaitForElement("Item 1");
+
+		App.WaitForElement("Issue18389_RemoveHeaderBtn");
+		App.Tap("Issue18389_RemoveHeaderBtn");
+
+		App.Tap("Issue18389_ScrollToBtn");
+		App.WaitForElement("Item 20");
 	}
 }

@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue18389 : ContentPage
 {
 	ObservableCollection<string> _items;
-	CollectionView _collectionView;
+	CollectionView2 _collectionView;
 	public Issue18389()
 	{
 		GenerateItems();
@@ -17,6 +17,8 @@ public class Issue18389 : ContentPage
 			RowSpacing = 10,
 			RowDefinitions =
 			{
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Auto },
 				new RowDefinition { Height = GridLength.Auto },
 				new RowDefinition { Height = GridLength.Star }
 			}
@@ -29,9 +31,25 @@ public class Issue18389 : ContentPage
 		};
 		scrollToIndexButton.Clicked += ScrollToLastItem;
 
-		mainGrid.Add(scrollToIndexButton, 0, 0);
+		Button removeHeaderButton = new Button
+		{
+			AutomationId = "Issue18389_RemoveHeaderBtn",
+			Text = "Remove Header"
+		};
+		removeHeaderButton.Clicked += RemoveHeader;
 
-		_collectionView = new CollectionView
+		Button resetCollectionViewButton = new Button
+		{
+			AutomationId = "Issue18389_ResetBtn",
+			Text = "Reset CollectionView to 0,0"
+		};
+		resetCollectionViewButton.Clicked += ResetCollectionView;
+
+		mainGrid.Add(scrollToIndexButton, 0, 0);
+		mainGrid.Add(resetCollectionViewButton, 0, 1);
+		mainGrid.Add(removeHeaderButton, 0, 2);
+
+		_collectionView = new CollectionView2
 		{
 			ItemsSource = _items,
 			ItemTemplate = new DataTemplate(() =>
@@ -63,7 +81,7 @@ public class Issue18389 : ContentPage
 			},
 		};
 
-		mainGrid.Add(_collectionView, 0, 1);
+		mainGrid.Add(_collectionView, 0, 3);
 
 		Content = mainGrid;
 	}
@@ -80,6 +98,16 @@ public class Issue18389 : ContentPage
 
 	void ScrollToLastItem(object sender, EventArgs e)
 	{
-		_collectionView.ScrollTo(_items.Count - 1);
+		_collectionView.ScrollTo(_items.Count - 1, -1, ScrollToPosition.End);
+	}
+
+	void RemoveHeader(object sender, EventArgs e)
+	{
+		_collectionView.Header = null;
+	}
+
+	void ResetCollectionView(object sender, EventArgs e)
+	{
+		_collectionView.ScrollTo(0);
 	}
 }
