@@ -67,11 +67,8 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+      name: MAUI
+      vmImage: MAUI
   
   - name: androidPoolLinux
     type: object
@@ -84,11 +81,8 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+      name: MAUI
+      vmImage: MAUI
   
   - name: windowsBuildPool
     type: object
