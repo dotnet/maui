@@ -550,9 +550,9 @@ namespace Microsoft.Maui.Controls
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
-					await OnPopAsync(animate ?? false);
+					await OnPopAsync(animate ?? true);
 				else
-					await OnPopToRootAsync(animate ?? false);
+					await OnPopToRootAsync(animate ?? true);
 
 				return;
 			}
