@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2
 	{
-		private int _currentSpan = -1;
+		int _currentSpan = -1;
 
 		public CollectionViewHandler2() : base(Mapper)
 		{
