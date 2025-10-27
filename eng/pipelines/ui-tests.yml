@@ -67,8 +67,8 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI
+      name: Azure Pipelines
+      vmImage: macOS-14
   
   - name: androidPoolLinux
     type: object
