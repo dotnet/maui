@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, RouteFactory> s_routes = new(StringComparer.Ordinal);
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
+		readonly static HashSet<string> routeSet = new HashSet<string>();
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
@@ -233,6 +234,13 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='SetRoute']/Docs/*" />
 		public static void SetRoute(Element obj, string value)
 		{
+			if (!string.IsNullOrEmpty(value) && IsUserDefined(value))
+			{
+				if (!routeSet.Add(value))
+				{
+					throw new ArgumentException($"Duplicated Route: \"{value}\" ");
+				}
+			}
 			obj.SetValue(RouteProperty, value);
 		}
 

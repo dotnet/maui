@@ -1224,30 +1224,6 @@ namespace Microsoft.Maui.Controls
 			ShellController.AppearanceChanged(CurrentPage, false);
 		}
 
-		void ValidateRoutesInShell()
-		{
-			HashSet<string> routes = new HashSet<string>();
-
-			var flyoutItems = FlyoutItems;
-			foreach (var flyoutItem in flyoutItems)
-			{
-				if (flyoutItem is IEnumerable enumerableItem)
-				{
-					foreach (var innerItem in enumerableItem)
-					{
-						if (innerItem is ShellItem shellItem && shellItem.CurrentItem != null)
-						{
-							var route = shellItem.CurrentItem.Route;
-							if (!string.IsNullOrEmpty(route) && !routes.Add(route))
-							{
-								throw new InvalidOperationException($"Duplicate route detected: {route}");
-							}
-						}
-					}
-				}
-			}
-		}
-
 		void Initialize()
 		{
 			if (CurrentItem != null)
@@ -1550,11 +1526,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		internal void SendFlyoutItemsChanged()
-		{
-			_flyoutManager.CheckIfFlyoutItemsChanged();
-			ValidateRoutesInShell();
-		}
+		internal void SendFlyoutItemsChanged() => _flyoutManager.CheckIfFlyoutItemsChanged();
 
 		public IEnumerable FlyoutItems => _flyoutManager.FlyoutItems;
 
