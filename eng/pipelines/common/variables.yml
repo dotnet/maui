@@ -59,7 +59,8 @@ variables:
 # Variable groups required for all builds
 - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui'),  ne(variables['Build.DefinitionName'], 'maui-pr-devicetests')) }}:
   - group: MAUI # This is the main MAUI variable group that contains secret for the apple certificate
-  - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr-uitests')) }}:
+  
+  - ${{ if ne(variables['Build.DefinitionName'], 'maui-pr-uitests') }}:
     - group: maui-provisionator # This is just needed for the provisionator
 
 
