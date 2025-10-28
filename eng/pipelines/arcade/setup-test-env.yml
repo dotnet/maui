@@ -37,7 +37,7 @@ steps:
     xcrun xcode-select --print-path
     echo
     echo selecting latest xcode...
-    sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+    sudo xcode-select -s /Applications/Xcode_$(XCODE).app
     xcrun xcode-select --print-path
     xcodebuild -version
     sudo xcodebuild -license accept

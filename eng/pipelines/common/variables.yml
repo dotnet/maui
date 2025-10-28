@@ -7,8 +7,10 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 9.0.100
-- name: REQUIRED_XCODE
+- name: XCODE
   value: 16.4
+- name: REQUIRED_XCODE
+  value: 16.4.0
 - name: DEVICETESTS_REQUIRED_XCODE
   value: 16.4.0
 - name: POWERSHELL_VERSION
