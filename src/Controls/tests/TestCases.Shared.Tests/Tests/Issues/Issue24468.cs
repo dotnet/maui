@@ -15,14 +15,18 @@ public class Issue24468 : _IssuesUITest
     [Category(UITestCategories.Navigation)]
     public void FlyoutPageToolbarButtonUpdatesOnOrientationChange()
     {
+        App.SetOrientationLandscape();
         App.WaitForElement("ContentPage");
 
         try
         {
-            App.SetOrientationLandscape();
-
-            var text = App.FindElement("StatusLabel").GetText();
-            Assert.That(text, Contains.Substring("ShouldShowToolbarButton is called"));
+            App.WaitForElement("EventLabel");
+            var eventText = App.FindElement("EventLabel").GetText();
+            Assert.That(eventText, Is.EqualTo("ShouldShowToolbarButton called"));
+            
+            var callCount = int.Parse(App.FindElement("CountLabel").GetText() ?? "0");
+            Assert.That(callCount, Is.GreaterThan(1).And.LessThan(5), 
+                $"Expected call count between 2-4, but got {callCount}. Method should not be called excessively.");
         }
         finally
         {

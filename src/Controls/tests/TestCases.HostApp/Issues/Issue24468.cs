@@ -4,17 +4,24 @@ namespace Maui.Controls.Sample.Issues;
     PlatformAffected.Android)]
 public class Issue24468 : TestFlyoutPage
 {
-    private Label _statusLabel;
+    private Label _eventLabel;
+    private Label _countLabel;
     private int _callCount = 0;
 
     protected override void Init()
     {
         Title = "Issue 24468";
 
-        _statusLabel = new Label 
+        _eventLabel = new Label 
         { 
             Text = "ShouldShowToolbarButton is not called",
-            AutomationId = "StatusLabel"
+            AutomationId = "EventLabel"
+        };
+
+        _countLabel = new Label 
+        { 
+            Text = "0",
+            AutomationId = "CountLabel"
         };
 
         Flyout = new ContentPage
@@ -31,7 +38,8 @@ public class Issue24468 : TestFlyoutPage
                 Children =
                 {
                     new Label { Text = "Rotate device to test toolbar button updates" },
-                    _statusLabel
+                    _eventLabel,
+                    _countLabel
                 }
             }, 
             AutomationId = "ContentPage"
@@ -47,7 +55,8 @@ public class Issue24468 : TestFlyoutPage
         
         if (_callCount > 1)
         {
-            _statusLabel.Text = "ShouldShowToolbarButton is called";
+            _eventLabel.Text = "ShouldShowToolbarButton called";
+            _countLabel.Text = _callCount.ToString();
         }
         
         return shouldShow;
