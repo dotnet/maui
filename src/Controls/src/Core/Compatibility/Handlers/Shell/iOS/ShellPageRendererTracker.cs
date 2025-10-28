@@ -732,7 +732,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SearchHandler.SetValue(SearchHandler.QueryProperty, sc.SearchBar.Text);
 			});
-
+			searchBar.OnEditingStopped += OnEditingCompleted;
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
@@ -767,6 +767,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateAutomationId();
 		}
 
+		void OnEditingCompleted(object sender, EventArgs e)
+		{
+			_searchController.Active = false;
+		}
+
 		void BookmarkButtonClicked(object sender, EventArgs e)
 		{
 			((ISearchHandlerController)SearchHandler).ClearPlaceholderClicked();
@@ -785,6 +790,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				NavigationItem.TitleView = null;
 			}
 
+			if (_searchController?.SearchBar is not null)
+			{
+				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
+			}
 			_searchController.SetSearchResultsUpdater(null);
 			_searchController.Dispose();
 			_searchController = null;
@@ -798,6 +807,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SearchButtonClicked(object sender, EventArgs e)
 		{
+			_searchController.Active = false;
 			((ISearchHandlerController)SearchHandler).QueryConfirmed();
 		}
 
@@ -917,6 +927,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
 					tvc.Disconnect();
+			}
+
+			if (_searchController?.SearchBar is not null)
+			{
+				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
 			}
 
 			_context = null;
