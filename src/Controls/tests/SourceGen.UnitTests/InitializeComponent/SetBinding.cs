@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class SetBinding : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void Test()
 	{
 		var xaml =
@@ -81,7 +81,7 @@ public partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		Assert.IsFalse(result.Diagnostics.Any());
-		Assert.AreEqual(expected, generated);
+		Assert.False(result.Diagnostics.Any());
+		Assert.Equal(expected, generated);
 	}
 }

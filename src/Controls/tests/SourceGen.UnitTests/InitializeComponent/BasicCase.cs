@@ -1,11 +1,11 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class BasicCase : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void BasicXaml()
 	{
 		var xaml =
@@ -84,8 +84,8 @@ internal partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
-		Assert.AreEqual(expected, generated);
+		Assert.Equal(expected, generated);
 	}
 }

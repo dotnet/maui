@@ -11,12 +11,12 @@
     Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
     x:DataType="models:ProjectTask">
     
-    <effectsView:SfEffectsView
+     <effectsView:SfEffectsView
         TouchDownEffects="Highlight"
         HighlightBackground="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}">
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
-            VerticalOptions="Fill"               
+            VerticalOptions="Fill"
             IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
             <shimmer:SfShimmer.CustomView>
                 <Grid 
@@ -35,24 +35,31 @@
                 </Grid>
             </shimmer:SfShimmer.CustomView>
             <shimmer:SfShimmer.Content>
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="15" Padding="{OnIdiom 15, Desktop=20}">
-                    <Grid.GestureRecognizers>
-                        <TapGestureRecognizer 
-                            Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}" 
-                            CommandParameter="{Binding .}"/>
-                    </Grid.GestureRecognizers>
-                    
+                <Grid ColumnDefinitions="*" ColumnSpacing="15" Padding="{OnIdiom 15, Desktop=20}">
+
+                    <Grid SemanticProperties.Description="{Binding Title}" Margin="{OnIdiom -15, Desktop=-20}">
+                        <Label
+                            Margin="{OnIdiom '65,0,0,0', Desktop= '70,0,0,0'}"
+                            Text="{Binding Title}"
+                            HorizontalOptions="Start"
+                            VerticalOptions="Center"
+                            LineBreakMode="WordWrap"/>
+
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}"
+                                CommandParameter="{Binding .}"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+
                     <CheckBox Grid.Column="0"
+                        WidthRequest="50"
+                        HorizontalOptions="Start"
                         IsChecked="{Binding IsCompleted, Mode=OneTime}"
                         VerticalOptions="Center"
                         CheckedChanged="CheckBox_CheckedChanged"
+                        AutomationProperties.IsInAccessibleTree="True"
                         SemanticProperties.Description="{Binding Title}"/>
-
-                    <Label Grid.Column="1"
-                        Text="{Binding Title}"
-                        VerticalOptions="Center"
-                        LineBreakMode="WordWrap"
-                        AutomationProperties.IsInAccessibleTree="False" />
                 </Grid>
             </shimmer:SfShimmer.Content>
         </shimmer:SfShimmer>
