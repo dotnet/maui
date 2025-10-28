@@ -20,7 +20,11 @@ public class Issue28523 : _IssuesUITest
 		App.WaitForElement("Baboon");
 		App.SetOrientationLandscape();
 		App.WaitForElement("Baboon");
+#if ANDROID
+		VerifyScreenshot(cropLeft: 125);
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 	[TearDown]

@@ -53,6 +53,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 
 				editorLayout.Children.Add(new Editor
 				{
+					IsSpellCheckEnabled = false,
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
 					AutomationId = "Editor1"
@@ -60,6 +61,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 
 				editorLayout.Children.Add(new Editor
 				{
+					IsSpellCheckEnabled = false,
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
 					AutomationId = "Editor2"
@@ -67,6 +69,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 
 				editorLayout.Children.Add(new Editor
 				{
+					IsSpellCheckEnabled = false,
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
 					AutomationId = "Editor3"
@@ -74,6 +77,7 @@ public partial class ScrollViewOptionsPage : ContentPage
 
 				editorLayout.Children.Add(new Editor
 				{
+					IsSpellCheckEnabled = false,
 					Text = string.Join(Environment.NewLine, Enumerable.Range(1, 15).Select(i => $"Editor 4: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim, eget facilisis enim nisl nec elit . Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam enim Eget facilisis enim nisl nec elit Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Nullam ac erat at dui laoreet aliquet. Praesent euismod, justo at dictum facilisis, urna erat dictum enim.")),
 					HeightRequest = 250,
 					AutomationId = "Editor4"

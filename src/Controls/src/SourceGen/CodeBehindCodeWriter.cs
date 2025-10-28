@@ -53,9 +53,9 @@ static class CodeBehindCodeWriter
 
 		var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem!.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
-		if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+		if (projItem.ManifestResourceName != null && projItem.RelativePath != null)
 		{
-			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.RelativePath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
 		}
 
 		if (XamlResourceIdOnly)
@@ -71,9 +71,9 @@ static class CodeBehindCodeWriter
 		var rootSymbol = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootType}");
 		bool alreadyHasXamlCompilationAttribute = rootSymbol?.GetAttributes().Any(a => a.AttributeClass != null && a.AttributeClass.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")!, SymbolEqualityComparer.Default)) ?? false;
 
-		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests";
+		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generateDefaultCtor;
 		var xamlInflators = projItem.Inflator;
-
+		
 		//if there's only the XamlC inflator, prevent non-assigned errors
 		if (xamlInflators == XamlInflator.XamlC)
 			sb.AppendLine("#pragma warning disable CS0649");
@@ -312,15 +312,29 @@ static class CodeBehindCodeWriter
 			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out _, out _);
 		}
 #if _MAUIXAML_SOURCEGEN_BACKCOMPAT
-		else if (hasXamlCompilationProcessingInstruction && root.NamespaceURI == XamlParser.MauiUri)
+		else if (hasXamlCompilationProcessingInstruction
+				&& (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri))
+#else
+		else if (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri)
+#endif
 		{
+			//make sure the base type can be resolved. if not, don't consider this as xaml, and move away
+			var typeArgs = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
+			try
+			{
+				var basetype = new XmlType(root.NamespaceURI, root.LocalName, typeArgs != null ? TypeArgumentsParser.ParseExpression(typeArgs, nsmgr, null) : null).GetTypeSymbol(null, compilation, xmlnsCache);
+			}
+			catch
+			{
+				return false;
+			}
+
 			rootClrNamespace = "__XamlGeneratedCode__";
 			rootType = $"__Type{uid}";
 			generateDefaultCtor = true;
 			addXamlCompilationAttribute = true;
 			hideFromIntellisense = true;
 		}
-#endif
 		else if (parseResult?.ProjectItem?.ManifestResourceName != null && parseResult.ProjectItem.TargetPath != null)
 		{ // rootClass == null && !hasXamlCompilationProcessingInstruction) {
 			xamlResourceIdOnly = true; //only generate the XamlResourceId assembly attribute

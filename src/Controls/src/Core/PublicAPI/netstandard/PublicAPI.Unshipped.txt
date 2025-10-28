@@ -63,6 +63,10 @@ Microsoft.Maui.Controls.DatePickerClosedEventArgs
 Microsoft.Maui.Controls.DatePickerClosedEventArgs.DatePickerClosedEventArgs() -> void
 Microsoft.Maui.Controls.DatePickerOpenedEventArgs
 Microsoft.Maui.Controls.DatePickerOpenedEventArgs.DatePickerOpenedEventArgs() -> void
+Microsoft.Maui.Controls.DisplayRotationStateTrigger
+Microsoft.Maui.Controls.DisplayRotationStateTrigger.DisplayRotationStateTrigger() -> void
+Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation.get -> Microsoft.Maui.Devices.DisplayRotation
+Microsoft.Maui.Controls.DisplayRotationStateTrigger.Rotation.set -> void
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
@@ -137,6 +141,9 @@ Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationSty
 Microsoft.Maui.Controls.PlatformWebViewInitializedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewInitializingEventArgs
 Microsoft.Maui.Controls.PlatformWebViewWebResourceRequestedEventArgs
+Microsoft.Maui.Controls.PointerEventArgs.Button.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.PointerGestureRecognizer.Buttons.set -> void
 Microsoft.Maui.Controls.RefreshView.IsRefreshEnabled.get -> bool
 Microsoft.Maui.Controls.RefreshView.IsRefreshEnabled.set -> void
 Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.get -> bool
@@ -426,6 +433,7 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 ~static readonly Microsoft.Maui.Controls.ContentPresenter.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentView.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.DatePicker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.DisplayRotationStateTrigger.RotationProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.Layout.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static readonly Microsoft.Maui.Controls.MenuItem.AcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Picker.IsOpenProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -434,6 +442,7 @@ static readonly Microsoft.Maui.Controls.Border.SafeAreaEdgesProperty -> Microsof
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WebView.JavaScriptEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverRectProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceViewProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.RefreshView.IsRefreshEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.CascadeInputTransparentProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.PaddingProperty -> Microsoft.Maui.Controls.BindableProperty

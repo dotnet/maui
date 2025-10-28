@@ -19,26 +19,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[TestCase("RemoveAddTabs", Category = UITestCategories.TabbedPage)]
 		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
 		{
-			try
-			{
-				App.WaitForElement(scenario);
-				App.Tap(scenario);
-				App.WaitForElement("BackgroundMe");
-				App.BackgroundApp();
-				App.WaitForNoElement("BackgroundMe");
-				App.ForegroundApp();
-				App.WaitForElement("Restore");
-				App.Tap("Restore");
-			}
-			catch
-			{
-				SaveUIDiagnosticInfo();
-
-				// Just in case these tests leave the app in an unreliable state
-				App.ResetApp();
-				FixtureSetup();
-				throw;
-			}
+			App.WaitForElement(scenario);
+			App.Tap(scenario);
+			App.WaitForElement("BackgroundMe");
+			App.BackgroundApp();
+			App.WaitForNoElement("BackgroundMe");
+			App.ForegroundApp();
+			App.WaitForElement("Restore");
+			App.Tap("Restore");
 		}
 	}
 }

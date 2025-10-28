@@ -1,6 +1,9 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui;
+#if ANDROID
+using Microsoft.Maui.Platform;
+#endif
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,17 +13,8 @@ namespace Microsoft.Maui.Controls
 		/// The backing store for the <see cref="ISafeAreaElement.SafeAreaEdges" /> bindable property.
 		/// </summary>
 		public static readonly BindableProperty SafeAreaEdgesProperty =
-			BindableProperty.Create("SafeAreaEdges", typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
-									propertyChanged: OnSafeAreaEdgesChanged,
+			BindableProperty.Create(nameof(ISafeAreaElement.SafeAreaEdges), typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
 									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
-		static void OnSafeAreaEdgesChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			// Centralized implementation - invalidate measure to trigger layout recalculation
-			if (bindable is IView view)
-			{
-				view.InvalidateMeasure();
-			}
-		}
 
 		static object SafeAreaEdgesDefaultValueCreator(BindableObject bindable)
 			=> ((ISafeAreaElement)bindable).SafeAreaEdgesDefaultValueCreator();

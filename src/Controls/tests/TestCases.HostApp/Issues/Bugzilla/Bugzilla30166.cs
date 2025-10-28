@@ -14,6 +14,7 @@
 			{
 				Navigation.PushAsync(new ContentPage
 				{
+					SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container),
 					Content = new Button
 					{
 						AutomationId = "PushModal",

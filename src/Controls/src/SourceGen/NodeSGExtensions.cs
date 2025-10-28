@@ -1,5 +1,6 @@
 using System;
 using System.CodeDom.Compiler;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -18,40 +20,62 @@ static class NodeSGExtensions
 {
 	public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
 
-	public delegate bool ProvideValueDelegate(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value);
+	public delegate bool ProvideValueDelegate(ElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType, out string value);
 
+	// Lazy converter factory function
+	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
+		(value, node, toType, context, parentVar) => 
+			lazyConverters.GetOrAdd(typeof(T), _ => new T()).Convert(value, node, toType, context, parentVar);
+
+	static readonly ConcurrentDictionary<Type, ISGTypeConverter> lazyConverters = new();
+	static readonly ConcurrentDictionary<string, ISGTypeConverter> lazyRegistryConverters = new();
+
+	// Lazy registry-based converter function (for non-source-gen converters)
+	private static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
+		(value, node, toType, context, parentVar) => 
+		{
+			var converter = lazyRegistryConverters.GetOrAdd(typeName, name => TypeConverterRegistry.GetConverter(name)!);
+			return converter?.Convert(value, node, toType, context, parentVar) ?? "default";
+		};
+
+	// Lazy enum converter
+	private static readonly Lazy<EnumConverter> _lazyEnumConverter = new(() => new EnumConverter());
+
+	private static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null) =>
+		_lazyEnumConverter.Value.Convert(value, node, toType, context, parentVar);
 
 	static Dictionary<ITypeSymbol, (ConverterDelegate converter, ITypeSymbol returnType)> GetKnownSGTypeConverters(SourceGenContext context)
 		=> context.knownSGTypeConverters ??= new(SymbolEqualityComparer.Default)
 	{
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, (KnownTypeConverters.ConvertRect, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.ColorTypeConverter")!, (KnownTypeConverters.ConvertColor, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.PointTypeConverter")!, (KnownTypeConverters.ConvertPoint, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Point")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, (KnownTypeConverters.ConvertThickness, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, (KnownTypeConverters.ConvertCornerRadius, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, (KnownTypeConverters.ConvertEasing, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, (KnownTypeConverters.ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexJustify")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, (KnownTypeConverters.ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexDirection")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignContentTypeConverter")!, (KnownTypeConverters.ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignContent")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignItemsTypeConverter")!, (KnownTypeConverters.ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignItems")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignSelfTypeConverter")!, (KnownTypeConverters.ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignSelf")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexWrapTypeConverter")!, (KnownTypeConverters.ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexWrap")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexBasisTypeConverter")!, (KnownTypeConverters.ConvertFlexBasis, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter")!, (KnownTypeConverters.ConvertColumnDefinitionCollection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollection")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FlowDirectionConverter")!, (KnownTypeConverters.ConvertFlowDirection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FontSizeConverter")!, (KnownTypeConverters.ConvertFontSize, context.Compilation.GetTypeByMetadataName("System.Double")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.GridLengthTypeConverter")!, (KnownTypeConverters.ConvertGridLength, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSourceConverter")!, (KnownTypeConverters.ConvertImageSource, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSource")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptionsConverter")!, (KnownTypeConverters.ConvertLayoutOptions, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptions")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ListStringTypeConverter")!, (KnownTypeConverters.ConvertListString, context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1")!.Construct(context.Compilation.GetSpecialType(SpecialType.System_String))!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary+RDSourceTypeConverter")!, (KnownTypeConverters.ConvertRDSource, context.Compilation.GetTypeByMetadataName("System.Uri")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter")!, (KnownTypeConverters.ConvertRowDefinitionCollection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollection")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PointCollectionConverter")!, (KnownTypeConverters.ConvertPointCollection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!) },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.ConstraintTypeConverter")!, (KnownTypeConverters.ConvertConstraint, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.Constraint")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, (CreateLazyConverter<RectConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.ColorTypeConverter")!, (CreateLazyConverter<ColorConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.PointTypeConverter")!, (CreateLazyConverter<PointConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Point")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.CornerRadius"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Easing"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexJustify")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexDirection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignContentTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignContent")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignItemsTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignItems")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignSelfTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignSelf")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexWrapTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexWrap")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexBasisTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Layouts.FlexBasis"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.GridLengthTypeConverter")!, (CreateLazyConverter<GridLengthConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, (CreateLazyConverter<ThicknessConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.ColumnDefinitionCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FlowDirectionConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.FlowDirection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FontSizeConverter")!, (CreateLazyRegistryConverter("System.Double"), context.Compilation.GetTypeByMetadataName("System.Double")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.GridLengthTypeConverter")!, (CreateLazyConverter<GridLengthConverter>(), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSourceConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.ImageSource"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSource")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptionsConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.LayoutOptions"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptions")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ListStringTypeConverter")!, (CreateLazyRegistryConverter("System.Collections.Generic.IList`1[System.String]"), context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1")!.Construct(context.Compilation.GetSpecialType(SpecialType.System_String))!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary+RDSourceTypeConverter")!, (CreateLazyRegistryConverter("System.Uri"), context.Compilation.GetTypeByMetadataName("System.Uri")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.RowDefinitionCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PointCollectionConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.PointCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.ConstraintTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.Compatibility.Constraint"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.Constraint")!) },
         
         // TODO: PathFigureCollectionConverter (used for PathGeometry and StrokeShape) is very complex, skipping for now, apart from that one all other shapes work though
-			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PathGeometryConverter")!, (KnownTypeConverters.ConvertPathGeometry, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Geometry")!) },
-			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (KnownTypeConverters.ConvertStrokeShape, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
+			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PathGeometryConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Geometry"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Geometry")!) },
+			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Shape"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 		};
 
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
@@ -85,7 +109,7 @@ static class NodeSGExtensions
 	public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
 	{
 		name = default;
-		if (parentNode is not IElementNode parentElement)
+		if (parentNode is not ElementNode parentElement)
 			return false;
 		foreach (var kvp in parentElement.Properties)
 		{
@@ -104,7 +128,7 @@ static class NodeSGExtensions
 		return parentList.CollectionItems.Contains(node);
 	}
 
-	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
+	public static bool IsResourceDictionary(this ElementNode node, SourceGenContext context)
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
 	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
@@ -570,7 +594,7 @@ static class NodeSGExtensions
 		if (parts.Length == 1)
 		{
 			ITypeSymbol? typeSymbol = null;
-			var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
+			var parent = node.Parent?.Parent as ElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as ElementNode;
 			if ((node.Parent as ElementNode)!.XmlType!.IsOfAnyType( "Setter", "PropertyCondition"))
 			{
 				if (parent!.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style"))
@@ -597,26 +621,26 @@ static class NodeSGExtensions
 		}
 	}
 
-	static ITypeSymbol? FindTypeSymbolForVisualState(IElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
+	static ITypeSymbol? FindTypeSymbolForVisualState(ElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
 	{
 		//1. parent is VisualState, don't check that
 
 		//2. check that the VS is in a VSG
-		if (!(parent.Parent is IElementNode target) || !target.XmlType.IsOfAnyType("VisualStateGroup"))
+		if (!(parent.Parent is ElementNode target) || !target.XmlType.IsOfAnyType("VisualStateGroup"))
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
 		if (   target.Parent is ListNode
-			|| (target.Parent as IElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
-			target = (IElementNode)target.Parent.Parent;
+			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
+			target = (ElementNode)target.Parent.Parent;
 		else
-			target = (IElementNode)target.Parent;
+			target = (ElementNode)target.Parent;
 
 		XmlType? typeName = null;
 		//4. target is now a Setter in a Style, or a VE
 		if (target.XmlType.IsOfAnyType("Setter"))
 		{
-			var targetType = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+			var targetType = ((target?.Parent as ElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 			typeName = TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
 		}
 		else
@@ -626,5 +650,5 @@ static class NodeSGExtensions
 	}
 
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)
-		=> node is IElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
+		=> node is ElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
 }

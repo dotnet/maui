@@ -34,6 +34,9 @@ parameters:
   #   container and pool.
   platform: {}
 
+  # Optional list of directories to ignore for component governance scans.
+  componentGovernanceIgnoreDirectories: []
+
   is1ESPipeline: ''
 
   # If set to true and running on a non-public project,
@@ -94,3 +97,4 @@ jobs:
     parameters:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
       platform: ${{ parameters.platform }}
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}

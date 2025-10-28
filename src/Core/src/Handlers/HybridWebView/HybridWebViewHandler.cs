@@ -33,6 +33,7 @@ using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -70,6 +71,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
+#if WINDOWS
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
 		};
 
 		public static CommandMapper<IHybridWebView, IHybridWebViewHandler> CommandMapper = new(ViewCommandMapper)
@@ -197,9 +201,13 @@ namespace Microsoft.Maui.Handlers
 			catch (Exception ex)
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
+				
+				// Return error response instead of null so JavaScript can handle the error
+				var errorResult = CreateErrorResult(ex);
+				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
+				var errorBytes = Encoding.UTF8.GetBytes(errorJson);
+				return errorBytes;
 			}
-
-			return default;
 		}
 
 		private static DotNetInvokeResult CreateInvokeResult(object? result)
@@ -225,6 +233,17 @@ namespace Microsoft.Maui.Handlers
 			return new DotNetInvokeResult()
 			{
 				Result = result,
+			};
+		}
+
+		private static DotNetInvokeResult CreateErrorResult(Exception ex)
+		{
+			return new DotNetInvokeResult()
+			{
+				IsError = true,
+				ErrorMessage = ex.Message,
+				ErrorType = ex.GetType().Name,
+				ErrorStackTrace = ex.StackTrace
 			};
 		}
 
@@ -263,7 +282,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// invoke the .NET method
-			var dotnetReturnValue = dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
+			var dotnetReturnValue = GetDotNetMethodReturnValue(jsInvokeTarget, dotnetMethod, invokeParamValues);
 
 			if (dotnetReturnValue is null) // null result
 			{
@@ -288,6 +307,29 @@ namespace Microsoft.Maui.Handlers
 			return dotnetReturnValue; // regular result
 		}
 
+		private static object? GetDotNetMethodReturnValue(object jsInvokeTarget, MethodInfo dotnetMethod, object?[]? invokeParamValues)
+		{
+			try
+			{
+				// invoke the .NET method
+				return dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
+			}
+			catch (TargetInvocationException tie) // unwrap while preserving original stack trace
+			{
+				if (tie.InnerException is not null)
+				{
+					// Rethrow the underlying exception without losing its original stack trace
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+
+					// unreachable, but required for compiler flow analysis
+					throw;
+				}
+
+				// no inner exception; rethrow the TargetInvocationException itself preserving its stack
+				throw;
+			}
+		}
+
 		private sealed class JSInvokeMethodData
 		{
 			public string? MethodName { get; set; }
@@ -305,11 +347,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			public object? Result { get; set; }
 			public bool IsJson { get; set; }
+			public bool IsError { get; set; }
+			public string? ErrorMessage { get; set; }
+			public string? ErrorType { get; set; }
+			public string? ErrorStackTrace { get; set; }
 		}
 
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
 		[JsonSerializable(typeof(JSInvokeError))]
+		[JsonSerializable(typeof(DotNetInvokeResult))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}
@@ -335,7 +382,7 @@ namespace Microsoft.Maui.Handlers
 			// Make all the platforms mimic Android's implementation, which is by far the most complete.
 			if (!OperatingSystem.IsAndroid())
 			{
-				script = EscapeJsString(script);
+				script = WebViewHelper.EscapeJsString(script);
 
 				if (!OperatingSystem.IsWindows())
 				{
@@ -429,47 +476,6 @@ namespace Microsoft.Maui.Handlers
 				return typedResult;
 			}
 		}
-
-
-#if PLATFORM && !TIZEN
-		// Copied from WebView.cs
-		internal static string? EscapeJsString(string js)
-		{
-			if (js == null)
-				return null;
-
-			if (!js.Contains('\'', StringComparison.Ordinal))
-				return js;
-
-			//get every quote in the string along with all the backslashes preceding it
-			var singleQuotes = Regex.Matches(js, @"(\\*?)'");
-
-			var uniqueMatches = new List<string>();
-
-			for (var i = 0; i < singleQuotes.Count; i++)
-			{
-				var matchedString = singleQuotes[i].Value;
-				if (!uniqueMatches.Contains(matchedString))
-				{
-					uniqueMatches.Add(matchedString);
-				}
-			}
-
-			uniqueMatches.Sort((x, y) => y.Length.CompareTo(x.Length));
-
-			//escape all quotes from the script as well as add additional escaping to all quotes that were already escaped
-			for (var i = 0; i < uniqueMatches.Count; i++)
-			{
-				var match = uniqueMatches[i];
-				var numberOfBackslashes = match.Length - 1;
-				var slashesToAdd = (numberOfBackslashes * 2) + 1;
-				var replacementStr = "'".PadLeft(slashesToAdd + 1, '\\');
-				js = Regex.Replace(js, @"(?<=[^\\])" + Regex.Escape(match), replacementStr);
-			}
-
-			return js;
-		}
-#endif
 
 		internal static async Task<string?> GetAssetContentAsync(string assetPath)
 		{
