@@ -24,11 +24,24 @@ steps:
     skipXcode: true
 
 - script: |
-    sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+    echo Remove old Xamarin Settings
+    rm -f ~/Library/Preferences/Xamarin/Settings.plist
+    rm -f ~/Library/Preferences/maui/Settings.plist
+    echo Mac OS version:
+    sw_vers -productVersion
+    echo
+    echo Installed Xcode versions:
+    ls /Applications | grep 'Xcode'
+    echo
+    echo currently selected xcode:
+    xcrun xcode-select --print-path
+    echo
+    echo selecting latest xcode...
+    sudo xcode-select -s /Applications/Xcode_$(XCODE).app
     xcrun xcode-select --print-path
     xcodebuild -version
     sudo xcodebuild -license accept
-    if [[ ${XCODE_VERSION/\.*/} -ge 26 ]]; then
+    if [[ ${XCODE/\.*/} -ge 26 ]]; then
       sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
     else
       sudo xcodebuild -downloadPlatform iOS
