@@ -10,8 +10,6 @@ public class Issue31825 : ContentPage
 		Issue31825ViewModel viewModel = new Issue31825ViewModel();
 		CollectionView2 collectionView = new CollectionView2
 		{
-			VerticalOptions = LayoutOptions.FillAndExpand,
-			HorizontalOptions = LayoutOptions.FillAndExpand,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var grid = new Grid
@@ -88,14 +86,14 @@ public class Issue31825Model
 
 public class Issue31825ViewModel
 {
-	public ObservableCollection<Issue31825Model> Items { get; private set; } = new ObservableCollection<Issue31825Model>();
+	public ObservableCollection<Issue31825Model> Items { get; set; } = new ObservableCollection<Issue31825Model>();
 
 	public Issue31825ViewModel()
 	{
-		_ = CreateMonkeyCollection();
+		CreateItemsCollection();
 	}
 
-	async Task CreateMonkeyCollection()
+	private void CreateItemsCollection()
 	{
 		for (int i = 0; i < 18; i++)
 		{
