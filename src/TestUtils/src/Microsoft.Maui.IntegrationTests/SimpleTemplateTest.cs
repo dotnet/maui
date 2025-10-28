@@ -11,9 +11,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
-	//TODO: Enable these tests back https://github.com/dotnet/maui/issues/32151
-	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
-	//[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	//Debug not ready yet
 	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
 	//[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
