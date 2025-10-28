@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,19 +14,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh7559(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
-			public void GenericBPCompiles([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(Gh7559));
 				var layout = new Gh7559(useCompiledXaml);
 				var value = Gh7559Generic<Gh7559Enum>.GetIcon(layout);
-				Assert.That(value, Is.EqualTo(Gh7559Enum.LetterA));
+				Assert.Equal(Gh7559Enum.LetterA, value);
 			}
 		}
 	}

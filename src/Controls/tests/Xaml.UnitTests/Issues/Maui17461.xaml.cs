@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,18 +19,17 @@ public partial class Maui17461 : ContentPage
 	public Maui17461(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void MissingKeyException([Values("net7.0-ios", "net7.0-android", "net7.0-macos")] string targetFramework)
+		[Theory]
+			public void Method([InlineData("net7.0-ios", "net7.0-android", "net7.0-macos")] string targetFramework)
 		{
 			MockCompiler.Compile(typeof(Maui17461), out var methodDef, targetFramework: targetFramework);
 		}

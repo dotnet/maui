@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -23,16 +23,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void OnButtonClicked(object sender, EventArgs e)
 		{
 			clickcount++;
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestEventConnection(bool useCompiledXaml)
 			{
 				Issue2152 layout = null;
@@ -40,9 +39,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Cell cell = null;
 				Assert.DoesNotThrow(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
 				var button = cell.FindByName<Button>("btn") as IButtonController;
-				Assert.AreEqual(0, layout.clickcount);
+				Assert.Equal(0, layout.clickcount);
 				button.SendClicked();
-				Assert.AreEqual(1, layout.clickcount);
+				Assert.Equal(1, layout.clickcount);
 			}
 		}
 	}

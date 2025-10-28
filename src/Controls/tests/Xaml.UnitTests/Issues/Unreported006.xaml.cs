@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -21,17 +21,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty GenericPropertyProperty =
-			BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));
-
-		[TestFixture]
-		class Tests
+			BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void CanAssignGenericBP(bool useCompiledXaml)
 			{
 				var page = new Unreported006();
 				Assert.NotNull(page.GenericProperty);
-				Assert.That(page.GenericProperty, Is.TypeOf<Compatibility.StackLayout>());
+				Assert.IsType<Compatibility.StackLayout>(page.GenericProperty);
 			}
 		}
 	}

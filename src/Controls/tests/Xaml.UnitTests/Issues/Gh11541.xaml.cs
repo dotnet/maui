@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,13 +12,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh11541(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
-			public void RectangleGeometryDoesntThrow([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				Assert.DoesNotThrow(() => new Gh11541(useCompiledXaml));
 			}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,20 +17,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue1213(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void MultiPageAsContentPropertyAttribute(bool useCompiledXaml)
 			{
 				var page = new Issue1213(useCompiledXaml);
-				Assert.AreEqual(2, page.Children.Count);
+				Assert.Equal(2, page.Children.Count);
 			}
 		}
 	}

@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -59,25 +59,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5510(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test]
-			public void CompileBindingWithIndexer([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5510)));
 
 				var vm = new Gh5510VM();
 				var layout = new Gh5510(useCompiledXaml) { BindingContext = vm };
-				Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Red));
+				Assert.Equal(Colors.Red, layout.entry.TextColor);
 				vm.ClearErrorForPerson();
-				Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Black));
+				Assert.Equal(Colors.Black, layout.entry.TextColor);
 			}
 		}
 	}

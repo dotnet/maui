@@ -2,7 +2,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -16,31 +16,30 @@ public partial class Maui26206 : ContentPage
 	public Maui26206(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
+		[Fact]
 		public void MultipleResourcesInRD([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui26206));
 			var page = new Maui26206(useCompiledXaml);
-			Assert.That(((StackBase)page.Content).Spacing, Is.EqualTo(25d));
+			Assert.Equal(25d, ((StackBase)page.Content).Spacing);
 		}
 	}
 }

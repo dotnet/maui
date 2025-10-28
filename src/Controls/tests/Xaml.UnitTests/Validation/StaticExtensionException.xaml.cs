@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,15 +16,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StaticExtensionException(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Issue2115
+		}		public class Issue2115
 		{
-			[TestCase(false)]
+			[InlineData(false)]
 			public void xStaticThrowsMeaningfullException(bool useCompiledXaml)
 			{
-				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(useCompiledXaml));
+				new XamlParseExceptionConstraint(6, 34).Validate(() => new StaticExtensionException(useCompiledXaml));
 			}
 		}
 	}

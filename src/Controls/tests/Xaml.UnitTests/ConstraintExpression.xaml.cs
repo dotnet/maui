@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,24 +17,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public ConstraintExpression(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ConstantConstraint(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
 				var label = layout.constantConstraint;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.AreEqual(42, constraint.Compute(null));
+				Assert.Equal(42, constraint.Compute(null));
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ConstraintRelativeToParent(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml);
@@ -42,11 +39,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToParent;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.AreEqual(102, constraint.Compute(layout.relativeLayout));
+				Assert.Equal(102, constraint.Compute(layout.relativeLayout));
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ContraintRelativeToView(bool useCompiledXaml)
 			{
 				var layout = new ConstraintExpression(useCompiledXaml)
@@ -59,7 +56,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.constraintRelativeToView;
 				var constraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(label);
 				Assert.NotNull(constraint);
-				Assert.AreEqual(97, constraint.Compute(layout.relativeLayout));
+				Assert.Equal(97, constraint.Compute(layout.relativeLayout));
 			}
 		}
 	}

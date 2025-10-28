@@ -1,19 +1,22 @@
 using System;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class BuildExceptionConstraint : ExceptionTypeConstraint
+	/// <summary>
+	/// Helper for asserting BuildException with specific line and position information
+	/// </summary>
+	public class BuildExceptionConstraint
 	{
 		readonly bool _haslineinfo;
 		readonly int _linenumber;
 		readonly int _lineposition;
 		readonly Func<string, bool> _messagePredicate;
 
-		BuildExceptionConstraint(bool haslineinfo) : base(typeof(BuildException)) => _haslineinfo = haslineinfo;
-
-		public override string DisplayName => "xamlparse";
+		BuildExceptionConstraint(bool haslineinfo)
+		{
+			_haslineinfo = haslineinfo;
+		}
 
 		public BuildExceptionConstraint() : this(false)
 		{
@@ -26,29 +29,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			_messagePredicate = messagePredicate;
 		}
 
-		protected override bool Matches(object actual)
+		public void Validate(Action action)
 		{
-			if (!base.Matches(actual))
-				return false;
-			var xmlInfo = ((BuildException)actual).XmlInfo;
+			var ex = Xunit.Assert.Throws<BuildException>(action);
+			
 			if (!_haslineinfo)
-				return true;
-			if (xmlInfo == null || !xmlInfo.HasLineInfo())
-				return false;
-			if (_messagePredicate != null && !_messagePredicate(((BuildException)actual).Message))
-				return false;
-			return xmlInfo.LineNumber == _linenumber && xmlInfo.LinePosition == _lineposition;
-		}
-
-		public override string Description
-		{
-			get
+				return;
+				
+			var xmlInfo = ex.XmlInfo;
+			Xunit.Assert.NotNull(xmlInfo);
+			Xunit.Assert.True(xmlInfo.HasLineInfo(), $"Expected exception to have line info");
+			
+			if (_messagePredicate != null)
 			{
-				if (_haslineinfo)
-					return string.Format($"{base.Description} line {_linenumber}, position {_lineposition}");
-
-				return base.Description;
+				Xunit.Assert.True(_messagePredicate(ex.Message), 
+					$"Exception message did not match predicate. Message: {ex.Message}");
 			}
+			
+			Xunit.Assert.Equal(_linenumber, xmlInfo.LineNumber);
+			Xunit.Assert.Equal(_lineposition, xmlInfo.LinePosition);
 		}
 	}
 }

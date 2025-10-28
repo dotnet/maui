@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,17 +15,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz41296(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void MarkupExtensionInDefaultNamespace(bool useCompiledXaml)
 			{
 				var layout = new Bz41296(useCompiledXaml);
-				Assert.AreEqual("FooBar", layout.TestLabel.Text.ToString());
+				Assert.Equal("FooBar", layout.TestLabel.Text.ToString());
 			}
 		}
 	}

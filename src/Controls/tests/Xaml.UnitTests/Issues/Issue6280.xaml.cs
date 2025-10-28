@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -9,18 +9,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue6280(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
-			public void BindingToNullable([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var vm = new Issue6280ViewModel();
 				var page = new Issue6280(useCompiledXaml) { BindingContext = vm };
 				page._entry.SetValueFromRenderer(Entry.TextProperty, 1);
-				Assert.AreEqual(vm.NullableInt, 1);
+				Assert.Equal(vm.NullableInt, 1);
 			}
 		}
 	}

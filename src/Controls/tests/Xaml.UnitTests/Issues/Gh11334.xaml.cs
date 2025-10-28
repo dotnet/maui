@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -25,21 +25,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			int index = stack.Children.IndexOf(label);
 			Label newLabel = new Label { Text = "New Inserted Label" };
 			stack.Children.Insert(index + 1, newLabel);
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			bool _debuggerinitialstate;
 
-			[SetUp]
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 			public void Setup()
 			{
 				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
 			}
 
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
@@ -48,18 +47,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
 			{
-				Assert.That(e.ChangeType, Is.EqualTo(VisualTreeChangeType.Remove));
-				Assert.That(e.ChildIndex, Is.EqualTo(0));
+				Assert.Equal(VisualTreeChangeType.Remove, e.ChangeType);
+				Assert.Equal(0, e.ChildIndex);
 				Assert.Pass();
 			}
 
-			[Test]
-			public void ChildIndexOnRemove([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11334(useCompiledXaml);
 				VisualDiagnostics.VisualTreeChanged += OnVTChanged;
 				layout.Remove(null, EventArgs.Empty);
-				Assert.Fail();
+				throw new Xunit.Sdk.XunitException();
 			}
 		}
 	}

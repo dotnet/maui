@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Converters;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -23,13 +23,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz55862(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
-			public void BindingContextWithConverter([Values(false/*, true*/)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false/*, true*/)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz55862)));

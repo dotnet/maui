@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,26 +17,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz41048(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void StyleDoesNotOverrideValues(bool useCompiledXaml)
 			{
 				var layout = new Bz41048(useCompiledXaml);
 				var label = layout.label0;
-				Assert.That(label.TextColor, Is.EqualTo(Colors.Red));
-				Assert.That(label.FontAttributes, Is.EqualTo(FontAttributes.Bold));
-				Assert.That(label.LineBreakMode, Is.EqualTo(LineBreakMode.WordWrap));
+				Assert.Equal(Colors.Red, label.TextColor);
+				Assert.Equal(FontAttributes.Bold, label.FontAttributes);
+				Assert.Equal(LineBreakMode.WordWrap, label.LineBreakMode);
 			}
 		}
 	}

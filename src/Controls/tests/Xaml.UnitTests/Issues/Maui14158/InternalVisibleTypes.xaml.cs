@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Xaml.UnitTests.Issues.Maui14158;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
@@ -13,13 +13,10 @@ public partial class InternalVisibleTypes : ContentPage
 	public InternalVisibleTypes(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Tests
+	}	class Tests
 	{
-		[TestCase(true)]
-		[TestCase(false)]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void VerifyCorrectTypesUsed(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

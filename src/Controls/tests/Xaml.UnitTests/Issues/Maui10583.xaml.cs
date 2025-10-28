@@ -6,7 +6,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -35,12 +35,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui10583(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[SetUp]
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 			public void Setup()
 			{
 				AppInfo.SetCurrent(new MockAppInfo());
@@ -48,15 +46,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			}
 
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 				AppInfo.SetCurrent(null);
 			}
 
-			[Test]
-			public void GenericMarkupExtensions([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				if (true)
 				{
@@ -65,9 +64,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 				var page = new Maui10583(useCompiledXaml);
 
-				Assert.That(page.lv.ItemsSource, Is.Not.Null);
+				Assert.NotNull(page.lv.ItemsSource);
 				var items = page.lv.ItemsSource as Maui10583Enum[];
-				Assert.That(items[1], Is.EqualTo(Maui10583Enum.Paul));
+				Assert.Equal(Maui10583Enum.Paul, items[1]);
 
 
 			}

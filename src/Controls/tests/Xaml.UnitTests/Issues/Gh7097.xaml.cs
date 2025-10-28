@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,25 +15,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh7097(bool useCompiledXaml) : base(useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[SetUp]
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
 
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
 			}
 
-			[Test]
-			public void CanXReferenceRoot([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml)
 				{
@@ -46,17 +45,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var cv = layout.Content as CollectionView;
 				var content = cv.ItemTemplate.CreateContent() as StackLayout;
 				var btn1 = content.Children[0] as Button;
-				Assert.That(btn1.Command, Is.TypeOf<MockCommand>());
+				Assert.IsType<MockCommand>(btn1.Command);
 			}
 
-			[Test]
+			[Fact]
 			//this was later reported as https://github.com/xamarin/Microsoft.Maui.Controls/issues/7286
-			public void RegisteringXNameOnSubPages([Values(false, true)] bool useCompiledXaml)
+			public void RegisteringXNameOnSubPages([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml);
 				var s = layout.FindByName("self");
-				Assert.That(layout.self, Is.Not.Null);
-				Assert.That(layout.collectionview, Is.Not.Null);
+				Assert.NotNull(layout.self);
+				Assert.NotNull(layout.collectionview);
 			}
 
 			class MockCommand : ICommand

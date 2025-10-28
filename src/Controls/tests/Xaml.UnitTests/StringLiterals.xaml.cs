@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,20 +16,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StringLiterals(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void EscapedStringsAreTreatedAsLiterals(bool useCompiledXaml)
 			{
 				var layout = new StringLiterals(useCompiledXaml);
-				Assert.AreEqual("Foo", layout.label0.Text);
-				Assert.AreEqual("{Foo}", layout.label1.Text);
-				Assert.AreEqual("Foo", layout.label2.Text);
-				Assert.AreEqual("Foo", layout.label3.Text);
+				Assert.Equal("Foo", layout.label0.Text);
+				Assert.Equal("{Foo}", layout.label1.Text);
+				Assert.Equal("Foo", layout.label2.Text);
+				Assert.Equal("Foo", layout.label3.Text);
 			}
 		}
 	}

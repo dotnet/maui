@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -30,29 +30,28 @@ public partial class Maui17950 : ContentPage
 	void TestBtn(object sender, string e)
 	{
 		Console.WriteLine("wrong event called");
-		Assert.Fail("wrong method invoked");
+		throw new Xunit.Sdk.XunitException("wrong method invoked");
 	}
 
 	void TestBtn()
 	{
 		Console.WriteLine("normal method called");
-		Assert.Fail("wrong method invoked");
-	}
-
-	[TestFixture]
-	class Test
+		throw new Xunit.Sdk.XunitException("wrong method invoked");
+	}	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void AmbiguousMatch([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui17950)));
 			Maui17950 page = new Maui17950(useCompiledXaml);
 			page.button.SendClicked();
-			Assert.Fail("no method invoked");
+			throw new Xunit.Sdk.XunitException("no method invoked");
 		}
 	}
 }

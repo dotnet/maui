@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -30,29 +30,28 @@ public partial class Maui19535 : Maui19535CustomThemeDictionary
 	public Maui19535(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void SubClassOfRDShouldNotThrow([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui19535));
 			var rd = new Maui19535(useCompiledXaml);
-			Assert.That(rd.Count, Is.EqualTo(3));
+			Assert.Equal(3, rd.Count);
 			Assert.True(rd.TryGetValue("CustomTheme", out var theme));
-			Assert.That(theme, Is.EqualTo("LightTheme"));
+			Assert.Equal("LightTheme", theme);
 		}
 	}
 

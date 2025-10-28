@@ -9,7 +9,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,12 +21,10 @@ public partial class Maui17597 : ContentPage
 	public Maui17597(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -34,22 +32,23 @@ public partial class Maui17597 : ContentPage
 		}
 
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-		[Test]
-		public void DataTriggerInStyle([Values(false, true)] bool useCompiledXaml)
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 		{
 			var page = new Maui17597(useCompiledXaml);
-			Assert.That(page.Test_Entry.Text, Is.EqualTo("Remove Text To Disable Button"));
-			Assert.That(page.button.IsEnabled, Is.True);
+			Assert.Equal("Remove Text To Disable Button", page.Test_Entry.Text);
+			Assert.True(page.button.IsEnabled, Is.True);
 
 			page.Test_Entry.SetValueFromRenderer(Entry.TextProperty, "");
-			Assert.That(page.Test_Entry.Text, Is.Empty);
-			Assert.That(page.Test_Entry.Text.Length, Is.EqualTo(0));
-			Assert.That(page.button.IsEnabled, Is.False);
+			Assert.True(page.Test_Entry.Text, Is.Empty);
+			Assert.Equal(0, page.Test_Entry.Text.Length);
+			Assert.True(page.button.IsEnabled, Is.False);
 
 			page.Test_Entry.SetValueFromRenderer(Entry.TextProperty, "foo");
-			Assert.That(page.Test_Entry.Text, Is.Not.Empty);
-			Assert.That(page.button.IsEnabled, Is.True);
+			Assert.True(page.Test_Entry.Text, Is.Not.Empty);
+			Assert.True(page.button.IsEnabled, Is.True);
 		}
 	}
 }

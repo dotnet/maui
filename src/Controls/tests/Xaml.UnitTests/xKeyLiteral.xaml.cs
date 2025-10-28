@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,14 +16,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public xKeyLiteral(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
+			[Fact]
 			//this requirement might change, see https://github.com/xamarin/Microsoft.Maui.Controls/issues/12425
-			public void xKeyRequireStringLiteral([Values(false, true)] bool useCompiledXaml)
+			public void xKeyRequireStringLiteral([InlineData(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(xKeyLiteral)));

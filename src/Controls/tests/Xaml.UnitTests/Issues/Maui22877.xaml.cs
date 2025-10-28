@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,14 +25,12 @@ public partial class Maui22877 : ContentPage
 	public Maui22877(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -41,23 +39,24 @@ public partial class Maui22877 : ContentPage
 		}
 
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void OnBindingRelease([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };
-			Assert.That(page.label0.Text, Is.EqualTo("Grade"));
+			Assert.Equal("Grade", page.label0.Text);
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };
-			Assert.That(page.label0.Text, Is.EqualTo("BoundString"));
+			Assert.Equal("BoundString", page.label0.Text);
 
 
 		}

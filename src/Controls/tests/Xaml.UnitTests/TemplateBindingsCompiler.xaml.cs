@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -22,26 +22,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TemplateBindingsCompiler(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Test(bool useCompiledXaml)
 			{
 				var page = new TemplateBindingsCompiler(useCompiledXaml);
 				var label = (Label)page.ContentView.GetTemplateChild("CardTitleLabel");
-				Assert.AreEqual("The title", label?.Text);
+				Assert.Equal("The title", label?.Text);
 
 				if (useCompiledXaml)
 				{
 					var binding = label.GetContext(Label.TextProperty).Bindings.GetValue();
-					Assert.That(binding, Is.TypeOf<TypedBinding<TemplateBindingCompilerTestCardView, string>>());
+					Assert.True(binding, Is.TypeOf<TypedBinding<TemplateBindingCompilerTestCardView, string>>());
 				}
 			}
 		}

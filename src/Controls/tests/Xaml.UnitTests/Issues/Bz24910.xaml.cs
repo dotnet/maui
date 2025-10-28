@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,36 +15,33 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz24910(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void AllowNullableIntProperties(bool useCompiledXaml)
 			{
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control0;
-				Assert.AreEqual(1, control.NullableInt);
+				Assert.Equal(1, control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void AllowNullableDoubleProperties(bool useCompiledXaml)
 			{
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control0;
-				Assert.AreEqual(2.2d, control.NullableDouble);
+				Assert.Equal(2.2d, control.NullableDouble);
 			}
 
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void ConversionForNullable(bool useCompiledXaml)
 			{
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control1;
-				Assert.AreEqual(2d, control.NullableDouble);
+				Assert.Equal(2d, control.NullableDouble);
 			}
 
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void AllowNull(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -55,7 +52,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Null(control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void AllowBindingToNullable(bool useCompiledXaml)
 			{
 				var page = new Bz24910(useCompiledXaml);
@@ -63,24 +60,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Null(control.NullableInt);
 
 				page.BindingContext = 2;
-				Assert.AreEqual(2, control.NullableInt);
+				Assert.Equal(2, control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void NullableAttachedBPs(bool useCompiledXaml)
 			{
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control4;
-				Assert.AreEqual(3, Bz24910Control.GetAttachedNullableInt(control));
+				Assert.Equal(3, Bz24910Control.GetAttachedNullableInt(control));
 			}
 
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void AllowNonBindableNullable(bool useCompiledXaml)
 			{
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control5;
 
-				Assert.AreEqual(5, control.NullableIntProp);
+				Assert.Equal(5, control.NullableIntProp);
 			}
 		}
 	}

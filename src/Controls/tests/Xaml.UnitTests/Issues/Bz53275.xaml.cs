@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,19 +27,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		public string ANonBindableProperty { get; set; }
-
-		[TestFixture]
-		class Tests
+		public string ANonBindableProperty { get; set; }		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void TargetPropertyIsSetOnMarkups(bool useCompiledXaml)
 			{
 				var page = new Bz53275(useCompiledXaml);
-				Assert.AreEqual("ANonBindableProperty", page.ANonBindableProperty);
+				Assert.Equal("ANonBindableProperty", page.ANonBindableProperty);
 				var l0 = page.label;
-				Assert.AreEqual("Text", l0.Text);
+				Assert.Equal("Text", l0.Text);
 			}
 		}
 	}

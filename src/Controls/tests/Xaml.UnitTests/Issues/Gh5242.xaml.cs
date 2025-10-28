@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -20,19 +20,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5242(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
-			public void BindingToNullable([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5242(useCompiledXaml) { BindingContext = new Gh5242VM { Value = 42 } };
-				Assert.That(layout.NullableInt, Is.EqualTo(42));
+				Assert.Equal(42, layout.NullableInt);
 
 				layout.BindingContext = new Gh5242VM { Value = null };
-				Assert.That(layout.NullableInt, Is.Null);
+				Assert.Null(layout.NullableInt);
 			}
 		}
 	}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -33,13 +33,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SimpleContentPage(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[Test]
-			[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]
+			[Fact]
+			[Fact(Skip = nameof(XamlCIs20TimesFasterThanXaml))]
 			public void XamlCIs20TimesFasterThanXaml()
 			{
 				var swXamlC = new Stopwatch();
@@ -58,8 +55,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Less(swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
 			}
 
-			[Test]
-			[Ignore(nameof(XamlCIsNotMuchSlowerThanCode))]
+			[Fact]
+			[Fact(Skip = nameof(XamlCIsNotMuchSlowerThanCode))]
 			public void XamlCIsNotMuchSlowerThanCode()
 			{
 				var swXamlC = new Stopwatch();

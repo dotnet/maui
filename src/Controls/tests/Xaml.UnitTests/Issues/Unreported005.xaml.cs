@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -66,16 +66,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Unreported005(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void CustomMarkupExtensionWorks(bool useCompiledXaml)
 			{
 				var page = new Unreported005(useCompiledXaml);
-				Assert.That(RelativeLayout.GetXConstraint(page.after), Is.TypeOf<Constraint>());
+				Assert.IsType<Constraint>(RelativeLayout.GetXConstraint(page.after));
 				Assert.NotNull(RelativeLayout.GetXConstraint(page.after));
 			}
 		}

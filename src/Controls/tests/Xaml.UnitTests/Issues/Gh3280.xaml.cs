@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,18 +19,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh3280(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void SizeHasConverter(bool useCompiledXaml)
 			{
 				Gh3280 layout = null;
 				Assert.DoesNotThrow(() => layout = new Gh3280(useCompiledXaml));
-				Assert.That(layout.Foo, Is.EqualTo(new Size(15, 25)));
+				Assert.Equal(new Size(15, 25, layout.Foo));
 			}
 		}
 	}

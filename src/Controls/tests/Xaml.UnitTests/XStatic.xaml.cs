@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -41,10 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XStatic(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
 			//{x:Static Member=prefix:typeName.staticMemberName}
 			//{x:Static prefix:typeName.staticMemberName}
@@ -56,87 +53,87 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// - An enumeration value
 			// All other cases should throw
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void StaticProperty(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Property", layout.staticproperty.Text);
+				Assert.Equal("Property", layout.staticproperty.Text);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void MemberOptional(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Property", layout.memberisoptional.Text);
+				Assert.Equal("Property", layout.memberisoptional.Text);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void FieldColor(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(Colors.Fuchsia, layout.color.TextColor);
+				Assert.Equal(Colors.Fuchsia, layout.color.TextColor);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Constant(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Constant", layout.constant.Text);
+				Assert.Equal("Constant", layout.constant.Text);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
 			public void ConstantInARemoteAssembly(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("CompatibilityGalleryControls", layout.remoteConstant.Text);
+				Assert.Equal("CompatibilityGalleryControls", layout.remoteConstant.Text);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Field(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Field", layout.field.Text);
+				Assert.Equal("Field", layout.field.Text);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Enum(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(ScrollOrientation.Both, layout.enuM.Orientation);
+				Assert.Equal(ScrollOrientation.Both, layout.enuM.Orientation);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void FieldRef(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("ic_close.png", layout.field2.Text);
+				Assert.Equal("ic_close.png", layout.field2.Text);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
 			public void xStaticAndImplicitOperators(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
+				Assert.Equal("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=55096
 			public void xStaticAndNestedClasses(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(MockxStatic.Nested.Foo, layout.nestedField.Text);
+				Assert.Equal(MockxStatic.Nested.Foo, layout.nestedField.Text);
 			}
 		}
 	}

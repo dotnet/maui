@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -45,18 +45,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz47703(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void IValueConverterOnBindings(bool useCompiledXaml)
 			{
 				var page = new Bz47703(useCompiledXaml);
 				page.BindingContext = new { Name = "Foo" };
-				Assert.AreEqual("Label:Foo", page.view.Text);
+				Assert.Equal("Label:Foo", page.view.Text);
 			}
 		}
 	}

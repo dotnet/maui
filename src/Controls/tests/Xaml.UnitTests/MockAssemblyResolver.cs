@@ -1,6 +1,6 @@
 using System.IO;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public override AssemblyDefinition Resolve(AssemblyNameReference name)
 		{
 			AssemblyDefinition assembly;
-			var localPath = IOPath.GetFullPath(IOPath.Combine(TestContext.CurrentContext.TestDirectory, $"{name.Name}.dll"));
+			var localPath = IOPath.GetFullPath(IOPath.Combine(AppContext.BaseDirectory, $"{name.Name}.dll"));
 			if (File.Exists(localPath))
 				assembly = AssemblyDefinition.ReadAssembly(localPath);
 			else

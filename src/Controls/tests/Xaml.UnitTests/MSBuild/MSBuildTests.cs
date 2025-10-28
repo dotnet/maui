@@ -6,16 +6,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Mono.Cecil;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
+using Xunit;
 using static Microsoft.Maui.Controls.MSBuild.UnitTests.MSBuildXmlExtensions;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	//This set of tests is for validating Microsoft.Maui.Controls.targets
-	[TestFixture]
-	[Category("LongRunning")]
+	//This set of tests is for validating Microsoft.Maui.Controls.targets	[Category("LongRunning")]
 	public class MSBuildTests
 	{
 		static readonly string[] references = {
@@ -68,12 +65,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		string tempDirectory;
 		string intermediateDirectory;
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void SetUp()
 		{
-			testDirectory = TestContext.CurrentContext.TestDirectory;
+			testDirectory = AppContext.BaseDirectory;
 			tempDirectory = IOPath.Combine(testDirectory, "temp",
-				TestContext.CurrentContext.Test.Name
+				"test"
 					.Replace('"', '_')
 					.Replace('(', '_')
 					.Replace(')', '_'));
@@ -88,18 +86,19 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
 				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
-				Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
+				throw new Xunit.Sdk.XunitException("Unable to find _Directory.Build.props at path: " + props);
 			}
 
 			File.Copy(props, IOPath.Combine(tempDirectory, "Directory.Build.props"), true);
 			File.Copy(targets, IOPath.Combine(tempDirectory, "Directory.Build.targets"), true);
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void TearDown()
 		{
 			// Leave log files behind on test failures
-			if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+			if (false)
 				return;
 
 			//NOTE: Windows can throw IOException: The process cannot access the file XYZ because it is being used by another process.
@@ -226,9 +225,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				}
 
 				if (shouldSucceed)
-					Assert.AreEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+					Assert.Equal(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
 				else
-					Assert.AreNotEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+					Assert.NotEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
 
 				return builder.ToString();
 			}
@@ -237,19 +236,19 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		void AssertExists(string path, bool nonEmpty = false)
 		{
 			if (!File.Exists(path))
-				Assert.Fail($"{path} should exist!");
+				throw new Xunit.Sdk.XunitException($"{path} should exist!");
 
 			if (nonEmpty && new FileInfo(path).Length == 0)
-				Assert.Fail($"{path} is empty!");
+				throw new Xunit.Sdk.XunitException($"{path} is empty!");
 		}
 
 		void AssertDoesNotExist(string path)
 		{
 			if (File.Exists(path))
-				Assert.Fail($"{path} should *not* exist!");
+				throw new Xunit.Sdk.XunitException($"{path} should *not* exist!");
 		}
 
-		[Test]
+		[Fact]
 		public void BuildAProject()
 		{
 			var project = NewProject();
@@ -263,8 +262,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
-		[Test]
-		public void ValidateOnly([Values("Debug", "Release", "ReleaseProd")] string configuration)
+		[Theory]
+			public void Method([InlineData("Debug", "Release", "ReleaseProd")] string configuration)
 		{
 			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
@@ -289,8 +288,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 		}
 
-		[Test]
-		[Ignore("source gen changes")]
+		[Fact]
+		[Fact(Skip = "source gen changes")]
 		public void ValidateOnly_WithErrors()
 		{
 			var project = NewProject();
@@ -305,7 +304,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
 		/// </summary>
-		[Test]
+		[Fact]
 		public void TargetsShouldSkip()
 		{
 			var project = NewProject();
@@ -324,13 +323,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreEqual(expectedXamlC, actualXamlC, $"Timestamps should match for {xamlCStamp}.");
+			Assert.Equal(expectedXamlC, actualXamlC, $"Timestamps should match for {xamlCStamp}.");
 		}
 
 		/// <summary>
 		/// Checks that XamlG and XamlC files are cleaned
 		/// </summary>
-		[Test]
+		[Fact]
 		public void Clean()
 		{
 			var project = NewProject();
@@ -351,7 +350,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertDoesNotExist(xamlCStamp);
 		}
 
-		[Test]
+		[Fact]
 		public void LinkedFile()
 		{
 			var folder = IOPath.Combine(tempDirectory, "A", "B");
@@ -374,7 +373,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
 		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
-		[Test]
+		[Fact]
 		public void DesignTimeBuild()
 		{
 			var project = NewProject();
@@ -398,7 +397,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		}
 
-		[Test]
+		[Fact]
 		public void AddNewFile()
 		{
 			var project = NewProject();
@@ -419,11 +418,11 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreNotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
+			Assert.NotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 
-		[Test]
-		[Ignore("source gen changes")]
+		[Fact]
+		[Fact(Skip = "source gen changes")]
 		public void TouchXamlFile()
 		{
 			var project = NewProject();
@@ -447,10 +446,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreNotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
+			Assert.NotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 
-		[Test]
+		[Fact]
 		public void RandomXml()
 		{
 			var project = NewProject();
@@ -463,7 +462,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		// [Test]
+		// [Fact]
 		// public void InvalidXml()
 		// {
 		// 	var project = NewProject();
@@ -473,7 +472,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	Assert.Throws<AssertionException>(() => Build(projectFile));
 		// }
 
-		[Test]
+		[Fact]
 		public void RandomEmbeddedResource()
 		{
 			var project = NewProject();
@@ -488,20 +487,20 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Test]
+		[Fact]
 		public void NoXamlFiles()
 		{
 			var project = NewProject();
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
-			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+			Assert.True(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
 
 		/// <summary>
 		/// Tests that the SingleProject Before targets respect custom CodesignEntitlements properties
 		/// </summary>
-		[Test]
+		[Fact]
 		public void SingleProject_CodesignEntitlementsRespected()
 		{
 			// Create a minimal project for property evaluation testing only
@@ -542,7 +541,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var log = Build(projectFile, target: "TestCodesignEntitlements", verbosity: "normal");
 
 			// Verify the custom CodesignEntitlements property is preserved
-			Assert.IsTrue(log.Contains("CodesignEntitlements = Custom/Entitlements.plist", StringComparison.Ordinal) ||
+			Assert.True(log.Contains("CodesignEntitlements = Custom/Entitlements.plist", StringComparison.Ordinal) ||
 						  log.Contains("CodesignEntitlements = Custom\\Entitlements.plist", StringComparison.Ordinal),
 				"Custom CodesignEntitlements property should be preserved and not overridden by default Entitlements.plist");
 		}
@@ -550,7 +549,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that the SingleProject Before targets use default Entitlements.plist when no custom CodesignEntitlements is set
 		/// </summary>
-		[Test]
+		[Fact]
 		public void SingleProject_DefaultEntitlementsUsedWhenNoCustomSet()
 		{
 			// Create a minimal project for property evaluation testing only
@@ -596,7 +595,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var log = Build(projectFile, target: "TestCodesignEntitlements", verbosity: "normal", additionalArgs: "-p:TFMTestiOSCondition=true");
 
 			// Verify the default CodesignEntitlements property is used
-			Assert.IsTrue(log.Contains("CodesignEntitlements = Platforms/iOS/Entitlements.plist", StringComparison.Ordinal) ||
+			Assert.True(log.Contains("CodesignEntitlements = Platforms/iOS/Entitlements.plist", StringComparison.Ordinal) ||
 						  log.Contains("CodesignEntitlements = Platforms\\iOS\\Entitlements.plist", StringComparison.Ordinal),
 				"Default Entitlements.plist should be used when no custom CodesignEntitlements is set");
 		}

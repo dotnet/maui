@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -26,16 +26,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4348(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void GenericBaseClassResolution(bool useCompiledXaml)
 			{
 				var layout = new Gh4348(useCompiledXaml) { BindingContext = new Gh4348VM() };
-				Assert.That(layout.labelCount.Text, Is.EqualTo("2"));
+				Assert.Equal("2", layout.labelCount.Text);
 			}
 		}
 	}

@@ -1,12 +1,10 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class Issue1637
+{	public class Issue1637
 	{
-		[Test]
+		[Fact]
 		public void ImplicitCollectionWithSingleElement()
 		{
 			var xaml = @"
@@ -17,8 +15,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Grid>";
 			var grid = new Grid();
 			Assert.DoesNotThrow(() => grid.LoadFromXaml<Grid>(xaml));
-			Assert.AreEqual(1, grid.RowDefinitions.Count);
-			Assert.IsTrue(grid.RowDefinitions[0].Height.IsStar);
+			Assert.Equal(1, grid.RowDefinitions.Count);
+			Assert.True(grid.RowDefinitions[0].Height.IsStar);
 		}
 	}
 }
