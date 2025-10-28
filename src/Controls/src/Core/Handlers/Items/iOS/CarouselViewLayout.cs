@@ -8,13 +8,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public class CarouselViewLayout : ItemsViewLayout
 	{
 		readonly WeakReference<CarouselView> _carouselView;
-		readonly ItemsLayout _itemsLayout;
+		readonly WeakReference<ItemsLayout> _itemsLayout;
+		ItemsLayout ItemsLayout
+		{
+			get
+			{
+				_itemsLayout.TryGetTarget(out var itemsLayout);
+				return itemsLayout;
+			}
+			set
+			{
+				_itemsLayout.SetTarget(value);
+			}
+		}
 		CGPoint? _pendingOffset;
 
 		public CarouselViewLayout(ItemsLayout itemsLayout, CarouselView carouselView) : base(itemsLayout)
 		{
 			_carouselView = new(carouselView);
-			_itemsLayout = itemsLayout;
+			_itemsLayout = new(itemsLayout);
 		}
 
 		public override void ConstrainTo(CGSize size)
@@ -38,7 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+			if (ItemsLayout is LinearItemsLayout linearItemsLayout)
 				return (nfloat)linearItemsLayout.ItemSpacing;
 
 			return base.GetMinimumInteritemSpacingForSection(collectionView, layout, section);

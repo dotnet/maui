@@ -38,5 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
+
+		static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
+		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateLayoutManager();
+		}
 	}
 }

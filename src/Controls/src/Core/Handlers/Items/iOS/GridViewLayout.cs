@@ -10,11 +10,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class GridViewLayout : ItemsViewLayout
 	{
-		readonly GridItemsLayout _itemsLayout;
+		readonly WeakReference<GridItemsLayout> _itemsLayout;
+
+		GridItemsLayout ItemsLayout
+		{
+			get
+			{
+				_itemsLayout.TryGetTarget(out var itemsLayout);
+				return itemsLayout;
+			}
+			set
+			{
+				_itemsLayout.SetTarget(value);
+			}
+		}
 
 		public GridViewLayout(GridItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy) : base(itemsLayout, itemSizingStrategy)
 		{
-			_itemsLayout = itemsLayout;
+			_itemsLayout = new(itemsLayout);
 		}
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
@@ -34,18 +47,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ConstrainTo(CGSize size)
 		{
+			var itemsLayout = ItemsLayout;
 			var availableSpace = ScrollDirection == UICollectionViewScrollDirection.Vertical
 					? size.Width : size.Height;
 
 			var spacing = (nfloat)(ScrollDirection == UICollectionViewScrollDirection.Vertical
-					? _itemsLayout.HorizontalItemSpacing
-					: _itemsLayout.VerticalItemSpacing);
+					? itemsLayout.HorizontalItemSpacing
+					: itemsLayout.VerticalItemSpacing);
 
-			spacing = ReduceSpacingToFitIfNeeded(availableSpace, spacing, _itemsLayout.Span);
+			spacing = ReduceSpacingToFitIfNeeded(availableSpace, spacing, itemsLayout.Span);
 
-			spacing *= (_itemsLayout.Span - 1);
+			spacing *= (itemsLayout.Span - 1);
 
-			ConstrainedDimension = (availableSpace - spacing) / _itemsLayout.Span;
+			ConstrainedDimension = (availableSpace - spacing) / itemsLayout.Span;
 
 			// We need to truncate the decimal part of ConstrainedDimension
 			// or we occasionally run into situations where the rows/columns don't fit	
@@ -194,22 +208,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
+			var itemsLayout = ItemsLayout;
 			var requestedSpacing = ScrollDirection == UICollectionViewScrollDirection.Horizontal
-				? (nfloat)_itemsLayout.VerticalItemSpacing
-				: (nfloat)_itemsLayout.HorizontalItemSpacing;
+				? (nfloat)itemsLayout.VerticalItemSpacing
+				: (nfloat)itemsLayout.HorizontalItemSpacing;
 
 			var availableSpace = ScrollDirection == UICollectionViewScrollDirection.Horizontal
 				? collectionView.Frame.Height
 				: collectionView.Frame.Width;
 
-			return ReduceSpacingToFitIfNeeded(availableSpace, requestedSpacing, _itemsLayout.Span);
+			return ReduceSpacingToFitIfNeeded(availableSpace, requestedSpacing, itemsLayout.Span);
 		}
 
 		void CenterAlignCellsInColumn(UICollectionViewLayoutAttributes preferredAttributes)
 		{
 			// Determine the set of cells above this one
 			var index = preferredAttributes.IndexPath;
-			var span = _itemsLayout.Span;
+			var span = ItemsLayout.Span;
 
 			var column = index.Item / span;
 			var start = (int)column * span;
@@ -257,6 +272,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool NeedsPartialColumnAdjustment(int section = 0)
 		{
+			var itemsLayout = ItemsLayout;
 			if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
 			{
 				// The bug only occurs with Horizontal scrolling
@@ -280,13 +296,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var itemCount = CollectionView.NumberOfItemsInSection(section);
 
-			if (itemCount < _itemsLayout.Span)
+			if (itemCount < itemsLayout.Span)
 			{
 				// If there is just one partial column, no problem; UICollectionViewFlowLayout gets it right
 				return false;
 			}
 
-			if (itemCount % _itemsLayout.Span == 0)
+			if (itemCount % itemsLayout.Span == 0)
 			{
 				// All of the columns are full; the bug only occurs when we have a partial column
 				return false;

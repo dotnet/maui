@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
@@ -113,16 +114,50 @@ namespace Microsoft.Maui.Controls
 
 		internal static readonly BindableProperty InternalItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
-				null, propertyChanged: OnInternalItemsLayoutPropertyChanged,
-				defaultValueCreator: (b) => LinearItemsLayout.CreateVerticalDefault());
+				defaultValueCreator: CreateDefaultItemsLayout, propertyChanged: OnInternalItemsLayoutPropertyChanged);
+
+		static IItemsLayout CreateDefaultItemsLayout(BindableObject bindable)
+		{
+			var layout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+
+			if (layout is BindableObject bo && bindable is ItemsView itemsView)
+			{
+				SetInheritedBindingContext(bo, itemsView.BindingContext);
+				bo.PropertyChanged += itemsView.OnItemsLayoutPropertyChanged;
+			}
+			
+			return layout;
+		}
 
 		static void OnInternalItemsLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			if (bindable is not ItemsView itemsView)
+				return;
+
 			if (oldValue is BindableObject boOld)
+			{
 				SetInheritedBindingContext(boOld, null);
+				boOld.PropertyChanged -= itemsView.OnItemsLayoutPropertyChanged;
+			}
 
 			if (newValue is BindableObject boNew)
+			{
 				SetInheritedBindingContext(boNew, bindable.BindingContext);
+				boNew.PropertyChanged += itemsView.OnItemsLayoutPropertyChanged;
+			}
+		}
+
+		void OnItemsLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+				e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+				e.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
+				e.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
+				e.PropertyName == nameof(GridItemsLayout.Span) ||
+				e.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+			{
+				Handler?.Invoke("ItemsLayoutProperties", e);
+			}
 		}
 
 		protected IItemsLayout InternalItemsLayout

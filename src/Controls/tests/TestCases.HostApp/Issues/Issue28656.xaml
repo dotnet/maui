@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28656"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="Issue28656">
+  <Grid RowDefinitions="Auto,*,*">
+        <Button
+            Command="{Binding ChangeLayoutCommand}"
+            AutomationId="ChangeLayoutButton"
+            Text="Change layout type"/>
+        <local:CollectionView2 Grid.Row="1"
+                        ItemsSource="{Binding Items}">
+            <local:CollectionView2.Triggers>
+                <DataTrigger
+                    Binding="{Binding IsGridLayout}"
+                    TargetType="CollectionView"
+                    Value="False">
+                    <Setter Property="ItemsLayout">
+                        <Setter.Value>
+                            <GridItemsLayout Orientation="Vertical"
+                                             Span="2"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+                <DataTrigger
+                    Binding="{Binding IsGridLayout}"
+                    TargetType="CollectionView"
+                    Value="True">
+                    <Setter Property="ItemsLayout">
+                        <Setter.Value>
+                            <LinearItemsLayout Orientation="Vertical"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </local:CollectionView2.Triggers>
+            <local:CollectionView2.ItemTemplate>
+                <DataTemplate x:DataType="{x:Null}">
+                    <Grid>
+                        <Grid
+                            BackgroundColor="Green"
+                            HeightRequest="300"
+                            Margin="10">
+                            <Label
+                                FontSize="26"
+                                HorizontalOptions="Center"
+                                Text="{Binding}"
+                                TextColor="Blue"
+                                VerticalOptions="Center"/>
+                        </Grid>
+                    </Grid>
+
+                </DataTemplate>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
+        <local:CollectionView2 Grid.Row="2"
+                        ItemsLayout="{Binding ItemsLayout}"
+                        ItemsSource="{Binding Items}">
+            <local:CollectionView2.ItemTemplate>
+                <DataTemplate x:DataType="{x:Null}">
+                    <Grid>
+                        <Grid
+                            BackgroundColor="Green"
+                            HeightRequest="300"
+                            Margin="10">
+                            <Label
+                                FontSize="26"
+                                HorizontalOptions="Center"
+                                Text="{Binding}"
+                                TextColor="Blue"
+                                VerticalOptions="Center"/>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
+    </Grid>
+</ContentPage>

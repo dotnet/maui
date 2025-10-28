@@ -8,11 +8,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		public StructuredItemsViewHandler() : base(StructuredItemsViewMapper)
+		public StructuredItemsViewHandler() : base(StructuredItemsViewMapper, StructuredItemsViewCommandMapper)
 		{
 
 		}
-		public StructuredItemsViewHandler(PropertyMapper mapper = null) : base(mapper ?? StructuredItemsViewMapper)
+		public StructuredItemsViewHandler(PropertyMapper mapper = null) : base(mapper ?? StructuredItemsViewMapper,StructuredItemsViewCommandMapper)
 		{
 
 		}
@@ -31,6 +31,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy
+		};
+
+		//TODO Make this public in .NET10
+		internal static CommandMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewCommandMapper = new(ViewCommandMapper)
+		{
+			["ItemsLayoutProperties"] = MapItemsLayoutPropertyChanged
 		};
 
 	}

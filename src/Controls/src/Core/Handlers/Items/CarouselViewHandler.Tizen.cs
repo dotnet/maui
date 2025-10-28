@@ -38,5 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			(handler.PlatformView as MauiCarouselView)?.UpdateLayoutManager();
 		}
+
+		static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		{
+			(handler.PlatformView as MauiCarouselView)?.UpdateLayoutManager();
+		}
 	}
 }
