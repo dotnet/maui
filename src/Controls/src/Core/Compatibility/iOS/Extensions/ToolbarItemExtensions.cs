@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
+		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, Color itemColor)
+		{
+			return new PrimaryToolbarItem(item, false, itemColor);
+		}
+
 		public static UIKit.UIBarButtonItem ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName)
 		{
 			return ToUIBarButtonItem(item, false, false);
@@ -30,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			readonly bool _forceName;
 			readonly WeakReference<ToolbarItem> _item;
 
-			public PrimaryToolbarItem(ToolbarItem item, bool forceName)
+			public PrimaryToolbarItem(ToolbarItem item, bool forceName, Color itemColor = null)
 			{
 				_forceName = forceName;
 				_item = new(item);
@@ -38,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty && !forceName)
 					UpdateIconAndStyle(item);
 				else
-					UpdateTextAndStyle(item);
+					UpdateTextAndStyle(item, itemColor);
 				UpdateIsEnabled(item);
 
 				Clicked += OnClicked;
@@ -123,13 +128,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Enabled = item.IsEnabled;
 			}
 
-			void UpdateTextAndStyle(ToolbarItem item)
+			void UpdateTextAndStyle(ToolbarItem item, Color itemColor = null)
 			{
 				Title = item.Text;
 #pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios8.0")]
 				Style = UIBarButtonItemStyle.Bordered;
 #pragma warning restore CA1416, CA1422
 				Image = null;
+				if(itemColor != null)
+					TintColor = itemColor.ToPlatform();
 			}
 		}
 
