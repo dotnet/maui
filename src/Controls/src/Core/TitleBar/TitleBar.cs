@@ -74,6 +74,17 @@ namespace Microsoft.Maui.Controls
 		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var titlebar = (TitleBar)bindable;
+
+			if (oldValue is BindableObject oldLeadingContent)
+			{
+				SetInheritedBindingContext(oldLeadingContent, null);
+			}
+
+			if (newValue is BindableObject newLeadingContent)
+			{
+				SetInheritedBindingContext(newLeadingContent, bindable.BindingContext);
+			}
+
 			if (newValue is null)
 			{
 				titlebar.ApplyVisibleState(LeadingHiddenState);
@@ -128,6 +139,17 @@ namespace Microsoft.Maui.Controls
 		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var titlebar = (TitleBar)bindable;
+
+			if (oldValue is BindableObject oldContent)
+			{
+				SetInheritedBindingContext(oldContent, null);
+			}
+
+			if (newValue is BindableObject newContent)
+			{
+				SetInheritedBindingContext(newContent, bindable.BindingContext);
+			}
+
 			if (newValue is null)
 			{
 				titlebar.ApplyVisibleState(ContentHiddenState);
@@ -142,6 +164,17 @@ namespace Microsoft.Maui.Controls
 		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var titlebar = (TitleBar)bindable;
+
+			if (oldValue is BindableObject oldTrailingContent)
+			{
+				SetInheritedBindingContext(oldTrailingContent, null);
+			}
+
+			if (newValue is BindableObject newTrailingContent)
+			{
+				SetInheritedBindingContext(newTrailingContent, bindable.BindingContext);
+			}
+
 			if (newValue is null)
 			{
 				titlebar.ApplyVisibleState(TrailingHiddenState);
@@ -151,6 +184,23 @@ namespace Microsoft.Maui.Controls
 				titlebar.ApplyVisibleState(TrailingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			if (Content is BindableObject content)
+			{
+				SetInheritedBindingContext(content, BindingContext);
+			}
+			if (TrailingContent is BindableObject trailingContent)
+			{
+				SetInheritedBindingContext(trailingContent, BindingContext);
+			}
+			if (LeadingContent is BindableObject leadingContent)
+			{
+				SetInheritedBindingContext(leadingContent, BindingContext);
+			}
+			base.OnBindingContextChanged();
 		}
 
 		/// <summary>
