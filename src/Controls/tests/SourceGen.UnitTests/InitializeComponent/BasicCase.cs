@@ -60,6 +60,20 @@ internal partial class TestPage
 {
 	private partial void InitializeComponent()
 	{
+		// Fallback to Runtime inflation if the page was updated by HotReload
+		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
+		{
+			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
+			ResourcePath = global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof(global::Test.TestPage)),
+			Instance = this,
+		});
+
+		if (rlr?.ResourceContent != null)
+		{
+			this.InitializeComponentRuntime();
+			return;
+		}
+
 		var button = new global::Microsoft.Maui.Controls.Button();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;

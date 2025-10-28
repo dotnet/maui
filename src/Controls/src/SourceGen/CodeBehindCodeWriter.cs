@@ -149,12 +149,16 @@ static class CodeBehindCodeWriter
 				InitComp("InitializeComponent");
 			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponent");
-			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen) {
 				InitComp("InitializeComponent", partialsignature: true);
+				//generate InitCompRuntime for HotReload fallback
+				if (projItem.EnableDiagnostics)
+					InitComp("InitializeComponentRuntime");
+			}
 		}
 		else
 		{
-			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime)
+			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime || projItem.EnableDiagnostics)
 				InitComp("InitializeComponentRuntime");
 			if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponentXamlC", empty: true);

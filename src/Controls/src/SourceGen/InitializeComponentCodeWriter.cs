@@ -93,6 +93,26 @@ static class InitializeComponentCodeWriter
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 				using (newblock())
 				{
+					if (xamlItem.ProjectItem.EnableDiagnostics)
+                    {
+						codeWriter.WriteLine(
+$$"""
+// Fallback to Runtime inflation if the page was updated by HotReload
+		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
+		{
+			AssemblyName = typeof({{rootType.ToFQDisplayString()}}).Assembly.GetName(),
+			ResourcePath = global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({{rootType.ToFQDisplayString()}})),
+			Instance = this,
+		});
+
+		if (rlr?.ResourceContent != null)
+		{
+			this.InitializeComponentRuntime();
+			return;
+		}
+
+""");
+					}
 					Visit(root, sgcontext);
 
 					foreach (var localMethod in sgcontext.LocalMethods)
