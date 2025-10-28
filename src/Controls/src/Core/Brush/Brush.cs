@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls
 			return brush == null || brush.IsEmpty;
 		}
 
-		internal static bool HasTransparentBackground(Brush background)
+		internal static bool IsTransparent(Brush background)
 		{
 			if (IsNullOrEmpty(background))
 			{
