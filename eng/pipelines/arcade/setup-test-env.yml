@@ -97,11 +97,11 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
-- template: /eng/pipelines/common/setup-android-dependencies.yml
-  parameters:
-    mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    repoLogPath: ${{ parameters.repoLogPath }}
-    androidSdkRoot: ${{ parameters.androidSdkRoot }}
+# - template: /eng/pipelines/common/setup-android-dependencies.yml
+#   parameters:
+#     mauiSourcePath: ${{ parameters.mauiSourcePath }}
+#     repoLogPath: ${{ parameters.repoLogPath }}
+#     androidSdkRoot: ${{ parameters.androidSdkRoot }}
 
 - ${{ if eq(parameters.buildMSBuildTasks, true) }}:
   - template: /eng/pipelines/common/run-dotnet-preview.yml
