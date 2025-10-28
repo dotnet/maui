@@ -12,7 +12,14 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs/*" />
+	/// <summary>
+	/// A <see cref="View" /> that presents HTML content.
+	/// </summary>
+	/// <remarks>
+	/// The WebView control provides a way to display web content within your .NET MAUI application.
+	/// You can load web pages from URLs, display HTML strings, or load local HTML files.
+	/// The WebView supports navigation events and JavaScript evaluation.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
@@ -55,7 +62,9 @@ namespace Microsoft.Maui.Controls
 		bool _canGoBack;
 		bool _canGoForward;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="WebView" /> element with default values.
+		/// </summary>
 		public WebView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<WebView>>(() => new PlatformConfigurationRegistry<WebView>(this));
@@ -68,7 +77,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CanGoBackPropertyKey, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoBack']/Docs/*" />
+		/// <summary>
+		/// Gets a value that indicates whether the user can navigate to previous pages.
+		/// </summary>
 		public bool CanGoBack
 		{
 			get { return (bool)GetValue(CanGoBackProperty); }
@@ -81,27 +92,39 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CanGoForwardPropertyKey, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForward']/Docs/*" />
+		/// <summary>
+		/// Gets a value that indicates whether the user can navigate forward.
+		/// </summary>
 		public bool CanGoForward
 		{
 			get { return (bool)GetValue(CanGoForwardProperty); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='UserAgent']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the user agent string that this <see cref="WebView" /> object uses.
+		/// </summary>
+		/// <remarks>
+		/// The default value is the default User Agent of the underlying platform browser, or <see langword="null" /> if it cannot be determined.
+		/// If the parameter is <see langword="null" /> the User Agent will not be updated and the current User Agent will remain.
+		/// </remarks>
 		public string UserAgent
 		{
 			get { return (string)GetValue(UserAgentProperty); }
 			set { SetValue(UserAgentProperty, value ?? UserAgent); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Cookies']/Docs/*" />
+		/// <summary>
+		/// When set this will act as a sync for cookies.
+		/// </summary>
 		public CookieContainer Cookies
 		{
 			get { return (CookieContainer)GetValue(CookiesProperty); }
 			set { SetValue(CookiesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="WebViewSource" /> object that represents the location that this <see cref="WebView" /> object displays.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(WebViewSourceTypeConverter))]
 		public WebViewSource Source
 		{
@@ -109,14 +132,22 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SourceProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Eval']/Docs/*" />
+		/// <summary>
+		/// Evaluates the script that is specified by <paramref name="script" />.
+		/// </summary>
+		/// <param name="script">A script to evaluate.</param>
 		public void Eval(string script)
 		{
 			Handler?.Invoke(nameof(IWebView.Eval), script);
 			_evalRequested?.Invoke(this, new EvalRequested(script));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='EvaluateJavaScriptAsync']/Docs/*" />
+		/// <summary>
+		/// On platforms that support JavaScript evaluation, evaluates <paramref name="script" />.
+		/// </summary>
+		/// <param name="script">The script to evaluate.</param>
+		/// <returns>A task that contains the result of the evaluation as a string.</returns>
+		/// <remarks>Native JavaScript evaluation is supported neither on Tizen nor GTK (Linux).</remarks>
 		public async Task<string> EvaluateJavaScriptAsync(string script)
 		{
 			if (script == null)
@@ -163,21 +194,27 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoBack']/Docs/*" />
+		/// <summary>
+		/// Navigates to the previous page.
+		/// </summary>
 		public void GoBack()
 		{
 			Handler?.Invoke(nameof(IWebView.GoBack));
 			_goBackRequested?.Invoke(this, EventArgs.Empty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='GoForward']/Docs/*" />
+		/// <summary>
+		/// Navigates to the next page in the list of visited pages.
+		/// </summary>
 		public void GoForward()
 		{
 			Handler?.Invoke(nameof(IWebView.GoForward));
 			_goForwardRequested?.Invoke(this, EventArgs.Empty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Reload']/Docs/*" />
+		/// <summary>
+		/// Reloads the current page.
+		/// </summary>
 		public void Reload()
 		{
 			Handler?.Invoke(nameof(IWebView.Reload));

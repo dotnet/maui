@@ -160,29 +160,27 @@ namespace Microsoft.Maui.DeviceTests
 			var labels = new List<WeakReference>();
 			VerticalCell cell = null;
 
+			var bindingContext = "foo";
+			var collectionView = new MyUserControl
 			{
-				var bindingContext = "foo";
-				var collectionView = new MyUserControl
-				{
-					Labels = labels
-				};
-				collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
+				Labels = labels
+			};
+			collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
 
-				var handler = await CreateHandlerAsync(collectionView);
+			var handler = await CreateHandlerAsync(collectionView);
 
-				await InvokeOnMainThreadAsync(() =>
-				{
-					cell = new VerticalCell(CGRect.Empty);
-					cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-				});
+			await InvokeOnMainThreadAsync(() =>
+			{
+				cell = new VerticalCell(CGRect.Empty);
+				cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
+			});
 
-				Assert.NotNull(cell);
-			}
+			Assert.NotNull(cell);
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
-			await AssertionExtensions.WaitForGC(labels.ToArray());
+			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
 		}
 
@@ -251,6 +249,47 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(source.IsIndexPathValid(valid));
 			Assert.False(source.IsIndexPathValid(invalidItem));
 			Assert.False(source.IsIndexPathValid(invalidSection));
+		}
+
+		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
+		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
+		{
+			SetupBuilder();
+
+			WeakReference weakCollectionView = null;
+			WeakReference weakHandler = null;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var collectionView = new CollectionView
+				{
+					ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
+					ItemTemplate = new DataTemplate(() => new Label())
+					// Note: Not setting ItemsLayout - using the default
+				};
+
+				weakCollectionView = new WeakReference(collectionView);
+
+				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+
+				// Verify handler is created
+				Assert.NotNull(handler);
+
+				// Store weak reference to the handler
+				weakHandler = new WeakReference(handler);
+
+				// Disconnect the handler
+				((IElementHandler)handler).DisconnectHandler();
+			});
+
+			// Force garbage collection
+			await AssertionExtensions.WaitForGC(weakCollectionView, weakHandler);
+
+			// Verify the CollectionView was collected
+			Assert.False(weakCollectionView.IsAlive, "CollectionView should have been garbage collected");
+
+			// Verify the handler was collected
+			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
 		}
 
 		/// <summary>

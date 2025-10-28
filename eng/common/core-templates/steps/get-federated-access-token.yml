@@ -31,6 +31,7 @@ steps:
   inputs:
     azureSubscription: ${{ parameters.federatedServiceConnection }}
     scriptType: 'pscore'
+    addSpnToEnvironment: true
     scriptLocation: 'inlineScript'
     inlineScript: |
       $accessToken = az account get-access-token --query accessToken --resource ${{ parameters.resource }} --output tsv

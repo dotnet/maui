@@ -153,6 +153,9 @@ public class IssueXXXXX : _IssuesUITest
 - Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
 - Verify AutomationId references match between XAML and test code
 - Ensure tests follow the established naming and inheritance patterns
+- There should be only one `[Category]` attribute per test, pick the most appropriate one
+
+IMPORTANT NOTE: When a new UI test category is added to `UITestCategories.cs`, we need to also update the `ui-tests.yml` to include this new category. Make sure to detect this in your reviews.
 
 ### Code Formatting
 

@@ -26,6 +26,7 @@ steps:
   inputs:
     azureSubscription: ${{ parameters.federatedServiceConnection }}
     scriptType: 'pscore'
+    addSpnToEnvironment: true
     scriptLocation: 'inlineScript'
     inlineScript: |
       # Calculate the expiration of the SAS token and convert to UTC

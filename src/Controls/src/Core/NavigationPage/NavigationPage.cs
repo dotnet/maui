@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
-#if WINDOWS || ANDROID || TIZEN
-		const bool UseMauiHandler = true;
-#else
+#if IOS || MACCATALYST
 		const bool UseMauiHandler = false;
+#else
+		const bool UseMauiHandler = true;
 #endif
 
 		bool _setForMaui;
@@ -869,11 +869,13 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						// Move the SendNavigating here so that it's fired prior to the stack being modified
+						// This ensures consistent event ordering across all platforms (iOS, Catalyst, Android, Windows)
+						Owner.SendNavigating(previousPage);
 						Owner.PushPage(root);
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},
