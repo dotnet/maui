@@ -13,45 +13,62 @@ class GeneralWrapperView : MauiView, ICrossPlatformLayout
 		UpdatePlatformView(childView, mauiContext);
 	}
 
-	public void Disconnect()
-	{
-		if (ChildView is null || !ChildView.TryGetTarget(out var childView))
-		{
-			return;
-		}
+    public static void Disconnect(MauiView view, WeakReference<IView>? childViewRef)
+    {
+        view.RemoveFromSuperview();
 
-		childView.DisconnectHandlers();
-	}
+        if (childViewRef is not null && childViewRef.TryGetTarget(out var childView))
+        {
+            childView.DisconnectHandlers();
+        }
 
-	public void UpdatePlatformView(IView? newChildView, IMauiContext mauiContext)
-	{
-		if (Subviews.Length > 0)
-		{
-			Subviews[0].RemoveFromSuperview();
-		}
+        for (int i = view.Subviews.Length - 1; i >= 0; i--)
+        {
+            view.Subviews[i].RemoveFromSuperview();
+        }
+    }
 
-		if (newChildView is null)
-		{
-			ChildView = null;
-			return;
-		}
+    public void Disconnect()
+    {
+        Disconnect(this, ChildView);
+    }
 
-		ChildView = new(newChildView);
+    public static void UpdatePlatformView(MauiView view, IView? newChildView, IMauiContext mauiContext, out WeakReference<IView>? childViewRef)
+    {
+        if (view.Subviews.Length > 0)
+        {
+            view.Subviews[0].RemoveFromSuperview();
+        }
+
+        if (newChildView is null)
+        {
+            view.View = null;
+            childViewRef = null;
+            return;
+        }
+
+        childViewRef = new(newChildView);
 
 		var nativeView = newChildView.ToPlatform(mauiContext);
 
-		if (nativeView is WrapperView)
-		{
-			// Disable clipping for WrapperView to allow the shadow to be displayed
-			ClipsToBounds = false;
-		}
-		else
-		{
-			ClipsToBounds = true;
-		}
+        if (nativeView is WrapperView)
+        {
+            // Disable clipping for WrapperView to allow the shadow to be displayed
+            view.ClipsToBounds = false;
+        }
+        else
+        {
+            view.ClipsToBounds = true;
+        }
 
-		AddSubview(nativeView);
-	}
+        view.AddSubview(nativeView);
+    }
+
+    public void UpdatePlatformView(IView? newChildView, IMauiContext mauiContext)
+    {
+        UpdatePlatformView(this, newChildView, mauiContext, out var weakReference);
+        ChildView = weakReference;
+    }
 
 	public Size CrossPlatformArrange(Rect bounds)
 	{

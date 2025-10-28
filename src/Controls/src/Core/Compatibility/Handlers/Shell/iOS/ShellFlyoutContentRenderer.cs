@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void ReMeasureFooter()
 		{
-			var size = _footerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
+			var size = _footerView?.UpdateSize(new CGSize(View.Frame.Width, double.PositiveInfinity));
 			if (size is not null)
 				UpdateFooterPosition(size.Value.Height);
 		}
