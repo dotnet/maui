@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 				_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
-				if (ContentSize != contentSize)
+				if (ContentSize != contentSize || frameChanged)
 				{
 					ContentSize = contentSize;
 
