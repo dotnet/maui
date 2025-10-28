@@ -51,7 +51,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Extensions.Configuration",
-          "version": "10.0.0-preview.7.25368.105"
+          "version": "10.0.0"
         }
       }
     },
@@ -60,7 +60,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Extensions.DependencyInjection",
-          "version": "10.0.0-preview.7.25368.105"
+          "version": "10.0.0"
         }
       }
     },
@@ -69,7 +69,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Extensions.Logging.Debug",
-          "version": "10.0.0-preview.7.25368.105"
+          "version": "10.0.0"
         }
       }
     },
@@ -105,7 +105,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.WindowsAppSDK",
-          "version": "1.7.250606001"
+          "version": "1.7.250909003"
         }
       }
     },

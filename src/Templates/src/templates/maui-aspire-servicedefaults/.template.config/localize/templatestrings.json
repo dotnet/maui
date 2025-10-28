@@ -1,7 +1,6 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI for .NET Aspire Service Defaults",
-  "_name.comment": "{Locked='.NET MAUI', Locked='.NET Aspire', Locked='Service Defaults'}",
   "description": "A project template for creating a .NET Aspire service defaults project for .NET MAUI.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
