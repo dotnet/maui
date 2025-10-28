@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Platform
 		IIndicatorView? _indicatorView;
 
 		bool _isTemplateIndicator;
+		
+		static readonly IndicatorAccessibilityDelegate _accessibilityDelegate = new();
 
 		public MauiPageControl(Context? context) : base(context)
 		{
@@ -155,7 +157,7 @@ namespace Microsoft.Maui.Platform
 			imageView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 			
 			// Set accessibility delegate to prevent "button" announcement
-			imageView.SetAccessibilityDelegate(new IndicatorAccessibilityDelegate());
+			imageView.SetAccessibilityDelegate(_accessibilityDelegate);
 			
 			// Set the accessibility content description
 			UpdateIndicatorAccessibility(imageView, position, selectedPosition);
