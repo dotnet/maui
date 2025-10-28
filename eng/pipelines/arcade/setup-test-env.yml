@@ -41,7 +41,7 @@ steps:
     xcrun xcode-select --print-path
     xcodebuild -version
     sudo xcodebuild -license accept
-    if [[ ${XCODE_VERSION/\.*/} -ge 26 ]]; then
+    if [[ ${XCODE/\.*/} -ge 26 ]]; then
       sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
     else
       sudo xcodebuild -downloadPlatform iOS
