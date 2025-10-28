@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
@@ -138,6 +139,26 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
 		}
 
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current == null)
+				return;
+
+			if (args.NewHandler == null || args.OldHandler is not null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			if (args.NewHandler != null && args.OldHandler == null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(PlaceholderColor));
+			OnPropertyChanged(nameof(TextColor));
+			OnPropertyChanged(nameof(CancelButtonColor));
+		}
+
 		ICommand ICommandElement.Command => SearchCommand;
 
 		object ICommandElement.CommandParameter => SearchCommandParameter;
@@ -171,7 +192,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		bool ITextInput.IsTextPredictionEnabled => true;
+		bool ITextInput.IsTextPredictionEnabled => IsTextPredictionEnabled;
 
 		void ISearchBar.SearchButtonPressed()
 		{

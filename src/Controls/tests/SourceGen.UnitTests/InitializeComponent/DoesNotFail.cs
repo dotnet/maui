@@ -1,11 +1,11 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void Test()
 	{
 		var xaml =
@@ -23,6 +23,7 @@ public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
             <x:Int32>32</x:Int32>
         </x:Array>
     </ContentPage.Resources>
+	<Label Text="{Binding Path=., Converter={StaticResource reverseConverter}}" x:DataType="x:String"/>
 </ContentPage>
 """;
 
@@ -47,7 +48,7 @@ public partial class TestPage : ContentPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		// Assert.AreEqual(expected, generated);
 	}

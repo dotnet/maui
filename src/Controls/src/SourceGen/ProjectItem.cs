@@ -7,6 +7,8 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 {
+	private readonly AdditionalText _additionalText = AdditionalText;
+	
 	public string Configuration
 		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
@@ -30,7 +32,11 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsFalse("build_metadata.additionalfiles.EnableDiagnostics"))
 				return false;
-			return Options.IsTrue("build_property.EnableMauiXamlDiagnostics");
+			if (Options.IsTrue("build_property.EnableMauiXamlDiagnostics"))
+				return true;
+			if (Options.IsFalse("build_property.EnableMauiXamlDiagnostics"))
+				return false;
+			return !Configuration.Equals("Release", StringComparison.OrdinalIgnoreCase);
 		}
 	}
 
@@ -66,5 +72,5 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		=> Options.GetValueOrNull("build_property.targetFramework");
 
 	public string? TargetPath
-		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
+		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", _additionalText.Path);
 }

@@ -64,7 +64,7 @@
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.zh-Hans.resx" Link="Resources\ErrorMessages.zh-Hans.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.zh-Hant.resx" Link="Resources\ErrorMessages.zh-Hant.resx" />
 
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.resx" Link="Resources\xls\MauiGResources.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.resx" Link="Resources\MauiGResources.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.cs.resx" Link="Resources\xlf\MauiGResources.cs.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.de.resx" Link="Resources\xlf\MauiGResources.de.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.es.resx" Link="Resources\xlf\MauiGResources.es.resx" />

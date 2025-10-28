@@ -15,15 +15,19 @@ class PrePost : IDisposable
 	/// <param name="iXmlLineInfo"></param>
 	/// <param name="fileName"></param>
 	/// <returns></returns>
-	public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
+	public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
 	{
-		static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
-			=> codeWriter.WriteLineNoTabs($"#line {(iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1)} \"{fileName}\"");
+		// Emit #line with an absolute path since relative paths have undefined behavior (https://github.com/dotnet/roslyn/issues/71202#issuecomment-1874649780)
+		static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
+		{
+			var lineNumber = iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1;
+			codeWriter.WriteLineNoTabs($"#line {lineNumber} \"{projectItem?.TargetPath}\"");
+		}
 
 		static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
 			=> codeWriter.WriteLineNoTabs("#line default");
 
-		return new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
+		return new(() => LineInfo(codeWriter, iXmlLineInfo, projectItem), () => LineDefault(codeWriter, iXmlLineInfo));
 	}
 
 	public static PrePost NoBlock() =>

@@ -11,6 +11,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Contacts;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Geolocation;
+using Windows.Media.Capture;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -173,6 +174,57 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Microphone : BasePlatformPermission
 		{
+			/// <inheritdoc/>
+			protected override Func<IEnumerable<string>> RequiredDeclarations => () => ["microphone"];
+
+			/// <inheritdoc/>
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				EnsureDeclared();
+				return Task.FromResult(CheckStatus() switch
+				{
+					DeviceAccessStatus.Allowed => PermissionStatus.Granted,
+					DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
+					DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
+					_ => PermissionStatus.Unknown,
+				});
+			}
+
+			/// <inheritdoc/>
+			public override async Task<PermissionStatus> RequestAsync()
+			{
+				EnsureDeclared();
+
+				// If already explicitly allowed, return that
+				var status = CheckStatus();
+				if (status == DeviceAccessStatus.Allowed)
+					return PermissionStatus.Granted;
+
+				try
+				{
+					var settings = new MediaCaptureInitializationSettings
+					{
+						StreamingCaptureMode = StreamingCaptureMode.Audio
+					};
+
+					using (var mediaCapture = new MediaCapture())
+					{
+						await mediaCapture.InitializeAsync(settings);
+						return PermissionStatus.Granted;
+					}
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return PermissionStatus.Denied;
+				}
+				catch
+				{
+					return PermissionStatus.Unknown;
+				}
+			}
+
+			private DeviceAccessStatus CheckStatus()
+				=> DeviceAccessInformation.CreateFromDeviceClass(DeviceClass.AudioCapture).CurrentStatus;
 		}
 
 		public partial class NearbyWifiDevices : BasePlatformPermission

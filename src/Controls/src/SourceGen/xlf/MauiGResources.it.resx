@@ -118,17 +118,83 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
-    <value>Si è verificato un errore durante l'analisi di XAML: {0}.</value>
+    <value>Errore durante l'analisi di XAML: {0}.</value>
+    <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>L'analisi XAML non è riuscita</value>
+    <value>Analisi XAML non riuscita</value>
   </data>
-  <data name="AmbiguousTypeTitle" xml:space="preserve">
-    <value>Ambiguous Type</value>
-    <comment>/</comment>
+  <data name="ExpressionNotClosed" xml:space="preserve">
+    <value>L'espressione deve terminare con '}'.</value>
   </data>
-  <data name="AmbiguousTypeMessage" xml:space="preserve">
-    <value>Multiple names found in the current xml namespace. use a more specific prefix.</value>
-    <comment>/</comment>
+  <data name="RectConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in Rect; il formato previsto è "x, y, w, h".</value>
+  </data>
+  <data name="ConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in "{1}".</value>
+  </data>
+  <data name="PointConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in Point; il formato previsto è "x, y".</value>
+  </data>
+  <data name="ThicknessConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in Thickness; il valore previsto è "h, v" or "l, t, r, b" o "l".</value>
+  </data>
+  <data name="CornerRadiusConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in CornerRadius; il valore previsto è "tl, tr, bl, br" o "l".</value>
+  </data>
+  <data name="SymbolResolution" xml:space="preserve">
+    <value>Risoluzione dei simboli non riuscita</value>
+  </data>
+  <data name="TypeResolutionMessage" xml:space="preserve">
+    <value>Non è possibile risolvere il tipo "{0}".</value>
+    <comment>{0} is a xmlnamespace and typename</comment>
+  </data>
+  <data name="DuplicateTypeError" xml:space="preserve">
+    <value>Sono stati trovati più tipi per "{0}".</value>
+  </data>
+  <data name="MemberResolution" xml:space="preserve">
+    <value>Non sono stati trovati eventi, elementi BindableProperty o proprietà per "{0}" oppure il tipo di valore e la proprietà non corrispondono.</value>
+    <comment>{0} is a property name</comment>
+  </data>
+  <data name="EasingConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in Easing; il valore previsto è "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" o "SpringOut".</value>
+  </data>
+  <data name="FlexBasisConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in FlexBasis; i valori previsti sono "Auto" o "n%", "n" dove n è un valore numerico.</value>
+  </data>
+  <data name="FlowDirectionConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in FlowDirection, i valori previsti sono "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" o "RightToLeft".</value>
+  </data>
+  <data name="GridLengthConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in GridLength; i valori previsti sono "*", "n*", "Auto" o "n" dove n è un valore numerico.</value>
+  </data>
+  <data name="ListStringConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in List&lt;string&gt;; il formato previsto è "x, y, z".</value>
+  </data>
+  <data name="StrokeShapeConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in Shape (o un discendente).</value>
+  </data>
+  <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in ColumnDefinitionCollection; i valori previsti sono "*", "n*", "Auto" or "n" (o una combinazione di questi valori delimitati da virgole) dove n è un valore numerico.</value>
+  </data>
+  <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in RowDefinitionCollection; i valori previsti sono "*", "n*", "Auto" o "n" (o una combinazione di questi valori delimitati da virgole) dove n è un valore numerico.</value>
+  </data>
+  <data name="LayoutOptionsConversionFailed" xml:space="preserve">
+    <value>Non è possibile convertire "{0}" in LayoutOptions; il valore previsto è "Start", "Center, "End" o "Fill".</value>
+  </data>
+  <data name="MethodResolution" xml:space="preserve">
+    <value>Nessun metodo trovato per '{0}'.</value>
+    <comment>0 is a method or ctor name</comment>
+  </data>
+  <data name="DuplicateKeyInRD" xml:space="preserve">
+    <value>chiave duplicata nel dizionario risorse</value>
+    <comment>
+</comment>
+  </data>
+  <data name="ConversionFailedTitle" xml:space="preserve">
+    <value>Conversione non riuscita</value>
+    <comment>
+</comment>
   </data>
 </root>

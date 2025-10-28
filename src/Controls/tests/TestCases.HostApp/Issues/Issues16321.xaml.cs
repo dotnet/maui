@@ -46,8 +46,19 @@ namespace Maui.Controls.Sample.Issues
 
 		async void OpenPrompt(System.Object sender, System.EventArgs e, Func<Page, Task> promptAction)
 		{
-			var uIWindow = new UIWindow();
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
+
+			UIWindow uIWindow;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && keyWindow?.WindowScene is not null)
+			{
+				uIWindow = new UIWindow(keyWindow.WindowScene);
+			}
+			else
+			{
+#pragma warning disable CA1422 // This call site is reachable on iOS < 13.0
+				uIWindow = new UIWindow();
+#pragma warning restore CA1422
+			}
 			if (keyWindow?.WindowLevel == UIWindowLevel.Normal)
 				keyWindow.WindowLevel = -1;
 

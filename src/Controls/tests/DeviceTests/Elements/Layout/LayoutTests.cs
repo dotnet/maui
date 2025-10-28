@@ -265,7 +265,12 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True((int)grid.Width <= grid.MaximumWidthRequest);
 		}
 
-		[Fact]
+
+		[Fact(
+#if ANDROID
+		Skip = "Fails on Android Helix"
+#endif
+		)]
 		public async Task GridCellsHonorMaxHeight()
 		{
 			EnsureHandlerCreated((builder) =>

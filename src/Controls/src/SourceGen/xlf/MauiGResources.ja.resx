@@ -118,17 +118,83 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
-    <value>Xaml の解析中にエラーが発生しました: {0}。</value>
+    <value>XAML の解析中にエラーが発生しました: {0}。</value>
+    <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
     <value>XAML の解析に失敗しました</value>
   </data>
-  <data name="AmbiguousTypeTitle" xml:space="preserve">
-    <value>Ambiguous Type</value>
-    <comment>/</comment>
+  <data name="ExpressionNotClosed" xml:space="preserve">
+    <value>式の末尾は '}' にする必要があります。</value>
   </data>
-  <data name="AmbiguousTypeMessage" xml:space="preserve">
-    <value>Multiple names found in the current xml namespace. use a more specific prefix.</value>
-    <comment>/</comment>
+  <data name="RectConversionFailed" xml:space="preserve">
+    <value>"{0}" を Rect に変換できません。想定される形式は "x, y, w, h" です</value>
+  </data>
+  <data name="ConversionFailed" xml:space="preserve">
+    <value>"{0}" を "{1}" に変換できません。</value>
+  </data>
+  <data name="PointConversionFailed" xml:space="preserve">
+    <value>"{0}" を Point に変換できません。想定される形式は "x, y" です。</value>
+  </data>
+  <data name="ThicknessConversionFailed" xml:space="preserve">
+    <value>"{0}" を Thickness に変換できません。必要な形式は "h, v"、"l, t, r b" または "l" です。</value>
+  </data>
+  <data name="CornerRadiusConversionFailed" xml:space="preserve">
+    <value>"{0}" を CornerRadius に変換できません。想定される形式は "tl, tr, bl, br" または "l" です。</value>
+  </data>
+  <data name="SymbolResolution" xml:space="preserve">
+    <value>シンボルの解決に失敗しました</value>
+  </data>
+  <data name="TypeResolutionMessage" xml:space="preserve">
+    <value>型 "{0}" を解決できません。</value>
+    <comment>{0} is a xmlnamespace and typename</comment>
+  </data>
+  <data name="DuplicateTypeError" xml:space="preserve">
+    <value>"{0}" に対して複数の型が見つかりました。</value>
+  </data>
+  <data name="MemberResolution" xml:space="preserve">
+    <value>アクセス可能なプロパティ、BindableProperty、または "{0}" のイベントが見つからないか、値とプロパティの型が一致しません。</value>
+    <comment>{0} is a property name</comment>
+  </data>
+  <data name="EasingConversionFailed" xml:space="preserve">
+    <value>"{0}" を Easing に変換できません。想定される値は "Linear"、"SinOut"、"SinIn"、"SinInOut"、"CubicIn"、"CubicOut"、"CubicInOut"、"BounceOut"、"BounceIn"、"SpringIn"、または "SpringOut" です。</value>
+  </data>
+  <data name="FlexBasisConversionFailed" xml:space="preserve">
+    <value>"{0}" を FlexBasis に変換できません。想定される値は "Auto" または "n%"、"n" です。ここで n は数値です。</value>
+  </data>
+  <data name="FlowDirectionConversionFailed" xml:space="preserve">
+    <value>"{0}" を FlowDirection に変換できません。想定される値は "rtl"、"ltr"、"inherit"、"MatchParent"、"LeftToRight"、または "RightToLeft" です。</value>
+  </data>
+  <data name="GridLengthConversionFailed" xml:space="preserve">
+    <value>"{0}" を GridLength に変換できません。想定される値は "*"、"n*"、"Auto"、または "n" です。ここで n は数値です。</value>
+  </data>
+  <data name="ListStringConversionFailed" xml:space="preserve">
+    <value>"{0}" を List&lt;string&gt; に変換できません。必要な形式は "x, y, z" です。</value>
+  </data>
+  <data name="StrokeShapeConversionFailed" xml:space="preserve">
+    <value>"{0}" を Shape (または子孫) に変換できません。</value>
+  </data>
+  <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>"{0}" を ColumnDefinitionCollection に変換できません。想定される値は "*"、"n*"、"Auto"、または "n" (またはコンマで区切られたこれらの組み合わせ) です。ここで n は数値です。</value>
+  </data>
+  <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>"{0}" を RowDefinitionCollection に変換できません。想定される値は "*", "n*", "Auto", または "n" (もしくはこれらをカンマで区切った組み合わせ) であり、ここで n は数値です。</value>
+  </data>
+  <data name="LayoutOptionsConversionFailed" xml:space="preserve">
+    <value>"{0}" を LayoutOptions に変換できません。想定される値は "Start"、"Center"、"End"、または "Fill" です。</value>
+  </data>
+  <data name="MethodResolution" xml:space="preserve">
+    <value>'{0}' のメソッドが見つかりませんでした。</value>
+    <comment>0 is a method or ctor name</comment>
+  </data>
+  <data name="DuplicateKeyInRD" xml:space="preserve">
+    <value>リソース ディクショナリ内の重複するキー</value>
+    <comment>
+</comment>
+  </data>
+  <data name="ConversionFailedTitle" xml:space="preserve">
+    <value>変換が失敗しました</value>
+    <comment>
+</comment>
   </data>
 </root>

@@ -11,7 +11,7 @@ variables:
 - name: _buildScript
   value: $(Build.SourcesDirectory)\build.cmd -ci
 - name: _buildScriptMacOS
-  value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError 0
+  value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError false
 - name: _helixScriptMacOS
   value: $(Build.SourcesDirectory)/helix.sh
 - name: _helixScript

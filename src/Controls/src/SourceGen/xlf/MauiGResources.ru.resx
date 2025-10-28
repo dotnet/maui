@@ -118,17 +118,83 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
-    <value>Произошла ошибка при синтаксическом анализе XAML: {0}.</value>
+    <value>Произошла ошибка при анализе XAML: {0}.</value>
+    <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>Сбой синтаксического анализа XAML</value>
+    <value>Сбой анализа XAML</value>
   </data>
-  <data name="AmbiguousTypeTitle" xml:space="preserve">
-    <value>Ambiguous Type</value>
-    <comment>/</comment>
+  <data name="ExpressionNotClosed" xml:space="preserve">
+    <value>Выражение должно заканчиваться символом "}".</value>
   </data>
-  <data name="AmbiguousTypeMessage" xml:space="preserve">
-    <value>Multiple names found in the current xml namespace. use a more specific prefix.</value>
-    <comment>/</comment>
+  <data name="RectConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в Rect. Ожидаемый формат: "x, y, w, h"</value>
+  </data>
+  <data name="ConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в "{1}".</value>
+  </data>
+  <data name="PointConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в Point. Ожидаемый формат: "x, y".</value>
+  </data>
+  <data name="ThicknessConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в Thickness. Ожидаемый формат: "h, v", "l, t, r, b" или "l".</value>
+  </data>
+  <data name="CornerRadiusConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в CornerRadius. Ожидаемый формат: "tl, tr, bl, br" или "l".</value>
+  </data>
+  <data name="SymbolResolution" xml:space="preserve">
+    <value>Сбой разрешения символов</value>
+  </data>
+  <data name="TypeResolutionMessage" xml:space="preserve">
+    <value>Не удается разрешить тип "{0}".</value>
+    <comment>{0} is a xmlnamespace and typename</comment>
+  </data>
+  <data name="DuplicateTypeError" xml:space="preserve">
+    <value>Найдено несколько типов для "{0}".</value>
+  </data>
+  <data name="MemberResolution" xml:space="preserve">
+    <value>Не найдено доступное свойство, привязываемое свойство (BindableProperty) или событие для "{0}", либо типы значения и свойства не совпадают.</value>
+    <comment>{0} is a property name</comment>
+  </data>
+  <data name="EasingConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в Easing, ожидается значение "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" или "SpringOut".</value>
+  </data>
+  <data name="FlexBasisConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в FlexBasis. Ожидаемые значения: "Auto" или "n%", где n — числовое значение.</value>
+  </data>
+  <data name="FlowDirectionConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в FlowDirection. Ожидаемые значения: "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" или "RightToLeft".</value>
+  </data>
+  <data name="GridLengthConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в GridLength. Ожидаемые значения: "*", "n*", "Auto" или "n", где n — числовое значение.</value>
+  </data>
+  <data name="ListStringConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в List&lt;string&gt;. Ожидаемый формат: "x, y, z".</value>
+  </data>
+  <data name="StrokeShapeConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в Shape (или в потомка).</value>
+  </data>
+  <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в ColumnDefinitionCollection. Ожидаемые значения: "*", "n*", "Auto" или "n" (или их сочетание, разделенное запятыми), где n — числовое значение.</value>
+  </data>
+  <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в RowDefinitionCollection. Ожидаемые значения: "*", "n*", "Auto" или "n" (или их сочетание, разделенное запятыми), где n — числовое значение.</value>
+  </data>
+  <data name="LayoutOptionsConversionFailed" xml:space="preserve">
+    <value>Не удается преобразовать "{0}" в LayoutOptions. Ожидаемые значения: "Start", "Center", "End" или "Fill".</value>
+  </data>
+  <data name="MethodResolution" xml:space="preserve">
+    <value>Не найден метод для "{0}".</value>
+    <comment>0 is a method or ctor name</comment>
+  </data>
+  <data name="DuplicateKeyInRD" xml:space="preserve">
+    <value>повторяющийся ключ в словаре ресурсов</value>
+    <comment>
+</comment>
+  </data>
+  <data name="ConversionFailedTitle" xml:space="preserve">
+    <value>Сбой преобразования</value>
+    <comment>
+</comment>
   </data>
 </root>

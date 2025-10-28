@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			var definitions = new List<RowDefinition>(count);
 			foreach (var range in unsplit.Split(','))
 			{
-				var length = GridLengthTypeConverter.ParseStringToGridLength(unsplit[range]);
+				var length = Converters.GridLengthTypeConverter.ParseStringToGridLength(unsplit[range]);
 				definitions.Add(new RowDefinition(length));
 			}
 #else
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 			var definitions = new List<RowDefinition>(count);
 			foreach (var lengthStr in lengths)
 			{
-				var length = GridLengthTypeConverter.ParseStringToGridLength(lengthStr);
+				var length = Converters.GridLengthTypeConverter.ParseStringToGridLength(lengthStr);
 				definitions.Add(new RowDefinition(length));
 			}
 #endif
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls
 			if (count == 0)
 				return string.Empty;
 			if (count == 1)
-				return GridLengthTypeConverter.ConvertToString(definitions[0].Height);
+				return Converters.GridLengthTypeConverter.ConvertToString(definitions[0].Height);
 
 			// for multiple items
 			var pool = ArrayPool<string>.Shared;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < definitions.Count; i++)
 			{
 				var definition = definitions[i];
-				rentedArray[i] = GridLengthTypeConverter.ConvertToString(definition.Height);
+				rentedArray[i] = Converters.GridLengthTypeConverter.ConvertToString(definition.Height);
 			}
 			var result = string.Join(", ", rentedArray, 0, definitions.Count);
 			pool.Return(rentedArray);

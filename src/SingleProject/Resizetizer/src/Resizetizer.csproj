@@ -81,10 +81,13 @@
       <_CopyItems Include="nuget\buildTransitive\**" />
       <_CopyItems Include="@(_ResizetizerFiles)" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
     <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
-    <AdjustReferencedAssemblyVersion Assembly="$(_AdjustmentsAssembly)" ReferencedAssembly="$(_AdjustmentsReferencedAssembly)" OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
-    <Copy SourceFiles="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" DestinationFiles="$(_MauiBuildTasksLocation)Svg.Skia.dll" ContinueOnError="true" Retries="0" />
+    <AdjustReferencedAssemblyVersion
+      Assembly="$(_AdjustmentsAssembly)"
+      ReferencedAssembly="$(_AdjustmentsReferencedAssembly)"
+      OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    <Copy SourceFiles="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" DestinationFiles="$(_MauiBuildTasksLocation)Svg.Skia.dll" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
     <ItemGroup>
       <FileWrites Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
     </ItemGroup>

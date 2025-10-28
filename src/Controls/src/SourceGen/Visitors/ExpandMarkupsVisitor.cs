@@ -7,9 +7,15 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class ExpandMarkupsVisitor : IXamlNodeVisitor
+class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 {
-	public ExpandMarkupsVisitor(SourceGenContext context) => Context = context;
+	record XmlLineInfoProvider(IXmlLineInfo XmlLineInfo) : IXmlLineInfoProvider
+	{
+	}
+
+	record SGContextProvider(SourceGenContext Context)
+	{
+	}
 
 	public static readonly IList<XmlName> Skips =
 	[
@@ -19,7 +25,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		XmlName.xName,
 	];
 
-	SourceGenContext Context { get; }
+	SourceGenContext Context { get; } = context;
 	public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 	public bool StopOnDataTemplate => false;
 	public bool StopOnResourceDictionary => false;
@@ -37,13 +43,13 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 			return;
 		if (Skips.Contains(propertyName))
 			return;
-		if (parentNode is not IElementNode parentElement || parentElement.SkipProperties.Contains(propertyName))
+		if (parentNode is not ElementNode parentElement || parentElement.SkipProperties.Contains(propertyName))
 			return;
 
 		var markupString = markupnode.MarkupString;
-		if (ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) is IElementNode node)
+		if (ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) is ElementNode node)
 		{
-			((IElementNode)parentNode).Properties[propertyName] = node;
+			((ElementNode)parentNode).Properties[propertyName] = node;
 			node.Parent = parentNode;
 		}
 	}
@@ -63,7 +69,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 	INode? ParseExpression(ref string expression, IXmlNamespaceResolver nsResolver, IXmlLineInfo xmlLineInfo, INode node, INode parentNode)
 	{
 		if (expression.StartsWith("{}", StringComparison.Ordinal))
-			return new ValueNode(expression.Substring(2), null);
+			return new ValueNode(expression.Substring(2), null, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 
 		if (expression[expression.Length - 1] != '}')
 		{
@@ -92,25 +98,21 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		var serviceProvider = new XamlServiceProvider(node, Context);
 		serviceProvider.Add(typeof(IXmlNamespaceResolver), nsResolver);
 		serviceProvider.Add(typeof(SGContextProvider), new SGContextProvider(Context));
+		if (xmlLineInfo != null)
+			serviceProvider.Add(typeof(IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
 
 		return new MarkupExpansionParser().Parse(match!, ref expression, serviceProvider);
 	}
 
-	class SGContextProvider
-	{
-		public SGContextProvider(SourceGenContext context) => Context = context;
-
-		public SourceGenContext Context { get; }
-	}
 
 	public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 	{
-		IElementNode? _node;
+		ElementNode? _node;
 		object IExpressionParser.Parse(string match, ref string remaining, IServiceProvider serviceProvider) => Parse(match, ref remaining, serviceProvider);
 
 		public INode Parse(string match, ref string remaining, IServiceProvider serviceProvider)
 		{
-			if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
+			if (serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is not IXmlNamespaceResolver nsResolver)
 				throw new ArgumentException();
 			IXmlLineInfo? xmlLineInfo = null;
 			if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
@@ -149,7 +151,10 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 					catch (XamlParseException xpe)
 					{
 						if (contextProvider != null)
+						{
 							contextProvider.Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(contextProvider.Context.ProjectItem.RelativePath!, xmlLineInfo!, match), xpe.Message));
+							return null!;
+						}
 						else
 							throw;
 					}
@@ -174,11 +179,11 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 					if (childname == XmlName.xTypeArguments)
 					{
 						typeArguments = TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
-						childnodes.Add((childname, new ValueNode(typeArguments, nsResolver)));
+						childnodes.Add((childname, new ValueNode(typeArguments, nsResolver, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1)));
 					}
 					else
 					{
-						var childnode = parsed.value as INode ?? new ValueNode(parsed.strValue, nsResolver);
+						var childnode = parsed.value as INode ?? new ValueNode(parsed.strValue, nsResolver, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 						childnodes.Add((childname, childnode));
 					}
 				}
@@ -198,9 +203,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 				throw new NotSupportedException();
 
 
-			_node = xmlLineInfo == null
-				? new ElementNode(xmltype, null, nsResolver)
-				: new ElementNode(xmltype, null, nsResolver, xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
+			_node = new ElementNode(xmltype, null, nsResolver, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 
 			foreach (var (childname, childnode) in childnodes)
 			{

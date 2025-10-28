@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class NoBaseClassOnCodeBehind : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	//as the base class ContentPage is only defined in the sg.cs, 
 	//it's not part of the compilation when we generate initializecomponent, and the Resources property can't be found
 	public void CodeBehindWithNoBaseClass()
@@ -44,6 +44,6 @@ public partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 	}
 }

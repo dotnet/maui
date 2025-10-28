@@ -80,6 +80,7 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
     - macOS.Architecture -equals x64
+    - Agent.OSVersion -equals 15.6
     artifact: build-macos
 
 - name: PackPlatforms
@@ -107,6 +108,7 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
     - macOS.Architecture -equals x64
+    - Agent.OSVersion -equals 15.6
     artifact: build-macos
 
 - name: RunTemplatePlatforms
@@ -117,6 +119,7 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
     - macOS.Architecture -equals x64
+    - Agent.OSVersion -equals 15.6
     testName: RunOnAndroid
     artifact: templates-run-android
   - name: $(iosTestsVmPool)
@@ -124,6 +127,7 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
     - macOS.Architecture -equals x64
+    - Agent.OSVersion -equals 15.6
     testName: RunOniOS
     artifact: templates-run-ios
 
@@ -135,6 +139,7 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
     - macOS.Architecture -equals arm64
+    - Agent.OSVersion -equals 15.6
 
 resources:
   repositories:
@@ -303,6 +308,9 @@ stages:
         displayName: Build Microsoft.Maui.IntegrationTests
       - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=Samples" --resultsfilename="integration-samples" --verbosity=diagnostic
         displayName: Run ${{ BuildPlatform.name }} sample build tests
+      - ${{ if eq(BuildPlatform.name , 'Windows') }}:
+        - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=AOT" --resultsfilename="integration-aot-windows" --verbosity=diagnostic
+          displayName: Run Windows AOT build tests
       - task: PublishTestResults@2
         displayName: Publish the ${{ BuildPlatform.name }} sample build tests
         condition: always()
