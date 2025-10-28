@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,27 +15,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public InlineCSS(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void InlineCSSParsed(bool useCompiledXaml)
 			{
 				var layout = new InlineCSS(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
+				Assert.Equal(Colors.Pink, layout.label.TextColor);
 			}
 
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void InitialValue(bool useCompiledXaml)
 			{
 				var layout = new InlineCSS(useCompiledXaml);
-				Assert.That(layout.BackgroundColor, Is.EqualTo(Colors.Green));
-				Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Colors.Green));
-				Assert.That(layout.button.BackgroundColor, Is.EqualTo(Colors.Green));
-				Assert.That(layout.label.BackgroundColor, Is.EqualTo(VisualElement.BackgroundColorProperty.DefaultValue));
-				Assert.That(layout.label.TextTransform, Is.EqualTo(TextTransform.Uppercase));
+				Assert.Equal(Colors.Green, layout.BackgroundColor);
+				Assert.Equal(Colors.Green, layout.stack.BackgroundColor);
+				Assert.Equal(Colors.Green, layout.button.BackgroundColor);
+				Assert.Equal(VisualElement.BackgroundColorProperty.DefaultValue, layout.label.BackgroundColor);
+				Assert.Equal(TextTransform.Uppercase, layout.label.TextTransform);
 			}
 		}
 	}

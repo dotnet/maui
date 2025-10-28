@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Foo.Microsoft.Maui.Controls.Bar
 {
@@ -13,14 +13,11 @@ namespace Foo.Microsoft.Maui.Controls.Bar
 		public Bz43301(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			//No need for any actual [Test]. If this compiles, the bug is fixed.
+			[InlineData(true)]
+			[InlineData(false)]
+			//No need for any actual [Fact]. If this compiles, the bug is fixed.
 			public void DoesCompile(bool useCompiledXaml)
 			{
 				var layout = new Bz43301(useCompiledXaml);

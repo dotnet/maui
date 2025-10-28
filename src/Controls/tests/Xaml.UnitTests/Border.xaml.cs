@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,13 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Border(bool useCompiledXaml)
 		{
 			// This stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void InitializeStrokeShape(bool useCompiledXaml)
 			{
 				var layout = new Border(useCompiledXaml);
@@ -30,8 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(layout.Border2.StrokeShape);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void BindingToStrokeShapeWorks(bool useCompiledXaml)
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -39,11 +36,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				BorderViewModel viewModel = new();
 				layout.BindingContext = viewModel;
-				Assert.IsTrue(layout.BorderWithBinding.StrokeShape is RoundRectangle);
-				Assert.AreEqual(4, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
+				Assert.True(layout.BorderWithBinding.StrokeShape is RoundRectangle);
+				Assert.Equal(4, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
 
 				viewModel.RoundedRect = new RoundRectangle() { CornerRadius = new CornerRadius(8) };
-				Assert.AreEqual(8, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
+				Assert.Equal(8, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
 				DispatcherProvider.SetCurrent(null);
 			}
 		}

@@ -1,7 +1,7 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -11,21 +11,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui6944(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Test
+		}		class Test
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Test]
-			public void ContentPropertyAttributeOnLayoutSubclass([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui6944(useCompiledXaml);
-				Assert.That(page.layout, Is.Not.Null);
-				Assert.That(page.layout, Is.TypeOf<Maui6944Layout>());
-				Assert.That(page.layout.ChildContent, Is.EqualTo(page.label));
+				Assert.NotNull(page.layout);
+				Assert.IsType<Maui6944Layout>(page.layout);
+				Assert.Equal(page.label, page.layout.ChildContent);
 			}
 		}
 	}

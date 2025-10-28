@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,13 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4099(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[Ignore("Ignore for now, Compiled Converters are disabled")]
+			[InlineData(true)]
+			[Fact(Skip = "Ignore for now, Compiled Converters are disabled")]
 			public void BetterExceptionReport(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -32,10 +29,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					}
 					catch (BuildException xpe)
 					{
-						Assert.That(xpe.XmlInfo.LineNumber, Is.EqualTo(5));
+						Assert.Equal(5, xpe.XmlInfo.LineNumber);
 						Assert.Pass();
 					}
-					Assert.Fail();
+					throw new Xunit.Sdk.XunitException();
 				}
 			}
 		}

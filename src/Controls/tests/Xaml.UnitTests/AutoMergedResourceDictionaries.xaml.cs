@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,18 +15,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public AutoMergedResourceDictionaries(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void AutoMergedRd(bool useCompiledXaml)
 			{
 				var layout = new AutoMergedResourceDictionaries(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));
-				Assert.That(layout.label.BackgroundColor, Is.EqualTo(Color.FromArgb("#FF96F3")));
+				Assert.Equal(Colors.Purple, layout.label.TextColor);
+				Assert.Equal(Color.FromArgb("#FF96F3", layout.label.BackgroundColor));
 			}
 		}
 	}

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -59,23 +59,22 @@ public partial class ServiceProviderTests : ContentPage
 	public ServiceProviderTests(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	public class Tests
+	}	public class Tests
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void TestServiceProviders([Values] bool useCompiledXaml)
 		{
 			var page = new ServiceProviderTests(useCompiledXaml);
 
-			Assert.AreEqual(null, page.label0.Text);
-			Assert.That(page.label1.Text, Does.Contain("IProvideValueTarget"));
-			Assert.That(page.label3.Text, Does.Contain("IXmlLineInfoProvider"));
-			Assert.That(page.label4.Text, Does.Contain("IRootObjectProvider(ServiceProviderTests)")); //https://github.com/dotnet/maui/issues/16881
+			Assert.Equal(null, page.label0.Text);
+			Assert.Contains("IProvideValueTarget", page.label1.Text);
+			Assert.Contains("IXmlLineInfoProvider", page.label3.Text);
+			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
 }

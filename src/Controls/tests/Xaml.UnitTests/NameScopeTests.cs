@@ -1,15 +1,12 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-
-	[TestFixture]
-	public class NameScopeTests : BaseTestFixture
+{	public class NameScopeTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TopLevelObjectsHaveANameScope()
 		{
 			var xaml = @"
@@ -19,11 +16,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var view = new CustomView().LoadFromXaml(xaml);
 
-			Assert.IsNotNull(Maui.Controls.Internals.NameScope.GetNameScope(view));
-			Assert.That(Maui.Controls.Internals.NameScope.GetNameScope(view), Is.TypeOf<Maui.Controls.Internals.NameScope>());
+			Assert.NotNull(Maui.Controls.Internals.NameScope.GetNameScope(view));
+			Assert.IsType<Maui.Controls.Internals.NameScope>(Maui.Controls.Internals.NameScope.GetNameScope(view));
 		}
 
-		[Test]
+		[Fact]
 		public void NameScopeAreSharedWithChildren()
 		{
 			var xaml = @"
@@ -36,17 +33,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var layout = new Controls.Compatibility.StackLayout().LoadFromXaml(xaml);
 
-			Assert.IsNotNull(Maui.Controls.Internals.NameScope.GetNameScope(layout));
-			Assert.That(Maui.Controls.Internals.NameScope.GetNameScope(layout), Is.TypeOf<Maui.Controls.Internals.NameScope>());
+			Assert.NotNull(Maui.Controls.Internals.NameScope.GetNameScope(layout));
+			Assert.IsType<Maui.Controls.Internals.NameScope>(Maui.Controls.Internals.NameScope.GetNameScope(layout));
 
 			foreach (var child in layout.Children)
 			{
-				Assert.IsNull(Maui.Controls.Internals.NameScope.GetNameScope(child));
-				Assert.AreSame(Maui.Controls.Internals.NameScope.GetNameScope(layout), child.GetNameScope());
+				Assert.Null(Maui.Controls.Internals.NameScope.GetNameScope(child));
+				Assert.Same(Maui.Controls.Internals.NameScope.GetNameScope(layout), child.GetNameScope());
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void DataTemplateChildrenDoesNotParticipateToParentNameScope()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -66,11 +63,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var listview = new ListView();
 			listview.LoadFromXaml(xaml);
 
-			Assert.AreSame(listview, ((Maui.Controls.Internals.INameScope)listview).FindByName("listview"));
-			Assert.IsNull(((Maui.Controls.Internals.INameScope)listview).FindByName("textcell"));
+			Assert.Same(listview, ((Maui.Controls.Internals.INameScope)listview).FindByName("listview"));
+			Assert.Null(((Maui.Controls.Internals.INameScope)listview).FindByName("textcell"));
 		}
 
-		[Test]
+		[Fact]
 		public void ElementsCreatedFromDataTemplateHaveTheirOwnNameScope()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -89,26 +86,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var listview = new ListView();
 			listview.LoadFromXaml(xaml);
-			Assert.IsNotNull(Maui.Controls.Internals.NameScope.GetNameScope(listview));
-			Assert.That(Maui.Controls.Internals.NameScope.GetNameScope(listview), Is.TypeOf<Maui.Controls.Internals.NameScope>());
+			Assert.NotNull(Maui.Controls.Internals.NameScope.GetNameScope(listview));
+			Assert.IsType<Maui.Controls.Internals.NameScope>(Maui.Controls.Internals.NameScope.GetNameScope(listview));
 
 			var cell0 = listview.ItemTemplate.CreateContent() as Element;
 			var cell1 = listview.ItemTemplate.CreateContent() as Element;
 
-			Assert.IsNotNull(Maui.Controls.Internals.NameScope.GetNameScope(cell0));
-			Assert.That(Maui.Controls.Internals.NameScope.GetNameScope(cell0), Is.TypeOf<Maui.Controls.Internals.NameScope>());
-			Assert.IsNotNull(Maui.Controls.Internals.NameScope.GetNameScope(cell1));
-			Assert.That(Maui.Controls.Internals.NameScope.GetNameScope(cell1), Is.TypeOf<Maui.Controls.Internals.NameScope>());
+			Assert.NotNull(Maui.Controls.Internals.NameScope.GetNameScope(cell0));
+			Assert.IsType<Maui.Controls.Internals.NameScope>(Maui.Controls.Internals.NameScope.GetNameScope(cell0));
+			Assert.NotNull(Maui.Controls.Internals.NameScope.GetNameScope(cell1));
+			Assert.IsType<Maui.Controls.Internals.NameScope>(Maui.Controls.Internals.NameScope.GetNameScope(cell1));
 
-			Assert.AreNotSame(Maui.Controls.Internals.NameScope.GetNameScope(listview), Maui.Controls.Internals.NameScope.GetNameScope(cell0));
-			Assert.AreNotSame(Maui.Controls.Internals.NameScope.GetNameScope(listview), Maui.Controls.Internals.NameScope.GetNameScope(cell1));
-			Assert.AreNotSame(Maui.Controls.Internals.NameScope.GetNameScope(cell0), Maui.Controls.Internals.NameScope.GetNameScope(cell1));
+			Assert.NotSame(Maui.Controls.Internals.NameScope.GetNameScope(listview), Maui.Controls.Internals.NameScope.GetNameScope(cell0));
+			Assert.NotSame(Maui.Controls.Internals.NameScope.GetNameScope(listview), Maui.Controls.Internals.NameScope.GetNameScope(cell1));
+			Assert.NotSame(Maui.Controls.Internals.NameScope.GetNameScope(cell0), Maui.Controls.Internals.NameScope.GetNameScope(cell1));
 
-			Assert.IsNull(((Maui.Controls.Internals.INameScope)listview).FindByName("textcell"));
+			Assert.Null(((Maui.Controls.Internals.INameScope)listview).FindByName("textcell"));
 			Assert.NotNull(((Maui.Controls.Internals.INameScope)cell0).FindByName("textcell"));
 			Assert.NotNull(((Maui.Controls.Internals.INameScope)cell1).FindByName("textcell"));
 
-			Assert.AreNotSame(((Maui.Controls.Internals.INameScope)cell0).FindByName("textcell"), ((Maui.Controls.Internals.INameScope)cell1).FindByName("textcell"));
+			Assert.NotSame(((Maui.Controls.Internals.INameScope)cell0).FindByName("textcell"), ((Maui.Controls.Internals.INameScope)cell1).FindByName("textcell"));
 
 		}
 	}

@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class CecilExtensionsTests : IAssemblyResolver
+{	public class CecilExtensionsTests : IAssemblyResolver
 	{
 		const string testNamespace = "Microsoft.Maui.Controls.Xaml.UnitTests";
 		AssemblyDefinition assembly;
@@ -23,7 +21,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 		}
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void SetUp()
 		{
 			assembly = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, readerParameters);
@@ -46,7 +45,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return assembly;
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void Dispose()
 		{
 			foreach (var assembly in assemblies)
@@ -75,13 +75,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			"Validation.MissingXClass",
 		};
 
-		[Test, TestCaseSource(nameof(IsXamlTrueSource))]
+		[Theory, MemberData(nameof(IsXamlTrueSource))]
 		public void IsXamlTrue(string name)
 		{
 			var resource = GetResource(name);
-			Assert.IsTrue(resource.IsXaml(new XamlCache(), assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
+			Assert.True(resource.IsXaml(new XamlCache(), assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
 			if (!className.StartsWith("__XamlGeneratedCode__"))
-				Assert.AreEqual(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name
+				Assert.Equal(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name;
 		}
 
 		static string[] IsXamlFalseSource = new[]
@@ -89,11 +89,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			"Validation.NotXaml",
 		};
 
-		[Test, TestCaseSource(nameof(IsXamlFalseSource))]
+		[Theory, MemberData(nameof(IsXamlFalseSource))]
 		public void IsXamlFalse(string name)
 		{
 			var resource = GetResource(name);
-			Assert.IsFalse(resource.IsXaml(new XamlCache(), assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
+			Assert.False(resource.IsXaml(new XamlCache(), assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
 		}
 	}
 }

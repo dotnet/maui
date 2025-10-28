@@ -4,12 +4,10 @@ using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml.UnitTests;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.XamlcUnitTests
-{
-	[TestFixture]
-	public class MethodDefinitionExtensionsTests
+{	public class MethodDefinitionExtensionsTests
 	{
 		public class NonGenericClass
 		{
@@ -28,7 +26,8 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		ModuleDefinition module;
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void SetUp()
 		{
 			module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
@@ -38,13 +37,14 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			});
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void TearDown()
 		{
 			module?.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void ResolveGenericReturnType()
 		{
 			var cache = new XamlCache();
@@ -52,19 +52,19 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 			var getter = type.GetMethods(cache, md => md.Name == "NonGeneric", module).Single();
 			var returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
-			Assert.AreEqual("System.Object", returnType.FullName);
+			Assert.Equal("System.Object", returnType.FullName);
 
 			getter = type.GetMethods(cache, md => md.Name == "GenericT", module).Single();
 			returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
-			Assert.AreEqual("System.Boolean", returnType.FullName);
+			Assert.Equal("System.Boolean", returnType.FullName);
 
 			getter = type.GetMethods(cache, md => md.Name == "GenericU", module).Single();
 			returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
-			Assert.AreEqual("System.String", returnType.FullName);
+			Assert.Equal("System.String", returnType.FullName);
 
 			getter = type.GetMethods(cache, md => md.Name == "GenericV", module).Single();
 			returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
-			Assert.AreEqual("System.Int32", returnType.FullName);
+			Assert.Equal("System.Int32", returnType.FullName);
 		}
 	}
 }

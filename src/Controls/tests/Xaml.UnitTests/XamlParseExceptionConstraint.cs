@@ -1,21 +1,21 @@
 using System;
-using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class XamlParseExceptionConstraint : ExceptionTypeConstraint
+	/// <summary>
+	/// Helper for asserting XamlParseException with specific line and position information
+	/// </summary>
+	public class XamlParseExceptionConstraint
 	{
 		bool haslineinfo;
 		int linenumber;
 		int lineposition;
 		Func<string, bool> messagePredicate;
 
-		XamlParseExceptionConstraint(bool haslineinfo) : base(typeof(XamlParseException))
+		XamlParseExceptionConstraint(bool haslineinfo)
 		{
 			this.haslineinfo = haslineinfo;
 		}
-
-		public override string DisplayName => "xamlparse";
 
 		public XamlParseExceptionConstraint() : this(false)
 		{
@@ -28,31 +28,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			this.messagePredicate = messagePredicate;
 		}
 
-		protected override bool Matches(object actual)
+		public void Validate(Action action)
 		{
-			if (!base.Matches(actual))
-				return false;
-			var xmlInfo = ((XamlParseException)actual).XmlInfo;
+			var ex = Xunit.Assert.Throws<XamlParseException>(action);
+			
 			if (!haslineinfo)
-				return true;
-			if (xmlInfo == null || !xmlInfo.HasLineInfo())
-				return false;
+				return;
+				
+			var xmlInfo = ex.XmlInfo;
+			Xunit.Assert.NotNull(xmlInfo);
+			Xunit.Assert.True(xmlInfo.HasLineInfo(), "Expected exception to have line info");
+			
 			if (messagePredicate != null)
-				if (!messagePredicate(((XamlParseException)actual).UnformattedMessage))
-					return false;
-			return xmlInfo.LineNumber == linenumber && xmlInfo.LinePosition == lineposition;
-		}
-
-		public override string Description
-		{
-			get
 			{
-				if (haslineinfo)
-				{
-					return string.Format($"{base.Description} line {linenumber}, position {lineposition}");
-				}
-				return base.Description;
+				Xunit.Assert.True(messagePredicate(ex.UnformattedMessage),
+					$"Exception message did not match predicate. Message: {ex.UnformattedMessage}");
 			}
+			
+			Xunit.Assert.Equal(linenumber, xmlInfo.LineNumber);
+			Xunit.Assert.Equal(lineposition, xmlInfo.LinePosition);
 		}
 	}
 }

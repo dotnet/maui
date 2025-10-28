@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,14 +25,12 @@ public partial class Maui24849 : ContentPage
 	public Maui24849(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -41,15 +39,16 @@ public partial class Maui24849 : ContentPage
 		}
 
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void VSGReturnsToNormal([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Style24849());
@@ -57,16 +56,16 @@ public partial class Maui24849 : ContentPage
 
 			app.MainPage = page;
 
-			Assert.That(page.button.IsEnabled, Is.False);
-			Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
+			Assert.True(page.button.IsEnabled, Is.False);
+			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor));
 
 			page.button.IsEnabled = true;
-			Assert.That(page.button.IsEnabled, Is.True);
-			Assert.That(page.button.TextColor, Is.EqualTo(Colors.White));
+			Assert.True(page.button.IsEnabled, Is.True);
+			Assert.Equal(Colors.White, page.button.TextColor);
 
 			page.button.IsEnabled = false;
-			Assert.That(page.button.IsEnabled, Is.False);
-			Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
+			Assert.True(page.button.IsEnabled, Is.False);
+			Assert.Equal(Color.FromHex("#3c3c3b", page.button.TextColor));
 		}
 	}
 }

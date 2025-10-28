@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -11,12 +11,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			Fired = true;
 		}
-	}
-
-	[TestFixture]
-	public class Issue1501
+	}	public class Issue1501
 	{
-		[Test]
+		[Fact]
 		public void ConnectEventsInGestureRecognizers()
 		{
 			var xaml = @"

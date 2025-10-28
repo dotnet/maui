@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,23 +15,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui13619(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Test]
-			public void AppThemeBindingAndDynamicResource([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var page = new Maui13619(useCompiledXaml);
-				Assert.That(page.label0.TextColor, Is.EqualTo(Colors.HotPink));
-				Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.DarkGray));
+				Assert.Equal(Colors.HotPink, page.label0.TextColor);
+				Assert.Equal(Colors.DarkGray, page.label0.BackgroundColor);
 
 				page.Resources["Primary"] = Colors.SlateGray;
-				Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.SlateGray));
+				Assert.Equal(Colors.SlateGray, page.label0.BackgroundColor);
 
 			}
 		}

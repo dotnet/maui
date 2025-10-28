@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,17 +17,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh1766(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void CSSPropertiesNotInerited(bool useCompiledXaml)
 			{
 				var layout = new Gh1766(useCompiledXaml);
-				Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Colors.Pink));
-				Assert.That(layout.entry.BackgroundColor, Is.EqualTo(VisualElement.BackgroundColorProperty.DefaultValue));
+				Assert.Equal(Colors.Pink, layout.stack.BackgroundColor);
+				Assert.Equal(VisualElement.BackgroundColorProperty.DefaultValue, layout.entry.BackgroundColor);
 			}
 		}
 	}

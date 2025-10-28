@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,12 +14,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TestSharedResourceDictionary(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[SetUp]
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 			public void Setup()
 			{
 				Application.Current = new MockApplication
@@ -31,35 +29,36 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 			}
 
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				Application.ClearCurrent();
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{
 				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(Colors.Pink, layout.label.TextColor);
+				Assert.Equal(Colors.Pink, layout.label.TextColor);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void NoConflictsBetweenSharedRDs(bool useCompiledXaml)
 			{
 				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(Colors.Pink, layout.label.TextColor);
-				Assert.AreEqual(Colors.Purple, layout.label2.TextColor);
+				Assert.Equal(Colors.Pink, layout.label.TextColor);
+				Assert.Equal(Colors.Purple, layout.label2.TextColor);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ImplicitStyleCanBeSharedFromSharedRD(bool useCompiledXaml)
 			{
 				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(Colors.Red, layout.implicitLabel.TextColor);
+				Assert.Equal(Colors.Red, layout.implicitLabel.TextColor);
 			}
 
 			class MyRD : ResourceDictionary
@@ -71,12 +70,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void MergedRDAtAppLevel(bool useCompiledXaml)
 			{
 				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual("Foo", layout.label3.Text);
+				Assert.Equal("Foo", layout.label3.Text);
 			}
 
 		}

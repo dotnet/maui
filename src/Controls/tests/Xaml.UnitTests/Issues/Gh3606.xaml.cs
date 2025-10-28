@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,17 +19,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh3606(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void BindingsWithSourceAndInvalidPathAreNotCompiled(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -38,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var view = new Gh3606(useCompiledXaml);
 
 				var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
-				Assert.That(binding, Is.TypeOf<Binding>());
+				Assert.IsType<Binding>(binding);
 			}
 		}
 	}

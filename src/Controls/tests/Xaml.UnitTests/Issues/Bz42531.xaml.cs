@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,16 +19,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz42531(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void RDInDataTemplates(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -38,9 +37,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var template = lv.ItemTemplate;
 				var cell = template.CreateContent(null, lv) as ViewCell;
 				var sl = cell.View as StackLayout;
-				Assert.AreEqual(1, sl.Resources.Count);
+				Assert.Equal(1, sl.Resources.Count);
 				var label = sl.Children[0] as Label;
-				Assert.AreEqual(LayoutOptions.Center, label.HorizontalOptions);
+				Assert.Equal(LayoutOptions.Center, label.HorizontalOptions);
 			}
 		}
 	}

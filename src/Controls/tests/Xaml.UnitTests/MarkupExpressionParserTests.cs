@@ -4,12 +4,10 @@ using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class MarkupExpressionParserTests : BaseTestFixture
+{	public class MarkupExpressionParserTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 		MockDeviceInfo mockDeviceInfo;
@@ -85,7 +83,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 		}
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public override void Setup()
 		{
 			base.Setup();
@@ -96,7 +95,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			typeResolver = new Internals.XamlTypeResolver(nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly());
 		}
 
-		[Test]
+		[Fact]
 		public void BindingOnSelf()
 		{
 			var bindingString = "{Binding}";
@@ -104,12 +103,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				IXamlTypeResolver = typeResolver,
 			});
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual(Binding.SelfPath, ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal(Binding.SelfPath, ((Binding)binding).Path);
 		}
 
-		[TestCase("{Binding Foo}")]
-		[TestCase("{Binding {x:Static local:MarkupExpressionParserTests.Foo}}")]
+		[InlineData("{Binding Foo}")]
+		[InlineData("{Binding {x:Static local:MarkupExpressionParserTests.Foo}}")]
 		public void BindingWithImplicitPath(string bindingString)
 		{
 			var binding = (new MarkupExtensionParser()).ParseExpression(ref bindingString, new Internals.XamlServiceProvider(null, null)
@@ -117,11 +116,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingWithPath()
 		{
 			var bindingString = "{Binding Path=Foo}";
@@ -131,11 +130,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingWithComposedPath()
 		{
 			var bindingString = "{Binding Path=Foo.Bar}";
@@ -145,11 +144,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo.Bar", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo.Bar", ((Binding)binding).Path);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingWithImplicitComposedPath()
 		{
 			var bindingString = "{Binding Path=Foo.Bar}";
@@ -159,8 +158,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo.Bar", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo.Bar", ((Binding)binding).Path);
 		}
 
 		class MockValueProvider : IProvideParentValues, IProvideValueTarget
@@ -192,7 +191,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public object TargetProperty { get; set; } = null;
 		}
 
-		[Test]
+		[Fact]
 		public void BindingWithImplicitPathAndConverter()
 		{
 			var bindingString = "{Binding Foo, Converter={StaticResource Bar}}";
@@ -202,13 +201,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IProvideValueTarget = new MockValueProvider("Bar", new ReverseConverter()),
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
 			Assert.NotNull(((Binding)binding).Converter);
-			Assert.That(((Binding)binding).Converter, Is.InstanceOf<ReverseConverter>());
+			Assert.True(((Binding)binding).Converter, Is.InstanceOf<ReverseConverter>());
 		}
 
-		[Test]
+		[Fact]
 		public void BindingWithPathAndConverter()
 		{
 			var bindingString = "{Binding Path=Foo, Converter={StaticResource Bar}}";
@@ -218,14 +217,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IProvideValueTarget = new MockValueProvider("Bar", new ReverseConverter()),
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
 			Assert.NotNull(((Binding)binding).Converter);
-			Assert.That(((Binding)binding).Converter, Is.InstanceOf<ReverseConverter>());
+			Assert.True(((Binding)binding).Converter, Is.InstanceOf<ReverseConverter>());
 		}
 
 
-		[Test]
+		[Fact]
 		public void TestBindingMode()
 		{
 			var bindingString = "{Binding Foo, Mode=TwoWay}";
@@ -235,12 +234,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
-			Assert.AreEqual(BindingMode.TwoWay, ((Binding)binding).Mode);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
+			Assert.Equal(BindingMode.TwoWay, ((Binding)binding).Mode);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingStringFormat()
 		{
 			var bindingString = "{Binding Foo, StringFormat=Bar}";
@@ -249,12 +248,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				IXamlTypeResolver = typeResolver,
 			});
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
-			Assert.AreEqual("Bar", ((Binding)binding).StringFormat);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
+			Assert.Equal("Bar", ((Binding)binding).StringFormat);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingStringFormatWithEscapes()
 		{
 			var bindingString = "{Binding Foo, StringFormat='{}Hello {0}'}";
@@ -264,12 +263,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
-			Assert.AreEqual("Hello {0}", ((Binding)binding).StringFormat);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
+			Assert.Equal("Hello {0}", ((Binding)binding).StringFormat);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingStringFormatWithoutEscaping()
 		{
 			var bindingString = "{Binding Foo, StringFormat='{0,20}'}";
@@ -279,12 +278,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
-			Assert.AreEqual("{0,20}", ((Binding)binding).StringFormat);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
+			Assert.Equal("{0,20}", ((Binding)binding).StringFormat);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingStringFormatNumeric()
 		{
 			var bindingString = "{Binding Foo, StringFormat=P2}";
@@ -294,12 +293,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
-			Assert.AreEqual("P2", ((Binding)binding).StringFormat);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
+			Assert.Equal("P2", ((Binding)binding).StringFormat);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingConverterParameter()
 		{
 			var bindingString = "{Binding Foo, ConverterParameter='Bar'}";
@@ -309,12 +308,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IXamlTypeResolver = typeResolver,
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo", ((Binding)binding).Path);
-			Assert.AreEqual("Bar", ((Binding)binding).ConverterParameter);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo", ((Binding)binding).Path);
+			Assert.Equal("Bar", ((Binding)binding).ConverterParameter);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingsCompleteString()
 		{
 			var bindingString = "{Binding Path=Foo.Bar, StringFormat='{}Qux, {0}', Converter={StaticResource Baz}, Mode=OneWayToSource}";
@@ -324,15 +323,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				IProvideValueTarget = new MockValueProvider("Baz", new ReverseConverter()),
 			});
 
-			Assert.That(binding, Is.InstanceOf<Binding>());
-			Assert.AreEqual("Foo.Bar", ((Binding)binding).Path);
+			Assert.True(binding, Is.InstanceOf<Binding>());
+			Assert.Equal("Foo.Bar", ((Binding)binding).Path);
 			Assert.NotNull(((Binding)binding).Converter);
-			Assert.That(((Binding)binding).Converter, Is.InstanceOf<ReverseConverter>());
-			Assert.AreEqual(BindingMode.OneWayToSource, ((Binding)binding).Mode);
-			Assert.AreEqual("Qux, {0}", ((Binding)binding).StringFormat);
+			Assert.True(((Binding)binding).Converter, Is.InstanceOf<ReverseConverter>());
+			Assert.Equal(BindingMode.OneWayToSource, ((Binding)binding).Mode);
+			Assert.Equal("Qux, {0}", ((Binding)binding).StringFormat);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingWithStaticConverter()
 		{
 			var bindingString = "{Binding Converter={x:Static local:ReverseConverter.Instance}}";
@@ -343,27 +342,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}) as Binding;
 
 			Assert.NotNull(binding);
-			Assert.AreEqual(".", binding.Path);
-			Assert.That(binding.Converter, Is.TypeOf<ReverseConverter>());
+			Assert.Equal(".", binding.Path);
+			Assert.IsType<ReverseConverter>(binding.Converter);
 		}
 
 		public int FontSize { get; set; }
 
-		[TestCase("{OnPlatform 20, Android=23}", "Android", 23)]
-		[TestCase("{OnPlatform Android=20, iOS=25}", "iOS", 25)]
-		[TestCase("{OnPlatform Android=20, MacCatalyst=25}", "MacCatalyst", 25)]
-		[TestCase("{OnPlatform Android=20, Tizen=25}", "Tizen", 25)]
-		[TestCase("{OnPlatform Android=20, WinUI=25}", "WinUI", 25)]
-		[TestCase("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
-		[TestCase("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
-		[TestCase("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
-		[TestCase("{OnPlatform 20}", "Android", 20)]
-		[TestCase("{OnPlatform 20}", "iOS", 20)]
-		[TestCase("{OnPlatform 20}", "Tizen", 20)]
-		[TestCase("{OnPlatform 20}", "WinUI", 20)]
-		[TestCase("{OnPlatform 20}", "UWP", 20)]
-		[TestCase("{OnPlatform 20}", "Foo", 20)]
-		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
+		[InlineData("{OnPlatform 20, Android=23}", "Android", 23)]
+		[InlineData("{OnPlatform Android=20, iOS=25}", "iOS", 25)]
+		[InlineData("{OnPlatform Android=20, MacCatalyst=25}", "MacCatalyst", 25)]
+		[InlineData("{OnPlatform Android=20, Tizen=25}", "Tizen", 25)]
+		[InlineData("{OnPlatform Android=20, WinUI=25}", "WinUI", 25)]
+		[InlineData("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
+		[InlineData("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
+		[InlineData("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
+		[InlineData("{OnPlatform 20}", "Android", 20)]
+		[InlineData("{OnPlatform 20}", "iOS", 20)]
+		[InlineData("{OnPlatform 20}", "Tizen", 20)]
+		[InlineData("{OnPlatform 20}", "WinUI", 20)]
+		[InlineData("{OnPlatform 20}", "UWP", 20)]
+		[InlineData("{OnPlatform 20}", "Foo", 20)]
+		[InlineData("{OnPlatform Android=23, Default=20}", "Foo", 20)]
 		public void OnPlatformExtension(string markup, string platform, int expected)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
@@ -377,16 +376,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 			});
 
-			Assert.AreEqual(expected, actual);
+			Assert.Equal(expected, actual);
 		}
 
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", "Phone", 23)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", "Tablet", 25)]
-		[TestCase("{OnIdiom 20, Phone=23, Tablet=25}", "Desktop", 20)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
-		[TestCase("{OnIdiom Phone=23}", "Desktop", default(int))]
+		[InlineData("{OnIdiom Phone=23, Tablet=25, Default=20}", "Phone", 23)]
+		[InlineData("{OnIdiom Phone=23, Tablet=25, Default=20}", "Tablet", 25)]
+		[InlineData("{OnIdiom 20, Phone=23, Tablet=25}", "Desktop", 20)]
+		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
+		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
+		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
+		[InlineData("{OnIdiom Phone=23}", "Desktop", default(int))]
 		public void OnIdiomExtension(string markup, string idiom, int expected)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Create(idiom);
@@ -400,13 +399,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 			});
 
-			Assert.AreEqual(expected, actual);
+			Assert.Equal(expected, actual);
 		}
 
-		[TestCase("{Binding")]
-		[TestCase("{Binding 'Foo}")]
-		[TestCase("{Binding Foo, Converter={StaticResource Bar}")]
-		[TestCase("{Binding Foo, Converter={StaticResource Bar}?}")]
+		[InlineData("{Binding")]
+		[InlineData("{Binding 'Foo}")]
+		[InlineData("{Binding Foo, Converter={StaticResource Bar}")]
+		[InlineData("{Binding Foo, Converter={StaticResource Bar}?}")]
 		public void InvalidExpressions(string expression)
 		{
 			var serviceProvider = new Internals.XamlServiceProvider(null, null);

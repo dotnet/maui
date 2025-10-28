@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -32,19 +32,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4227(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void FindMemberOnInterfaces(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh4227)));
 				var layout = new Gh4227(useCompiledXaml) { BindingContext = new Gh4227VM() };
-				Assert.That(layout.label0.Text, Is.EqualTo("level0"));
-				Assert.That(layout.label1.Text, Is.EqualTo("level1"));
+				Assert.Equal("level0", layout.label0.Text);
+				Assert.Equal("level1", layout.label1.Text);
 			}
 		}
 	}

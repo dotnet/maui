@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -25,19 +25,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz45179(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DTDoNotInstantiateTheirContent(bool useCompiledXaml)
 			{
 				Bz45179_0.creator_count = 0;
 				Assume.That(Bz45179_0.creator_count, Is.EqualTo(0));
 				var page = new Bz45179(useCompiledXaml);
-				Assert.That(Bz45179_0.creator_count, Is.EqualTo(0));
+				Assert.Equal(0, Bz45179_0.creator_count);
 			}
 		}
 	}

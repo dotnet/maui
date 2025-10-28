@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -24,13 +24,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		async Task OnClicked(object sender, EventArgs e)
 		{
 			await Task.Delay(1000);
-		}
-
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void ThrowsOnWrongEventHandlerSignature(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

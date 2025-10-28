@@ -2,17 +2,16 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class OnAppThemeTests : BaseTestFixture
+{	public class OnAppThemeTests : BaseTestFixture
 	{
 		MockAppInfo mockAppInfo;
 		MockApplication mockApp;
 
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public override void Setup()
 		{
 			base.Setup();
@@ -20,7 +19,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Application.Current = mockApp = new MockApplication();
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public override void TearDown()
 		{
 			Application.Current = null;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			base.TearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void OnAppThemeExtensionLightDarkColor()
 		{
 			var xaml = @"
@@ -39,14 +39,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 
 			SetAppTheme(AppTheme.Dark);
 			label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Red, label.TextColor);
+			Assert.Equal(Colors.Red, label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void OnAppThemeLightDarkColor()
 		{
 			var xaml = @"
@@ -61,14 +61,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 
 			SetAppTheme(AppTheme.Dark);
 			label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Red, label.TextColor);
+			Assert.Equal(Colors.Red, label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void OnAppThemeUnspecifiedThemeDefaultsToLightColor()
 		{
 			var xaml = @"
@@ -83,10 +83,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Unspecified);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void OnAppThemeUnspecifiedLightColorDefaultsToDefault()
 		{
 			var xaml = @"
@@ -101,10 +101,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void AppThemeColorLightDark()
 		{
 			var xaml = @"
@@ -119,14 +119,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 
 			SetAppTheme(AppTheme.Dark);
 			label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Red, label.TextColor);
+			Assert.Equal(Colors.Red, label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void AppThemeColorUnspecifiedThemeDefaultsToLightColor()
 		{
 			var xaml = @"
@@ -141,10 +141,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Unspecified);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void AppThemeColorUnspecifiedLightColorDefaultsToDefault()
 		{
 			var xaml = @"
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			SetAppTheme(AppTheme.Unspecified);
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 		}
 
 		void SetAppTheme(AppTheme theme)

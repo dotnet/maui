@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -21,19 +21,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh8936(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[Test]
-			public void IndexerBindingOnSubclasses([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh8936(useCompiledXaml) { BindingContext = new Gh8936VM() };
-				Assert.That(layout.entry0.Text, Is.EqualTo("Value"));
+				Assert.Equal("Value", layout.entry0.Text);
 				layout.entry0.Text = "Bar";
-				Assert.That(layout.entry0.Text, Is.EqualTo("Bar"));
-				Assert.That(((Gh8936VM)layout.BindingContext).Data["Key"], Is.EqualTo("Bar"));
+				Assert.Equal("Bar", layout.entry0.Text);
+				Assert.Equal("Bar", ((Gh8936VM)layout.BindingContext).Data["Key"]);
 			}
 		}
 	}

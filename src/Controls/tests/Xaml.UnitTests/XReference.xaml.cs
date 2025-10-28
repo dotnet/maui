@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,21 +15,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XReference(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void SupportsXReference(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
-				Assert.AreSame(layout.image, layout.imageView.Content);
+				Assert.Same(layout.image, layout.imageView.Content);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void XReferenceAsCommandParameterToSelf(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
@@ -44,27 +41,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					})
 				};
 				((IButtonController)button).SendClicked();
-				Assert.Fail();
+				throw new Xunit.Sdk.XunitException();
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void XReferenceAsBindingSource(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
 
-				Assert.AreEqual("foo", layout.entry.Text);
-				Assert.AreEqual("bar", layout.entry.Placeholder);
+				Assert.Equal("foo", layout.entry.Text);
+				Assert.Equal("bar", layout.entry.Placeholder);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void CrossXReference(bool useCompiledXaml)
 			{
 				var layout = new XReference(useCompiledXaml);
 
-				Assert.AreSame(layout.label0, layout.label1.BindingContext);
-				Assert.AreSame(layout.label1, layout.label0.BindingContext);
+				Assert.Same(layout.label0, layout.label1.BindingContext);
+				Assert.Same(layout.label1, layout.label0.BindingContext);
 			}
 		}
 	}

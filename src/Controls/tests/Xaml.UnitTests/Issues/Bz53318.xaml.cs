@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,12 +17,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz53318()
 		{
 			InitializeComponent();
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[Test]
+			[Fact]
 			public void DoesCompilesArgsInsideDataTemplate()
 			{
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));

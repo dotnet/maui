@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,12 +16,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2034(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
+			[InlineData(true)]
 			public void Compiles(bool useCompiledXaml)
 			{
 				if (!useCompiledXaml)

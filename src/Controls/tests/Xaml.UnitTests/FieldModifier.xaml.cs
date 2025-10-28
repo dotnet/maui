@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,28 +14,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FieldModifier(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class FindByNameTests
+		}		public class FindByNameTests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestFieldModifier(bool useCompiledXaml)
 			{
 				var layout = new FieldModifier();
-				Assert.That(layout.privateLabel, Is.Not.Null);
-				Assert.That(layout.internalLabel, Is.Not.Null);
-				Assert.That(layout.publicLabel, Is.Not.Null);
+				Assert.NotNull(layout.privateLabel);
+				Assert.NotNull(layout.internalLabel);
+				Assert.NotNull(layout.publicLabel);
 
 				var fields = typeof(FieldModifier).GetTypeInfo().DeclaredFields;
 
-				Assert.That(fields.First(fi => fi.Name == "privateLabel").IsPrivate, Is.True);
+				Assert.True(fields.First(fi => fi.Name == "privateLabel").IsPrivate, Is.True);
 
-				Assert.That(fields.First(fi => fi.Name == "internalLabel").IsPrivate, Is.False);
-				Assert.That(fields.First(fi => fi.Name == "internalLabel").IsPublic, Is.False);
+				Assert.True(fields.First(fi => fi.Name == "internalLabel").IsPrivate, Is.False);
+				Assert.True(fields.First(fi => fi.Name == "internalLabel").IsPublic, Is.False);
 
-				Assert.That(fields.First(fi => fi.Name == "publicLabel").IsPublic, Is.True);
+				Assert.True(fields.First(fi => fi.Name == "publicLabel").IsPublic, Is.True);
 			}
 		}
 	}

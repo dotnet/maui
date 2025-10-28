@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,18 +12,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TypeMismatch(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[Test]
-			public void ThrowsOnMismatchingType([Values(true, false)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(true, false)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws(new BuildExceptionConstraint(7, 16, m => m.Contains("No property, BindableProperty", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(TypeMismatch)));
+					new BuildExceptionConstraint(7, 16, m => m.Contains("No property, BindableProperty", StringComparison.Ordinal)).Validate(() => MockCompiler.Compile(typeof(TypeMismatch)));
 				else
-					Assert.Throws(new XamlParseExceptionConstraint(7, 16, m => m.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new TypeMismatch(useCompiledXaml));
+					new XamlParseExceptionConstraint(7, 16, m => m.StartsWith("Cannot assign property", StringComparison.Ordinal)).Validate(() => new TypeMismatch(useCompiledXaml));
 			}
 		}
 	}

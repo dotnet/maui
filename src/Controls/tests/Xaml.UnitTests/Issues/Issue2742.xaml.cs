@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -20,23 +20,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue2742(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ToolBarItemsOnContentPageInheritors(bool useCompiledXaml)
 			{
 				var layout = new Issue2742(useCompiledXaml);
-				Assert.That(layout.Content, Is.TypeOf<Label>());
-				Assert.AreEqual("test", ((Label)layout.Content).Text);
+				Assert.IsType<Label>(layout.Content);
+				Assert.Equal("test", ((Label)layout.Content).Text);
 
 				Assert.NotNull(layout.ToolbarItems);
-				Assert.AreEqual(2, layout.ToolbarItems.Count);
-				Assert.AreEqual("One", layout.ToolbarItems[0].Text);
+				Assert.Equal(2, layout.ToolbarItems.Count);
+				Assert.Equal("One", layout.ToolbarItems[0].Text);
 			}
 		}
 	}

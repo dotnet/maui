@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -18,25 +18,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture]
 #if !DEBUG
-		[Ignore("This test runs only in debug")]
+		[Fact(Skip = "This test runs only in debug")]
 #endif
 		public class Tests
 		{
-			[TestCase(false)]
-			//[TestCase(true)]
+			[InlineData(false)]
+			//[InlineData(true)]
 			public void Test(bool useCompiledXaml)
 			{
 				List<BindingBaseErrorEventArgs> failures = new List<BindingBaseErrorEventArgs>();
 				BindingDiagnostics.BindingFailed += (o, e) => failures.Add(e);
 				var layout = new BindingDiagnosticsTests(useCompiledXaml) { BindingContext = new { foo = "bar" } };
-				Assert.That(failures.Count, Is.GreaterThan(0));
+				Assert.True(failures.Count, Is.GreaterThan(0));
 				var failure = failures[0] as BindingErrorEventArgs;
-				Assert.That(((Binding)failure.Binding).Path, Is.EqualTo("foobar"));
-				Assert.That(failure.XamlSourceInfo.LineNumber, Is.EqualTo(7));
-				Assert.That(failure.Target, Is.TypeOf<Label>());
-				Assert.That(failure.TargetProperty, Is.EqualTo(Label.TextProperty));
+				Assert.Equal("foobar", ((Binding)failure.Binding).Path);
+				Assert.Equal(7, failure.XamlSourceInfo.LineNumber);
+				Assert.IsType<Label>(failure.Target);
+				Assert.Equal(Label.TextProperty, failure.TargetProperty);
 			}
 		}
 	}

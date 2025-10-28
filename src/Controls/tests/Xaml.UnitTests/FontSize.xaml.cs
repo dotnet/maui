@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -17,17 +17,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FontSize(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[Test]
+			[Fact]
 			public void FontSizeExtensionsAreReplaced()
 			{
 				MockCompiler.Compile(typeof(FontSize), out var methodDef, out var hasLoggedErrors);
-				Assert.That(!hasLoggedErrors);
-				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsFontSizeConverterCtor(methodDef, instr)), "This Xaml still generates a new FontSizeConverter()");
+				Assert.True(!hasLoggedErrors);
+				Assert.True(!methodDef.Body.Instructions.Any(instr => InstructionIsFontSizeConverterCtor(methodDef, instr)), "This Xaml still generates a new FontSizeConverter()");
 			}
 
 			bool InstructionIsFontSizeConverterCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
@@ -41,16 +38,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				return true;
 			}
 
-			[Test]
-			public void CorrectFontSizes([Values(false, true)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false, true)] bool useCompiledXaml)
 			{
 				var page = new FontSize(useCompiledXaml);
-				Assert.That(page.l42.FontSize, Is.EqualTo(42));
+				Assert.Equal(42, page.l42.FontSize);
 
 #pragma warning disable CS0612 // Type or member is obsolete
-				Assert.That(page.lmedium.FontSize, Is.EqualTo(Device.GetNamedSize(NamedSize.Medium, page.lmedium)));
-				Assert.That(page.ldefault.FontSize, Is.EqualTo(Device.GetNamedSize(NamedSize.Default, page.ldefault)));
-				Assert.That(page.bdefault.FontSize, Is.EqualTo(Device.GetNamedSize(NamedSize.Default, page.bdefault)));
+				Assert.Equal(Device.GetNamedSize(NamedSize.Medium, page.lmedium, page.lmedium.FontSize));
+				Assert.Equal(Device.GetNamedSize(NamedSize.Default, page.ldefault, page.ldefault.FontSize));
+				Assert.Equal(Device.GetNamedSize(NamedSize.Default, page.bdefault, page.bdefault.FontSize));
 #pragma warning restore CS0612 // Type or member is obsolete
 
 			}

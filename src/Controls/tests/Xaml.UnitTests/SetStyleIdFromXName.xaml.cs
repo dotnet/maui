@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -10,18 +10,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SetStyleIdFromXName(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void SetStyleId(bool useCompiledXaml)
 			{
 				var layout = new SetStyleIdFromXName(useCompiledXaml);
-				Assert.That(layout.label0.StyleId, Is.EqualTo("label0"));
-				Assert.That(layout.label1.StyleId, Is.EqualTo("foo"));
-				Assert.That(layout.label2.StyleId, Is.EqualTo("bar"));
+				Assert.Equal("label0", layout.label0.StyleId);
+				Assert.Equal("foo", layout.label1.StyleId);
+				Assert.Equal("bar", layout.label2.StyleId);
 			}
 		}
 	}

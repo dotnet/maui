@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,16 +15,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh1566(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true), TestCase(false)]
+			[InlineData(true), TestCase(false)]
 			public void ObsoletePropsDoNotThrow(bool useCompiledXaml)
 			{
 				var layout = new Gh1566(useCompiledXaml);
-				Assert.That(layout.frame.BorderColor, Is.EqualTo(Colors.Red));
+				Assert.Equal(Colors.Red, layout.frame.BorderColor);
 			}
 		}
 	}

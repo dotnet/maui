@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,13 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz43450(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DoesNotAllowGridRowDefinition(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

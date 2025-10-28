@@ -1,27 +1,27 @@
 using System;
 using System.Globalization;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[TestFixture]
-	public class Issue1493
+{	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public virtual void TearDown()
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 		}
 
-		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		[InlineData("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
 		//mostly happens in european cultures
 		public void CultureInvariantNumberParsing(string culture)
 		{

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,18 +16,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz40906(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ParsingCDATA(bool useCompiledXaml)
 			{
 				var page = new Bz40906(useCompiledXaml);
-				Assert.AreEqual("Foo", page.label0.Text);
-				Assert.AreEqual("FooBar>><<", page.label1.Text);
+				Assert.Equal("Foo", page.label0.Text);
+				Assert.Equal("FooBar>><<", page.label1.Text);
 			}
 		}
 	}

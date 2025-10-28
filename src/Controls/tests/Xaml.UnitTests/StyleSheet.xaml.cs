@@ -1,8 +1,8 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
+using Xunit;
+
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,24 +16,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StyleSheet(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void EmbeddedStyleSheetsAreLoaded(bool useCompiledXaml)
 			{
 				var layout = new StyleSheet(useCompiledXaml);
-				Assert.That(layout.Resources.StyleSheets[0].Styles.Count, Is.GreaterThanOrEqualTo(1));
+				Assert.True(layout.Resources.StyleSheets[0].Styles.Count, Is.GreaterThanOrEqualTo(1));
 			}
 
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void StyleSheetsAreApplied(bool useCompiledXaml)
 			{
 				var layout = new StyleSheet(useCompiledXaml);
-				Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Azure));
-				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Colors.AliceBlue));
+				Assert.Equal(Colors.Azure, layout.label0.TextColor);
+				Assert.Equal(Colors.AliceBlue, layout.label0.BackgroundColor);
 			}
 		}
 	}

@@ -9,7 +9,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -33,36 +33,35 @@ public partial class Maui26369 : ContentPage
 	public Maui26369(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	}	class Test
 	{
-		[SetUp]
+		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
+		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
+		[Fact]
 		public void CompilationDoesNotFail([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(Maui26369), out var methodDef, out var hasLoggedErrors);
-				Assert.IsFalse(hasLoggedErrors);
+				Assert.False(hasLoggedErrors);
 				Assert.False(ContainsBoxToNullable(methodDef));
 			}
 
 			var page = new Maui26369(useCompiledXaml);
-			Assert.That(page.NullableGridLength, Is.EqualTo(new GridLength(30)));
+			Assert.Equal(new GridLength(30, page.NullableGridLength));
 		}
 
 		private bool ContainsBoxToNullable(MethodDefinition methodDef)

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,15 +15,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh10803(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			bool debuggerinitialstate;
 			int failures = 0;
 
-			[SetUp]
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -32,7 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DebuggerHelper._mockDebuggerIsAttached = true;
 			}
 
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = debuggerinitialstate;
@@ -41,13 +40,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				failures = 0;
 			}
 
-			[Test]
-			public void SourceInfoForElementsInDT([Values(false)] bool useCompiledXaml)
+			[Theory]
+			public void Method([InlineData(false)] bool useCompiledXaml)
 			{
 				var layout = new Gh10803(useCompiledXaml);
 				var listview = layout.listview;
 				var cell = listview.TemplatedItems.GetOrCreateContent(0, null);
-				Assert.That(failures, Is.EqualTo(0), "one or more element without source info, or with invalid ChildIndex");
+				Assert.True(failures, Is.EqualTo(0), "one or more element without source info, or with invalid ChildIndex");
 			}
 
 			void VTChanged(object sender, VisualTreeChangeEventArgs e)

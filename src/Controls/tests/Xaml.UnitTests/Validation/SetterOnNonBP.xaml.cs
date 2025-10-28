@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class FakeView : View
@@ -18,19 +18,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SetterOnNonBP(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class SetterOnNonBPTests
+		}		public class SetterOnNonBPTests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void ShouldThrow(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws(new BuildExceptionConstraint(10, 13), () => MockCompiler.Compile(typeof(SetterOnNonBP)));
+					new BuildExceptionConstraint(10, 13).Validate(() => MockCompiler.Compile(typeof(SetterOnNonBP)));
 				else
-					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => new SetterOnNonBP(useCompiledXaml));
+					new XamlParseExceptionConstraint(10, 13).Validate(() => new SetterOnNonBP(useCompiledXaml));
 			}
 		}
 	}

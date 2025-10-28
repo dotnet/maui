@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,34 +15,33 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz55343(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
-			[SetUp]
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
-			[TearDown]
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[Ignore("[Bug] Types that require conversion don't work in OnPlatform: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13830")]
-			[TestCase(true)]
-			[TestCase(false)]
+			[Fact(Skip = "[Bug] Types that require conversion don't work in OnPlatform: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13830")]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void OnPlatformFontConversion(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new Bz55343(useCompiledXaml);
-				Assert.That(layout.label0.FontSize, Is.EqualTo(16d));
-				Assert.That(layout.label1.FontSize, Is.EqualTo(64d));
+				Assert.Equal(16d, layout.label0.FontSize);
+				Assert.Equal(64d, layout.label1.FontSize);
 			}
 		}
 	}

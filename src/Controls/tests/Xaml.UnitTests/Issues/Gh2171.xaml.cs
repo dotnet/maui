@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -14,20 +14,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2171(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
+		}		class Tests
 		{
-			[TestCase(false), TestCase(true)]
+			[InlineData(false), TestCase(true)]
 			public void ParsingNestedMarkups(bool useCompiledXaml)
 			{
 				var layout = new Gh2171(useCompiledXaml);
 				var markup = layout.BindingContext as Gh2171Extension;
-				Assert.That(markup, Is.Not.Null);
-				Assert.That(markup.Foo, Is.EqualTo("foo"));
-				Assert.That(markup.Bar, Is.EqualTo("bar"));
-				Assert.That((markup.Binding as Binding).Path, Is.EqualTo("Text"));
+				Assert.NotNull(markup);
+				Assert.Equal("foo", markup.Foo);
+				Assert.Equal("bar", markup.Bar);
+				Assert.Equal("Text", (markup.Binding as Binding).Path);
 			}
 		}
 	}

@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -22,16 +22,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public BindingsCompiler(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
+		}		public class Tests
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
+		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
+		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Test(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -69,49 +68,49 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 
 				//testing paths
-				Assert.AreEqual("Text0", layout.label0.Text);
-				Assert.AreEqual("Text0", layout.label1.Text);
-				Assert.AreEqual("Text1", layout.label2.Text);
-				Assert.AreEqual("TextIndex", layout.label3.Text);
-				Assert.AreEqual("Text0", layout.label8.Text);
+				Assert.Equal("Text0", layout.label0.Text);
+				Assert.Equal("Text0", layout.label1.Text);
+				Assert.Equal("Text1", layout.label2.Text);
+				Assert.Equal("TextIndex", layout.label3.Text);
+				Assert.Equal("Text0", layout.label8.Text);
 
 				//value types
-				Assert.That(layout.label5.Text, Is.EqualTo("42"));
-				Assert.That(layout.label6.Text, Is.EqualTo("text6"));
-				Assert.AreEqual("Text9", layout.label9.Text);
-				Assert.AreEqual("Text9", layout.label10.Text);
+				Assert.Equal("42", layout.label5.Text);
+				Assert.Equal("text6", layout.label6.Text);
+				Assert.Equal("Text9", layout.label9.Text);
+				Assert.Equal("Text9", layout.label10.Text);
 				layout.label9.Text = "Text from label9";
-				Assert.AreEqual("Text from label9", vm.StructModel.Text);
+				Assert.Equal("Text from label9", vm.StructModel.Text);
 				layout.label10.Text = "Text from label10";
-				Assert.AreEqual("Text from label10", vm.StructModel.Model.Text);
+				Assert.Equal("Text from label10", vm.StructModel.Model.Text);
 
 				//testing selfPath
 				layout.label4.BindingContext = "Self";
-				Assert.AreEqual("Self", layout.label4.Text);
+				Assert.Equal("Self", layout.label4.Text);
 				layout.label7.BindingContext = 42;
-				Assert.That(layout.label7.Text, Is.EqualTo("42"));
+				Assert.Equal("42", layout.label7.Text);
 
 				//testing INPC
 				GC.Collect();
 				vm.Text = "Text2";
-				Assert.AreEqual("Text2", layout.label0.Text);
+				Assert.Equal("Text2", layout.label0.Text);
 
 				//https://github.com/dotnet/maui/issues/21181
 				vm.Model[3] = "TextIndex2";
-				Assert.AreEqual("TextIndex2", layout.label3.Text);
+				Assert.Equal("TextIndex2", layout.label3.Text);
 
 				//https://github.com/dotnet/maui/issues/23621
 				vm.Model.SetIndexerValueAndCallOnPropertyChangedWithoutIndex(3, "TextIndex3");
-				Assert.AreEqual("TextIndex3", layout.label3.Text);
+				Assert.Equal("TextIndex3", layout.label3.Text);
 
 				//testing 2way
-				Assert.AreEqual("Text2", layout.entry0.Text);
+				Assert.Equal("Text2", layout.entry0.Text);
 				((IElementController)layout.entry0).SetValueFromRenderer(Entry.TextProperty, "Text3");
-				Assert.AreEqual("Text3", layout.entry0.Text);
-				Assert.AreEqual("Text3", vm.Text);
+				Assert.Equal("Text3", layout.entry0.Text);
+				Assert.Equal("Text3", vm.Text);
 				((IElementController)layout.entry1).SetValueFromRenderer(Entry.TextProperty, "Text4");
-				Assert.AreEqual("Text4", layout.entry1.Text);
-				Assert.AreEqual("Text4", vm.Model.Text);
+				Assert.Equal("Text4", layout.entry1.Text);
+				Assert.Equal("Text4", vm.Model.Text);
 				vm.Model = null;
 				layout.entry1.BindingContext = null;
 
@@ -119,18 +118,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				if (useCompiledXaml)
 				{
 					var binding = layout.picker0.ItemDisplayBinding;
-					Assert.That(binding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
+					Assert.True(binding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
 				}
 
 				//testing invalid bindingcontext type
 				layout.stack.BindingContext = new object();
-				Assert.AreEqual(null, layout.label0.Text);
+				Assert.Equal(null, layout.label0.Text);
 
 				//testing source
-				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
+				Assert.Equal("Text for label12", layout.label12.Text);
 
 				//testing binding with path that cannot be statically compiled (we don't support casts in the Path)
-				Assert.That(layout.label13.Text, Is.EqualTo("Global Text"));
+				Assert.Equal("Global Text", layout.label13.Text);
 			}
 		}
 	}
