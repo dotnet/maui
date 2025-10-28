@@ -1,6 +1,7 @@
 parameters:
   # Xcode
   skipXcode: false
+  skipSimulatorSetup: false
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
@@ -76,42 +77,61 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      ls /Applications | grep 'Xcode'
+      ls -la /Applications | grep 'Xcode'
       echo
       echo currently selected xcode:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+      # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
+      if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
+        XCODE_VERSION=$(REQUIRED_XCODE)
+      else
+        XCODE_VERSION=$(XCODE)
+      fi
+      sudo xcode-select -s /Applications/Xcode_${XCODE_VERSION}.app
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-      # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
-      # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-      if [[ "$(REQUIRED_XCODE)" =~ ^26[.]0.*$ ]]; then
-        if ! sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0; then
-          echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
-          sudo xcrun simctl runtime delete all
-          # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
-          for i in $(seq 1 60); do
-            sleep 1
-            C=$(xcrun simctl runtime list -j | jq '. | length')
-            if [[ $C == 0 ]]; then
-              echo "    still $C simulators left..."
-              break
-            fi
-          done
-          echo "Re-trying simulator runtime installation"
-          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
-        fi
-      else
-        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
-      fi
+     
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
     timeoutInMinutes: 30
 
+  - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
+    - script: |
+        echo installing simulator runtimes...
+        # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
+        if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
+          XCODE_VERSION=$(REQUIRED_XCODE)
+        else
+          XCODE_VERSION=$(XCODE)
+        fi
+        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
+        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
+        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
+          if ! sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0; then
+            echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
+            sudo xcrun simctl runtime delete all
+            # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+            for i in $(seq 1 60); do
+              sleep 1
+              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if [[ $C == 0 ]]; then
+                echo "    still $C simulators left..."
+                break
+              fi
+            done
+            echo "Re-trying simulator runtime installation"
+            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
+          fi
+        else
+          sudo xcodebuild -downloadPlatform iOS
+        fi
+      displayName: Install Simulator Runtimes
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 30
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
   # Prepare macOS
@@ -181,13 +201,13 @@ steps:
 
 # Provisioning Android - JDK
 - ${{ if ne(parameters.skipJdk, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK'
     condition: succeeded()
 
 # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Common Packages'
     condition: succeeded()
 
@@ -206,7 +226,7 @@ steps:
 
 # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
 - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Platform APIs'
     condition: succeeded()
     env:
@@ -214,7 +234,7 @@ steps:
 
 # Provisioning Android - Emulator images (eg: system-images;android-34;google_apis;aarch64)
 - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Emulator Images'
     condition: succeeded()
     env:
@@ -222,7 +242,7 @@ steps:
 
 # Provisioning Android - Android AVDs (actual emulator virtual devices)
 - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Create AVDs'
     condition: succeeded()
     env:

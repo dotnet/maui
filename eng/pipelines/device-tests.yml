@@ -113,6 +113,7 @@ stages:
       parameters:
         pool: ${{ parameters.macOSPool }}
         runAsPublic: true
+        TargetFrameworkVersion: targetFrameworkVersion.tfm
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
           parameters:
@@ -124,7 +125,8 @@ stages:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
+            skipSimulatorSetup: true
 
     # Just use the old way for Windows Device Tests
     - template: common/device-tests.yml

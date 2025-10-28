@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Xunit;
 
@@ -88,6 +89,6 @@ public partial class TestPage
 		var (result, generated) = RunGenerator(xaml, code, "0168, CS0612");
 		Assert.False(result.Diagnostics.Any());
 
-		Assert.Equal(expected, generated);
+		Assert.Equal(expected.Replace("\r\n", "\n", StringComparison.Ordinal), generated?.Replace("\r\n", "\n", StringComparison.Ordinal));
 	}
 }

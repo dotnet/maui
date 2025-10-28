@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Xunit;
 
@@ -53,7 +54,7 @@ public partial class __TypeDBD64C1C77CDA760
 		var (result, generated) = RunGenerator(xaml, "", path: "Styles.xaml");
 		Assert.False(result.Diagnostics.Any());
 
-		Assert.Equal(expected, generated);
+		Assert.Equal(expected.Replace("\r\n", "\n", StringComparison.Ordinal), generated?.Replace("\r\n", "\n", StringComparison.Ordinal));
 		
     }
 }

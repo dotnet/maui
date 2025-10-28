@@ -31,18 +31,40 @@ steps:
     sw_vers -productVersion
     echo
     echo Installed Xcode versions:
-    ls /Applications | grep 'Xcode'
+    ls -la /Applications | grep 'Xcode'
     echo
     echo currently selected xcode:
     xcrun xcode-select --print-path
     echo
     echo selecting latest xcode...
-    sudo xcode-select -s /Applications/Xcode_$(XCODE).app
+    # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
+    if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
+      XCODE_VERSION=$(REQUIRED_XCODE)
+    else
+      XCODE_VERSION=$(XCODE)
+    fi
+    sudo xcode-select -s /Applications/Xcode_${XCODE_VERSION}.app
     xcrun xcode-select --print-path
     xcodebuild -version
     sudo xcodebuild -license accept
-    if [[ ${XCODE/\.*/} -ge 26 ]]; then
-      sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
+    # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
+    # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
+    if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
+      if ! sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0; then
+        echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
+        sudo xcrun simctl runtime delete all
+        # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+        for i in $(seq 1 60); do
+          sleep 1
+          C=$(xcrun simctl runtime list -j | jq '. | length')
+          if [[ $C == 0 ]]; then
+            echo "    still $C simulators left..."
+            break
+          fi
+        done
+        echo "Re-trying simulator runtime installation"
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
+      fi
     else
       sudo xcodebuild -downloadPlatform iOS
     fi
@@ -97,11 +119,11 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
-- template: /eng/pipelines/common/setup-android-dependencies.yml
-  parameters:
-    mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    repoLogPath: ${{ parameters.repoLogPath }}
-    androidSdkRoot: ${{ parameters.androidSdkRoot }}
+# - template: /eng/pipelines/common/setup-android-dependencies.yml
+#   parameters:
+#     mauiSourcePath: ${{ parameters.mauiSourcePath }}
+#     repoLogPath: ${{ parameters.repoLogPath }}
+#     androidSdkRoot: ${{ parameters.androidSdkRoot }}
 
 - ${{ if eq(parameters.buildMSBuildTasks, true) }}:
   - template: /eng/pipelines/common/run-dotnet-preview.yml

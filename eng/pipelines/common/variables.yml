@@ -12,7 +12,7 @@ variables:
 - name: DEVICETESTS_REQUIRED_XCODE
   value: 26.0.1
 - name: XCODE
-  value: 26.0
+  value: 26.0.1
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Localization variables
