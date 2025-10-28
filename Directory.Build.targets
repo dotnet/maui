@@ -5,6 +5,7 @@
   <!-- Don't include netstandard TFMs in the NuGet package -->
   <PropertyGroup>
     <IncludeBuildOutput Condition="$(TargetFramework.Contains('netstandard'))">false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking Condition="$(TargetFramework.Contains('netstandard'))">true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <ItemGroup>
