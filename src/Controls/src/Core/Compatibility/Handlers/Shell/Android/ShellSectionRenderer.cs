@@ -77,6 +77,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
 		bool _disposed;
+		GlobalWindowInsetListener _localInsetListener;
+		CoordinatorLayout _managedCoordinatorLayout;
 		IShellController ShellController => _shellContext.Shell;
 		public event EventHandler AnimationFinished;
 		Fragment IShellObservableFragment.Fragment => this;
@@ -105,11 +107,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
 
 			// Set up the CoordinatorLayout with a local inset listener
-			if (context?.GetGlobalWindowInsetListener() is GlobalWindowInsetListener globalListener)
-			{
-				var localListener = new GlobalWindowInsetListener();
-				root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, localListener);
-			}
+			_localInsetListener = new GlobalWindowInsetListener();
+			_managedCoordinatorLayout = root;
+			root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, _localInsetListener);
 
 			int actionBarHeight = context.GetActionBarHeight();
 
@@ -203,6 +203,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_rootView != null)
 			{
+				// Clean up the coordinator layout and local listener first
+				if (_managedCoordinatorLayout is not null && _localInsetListener is not null)
+				{
+					GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout, _localInsetListener);
+				}
+
 				UnhookEvents();
 
 				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
@@ -229,6 +235,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = null;
 			_viewPager = null;
 			_rootView = null;
+			_localInsetListener = null;
+			_managedCoordinatorLayout = null;
 
 		}
 

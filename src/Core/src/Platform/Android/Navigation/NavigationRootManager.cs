@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Platform
 		AView? _rootView;
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
+		GlobalWindowInsetListener? _localInsetListener;
+		CoordinatorLayout? _managedCoordinatorLayout;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -75,10 +77,11 @@ namespace Microsoft.Maui.Platform
 					   .JavaCast<CoordinatorLayout>();
 
 				// Set up the CoordinatorLayout with a local inset listener
-				if (navigationLayout != null && mauiContext.Context?.GetGlobalWindowInsetListener() is GlobalWindowInsetListener globalListener)
+				if (navigationLayout != null)
 				{
-					var localListener = new GlobalWindowInsetListener();
-					navigationLayout = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(navigationLayout, localListener);
+					_localInsetListener = new GlobalWindowInsetListener();
+					_managedCoordinatorLayout = navigationLayout;
+					navigationLayout = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(navigationLayout, _localInsetListener);
 				}
 
 				_rootView = navigationLayout;
@@ -115,6 +118,12 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			// Clean up the coordinator layout and local listener first
+			if (_managedCoordinatorLayout is not null && _localInsetListener is not null)
+			{
+				GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout, _localInsetListener);
+			}
+
 			ClearPlatformParts();
 			SetContentView(null);
 		}
@@ -126,6 +135,8 @@ namespace Microsoft.Maui.Platform
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;
+			_localInsetListener = null;
+			_managedCoordinatorLayout = null;
 		}
 
 		IDisposable? _pendingFragment;
