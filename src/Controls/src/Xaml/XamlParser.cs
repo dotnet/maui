@@ -283,6 +283,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						return XmlName.xFactoryMethod;
 					case "Arguments":
 						return XmlName.xArguments;
+					case "ClassModifier":
+						return XmlName.xClassModifier;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
 						return XmlName.Empty;

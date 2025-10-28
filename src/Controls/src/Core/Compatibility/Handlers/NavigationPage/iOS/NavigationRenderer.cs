@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -1515,6 +1516,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
+				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
 			}
@@ -2081,9 +2084,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UIImageView _icon;
 			bool _disposed;
 
+			//https://developer.apple.com/documentation/uikit/uiview/2865930-directionallayoutmargins
+			const int SystemMargin = 16;
+
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
+				// For iOS 26+, we need to use autoresizing masks instead of constraints to ensure proper TitleView display
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					TranslatesAutoresizingMaskIntoConstraints = true;
+					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -2109,6 +2121,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				ClipsToBounds = true;
+			}
+
+			public override UIEdgeInsets AlignmentRectInsets
+			{
+				get
+				{
+					if (_child?.VirtualView is IView view)
+					{
+						var margin = view.Margin;
+						return new UIEdgeInsets(-(nfloat)margin.Top, -(nfloat)margin.Left, -(nfloat)margin.Bottom, -(nfloat)margin.Right);
+					}
+					else
+					{
+						return base.AlignmentRectInsets;
+					}
+				}
 			}
 
 			void OnTitleViewParentSet(object sender, EventArgs e)
@@ -2156,7 +2184,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (Superview != null)
 					{
-						if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
+						// For iOS 26+ and pre-iOS 11, we use autoresizing masks and need to adjust the frame manually
+						if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26) ||
+							!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 						{
 							value.Y = Superview.Bounds.Y;
 
@@ -2207,10 +2237,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_icon != null)
 					_icon.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
 
-				if (_child?.VirtualView != null)
+				if (_child?.VirtualView is IView view)
 				{
 					Rect layoutBounds = new Rect(IconWidth, 0, Bounds.Width - IconWidth, height);
 
+					if (view.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill ||
+						view.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+					{
+						view.Measure(Bounds.Width, Bounds.Height);
+						layoutBounds = view.ComputeFrame(new Rect(0, 0, Bounds.Width, Bounds.Height));
+					}
 					_child.PlatformArrangeHandler(layoutBounds);
 				}
 				else if (_icon != null && Superview != null)

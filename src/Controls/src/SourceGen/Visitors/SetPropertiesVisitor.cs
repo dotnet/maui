@@ -22,6 +22,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	public static readonly IList<XmlName> skips = [
 	   XmlName.xArguments,
 		XmlName.xClass,
+		XmlName.xClassModifier,
 		XmlName.xDataType,
 		XmlName.xFactoryMethod,
 		XmlName.xFieldModifier,

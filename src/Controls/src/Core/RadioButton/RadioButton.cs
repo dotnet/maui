@@ -56,7 +56,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
-			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged());
+			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged(),
+			coerceValue: (b, o) => o ?? b);
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
@@ -209,6 +210,9 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() =>
 				new PlatformConfigurationRegistry<RadioButton>(this));
+
+			//initialize Value to prevent null value
+			Value = this;
 		}
 
 		/// <inheritdoc/>

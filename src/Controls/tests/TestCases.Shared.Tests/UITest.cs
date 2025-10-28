@@ -126,6 +126,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			int cropLeft = 0,
+			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0
@@ -136,7 +138,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, cropLeft, cropRight, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -153,6 +155,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
 		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
+		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
@@ -181,6 +185,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			int cropLeft = 0,
+			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
@@ -237,7 +243,8 @@ namespace Microsoft.Maui.TestCases.Tests
 							environmentName = "android-notch-36";
 						}
 
-						if (!((deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420) || (deviceApiLevel == 36 && deviceScreenSize == "1080x2424" && deviceScreenDensity == 420)))
+						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
@@ -327,15 +334,23 @@ namespace Microsoft.Maui.TestCases.Tests
 					_ => 0,
 				};
 
+				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
+				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
+				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
+				int cropFromLeft = 0;
+				int cropFromRight = 0;
+
+				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
+				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
 				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
 				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
-				if (cropFromTop > 0 || cropFromBottom > 0)
+				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
+					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
@@ -415,6 +430,45 @@ namespace Microsoft.Maui.TestCases.Tests
 			catch (TimeoutException)
 			{
 				// Continue with the test
+			}
+		}
+
+		protected virtual void TryToResetTestState()
+		{
+			Reset();
+		}
+		
+		protected override void FixtureSetup()
+		{
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(false);
+#endif
+					TryToResetTestState();
+
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						App.Back();
+#if ANDROID || MACCATALYST
+						App.ToggleSystemAnimations(true);
+#endif
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
 			}
 		}
 

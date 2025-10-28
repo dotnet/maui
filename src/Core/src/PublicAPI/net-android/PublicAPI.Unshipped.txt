@@ -1,4 +1,6 @@
 ﻿#nullable enable
+Microsoft.Maui.Converters.GridLengthTypeConverter
+Microsoft.Maui.Converters.GridLengthTypeConverter.GridLengthTypeConverter() -> void
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
@@ -21,6 +23,16 @@ Microsoft.Maui.Handlers.OpenWindowRequest.Deconstruct(out Microsoft.Maui.IPersis
 Microsoft.Maui.Handlers.OpenWindowRequest.OpenWindowRequest(Microsoft.Maui.Handlers.OpenWindowRequest! original) -> void
 Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
 Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.Maui.PlatformViewGroup
+override Microsoft.Maui.Handlers.ToolbarHandler.ConnectHandler(Google.Android.Material.AppBar.MaterialToolbar! platformView) -> void
+override Microsoft.Maui.PlatformViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformViewGroup.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformViewGroup.ThresholdType.get -> System.Type!
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
+Microsoft.Maui.PlatformViewGroup.PlatformViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle, int defStyleRes) -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.set -> void
@@ -66,6 +78,8 @@ Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(Androi
 Microsoft.Maui.Platform.MauiHorizontalScrollView.MauiHorizontalScrollView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.get -> bool
 *REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
+Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.MauiShapeableImageView
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
@@ -156,6 +170,10 @@ override Microsoft.Maui.Converters.FlexWrapTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Converters.FlexWrapTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Converters.GridLengthTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
+override Microsoft.Maui.Converters.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Converters.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value) -> object!
+override Microsoft.Maui.Converters.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value) -> object!
@@ -195,12 +213,19 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.Handlers.OpenWindowRequest.GetHashCode() -> int
 override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyDown(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyLongPress(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyMultiple(Android.Views.Keycode keyCode, int repeatCount, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyShortcut(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnKeyUp(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
+override Microsoft.Maui.Platform.ContentViewGroup.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.ContentViewGroup.OnConfigurationChanged(Android.Content.Res.Configuration? newConfig) -> void
+override Microsoft.Maui.Platform.ContentViewGroup.OnDetachedFromWindow() -> void
+override Microsoft.Maui.Platform.LayoutViewGroup.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.LayoutViewGroup.OnConfigurationChanged(Android.Content.Res.Configuration? newConfig) -> void
+override Microsoft.Maui.Platform.LayoutViewGroup.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.Draw(Android.Graphics.Canvas? canvas) -> void
 override Microsoft.Maui.Platform.MauiHorizontalScrollView.HorizontalScrollBarEnabled.get -> bool
@@ -211,6 +236,9 @@ override Microsoft.Maui.Platform.MauiHorizontalScrollView.OnTouchEvent(Android.V
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiScrollView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiScrollView.OnConfigurationChanged(Android.Content.Res.Configuration? newConfig) -> void
+override Microsoft.Maui.Platform.MauiScrollView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiShapeableImageView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
@@ -367,3 +395,4 @@ virtual Microsoft.Maui.SwipeViewSwipeStarted.<Clone>$() -> Microsoft.Maui.SwipeV
 virtual Microsoft.Maui.SwipeViewSwipeStarted.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.SwipeViewSwipeStarted.Equals(Microsoft.Maui.SwipeViewSwipeStarted? other) -> bool
 virtual Microsoft.Maui.SwipeViewSwipeStarted.PrintMembers(System.Text.StringBuilder! builder) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void

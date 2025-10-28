@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
@@ -15,7 +15,7 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null)
 		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn);
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_BasicXaml()
 	{
 		var xaml =
@@ -31,16 +31,16 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
-		Assert.IsTrue(generated.Contains("public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
+		Assert.True(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+		Assert.True(generated.Contains("public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
 
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_GlobalNamespace()
 	{
 		var xaml =
@@ -54,14 +54,14 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+		Assert.True(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_AggregatedXmlns()
 	{
 		var xaml =
@@ -84,15 +84,15 @@ using Microsoft.Maui.Controls;
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
-		Assert.IsTrue(generated.Contains("global::Microsoft.Maui.Controls.Label label", StringComparison.Ordinal));
+		Assert.True(generated.Contains("Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
+		Assert.True(generated.Contains("global::Microsoft.Maui.Controls.Label label", StringComparison.Ordinal));
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_AggregatedXmlnsOnRD()
 	{
 		var xaml =
@@ -114,14 +114,17 @@ using Microsoft.Maui.Controls;
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("public partial class __Type", StringComparison.Ordinal));
+		Assert.True(generated.Contains("public partial class __Type", StringComparison.Ordinal));
 	}
 
-	public void TestCodeBehindGenerator_LocalXaml([Values] bool resolvedType)
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void TestCodeBehindGenerator_LocalXaml(bool resolvedType)
 	{
 		var xaml =
 """
@@ -165,19 +168,19 @@ public class TestControl : ContentView
 
 		if (resolvedType)
 		{
-			Assert.IsFalse(result.Diagnostics.Any());
+			Assert.False(result.Diagnostics.Any());
 
 			var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
-			Assert.IsTrue(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
+			Assert.True(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
 		}
 		else
 		{
-			Assert.IsTrue(result.Diagnostics.Any(d => d.Descriptor.Id == "MAUIX2000"));
+			Assert.True(result.Diagnostics.Any(d => d.Descriptor.Id == "MAUIX2000"));
 		}
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_CompilationClone()
 	{
 		var xaml =
@@ -200,7 +203,7 @@ public class TestControl : ContentView
 		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
-		Assert.AreEqual(output1, output2);
+		Assert.Equal(output1, output2);
 
 		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
 		{
@@ -220,7 +223,7 @@ public class TestControl : ContentView
 		VerifyStepRunReasons(result2, expectedReasons);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_ReferenceAdded()
 	{
 		var xaml =
@@ -243,7 +246,7 @@ public class TestControl : ContentView
 		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
-		Assert.AreEqual(output1, output2);
+		Assert.Equal(output1, output2);
 
 		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
 		{
@@ -263,7 +266,7 @@ public class TestControl : ContentView
 		VerifyStepRunReasons(result2, expectedReasons);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_ModifiedXaml()
 	{
 		var xaml =
@@ -297,12 +300,12 @@ public class TestControl : ContentView
 		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
-		Assert.AreNotEqual(output1, output2);
+		Assert.NotEqual(output1, output2);
 
-		Assert.IsTrue(output1.Contains("MyButton", StringComparison.Ordinal));
-		Assert.IsFalse(output1.Contains("MyButton2", StringComparison.Ordinal));
-		Assert.IsTrue(output2.Contains("MyButton", StringComparison.Ordinal));
-		Assert.IsTrue(output2.Contains("MyButton2", StringComparison.Ordinal));
+		Assert.True(output1.Contains("MyButton", StringComparison.Ordinal));
+		Assert.False(output1.Contains("MyButton2", StringComparison.Ordinal));
+		Assert.True(output2.Contains("MyButton", StringComparison.Ordinal));
+		Assert.True(output2.Contains("MyButton2", StringComparison.Ordinal));
 
 		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
 		{
@@ -324,7 +327,7 @@ public class TestControl : ContentView
 		VerifyStepRunReasons(result2, expectedReasons);
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_NotXaml()
 	{
 		var xaml =
@@ -338,10 +341,10 @@ public class TestControl : ContentView
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
-		Assert.That(result.Diagnostics.Any() || string.IsNullOrWhiteSpace(generated));
+		Assert.True(result.Diagnostics.Any() || string.IsNullOrWhiteSpace(generated));
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_ConflictingNames()
 	{
 		var code =
@@ -378,12 +381,12 @@ namespace Ns2
 
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsTrue(result.Diagnostics.Any());
+		Assert.True(result.Diagnostics.Any());
 
 		//var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_DuplicateNames()
 	{
 		var xaml = """
@@ -472,14 +475,14 @@ internal class InternalWithSuffix : Button { }
 
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("External.PublicInExternal publicInExternal", StringComparison.Ordinal));
+		Assert.True(generated.Contains("External.PublicInExternal publicInExternal", StringComparison.Ordinal));
 	}
 
-	[Test]
+	[Fact]
 	public void TestCodeBehindGenerator_InternalsVisibleTo()
 	{
 		var xaml = """
@@ -538,10 +541,10 @@ internal class InternalButVisible : Label { }
 
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
-		Assert.IsTrue(generated.Contains("External.InternalButVisible internalButVisible", StringComparison.Ordinal));
+		Assert.True(generated.Contains("External.InternalButVisible internalButVisible", StringComparison.Ordinal));
 	}
 }

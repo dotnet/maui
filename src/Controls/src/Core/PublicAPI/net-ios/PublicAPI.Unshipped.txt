@@ -1,4 +1,5 @@
-﻿#nullable enable
+#nullable enable
+*REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
 *REMOVED*Microsoft.Maui.Controls.Accelerator
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void

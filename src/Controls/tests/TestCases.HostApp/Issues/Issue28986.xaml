@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue28986"
              x:Name="TestPage"
-             Title="SafeArea Test">
+             Title="SafeArea Test"
+             SafeAreaEdges="None">
     
     <Grid x:Name="MainGrid" BackgroundColor="Red" SafeAreaEdges="All" AutomationId="MainGrid">
         <!-- Single content grid that spans the entire screen -->

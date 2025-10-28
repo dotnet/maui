@@ -125,75 +125,75 @@
     <value>Analýza XAML se nezdařila</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
-    <value>Expression must end with '}'.</value>
+    <value>Výraz musí končit znakem }.</value>
   </data>
   <data name="RectConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Rect, expected format is "x, y, w, h"</value>
+    <value>{0} nejde převést na Rect, očekávaný formát je x, y, w, h</value>
   </data>
   <data name="ConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into "{1}".</value>
+    <value>{0} nejde převést na {1}.</value>
   </data>
   <data name="PointConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Point, expected format is "x, y".</value>
+    <value>{0} nejde převést na Point, očekávaný formát je x, y.</value>
   </data>
   <data name="ThicknessConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l".</value>
+    <value>{0} nejde převést na Thickness, očekávaný formát je h, v nebo l, t, r, b nebo l.</value>
   </data>
   <data name="CornerRadiusConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l".</value>
+    <value>{0} nejde převést na CornerRadius, očekávaný formát je tl, tr, bl, br nebo l.</value>
   </data>
   <data name="SymbolResolution" xml:space="preserve">
-    <value>Symbol resolution failed</value>
+    <value>Nepovedlo se přeložit symbol</value>
   </data>
   <data name="TypeResolutionMessage" xml:space="preserve">
-    <value>Cannot resolve type "{0}".</value>
+    <value>Typ {0} nejde přeložit.</value>
     <comment>{0} is a xmlnamespace and typename</comment>
   </data>
   <data name="DuplicateTypeError" xml:space="preserve">
-    <value>Multiple Types found for "{0}".</value>
+    <value>Pro {0} se našlo více typů.</value>
   </data>
   <data name="MemberResolution" xml:space="preserve">
-    <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
+    <value>Pro člen {0} nešlo najít žádnou přístupnou vlastnost, BindableProperty nebo událost nebo došlo k neshodě typu mezi hodnotou a vlastností.</value>
     <comment>{0} is a property name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
+    <value>{0} nejde převést na Easing, očekávané hodnoty jsou Linear, SinOut, SinIn, SinInOut, CubicIn, CubicOut, CubicInOut, BounceOut, BounceIn, SpringIn nebo SpringOut.</value>
   </data>
   <data name="FlexBasisConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
+    <value>{0} nejde převést na FlexBasis, očekávané hodnoty jsou Auto nebo n%, "n", kde n je číselná hodnota.</value>
   </data>
   <data name="FlowDirectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
+    <value>{0} nejde převést na FlowDirection, očekávané hodnoty jsou rtl, ltr, inherit, MatchParent, LeftToRight nebo RightToLeft.</value>
   </data>
   <data name="GridLengthConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into GridLength, expected values are "*", "n*", "Auto" or "n" where n is a numeric value.</value>
+    <value>{0} nejde převést na GridLength, očekávané hodnoty jsou *, n*, Auto nebo n, kde n je číselná hodnota.</value>
   </data>
   <data name="ListStringConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
+    <value>{0} nejde převést na List&lt;string&gt;, očekávaný formát je x, y, z.</value>
   </data>
   <data name="StrokeShapeConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Shape (or descendant).</value>
+    <value>{0} nejde převést na obrazec (nebo potomka).</value>
   </data>
   <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into ColumnDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>{0} nejde převést na ColumnDefinitionCollection, očekávané hodnoty jsou "*", "n*", "Auto" nebo "n" (nebo kombinace těchto oddělovaných čárkami), kde n je číselná hodnota.</value>
   </data>
   <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into RowDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>{0} nejde převést na RowDefinitionCollection, očekávané hodnoty jsou *, n*, Auto nebo n (nebo kombinace těchto hodnot oddělených čárkami), kde n je číselná hodnota.</value>
   </data>
   <data name="LayoutOptionsConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
+    <value>{0} nejde převést na LayoutOptions, očekávané hodnoty jsou Start, Center, End nebo Fill.</value>
   </data>
   <data name="MethodResolution" xml:space="preserve">
-    <value>No method found for '{0}'.</value>
+    <value>Pro {0} nebyla nalezena žádná metoda.</value>
     <comment>0 is a method or ctor name</comment>
   </data>
   <data name="DuplicateKeyInRD" xml:space="preserve">
-    <value>duplicate key in resource dictionary</value>
+    <value>duplicitní klíč ve slovníku prostředků</value>
     <comment>
 </comment>
   </data>
   <data name="ConversionFailedTitle" xml:space="preserve">
-    <value>Conversion Failed</value>
+    <value>Převod neproběhl úspěšně</value>
     <comment>
 </comment>
   </data>

@@ -1,11 +1,11 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class ResourceDictionary : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void ResourceDictionaryWithoutXClass()
     {
         var xaml =
@@ -37,7 +37,7 @@ public partial class __TypeDBD64C1C77CDA760
 {
 	private partial void InitializeComponent()
 	{
-		var color = global::Microsoft.Maui.Graphics.Color.FromArgb("#FF4B14");
+		var color = new global::Microsoft.Maui.Graphics.Color(1f, 0.29411766f, 0.078431375f, 1f) /* #FF4B14 */;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color!, new global::System.Uri(@"Styles.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Styles.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
@@ -51,9 +51,9 @@ public partial class __TypeDBD64C1C77CDA760
 """;
 
 		var (result, generated) = RunGenerator(xaml, "", path: "Styles.xaml");
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
-		Assert.AreEqual(expected, generated);
+		Assert.Equal(expected, generated);
 		
     }
 }
