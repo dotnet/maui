@@ -485,7 +485,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
 			var icons = await GetIcon(page);
-			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icons?.Item1, icons?.Item2)
+
+			// iOS 26+ requires images to use AlwaysTemplate rendering mode for tint colors to work on unselected items
+			UIImage icon = icons?.Item1;
+			UIImage selectedIcon = icons?.Item2;
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				if (icon != null)
+					icon = icon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				if (selectedIcon != null)
+					selectedIcon = selectedIcon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+			}
+
+			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icon, selectedIcon)
 			{
 				Tag = Tabbed?.Children.IndexOf(page) ?? -1,
 				AccessibilityIdentifier = page.AutomationId
