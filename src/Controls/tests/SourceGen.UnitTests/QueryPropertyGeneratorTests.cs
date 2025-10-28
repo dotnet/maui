@@ -3,11 +3,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
-[TestFixture]
 public class QueryPropertyGeneratorTests
 {
 	private static void AssertGeneratedCode(string sourceCode, string expectedOutput)
@@ -17,14 +16,17 @@ public class QueryPropertyGeneratorTests
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput), "Generated source should match expected output exactly");
+		// Normalize line endings for comparison
+		var normalizedExpected = expectedOutput.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
+		var normalizedGenerated = generatedSource.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
+		Assert.Equal(normalizedExpected, normalizedGenerated);
 	}
 
-	[Test]
+	[Fact]
 	public void SingleStringProperty_GeneratesCorrectImplementation()
 	{
 		var sourceCode = @"
@@ -94,7 +96,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void MultipleProperties_GeneratesCorrectImplementation()
 	{
 		var sourceCode = @"
@@ -180,7 +182,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void IntProperty_GeneratesTypeConversion()
 	{
 		var sourceCode = @"
@@ -251,7 +253,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void DoubleProperty_GeneratesTypeConversion()
 	{
 		var sourceCode = @"
@@ -322,7 +324,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void BoolProperty_GeneratesTypeConversion()
 	{
 		var sourceCode = @"
@@ -393,7 +395,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void MixedPropertyTypes_GeneratesCorrectImplementation()
 	{
 		var sourceCode = @"
@@ -497,7 +499,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void NoQueryPropertyAttribute_GeneratesNothing()
 	{
 		var sourceCode = @"
@@ -516,11 +518,11 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty);
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(0));
+		Assert.Empty(result.Diagnostics);
+		Assert.Empty(result.GeneratedTrees);
 	}
 
-	[Test]
+	[Fact]
 	public void DocumentationExample_BearDetailPage()
 	{
 		// Example from: https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation
@@ -559,8 +561,8 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
@@ -618,10 +620,10 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput), "Generated source should match expected output exactly");
+		Assert.Equal(expectedOutput, generatedSource);
 	}
 
-	[Test]
+	[Fact]
 	public void DocumentationExample_ElephantDetailPage()
 	{
 		// Example from: https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation
@@ -657,8 +659,8 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
 
@@ -729,10 +731,10 @@ namespace MyApp
 }
 ";
 
-		Assert.That(generatedSource, Is.EqualTo(expectedOutput), "Generated source should match expected output exactly");
+		Assert.Equal(expectedOutput, generatedSource);
 	}
 
-	[Test]
+	[Fact]
 	public void PropertyNotFound_GeneratesNothing()
 	{
 		var sourceCode = @"
@@ -752,14 +754,14 @@ namespace MyApp
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
 		// Should generate diagnostic for non-existent property
-		Assert.That(result.Diagnostics, Is.Not.Empty, "Should produce diagnostic for non-existent property");
-		Assert.That(result.Diagnostics.Any(d => d.Id == "MAUI1201"), Is.True, "Should produce MAUI1201 diagnostic");
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1201"));
 
 		// Should not generate source for non-existent properties
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(0));
+		Assert.Empty(result.GeneratedTrees);
 	}
 
-	[Test]
+	[Fact]
 	public void NullableStringProperty_GeneratesCorrectImplementation()
 	{
 		var sourceCode = @"
@@ -830,7 +832,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void NullableIntProperty_GeneratesCorrectImplementation()
 	{
 		var sourceCode = @"
@@ -901,7 +903,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void ClassWithoutNamespace_GeneratesCorrectImplementation()
 	{
 		var sourceCode = @"
@@ -965,7 +967,7 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void HandlesPropertyClearing()
 	{
 		var sourceCode = @"
@@ -1035,7 +1037,7 @@ namespace MyApp
 		AssertGeneratedCode(sourceCode, expectedOutput);
 	}
 
-	[Test]
+	[Fact]
 	public void GeneratedCode_CompilesSuccessfully()
 	{
 		var sourceCode = @"
@@ -1055,8 +1057,8 @@ namespace MyApp
 
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
 
-		Assert.That(result.Diagnostics, Is.Empty, "Generator should not produce diagnostics");
-		Assert.That(result.GeneratedTrees.Length, Is.EqualTo(1), "Should generate exactly one file");
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
 
 		// Add the generated source to the compilation and verify it compiles
 		compilation = compilation.AddSyntaxTrees(result.GeneratedTrees[0]);
@@ -1064,6 +1066,6 @@ namespace MyApp
 		var compilationDiagnostics = compilation.GetDiagnostics();
 		var errors = compilationDiagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).ToArray();
 
-		Assert.That(errors, Is.Empty, $"Generated code should compile without errors. Errors: {string.Join(Environment.NewLine, errors.Select(e => e.ToString()))}");
+		Assert.Empty(errors);
 	}
 }
