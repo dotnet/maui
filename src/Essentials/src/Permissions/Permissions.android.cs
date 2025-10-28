@@ -301,6 +301,35 @@ namespace Microsoft.Maui.ApplicationModel
 					(Manifest.Permission.AccessFineLocation, true)
 				};
 
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
+					return Task.FromResult(PermissionStatus.Granted);
+
+				// Check if all permissions are declared in manifest
+				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
+				{
+					if (!IsDeclaredInManifest(androidPermission))
+						throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
+				}
+
+				// Count granted permissions to handle partial location permissions correctly
+				var grantedCount = 0;
+				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
+				{
+					var status = DoCheck(androidPermission);
+					if (status == PermissionStatus.Granted)
+						grantedCount++;
+				}
+
+				return grantedCount switch
+				{
+					2 => Task.FromResult(PermissionStatus.Granted),
+					1 => Task.FromResult(PermissionStatus.Restricted),
+					_ => Task.FromResult(PermissionStatus.Denied)
+				};
+			}
+
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				// Check status before requesting first
@@ -338,6 +367,36 @@ namespace Microsoft.Maui.ApplicationModel
 
 					return permissions.ToArray();
 				}
+			}
+
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
+					return Task.FromResult(PermissionStatus.Granted);
+
+				// Check if all permissions are declared in manifest
+				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
+				{
+					if (!IsDeclaredInManifest(androidPermission))
+						throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
+				}
+
+				// Count granted permissions to handle partial location permissions correctly
+				var grantedCount = 0;
+				var totalCount = RequiredPermissions.Length;
+				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
+				{
+					var status = DoCheck(androidPermission);
+					if (status == PermissionStatus.Granted)
+						grantedCount++;
+				}
+
+				return grantedCount switch
+				{
+					var count when count == totalCount => Task.FromResult(PermissionStatus.Granted),
+					var count when count > 0 => Task.FromResult(PermissionStatus.Restricted),
+					_ => Task.FromResult(PermissionStatus.Denied)
+				};
 			}
 
 #if __ANDROID_29__
