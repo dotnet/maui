@@ -21,8 +21,6 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			var invokeJavaScriptTarget = new TestDotNetMethods();
 			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
 
-			//await Task.Delay(15_000);
-
 			// Tell JavaScript to invoke the method
 			hybridWebView.SendRawMessage(methodName);
 

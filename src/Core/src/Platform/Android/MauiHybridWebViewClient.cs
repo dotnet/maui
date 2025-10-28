@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				// 2. Check if the request is for a local resource
-				response = GetResponse(url, logger);
+				response = GetResponse(url, request, logger);
 				if (response is not null)
 				{
 					return response;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? GetResponse(string fullUrl, ILogger? logger)
+		private WebResourceResponse? GetResponse(string fullUrl, IWebResourceRequest request, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
@@ -94,9 +94,30 @@ namespace Microsoft.Maui.Platform
 			{
 				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
 
-				var fullUri = new Uri(fullUrl);
-				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
+				// Only accept requests that have the expected headers
+				if (!HybridWebViewHandler.HasExpectedHeaders(request.RequestHeaders))
+				{
+					logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+				}
+
+				// Only accept POST requests
+				if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+				{
+					logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.Method);
+					return new WebResourceResponse(null, "UTF-8", 405, "Method Not Allowed", null, null);
+				}
+
+				// On Android, POST body is not available in ShouldInterceptRequest, so we use a custom header
+				string? requestBody = null;
+				request.RequestHeaders?.TryGetValue(HybridWebViewHandler.InvokeDotNetBodyHeaderName, out requestBody);
+				if (string.IsNullOrEmpty(requestBody))
+				{
+					logger?.LogError("InvokeDotNet request missing X-Maui-Request-Body header");
+					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+				}
+
+				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
 				var responseStream = new AsyncStream(contentBytesTask, logger);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
 			}
