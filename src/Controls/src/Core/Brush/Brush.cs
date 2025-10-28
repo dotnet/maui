@@ -116,6 +116,33 @@ namespace Microsoft.Maui.Controls
 			return brush == null || brush.IsEmpty;
 		}
 
+		internal static bool HasTransparentBackground(Brush background)
+		{
+			if (IsNullOrEmpty(background))
+			{
+				return false;
+			}
+
+			if (background is SolidColorBrush solidColorBrush)
+			{
+				return solidColorBrush.Color?.Alpha < 1;
+			}
+
+			if (background is GradientBrush gradientBrush && gradientBrush.GradientStops is not null)
+			{
+				// Check if any gradient stop has transparency
+				foreach (var stop in gradientBrush.GradientStops)
+				{
+					if (stop.Color?.Alpha < 1)
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
 		static ImmutableBrush aliceBlue;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.AliceBlue"/>.</summary>
 		public static SolidColorBrush AliceBlue => aliceBlue ??= new(Colors.AliceBlue);
