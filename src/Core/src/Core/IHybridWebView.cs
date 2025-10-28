@@ -21,6 +21,13 @@ namespace Microsoft.Maui
 		string? HybridRoot { get; }
 
 		/// <summary>
+		/// Gets or sets the URL or route to navigate to within the hybrid web view. This allows navigation to specific
+		/// pages or routes within a single-page application (SPA). For example, setting this to "/#/config" will
+		/// navigate to the config route in a hash-based SPA.
+		/// </summary>
+		string? Source { get; }
+
+		/// <summary>
 		/// For internal use only.
 		/// </summary>
 		object? InvokeJavaScriptTarget { get; set; }
