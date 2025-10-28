@@ -11,7 +11,7 @@
       "isHidden": true
     },
     "Empty": {
-      "longName": "empty"
+      "isHidden": true
     }
   },
   "usageExamples": [
