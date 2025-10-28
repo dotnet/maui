@@ -53,16 +53,16 @@ public static class Extensions
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
-                // Enable reporting metrics coming from the .NET MAUI SDK
-                metrics.AddMeter("Microsoft.Maui");
+                // Uncomment the following line to enable reporting metrics coming from the .NET MAUI SDK, this might cause a lot of added telemetry
+                //metrics.AddMeter("Microsoft.Maui");
                 
                 metrics.AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
-                // Enable reporting tracing coming from the .NET MAUI SDK
-                tracing.AddSource("Microsoft.Maui");
+                // Uncomment the following line to enable reporting tracing coming from the .NET MAUI SDK, this might cause a lot of added telemetry
+                //tracing.AddSource("Microsoft.Maui");
                 
                 tracing.AddSource(builder.Environment.ApplicationName)
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
@@ -71,30 +71,6 @@ public static class Extensions
             });
 
         builder.AddOpenTelemetryExporters();
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Disables the security check for ASP.NET development certificates.
-    /// This should only be used in development environments.
-    /// </summary>
-#if !DEBUG
-    [Obsolete("This method should only be used for development purposes.", true)]
-#endif
-    public static IHttpClientBuilder DisableDevCertSecurityCheck(this IHttpClientBuilder builder)
-    {
-        builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
-            {
-                if (cert is not null && cert.Issuer.Equals("CN=localhost", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                return errors == System.Net.Security.SslPolicyErrors.None;
-            }
-        });
 
         return builder;
     }

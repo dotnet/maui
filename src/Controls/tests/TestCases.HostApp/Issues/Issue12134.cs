@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample.Issues
 
 			SetCookieContainer(anotherWebView);
 			anotherWebView.Navigated += WebViewOnNavigated;
-			anotherWebView.Source = "https://dotnet.microsoft.com/apps/xamarin";
+			anotherWebView.Source = "https://dotnet.microsoft.com";
 			return anotherWebView;
 		}
 
