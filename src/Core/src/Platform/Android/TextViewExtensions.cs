@@ -20,6 +20,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
 			var text = label.Text ?? string.Empty;
+			textView.UpdateTextHtml(text);
+		}
+
+		internal static void UpdateTextHtml(this TextView textView, string text)
+		{
 			var htmlText = WebUtility.HtmlDecode(text);
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))

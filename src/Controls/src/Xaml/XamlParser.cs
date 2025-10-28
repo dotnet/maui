@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			ParseXamlElementFor(rootNode, reader);
 		}
 
-		static void ParseXamlElementFor(IElementNode node, XmlReader reader)
+		static void ParseXamlElementFor(ElementNode node, XmlReader reader)
 		{
 			Debug.Assert(reader.NodeType == XmlNodeType.Element);
 
@@ -174,10 +174,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 						node = new ElementNode(new XmlType(elementNsUri, elementName, typeArguments), elementNsUri,
 							reader as IXmlNamespaceResolver, elementXmlInfo.LineNumber, elementXmlInfo.LinePosition);
-						((IElementNode)node).Properties.AddRange(attributes);
+						((ElementNode)node).Properties.AddRange(attributes);
 						(node.IgnorablePrefixes ?? (node.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 
-						ParseXamlElementFor((IElementNode)node, reader);
+						ParseXamlElementFor((ElementNode)node, reader);
 						nodes.Add(node);
 						if (isEmpty || nested)
 							return node;
@@ -283,6 +283,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						return XmlName.xFactoryMethod;
 					case "Arguments":
 						return XmlName.xArguments;
+					case "ClassModifier":
+						return XmlName.xClassModifier;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
 						return XmlName.Empty;
@@ -416,7 +418,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (s_xmlnsDefinitions == null)
 				GatherXmlnsDefinitionAndXmlnsPrefixAttributes(currentAssembly);
 
-			IEnumerable<Type> types = xmlType.GetTypeReferences(
+			var types = xmlType.GetTypeReferences(
 				s_xmlnsDefinitions,
 				currentAssembly?.FullName,
 				(typeInfo) =>
@@ -426,12 +428,13 @@ namespace Microsoft.Maui.Controls.Xaml
 						return t;
 					return null;
 				},
-				expandToExtension);
+				expandToExtension).Distinct().ToList();
 
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-			if (!types.Any())
+
+			if (types.Count == 0)
 			{
 				// This covers the scenario where the AppDomain's loaded
 				// assemblies might have changed since this method was first
@@ -445,13 +448,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			if (types.Distinct().Skip(1).Any())
+			if (types.Count > 1)
 			{
 				exception = new XamlParseException($"Ambiguous type '{xmlType.Name}' in xmlns '{xmlType.NamespaceUri}'", xmlInfo);
 				return null;
 			}
 
-			var type = types.Distinct().FirstOrDefault();
+			var type = types.Count == 1 ? types[0] : null;
 
 			if (type != null && typeArguments != null)
 			{

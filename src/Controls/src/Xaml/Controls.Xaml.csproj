@@ -14,6 +14,8 @@
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
 		<NoWarn>$(NoWarn);CA1416</NoWarn>
 		<DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+		<!-- Disable PRI generation to avoid conflicts with Core project's PRI file -->
+		<AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -24,6 +26,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+		<IsAotCompatible>true</IsAotCompatible>
 		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 		<EnableAotAnalyzer>true</EnableAotAnalyzer>
 		<EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>

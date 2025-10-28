@@ -166,8 +166,10 @@ namespace Microsoft.Maui.Handlers
 			// Store the deferral to complete the refresh later
 			_refreshCompletionDeferral = args.GetDeferral();
 
-			// Update the virtual view to indicate that a refresh is in progress
-			VirtualView.IsRefreshing = true;
+			if (VirtualView != null && !VirtualView.IsRefreshing)
+			{
+				VirtualView.IsRefreshing = true;
+			}
 		}
 
 		void CompleteRefresh()

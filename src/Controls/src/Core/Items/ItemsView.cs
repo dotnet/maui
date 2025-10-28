@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Controls
 
 		internal static readonly BindableProperty InternalItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
-				LinearItemsLayout.Vertical, propertyChanged: OnInternalItemsLayoutPropertyChanged);
+				null, propertyChanged: OnInternalItemsLayoutPropertyChanged,
+				defaultValueCreator: (b) => LinearItemsLayout.CreateVerticalDefault());
 
 		static void OnInternalItemsLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -231,7 +232,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource);
+			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource?.GetType());
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 	}

@@ -16,6 +16,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
+| _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -99,3 +100,28 @@ Defaults to `false`
 Enable VisualDiagnostics and BindingDiagnostics
 
 Defaults to `EnableDiagnostics`
+
+## _EnableMauiAspire
+
+Controls whether MAUI Aspire integration features are enabled at runtime.
+
+**Default Value**: `true`
+
+**Automatic Configuration**: This feature switch is automatically configured by the MAUI build system based on optimization settings:
+- **Non-optimized builds (Debug)**: Enabled (`true`)
+- **Optimized builds (Release)**: Disabled (`false`) 
+- **Regular builds (no AOT/Trimming)**: Uses runtime default (`true`)
+
+The automatic configuration only applies when `PublishAot=true` OR `TrimMode=full` is set.
+
+**Manual Override** (Not Recommended): While it's possible to manually override this setting, it's not recommended as it may introduce performance and security risks in production:
+
+```xml
+<PropertyGroup>
+  <_EnableMauiAspire>true</_EnableMauiAspire>
+</PropertyGroup>
+```
+
+**Warning**: Manually setting this property in optimized builds (where `Optimize=true`) will trigger build warning MA002.
+
+**Trimming Behavior**: When `_EnableMauiAspire=false` and trimming is enabled, the .NET trimmer can eliminate MAUI Aspire-related code paths, reducing the final application size and potentially improving performance in production scenarios.

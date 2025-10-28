@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Xml;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -11,17 +10,11 @@ using static Mono.Cecil.Cil.OpCodes;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
-	class CreateObjectVisitor : IXamlNodeVisitor
+	class CreateObjectVisitor(ILContext context) : IXamlNodeVisitor
 	{
-		public CreateObjectVisitor(ILContext context)
-		{
-			Context = context;
-			Module = context.Body.Method.Module;
-		}
+		public ILContext Context { get; } = context;
 
-		public ILContext Context { get; }
-
-		ModuleDefinition Module { get; }
+		ModuleDefinition Module { get; } = context.Body.Method.Module;
 
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => true;
@@ -31,7 +24,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public bool IsResourceDictionary(ElementNode node)
 		{
-			var parentVar = Context.Variables[(IElementNode)node];
+			var parentVar = Context.Variables[node];
 			return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
 				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
 		}
@@ -58,7 +51,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				children.AddRange(node.CollectionItems);
 				foreach (var cnode in children)
 				{
-					if (cnode is not IElementNode en)
+					if (cnode is not ElementNode en)
 						continue;
 					foreach (var n in en.Properties.Values.ToList())
 						n.Accept(visitor, cnode);
@@ -72,7 +65,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context.Body.Variables.Add(vardef);
 
 				Context.IL.Append(il);
-				Context.IL.Emit(OpCodes.Stloc, vardef);
+				Context.IL.Emit(Stloc, vardef);
 
 				//clean the node as it has been fully exhausted
 				foreach (var prop in node.Properties)
@@ -99,10 +92,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				.GetCustomAttribute(Context.Cache, Module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))
 				?.ConstructorArguments?[0].Value as string;
 			Type compiledMarkupExtensionType;
-			ICompiledMarkupExtension markupProvider;
 			if (compiledMarkupExtensionName != null &&
 				(compiledMarkupExtensionType = Type.GetType(compiledMarkupExtensionName)) != null &&
-				(markupProvider = Activator.CreateInstance(compiledMarkupExtensionType) as ICompiledMarkupExtension) != null)
+				Activator.CreateInstance(compiledMarkupExtensionType) is ICompiledMarkupExtension markupProvider)
 			{
 
 				var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
@@ -139,9 +131,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
 					Context.IL.Append(PushCtorXArguments(factoryCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			}
-			else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			else if (node.Properties.TryGetValue(XmlName.xFactoryMethod, out INode value))
 			{
-				var factoryMethod = (string)(node.Properties[XmlName.xFactoryMethod] as ValueNode).Value;
+				var factoryMethod = (string)(value as ValueNode).Value;
 				factoryMethodInfo = typedef.AllMethods(Context.Cache).FirstOrDefault(md => !md.methodDef.IsConstructor &&
 																			  md.methodDef.Name == factoryMethod &&
 																			  md.methodDef.IsStatic &&
@@ -170,7 +162,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				//				IL_0000:  ldstr "foo"
 				Context.IL.Append(PushCtorArguments(parameterizedCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			}
-			ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
+			ctorInfo ??= typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
 			if (parameterizedCtorInfo != null && ctorInfo == null)
 				//there was a parameterized ctor, we didn't use it
 				throw new BuildException(BuildExceptionCode.PropertyMissing, node, null, missingCtorParameter, typedef.FullName);
@@ -206,29 +198,29 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Context.IL.Append(vnode.PushConvertedValue(Context, typeref, [typedef],
 						(requiredServices) => node.PushServiceProvider(Context, requiredServices),
 						false, true));
-					Context.IL.Emit(OpCodes.Stloc, vardef);
+					Context.IL.Emit(Stloc, vardef);
 				}
 				else if (node.CollectionItems.Count == 1 && (vnode = node.CollectionItems.First() as ValueNode) != null &&
 						 implicitOperatorref != null)
 				{
 					//<FileImageSource>path.png</FileImageSource>
 					var implicitOperator = Module.ImportReference(implicitOperatorref);
-					Context.IL.Emit(OpCodes.Ldstr, ((ValueNode)(node.CollectionItems.First())).Value as string);
-					Context.IL.Emit(OpCodes.Call, implicitOperator);
-					Context.IL.Emit(OpCodes.Stloc, vardef);
+					Context.IL.Emit(Ldstr, ((ValueNode)(node.CollectionItems.First())).Value as string);
+					Context.IL.Emit(Call, implicitOperator);
+					Context.IL.Emit(Stloc, vardef);
 				}
 				else if (factorymethodinforef != null)
 				{
-					Context.IL.Emit(OpCodes.Call, Module.ImportReference(factorymethodinforef));
-					Context.IL.Emit(OpCodes.Stloc, vardef);
+					Context.IL.Emit(Call, Module.ImportReference(factorymethodinforef));
+					Context.IL.Emit(Stloc, vardef);
 				}
 				else if (!typedef.IsValueType)
 				{
 					var ctor = Module.ImportReference(ctorinforef);
 					//					IL_0001:  newobj instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Button::'.ctor'()
 					//					IL_0006:  stloc.0 
-					Context.IL.Emit(OpCodes.Newobj, ctor);
-					Context.IL.Emit(OpCodes.Stloc, vardef);
+					Context.IL.Emit(Newobj, ctor);
+					Context.IL.Emit(Stloc, vardef);
 				}
 				else if (ctorInfo != null && node.Properties.ContainsKey(XmlName.xArguments) &&
 						 !node.Properties.ContainsKey(XmlName.xFactoryMethod) && ctorInfo.MatchXArguments(node, typeref, Module, Context))
@@ -238,16 +230,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					//					IL_000b:  call instance void valuetype Test/Foo::'.ctor'(bool)
 
 					var ctor = Module.ImportReference(ctorinforef);
-					Context.IL.Emit(OpCodes.Ldloca, vardef);
+					Context.IL.Emit(Ldloca, vardef);
 					Context.IL.Append(PushCtorXArguments(ctor, node));
-					Context.IL.Emit(OpCodes.Call, ctor);
+					Context.IL.Emit(Call, ctor);
 				}
 				else
 				{
 					//					IL_0000:  ldloca.s 0
 					//					IL_0002:  initobj Test/Foo
-					Context.IL.Emit(OpCodes.Ldloca, vardef);
-					Context.IL.Emit(OpCodes.Initobj, Module.ImportReference(typedef));
+					Context.IL.Emit(Ldloca, vardef);
+					Context.IL.Emit(Initobj, Module.ImportReference(typedef));
 				}
 			}
 		}
@@ -263,18 +255,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			Context.Variables[node] = vardef;
 			Context.Root = vardef;
 			Context.Body.Variables.Add(vardef);
-			Context.IL.Emit(OpCodes.Ldarg_0);
-			Context.IL.Emit(OpCodes.Stloc, vardef);
+			Context.IL.Emit(Ldarg_0);
+			Context.IL.Emit(Stloc, vardef);
 		}
 
 		public void Visit(ListNode node, INode parentNode)
 		{
-			XmlName name;
-			if (SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out name))
+			if (SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
 				node.XmlName = name;
 		}
 
-		bool ValidateCtorArguments(MethodDefinition ctorinfo, ElementNode enode, out string firstMissingProperty)
+		static bool ValidateCtorArguments(MethodDefinition ctorinfo, ElementNode enode, out string firstMissingProperty)
 		{
 			firstMissingProperty = null;
 			foreach (var parameter in ctorinfo.Parameters)
@@ -304,12 +295,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!enode.SkipProperties.Contains(new XmlName("", propname)))
 					enode.SkipProperties.Add(new XmlName("", propname));
 				VariableDefinition vardef;
-				ValueNode vnode = null;
 
-				if (node is IElementNode && (vardef = Context.Variables[node as IElementNode]) != null)
+				if (node is ElementNode && (vardef = Context.Variables[node as ElementNode]) != null)
 					foreach (var instruction in vardef.LoadAs(Context.Cache, parameter.ParameterType.ResolveGenericParameters(ctorinfo), Module))
 						yield return instruction;
-				else if ((vnode = node as ValueNode) != null)
+				else if (node is ValueNode vnode)
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
 						parameter.ParameterType,
@@ -327,11 +317,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield break;
 
 			var arguments = new List<INode>();
-			var node = enode.Properties[XmlName.xArguments] as ElementNode;
-			if (node != null)
+			if (enode.Properties[XmlName.xArguments] is ElementNode node)
 				arguments.Add(node);
-			var list = enode.Properties[XmlName.xArguments] as ListNode;
-			if (list != null)
+			if (enode.Properties[XmlName.xArguments] is ListNode list)
 			{
 				foreach (var n in list.CollectionItems)
 					arguments.Add(n);
@@ -342,12 +330,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var parameter = factoryCtorInfo.Parameters[i];
 				var arg = arguments[i];
 				VariableDefinition vardef;
-				ValueNode vnode = null;
 
-				if (arg is IElementNode && (vardef = Context.Variables[arg as IElementNode]) != null)
+				if (arg is ElementNode && (vardef = Context.Variables[arg as ElementNode]) != null)
 					foreach (var instruction in vardef.LoadAs(Context.Cache, parameter.ParameterType.ResolveGenericParameters(factoryCtorInfo), Module))
 						yield return instruction;
-				else if ((vnode = arg as ValueNode) != null)
+				else if (arg is ValueNode vnode)
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
 						parameter.ParameterType,
@@ -359,7 +346,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		static bool IsXaml2009LanguagePrimitive(IElementNode node)
+		static bool IsXaml2009LanguagePrimitive(ElementNode node)
 		{
 			if (node.NamespaceURI == XamlParser.X2009Uri)
 				return node.XmlType.Name != "Array";
@@ -525,11 +512,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						yield return Create(Ldloca, vardef);
 						yield return Create(Call, module.ImportMethodReference(Context.Cache, ("mscorlib", "System", "TimeSpan"),
 																			   methodName: "TryParse",
-																			   parameterTypes: new[] {
+																			   parameterTypes: [
 																			   ("mscorlib", "System", "String"),
 																			   ("mscorlib", "System", "IFormatProvider"),
 																			   ("mscorlib", "System", "TimeSpan"),
-																			   },
+																			   ],
 																			   isStatic: true));
 						yield return Create(Pop);
 						yield return Create(Ldloc, vardef);
@@ -537,7 +524,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					else
 					{
 						yield return Create(Ldc_I8, 0L);
-						yield return Create(Newobj, module.ImportCtorReference(Context.Cache, ("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
+						yield return Create(Newobj, module.ImportCtorReference(Context.Cache, ("mscorlib", "System", "TimeSpan"), parameterTypes: [("mscorlib", "System", "Int64")]));
 					}
 					break;
 				case "System.Uri":
@@ -551,11 +538,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						yield return Create(Ldloca, vardef);
 						yield return Create(Call, module.ImportMethodReference(Context.Cache, ("System", "System", "Uri"),
 																			   methodName: "TryCreate",
-																			   parameterTypes: new[] {
+																			   parameterTypes: [
 																			   ("mscorlib", "System", "String"),
 																			   ("System", "System", "UriKind"),
 																			   ("System", "System", "Uri"),
-																			   },
+																			   ],
 																			   isStatic: true));
 						yield return Create(Pop);
 						yield return Create(Ldloc, vardef);

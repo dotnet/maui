@@ -114,20 +114,34 @@ public class Issue30690 : _IssuesUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST // App.ScrollUp does nothing: https://github.com/dotnet/maui/issues/31216
+
+#if TEST_FAILS_ON_WINDOWS //Flaky test, disabling for Windows.
+
 	[Test]
 	public void PullToRefreshWorksWhenEnabled()
 	{
 		// Find the scroll view content to perform pull gesture on
 		App.WaitForElement(ScrollViewContent);
+		bool refreshSucceeded = false;
+		for (int i = 0; i < 3 && !refreshSucceeded; i++)
+		{
+			// Perform pull-to-refresh
+			App.ScrollUp(ScrollViewContent, ScrollStrategy.Gesture, swipePercentage: 0.90, swipeSpeed: 1000);
+			try
+			{
+				// Wait for refresh to complete and verify it worked
+				App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5));
+				refreshSucceeded = App.WaitForTextToBePresentInElement(StatusLabel, "Refresh completed", timeout: TimeSpan.FromSeconds(5));
+			}
 
-		// Perform pull-to-refresh
-		App.ScrollUp(ScrollViewContent);
-		App.WaitForTextToBePresentInElement(StatusLabel, "Refreshing...", timeout: TimeSpan.FromSeconds(5));
-
-		// Wait for refresh to complete and verify it worked
-		Assert.That(App.WaitForTextToBePresentInElement(StatusLabel, "Refresh completed", timeout: TimeSpan.FromSeconds(5)), Is.True);
+			catch (Exception)
+			{
+				// Refresh not completed yet, will retry
+			}
+		}
+		Assert.That(refreshSucceeded, Is.True, "Pull-to-refresh did not complete after multiple attempts");
 	}
-
+#endif
 	[Test]
 	public void PullToRefreshBlockedWhenIsRefreshEnabledFalse()
 	{

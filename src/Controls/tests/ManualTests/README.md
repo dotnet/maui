@@ -167,9 +167,20 @@ Navigate to the Microsoft.Maui.Controls package on the nightly feed (or use tool
 </ItemGroup>
 ```
 
+Note: you can also set the values to `$(MauiVersion)` and set a `<MauiVersion>` node with the version you want to use. See **Method 2**, below.
+
 ### How to Compile
 
 This mode is similar to Workloads Mode but allows specifying any available NuGet version for `MauiVersion`. It requires setting `UseMaui=true`.
+
+You will need to manually add the target frameworks to the `<TargetFrameworks>` node when you use this method. For example, running the project on iOS and Android will require:
+
+```xml
+<!-- Instead of: <TargetFrameworks>$(MauiManualTestsPlatforms)</TargetFrameworks> do the line below -->
+<TargetFrameworks>net10.0-ios;net10.0-android</TargetFrameworks>
+```
+
+Depending on the .NET version you want to use, replace `net10.0` prefix with the version you want to use, for example: `net9.0`.
 
 #### Method 1: Using MSBuild Property
 ```bash

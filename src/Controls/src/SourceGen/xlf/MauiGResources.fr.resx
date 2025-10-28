@@ -125,75 +125,75 @@
     <value>L'analyse XAML a échoué</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
-    <value>Expression must end with '}'.</value>
+    <value>L'expression doit se terminer par '}'.</value>
   </data>
   <data name="RectConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Rect, expected format is "x, y, w, h"</value>
+    <value>Impossible de convertir « {0} » en Rect, le format attendu est « x, y, l, h »</value>
   </data>
   <data name="ConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into "{1}".</value>
+    <value>Impossible de convertir "{0}" en "{1}".</value>
   </data>
   <data name="PointConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Point, expected format is "x, y".</value>
+    <value>Impossible de convertir "{0}" en Point, le format attendu est "x, y".</value>
   </data>
   <data name="ThicknessConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l".</value>
+    <value>Impossible de convertir "{0}" en épaisseur, le format attendu est "h, v" ou "l, t, r, b" ou "l".</value>
   </data>
   <data name="CornerRadiusConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l".</value>
+    <value>Impossible de convertir "{0}" en CornerRadius, le format attendu est "tl, tr, bl, br" ou "l".</value>
   </data>
   <data name="SymbolResolution" xml:space="preserve">
-    <value>Symbol resolution failed</value>
+    <value>La résolution du symbole a échoué</value>
   </data>
   <data name="TypeResolutionMessage" xml:space="preserve">
-    <value>Cannot resolve type "{0}".</value>
+    <value>Impossible de résoudre le type « {0} ».</value>
     <comment>{0} is a xmlnamespace and typename</comment>
   </data>
   <data name="DuplicateTypeError" xml:space="preserve">
-    <value>Multiple Types found for "{0}".</value>
+    <value>Plusieurs types trouvés pour « {0} ».</value>
   </data>
   <data name="MemberResolution" xml:space="preserve">
-    <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
+    <value>Aucune propriété accessible, BindableProperty ou événement trouvé pour « {0} », ou type incompatible entre la valeur et la propriété.</value>
     <comment>{0} is a property name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
+    <value>Impossible de convertir "{0}" en Easing, la valeur attendue est "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" ou "SpringOut".</value>
   </data>
   <data name="FlexBasisConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
+    <value>Impossible de convertir « {0} » en FlexBasis, les valeurs attendues sont « Auto » ou « n% », « n » où n est une valeur numérique.</value>
   </data>
   <data name="FlowDirectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
+    <value>Impossible de convertir "{0}" en FlowDirection, les valeurs attendues sont "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" ou "RightToLeft".</value>
   </data>
   <data name="GridLengthConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into GridLength, expected values are "*", "n*", "Auto" or "n" where n is a numeric value.</value>
+    <value>Impossible de convertir "{0}" en GridLength, les valeurs attendues sont "*", "n*", "Auto" ou "n" où n est une valeur numérique.</value>
   </data>
   <data name="ListStringConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
+    <value>Impossible de convertir "{0}" en List&lt;string&gt;, le format attendu est "x, y, z".</value>
   </data>
   <data name="StrokeShapeConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Shape (or descendant).</value>
+    <value>Impossible de convertir "{0}" en forme (ou descendant).</value>
   </data>
   <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into ColumnDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>Impossible de convertir « {0} » en ColumnDefinitionCollection, les valeurs attendues sont « * », « n* », « Auto » ou « n » (ou une combinaison de ces éléments séparés par des virgules) où n est une valeur numérique.</value>
   </data>
   <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into RowDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+    <value>Impossible de convertir « {0} » en RowDefinitionCollection, les valeurs attendues sont « * », « n* », « Auto » ou « n » (ou une combinaison de ces valeurs séparées par des virgules) où n est une valeur numérique.</value>
   </data>
   <data name="LayoutOptionsConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
+    <value>Impossible de convertir « {0} » en LayoutOptions, les valeurs attendues sont « Début », « Centre », « Fin » ou « Remplissage ».</value>
   </data>
   <data name="MethodResolution" xml:space="preserve">
-    <value>No method found for '{0}'.</value>
+    <value>Aucune méthode trouvée pour '{0}'.</value>
     <comment>0 is a method or ctor name</comment>
   </data>
   <data name="DuplicateKeyInRD" xml:space="preserve">
-    <value>duplicate key in resource dictionary</value>
+    <value>clé en double dans le dictionnaire de ressources</value>
     <comment>
 </comment>
   </data>
   <data name="ConversionFailedTitle" xml:space="preserve">
-    <value>Conversion Failed</value>
+    <value>Échec de la conversion</value>
     <comment>
 </comment>
   </data>

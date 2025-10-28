@@ -30,12 +30,12 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		if (namescope.namesInScope.ContainsKey(name))
 			//TODO send diagnostic instead
 			throw new Exception("dup x:Name");
-		namescope.namesInScope.Add(name, Context.Variables[(IElementNode)parentNode]);
+		namescope.namesInScope.Add(name, Context.Variables[(ElementNode)parentNode]);
 		using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 		{
-			Writer.WriteLine($"{namescope.namescope.Name}.RegisterName(\"{name}\", {Context.Variables[(IElementNode)parentNode].Name});");
+			Writer.WriteLine($"{namescope.namescope.Name}.RegisterName(\"{name}\", {Context.Variables[(ElementNode)parentNode].Name});");
 		}
-		SetStyleId((string)node.Value, Context.Variables[(IElementNode)parentNode]);
+		SetStyleId((string)node.Value, Context.Variables[(ElementNode)parentNode]);
 	}
 
 	public void Visit(MarkupNode node, INode parentNode)
@@ -89,7 +89,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		=> Context.Scopes[node] = Context.Scopes[parentNode];
 
 	static bool IsDataTemplate(INode node, INode parentNode)
-		=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent) && createContent == node;
+		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent) && createContent == node;
 
 	static bool IsStyle(INode node, INode parentNode)
 		=> parentNode is ElementNode pnode && pnode.XmlType.Name == "Style";
@@ -98,7 +98,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		=> node != null && node.XmlType.Name == "VisualStateGroup" && node.Parent is IListNode;
 
 	static bool IsXNameProperty(ValueNode node, INode parentNode)
-		=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
+		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
 
 	LocalVariable GetOrCreateNameScope(ElementNode node)
 	{

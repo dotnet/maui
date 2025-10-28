@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this TEntry entry, InputView inputView)
 		{
-			var text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			var text = TextTransformUtilities.GetTransformedText(inputView.Text, inputView.TextTransform);
 			if (entry.Text != text)
 				entry.Text = text;
 		}
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this TEditor editor, InputView inputView)
 		{
-			var text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			var text = TextTransformUtilities.GetTransformedText(inputView.Text, inputView.TextTransform);
 			if (editor.Text != text)
 				editor.Text = text;
 		}
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 					if (label.FormattedText != null)
 						platformLabel.FormattedText = label.ToFormattedString();
 					else
-						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						platformLabel.Text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
 					break;
 				case TextType.Html:
 					platformLabel.UpdateTextHtml(label);

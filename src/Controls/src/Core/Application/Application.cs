@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0612 // Type or member is obsolete
 			_systemResources = new Lazy<IResourceDictionary?>(() =>
 			{
-				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
+				var systemResources = DependencyService.Get<ISystemResourcesProvider>()?.GetSystemResources();
 				if (systemResources is not null)
 				{
 					systemResources.ValuesChanged += OnParentResourcesChanged;
@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = true;
 				_lastAppTheme = newTheme;
 
+				OnPropertyChanged(nameof(UserAppTheme));
 				OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, newTheme)]);
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
-				OnPropertyChanged(nameof(UserAppTheme));
 			}
 			finally
 			{

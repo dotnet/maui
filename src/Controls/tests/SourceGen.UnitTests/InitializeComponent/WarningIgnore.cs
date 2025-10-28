@@ -1,11 +1,11 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class CSWarningIgnore : SourceGenXamlInitializeComponentTestBase
 {
-	[Test]
+	[Fact]
 	public void WarningIgnore()
 	{
 		var xaml =
@@ -86,8 +86,8 @@ public partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code, "0168, CS0612");
-		Assert.IsFalse(result.Diagnostics.Any());
+		Assert.False(result.Diagnostics.Any());
 
-		Assert.AreEqual(expected, generated);
+		Assert.Equal(expected, generated);
 	}
 }

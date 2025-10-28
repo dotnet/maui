@@ -4,13 +4,13 @@ parameters:
   versions: []
   provisionatorChannel: 'latest'
   skipProvisioning: true
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
   cakeArgs: ''
   buildAndTest: true
+  useCoreClr: false # Use CoreCLR for Android builds
   targetFrameworkVersion:
     tfm: ''
     dependsOn: ''
@@ -24,11 +24,11 @@ parameters:
 
 jobs:
 - ${{ if eq(parameters.buildAndTest, 'false') }}:
-  - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
+  - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build_${{ parameters.useCoreClr }}
     timeoutInMinutes: 60
     workspace:
       clean: all
-    displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }}
+    displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ iif(eq(parameters.useCoreClr, 'true'), ' (CoreCLR)', '(Mono)') }}
     pool: ${{ parameters.pool }}
     variables:
       REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
@@ -41,7 +41,6 @@ jobs:
         targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
         packageid: ${{ parameters.project.packageid }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
         artifactName: ${{ parameters.artifactName }}
         artifactItemPattern: ${{ parameters.artifactItemPattern }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
@@ -50,15 +49,16 @@ jobs:
         deviceTestConfiguration: ${{ parameters.project.configuration }}
         skipProvisioning: ${{ parameters.skipProvisioning }}
         appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
+        useCoreClr: ${{ parameters.useCoreClr }}
 - ${{ each version in parameters.versions }}:
   - ${{ if not(containsValue(parameters.project.versionsExclude, version)) }}:
-    - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_${{ replace(replace(version, '.', ''), '-', '') }}
+    - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_${{ replace(replace(version, '.', ''), '-', '') }}_${{ parameters.useCoreClr }}
       ${{ if eq(parameters.buildAndTest, 'false') }}:
-        dependsOn: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
+        dependsOn: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build_${{ parameters.useCoreClr }}
       timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
       workspace:
         clean: all
-      displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }}
+      displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }}  ${{ iif(eq(parameters.useCoreClr, 'true'), ' (CoreCLR)', '(Mono)') }}
       pool: ${{ parameters.pool }}
       variables:
         REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
@@ -95,7 +95,6 @@ jobs:
           targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
           packageid: ${{ parameters.project.packageid }}
           provisionatorChannel: ${{ parameters.provisionatorChannel }}
-          agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
           artifactName: ${{ parameters.artifactName }}
           artifactItemPattern: ${{ parameters.artifactItemPattern }}
           checkoutDirectory: ${{ parameters.checkoutDirectory }}
@@ -104,3 +103,4 @@ jobs:
           deviceTestConfiguration: ${{ parameters.project.configuration }}
           skipProvisioning: ${{ parameters.skipProvisioning }}
           skipDotNet: ${{ eq(parameters.buildAndTest, 'false') }}
+          useCoreClr: ${{ parameters.useCoreClr }}

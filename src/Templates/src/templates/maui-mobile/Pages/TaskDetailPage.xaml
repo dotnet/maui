@@ -15,7 +15,7 @@
             Order="Primary"
             Priority="0"
             IconImageSource="{StaticResource IconDelete}"
-            SemanticProperties.Description="Delete" />
+            SemanticProperties.Description="Delete Task" />
     </ContentPage.ToolbarItems>        
 
     <Grid>
@@ -35,8 +35,8 @@
                         SemanticProperties.Hint="Indicates if this task is completed" />
                 </sf:SfTextInputLayout>
 
-                <sf:SfTextInputLayout 
-                    IsVisible="{Binding IsExistingProject}" 
+                 <sf:SfTextInputLayout
+                    IsVisible="{Binding IsExistingProject}"
                     SemanticProperties.Description="ComboBox to select Project"
                     SemanticProperties.Hint="State Collapsed"
                     Hint="Project">
@@ -50,7 +50,7 @@
                 </sf:SfTextInputLayout>
 
                 <Button 
-                    HeightRequest="{OnIdiom 44, Desktop=60}"
+                    MinimumHeightRequest="{OnIdiom 44, Desktop=60}"
                     Text="Save"
                     Command="{Binding SaveCommand}"/>
             </VerticalStackLayout>

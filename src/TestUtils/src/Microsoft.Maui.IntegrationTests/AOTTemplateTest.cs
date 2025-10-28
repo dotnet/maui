@@ -9,10 +9,18 @@ public class AOTTemplateTest : BaseTemplateTests
 	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
 	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
 	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+	[TestCase("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-x64")]
+	[TestCase("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-arm64")]
 	public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 	{
-		if (!TestEnvironment.IsMacOS)
-			Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+		bool isWindowsFramework = framework.Contains("windows", StringComparison.OrdinalIgnoreCase);
+		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
+
+		if (isApplePlatform && !TestEnvironment.IsMacOS)
+			Assert.Ignore("Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system.");
+
+		if (isWindowsFramework && !TestEnvironment.IsWindows)
+			Assert.Ignore("Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system.");
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -20,7 +28,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		var extendedBuildProps = PrepareNativeAotBuildProps();
+		var extendedBuildProps = isWindowsFramework ? PrepareNativeAotBuildPropsWindows(runtimeIdentifier) : PrepareNativeAotBuildProps();
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
@@ -36,11 +44,19 @@ public class AOTTemplateTest : BaseTemplateTests
 	[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
 	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
 	[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+	[TestCase("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-x64")]
+	[TestCase("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-arm64")]
 	public void PublishNativeAOTRootAllMauiAssemblies(string id, string framework, string runtimeIdentifier)
 	{
 		// This test follows the following guide: https://devblogs.microsoft.com/dotnet/creating-aot-compatible-libraries/#publishing-a-test-application-for-aot
-		if (!TestEnvironment.IsMacOS)
-			Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+		bool isWindowsFramework = framework.Contains("windows", StringComparison.OrdinalIgnoreCase);
+		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
+
+		if (isApplePlatform && !TestEnvironment.IsMacOS)
+			Assert.Ignore("Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system.");
+
+		if (isWindowsFramework && !TestEnvironment.IsWindows)
+			Assert.Ignore("Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system.");
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -48,7 +64,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		var extendedBuildProps = PrepareNativeAotBuildProps();
+		var extendedBuildProps = isWindowsFramework ? PrepareNativeAotBuildPropsWindows(runtimeIdentifier) : PrepareNativeAotBuildProps();
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
 			"""
@@ -76,18 +92,41 @@ public class AOTTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
-		actualWarnings.AssertWarnings(BuildWarningsUtilities.ExpectedNativeAOTWarnings);
+		var expectedWarnings = isWindowsFramework && BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows != null
+			? BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows
+			: BuildWarningsUtilities.ExpectedNativeAOTWarnings;
+		actualWarnings.AssertWarnings(expectedWarnings);
 	}
 
 	private List<string> PrepareNativeAotBuildProps()
 	{
-		var extendedBuildProps = new List<string>(BuildProps);
-		extendedBuildProps.Add("PublishAot=true");
-		extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
-		extendedBuildProps.Add("_IsPublishing=true"); // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
-		extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
-		extendedBuildProps.Add("TrimmerSingleWarn=false");
-		extendedBuildProps.Add("_RequireCodeSigning=false"); // This is required to build the iOS app without a signing key
+		var extendedBuildProps = new List<string>(BuildProps)
+		{
+			"PublishAot=true",
+			"PublishAotUsingRuntimePack=true",  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
+			"_IsPublishing=true", // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
+			"IlcTreatWarningsAsErrors=false",
+			"TrimmerSingleWarn=false",
+			"_RequireCodeSigning=false" // This is required to build the iOS app without a signing key
+		};
+		return extendedBuildProps;
+	}
+
+	private List<string> PrepareNativeAotBuildPropsWindows(string runtimeIdentifier)
+	{
+		var extendedBuildProps = new List<string>(BuildProps)
+		{
+			"PublishAot=true",
+			"PublishAotUsingRuntimePack=true",
+			"_IsPublishing=true",
+			"IlcTreatWarningsAsErrors=false",
+			"TrimmerSingleWarn=false",
+
+			// Windows-specific properties
+			$"RuntimeIdentifierOverride={runtimeIdentifier}",
+			"WindowsPackageType=None",
+			"SelfContained=true"
+		};
 		return extendedBuildProps;
 	}
 }

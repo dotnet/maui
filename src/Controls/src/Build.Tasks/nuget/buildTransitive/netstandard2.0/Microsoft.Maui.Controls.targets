@@ -272,6 +272,13 @@
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>
+    
+    <!-- Validate _EnableMauiAspire usage - warn when user manually sets it in optimized builds where it conflicts with intended behavior -->
+    <Warning
+      Code="MA002"
+      Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
+      Condition="'$(_EnableMauiAspire)' != '' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
+    
     <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
@@ -280,6 +287,10 @@
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
+      
+      <!-- Set _EnableMauiAspire based on whether optimizations are enabled when not already set -->
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
@@ -318,6 +329,21 @@
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
+                                      Condition="'$(_EnableMauiAspire)' != ''"
+                                      Value="$(_EnableMauiAspire)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
+
+  <Target Name="_MauiSetWinUIDefaultsForPublishAot" BeforeTargets="PrepareForBuild" Condition="'$(PublishAot)' == 'true' and '$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <PropertyGroup>
+      <DebugSymbols Condition="'$(DebugSymbols)' == ''">false</DebugSymbols>
+      <DebugType Condition="'$(DebugType)' == ''">None</DebugType>
+      <EmbedXbfInPri Condition="'$(EmbedXbfInPri)' == ''">false</EmbedXbfInPri>
+      <SelfContained Condition="'$(SelfContained)' == ''">true</SelfContained>
+      <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+    </PropertyGroup>
+  </Target>
+
 </Project>

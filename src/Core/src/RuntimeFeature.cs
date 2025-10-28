@@ -26,6 +26,7 @@ namespace Microsoft.Maui
 		const bool SupportNamescopesByDefault = true;
 		const bool EnableDiagnosticsByDefault = false;
 		const bool IsMeterSupportedByDefault = true;
+		const bool EnableAspireByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -138,6 +139,14 @@ namespace Microsoft.Maui
 				AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", value);
 			}
 		}
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableMauiAspire)}")]
+#endif
+		public static bool EnableMauiAspire => AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiAspire)}", out bool isEnabled)
+				? isEnabled
+				: EnableAspireByDefault;
+
 #pragma warning restore IL4000
 	}
 }
