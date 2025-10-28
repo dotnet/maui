@@ -57,8 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			base.OnAttachedToWindow();
 
-			if (Control != null)
-				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+			Control?.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -73,10 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (disposing)
 			{
 				// Unhook the adapter from the ListView before disposing of it
-				if (Control != null)
-				{
-					Control.Adapter = null;
-				}
+				Control?.Adapter = null;
 
 				_adapter?.Dispose();
 				_adapter = null;

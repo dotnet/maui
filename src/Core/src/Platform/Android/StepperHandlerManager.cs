@@ -64,11 +64,9 @@ namespace Microsoft.Maui.Platform
 			where TButton : AButton
 		{
 			// NOTE: a value of `null` means that we are forcing an update
-			if (downButton != null)
-				downButton.Enabled = stepper.IsEnabled && stepper.Value > stepper.Minimum;
+			downButton?.Enabled = stepper.IsEnabled && stepper.Value > stepper.Minimum;
 
-			if (upButton != null)
-				upButton.Enabled = stepper.IsEnabled && stepper.Value < stepper.Maximum;
+			upButton?.Enabled = stepper.IsEnabled && stepper.Value < stepper.Maximum;
 		}
 
 		class StepperListener : Java.Lang.Object, AView.IOnClickListener

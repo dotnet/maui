@@ -5,6 +5,6 @@ public partial class Issue28986_NavigationPage : NavigationPage
 {
 	public Issue28986_NavigationPage() : base(new Issue28986_ContentPage())
 	{
-        BarBackground = Colors.Blue;
+		BarBackground = Colors.Blue;
 	}
 }
