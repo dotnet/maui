@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31433">
+        <Grid RowDefinitions="*,*">
+                <ScrollView Grid.Row="0"
+                            Margin="10"
+                            Background="Black">
+                        <HorizontalStackLayout
+                                HorizontalOptions="Center">
+                                <Button Text="Button1"
+                                        AutomationId="button"
+                                        Background="Red"
+                                        HeightRequest="150"
+                                        WidthRequest="150"
+                                        Margin="10"/>
+                                <Button Text="Button2"
+                                        Background="Green"
+                                        HeightRequest="150"
+                                        WidthRequest="150"
+                                        Margin="10"/>
+                        </HorizontalStackLayout>
+                </ScrollView>
+                <ScrollView Grid.Row="1"
+                            Margin="10"
+                            Background="Black">
+                        <FlexLayout  Wrap="Wrap"
+                                     AlignContent="Start"
+                                     Direction="Row"
+                                     AlignItems="Start"
+                                     HorizontalOptions="Center">
+                                <Button Text="Button1"
+                                        Background="Red"
+                                        HeightRequest="150"
+                                        WidthRequest="150"
+                                        Margin="10"/>
+                                <Button Text="Button2"
+                                        Background="Green"
+                                        HeightRequest="150"
+                                        WidthRequest="150"
+                                        Margin="10"/>
+                        </FlexLayout>
+                </ScrollView>
+        </Grid>
+</ContentPage>
