@@ -124,8 +124,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
-			int cropLeft = 0,
-			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0
@@ -136,7 +134,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropLeft, cropRight, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -153,8 +151,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
 		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
-		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
-		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
@@ -183,8 +179,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
-			int cropLeft = 0,
-			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
@@ -294,13 +288,19 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
+				// Get the current orientation, default to Portrait (e.g. Windows, Mac)
+				var orientation = OpenQA.Selenium.ScreenOrientation.Portrait;
+#if ANDROID || IOSUITEST
+				orientation = App.GetOrientation();
+#endif
+
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
+					TestDevice.iOS => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "ios-iphonex" ? 90 : 110) : 0,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
 					_ => 0,
@@ -313,33 +313,42 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 #endif
 
-				// For Android also crop the 3 button nav from the bottom, since it's not part of the
+				// For Android crop the 3 button nav from the bottom and left based on orientation, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
 				// For iOS, crop the home indicator at the bottom.
-				int cropFromBottom = _testDevice switch
-				{
-					TestDevice.Android => 125,
-					TestDevice.iOS => 40,
-					_ => 0,
-				};
-
-				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
-				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
-				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
 				int cropFromLeft = 0;
-				int cropFromRight = 0;
+				int cropFromBottom = 0;
+				if (_testDevice == TestDevice.Android)
+				{
+					if (orientation == OpenQA.Selenium.ScreenOrientation.Portrait)
+					{
+						cropFromBottom = 125;
+					}
+					else
+					{
+						cropFromLeft = 125;
+					}
+				}
+				else if (_testDevice == TestDevice.iOS)
+				{
+					cropFromBottom = 40;
+				}
 
-				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
-				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
 				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
 				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
-				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
+				if (cropFromTop > 0 || cropFromBottom > 0 || cropFromLeft > 0)
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
+					// For better readability
+					int cropX = cropFromLeft;
+					int cropY = cropFromTop;
+					int cropWidth = width - cropFromLeft;
+					int cropHeight = height - cropFromTop - cropFromBottom;
+
+					imageEditor.Crop(cropX, cropY, cropWidth, cropHeight);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
