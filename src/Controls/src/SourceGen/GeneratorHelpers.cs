@@ -365,19 +365,25 @@ static class GeneratorHelpers
 
 	public static IDictionary<XmlType, ITypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken) => new Dictionary<XmlType, ITypeSymbol>();
 
-	public static SyntaxTree? GetSyntaxTree((XamlProjectItemForCB? xamlItem, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
+	public static (string? source, XamlProjectItemForCB? xamlItem, IList<Diagnostic>? diagnostics) GetSource((XamlProjectItemForCB? xamlItem, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
 	{
-		var options = tuple.compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+		cancellationToken.ThrowIfCancellationRequested();
+		var (xamlItem, xmlnsCache, typeCache, compilation) = tuple;
+
+		string? code = null;
+		List<Diagnostic>? diagnostics = null;
+		void reportDiagnostic(Diagnostic diagnostic) => (diagnostics ??= new List<Diagnostic>()).Add(diagnostic);
 		try
 		{
-			var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(tuple.xamlItem, tuple.compilation, null, cancellationToken, tuple.xmlnsCache, tuple.typeCache);
-			return CSharpSyntaxTree.ParseText(code, options: options, cancellationToken: cancellationToken);
+			code = CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, reportDiagnostic, cancellationToken, xmlnsCache, typeCache);
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
+			var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
 		}
-		return null;
-	}
+		return (code, xamlItem, diagnostics);
+    }
 
 	/// <summary>
 	/// Formats a value as a culture-independent C# literal for source generation.

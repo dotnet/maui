@@ -7,6 +7,7 @@ using System.Threading;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
@@ -31,6 +32,10 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		var referenceCompilationProvider = initContext.CompilationProvider
 			.WithComparer(new CompilationReferencesComparer())
 			.WithTrackingName(TrackingNames.ReferenceCompilationProvider);
+
+		var referenceTypeCacheProvider = referenceCompilationProvider
+			.Select(GetTypeCache)
+			.WithTrackingName(TrackingNames.ReferenceTypeCacheProvider);
 
 		var xmlnsDefinitionsProvider = referenceCompilationProvider
 			.Select(GetAssemblyAttributes)
@@ -57,27 +62,27 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			.Where(static p => p?.Kind == "Css")
 			.WithTrackingName(TrackingNames.CssProjectItemProvider);
 
-		var referenceTypeCacheProvider = referenceCompilationProvider
-			.Select(GetTypeCache)
-			.WithTrackingName(TrackingNames.ReferenceTypeCacheProvider);
-
 		var xamlSourceProviderForCB = xamlProjectItemProviderForCB
 			.Combine(xmlnsDefinitionsProvider, referenceTypeCacheProvider, referenceCompilationProvider)
+			.Select(GetSource)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForCB);
 
 		var compilationWithCodeBehindProvider = xamlSourceProviderForCB
-			.Select(GetSyntaxTree)
 			.Collect()
 			.Combine(referenceCompilationProvider)
 			.Select(static (t, ct) =>
 			{
 				var compilation = t.Right;
-				foreach (var tree in t.Left)
+				var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+				foreach (var (source, xamlItem, diagnostics) in t.Left)
 				{
 					ct.ThrowIfCancellationRequested();
 
-					if (tree is not null)
+					if (source is not null)
+					{
+						var tree = CSharpSyntaxTree.ParseText(source, options: options, cancellationToken: ct);
 						compilation = compilation.AddSyntaxTrees(tree);
+					}
 				}
 				return compilation;
 			})
@@ -95,12 +100,15 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		// Register the XAML pipeline for CodeBehind
 		initContext.RegisterSourceOutput(xamlSourceProviderForCB, static (sourceProductionContext, provider) =>
 		{
-			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
+			var (source, xamlItem, diagnostics) = provider;
 
 			try
 			{
-				var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext.ReportDiagnostic, sourceProductionContext.CancellationToken, xmlnsCache, typeCache);
-				sourceProductionContext.AddSource(GetHintName(xamlItem?.ProjectItem, "sg"), code);
+				if (diagnostics != null)
+					foreach (var diag in diagnostics)
+						sourceProductionContext.ReportDiagnostic(diag);
+				if (source != null)
+					sourceProductionContext.AddSource(GetHintName(xamlItem?.ProjectItem, "sg"), source);
 			}
 			catch (Exception e)
 			{

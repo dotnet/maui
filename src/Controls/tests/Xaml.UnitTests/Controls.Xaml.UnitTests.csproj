@@ -11,6 +11,7 @@
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <DefineConstants>$(DefineConstants);MauiAllowImplicitXmlnsDeclaration</DefineConstants>
+    <ReportAnalyzer>true</ReportAnalyzer>
     <!-- We can't yet disable the namescope generation, ConstraintTypeConverter and ReferenceTypeConverter need to be ported to sourcegen
     <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
     -->
