@@ -2,8 +2,9 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <!-- Don't include netstandard TFMs in the NuGet package -->
   <PropertyGroup>
-    <IsPackable Condition="$(TargetFramework.Contains('netstandard'))">false</IsPackable>
+    <IncludeBuildOutput Condition="$(TargetFramework.Contains('netstandard'))">false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
