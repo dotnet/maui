@@ -10,8 +10,6 @@ namespace Maui.Controls.Sample.Issues
 		const string FooterLabelId = "FooterLabel";
 
 		private CollectionView _collectionView;
-		private Button _headerButton;
-		private Button _footerButton;
 		private Label _headerLabel;
 		private Label _footerLabel;
 
@@ -114,9 +112,9 @@ namespace Maui.Controls.Sample.Issues
 			Content = grid;
 		}
 
-		private void OnToggleHeaderClicked(object? sender, EventArgs e)
+		private void OnToggleHeaderClicked(object sender, EventArgs e)
 		{
-			var button = (Button)sender!;
+			var button = (Button)sender;
 
 			if (_collectionView.Header != null)
 			{
@@ -130,9 +128,9 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		private void OnToggleFooterClicked(object? sender, EventArgs e)
+		private void OnToggleFooterClicked(object sender, EventArgs e)
 		{
-			var button = (Button)sender!;
+			var button = (Button)sender;
 
 			if (_collectionView.Footer != null)
 			{
