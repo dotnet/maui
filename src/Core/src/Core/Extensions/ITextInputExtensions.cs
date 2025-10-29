@@ -53,9 +53,13 @@ namespace Microsoft.Maui
 
 		internal static void UpdateCursorPosition(this ITextInput textInput, int cursorPosition)
 		{
-			if (textInput.CursorPosition != cursorPosition)
+			// Validate cursor position bounds
+			var textLength = textInput.Text?.Length ?? 0;
+			var validatedCursorPosition = Math.Clamp(cursorPosition, 0, textLength);
+			
+			if (textInput.CursorPosition != validatedCursorPosition)
 			{
-				textInput.CursorPosition = cursorPosition;
+				textInput.CursorPosition = validatedCursorPosition;
 			}
 		}
 #endif
