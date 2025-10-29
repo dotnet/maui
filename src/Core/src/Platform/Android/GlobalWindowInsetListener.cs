@@ -1,17 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
+    /// <summary>
+    /// Registry entry for tracking CoordinatorLayout instances and their associated listeners.
+    /// Uses WeakReference to avoid memory leaks when layouts are disposed.
+    /// </summary>
+    internal record CoordinatorLayoutEntry(WeakReference<CoordinatorLayout> Layout, GlobalWindowInsetListener Listener);
+
+    /// <summary>
+    /// Manages window insets and safe area handling for Android views.
+    /// This class can be used as a global listener (one per activity) or as local listeners
+    /// attached to specific CoordinatorLayouts for better isolation in complex navigation scenarios.
+    /// 
+    /// Thread Safety: All public methods should be called on the UI thread.
+    /// Android view operations are not thread-safe and must execute on the main thread.
+    /// </summary>
     internal class GlobalWindowInsetListener : WindowInsetsAnimationCompat.Callback, IOnApplyWindowInsetsListener
     {
         readonly HashSet<AView> _trackedViews = [];
@@ -19,20 +33,165 @@ namespace Microsoft.Maui.Platform
 
         AView? _pendingView;
 
-		public GlobalWindowInsetListener() : base(DispatchModeStop)
-		{
-		}
+        // Static tracking for CoordinatorLayouts that have local inset listeners.
+        // This registry allows child views to find their appropriate listener without
+        // relying on a global activity-level listener.
+        // Thread Safety: All access must be on UI thread (enforced by Android's threading model).
+        static readonly List<CoordinatorLayoutEntry> _registeredCoordinatorLayouts = new();
+
+        /// <summary>
+        /// Registers a CoordinatorLayout to use this local listener instead of the global one.
+        /// This enables per-layout inset management for better isolation in complex scenarios.
+        /// Must be called on UI thread.
+        /// </summary>
+        /// <param name="coordinatorLayout">The CoordinatorLayout to register</param>
+        internal void RegisterCoordinatorLayout(CoordinatorLayout coordinatorLayout)
+        {
+            // Clean up dead references and check for existing registration
+            for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
+            {
+                var entry = _registeredCoordinatorLayouts[i];
+                if (!entry.Layout.TryGetTarget(out var existingLayout))
+                {
+                    _registeredCoordinatorLayouts.RemoveAt(i);
+                }
+                else if (existingLayout == coordinatorLayout)
+                {
+                    // Already registered, no need to add again
+                    return;
+                }
+            }
+
+            // Add this layout to the registry
+            _registeredCoordinatorLayouts.Add(new CoordinatorLayoutEntry(new WeakReference<CoordinatorLayout>(coordinatorLayout), this));
+        }
+
+        /// <summary>
+        /// Unregisters a CoordinatorLayout from using this local listener.
+        /// Must be called on UI thread.
+        /// </summary>
+        /// <param name="coordinatorLayout">The CoordinatorLayout to unregister</param>
+        internal static void UnregisterCoordinatorLayout(CoordinatorLayout coordinatorLayout)
+        {
+            for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
+            {
+                if (_registeredCoordinatorLayouts[i].Layout.TryGetTarget(out var layout) && layout == coordinatorLayout)
+                {
+                    _registeredCoordinatorLayouts.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the appropriate GlobalWindowInsetListener for a given view by checking
+        /// if it's contained within any registered CoordinatorLayout.
+        /// Must be called on UI thread.
+        /// </summary>
+        /// <param name="view">The view to find a listener for</param>
+        /// <returns>The local listener if view is in a registered CoordinatorLayout, null otherwise</returns>
+        internal static GlobalWindowInsetListener? FindListenerForView(AView view)
+        {
+            // Clean up dead references and find listener
+            for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
+            {
+                var entry = _registeredCoordinatorLayouts[i];
+                if (!entry.Layout.TryGetTarget(out var layout))
+                {
+                    _registeredCoordinatorLayouts.RemoveAt(i);
+                }
+                else if (IsViewContainedIn(view, layout))
+                {
+                    return entry.Listener;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if a view is contained within the specified layout's hierarchy.
+        /// Optimized with early termination when encountering another CoordinatorLayout.
+        /// </summary>
+        /// <param name="view">The view to check</param>
+        /// <param name="layout">The target layout</param>
+        /// <returns>True if view is a descendant of layout</returns>
+        static bool IsViewContainedIn(AView view, ViewGroup layout)
+        {
+            var parent = view.Parent;
+            while (parent is not null)
+            {
+                if (parent == layout)
+                {
+                    return true;
+                }
+
+                // Early termination: if we hit a different CoordinatorLayout,
+                // this view belongs to that layout's hierarchy instead
+                if (parent is CoordinatorLayout && parent != layout)
+                {
+                    return false;
+                }
+
+                parent = parent.Parent;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sets up a CoordinatorLayout to use this listener for inset handling.
+        /// This method registers the layout and attaches the listener.
+        /// Must be called on UI thread.
+        /// </summary>
+        /// <param name="coordinatorLayout">The CoordinatorLayout to set up</param>
+        /// <param name="listener">The listener to attach</param>
+        /// <returns>The same CoordinatorLayout for method chaining</returns>
+        internal static CoordinatorLayout SetupCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout, GlobalWindowInsetListener listener)
+        {
+            ViewCompat.SetOnApplyWindowInsetsListener(coordinatorLayout, listener);
+            ViewCompat.SetWindowInsetsAnimationCallback(coordinatorLayout, listener);
+
+            listener.RegisterCoordinatorLayout(coordinatorLayout);
+
+            return coordinatorLayout;
+        }
+
+        /// <summary>
+        /// Removes the local listener from a CoordinatorLayout and properly cleans up.
+        /// This resets all tracked views and unregisters the layout.
+        /// Must be called on UI thread.
+        /// </summary>
+        /// <param name="coordinatorLayout">The CoordinatorLayout to clean up</param>
+        /// <param name="listener">The listener to remove</param>
+        internal static void RemoveCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout, GlobalWindowInsetListener listener)
+        {
+            // Remove the listener from the coordinator layout
+            ViewCompat.SetOnApplyWindowInsetsListener(coordinatorLayout, null);
+            ViewCompat.SetWindowInsetsAnimationCallback(coordinatorLayout, null);
+
+            // Unregister from the registry
+            UnregisterCoordinatorLayout(coordinatorLayout);
+
+            // Reset any tracked views within this coordinator layout
+            listener.ResetAppliedSafeAreas(coordinatorLayout);
+        }
+
+        public GlobalWindowInsetListener() : base(DispatchModeStop)
+        {
+        }
 
 		public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
         {
             if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
             {
                 if (IsImeAnimating)
+                {
                     _pendingView = v;
+                }
 
                 return insets;
             }
-            
+
             _pendingView = null;
 
             // Handle custom inset views first
@@ -50,51 +209,48 @@ namespace Microsoft.Maui.Platform
             var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
             var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 
-            var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
-            var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
-            var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
-            var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-
+            // Handle MaterialToolbar special case early
             if (v is MaterialToolbar)
             {
                 v.SetPadding(displayCutout?.Left ?? 0, 0, displayCutout?.Right ?? 0, 0);
                 return WindowInsetsCompat.Consumed;
             }
 
-            // Handle special cases
+            // Find AppBarLayout - check direct child first, then first two children
             var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
-
             if (appBarLayout is null && v is ViewGroup group)
             {
-                if (group.ChildCount > 0 && group.GetChildAt(0) is AppBarLayout firstChildAppBar)
+                if (group.ChildCount > 0 && group.GetChildAt(0) is AppBarLayout firstChild)
                 {
-                    appBarLayout = firstChildAppBar;
+                    appBarLayout = firstChild;
                 }
-                else if (group.ChildCount > 1 && group.GetChildAt(1) is AppBarLayout secondChildAppBar)
+                else if (group.ChildCount > 1 && group.GetChildAt(1) is AppBarLayout secondChild)
                 {
-                    appBarLayout = secondChildAppBar;
+                    appBarLayout = secondChild;
                 }
             }
 
-            bool appBarLayoutContainsSomething = appBarLayout?.MeasuredHeight > 0;
-
-            for (int i = 0; i < (appBarLayout?.ChildCount ?? 0) && !appBarLayoutContainsSomething; i++)
+            // Check if AppBarLayout has meaningful content
+            bool appBarHasContent = appBarLayout?.MeasuredHeight > 0;
+            if (!appBarHasContent && appBarLayout is not null)
             {
-                var child = appBarLayout?.GetChildAt(i);
-                if (child is not null && child.MeasuredHeight > 0)
+                for (int i = 0; i < appBarLayout.ChildCount; i++)
                 {
-                    appBarLayoutContainsSomething = true;
-                    break;
+                    var child = appBarLayout.GetChildAt(i);
+                    if (child?.MeasuredHeight > 0)
+                    {
+                        appBarHasContent = true;
+                        break;
+                    }
                 }
             }
 
+            // Apply padding to AppBarLayout based on content and system insets
             if (appBarLayout is not null)
             {
-                if (appBarLayoutContainsSomething)
+                if (appBarHasContent)
                 {
-                    // Pad the AppBarLayout to avoid the navigation bar in landscape orientation and system UI in portrait.
-                    // In landscape, the navigation bar is on the left or right edge; in portrait, we account for the status bar and display cutouts.
-                    // Without this padding, the AppBarLayout would extend behind these system UI elements and be partially hidden or non-interactive.
+                    var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
                     appBarLayout.SetPadding(systemBars?.Left ?? 0, topInset, systemBars?.Right ?? 0, 0);
                 }
                 else
@@ -103,11 +259,11 @@ namespace Microsoft.Maui.Platform
                 }
             }
 
-
-            var bottomNavigation = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
-            
-            if (bottomNavigation)
+            // Handle bottom navigation
+            var hasBottomNav = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
+            if (hasBottomNav)
             {
+                var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
                 v.SetPadding(0, 0, 0, bottomInset);
             }
             else
@@ -118,16 +274,16 @@ namespace Microsoft.Maui.Platform
             // Create new insets with consumed values
             var newSystemBars = Insets.Of(
                 systemBars?.Left ?? 0,
-                appBarLayoutContainsSomething ? 0 : systemBars?.Top ?? 0,
+                appBarHasContent ? 0 : systemBars?.Top ?? 0,
                 systemBars?.Right ?? 0,
-                bottomNavigation ? 0 : systemBars?.Bottom ?? 0
+                hasBottomNav ? 0 : systemBars?.Bottom ?? 0
             ) ?? Insets.None;
 
             var newDisplayCutout = Insets.Of(
                 displayCutout?.Left ?? 0,
-                appBarLayoutContainsSomething ? 0 : displayCutout?.Top ?? 0,
+                appBarHasContent ? 0 : displayCutout?.Top ?? 0,
                 displayCutout?.Right ?? 0,
-                bottomNavigation ? 0 : displayCutout?.Bottom ?? 0
+                hasBottomNav ? 0 : displayCutout?.Bottom ?? 0
             ) ?? Insets.None;
 
             return new WindowInsetsCompat.Builder(insets)
@@ -155,7 +311,8 @@ namespace Microsoft.Maui.Platform
 
         public void ResetAllViews()
         {
-            var viewsToReset = new List<AView>(_trackedViews); // Create a copy to avoid modification during enumeration
+            // Create a copy to avoid modification during enumeration
+            var viewsToReset = _trackedViews.ToArray();
             foreach (var view in viewsToReset)
             {
                 ResetView(view);
@@ -186,7 +343,7 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         static bool IsDescendantOf(AView? child, AView parent)
         {
-            if (child is null || parent is null)
+            if (child is null)
             {
                 return false;
             }
@@ -213,61 +370,51 @@ namespace Microsoft.Maui.Platform
             base.Dispose(disposing);
         }
 
-		public override void OnPrepare(WindowInsetsAnimationCompat? animation)
-		{
-            base.OnPrepare(animation);
-
-            if (animation is null)
-                return;
-
-			// Check if this is an IME animation
-			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-			{
-				IsImeAnimating = true;
-			}
-		}
-
-		public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
+        public override void OnPrepare(WindowInsetsAnimationCompat? animation)
         {
-            if (animation is null)
-                return bounds;
+            base.OnPrepare(animation);
+            if (IsImeAnimation(animation))
+            {
+                IsImeAnimating = true;
+            }
+        }
 
-			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-			{
-				IsImeAnimating = true;
-			}
-			return bounds;
-		}
+        public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
+        {
+            if (IsImeAnimation(animation))
+            {
+                IsImeAnimating = true;
+            }
 
-		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
-		{
-			if (insets != null && runningAnimations != null)
-			{
-				// Check for IME animations
-				foreach (var animation in runningAnimations)
-				{
-					if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-					{
-						var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-						var imeHeight = imeInsets?.Bottom ?? 0;
-						// IME height during animation: imeHeight
-					}
-				}
-			}
+            return bounds;
+        }
+
+        public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
+        {
+            if (insets is null || runningAnimations is null)
+            {
+                return insets;
+            }
+
+            // Process any IME animations
+            foreach (var animation in runningAnimations)
+            {
+                if (IsImeAnimation(animation))
+                {
+                    var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+                    // IME height available as: imeInsets?.Bottom ?? 0
+                    break; // Only need to process one IME animation
+                }
+            }
             return insets;
-		}
+        }
 
-		public override void OnEnd(WindowInsetsAnimationCompat? animation)
-		{
+        public override void OnEnd(WindowInsetsAnimationCompat? animation)
+        {
             base.OnEnd(animation);
 
-            if (animation is null)
-                return;
-
-			// Check if this was an IME animation
-			if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
-			{
-
+            if (IsImeAnimation(animation))
+            {
                 if (_pendingView is AView view)
                 {
                     _pendingView = null;
@@ -278,58 +425,52 @@ namespace Microsoft.Maui.Platform
                     });
                 }
                 else
-                {                    
+                {
                     IsImeAnimating = false;
                 }
-			}
-		}
-	}
+            }
+        }
+
+        /// <summary>
+        /// Helper method to check if an animation involves the IME
+        /// </summary>
+        static bool IsImeAnimation(WindowInsetsAnimationCompat? animation) =>
+            animation is not null && (animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0;
+    }
 }
 
 /// <summary>
-/// Extension methods to access the shared GlobalWindowInsetListener instance.
+/// Extension methods to access WindowInsetListener instances.
+/// These methods support both the legacy global listener pattern and the new
+/// per-CoordinatorLayout local listener pattern.
 /// </summary>
 internal static class GlobalWindowInsetListenerExtensions
 {
     /// <summary>
-    /// Gets the shared GlobalWindowInsetListener instance from the current MauiAppCompatActivity.
-    /// </summary>
-    /// <param name="context">The Android context</param>
-    /// <returns>The shared GlobalWindowInsetListener instance, or null if not available</returns>
-    public static GlobalWindowInsetListener? GetGlobalWindowInsetListener(this Context context)
-    {
-        return context.GetActivity() as MauiAppCompatActivity is MauiAppCompatActivity activity
-            ? activity.GlobalWindowInsetListener
-            : null;
-    }
-
-    /// <summary>
-    /// Sets the shared GlobalWindowInsetListener on the specified view.
-    /// This ensures all views use the same listener instance for coordinated inset management.
+    /// Sets the appropriate GlobalWindowInsetListener on the specified view.
+    /// This prioritizes local coordinator layout listeners over global ones.
     /// </summary>
     /// <param name="view">The Android view to set the listener on</param>
     /// <param name="context">The Android context to get the listener from</param>
     public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
     {
-        if (view is not MaterialToolbar && view.FindParent(
-            (parent) =>
-                parent is NestedScrollView ||
-                parent is AppBarLayout ||
-                parent is MauiScrollView)
-            is not null)
+        // Check if this view is contained within a registered CoordinatorLayout first
+        if (GlobalWindowInsetListener.FindListenerForView(view) is GlobalWindowInsetListener localListener)
         {
-            // Don't set the listener on views inside a NestedScrollView or AppBarLayout
+            ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
+            ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
+            return true;
+        }
+
+        // Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
+        if (view is not MaterialToolbar &&
+            view.FindParent(parent => parent is NestedScrollView || parent is AppBarLayout || parent is MauiScrollView) is not null)
+        {
             return false;
         }
 
-        var listener = context.GetGlobalWindowInsetListener();
-        if (listener is not null)
-        {
-            ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
-            ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
-        }
-
-        return true;
+        // If no listener available, this is likely a configuration issue but not critical
+        return false;
     }
 
     /// <summary>
@@ -340,9 +481,12 @@ internal static class GlobalWindowInsetListenerExtensions
     /// <param name="context">The Android context to get the listener from</param>
     public static void RemoveGlobalWindowInsetListener(this View view, Context context)
     {
-        var listener = context.GetGlobalWindowInsetListener();
-        listener?.ResetView(view);
+        // Clear the listeners first
         ViewCompat.SetOnApplyWindowInsetsListener(view, null);
         ViewCompat.SetWindowInsetsAnimationCallback(view, null);
+
+        // Reset view state - prefer local listener if available, otherwise use global
+        var listener = GlobalWindowInsetListener.FindListenerForView(view);
+        listener?.ResetView(view);
     }
 }

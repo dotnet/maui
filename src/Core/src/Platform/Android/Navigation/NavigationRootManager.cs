@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -17,6 +18,8 @@ namespace Microsoft.Maui.Platform
 		AView? _rootView;
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
+		GlobalWindowInsetListener? _localInsetListener;
+		CoordinatorLayout? _managedCoordinatorLayout;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -68,25 +71,26 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				navigationLayout ??=
+				navigationLayout =
 				   LayoutInflater
 					   .Inflate(Resource.Layout.navigationlayout, null)
 					   .JavaCast<CoordinatorLayout>();
 
+				// Set up the CoordinatorLayout with a local inset listener
+				if (navigationLayout != null)
+				{
+					_localInsetListener = new GlobalWindowInsetListener();
+					_managedCoordinatorLayout = navigationLayout;
+					navigationLayout = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(navigationLayout, _localInsetListener);
+				}
+
 				_rootView = navigationLayout;
-			}
-
-			if (navigationLayout is CoordinatorLayout && mauiContext.Context is not null)
-            {
-                GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
-            }
-
-			// if the incoming view is a Drawer Layout then the Drawer Layout
-			// will be the root view and internally handle all if its view management
-			// this is mainly used for FlyoutView
-			//
-			// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
-			// and place the content there
+			}           // if the incoming view is a Drawer Layout then the Drawer Layout
+						// will be the root view and internally handle all if its view management
+						// this is mainly used for FlyoutView
+						//
+						// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
+						// and place the content there
 			if (DrawerLayout == null)
 			{
 				SetContentView(view);
@@ -114,6 +118,12 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			// Clean up the coordinator layout and local listener first
+			if (_managedCoordinatorLayout is not null && _localInsetListener is not null)
+			{
+				GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout, _localInsetListener);
+			}
+
 			ClearPlatformParts();
 			SetContentView(null);
 		}
@@ -125,6 +135,8 @@ namespace Microsoft.Maui.Platform
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;
+			_localInsetListener = null;
+			_managedCoordinatorLayout = null;
 		}
 
 		IDisposable? _pendingFragment;
