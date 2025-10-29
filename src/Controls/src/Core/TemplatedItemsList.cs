@@ -770,7 +770,8 @@ namespace Microsoft.Maui.Controls.Internals
 					new TypedBinding<TemplatedItemsList<TView, TItem>, string>(
 						getter: static list => (list.Name, true),
 						setter: static (list, val) => list.Name = val,
-						handlers: [new(static list => list, nameof(Name))]));
+						handlersCount: 1,
+						handlers: static list => [(list, "Name")]));
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
