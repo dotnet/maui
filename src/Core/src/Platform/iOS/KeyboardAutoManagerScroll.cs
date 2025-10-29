@@ -350,79 +350,98 @@ public static class KeyboardAutoManagerScroll
 			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
 		}
 
-		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
-		var window = ContainerView.Window;
-
+		var window = ContainerView!.Window;
 		if (window is null)
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
 		}
 
-		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
-		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
+		var kbSize = CalculateKeyboardSize(window);
+		var navigationBarAreaHeight = GetNavigationBarAreaHeight(window);
 
-		nfloat statusBarHeight;
-		nfloat navigationBarAreaHeight;
-
-		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		if (navigationBarAreaHeight == -1) // View is descendant of navigation bar
 		{
-			if (View.IsDescendantOfView(navigationController.NavigationBar))
-			{
-				IsKeyboardAutoScrollHandling = false;
-				return;
-			}
-
-			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
-		}
-		else
-		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
-				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
-			else
-				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
-
-			navigationBarAreaHeight = statusBarHeight;
+			return;
 		}
 
-		var topLayoutGuide = Math.Max(navigationBarAreaHeight, ContainerView.LayoutMargins.Top);
+		var topLayoutGuide = (nfloat)Math.Max(navigationBarAreaHeight, ContainerView.LayoutMargins.Top);
 
-		// calculate the cursor rect
 		CursorRect = FindCursorPosition();
-
 		if (CursorRect is null)
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
 		}
 
-		var cursorRect = (CGRect)CursorRect;
-
-		var viewRectInContainer = ContainerView.ConvertRectFromView(View.Frame, View.Superview);
-		var viewRectInWindow = ContainerView.ConvertRectToView(viewRectInContainer, null);
-
-		// since the cursorRect does not have a height for Pickers, we can assign the height of the picker as the cursor height
-		if (cursorRect.Height == 0)
-		{
-			cursorRect.Height = View.Bounds.Height;
-		}
-
+		var cursorRect = AdjustCursorRect((CGRect)CursorRect);
 		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewDistanceFromBottom;
 
-		// readjust contentInset when the textView height is too large for the screen
-		var rootSuperViewFrameInWindow = window.Frame;
-		if (ContainerView.Superview is UIView v)
+		var (topBoundary, bottomBoundary, superScrollView, superScrollViewRect) =
+			CalculateBoundaries(topLayoutGuide, keyboardYPosition, cursorRect);
+
+		var (move, cursorNotInViewScroll, cursorTooHigh, cursorTooLow) =
+			CalculateInitialMove(cursorRect, topBoundary, bottomBoundary);
+
+		HandleLastScrollView(superScrollView);
+
+		bool forceSetContentInsets = true;
+
+		if (LastScrollView is not null)
 		{
-			rootSuperViewFrameInWindow = v.ConvertRectToView(v.Bounds, window);
+			(move, forceSetContentInsets) = ProcessScrollViewHierarchy(
+				move, cursorNotInViewScroll, cursorTooHigh, cursorTooLow,
+				cursorRect, topBoundary, bottomBoundary, superScrollView, superScrollViewRect);
 		}
 
-		nfloat cursorNotInViewScroll = 0;
-		nfloat move = 0;
-		bool cursorTooHigh = false;
-		bool cursorTooLow = false;
+		ApplyFinalPositionAdjustments(move, kbSize.Height, forceSetContentInsets, superScrollView);
+	}
 
-		// Find the next parent ScrollView that is scrollable or use the current View if it is a ScrollView
-		var superView = View.FindResponder<UIScrollView>() ?? View as UIScrollView;
+	static CGSize CalculateKeyboardSize(UIWindow window)
+	{
+		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
+		var result = intersectRect == CGRect.Empty
+			? new CGSize(KeyboardFrame.Width, 0)
+			: intersectRect.Size;
+		return result;
+	}
+
+	static nfloat GetNavigationBarAreaHeight(UIWindow window)
+	{
+		if (View!.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		{
+			if (View!.IsDescendantOfView(navigationController.NavigationBar))
+			{
+				IsKeyboardAutoScrollHandling = false;
+				return -1;
+			}
+			var navBarHeight = navigationController.NavigationBar.Frame.GetMaxY();
+			return navBarHeight;
+		}
+
+		nfloat statusBarHeight;
+		if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
+			statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+		else
+			statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
+
+		return statusBarHeight;
+	}
+
+	static CGRect AdjustCursorRect(CGRect cursorRect)
+	{
+		// Since the cursorRect does not have a height for Pickers, assign the height of the picker
+		if (cursorRect.Height == 0)
+		{
+			cursorRect.Height = View!.Bounds.Height;
+		}
+		return cursorRect;
+	}
+
+	static (nfloat topBoundary, double bottomBoundary, UIScrollView? superScrollView, CGRect? superScrollViewRect) CalculateBoundaries(
+	nfloat topLayoutGuide, nfloat keyboardYPosition, CGRect cursorRect)
+	{
+		var superView = View!.FindResponder<UIScrollView>() ?? View as UIScrollView;
 		var superScrollView = FindParentScroll(superView);
 
 		CGRect? superScrollViewRect = null;
@@ -431,12 +450,12 @@ public static class KeyboardAutoManagerScroll
 
 		if (superScrollView is not null)
 		{
-			var superScrollInContainer = ContainerView.ConvertRectFromView(superScrollView.Frame, superScrollView.Superview);
+			var superScrollInContainer = ContainerView!.ConvertRectFromView(superScrollView.Frame, superScrollView.Superview);
 			superScrollViewRect = ContainerView.ConvertRectToView(superScrollInContainer, null);
-			topBoundary = Math.Max(topBoundary, superScrollViewRect.Value.Top);
+			topBoundary = (nfloat)Math.Max(topBoundary, superScrollViewRect.Value.Top);
 			var superScrollViewBottom = superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom;
 
-			// if the superScrollView is a small editor, it may not make sense to scroll the entire screen if cursor is visible
+			// If the superScrollView is a small editor, don't scroll entire screen if cursor is visible
 			if (superScrollView is UITextView && superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom < cursorRect.Bottom)
 			{
 				superScrollViewBottom = superScrollViewRect.Value.Bottom;
@@ -445,44 +464,50 @@ public static class KeyboardAutoManagerScroll
 			bottomBoundary = Math.Min(bottomBoundary, superScrollViewBottom);
 		}
 
-		bool forceSetContentInsets = true;
+		return (topBoundary, bottomBoundary, superScrollView, superScrollViewRect);
+	}
 
-		// scenario where we go into an editor with the "Next" keyboard button,
-		// but the cursor location on the editor is scrolled below the visible section
+	static (nfloat move, nfloat cursorNotInViewScroll, bool cursorTooHigh, bool cursorTooLow) CalculateInitialMove(
+	CGRect cursorRect, nfloat topBoundary, double bottomBoundary)
+	{
+		nfloat move = 0;
+		nfloat cursorNotInViewScroll = 0;
+		bool cursorTooHigh = false;
+		bool cursorTooLow = false;
+
+		var viewRectInContainer = ContainerView!.ConvertRectFromView(View!.Frame, View.Superview);
+		var viewRectInWindow = ContainerView.ConvertRectToView(viewRectInContainer, null);
+
+		// Check if cursor is actually visible on screen (not just within safe area)
+		var screenTopBoundary = (nfloat)0; // Top of the actual screen
+
+		// If cursor is already fully visible on screen (between screen top and keyboard), no movement needed
+		if (cursorRect.Y >= screenTopBoundary && cursorRect.Bottom <= bottomBoundary)
+		{
+			return (0, 0, false, false);
+		}
+
+		// Cursor location scrolled below visible section
 		if (View is UITextView && IsKeyboardShowing && cursorRect.Bottom >= viewRectInWindow.GetMaxY())
 		{
 			move = viewRectInWindow.Bottom - (nfloat)bottomBoundary;
 		}
-
-		// scenario where we go into an editor with the "Next" keyboard button,
-		// but the cursor location on the editor is scrolled above the visible section
+		// Cursor location scrolled above visible section
 		else if (View is UITextView && IsKeyboardShowing && cursorRect.Y < viewRectInWindow.GetMinY())
 		{
 			move = viewRectInWindow.Top - (nfloat)bottomBoundary;
-
-			// no need to move the screen down if we can already see the view
 			if (move < 0)
-			{
 				move = 0;
-			}
 		}
-
 		else if (cursorRect.Bottom > bottomBoundary && cursorRect.Y > topBoundary)
 		{
 			move = cursorRect.Bottom - (nfloat)bottomBoundary;
 		}
-
 		else if (cursorRect.Y <= topBoundary && cursorRect.Bottom <= bottomBoundary)
 		{
-			move = cursorRect.Y - (nfloat)topBoundary;
-
-			// no need to move the screen down if we can already see the view
-			if (move < 0)
-			{
-				move = 0;
-			}
+			// Cursor is above safe area but still on screen - only move if necessary for visibility
+			move = cursorRect.Y - topBoundary;
 		}
-
 		else if (cursorRect.Y <= topBoundary && cursorRect.Bottom >= bottomBoundary)
 		{
 			cursorNotInViewScroll = viewRectInWindow.GetMinY() - cursorRect.Y;
@@ -490,270 +515,331 @@ public static class KeyboardAutoManagerScroll
 			cursorTooHigh = true;
 		}
 
-		// This is the case when the keyboard is already showing and we click another editor/entry
-		if (LastScrollView is not null)
+		return (move, cursorNotInViewScroll, cursorTooHigh, cursorTooLow);
+	}
+
+	static void HandleLastScrollView(UIScrollView? superScrollView)
+	{
+		// Keyboard already showing and we click another editor/entry
+		if (LastScrollView is not null && superScrollView is null)
 		{
-			// if there is not a current superScrollView, restore LastScrollView
-			if (superScrollView is null)
-			{
-				if (LastScrollView.ContentInset != StartingContentInsets)
-				{
-					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateStartingLastScrollView, () => { });
-				}
-
-				if (!LastScrollView.ContentOffset.Equals(StartingContentOffset))
-				{
-					if (View.FindResponder<UIStackView>() is UIStackView)
-					{
-						LastScrollView.SetContentOffset(StartingContentOffset, UIView.AnimationsEnabled);
-					}
-					else
-					{
-						LastScrollView.ContentOffset = StartingContentOffset;
-					}
-				}
-
-				StartingContentInsets = new UIEdgeInsets();
-				StartingScrollIndicatorInsets = new UIEdgeInsets();
-				StartingContentOffset = new CGPoint(0, 0);
-				LastScrollView = null;
-			}
+			RestoreLastScrollView();
 		}
-
-		else if (superScrollView is not null)
+		else if (LastScrollView is null && superScrollView is not null)
 		{
 			LastScrollView = superScrollView;
 			StartingContentInsets = superScrollView.ContentInset;
 			StartingContentOffset = superScrollView.ContentOffset;
 
-			StartingScrollIndicatorInsets = OperatingSystem.IsIOSVersionAtLeast(11, 1) ?
-				superScrollView.VerticalScrollIndicatorInsets : superScrollView.ScrollIndicatorInsets;
+			StartingScrollIndicatorInsets = OperatingSystem.IsIOSVersionAtLeast(11, 1)
+				? superScrollView.VerticalScrollIndicatorInsets
+				: superScrollView.ScrollIndicatorInsets;
+		}
+	}
+
+	static void RestoreLastScrollView()
+	{
+		if (LastScrollView!.ContentInset != StartingContentInsets)
+		{
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut,
+				AnimateStartingLastScrollView, () => { });
 		}
 
-		// Calculate the move for the ScrollViews
-		if (LastScrollView is not null)
+		if (!LastScrollView.ContentOffset.Equals(StartingContentOffset))
 		{
-			var lastView = View;
-			superScrollView = LastScrollView;
-			nfloat innerScrollValue = 0;
-			nfloat tempMove = 0;
-
-			while (superScrollView is not null)
+			if (View!.FindResponder<UIStackView>() is UIStackView)
 			{
-				var shouldContinue = false;
+				LastScrollView.SetContentOffset(StartingContentOffset, UIView.AnimationsEnabled);
+			}
+			else
+			{
+				LastScrollView.ContentOffset = StartingContentOffset;
+			}
+		}
 
-				// if we have an innerScrollValue, let's move with this value first and then do the move
+		StartingContentInsets = new UIEdgeInsets();
+		StartingScrollIndicatorInsets = new UIEdgeInsets();
+		StartingContentOffset = new CGPoint(0, 0);
+		LastScrollView = null;
+	}
+
+	static (nfloat move, bool forceSetContentInsets) ProcessScrollViewHierarchy(
+	   nfloat move, nfloat cursorNotInViewScroll, bool cursorTooHigh, bool cursorTooLow,
+	   CGRect cursorRect, nfloat topBoundary, double bottomBoundary,
+	   UIScrollView? superScrollView, CGRect? superScrollViewRect)
+	{
+		var lastView = View;
+		superScrollView = LastScrollView;
+		nfloat innerScrollValue = 0;
+		nfloat tempMove = 0;
+		bool forceSetContentInsets = true;
+
+		while (superScrollView is not null)
+		{
+			var (shouldContinue, updatedMove, updatedTempMove) = DetermineScrollContinuation(
+				move, tempMove, cursorNotInViewScroll, cursorRect, cursorTooHigh, cursorTooLow,
+				topBoundary, bottomBoundary, innerScrollValue, superScrollView);
+
+			move = updatedMove;
+			tempMove = updatedTempMove;
+
+			if (shouldContinue)
+			{
+				forceSetContentInsets = false;
+
+				var (scrolled, updatedInnerScrollValue) = ProcessSingleScrollView(
+					move, innerScrollValue, cursorNotInViewScroll, superScrollView,
+					superScrollViewRect, bottomBoundary, cursorRect);
+
+				innerScrollValue = updatedInnerScrollValue;
+
 				if (cursorNotInViewScroll != 0)
 				{
-					tempMove = move;
-					move = cursorNotInViewScroll;
-					shouldContinue = true;
+					cursorNotInViewScroll = 0;
 				}
-
-				else if (move > 0 || tempMove > 0)
-				{
-					if (move == 0)
-					{
-						move = tempMove;
-					}
-					shouldContinue = move > -superScrollView.ContentOffset.Y - superScrollView.ContentInset.Top;
-				}
-
-				else if (superScrollView.FindResponder<UITableView>() is UITableView tableView)
-				{
-					shouldContinue = superScrollView.ContentOffset.Y > 0;
-
-					if (shouldContinue && View?.FindResponder<UITableViewCell>() is UITableViewCell tableCell
-						&& tableView.IndexPathForCell(tableCell) is NSIndexPath indexPath
-						&& tableView.GetPreviousIndexPath(indexPath) is NSIndexPath previousIndexPath)
-					{
-						var previousCellRect = tableView.RectForRowAtIndexPath(previousIndexPath);
-						if (!previousCellRect.IsEmpty)
-						{
-							var previousCellRectInRootSuperview = tableView.ConvertRectToView(previousCellRect, ContainerView.Superview);
-							move = (nfloat)Math.Min(0, previousCellRectInRootSuperview.GetMaxY() - topBoundary);
-						}
-					}
-				}
-
-				else if (superScrollView.FindResponder<UICollectionView>() is UICollectionView collectionView)
-				{
-					shouldContinue = superScrollView.ContentOffset.Y > 0;
-
-					if (shouldContinue && View?.FindResponder<UICollectionViewCell>() is UICollectionViewCell collectionCell
-						&& collectionView.IndexPathForCell(collectionCell) is NSIndexPath indexPath
-						&& collectionView.GetPreviousIndexPath(indexPath) is NSIndexPath previousIndexPath
-						&& collectionView.GetLayoutAttributesForItem(previousIndexPath) is UICollectionViewLayoutAttributes attributes)
-					{
-						var previousCellRect = attributes.Frame;
-
-						if (!previousCellRect.IsEmpty)
-						{
-							var previousCellRectInRootSuperview = collectionView.ConvertRectToView(previousCellRect, ContainerView.Superview);
-							move = (nfloat)Math.Min(0, previousCellRectInRootSuperview.GetMaxY() - topBoundary);
-						}
-					}
-				}
-
 				else
 				{
-					shouldContinue = !(innerScrollValue == 0
-						&& cursorRect.Y + cursorNotInViewScroll >= topBoundary
-						&& cursorRect.Bottom + cursorNotInViewScroll <= bottomBoundary);
-
-					if (cursorRect.Y - innerScrollValue < topBoundary && !cursorTooHigh)
-					{
-						move = cursorRect.Y - innerScrollValue - (nfloat)topBoundary;
-					}
-					else if (cursorRect.Y - innerScrollValue > bottomBoundary && !cursorTooLow)
-					{
-						move = cursorRect.Y - innerScrollValue - (nfloat)bottomBoundary;
-					}
-				}
-
-				// Go up the hierarchy and look for other scrollViews until we reach the UIWindow
-				if (shouldContinue)
-				{
-					forceSetContentInsets = false;
-
+					lastView = superScrollView;
 					var tempScrollView = superScrollView.FindResponder<UIScrollView>();
-					var nextScrollView = FindParentScroll(tempScrollView);
-
-					// if PrefersLargeTitles is true, we may need additional logic to handle the collapsable navbar
-					var navController = View?.FindResponder<UINavigationController>();
-					var prefersLargeTitles = navController?.NavigationBar.PrefersLargeTitles ?? false;
-
-					if (prefersLargeTitles)
-					{
-						move = AdjustForLargeTitles(move, superScrollView, navController!);
-					}
-
-					var origContentOffsetY = superScrollView.ContentOffset.Y;
-					var shouldOffsetY = superScrollView.ContentOffset.Y - Math.Min(superScrollView.ContentOffset.Y, -move);
-					var requestedMove = move;
-
-					// the contentOffset.Y will change to shouldOffSetY so we can subtract the difference from the move
-					move -= (nfloat)(shouldOffsetY - superScrollView.ContentOffset.Y);
-
-					var newContentOffset = new CGPoint(superScrollView.ContentOffset.X, shouldOffsetY);
-
-					if ((!superScrollView.ContentOffset.Equals(newContentOffset) || innerScrollValue != 0) && superScrollViewRect is not null)
-					{
-						if ((nextScrollView is null && superScrollViewRect.Value.Y + cursorRect.Height + TextViewDistanceFromBottom < bottomBoundary) ||
-							cursorNotInViewScroll != 0)
-						{
-							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
-							{
-								newContentOffset.Y += innerScrollValue;
-								innerScrollValue = 0;
-								ScrolledView = superScrollView;
-
-								if (View?.FindResponder<UIStackView>() is not null)
-								{
-									superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
-								}
-								else
-								{
-									superScrollView.ContentOffset = newContentOffset;
-								}
-							}, () => { });
-
-							// after this scroll finishes, there is an edge case where if we have Large Titles,
-							// the entire requeseted scroll amount may not be allowed. If so, we need to scroll again.
-							var actualScrolledAmount = superScrollView.ContentOffset.Y - origContentOffsetY;
-							var amountNotScrolled = requestedMove - actualScrolledAmount;
-
-							if (prefersLargeTitles && amountNotScrolled > 1)
-							{
-								ShouldScrollAgain = true;
-							}
-						}
-
-						else
-						{
-							// add the amount we would have moved to the next scroll value
-							innerScrollValue += newContentOffset.Y - superScrollView.ContentOffset.Y;
-						}
-					}
-
-					// if we needed to scroll for cursorNotInViewScroll first, use the same superScrollView and handle the move now
-					if (cursorNotInViewScroll != 0)
-					{
-						cursorNotInViewScroll = 0;
-					}
-					else
-					{
-						lastView = superScrollView;
-						superScrollView = nextScrollView;
-					}
-				}
-
-				else
-				{
-					// if we did not get to scroll all the way, add the value to move
-					move += innerScrollValue;
-					break;
-				}
-			}
-
-			move += innerScrollValue;
-
-			// Adjust the parent's ContentInset.Bottom so we can still scroll to the top with the keyboard showing
-			if (forceSetContentInsets && superScrollView is not null)
-			{
-				ApplyContentInset(superScrollView, LastScrollView, false, false);
-				// if our View is an editor, we can adjust the ContentInset.Bottom so that the text cursor will stay above the keyboard
-				if (superScrollView != View && View is UITextView textView)
-				{
-					ApplyContentInset(textView, textView, false, true);
+					superScrollView = FindParentScroll(tempScrollView);
 				}
 			}
 			else
 			{
-				ApplyContentInset(ScrolledView, LastScrollView, true, false);
-				// if our View is an editor, we can adjust the ContentInset.Bottom so that the text cursor will stay above the keyboard
-				if (ScrolledView != View && View is UITextView textView)
-				{
-					ApplyContentInset(textView, textView, true, true);
-				}
+				move += innerScrollValue;
+				break;
 			}
 		}
 
+		move += innerScrollValue;
+		ApplyScrollViewContentInsets(forceSetContentInsets, superScrollView);
+
+		return (move, forceSetContentInsets);
+	}
+
+	static (bool shouldContinue, nfloat move, nfloat tempMove) DetermineScrollContinuation(
+	   nfloat move, nfloat tempMove, nfloat cursorNotInViewScroll, CGRect cursorRect,
+	   bool cursorTooHigh, bool cursorTooLow, nfloat topBoundary, double bottomBoundary,
+	   nfloat innerScrollValue, UIScrollView superScrollView)
+	{
+		bool shouldContinue = false;
+
+		if (cursorNotInViewScroll != 0)
+		{
+			tempMove = move;
+			move = cursorNotInViewScroll;
+			shouldContinue = true;
+		}
+		else if (move > 0 || tempMove > 0)
+		{
+			if (move == 0)
+				move = tempMove;
+			shouldContinue = move > -superScrollView.ContentOffset.Y - superScrollView.ContentInset.Top;
+		}
+		else if (superScrollView.FindResponder<UITableView>() is UITableView tableView)
+		{
+			shouldContinue = superScrollView.ContentOffset.Y > 0;
+			if (shouldContinue)
+			{
+				move = CalculateTableViewMove(tableView, topBoundary);
+			}
+		}
+		else if (superScrollView.FindResponder<UICollectionView>() is UICollectionView collectionView)
+		{
+			shouldContinue = superScrollView.ContentOffset.Y > 0;
+			if (shouldContinue)
+			{
+				move = CalculateCollectionViewMove(collectionView, topBoundary);
+			}
+		}
+		else
+		{
+			shouldContinue = !(innerScrollValue == 0
+				&& cursorRect.Y + cursorNotInViewScroll >= topBoundary
+				&& cursorRect.Bottom + cursorNotInViewScroll <= bottomBoundary);
+
+			if (cursorRect.Y - innerScrollValue < topBoundary && !cursorTooHigh)
+			{
+				move = cursorRect.Y - innerScrollValue - topBoundary;
+			}
+			else if (cursorRect.Y - innerScrollValue > bottomBoundary && !cursorTooLow)
+			{
+				move = cursorRect.Y - innerScrollValue - (nfloat)bottomBoundary;
+			}
+		}
+
+		return (shouldContinue, move, tempMove);
+	}
+
+	static nfloat CalculateTableViewMove(UITableView tableView, nfloat topBoundary)
+	{
+		if (View?.FindResponder<UITableViewCell>() is UITableViewCell tableCell
+			&& tableView.IndexPathForCell(tableCell) is NSIndexPath indexPath
+			&& tableView.GetPreviousIndexPath(indexPath) is NSIndexPath previousIndexPath)
+		{
+			var previousCellRect = tableView.RectForRowAtIndexPath(previousIndexPath);
+			if (!previousCellRect.IsEmpty)
+			{
+				var previousCellRectInRootSuperview = tableView.ConvertRectToView(previousCellRect, ContainerView!.Superview);
+				return (nfloat)Math.Min(0, previousCellRectInRootSuperview.GetMaxY() - topBoundary);
+			}
+		}
+		return 0;
+	}
+
+	static nfloat CalculateCollectionViewMove(UICollectionView collectionView, nfloat topBoundary)
+	{
+		if (View?.FindResponder<UICollectionViewCell>() is UICollectionViewCell collectionCell
+			&& collectionView.IndexPathForCell(collectionCell) is NSIndexPath indexPath
+			&& collectionView.GetPreviousIndexPath(indexPath) is NSIndexPath previousIndexPath
+			&& collectionView.GetLayoutAttributesForItem(previousIndexPath) is UICollectionViewLayoutAttributes attributes)
+		{
+			var previousCellRect = attributes.Frame;
+			if (!previousCellRect.IsEmpty)
+			{
+				var previousCellRectInRootSuperview = collectionView.ConvertRectToView(previousCellRect, ContainerView!.Superview);
+				return (nfloat)Math.Min(0, previousCellRectInRootSuperview.GetMaxY() - topBoundary);
+			}
+		}
+		return 0;
+	}
+
+	static (bool scrolled, nfloat innerScrollValue) ProcessSingleScrollView(
+	   nfloat move, nfloat innerScrollValue, nfloat cursorNotInViewScroll,
+	   UIScrollView superScrollView, CGRect? superScrollViewRect, double bottomBoundary, CGRect cursorRect)
+	{
+		var navController = View?.FindResponder<UINavigationController>();
+		var prefersLargeTitles = navController?.NavigationBar.PrefersLargeTitles ?? false;
+
+		if (prefersLargeTitles)
+		{
+			move = AdjustForLargeTitles(move, superScrollView, navController!);
+		}
+
+		var origContentOffsetY = superScrollView.ContentOffset.Y;
+		var shouldOffsetY = superScrollView.ContentOffset.Y - Math.Min(superScrollView.ContentOffset.Y, -move);
+		var requestedMove = move;
+
+		move -= (nfloat)(shouldOffsetY - superScrollView.ContentOffset.Y);
+
+		var newContentOffset = new CGPoint(superScrollView.ContentOffset.X, shouldOffsetY);
+
+		if ((!superScrollView.ContentOffset.Equals(newContentOffset) || innerScrollValue != 0) && superScrollViewRect is not null)
+		{
+			var tempScrollView = superScrollView.FindResponder<UIScrollView>();
+			var nextScrollView = FindParentScroll(tempScrollView);
+
+			if ((nextScrollView is null && superScrollViewRect.Value.Y + cursorRect.Height + TextViewDistanceFromBottom < bottomBoundary) ||
+				cursorNotInViewScroll != 0)
+			{
+				AnimateScrollViewOffset(superScrollView, newContentOffset, ref innerScrollValue);
+
+				CheckAndHandleLargeTitleScroll(superScrollView, origContentOffsetY, requestedMove, prefersLargeTitles);
+				return (true, innerScrollValue);
+			}
+			else
+			{
+				innerScrollValue += newContentOffset.Y - superScrollView.ContentOffset.Y;
+			}
+		}
+
+		return (false, innerScrollValue);
+	}
+
+	static void AnimateScrollViewOffset(UIScrollView scrollView, CGPoint newContentOffset, ref nfloat innerScrollValue)
+	{
+		var capturedInnerScrollValue = innerScrollValue;
+		UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+		{
+			newContentOffset.Y += capturedInnerScrollValue;
+			ScrolledView = scrollView;
+
+			if (View?.FindResponder<UIStackView>() is not null)
+			{
+				scrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
+			}
+			else
+			{
+				scrollView.ContentOffset = newContentOffset;
+			}
+		}, () => { });
+		innerScrollValue = 0;
+	}
+
+	static void CheckAndHandleLargeTitleScroll(UIScrollView scrollView, nfloat origContentOffsetY,
+	   nfloat requestedMove, bool prefersLargeTitles)
+	{
+		var actualScrolledAmount = scrollView.ContentOffset.Y - origContentOffsetY;
+		var amountNotScrolled = requestedMove - actualScrolledAmount;
+
+		if (prefersLargeTitles && amountNotScrolled > 1)
+		{
+			ShouldScrollAgain = true;
+		}
+	}
+
+	static void ApplyScrollViewContentInsets(bool forceSetContentInsets, UIScrollView? superScrollView)
+	{
+		if (forceSetContentInsets && superScrollView is not null)
+		{
+			ApplyContentInset(superScrollView, LastScrollView, false, false);
+			if (superScrollView != View && View is UITextView textView)
+			{
+				ApplyContentInset(textView, textView, false, true);
+			}
+		}
+		else
+		{
+			ApplyContentInset(ScrolledView, LastScrollView, true, false);
+			if (ScrolledView != View && View is UITextView textView)
+			{
+				ApplyContentInset(textView, textView, true, true);
+			}
+		}
+	}
+
+	static void ApplyFinalPositionAdjustments(nfloat move, nfloat kbHeight,
+	   bool forceSetContentInsets, UIScrollView? superScrollView)
+	{
+		var rootViewOrigin = new CGPoint(ContainerView!.Frame.GetMinX(), ContainerView.Frame.GetMinY());
+
 		if (move >= 0)
 		{
-			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move, Math.Min(0, -kbSize.Height - TextViewDistanceFromBottom));
+			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move,
+				Math.Min(0, -kbHeight - TextViewDistanceFromBottom));
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
 				ShouldIgnoreSafeAreaAdjustment = true;
-				var rect = ContainerView.Frame;
-				rect.X = rootViewOrigin.X;
-				rect.Y = rootViewOrigin.Y;
+				AnimateContainerView(rootViewOrigin);
 
-				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
-
-				// this is the scenario where there is a scrollview, but the whole scrollview is below
-				// where the keyboard will be. We need to scroll the ContainerView and add ContentInsets to the scrollview.
 				if (LastScrollView is not null)
 				{
 					ApplyContentInset(LastScrollView, LastScrollView, false, false);
 				}
 			}
 		}
-
 		else
 		{
+			// Since we now only get negative moves when truly needed (cursor not visible on screen),
+			// apply the move directly
 			rootViewOrigin.Y -= move;
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
-				var rect = ContainerView.Frame;
-				rect.X = rootViewOrigin.X;
-				rect.Y = rootViewOrigin.Y;
-
-				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+				AnimateContainerView(rootViewOrigin);
 			}
 		}
+	}
+
+	static void AnimateContainerView(CGPoint rootViewOrigin)
+	{
+		var rect = ContainerView!.Frame;
+		rect.X = rootViewOrigin.X;
+		rect.Y = rootViewOrigin.Y;
+
+		UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut,
+			() => AnimateRootView(rect), () => { });
 	}
 
 	static void AnimateInset(UIScrollView? scrollView, UIEdgeInsets movedInsets, nfloat bottomScrollIndicatorInset)
@@ -883,11 +969,16 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		var window = ContainerView.Window;
-		ArgumentNullException.ThrowIfNull(window);
+		if (window is null)
+		{
+			return 0;
+		}
+
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
+		var result = window.Frame.Height - kbSize.Height;
 
-		return window.Frame.Height - kbSize.Height;
+		return result;
 	}
 
 	// In the case we have PrefersLargeTitles set to true, the UINavigationBar
