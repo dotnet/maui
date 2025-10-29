@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -16,21 +10,15 @@ public partial class Maui17354 : ContentPage
 
 	public Maui17354() => InitializeComponent();
 
-	public Maui17354(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
+		public void VSMandAppTheme([Values] XamlInflator inflator)
 		{
-			var page = new Maui17354(useCompiledXaml);
+			var page = new Maui17354(inflator);
 			var grid = page.grid;
 
 			Assert.That(grid.BackgroundColor, Is.EqualTo(Colors.Transparent));

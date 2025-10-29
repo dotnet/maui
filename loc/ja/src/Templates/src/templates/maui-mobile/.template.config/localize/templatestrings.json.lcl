@@ -21,17 +21,17 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[iOS、Android、Mac Catalyst、WinUI 、Tizen 用の .NET MAUI アプリケーションを作成するためのプロジェクト]]></Val>
+            <Val><![CDATA[iOS、Android、Mac Catalyst、WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen, and WinUI]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -65,7 +65,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run 'dotnet restore']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA['dotnet restore' を実行します]]></Val>
+            <Val><![CDATA['dotnet restore' を実行する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プロジェクトのターゲット フレームワークです。]]></Val>
+            <Val><![CDATA[プロジェクトのターゲット フレームワーク。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -101,7 +101,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Include sample content]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_サンプル コンテンツを含める]]></Val>
+            <Val><![CDATA[サンプル コンテンツを含める(_I)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -110,7 +110,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Overrides the $(ApplicationId) in the project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プロジェクト内の $(ApplicationId) をオーバーライドします]]></Val>
+            <Val><![CDATA[プロジェクト内の $(ApplicationId) をオーバーライドする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=4321");
 			Assert.Equal("4321", page.SomeQueryParameter);
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}");
-			Assert.Null(page.SomeQueryParameter);
+			Assert.Empty(page.SomeQueryParameter);
 		}
 
 		[Fact]

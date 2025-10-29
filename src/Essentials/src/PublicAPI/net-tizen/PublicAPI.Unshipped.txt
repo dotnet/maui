@@ -1,1 +1,15 @@
 #nullable enable
+Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
+Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
+Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
+*REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Devices.HapticFeedback.IsSupported.get -> bool
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
+static Microsoft.Maui.Devices.Vibration.IsSupported.get -> bool
+*REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!

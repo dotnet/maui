@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_layoutPropertyChanged ??= LayoutPropertyChanged;
 				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
 			}
-			else if (_layoutPropertyChangedProxy is not null)
+			else
 			{
-				_layoutPropertyChangedProxy.Unsubscribe();
+				_layoutPropertyChangedProxy?.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
 		}
@@ -47,11 +47,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.DisconnectHandler(platformView);
 
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChangedProxy = null;
-			}
+			_layoutPropertyChangedProxy?.Unsubscribe();
+			_layoutPropertyChangedProxy = null;
 		}
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)

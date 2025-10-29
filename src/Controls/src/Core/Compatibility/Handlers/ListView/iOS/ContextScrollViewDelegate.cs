@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void LayoutSubviews()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var width = Frame.Width;
+#pragma warning restore CS0618 // Type or member is obsolete
 			nfloat takenSpace = 0;
 
 			for (var i = 0; i < Subviews.Length; i++)

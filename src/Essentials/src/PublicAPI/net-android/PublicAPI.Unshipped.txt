@@ -1,1 +1,31 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
+Microsoft.Maui.Media.IMediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
+Microsoft.Maui.Media.IMediaPicker.PickVideosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
+Microsoft.Maui.Media.MediaPickerOptions.CompressionQuality.get -> int
+Microsoft.Maui.Media.MediaPickerOptions.CompressionQuality.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.MaximumHeight.get -> int?
+Microsoft.Maui.Media.MediaPickerOptions.MaximumHeight.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.MaximumWidth.get -> int?
+Microsoft.Maui.Media.MediaPickerOptions.MaximumWidth.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.PreserveMetaData.get -> bool
+Microsoft.Maui.Media.MediaPickerOptions.PreserveMetaData.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.RotateImage.get -> bool
+Microsoft.Maui.Media.MediaPickerOptions.RotateImage.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.SelectionLimit.get -> int
+Microsoft.Maui.Media.MediaPickerOptions.SelectionLimit.set -> void
+Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
+Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
+*REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Devices.HapticFeedback.IsSupported.get -> bool
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
+static Microsoft.Maui.Devices.Vibration.IsSupported.get -> bool
+static Microsoft.Maui.Media.MediaPicker.PickPhotosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
+static Microsoft.Maui.Media.MediaPicker.PickVideosAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.List<Microsoft.Maui.Storage.FileResult!>!>!
+*REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!

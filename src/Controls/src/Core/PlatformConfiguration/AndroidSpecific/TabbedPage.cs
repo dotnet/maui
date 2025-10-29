@@ -108,6 +108,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 
 		/// <summary>Bindable property for <see cref="OffscreenPageLimit"/>.</summary>
+		[System.Obsolete("OffscreenPageLimitProperty is obsolete. This property will be removed in a future version.")]
 		public static readonly BindableProperty OffscreenPageLimitProperty =
 			BindableProperty.Create("OffscreenPageLimit", typeof(int),
 			typeof(TabbedPage), 3, validateValue: (binding, value) => (int)value >= 0);
@@ -115,12 +116,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <summary>Returns the number of offscreen pages are cached in memory.</summary>
 		/// <param name="element">The platform specific element on which to perform the operation.</param>
 		/// <returns>The number of offscreen pages are cached in memory.</returns>
+		[System.Obsolete("GetOffscreenPageLimit is obsolete. This method will be removed in a future version.")]
 		public static int GetOffscreenPageLimit(BindableObject element)
 		{
 			return (int)element.GetValue(OffscreenPageLimitProperty);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetOffscreenPageLimit'][1]/Docs/*" />
+		[System.Obsolete("SetOffscreenPageLimit is obsolete. This method will be removed in a future version.")]
 		public static void SetOffscreenPageLimit(BindableObject element, int value)
 		{
 			element.SetValue(OffscreenPageLimitProperty, value);
@@ -129,12 +132,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <summary>Returns the number of offscreen pages are cached in memory.</summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <returns>The number of offscreen pages are cached in memory.</returns>
+		[System.Obsolete("OffscreenPageLimit is obsolete. This method will be removed in a future version.")]
 		public static int OffscreenPageLimit(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetOffscreenPageLimit(config.Element);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetOffscreenPageLimit'][2]/Docs/*" />
+		[System.Obsolete("SetOffscreenPageLimit is obsolete. This method will be removed in a future version.")]
 		public static IPlatformElementConfiguration<Android, FormsElement> SetOffscreenPageLimit(this IPlatformElementConfiguration<Android, FormsElement> config, int value)
 		{
 			SetOffscreenPageLimit(config.Element, value);

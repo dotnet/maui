@@ -1,10 +1,12 @@
 #nullable disable
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
 	internal class RadioButtonGroupController
 	{
+		static readonly ConditionalWeakTable<RadioButton, RadioButtonGroupController> groupControllers = new();
 		readonly Element _layout;
 		string _groupName;
 		private object _selectedValue;
@@ -21,50 +23,26 @@ namespace Microsoft.Maui.Controls
 
 			_layout = (Element)layout;
 			_layout.ChildAdded += ChildAdded;
+			_layout.ChildRemoved += ChildRemoved;
 
 			if (!string.IsNullOrEmpty(_groupName))
 			{
 				UpdateGroupNames(_layout, _groupName);
 			}
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
-				RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupNameChanged>(this, RadioButton.GroupNameChangedMessage,
-				HandleRadioButtonGroupNameChanged);
-			MessagingCenter.Subscribe<RadioButton, RadioButtonValueChanged>(this, RadioButton.ValueChangedMessage,
-				HandleRadioButtonValueChanged);
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		bool MatchesScope(RadioButtonScopeMessage message)
+		internal static RadioButtonGroupController GetGroupController(RadioButton radioButton)
 		{
-			return RadioButtonGroup.GetVisualRoot(_layout) == message.Scope;
-		}
-
-		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
-		{
-			if (selected.GroupName != _groupName || !MatchesScope(args))
+			if (radioButton is not null && groupControllers.TryGetValue(radioButton, out var controller))
 			{
-				return;
+				return controller;
 			}
-
-			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, selected.Value);
+			return null;
 		}
 
-		void HandleRadioButtonGroupNameChanged(RadioButton radioButton, RadioButtonGroupNameChanged args)
+		internal void HandleRadioButtonGroupSelectionChanged(RadioButton radioButton)
 		{
-			if (args.OldName != _groupName || !MatchesScope(args))
-			{
-				return;
-			}
-
-			_layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
-		}
-
-		void HandleRadioButtonValueChanged(RadioButton radioButton, RadioButtonValueChanged args)
-		{
-			if (radioButton.GroupName != _groupName || !MatchesScope(args))
+			if (radioButton.GroupName != _groupName)
 			{
 				return;
 			}
@@ -87,12 +65,56 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var element in e.Element.Descendants())
 				{
-					if (element is RadioButton radioButton1)
+					if (element is RadioButton childRadioButton)
 					{
-						AddRadioButton(radioButton1);
+						AddRadioButton(childRadioButton);
 					}
 				}
 			}
+		}
+
+		void ChildRemoved(object sender, ElementEventArgs e)
+		{
+			if (e.Element is RadioButton radioButton)
+			{
+				if (groupControllers.TryGetValue(radioButton, out _))
+				{
+					groupControllers.Remove(radioButton);
+				}
+			}
+			else
+			{
+				foreach (var element in e.Element.Descendants())
+				{
+					if (element is RadioButton radioButton1)
+					{
+						if (groupControllers.TryGetValue(radioButton1, out _))
+						{
+							groupControllers.Remove(radioButton1);
+						}
+					}
+				}
+			}
+		}
+
+		internal void HandleRadioButtonValueChanged(RadioButton radioButton)
+		{
+			if (radioButton?.GroupName != _groupName)
+			{
+				return;
+			}
+
+			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
+		}
+
+		internal void HandleRadioButtonGroupNameChanged(string oldGroupName)
+		{
+			if (oldGroupName != _groupName)
+			{
+				return;
+			}
+
+			_layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
 		}
 
 		void AddRadioButton(RadioButton radioButton)
@@ -123,6 +145,11 @@ namespace Microsoft.Maui.Controls
 			{
 				radioButton.GroupName = name;
 			}
+
+			if (!groupControllers.TryGetValue(radioButton, out _))
+			{
+				groupControllers.Add(radioButton, this);
+			}
 		}
 
 		void UpdateGroupNames(Element element, string name, string oldName = null)
@@ -142,11 +169,27 @@ namespace Microsoft.Maui.Controls
 
 			_selectedValue = radioButtonValue;
 
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
-				new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
-#pragma warning restore CS0618 // Type or member is obsolete
-
+			foreach (var child in _layout.Descendants())
+			{
+				if (child is RadioButton radioButton && radioButton.GroupName == _groupName)
+				{
+					if (radioButtonValue is not null)
+					{
+						if (radioButton.Value is not null && radioButton.Value.Equals(radioButtonValue))
+						{
+							radioButton.SetValue(RadioButton.IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+						}
+					}
+					else
+					{
+						// Setting null - uncheck the selected radio button in the group
+						if (radioButton.IsChecked)
+						{
+							radioButton.SetValue(RadioButton.IsCheckedProperty, false, specificity: SetterSpecificity.FromHandler);
+						}
+					}
+				}
+			}
 		}
 
 		void SetGroupName(string groupName)

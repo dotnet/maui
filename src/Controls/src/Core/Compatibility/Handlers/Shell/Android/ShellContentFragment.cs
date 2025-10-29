@@ -6,6 +6,7 @@ using Android.Views;
 using Android.Views.Animations;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using AndroidAnimation = Android.Views.Animations.Animation;
@@ -142,6 +143,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
+
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_root, this.Context);
+
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 

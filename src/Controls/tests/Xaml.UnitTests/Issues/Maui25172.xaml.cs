@@ -8,17 +8,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui25172 : CoreContentPage<VM25172>
 {
-	public Maui25172()
-	{
-		InitializeComponent();
-	}
+	public Maui25172() => InitializeComponent();
 
-	public Maui25172(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -35,14 +26,9 @@ public partial class Maui25172 : CoreContentPage<VM25172>
 		}
 
 		[Test]
-		public void CompilationWithGenericBaseClassSucceeds([Values(true, false)] bool useCompiledXaml)
+		public void CompilationWithGenericBaseClassSucceeds([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-			{
-				MockCompiler.Compile(typeof(Maui25172));
-			}
-
-			var page = new Maui25172(useCompiledXaml);
+			var page = new Maui25172(inflator);
 			Assert.IsTrue(typeof(CoreContentPage<VM25172>).IsAssignableFrom(page.GetType()));
 		}
 	}

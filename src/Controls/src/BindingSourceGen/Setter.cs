@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
+
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
 {
 	public static Setter From(
 		IEnumerable<IPathPart> path,
-		uint bindingId,
 		string sourceVariableName = "source",
 		string assignedValueExpression = "value")
 	{
@@ -40,23 +40,30 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 					AddPatternMatchingExpression("{}");
 				}
 
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart, bindingId);
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
+			}
+			else if (part is MemberAccess { IsValueType: true } && part != path.Last())
+			{
+				// It is necessary to create a variable for value types in order to set their properties.
+				// We can simply reuse the pattern matching mechanism to declare the variable.
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, shouldUseUnsafePropertySetter: false);
+				AddPatternMatchingExpression("{}");
 			}
 			else
 			{
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, bindingId, part == path.Last());
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, part == path.Last());
 			}
 		}
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, bindingId, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
 	}
 
-	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, uint bindingId, string assignedValueExpression = "value") =>
+	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
 		lastPart switch
 		{
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{CreateUnsafePropertyAccessorSetMethodName(bindingId, inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
+			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{CreateUnsafePropertyAccessorSetMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
 			_ => $"{accessAccumulator} = {assignedValueExpression};",
 		};
 }

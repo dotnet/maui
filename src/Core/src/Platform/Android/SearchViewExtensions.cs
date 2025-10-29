@@ -1,12 +1,15 @@
 ﻿using System;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
+using Android.Views.InputMethods;
 using Android.Widget;
 using static Android.Content.Res.Resources;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
+using AAttribute = Android.Resource.Attribute;
 
 namespace Microsoft.Maui.Platform
 {
@@ -36,7 +39,7 @@ namespace Microsoft.Maui.Platform
 					editText.SetHintTextColor(c);
 				}
 			}
-			else if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorHint, out var color))
+			else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorHint, out var color))
 			{
 				editText.SetHintTextColor(color);
 
@@ -47,7 +50,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateTextColor(this SearchView searchView, ITextStyle entry)
 		{
-			if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorPrimary, out var color) &&
+			if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color) &&
 				searchView.GetFirstChildOfType<EditText>() is EditText editText)
 			{
 				if (entry.TextColor is null)
@@ -131,8 +134,29 @@ namespace Microsoft.Maui.Platform
 				{
 					if (searchBar.CancelButtonColor is not null)
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else if (TryGetDefaultStateColor(searchView, Android.Resource.Attribute.TextColorPrimary, out var color))
+					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
 						drawable.SetColorFilter(color, FilterMode.SrcIn);
+				}
+			}
+		}
+
+		internal static void UpdateSearchIconColor(this SearchView searchView, ISearchBar searchBar)
+		{
+			if (searchView.Resources is null)
+				return;
+
+			var searchIconIdentifier = Resource.Id.search_mag_icon;
+
+			if (searchIconIdentifier > 0)
+			{
+				var image = searchView.FindViewById<ImageView>(searchIconIdentifier);
+
+				if (image?.Drawable is not null)
+				{
+					if (searchBar.SearchIconColor is not null)
+						image.Drawable.SetColorFilter(searchBar.SearchIconColor, FilterMode.SrcIn);
+					else
+						image.Drawable.ClearColorFilter();
 				}
 			}
 		}
@@ -181,6 +205,12 @@ namespace Microsoft.Maui.Platform
 			searchView.SetInputType(searchBar);
 		}
 
+		public static void UpdateReturnType(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.SetInputType(searchBar);
+			searchView.ImeOptions = (int)searchBar.ReturnType.ToPlatform();
+		}
+
 		internal static void SetInputType(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
@@ -201,8 +231,8 @@ namespace Microsoft.Maui.Platform
 			if (searchView.Context?.Theme is not Theme theme)
 				return false;
 
-			int[] s_disabledState = [-Android.Resource.Attribute.StateEnabled];
-			int[] s_enabledState = [Android.Resource.Attribute.StateEnabled];
+			int[] s_disabledState = [-AAttribute.StateEnabled];
+			int[] s_enabledState = [AAttribute.StateEnabled];
 
 			using var ta = theme.ObtainStyledAttributes([attribute]);
 			var cs = ta.GetColorStateList(0);

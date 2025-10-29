@@ -6,13 +6,13 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 9.0.100
-- name: XCODE
-  value: 16.4
+  value: 10.0.100-preview.2.25164.34
 - name: REQUIRED_XCODE
-  value: 16.4.0
+  value: 26.0.1
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 16.4.0
+  value: 26.0.1
+- name: XCODE
+  value: 26.0
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Localization variables

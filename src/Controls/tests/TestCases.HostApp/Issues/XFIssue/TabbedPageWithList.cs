@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
+
 public class TabbedPageWithListName
 {
 	public string Name { get; set; }

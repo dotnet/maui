@@ -75,7 +75,7 @@ public class MainViewController : UIViewController
 		if (_mauiView?.DotNetBot is not Image bot)
 			return;
 
-		await bot.RotateTo(360, 1000);
+		await bot.RotateToAsync(360, 1000);
 		bot.Rotation = 0;
 
 		bot.HeightRequest = 90;

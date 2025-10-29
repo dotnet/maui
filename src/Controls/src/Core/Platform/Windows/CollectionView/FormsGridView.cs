@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			_formsEmptyView?.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
+			_formsEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 
 			return base.ArrangeOverride(finalSize);
 		}

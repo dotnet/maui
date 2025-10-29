@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
+		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary? launchOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var pair in state)
 				{
-					userInfo.SetValueForKey(new NSString(pair.Value), new NSString(pair.Key));
+					userInfo.SetValueForKey(new NSString(pair.Value ?? string.Empty), new NSString(pair.Key));
 				}
 			}
 

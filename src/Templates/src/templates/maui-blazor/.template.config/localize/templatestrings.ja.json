@@ -1,10 +1,10 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid アプリ",
-  "description": "Blazor ハイブリッドを使用して iOS、Android、Mac Catalyst、WinUI 、Tizen 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
+  "description": "Blazor Hybrid を使用して、iOS、Android、Mac Catalyst、WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
   "postActions/openInEditor/description": "エディターで Components/Pages/Home.razor を開きます。",
-  "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします",
-  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドする",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "ターゲット DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "サンプル ページを含める(_I)",
   "symbols/IncludeSampleContent/description": "基本的な使用パターンを示すサンプル ページとスタイルを追加するかどうかを構成します。",

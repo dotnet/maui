@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
+  <!--  
     Microsoft ResX Schema 
     
     Version 2.0
@@ -119,8 +119,82 @@
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
     <value>An error occured while parsing Xaml: {0}.</value>
+    <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
     <value>XAML parsing failed</value>
+  </data>
+  <data name="ExpressionNotClosed" xml:space="preserve">
+    <value>Expression must end with '}'.</value>
+  </data>
+  <data name="RectConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Rect, expected format is "x, y, w, h"</value>
+  </data>
+  <data name="ConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into "{1}".</value>
+  </data>
+  <data name="PointConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Point, expected format is "x, y".</value>
+  </data>
+  <data name="ThicknessConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l".</value>
+  </data>
+  <data name="CornerRadiusConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l".</value>
+  </data>
+  <data name="SymbolResolution" xml:space="preserve">
+    <value>Symbol resolution failed</value>
+  </data>
+  <data name="TypeResolutionMessage" xml:space="preserve">
+    <value>Cannot resolve type "{0}".</value>
+    <comment>{0} is a xmlnamespace and typename</comment>
+  </data>
+  <data name="DuplicateTypeError" xml:space="preserve">
+    <value>Multiple Types found for "{0}".</value>
+  </data>
+  <data name="MemberResolution" xml:space="preserve">
+    <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
+    <comment>{0} is a property name</comment>
+  </data>
+  <data name="EasingConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
+  </data>
+  <data name="FlexBasisConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
+  </data>
+  <data name="FlowDirectionConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
+  </data>
+  <data name="GridLengthConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into GridLength, expected values are "*", "n*", "Auto" or "n" where n is a numeric value.</value>
+  </data>
+  <data name="ListStringConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
+  </data>
+  <data name="StrokeShapeConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Shape (or descendant).</value>
+  </data>
+  <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into ColumnDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+  </data>
+  <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into RowDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
+  </data>
+  <data name="LayoutOptionsConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
+  </data>
+  <data name="MethodResolution" xml:space="preserve">
+    <value>No method found for '{0}'.</value>
+    <comment>0 is a method or ctor name</comment>
+  </data>
+  <data name="DuplicateKeyInRD" xml:space="preserve">
+    <value>duplicate key in resource dictionary</value>
+    <comment>
+</comment>
+  </data>
+  <data name="ConversionFailedTitle" xml:space="preserve">
+    <value>Conversion Failed</value>
+    <comment>
+</comment>
   </data>
 </root>

@@ -43,6 +43,6 @@ public class Bugzilla40092 : TestContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		await DisplayAlert("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
+		await DisplayAlertAsync("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
 	}
 }

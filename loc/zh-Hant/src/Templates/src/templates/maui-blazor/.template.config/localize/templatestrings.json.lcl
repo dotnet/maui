@@ -21,12 +21,12 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI using Blazor Hybrid]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[此專案可用於建立適用於 iOS、Android、Mac Catalyst、WinUI 和使用 Blazor 混合式的 Tizen 的 .NET MAUI 應用程式]]></Val>
+            <Val><![CDATA[此專案可用於建立適用於 iOS、Android、Mac Catalyst 和使用 Blazor Hybrid 的 WinUI 的 .NET MAUI 應用程式]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[專案的目標 Framework。]]></Val>
+            <Val><![CDATA[專案的目標架構。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

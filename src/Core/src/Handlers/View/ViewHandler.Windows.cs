@@ -190,6 +190,20 @@ public partial class ViewHandler
 		}
 	}
 
+	internal virtual bool PreventGestureBubbling
+		=> this switch
+		{
+			ButtonHandler => true,
+			DatePickerHandler => true,
+			StepperHandler => true,
+			SliderHandler => true,
+			SwitchHandler => true,
+			TimePickerHandler => true,
+			ImageButtonHandler => true,
+			RadioButtonHandler => true,
+			_ => false,
+		};
+
 	static void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
 	{
 		if (e.NewFocusedElement is PlatformView platformView && FocusManagerMapping.TryGetValue(platformView, out ViewHandler? handler))

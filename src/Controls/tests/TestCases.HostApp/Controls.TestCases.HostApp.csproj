@@ -5,6 +5,7 @@
     <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
+    <MauiTestProject>true</MauiTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
@@ -15,14 +16,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationTitle>Controls TestCases</ApplicationTitle>
+    <ApplicationTitle>Controls.TestCases.HostApp</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.uitests</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
     <!-- TODO: remove these obsolete nowarns and fix it in code -->
-    <NoWarn>$(NoWarn);CS0618;CS0672</NoWarn>
+    <NoWarn>$(NoWarn);CS0618;CS0672;XC0618;XC0022;XC0023;IL2026;IL2091;IL2067;IL2072;IL2087;IL3050</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">

@@ -10,18 +10,8 @@ public partial class Maui24384 : ContentPage
 {
 	public static System.Collections.Immutable.ImmutableArray<string> StaticLetters => ["A", "B", "C"];
 
-	public Maui24384()
-	{
-		InitializeComponent();
-	}
+	public Maui24384() => InitializeComponent();
 
-
-	public Maui24384(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -34,12 +24,9 @@ public partial class Maui24384 : ContentPage
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void ImmutableToIList([Values] bool useCompiledXaml)
+		public void ImmutableToIList([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(Maui24384));
-			// Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui24384)));
-			var page = new Maui24384(useCompiledXaml);
+			var page = new Maui24384(inflator);
 			var picker = page.Content as Picker;
 			Assert.That(picker.ItemsSource, Is.EquivalentTo(Maui24384.StaticLetters));
 		}

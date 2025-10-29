@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.Pages
 							var navPage = (NavigationPage)Parent;
 							navPage.On<iOS>().SetPrefersLargeTitles(true);
 							var page = new ContentPage { Title = "New Title", BackgroundColor = Colors.Red };
-							page.On<iOS>().SetUseSafeArea(true);
+							page.SafeAreaEdges = Microsoft.Maui.SafeAreaEdges.All;
 							var listView = new ListView(ListViewCachingStrategy.RecycleElementAndDataTemplate)
 							{
 								HasUnevenRows = true,

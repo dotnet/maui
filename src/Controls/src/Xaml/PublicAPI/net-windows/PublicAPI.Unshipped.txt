@@ -1,1 +1,200 @@
 #nullable enable
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.get -> Microsoft.Maui.Graphics.Color
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.get -> string
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.get -> string
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
+*REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
+*REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
+Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
+Microsoft.Maui.Controls.Hosting.AppHostBuilderExtensions
+Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension
+Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.AppThemeBindingExtension() -> void
+Microsoft.Maui.Controls.Xaml.ArrayExtension
+Microsoft.Maui.Controls.Xaml.ArrayExtension.ArrayExtension() -> void
+Microsoft.Maui.Controls.Xaml.BindingExtension
+Microsoft.Maui.Controls.Xaml.BindingExtension.BindingExtension() -> void
+Microsoft.Maui.Controls.Xaml.BindingExtension.Mode.get -> Microsoft.Maui.Controls.BindingMode
+Microsoft.Maui.Controls.Xaml.BindingExtension.Mode.set -> void
+Microsoft.Maui.Controls.Xaml.DataTemplateExtension
+Microsoft.Maui.Controls.Xaml.DataTemplateExtension.DataTemplateExtension() -> void
+Microsoft.Maui.Controls.Xaml.DynamicResourceExtension
+Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.DynamicResourceExtension() -> void
+Microsoft.Maui.Controls.Xaml.Extensions
+Microsoft.Maui.Controls.Xaml.FontImageExtension
+Microsoft.Maui.Controls.Xaml.FontImageExtension.FontImageExtension() -> void
+Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider
+Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
+Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
+Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider
+Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver
+Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider
+Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver
+Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver.XmlNamespaceResolver() -> void
+Microsoft.Maui.Controls.Xaml.NullExtension
+Microsoft.Maui.Controls.Xaml.NullExtension.NullExtension() -> void
+Microsoft.Maui.Controls.Xaml.OnIdiomExtension
+Microsoft.Maui.Controls.Xaml.OnIdiomExtension.OnIdiomExtension() -> void
+Microsoft.Maui.Controls.Xaml.OnPlatformExtension
+Microsoft.Maui.Controls.Xaml.OnPlatformExtension.OnPlatformExtension() -> void
+Microsoft.Maui.Controls.Xaml.ReferenceExtension
+Microsoft.Maui.Controls.Xaml.ReferenceExtension.ReferenceExtension() -> void
+Microsoft.Maui.Controls.Xaml.RelativeSourceExtension
+Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.AncestorLevel.get -> int
+Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.AncestorLevel.set -> void
+Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.Mode.get -> Microsoft.Maui.Controls.RelativeBindingSourceMode
+Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.Mode.set -> void
+Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.RelativeSourceExtension() -> void
+Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
+Microsoft.Maui.Controls.Xaml.StaticExtension
+Microsoft.Maui.Controls.Xaml.StaticExtension.StaticExtension() -> void
+Microsoft.Maui.Controls.Xaml.StaticResourceExtension
+Microsoft.Maui.Controls.Xaml.StaticResourceExtension.StaticResourceExtension() -> void
+Microsoft.Maui.Controls.Xaml.StyleSheetExtension
+Microsoft.Maui.Controls.Xaml.StyleSheetExtension.StyleSheetExtension() -> void
+Microsoft.Maui.Controls.Xaml.TemplateBindingExtension
+Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.Mode.get -> Microsoft.Maui.Controls.BindingMode
+Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.Mode.set -> void
+Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TemplateBindingExtension() -> void
+Microsoft.Maui.Controls.Xaml.TypeExtension
+Microsoft.Maui.Controls.Xaml.TypeExtension.TypeExtension() -> void
+Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute
+Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationAttribute(Microsoft.Maui.Controls.Xaml.XamlCompilationOptions xamlCompilationOptions) -> void
+Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationOptions.get -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationOptions.set -> void
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile = 2 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip = 1 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlFilePathAttribute
+Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Dark.get -> object
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Dark.set -> void
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Default.get -> object
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Default.set -> void
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Light.get -> object
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Light.set -> void
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Value.get -> object
+~Microsoft.Maui.Controls.Xaml.ArrayExtension.Items.get -> System.Collections.IList
+~Microsoft.Maui.Controls.Xaml.ArrayExtension.ProvideValue(System.IServiceProvider serviceProvider) -> System.Array
+~Microsoft.Maui.Controls.Xaml.ArrayExtension.Type.get -> System.Type
+~Microsoft.Maui.Controls.Xaml.ArrayExtension.Type.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.Converter.get -> Microsoft.Maui.Controls.IValueConverter
+~Microsoft.Maui.Controls.Xaml.BindingExtension.Converter.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterParameter.get -> object
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterParameter.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.FallbackValue.get -> object
+~Microsoft.Maui.Controls.Xaml.BindingExtension.FallbackValue.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.Path.get -> string
+~Microsoft.Maui.Controls.Xaml.BindingExtension.Path.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.Source.get -> object
+~Microsoft.Maui.Controls.Xaml.BindingExtension.Source.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.StringFormat.get -> string
+~Microsoft.Maui.Controls.Xaml.BindingExtension.StringFormat.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.TargetNullValue.get -> object
+~Microsoft.Maui.Controls.Xaml.BindingExtension.TargetNullValue.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
+~Microsoft.Maui.Controls.Xaml.BindingExtension.TypedBinding.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.UpdateSourceEventName.get -> string
+~Microsoft.Maui.Controls.Xaml.BindingExtension.UpdateSourceEventName.set -> void
+~Microsoft.Maui.Controls.Xaml.DataTemplateExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.DataTemplate
+~Microsoft.Maui.Controls.Xaml.DataTemplateExtension.TypeName.get -> string
+~Microsoft.Maui.Controls.Xaml.DataTemplateExtension.TypeName.set -> void
+~Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.Key.get -> string
+~Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.Key.set -> void
+~Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.FindByName(string name) -> object
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.RootObject.get -> object
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope scope) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, bool notused) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, object rootObject) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(string dataType) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.Add(System.Type type, object service) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.GetService(System.Type serviceType) -> object
+~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(object rootObject) -> void
+Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider() -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver.XamlTypeResolver(System.Xml.IXmlNamespaceResolver namespaceResolver, System.Reflection.Assembly currentAssembly) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider.XmlLineInfo.get -> System.Xml.IXmlLineInfo
+~Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider.XmlLineInfoProvider(System.Xml.IXmlLineInfo xmlLineInfo) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver.Add(string prefix, string ns) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver.GetNamespacesInScope(System.Xml.XmlNamespaceScope scope) -> System.Collections.Generic.IDictionary<string, string>
+~Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver.LookupNamespace(string prefix) -> string
+~Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver.LookupPrefix(string namespaceName) -> string
+~Microsoft.Maui.Controls.Xaml.NullExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Converter.get -> Microsoft.Maui.Controls.IValueConverter
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Converter.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.ConverterParameter.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.ConverterParameter.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Default.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Default.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Desktop.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Desktop.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Phone.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Phone.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Tablet.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Tablet.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.TV.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.TV.set -> void
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Watch.get -> object
+~Microsoft.Maui.Controls.Xaml.OnIdiomExtension.Watch.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Android.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Android.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Converter.get -> Microsoft.Maui.Controls.IValueConverter
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Converter.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.ConverterParameter.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.ConverterParameter.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Default.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Default.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.iOS.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.iOS.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.MacCatalyst.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.MacCatalyst.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Tizen.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Tizen.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.UWP.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.UWP.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WinUI.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WinUI.set -> void
+~Microsoft.Maui.Controls.Xaml.ReferenceExtension.Name.get -> string
+~Microsoft.Maui.Controls.Xaml.ReferenceExtension.Name.set -> void
+~Microsoft.Maui.Controls.Xaml.ReferenceExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.AncestorType.get -> System.Type
+~Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.AncestorType.set -> void
+~Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.StaticExtension.Member.get -> string
+~Microsoft.Maui.Controls.Xaml.StaticExtension.Member.set -> void
+~Microsoft.Maui.Controls.Xaml.StaticExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.StaticResourceExtension.Key.get -> string
+~Microsoft.Maui.Controls.Xaml.StaticResourceExtension.Key.set -> void
+~Microsoft.Maui.Controls.Xaml.StaticResourceExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
+~Microsoft.Maui.Controls.Xaml.StyleSheetExtension.Source.get -> System.Uri
+~Microsoft.Maui.Controls.Xaml.StyleSheetExtension.Source.set -> void
+~Microsoft.Maui.Controls.Xaml.StyleSheetExtension.Style.get -> string
+~Microsoft.Maui.Controls.Xaml.StyleSheetExtension.Style.set -> void
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.Converter.get -> Microsoft.Maui.Controls.IValueConverter
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.Converter.set -> void
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.ConverterParameter.get -> object
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.ConverterParameter.set -> void
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.Path.get -> string
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.Path.set -> void
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.StringFormat.get -> string
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.StringFormat.set -> void
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void
+~Microsoft.Maui.Controls.Xaml.TypeExtension.ProvideValue(System.IServiceProvider serviceProvider) -> System.Type
+~Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName.get -> string
+~Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName.set -> void
+~Microsoft.Maui.Controls.Xaml.XamlFilePathAttribute.FilePath.get -> string
+~Microsoft.Maui.Controls.Xaml.XamlFilePathAttribute.XamlFilePathAttribute(string filePath = "") -> void
+~static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.UseMauiEmbeddedApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder) -> Microsoft.Maui.Hosting.MauiAppBuilder
+~static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.UseMauiEmbeddedApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder, System.Func<System.IServiceProvider, TApp> implementationFactory) -> Microsoft.Maui.Hosting.MauiAppBuilder
+~static Microsoft.Maui.Controls.Hosting.AppHostBuilderExtensions.AddMauiControlsHandlers(this Microsoft.Maui.Hosting.IMauiHandlersCollection handlersCollection) -> Microsoft.Maui.Hosting.IMauiHandlersCollection
+~static Microsoft.Maui.Controls.Hosting.AppHostBuilderExtensions.UseMauiApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder) -> Microsoft.Maui.Hosting.MauiAppBuilder
+~static Microsoft.Maui.Controls.Hosting.AppHostBuilderExtensions.UseMauiApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder, System.Func<System.IServiceProvider, TApp> implementationFactory) -> Microsoft.Maui.Hosting.MauiAppBuilder
+~static Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml<TXaml>(this TXaml view, string xaml) -> TXaml
+~static Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml<TXaml>(this TXaml view, System.Type callingType) -> TXaml
+~static Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers.LoadFromSource(Microsoft.Maui.Controls.ResourceDictionary rd, System.Uri source, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void

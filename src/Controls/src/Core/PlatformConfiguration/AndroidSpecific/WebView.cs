@@ -116,5 +116,62 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			SetDisplayZoomControls(config.Element, value);
 			return config;
 		}
+
+		/// <summary>
+		/// Bindable property for controlling whether JavaScript is enabled in a Element.
+		/// </summary>
+		public static readonly BindableProperty JavaScriptEnabledProperty = BindableProperty.Create("JavaScriptEnabled", typeof(bool), typeof(FormsElement), true);
+
+		/// <summary>
+		/// Gets the value of the JavaScriptEnabled property for the specified WebView.
+		/// </summary>
+		/// <param name="element">The WebView from which to read the property value.</param>
+		/// <returns>A boolean value indicating whether JavaScript is enabled.</returns>
+		public static bool GetJavaScriptEnabled(FormsElement element)
+		{
+			return (bool)element.GetValue(JavaScriptEnabledProperty);
+		}
+
+		/// <summary>
+		/// Sets the value of the JavaScriptEnabled property for the specified WebView.
+		/// </summary>
+		/// <param name="element">The WebView on which to set the property value.</param>
+		/// <param name="value">The boolean value indicating whether JavaScript should be enabled.</param>
+		public static void SetJavaScriptEnabled(FormsElement element, bool value)
+		{
+			element.SetValue(JavaScriptEnabledProperty, value);
+		}
+
+		/// <summary>
+		/// Sets whether JavaScript is enabled for the specified Android platform configuration.
+		/// </summary>
+		/// <param name="config">The platform configuration to which this method applies.</param>
+		/// <param name="value">The boolean value indicating whether JavaScript should be enabled.</param>
+		public static void JavaScriptEnabled(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			SetJavaScriptEnabled(config.Element, value);
+		}
+
+		/// <summary>
+		/// Determines whether JavaScript is enabled for the specified Android platform configuration.
+		/// </summary>
+		/// <param name="config">The platform configuration to check.</param>
+		/// <returns>A boolean value indicating whether JavaScript is enabled.</returns>
+		public static bool IsJavaScriptEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetJavaScriptEnabled(config.Element);
+		}
+
+		/// <summary>
+		/// Sets whether JavaScript is enabled for the specified Android platform configuration and returns the configuration.
+		/// </summary>
+		/// <param name="config">The platform configuration to which this method applies.</param>
+		/// <param name="value">The boolean value indicating whether JavaScript should be enabled.</param>
+		/// <returns>The platform configuration to support fluent API.</returns>
+		public static IPlatformElementConfiguration<Android, FormsElement> SetJavaScriptEnabled(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			SetJavaScriptEnabled(config.Element, value);
+			return config;
+		}
 	}
 }

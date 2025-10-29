@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue19500 : _IssuesUITest
 {
 	public override string Issue => "[iOS] Editor is not be able to scroll if IsReadOnly is true";

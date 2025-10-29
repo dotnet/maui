@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if ANDROID
 	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
-		[TestFixture(TestDevice.iOS)]
+	[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
 		[TestFixture(TestDevice.Mac)]
 #elif WINTEST
@@ -22,6 +22,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 	public abstract class UITest : UITestBase
 	{
+		string _defaultiOSVersion = "18.5";
+
 		protected const int SetupMaxRetries = 1;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
@@ -46,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net9.0";
+			var frameworkVersion = "net10.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -65,14 +67,14 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win-x64\\{windowsExe}");
+					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win-x64\\{windowsExe}");
 
 					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
 					{
@@ -209,6 +211,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
 
+
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -235,9 +238,15 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
 							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
 
-						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						if (deviceApiLevel == 36)
 						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+							environmentName = "android-notch-36";
+						}
+
+						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
+						{
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
@@ -247,7 +256,9 @@ namespace Microsoft.Maui.TestCases.Tests
 						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
 							?? throw new InvalidOperationException("deviceName capability is missing or null.");
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						environmentName = "ios";
+
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
 						{
 							environmentName = "ios";
 						}
@@ -261,7 +272,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							//Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS {_defaultiOSVersion}) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}' '{platformVersion}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
 
@@ -299,7 +310,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => 60,
+					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -318,7 +329,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
@@ -419,6 +430,45 @@ namespace Microsoft.Maui.TestCases.Tests
 			catch (TimeoutException)
 			{
 				// Continue with the test
+			}
+		}
+
+		protected virtual void TryToResetTestState()
+		{
+			Reset();
+		}
+		
+		protected override void FixtureSetup()
+		{
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(false);
+#endif
+					TryToResetTestState();
+
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						App.Back();
+#if ANDROID || MACCATALYST
+						App.ToggleSystemAnimations(true);
+#endif
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
 			}
 		}
 

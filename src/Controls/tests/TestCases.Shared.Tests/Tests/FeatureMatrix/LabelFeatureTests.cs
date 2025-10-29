@@ -524,6 +524,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(FontSizeEntry, "24");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -573,6 +575,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(CharacterSpacingEntry, "3");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -713,6 +717,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(MaxLinesEntry, "1");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -730,6 +736,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(LineHeightEntry, "2");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
