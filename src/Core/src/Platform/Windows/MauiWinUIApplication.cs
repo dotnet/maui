@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using global::Windows.ApplicationModel.Activation;
 
 namespace Microsoft.Maui
 {
@@ -20,6 +21,17 @@ namespace Microsoft.Maui
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
+			var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent()?.GetActivatedEventArgs();
+			if (activatedEventArgs?.Kind == Windows.AppLifecycle.ExtendedActivationKind.Protocol)
+			{
+				IProtocolActivatedEventArgs? protocolArgs = activatedEventArgs?.Data as IProtocolActivatedEventArgs;
+				if (protocolArgs is not null && Security.Authentication.OAuth.OAuth2Manager.CompleteAuthRequest(protocolArgs.Uri))
+				{
+					System.Diagnostics.Process.GetCurrentProcess().Kill();
+					return; // We relaunched the application after compliting a OAuth sign-in, so close this instance
+				}
+			}
+
 			// Windows running on a different thread will "launch" the app again
 			if (_application != null && _services != null)
 			{
