@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls.Internals
 			IPropertyChangeHandler Clone();
 		}
 
-		private sealed class PropertyChangeHandler(
+		private struct PropertyChangeHandler(
 			TypedBindingBase binding,
 			int handlersCount,
 			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers) : IPropertyChangeHandler
@@ -564,14 +564,17 @@ namespace Microsoft.Maui.Controls.Internals
 
 			public void Unsubscribe()
 			{
-				foreach (var listener in _listeners ?? [])
+				if (_listeners is null)
+					return;
+
+				foreach (var listener in _listeners)
 				{
 					listener?.Unsubscribe();
 				}
 			}
 		}
 
-		private sealed class LegacyPropertyChangeHandler : IPropertyChangeHandler
+		private struct LegacyPropertyChangeHandler : IPropertyChangeHandler
 		{
 			private readonly TypedBindingBase _binding;
 			private readonly PropertyChangedProxy[]? _handlers;
