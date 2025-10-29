@@ -138,11 +138,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var table = RealParent as TableView;
 				if (table != null)
 					return table.HasUnevenRows && Height > 0 ? Height : table.RowHeight;
 
 				var list = RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (list != null)
 					return list.HasUnevenRows && Height > 0 ? Height : list.RowHeight;
 
@@ -166,11 +168,13 @@ namespace Microsoft.Maui.Controls
 			if (_nextCallToForceUpdateSizeQueued)
 				return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if ((Parent as ListView)?.HasUnevenRows == true || (Parent as TableView)?.HasUnevenRows == true)
 			{
 				_nextCallToForceUpdateSizeQueued = true;
 				OnForceUpdateSizeRequested();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public event EventHandler Tapped;
@@ -231,7 +235,9 @@ namespace Microsoft.Maui.Controls
 		{
 			OnAppearing();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var container = RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			container?.SendCellAppearing(this);
 		}
 
@@ -242,7 +248,9 @@ namespace Microsoft.Maui.Controls
 		{
 			OnDisappearing();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var container = RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			container?.SendCellDisappearing(this);
 		}
 
@@ -309,7 +317,7 @@ namespace Microsoft.Maui.Controls
 		// This is used by ListView to pass data to the GetCell call
 		// Ideally we can pass these as arguments to ToHandler
 		// But we'll do that in a different smaller more targeted PR
-		internal Android.Views.View ConvertView { get; set; }
+		internal global::Android.Views.View ConvertView { get; set; }
 #elif IOS
 		internal UIKit.UITableViewCell ReusableCell { get; set; }
 

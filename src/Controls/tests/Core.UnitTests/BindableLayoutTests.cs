@@ -730,7 +730,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			if (itemsSource == null)
 			{
-				return layout.Children.Count() == 0;
+				return layout.InternalChildren.Count() == 0;
 			}
 
 			int i = 0;
@@ -739,14 +739,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (BindableLayout.GetItemTemplate(layout) is DataTemplate dataTemplate ||
 					BindableLayout.GetItemTemplateSelector(layout) is DataTemplateSelector dataTemplateSelector)
 				{
-					if (!Equals(item, layout.Children[i].BindingContext))
+					if (!Equals(item, layout.InternalChildren[i].BindingContext))
 					{
 						return false;
 					}
 				}
 				else
 				{
-					if (!Equals(item?.ToString(), ((Label)layout.Children[i]).Text))
+					if (!Equals(item?.ToString(), ((Label)layout.InternalChildren[i]).Text))
 					{
 						return false;
 					}
@@ -755,7 +755,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				++i;
 			}
 
-			return layout.Children.Count == i;
+			return layout.InternalChildren.Count == i;
 		}
 
 		class DataTemplateBoxView : DataTemplate

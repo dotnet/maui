@@ -12,19 +12,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz30074(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void DataTriggerInTemplates(bool useCompiledXaml)
+			[Test]
+			public void DataTriggerInTemplates([Values] XamlInflator inflator)
 			{
-				var layout = new Bz30074(useCompiledXaml);
+				var layout = new Bz30074(inflator);
 				Assert.Null(layout.image.Source);
 
 				layout.BindingContext = new { IsSelected = true };

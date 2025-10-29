@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -170,6 +172,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var radioButton2 = new RadioButton() { GroupName = "foo" };
 			var radioButton3 = new RadioButton() { GroupName = "foo" };
 
+			var layout = new Grid();
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
 			radioButton1.IsChecked = true;
 			radioButton2.IsChecked = true;
 
@@ -237,6 +244,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("updated", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
 		}
 
+		[Fact]
+		public async Task RadioButtonGroupLayoutShouldNotLeak()
+		{
+			WeakReference CreateReference()
+			{
+				var layout = new StackLayout();
+				var rb1 = new RadioButton { Content = "RB1", Value = "RB1" };
+				var rb2 = new RadioButton { Content = "RB2", Value = "RB2" };
+				layout.Add(rb1);
+				layout.Add(rb2);
+				layout.SetValue(RadioButtonGroup.GroupNameProperty, "GroupA");
+				layout.SetValue(RadioButtonGroup.SelectedValueProperty, "RB1");
+
+				return new(layout);
+			}
+
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(reference.IsAlive, "RadioButtonGroup should not be alive");
+		}
+
+		[Fact]
+		public async Task RadioButtonShouldNotLeak()
+		{
+			WeakReference CreateReference()
+			{
+				var radioButton = new RadioButton { Content = "RB1", Value = "RB1", GroupName = "GroupA" };
+				return new(radioButton);
+			}
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(reference.IsAlive, "RadioButton should not be alive");
+
+		}
+		
 		[Fact]
 		public void GroupNullSelectionClearsAnySelection()
 		{

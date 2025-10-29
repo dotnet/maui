@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<LabelHandler>]
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
 	{
 		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="source">The source parameter.</param>
 		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		/// <summary>Bindable property for <see cref="LineBreakMode"/>.</summary>
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,

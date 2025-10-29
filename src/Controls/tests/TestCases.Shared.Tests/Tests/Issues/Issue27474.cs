@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/27999
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,3 +23,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

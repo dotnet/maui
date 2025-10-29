@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (XAML)",
-  "description": "Fenêtre permettant d’afficher une page en XAML.",
+  "description": "Fenêtre permettant d’afficher une page à l’aide de XAML.",
   "postActions/openInEditor/description": "Ouvre NewWindow1.xaml dans le Rédacteur.",
   "symbols/namespace/description": "espace de noms pour le code généré"
 }

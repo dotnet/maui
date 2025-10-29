@@ -1,3 +1,4 @@
+using System;
 using CoreGraphics;
 using UIKit;
 
@@ -23,6 +24,31 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
+		}
+
+		internal static UIImage ResizeImageSource(this UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
+		{
+			if (sourceImage?.CGImage is null)
+			{
+				return null;
+			}
+
+			maxWidth = (nfloat)Math.Min(maxWidth, originalImageSize.Width);
+			maxHeight = (nfloat)Math.Min(maxHeight, originalImageSize.Height);
+
+			var sourceSize = sourceImage.Size;
+
+			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1 && !shouldScaleUp)
+				return sourceImage;
+
+			var resizedImage = UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
+
+			// Preserve the rendering mode to maintain color behavior
+			resizedImage = resizedImage.ImageWithRenderingMode(sourceImage.RenderingMode);
+
+			return resizedImage;
 		}
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)

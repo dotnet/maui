@@ -25,6 +25,11 @@ steps:
     artifact: ui-tests-samples-nativeaot
 
 - task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
+  inputs:
+    artifact: ui-tests-samples-coreclr
+
+- task: DownloadPipelineArtifact@2
   condition: eq('${{ parameters.platform }}' , 'windows')
   inputs:
     artifact: ui-tests-samples-windows

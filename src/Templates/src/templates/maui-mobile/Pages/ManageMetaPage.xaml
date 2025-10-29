@@ -55,9 +55,9 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="models:Category">
                         <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="4*,3*,30,Auto">
-                            <Entry Text="{Binding Title}" Grid.Column="0" SemanticProperties.Description="Title" />
+                           <Entry Text="{Binding Title}" SemanticProperties.Description="{Binding Title}" Grid.Column="0" />
                             <Entry Text="{Binding Color}" Grid.Column="1" x:Name="ColorEntry"
-                                SemanticProperties.Description="Color"
+                                SemanticProperties.Description="{Binding Title, StringFormat='{}{0} Color'}"
                                 SemanticProperties.Hint="Category color in HEX format">
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
@@ -76,7 +76,7 @@
                                 Background="Transparent"
                                 Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3"
-                                SemanticProperties.Description="Delete" />
+                                SemanticProperties.Description="{Binding Title, StringFormat='Delete {0} Category'}" />
                         </Grid>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
@@ -84,11 +84,12 @@
 
             <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto" Margin="0,10">
                 <Button Text="Save" Command="{Binding SaveCategoriesCommand}"
-                    HeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
+                    SemanticProperties.Description="Save Categories"
+                    MinimumHeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
 
                 <Button ImageSource="{StaticResource IconAdd}"
                     Command="{Binding AddCategoryCommand}" Grid.Column="1"
-                    SemanticProperties.Description="Add" />
+                    SemanticProperties.Description="Add Categories" />
             </Grid>
 
             <Label Text="Tags" Style="{StaticResource Title2}" />
@@ -97,9 +98,9 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="models:Tag">
                         <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="4*,3*,30,Auto">
-                            <Entry Text="{Binding Title}" Grid.Column="0" SemanticProperties.Description="Title" />
+                            <Entry Text="{Binding Title}" Grid.Column="0" SemanticProperties.Description="{Binding Title}" />
                             <Entry Text="{Binding Color}" Grid.Column="1" x:Name="ColorEntry"
-                                SemanticProperties.Description="Color"
+                                SemanticProperties.Description="{Binding Title, StringFormat='{}{0} Color'}"
                                 SemanticProperties.Hint="Tag color in HEX format">
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
@@ -115,6 +116,7 @@
         
                             <Button 
                                 ImageSource="{StaticResource IconDelete}"
+                                SemanticProperties.Description="{Binding Title, StringFormat='Delete {0} Tag'}"
                                 Background="Transparent"
                                 Command="{Binding DeleteTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3"/>
@@ -125,11 +127,12 @@
 
             <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto" Margin="0,10">
                 <Button Text="Save" Command="{Binding SaveTagsCommand}"
-                    HeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
+                    SemanticProperties.Description="Save Tags"
+                    MinimumHeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0" />
 
                 <Button ImageSource="{StaticResource IconAdd}"
                     Command="{Binding AddTagCommand}" Grid.Column="1"
-                    SemanticProperties.Description="Add" />
+                    SemanticProperties.Description="Add Tags" />
             </Grid>
         </VerticalStackLayout>
     </ScrollView>

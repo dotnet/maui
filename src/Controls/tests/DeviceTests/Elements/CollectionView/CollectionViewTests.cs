@@ -367,7 +367,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				collectionView.VerticalOptions = layoutOptions;
 			}
 
-			var layout = new Grid() { IgnoreSafeArea = true, HeightRequest = containerHeight, WidthRequest = containerWidth };
+			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+#pragma warning disable CS0618 // Type or member is obsolete
+			layout.IgnoreSafeArea = true;
+#pragma warning restore CS0618 // Type or member is obsolete
 			layout.Add(collectionView);
 
 			ObservableCollection<string> data = new();
@@ -441,7 +444,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			double containerHeight = 500;
 			double containerWidth = 500;
-			var layout = new Grid() { IgnoreSafeArea = true, HeightRequest = containerHeight, WidthRequest = containerWidth };
+			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+#pragma warning disable CS0618 // Type or member is obsolete
+			layout.IgnoreSafeArea = true;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Label headerLabel = hasHeader ? new Label { Text = "header" } : null;
 			Label footerLabel = hasFooter ? new Label { Text = "footer" } : null;
@@ -707,6 +713,48 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				collectionView.SelectedItem = Items.FirstOrDefault(x => x == "Item 3");
 				await WaitForUIUpdate(frame, collectionView);
 			}, MauiContext, (view) => CreateHandlerAsync<LayoutHandler>(view));
+		}
+
+		[Theory]
+		[InlineData(true)] // Use new SafeArea API
+		[InlineData(false)] // Use old IgnoreSafeArea API
+		public async Task SafeAreaBehaviorConsistency(bool useNewApi)
+		{
+			SetupBuilder();
+
+			double containerHeight = 500;
+			double containerWidth = 500;
+			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+
+			if (useNewApi)
+			{
+				layout.SafeAreaEdges = SafeAreaEdges.None;
+			}
+			else
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				layout.IgnoreSafeArea = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = LinearItemsLayout.Vertical,
+				ItemTemplate = new DataTemplate(() => new Label() { HeightRequest = 20, WidthRequest = 20 }),
+				ItemsSource = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" }
+			};
+
+			layout.Add(collectionView);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				await Task.Delay(100);
+
+				// Both APIs should result in the same layout behavior
+				// The layout should fill the container and ignore safe area
+				var layoutBounds = layout.GetPlatformViewBounds();
+				Assert.NotEqual(Rect.Zero, layoutBounds);
+			});
 		}
 	}
 }

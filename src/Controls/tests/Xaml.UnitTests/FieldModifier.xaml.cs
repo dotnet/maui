@@ -2,41 +2,31 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class FieldModifier : ContentPage
 {
-	public partial class FieldModifier : ContentPage
+	public FieldModifier() => InitializeComponent();
+
+	[TestFixture]
+	class FindByNameTests
 	{
-		public FieldModifier()
+		[Test]
+		public void TestFieldModifier([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			var layout = new FieldModifier();
+			Assert.That(layout.privateLabel, Is.Not.Null);
+			Assert.That(layout.internalLabel, Is.Not.Null);
+			Assert.That(layout.publicLabel, Is.Not.Null);
 
-		public FieldModifier(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+			var fields = typeof(FieldModifier).GetTypeInfo().DeclaredFields;
 
-		[TestFixture]
-		public class FindByNameTests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestFieldModifier(bool useCompiledXaml)
-			{
-				var layout = new FieldModifier();
-				Assert.That(layout.privateLabel, Is.Not.Null);
-				Assert.That(layout.internalLabel, Is.Not.Null);
-				Assert.That(layout.publicLabel, Is.Not.Null);
+			Assert.That(fields.First(fi => fi.Name == "privateLabel").IsPrivate, Is.True);
 
-				var fields = typeof(FieldModifier).GetTypeInfo().DeclaredFields;
+			Assert.That(fields.First(fi => fi.Name == "internalLabel").IsPrivate, Is.False);
+			Assert.That(fields.First(fi => fi.Name == "internalLabel").IsPublic, Is.False);
 
-				Assert.That(fields.First(fi => fi.Name == "privateLabel").IsPrivate, Is.True);
-
-				Assert.That(fields.First(fi => fi.Name == "internalLabel").IsPrivate, Is.False);
-				Assert.That(fields.First(fi => fi.Name == "internalLabel").IsPublic, Is.False);
-
-				Assert.That(fields.First(fi => fi.Name == "publicLabel").IsPublic, Is.True);
-			}
+			Assert.That(fields.First(fi => fi.Name == "publicLabel").IsPublic, Is.True);
 		}
 	}
 }

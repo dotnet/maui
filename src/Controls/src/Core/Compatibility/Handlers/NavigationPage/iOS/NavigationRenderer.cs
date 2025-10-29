@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -45,7 +46,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
 		{
 			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
-			[PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName] = NavigationPage.MapIsNavigationBarTranslucent,
 		};
 
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
@@ -377,6 +377,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBackgroundColor();
 		}
 
+		/// <summary>
+		/// Override this method to provide a custom image for the secondary toolbar menu button.
+		/// The default implementation uses the "ellipsis.circle" system image.
+		/// This image is used for the menu button that appears when there are secondary toolbar items
+		/// </summary>
+		/// <returns>The image to use for the secondary toolbar menu button.</returns>
+		protected virtual UIImage GetSecondaryToolbarMenuButtonImage()
+		{
+			// Use the ellipsis.circle system image for the menu button by default
+			// as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
+			return UIImage.GetSystemImage("ellipsis.circle");
+		}
 
 		ParentingViewController CreateViewControllerForPage(Page page)
 		{
@@ -501,10 +513,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var current = Current = NavPage?.CurrentPage;
 				ValidateNavbarExists(current);
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
 				UpdateTranslucent();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
 			{
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
@@ -616,7 +630,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateTranslucent()
 		{
-			_viewHandlerWrapper.UpdateProperty(IsNavigationBarTranslucentProperty.PropertyName);
+#pragma warning disable CS0618 // Type or member is obsolete
+			NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void InsertPageBefore(Page page, Page before)
@@ -755,6 +771,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_currentBarBackgroundBrush = null;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+			bool userTranslucentValue = false;
+			bool isNavigationBarTranslucentExplicitlySet = NavPage.IsSet(IsNavigationBarTranslucentProperty);
+			if (isNavigationBarTranslucentExplicitlySet)
+			{
+				userTranslucentValue = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
@@ -768,10 +793,34 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if (_currentBarBackgroundColor?.Alpha < 1f)
-						navigationBarAppearance.ConfigureWithTransparentBackground();
+					// If user explicitly set translucent property, respect that value
+					if (isNavigationBarTranslucentExplicitlySet)
+					{
+						if (userTranslucentValue)
+						{
+							navigationBarAppearance.ConfigureWithTransparentBackground();
+							NavigationBar.Translucent = true;
+						}
+						else
+						{
+							navigationBarAppearance.ConfigureWithOpaqueBackground();
+							NavigationBar.Translucent = false;
+						}
+					}
 					else
-						navigationBarAppearance.ConfigureWithOpaqueBackground();
+					{
+						// Default behavior: set translucency based on background color alpha
+						if (_currentBarBackgroundColor?.Alpha < 1f)
+						{
+							navigationBarAppearance.ConfigureWithTransparentBackground();
+							NavigationBar.Translucent = true;
+						}
+						else
+						{
+							navigationBarAppearance.ConfigureWithOpaqueBackground();
+							NavigationBar.Translucent = false;
+						}
+					}
 
 					navigationBarAppearance.BackgroundColor = _currentBarBackgroundColor.ToPlatform();
 				}
@@ -789,19 +838,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if (_currentBarBackgroundColor?.Alpha == 0f)
+				// If user explicitly set translucent property, respect that value
+				if (isNavigationBarTranslucentExplicitlySet)
 				{
-					NavigationBar.SetTransparentNavigationBar();
+					if (userTranslucentValue)
+					{
+						NavigationBar.SetTransparentNavigationBar();
+						NavigationBar.Translucent = true;
+					}
+					else
+					{
+						// Set navigation bar background color for opaque navigation bar
+						NavigationBar.BarTintColor = _currentBarBackgroundColor == null
+							? UINavigationBar.Appearance.BarTintColor
+							: _currentBarBackgroundColor.ToPlatform();
+
+						var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
+						NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+						NavigationBar.Translucent = false;
+					}
 				}
 				else
 				{
-					// Set navigation bar background color
-					NavigationBar.BarTintColor = _currentBarBackgroundColor == null
-						? UINavigationBar.Appearance.BarTintColor
-						: _currentBarBackgroundColor.ToPlatform();
+					// Default behavior: set translucency based on background color alpha
+					if (_currentBarBackgroundColor?.Alpha == 0f)
+					{
+						NavigationBar.SetTransparentNavigationBar();
+					}
+					else
+					{
+						// Set navigation bar background color
+						NavigationBar.BarTintColor = _currentBarBackgroundColor == null
+							? UINavigationBar.Appearance.BarTintColor
+							: _currentBarBackgroundColor.ToPlatform();
 
-					var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
-					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+						var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
+						NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+					}
 				}
 			}
 		}
@@ -961,12 +1034,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result?.Value;
-				if (icon != null)
+				var originalImageSize = icon?.Size ?? CGSize.Empty;
+
+				// The largest height you can use for navigation bar icons in iOS.
+				// Per Apple's Human Interface Guidelines, the navigation bar height is 44 points,
+				// so using the full height ensures maximum visual clarity and maintains consistency
+				// with iOS design standards. This allows icons to utilize the entire available
+				// vertical space within the navigation bar container.
+				var defaultIconHeight = 44f;
+				var buffer = 0.1;
+				// We only check height because the navigation bar constrains vertical space (44pt height),
+				// but allows horizontal flexibility. Width can vary based on icon design and content,
+				// while height must fit within the fixed navigation bar bounds to avoid clipping.
+				
+				// if the image is bigger than the default available size, resize it
+				if (icon is not null)
 				{
+					if (originalImageSize.Height - defaultIconHeight > buffer)
+					{
+						if (FlyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+						{
+							icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+						}
+					}
 					try
 					{
 						containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
@@ -985,8 +1078,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (FlyoutPage != null && !string.IsNullOrEmpty(FlyoutPage.AutomationId))
 					SetAutomationId(containerController.NavigationItem.LeftBarButtonItem, $"btn_{FlyoutPage.AutomationId}");
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityHint(FlyoutPage);
 				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(FlyoutPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 			});
 
 			void OnItemTapped(object sender, EventArgs e)
@@ -1171,6 +1266,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WeakReference<Page> _child;
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
+			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			bool _toolbarUpdatePending = false;
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
@@ -1303,6 +1400,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_tracker.Target = Child;
 				_tracker.AdditionalTargets = Child.GetParentPages();
+				_tracker.CollectionChanged += TrackerOnCollectionChanged;
 
 				UpdateToolbarItems();
 			}
@@ -1324,24 +1422,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void WillMoveToParentViewController(UIViewController parent)
 			{
 				base.WillMoveToParentViewController(parent);
-
-				if (_tracker is null)
-				{
-					return;
-				}
-
-				if (parent is null)
-				{
-					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
-				}
-				else
-				{
-					_tracker.CollectionChanged += TrackerOnCollectionChanged;
-				}
 			}
 
 			internal void Disconnect(bool dispose)
 			{
+				// Unsubscribe from toolbar item property changes
+				CleanToolbarItems();
+
 				if (Child is Page child)
 				{
 					child.SendDisappearing();
@@ -1359,7 +1446,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (NavigationItem.TitleView is not null)
 				{
 					if (dispose)
+					{
 						NavigationItem.TitleView.Dispose();
+					}
 
 					NavigationItem.TitleView = null;
 				}
@@ -1367,13 +1456,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (NavigationItem.RightBarButtonItems is not null && dispose)
 				{
 					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+					{
 						NavigationItem.RightBarButtonItems[i].Dispose();
+					}
 				}
 
 				if (ToolbarItems is not null && dispose)
 				{
 					for (var i = 0; i < ToolbarItems.Length; i++)
+					{
 						ToolbarItems[i].Dispose();
+					}
 				}
 
 				for (int i = View.Subviews.Length - 1; i >= 0; i--)
@@ -1635,6 +1728,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateToolbarItems();
 			}
 
+			void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				// Only rebuild toolbar items if a relevant property changed
+				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
+					e.PropertyName == MenuItem.TextProperty.PropertyName ||
+					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+				{
+					// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
+					if (!_toolbarUpdatePending)
+					{
+						_toolbarUpdatePending = true;
+						BeginInvokeOnMainThread(() =>
+						{
+							_toolbarUpdatePending = false;
+							if (!_disposed)
+							{
+								UpdateToolbarItems();
+							}
+						});
+					}
+				}
+			}
+
 			void UpdateHasBackButton()
 			{
 				if (Child is not Page child || NavigationItem.HidesBackButton == !NavigationPage.GetHasBackButton(child))
@@ -1671,37 +1787,93 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			void CleanToolbarItems()
+			{
+				foreach (var item in _trackedToolbarItems)
+				{
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				}
+				_trackedToolbarItems.Clear();
+			}
+
 			void UpdateToolbarItems()
 			{
-				if (NavigationItem.RightBarButtonItems != null)
+				// Unsubscribe from previous toolbar item property changes
+				CleanToolbarItems();
+
+				if (NavigationItem.RightBarButtonItems is not null)
 				{
 					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+					{
 						NavigationItem.RightBarButtonItems[i].Dispose();
+					}
 				}
-				if (ToolbarItems != null)
+
+				if (ToolbarItems is not null)
 				{
 					for (var i = 0; i < ToolbarItems.Length; i++)
+					{
 						ToolbarItems[i].Dispose();
+					}
 				}
 
 				List<UIBarButtonItem> primaries = null;
-				List<UIBarButtonItem> secondaries = null;
+				List<UIMenuElement> secondaries = null;
 				var toolbarItems = _tracker.ToolbarItems;
+
+				// Subscribe to property changes for all current toolbar items
 				foreach (var item in toolbarItems)
 				{
+					item.PropertyChanged += OnToolbarItemPropertyChanged;
+					_trackedToolbarItems.Add(item);
+
 					if (item.Order == ToolbarItemOrder.Secondary)
-						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));
+					{
+						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+					}
 					else
-						(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem());
+					{
+						(primaries ??= []).Add(item.ToUIBarButtonItem());
+					}
 				}
 
-				primaries?.Reverse();
-				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
-				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
+				if (primaries is not null && primaries.Count > 0)
+				{
+					primaries.Reverse();
+				}
 
-				NavigationRenderer n;
-				if (_navigation.TryGetTarget(out n))
+				if (secondaries is not null && secondaries.Count > 0)
+				{
+					UIImage secondaryIcon = null;
+					if (_navigation.TryGetTarget(out NavigationRenderer navRenderer))
+					{
+						secondaryIcon = navRenderer.GetSecondaryToolbarMenuButtonImage();
+					}
+					else
+					{
+						// Shouldn't happen, but just in case let's add a fallback to the default icon
+						secondaryIcon = UIImage.GetSystemImage("ellipsis.circle");
+					}
+
+					var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+					var menuButton = new UIBarButtonItem(secondaryIcon, menu)
+					{
+						AccessibilityIdentifier = "SecondaryToolbarMenuButton"
+					};
+
+					// Since we are adding secondary items under a primary button,
+					// make sure that primaries is initialized
+					primaries ??= [];
+
+					primaries.Insert(0, menuButton);
+				}
+
+				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
+
+				if (_navigation.TryGetTarget(out NavigationRenderer n))
+				{
 					n.UpdateToolBarVisible();
+				}
 			}
 
 			void UpdateLargeTitles()
@@ -1742,7 +1914,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override bool ShouldAutorotate()
 			{
 				if (Child?.Handler is IPlatformViewHandler ivh)
-
 					return ivh.ViewController.ShouldAutorotate();
 				return base.ShouldAutorotate();
 			}

@@ -219,7 +219,7 @@ namespace Microsoft.Maui.DeviceTests
 			return false;
 		}
 
-		protected void AssertTranslationMatches(Android.Views.View nativeView, double expectedTranslationX, double expectedTranslationY)
+		protected void AssertTranslationMatches(global::Android.Views.View nativeView, double expectedTranslationX, double expectedTranslationY)
 		{
 			var context = nativeView?.Context ?? throw new InvalidOperationException("Context cannot be null.");
 

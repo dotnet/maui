@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -96,9 +97,11 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public ICommand NavigateCommand { get; set; }
 
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2111", 
+			Justification = "The lambda expression in NavigateCommand is only used with known page types that have public parameterless constructors.")]
 		public Issue21112ViewModel()
 		{
-			NavigateCommand = new Command<Type>(async (Type pageType) =>
+			NavigateCommand = new Command<Type>(async ([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type pageType) =>
 			{
 				Page page = Activator.CreateInstance(pageType) as Page;
 				if (page is not null)

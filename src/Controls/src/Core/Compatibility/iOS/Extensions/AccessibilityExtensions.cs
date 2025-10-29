@@ -14,13 +14,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			nativeViewElement.AccessibilityIdentifier = element?.AutomationId;
+#pragma warning disable CS0618 // Type or member is obsolete
 			SetAccessibilityLabel(nativeViewElement, element);
 			SetAccessibilityHint(nativeViewElement, element);
+#pragma warning restore CS0618 // Type or member is obsolete
 			SetIsAccessibilityElement(nativeViewElement, element);
 			SetAccessibilityElementsHidden(nativeViewElement, element);
 		}
 
-		// TODO OBSOLETE FOR NET10
+		[Obsolete("Use Microsoft.Maui.Platform.UpdateSemantics")]
 		public static string SetAccessibilityHint(this NativeView Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return _defaultAccessibilityHint;
 		}
 
-		// TODO OBSOLETE FOR NET10
+		[Obsolete("Use Microsoft.Maui.Platform.UpdateSemantics")]
 		public static string SetAccessibilityLabel(this NativeView Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)
@@ -66,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return _defaultAccessibilityLabel;
 		}
 
-		// TODO OBSOLETE FOR NET10
+		[Obsolete("Use Microsoft.Maui.Platform.UpdateSemantics")]
 		public static string SetAccessibilityHint(this UIBarItem Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
@@ -90,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
-		// TODO OBSOLETE FOR NET10
+		[Obsolete("Use Microsoft.Maui.Platform.UpdateSemantics")]
 		public static string SetAccessibilityLabel(this UIBarItem Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)

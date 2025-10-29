@@ -6,7 +6,7 @@ internal static class NodeExtensions
 	{
 		name = default;
 
-		if (parentNode is not IElementNode parentElement)
+		if (parentNode is not ElementNode parentElement)
 		{
 			return false;
 		}

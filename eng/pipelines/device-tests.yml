@@ -54,11 +54,6 @@ parameters:
   type: boolean
   default: false
 
-- name: provisionatorChannel
-  displayName: 'Provisionator channel'
-  type: string
-  default: 'latest'
-
 - name: BuildEverything
   type: boolean
   default: false
@@ -78,6 +73,7 @@ parameters:
     vmImage: $(iosDeviceTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
+    - Agent.OSVersion -equals 15.6
 
 - name: catalystPool
   type: object
@@ -86,6 +82,7 @@ parameters:
     vmImage: $(iosDeviceTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
+    - Agent.OSVersion -equals 15.6
 
 - name: windowsPool
   type: object
@@ -99,10 +96,11 @@ parameters:
     name: Azure Pipelines
     vmImage: macOS-15
 
+
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net9.0
+  - tfm: net10.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -173,26 +171,24 @@ stages:
         iosPool: ${{ parameters.iosPool }}
         catalystPool: ${{ parameters.catalystPool }}
         windowsPool: ${{ parameters.windowsPool }}
-        agentPoolAccessToken: $(AgentPoolAccessToken)
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
           androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
-          iosVersions: [ 'simulator-18.0' ]
+          iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
-          provisionatorChannel: ${{ parameters.provisionatorChannel }}
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
         ${{ else }}:
-          androidApiLevels: [ 35, 23 ]
-          iosVersions: [ 'simulator-18.0' ]
+          androidApiLevels: [ 33, 23 ]
+          iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
-          provisionatorChannel: ${{ parameters.provisionatorChannel }}
           skipProvisioning: ${{ not(parameters.UseProvisionator) }}
         projects:
         - name: essentials
           desc: Essentials
           androidApiLevelsExclude: [ 25, 27 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -203,7 +199,8 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: graphics
           desc: Graphics
-          androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -215,6 +212,7 @@ stages:
         - name: core
           desc: Core
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -226,6 +224,7 @@ stages:
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Debug'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -237,6 +236,7 @@ stages:
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          androidApiLevelsCoreClrExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'

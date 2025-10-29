@@ -18,6 +18,7 @@ public partial class ContentPageControlMainPage : ContentPage
 	public ContentPageControlMainPage(ContentPageViewModel viewModel)
 	{
 		InitializeComponent();
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
 	}

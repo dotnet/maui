@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(rect.Width),
 				context.FromPixels(rect.Height));
 
-		internal static Rect FromPixels(this Context context, Android.Graphics.Rect rect) =>
+		internal static Rect FromPixels(this Context context, global::Android.Graphics.Rect rect) =>
 			new Rect(
 				context.FromPixels(rect.Left),
 				context.FromPixels(rect.Top),
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Platform
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			context ??= Android.App.Application.Context;
+			context ??= global::Android.App.Application.Context;
 
 			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
 				s_displayDensity = metrics != null ? metrics.Density : 1;
@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Platform
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
 			{
-				if (window.Handler?.PlatformView is Android.App.Activity activity)
+				if (window.Handler?.PlatformView is AActivity activity)
 				{
 					if (activity == platformWindow)
 						return window;

@@ -14,12 +14,28 @@ namespace Maui.Controls.Sample.Pages
 			UpdateDatePickerBackground();
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			IsOpenDatePicker.Opened += IsOpenDatePickerOpened;
+			IsOpenDatePicker.Closed += IsOpenDatePickerClosed;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+
+			IsOpenDatePicker.Opened -= IsOpenDatePickerOpened;
+			IsOpenDatePicker.Closed -= IsOpenDatePickerClosed;
+		}
+
+		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			UpdateDatePickerBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			BackgroundDatePicker.Background = null;
 		}
@@ -41,14 +57,44 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnFocusDatePickerFocused(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void OnFocusDatePickerFocused(object sender, FocusEventArgs e)
 		{
 			Debug.WriteLine("Focused");
 		}
 
-		void OnFocusDatePickerUnfocused(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void OnFocusDatePickerUnfocused(object sender, FocusEventArgs e)
 		{
 			Debug.WriteLine("Unfocused");
+		}
+
+		void SetDatePickerToNull(object sender, EventArgs e)
+		{
+			NullDatePicker.Date = null;
+		}
+
+		void SetDatePickerToToday(object sender, EventArgs e)
+		{
+			NullDatePicker.Date = DateTime.Now;
+		}
+
+		void OnOpenClicked(object sender, EventArgs e)
+		{
+			IsOpenDatePicker.IsOpen = true;
+		}
+
+		void OnCloseClicked(object sender, EventArgs e)
+		{
+			IsOpenDatePicker.IsOpen = false;
+		}
+
+		void IsOpenDatePickerOpened(object? sender, DatePickerOpenedEventArgs e)
+		{
+			Console.WriteLine("IsOpenDatePicker Opened");
+		}
+
+		void IsOpenDatePickerClosed(object? sender, DatePickerClosedEventArgs e)
+		{
+			Console.WriteLine("IsOpenDatePicker Closed");
 		}
 	}
 }

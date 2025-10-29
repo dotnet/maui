@@ -107,6 +107,7 @@ namespace Maui.Controls.Sample.Issues
 			grd.Children.Add(_carousel);
 			grd.Children.Add(btn);
 			grd.Children.Add(btnAdd);
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = grd;
 #pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Instance.Subscribe<Page>(this, "DeleteMe", Callback);

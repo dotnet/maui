@@ -1,14 +1,14 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Uygulaması",
-  "description": "iOS, Android, Mac Catalyst, WinUI ve Tizen için bir .NET MAUI uygulaması oluşturmaya yönelik proje",
+  "description": "iOS, Android, Mac Catalyst ve WinUI için .NET MAUI uygulaması oluşturma projesi",
   "postActions/openInEditor/description": "Düzenleyicide MainPage.xaml dosyasını açar.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
-  "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır",
+  "postActions/restore/manualInstructions/default/text": "\"dotnet restore\" komutunu çalıştır",
   "symbols/applicationId/description": "Projedeki $(ApplicationId) uygulamasın geçersiz kılar",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Örnek içeriği dahil et",
   "symbols/IncludeSampleContent/description": "Temel kullanım desenlerini göstermek için örnek sayfaların ve işlevler eklenip eklenmeyeceğini belirler.",
-  "symbols/skipRestore/description": "Belirtilmişse, oluşturma anında projenin otomatik geri yüklenmesini atlar."
+  "symbols/skipRestore/description": "Belirtilmişse oluştururken projenin otomatik geri yüklenmesini atlar."
 }

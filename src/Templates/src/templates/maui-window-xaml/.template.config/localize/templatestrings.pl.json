@@ -3,5 +3,5 @@
   "name": ".NET MAUI Window (XAML)",
   "description": "Okno do wyświetlania strony przy użyciu języka XAML.",
   "postActions/openInEditor/description": "Otwiera plik NewWindow1.xaml w edytorze.",
-  "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu."
+  "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu"
 }

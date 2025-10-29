@@ -7,8 +7,6 @@ using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
-using Java.Interop;
-using Java.Lang;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -23,6 +21,7 @@ namespace Microsoft.Maui.Platform
 		Callbacks? _fragmentLifecycleCallbacks;
 		FragmentManager? _fragmentManager;
 		FragmentContainerView? _fragmentContainerView;
+		Type _navigationViewFragmentType = typeof(NavigationViewFragment);
 
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -32,28 +31,28 @@ namespace Microsoft.Maui.Platform
 		internal bool IsAnimated { get; set; } = true;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
-		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
+		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
 
-		internal NavHostFragment NavHost =>
+		public NavHostFragment NavHost =>
 			_navHost ?? throw new InvalidOperationException($"NavHost cannot be null");
 
-		internal NavController NavController =>
+		public NavController NavController =>
 			NavHost.NavController ?? throw new InvalidOperationException($"NavHost cannot be null");
 
-		internal FragmentNavigator FragmentNavigator =>
+		public FragmentNavigator FragmentNavigator =>
 			_fragmentNavigator ?? throw new InvalidOperationException($"FragmentNavigator cannot be null");
 
-		internal NavGraph NavGraph => _navGraph ??
+		public NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
-		internal bool HasNavHost => _navHost is not null;
+		public bool HasNavHost => _navHost is not null;
 
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
 		public IMauiContext MauiContext { get; }
 
-		internal IToolbarElement? ToolbarElement =>
+		protected IToolbarElement? ToolbarElement =>
 			MauiContext.GetNavigationRootManager().ToolbarElement;
 
 		public StackNavigationManager(IMauiContext mauiContext)
@@ -224,10 +223,21 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public void SetNavigationViewFragmentType(Type type)
+		{
+			ArgumentNullException.ThrowIfNull(type);
+			if (!typeof(NavigationViewFragment).IsAssignableFrom(type))
+			{
+				throw new ArgumentException($"Type {type.FullName} must be assignable to {nameof(NavigationViewFragment)}");
+			}
+
+			_navigationViewFragmentType = type;
+		}
+
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
 		{
 			var destination = new FragmentNavigator.Destination(FragmentNavigator);
-			var canonicalName = Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName;
+			var canonicalName = Java.Lang.Class.FromType(_navigationViewFragmentType).CanonicalName;
 
 			if (canonicalName != null)
 				destination.SetClassName(canonicalName);

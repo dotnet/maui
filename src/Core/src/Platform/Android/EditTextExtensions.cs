@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Content.Res;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
@@ -44,21 +45,23 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor)
 		{
 			if (textColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+			{
 				editText.SetTextColor(c);
+			}
 			else if (textColor is null)
 			{
 				// Fallback to system default color
 				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
 				{
-					using var ta = theme.ObtainStyledAttributes([Android.Resource.Attribute.TextColorPrimary]);
+					using var ta = theme.ObtainStyledAttributes([global::Android.Resource.Attribute.TextColorPrimary]);
 					var cs = ta.GetColorStateList(0);
 
 					if (cs is not null)
 					{
-						int[] DisabledState = [-Android.Resource.Attribute.StateEnabled];
-						int[] EnabledState = [Android.Resource.Attribute.StateEnabled];
+						int[] DisabledState = [-global::Android.Resource.Attribute.StateEnabled];
+						int[] EnabledState = [global::Android.Resource.Attribute.StateEnabled];
 						var state = editText.Enabled ? EnabledState : DisabledState;
-						var color = new Android.Graphics.Color(cs.GetColorForState(state, Colors.Black.ToPlatform()));
+						var color = new global::Android.Graphics.Color(cs.GetColorForState(state, Colors.Black.ToPlatform()));
 						editText.SetTextColor(color);
 					}
 				}
@@ -157,8 +160,8 @@ namespace Microsoft.Maui.Platform
 				var typedValue = new TypedValue();
 				if (OperatingSystem.IsAndroidVersionAtLeast(23) &&
 					editText.Context?.Theme is Resources.Theme theme &&
-					theme.ResolveAttribute(Android.Resource.Attribute.TextColorHint, typedValue, true) &&
-					editText.Resources?.GetColor(typedValue.ResourceId, theme) is Android.Graphics.Color color)
+					theme.ResolveAttribute(global::Android.Resource.Attribute.TextColorHint, typedValue, true) &&
+					editText.Resources?.GetColor(typedValue.ResourceId, theme) is global::Android.Graphics.Color color)
 				{
 					editText.SetHintTextColor(color);
 				}
@@ -196,12 +199,7 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		// TODO: NET8 hartez - Remove this, nothing uses it
-		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
-			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
-
-		// TODO: NET8 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
-		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
+		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry)
 		{
 			if (entry?.Handler is not EntryHandler entryHandler)
 			{
@@ -246,8 +244,7 @@ namespace Microsoft.Maui.Platform
 			imm?.RestartInput(editText);
 		}
 
-		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
-		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
+		public static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
 		{
 			var newCursorPosition = editText.SelectionStart + cursorOffset;
 			return Math.Max(0, newCursorPosition);
@@ -309,8 +306,7 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
-		internal static int GetSelectedTextLength(this EditText editText)
+		public static int GetSelectedTextLength(this EditText editText)
 		{
 			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
 			return Math.Max(0, selectedLength);
@@ -418,7 +414,7 @@ namespace Microsoft.Maui.Platform
 		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
 		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
 		// bounds of the EditText.
-		static bool RectContainsMotionEvent(Android.Graphics.Rect rect, MotionEvent motionEvent)
+		static bool RectContainsMotionEvent(global::Android.Graphics.Rect  rect, MotionEvent motionEvent)
 		{
 			var x = motionEvent.GetX();
 
@@ -438,7 +434,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Gets the location of the "Clear" button relative to the bounds of the EditText
-		static Android.Graphics.Rect GetClearButtonLocation(Android.Graphics.Rect buttonRect, EditText platformView)
+		static global::Android.Graphics.Rect GetClearButtonLocation(global::Android.Graphics.Rect buttonRect, EditText platformView)
 		{
 			// Determine the top and bottom edges of the button
 			// This assumes the button is vertically centered within the padded area of the EditText
@@ -454,19 +450,19 @@ namespace Microsoft.Maui.Platform
 			// The horizontal location of the button depends on the layout direction
 			var flowDirection = platformView.LayoutDirection;
 
-			if (flowDirection == Android.Views.LayoutDirection.Ltr)
+			if (flowDirection == global::Android.Views.LayoutDirection.Ltr)
 			{
 				var rightEdge = platformView.Width - platformView.PaddingRight;
 				var leftEdge = rightEdge - buttonRect.Width();
 
-				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 			else
 			{
 				var leftEdge = platformView.PaddingLeft;
 				var rightEdge = leftEdge + buttonRect.Width();
 
-				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
 	}
