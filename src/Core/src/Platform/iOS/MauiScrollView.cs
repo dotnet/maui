@@ -303,15 +303,15 @@ namespace Microsoft.Maui.Platform
 				}
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
-				if (ContentSize != contentSize || frameChanged)
+				if (ContentSize != contentSize)
 				{
 					ContentSize = contentSize;
-
-					// Invalidation stops at `UIScrollViews` for performance reasons,
-					// but when the content size changes, we need to invalidate the ancestors
-					// in case the ScrollView is configured to grow/shrink with its content.
-					this.InvalidateAncestorsMeasures();
 				}
+				
+				// Invalidation stops at `UIScrollViews` for performance reasons,
+				// but when the content size changes, we need to invalidate the ancestors
+				// in case the ScrollView is configured to grow/shrink with its content.
+				this.InvalidateAncestorsMeasures();
 			}
 
 			base.LayoutSubviews();
