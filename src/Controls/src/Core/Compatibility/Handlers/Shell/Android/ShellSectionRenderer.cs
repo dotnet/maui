@@ -13,8 +13,10 @@ using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
+using Google.Android.Material.AppBar;
 using Google.Android.Material.Tabs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -75,6 +77,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
 		bool _disposed;
+		GlobalWindowInsetListener? _localInsetListener;
+		CoordinatorLayout? _managedCoordinatorLayout;
 		IShellController ShellController => _shellContext.Shell;
 		public event EventHandler AnimationFinished;
 		Fragment IShellObservableFragment.Fragment => this;
@@ -101,7 +105,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(root, this.Context);
+
+			// Set up the CoordinatorLayout with a local inset listener
+			_localInsetListener = new GlobalWindowInsetListener();
+			_managedCoordinatorLayout = root;
+			root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, _localInsetListener);
+
 			int actionBarHeight = context.GetActionBarHeight();
 
 			var shellToolbar = new Toolbar(shellSection);
@@ -194,6 +203,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_rootView != null)
 			{
+				// Clean up the coordinator layout and local listener first
+				if (_managedCoordinatorLayout is not null && _localInsetListener is not null)
+				{
+					GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout, _localInsetListener);
+				}
+
 				UnhookEvents();
 
 				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
@@ -220,6 +235,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = null;
 			_viewPager = null;
 			_rootView = null;
+			_localInsetListener = null;
+			_managedCoordinatorLayout = null;
 
 		}
 
