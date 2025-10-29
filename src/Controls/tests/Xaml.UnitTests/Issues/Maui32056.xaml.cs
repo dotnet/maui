@@ -39,12 +39,8 @@ public partial class Maui32056 : ContentPage
 				MockCompiler.Compile(typeof(Maui32056), out var methodDef, out var hasLoggedErrors);
 				Assert.IsFalse(hasLoggedErrors);
 			}
-			else
-			{
-				var page = new Maui32056(inflator);
-				Assert.AreEqual(Maui32056Enum.A.ToString(), page.label0.Text);			
-			}
-
+			var page = new Maui32056(inflator);
+			Assert.AreEqual(Maui32056Enum.A.ToString(), page.label0.Text);			
 		}
 	}
 }
