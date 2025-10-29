@@ -908,6 +908,7 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.RemoveFromInnerChildren(page);
+						page?.DisconnectHandlers();
 
 						if (Owner.RootPage == page)
 							Owner.RootPage = (Page)Owner.InternalChildren[0];
