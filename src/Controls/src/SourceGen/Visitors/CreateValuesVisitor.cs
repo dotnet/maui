@@ -224,6 +224,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					propValue = vn.ConvertTo(pType, pConverter, writer, Context);
 				else if (propNode is ElementNode en)
 				{
+					Context.ReportDiagnostic(Diagnostic.Create(Descriptors.RequiredProperty, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), $"'{type.ToFQDisplayString()}.{propXmlName.LocalName}'"));
 					en.TryProvideValue(writer, Context);
 					propValue = variables[en].ValueAccessor;
 				}
