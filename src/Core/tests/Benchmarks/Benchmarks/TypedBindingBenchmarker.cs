@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
@@ -92,6 +93,74 @@ namespace Microsoft.Maui.Benchmarks
 					}
 				)
 				{ Source = Source };
+				Target.SetBinding(MyObject.NameProperty, binding);
+			}
+		}
+
+		[Benchmark]
+		public void TypedBind2Name()
+		{
+			for (int i = 0; i < Iterations; i++)
+			{
+				var binding = new TypedBinding<MyObject, string>(
+					o => (o.Name, true),
+					null,
+					handlersCount: 1,
+					handlers: static o => [(o, "Name")]
+				)
+				{ Source = Source };
+				Target.SetBinding(MyObject.NameProperty, binding);
+			}
+		}
+
+		[Benchmark]
+		public void TypedBind2Child()
+		{
+			for (int i = 0; i < Iterations; i++)
+			{
+				var binding = new TypedBinding<MyObject, string>(
+					o => (o.Child.Name, true),
+					null,
+					handlersCount: 2,
+					handlers: GetHandlers
+				)
+				{ Source = Source };
+				
+				static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(MyObject o)
+				{
+					var x0 = o;
+					yield return (x0, "Child");
+					var x1 = x0.Child;
+					yield return (x1, "Name");
+				}
+
+				Target.SetBinding(MyObject.NameProperty, binding);
+			}
+		}
+
+		[Benchmark]
+		public void TypedBind2ChildIndexer()
+		{
+			for (int i = 0; i < Iterations; i++)
+			{
+				var binding = new TypedBinding<MyObject, string>(
+					o => (o.Children[0].Name, true),
+					null,
+					handlersCount: 2,
+					handlers: GetHandlers
+				)
+				{ Source = Source };
+				
+				static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(MyObject o)
+				{
+					var x0 = o;
+					yield return (x0, "Children");
+					var x1 = x0.Children;
+					// yield return (x1, "Item[0]"); -- not INotifyPropertyChanged
+					var x2 = x1[0];
+					yield return (x2, "Name");
+				}
+				
 				Target.SetBinding(MyObject.NameProperty, binding);
 			}
 		}
