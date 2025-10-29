@@ -291,6 +291,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsView.Handler.PlatformView is UIView itemsView)
 			{
 				itemsView.UpdateFlowDirection(ItemsView);
+
+				// Ensure the CollectionView itself gets the flow direction update for proper layout behavior
+				CollectionView?.UpdateFlowDirection(ItemsView);
+				
 				if (ItemsView.ItemTemplate is not null)
 				{
 					foreach (var child in ItemsView.LogicalChildrenInternal)
