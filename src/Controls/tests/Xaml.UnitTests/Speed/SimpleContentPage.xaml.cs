@@ -33,9 +33,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SimpleContentPage(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+
+		public public class Tests
 		{
-			[Fact]
 			[Fact(Skip = nameof(XamlCIs20TimesFasterThanXaml))]
 			public void XamlCIs20TimesFasterThanXaml()
 			{
@@ -52,10 +53,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					new SimpleContentPage(false);
 				swXaml.Stop();
 
-				Assert.Less(swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
+				Assert.True(swXamlC.ElapsedMilliseconds * 20 < swXaml.ElapsedMilliseconds,
+					$"Expected XamlC to be at least 20x faster than Xaml, but {swXamlC.ElapsedMilliseconds * 20} >= {swXaml.ElapsedMilliseconds}");
 			}
 
-			[Fact]
 			[Fact(Skip = nameof(XamlCIsNotMuchSlowerThanCode))]
 			public void XamlCIsNotMuchSlowerThanCode()
 			{
@@ -72,7 +73,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					new SimpleContentPageCode(false);
 				swCode.Stop();
 
-				Assert.LessOrEqual(swXamlC.ElapsedMilliseconds * .2, swCode.ElapsedMilliseconds);
+				Assert.True(swXamlC.ElapsedMilliseconds * .2 <= swCode.ElapsedMilliseconds,
+					$"Expected XamlC to be not much slower than code, but {swXamlC.ElapsedMilliseconds * .2} > {swCode.ElapsedMilliseconds}");
 			}
 		}
 	}

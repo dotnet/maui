@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
@@ -17,7 +17,8 @@ public partial class Maui22536
 	public Maui22536(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
@@ -31,7 +32,9 @@ public partial class Maui22536
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui22536(useCompiledXaml);
 			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203"));

@@ -26,7 +26,8 @@ public partial class Maui13474
 	public Maui13474(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
@@ -40,12 +41,14 @@ public partial class Maui13474
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui13474(useCompiledXaml);
 			var fontImageSource = page.imageButton.Source as FontImageSource;
 			Assert.Equal(fontImageSource.Color, Colors.Red);
-			Assert.Equal(fontImageSource.FontFamily, "FontAwesome");
+			Assert.Equal("FontAwesome", fontImageSource.FontFamily);
 		}
 	}
 }

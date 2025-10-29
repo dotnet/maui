@@ -21,10 +21,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty GenericPropertyProperty =
-			BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));		class Tests
+			BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006)); public class Tests
 		{
+			[Theory]
 			[InlineData(true), InlineData(false)]
-			public void CanAssignGenericBP(bool useCompiledXaml)
+			public void CanAssignGenericBP()
 			{
 				var page = new Unreported006();
 				Assert.NotNull(page.GenericProperty);

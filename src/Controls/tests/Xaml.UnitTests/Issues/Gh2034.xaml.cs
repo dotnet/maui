@@ -16,15 +16,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2034(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
 			public void Compiles(bool useCompiledXaml)
 			{
 				if (!useCompiledXaml)
 					return;
 				MockCompiler.Compile(typeof(Gh2034));
-				Assert.Pass();
+				// Test passes by not throwing
 			}
 		}
 	}

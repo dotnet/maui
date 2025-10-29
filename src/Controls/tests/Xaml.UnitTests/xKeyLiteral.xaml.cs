@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public xKeyLiteral(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Fact]
 			//this requirement might change, see https://github.com/xamarin/Microsoft.Maui.Controls/issues/12425

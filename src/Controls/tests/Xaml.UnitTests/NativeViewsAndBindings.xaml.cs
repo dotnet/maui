@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -280,7 +280,8 @@ public partial class NativeViewsAndBindings : ContentPage
 	public NativeViewsAndBindings(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
@@ -295,7 +296,9 @@ public partial class NativeViewsAndBindings : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var layout = new NativeViewsAndBindings(useCompiledXaml);
 			layout.BindingContext = new

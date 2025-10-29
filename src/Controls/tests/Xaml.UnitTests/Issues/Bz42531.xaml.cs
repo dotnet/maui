@@ -19,14 +19,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz42531(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void RDInDataTemplates(bool useCompiledXaml)
 			{
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var template = lv.ItemTemplate;
 				var cell = template.CreateContent(null, lv) as ViewCell;
 				var sl = cell.View as StackLayout;
-				Assert.Equal(1, sl.Resources.Count);
+				Assert.Single(sl.Resources);
 				var label = sl.Children[0] as Label;
 				Assert.Equal(LayoutOptions.Center, label.HorizontalOptions);
 			}

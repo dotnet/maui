@@ -16,9 +16,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DynamicResource(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+
+		public class Tests
 		{
-			[InlineData(false), InlineData(true)]
+			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void TestDynamicResources(bool useCompiledXaml)
 			{
 				var layout = new DynamicResource(useCompiledXaml);

@@ -145,14 +145,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		void onButtonClicked(object sender, EventArgs args)
 		{
 			fired = true;
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetValueToBP(bool useCompiledXaml)
 			{
@@ -161,6 +163,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetBindingToBP(bool useCompiledXaml)
 			{
@@ -172,6 +175,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetBindingWithImplicitPath(bool useCompiledXaml)
 			{
@@ -183,6 +187,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetEvent(bool useCompiledXaml)
 			{
@@ -193,6 +198,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetBoolValue(bool useCompiledXaml)
 			{
@@ -203,6 +209,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//TODO test all value conversions
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetAttachedBP(bool useCompiledXaml)
 			{
@@ -212,6 +219,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetContent(bool useCompiledXaml)
 			{
@@ -220,6 +228,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetImplicitContent(bool useCompiledXaml)
 			{
@@ -228,6 +237,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetCollectionContent(bool useCompiledXaml)
 			{
@@ -237,6 +247,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetImplicitCollectionContent(bool useCompiledXaml)
 			{
@@ -246,6 +257,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetSingleCollectionContent(bool useCompiledXaml)
 			{
@@ -254,6 +266,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetImplicitSingleCollectionContent(bool useCompiledXaml)
 			{
@@ -262,6 +275,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetPropertyDefinedOnGenericType(bool useCompiledXaml)
 			{
@@ -270,6 +284,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetConvertibleProperties(bool useCompiledXaml)
 			{
@@ -278,6 +293,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetValueTypeProperties(bool useCompiledXaml)
 			{
@@ -286,6 +302,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void CreateValueTypes(bool useCompiledXaml)
 			{
@@ -294,15 +311,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void DefCollections(bool useCompiledXaml)
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.Equal(2, page.grid0.RowDefinitions.Count);
-				Assert.Equal(1, page.grid0.ColumnDefinitions.Count);
+				Assert.Single(page.grid0.ColumnDefinitions);
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void FlagsAreApplied(bool useCompiledXaml)
 			{
@@ -311,6 +330,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ConversionsAreAppliedOnSet(bool useCompiledXaml)
 			{
@@ -319,6 +339,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ConversionsAreAppliedOnAdd(bool useCompiledXaml)
 			{
@@ -327,6 +348,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ListsAreSimplified(bool useCompiledXaml)
 			{
@@ -335,6 +357,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void MorePrimitiveTypes(bool useCompiledXaml)
 			{
@@ -348,6 +371,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void NonIntEnums(bool useCompiledXaml)
 			{
@@ -363,6 +387,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetValueWithImplicitOperatorOnTarget(bool useCompiledXaml)
 			{
@@ -371,6 +396,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetWithImplicitOperatorOnSource(bool useCompiledXaml)
 			{
@@ -379,6 +405,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetWithImplicitOperatorOnTarget(bool useCompiledXaml)
 			{

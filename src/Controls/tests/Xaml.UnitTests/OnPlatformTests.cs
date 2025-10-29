@@ -3,13 +3,14 @@ using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class OnPlatformTests : BaseTestFixture
+{
+	public class OnPlatformTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public override void Setup()
+		protected override void Setup()
 		{
 			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -138,13 +139,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			image = new Image().LoadFromXaml(xaml);
 			Assert.Equal("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
-	}	public class OnIdiomTests : BaseTestFixture
+	}
+	public class OnIdiomTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public override void Setup()
+		protected override void Setup()
 		{
 			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());

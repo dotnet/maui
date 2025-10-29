@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -15,15 +15,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public AutoMergedResourceDictionaries(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void AutoMergedRd(bool useCompiledXaml)
 			{
 				var layout = new AutoMergedResourceDictionaries(useCompiledXaml);
 				Assert.Equal(Colors.Purple, layout.label.TextColor);
-				Assert.Equal(Color.FromArgb("#FF96F3", layout.label.BackgroundColor));
+				Assert.Equal(Color.Parse("#FF96F3"), layout.label.BackgroundColor);
 			}
 		}
 	}

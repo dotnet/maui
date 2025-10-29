@@ -9,9 +9,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue6280(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var vm = new Issue6280ViewModel();

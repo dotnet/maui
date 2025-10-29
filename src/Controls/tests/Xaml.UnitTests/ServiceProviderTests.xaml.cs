@@ -59,24 +59,27 @@ public partial class ServiceProviderTests : ContentPage
 	public ServiceProviderTests(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	public class Tests
+	}
+
+
+	public public class Tests
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Fact]
-		public void TestServiceProviders([Theory]
+		[Theory]
 		[InlineData(true)]
-		[InlineData(false)] bool useCompiledXaml)
+		[InlineData(false)]
+		public void TestServiceProviders(bool useCompiledXaml)
 		{
 			var page = new ServiceProviderTests(useCompiledXaml);
 
-			Assert.Equal(null, page.label0.Text);
-			Assert.Contains("IProvideValueTarget", page.label1.Text);
-			Assert.Contains("IXmlLineInfoProvider", page.label3.Text);
-			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text); //https://github.com/dotnet/maui/issues/16881
+			Assert.Null(page.label0.Text);
+			Assert.Contains("IProvideValueTarget", page.label1.Text, StringComparison.Ordinal);
+			Assert.Contains("IXmlLineInfoProvider", page.label3.Text, StringComparison.Ordinal);
+			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text, StringComparison.Ordinal); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
 }

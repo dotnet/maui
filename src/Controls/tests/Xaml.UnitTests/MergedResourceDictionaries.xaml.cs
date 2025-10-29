@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -15,9 +15,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public MergedResourceDictionaries(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{

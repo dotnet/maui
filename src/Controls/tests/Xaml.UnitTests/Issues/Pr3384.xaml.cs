@@ -19,10 +19,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Pr3384(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -30,7 +32,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
@@ -38,6 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void RecyclingStrategyIsHandled(bool useCompiledXaml)
 			{

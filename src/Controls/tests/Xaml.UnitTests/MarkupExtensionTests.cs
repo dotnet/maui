@@ -83,13 +83,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			return "BaaExtension";
 		}
-	}	public class MarkupExtensionTests : BaseTestFixture
+	}
+	public class MarkupExtensionTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public override void Setup()
+		protected override void Setup()
 		{
 			base.Setup();
 			var nsManager = new XmlNamespaceManager(new NameTable());
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.True(result, Is.InstanceOf<string>());
+			Assert.IsType<string>(result);
 			Assert.Equal("Foo", result);
 		}
 
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.True(result, Is.InstanceOf<string>());
+			Assert.IsType<string>(result);
 			Assert.Equal("FooBar", result);
 		}
 
@@ -140,7 +141,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.True(result, Is.InstanceOf<string>());
+			Assert.IsType<string>(result);
 			Assert.Equal("TrueTrueTrue", result);
 		}
 
@@ -200,7 +201,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.True(result, Is.InstanceOf<string>());
+			Assert.IsType<string>(result);
 			Assert.Equal("BaaExtension", result);
 		}
 
@@ -215,7 +216,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			};
 			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.True(result, Is.InstanceOf<string>());
+			Assert.IsType<string>(result);
 			Assert.Equal("FuuExtension", result);
 		}
 

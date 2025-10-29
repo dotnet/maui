@@ -17,16 +17,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StyleTests(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void SetUp()
 			{
 				Application.Current = new MockApplication();
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void TestStyle(bool useCompiledXaml)
 			{
@@ -37,6 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void TestConversionOnSetters(bool useCompiledXaml)
 			{
@@ -61,6 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ImplicitStyleAreApplied(bool useCompiledXaml)
 			{
@@ -69,6 +74,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void PropertyDoesNotNeedTypes(bool useCompiledXaml)
 			{
@@ -81,6 +87,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Red, s1.Value);
 			}
 
+			[Xunit.Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			//issue #2406
@@ -95,6 +102,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(Colors.Red, label.TextColor);
 			}
 
+			[Xunit.Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			//issue #2406

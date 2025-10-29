@@ -16,16 +16,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue2114(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void SetUp()
 			{
 				Application.Current = null;
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void StaticResourceOnApplication(bool useCompiledXaml)
 			{

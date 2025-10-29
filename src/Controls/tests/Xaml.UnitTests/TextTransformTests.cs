@@ -3,10 +3,12 @@ using Microsoft.Maui.Controls.Internals;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class TextTransformTests : BaseTestFixture
+{
+	public class TextTransformTests : BaseTestFixture
 	{
 		[InlineData(TextTransform.None)]
 		[InlineData(TextTransform.Lowercase)]
+		[Theory]
 		[InlineData(TextTransform.Uppercase)]
 		public void LabelTextTransform(TextTransform result)
 		{

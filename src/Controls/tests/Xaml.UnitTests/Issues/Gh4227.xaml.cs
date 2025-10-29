@@ -32,9 +32,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4227(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public public class Tests
 		{
-			[InlineData(true), InlineData(false)]
+			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void FindMemberOnInterfaces(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

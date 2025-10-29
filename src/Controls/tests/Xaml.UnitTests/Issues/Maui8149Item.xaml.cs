@@ -6,4 +6,15 @@ public partial class Maui8149Item : ContentView
 	{
 		InitializeComponent();
 	}
+
+	public class Test
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void Method()
+		{
+			// ...existing code...
+		}
+	}
 }

@@ -11,9 +11,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DO817710(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				Assert.DoesNotThrow(() => new DO817710(useCompiledXaml: useCompiledXaml));

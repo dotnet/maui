@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1497
+{
+	public class Issue1497
 	{
 		[Fact]
 		public void BPCollectionsWithSingleElement()
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					    </Grid>";
 
 			var grid = new Grid().LoadFromXaml(xaml);
-			Assert.Equal(1, grid.ColumnDefinitions.Count);
+			Assert.Single(grid.ColumnDefinitions);
 			Assert.True(grid.ColumnDefinitions[0].Width.IsStar);
 		}
 	}

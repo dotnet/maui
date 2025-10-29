@@ -11,14 +11,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh6192(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh6192(useCompiledXaml);

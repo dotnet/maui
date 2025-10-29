@@ -16,8 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StaticExtensionException(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Issue2115
+		}
+		public class Issue2115
 		{
+			[Theory]
 			[InlineData(false)]
 			public void xStaticThrowsMeaningfullException(bool useCompiledXaml)
 			{

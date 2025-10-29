@@ -25,7 +25,8 @@ public partial class Maui24500 : ContentPage
 	public Maui24500(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -48,17 +49,19 @@ public partial class Maui24500 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui24500));
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui24500(useCompiledXaml) { BindingContext = new { EditingMode = true } };
-			Assert.Equal(false, page.label0.IsVisible);
+			Assert.False(page.label0.IsVisible);
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			page = new Maui24500(useCompiledXaml) { BindingContext = new { EditingMode = true } };
-			Assert.Equal(true, page.label0.IsVisible);
+			Assert.True(page.label0.IsVisible);
 
 
 		}

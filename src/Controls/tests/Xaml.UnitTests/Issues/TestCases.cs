@@ -13,12 +13,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class BasePage : ContentPage
 	{
 
-	}	public class TestCases
+	}
+	public class TestCases
 	{
 		CultureInfo _defaultCulture;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -27,6 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public virtual void TearDown()
 		{
 			DispatcherProvider.SetCurrent(null);
@@ -202,6 +205,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Equal("oof", label.Text);
 		}
 
+		[Xunit.Theory]
 		[InlineData("en-US"), InlineData("tr-TR"), InlineData("fr-FR")]
 		//only happens in european cultures
 		public void Issue1493(string culture)

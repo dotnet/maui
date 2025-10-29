@@ -18,10 +18,12 @@ public partial class Maui21434
 	public Maui21434(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -32,7 +34,9 @@ public partial class Maui21434
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(true)]
+		[InlineData(false)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui21434(useCompiledXaml);
 			Assert.Equal("ParentText", page.ParentTextLabel?.Text);

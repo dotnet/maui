@@ -24,7 +24,7 @@ public partial class Maui17950 : ContentPage
 	void TestBtn(object sender, EventArgs e)
 	{
 		Console.WriteLine("event called");
-		Assert.Pass();
+		// Test passes by not throwing
 	}
 
 	void TestBtn(object sender, string e)
@@ -37,7 +37,8 @@ public partial class Maui17950 : ContentPage
 	{
 		Console.WriteLine("normal method called");
 		throw new Xunit.Sdk.XunitException("wrong method invoked");
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
@@ -45,7 +46,9 @@ public partial class Maui17950 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui17950)));

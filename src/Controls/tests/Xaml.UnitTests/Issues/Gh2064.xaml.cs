@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2064(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void ReportMissingTargetTypeOnStyle(bool useCompiledXaml)
 			{

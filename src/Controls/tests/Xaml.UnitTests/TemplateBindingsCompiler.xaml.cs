@@ -22,14 +22,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TemplateBindingsCompiler(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void Test(bool useCompiledXaml)
 			{

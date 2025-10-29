@@ -14,8 +14,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public ResourceDictionaryWithInvalidSource(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void InvalidSourceThrows(bool useCompiledXaml)
 			{

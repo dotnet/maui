@@ -62,9 +62,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			get { return (IList<string>)GetValue(Collection2Property); }
 			set { SetValue(Collection2Property, value); }
-		}		class Tests
+		}
+		public class Tests
 		{
-			[InlineData(true), InlineData(false)]
+			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void CollectionProperties(bool useCompiledXaml)
 			{
 				var layout = new Bz60575(useCompiledXaml);
@@ -75,13 +78,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				//attached BP with a single element
 				col = layout.GetValue(Bz60575Helpers.Collection2Property) as IList<string>;
-				Assert.Equal(1, col.Count);
+				Assert.Single(col);
 
 				//normal BP
 				Assert.Equal(3, layout.Collection.Count);
 
 				//normal BP with a single element
-				Assert.Equal(1, layout.Collection2.Count);
+				Assert.Single(layout.Collection2);
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -18,7 +18,8 @@ public partial class Maui25608
 	public Maui25608(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
 
@@ -43,7 +44,9 @@ public partial class Maui25608
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			bool bindingFailureReported = false;
 			_bindingFailureHandler = (sender, args) => bindingFailureReported = true;

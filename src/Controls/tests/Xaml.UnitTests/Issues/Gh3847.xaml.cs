@@ -16,8 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh3847(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void RelativeSourceSelfBinding(bool useCompiledXaml)
 			{
@@ -25,6 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = view.FindByName<Label>("SelfBindingLabel");
 				Assert.Equal(label.Text, label.StyleId);
 			}
+
+			[Theory]
 
 			[InlineData(false), InlineData(true)]
 			public void RelativeSourceAncestorLevelBinding(bool useCompiledXaml)
@@ -39,9 +43,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				Assert.Equal(level1Label.Text, stack1.StyleId);
 				Assert.Equal(level2Label.Text, stack0.StyleId);
-				Assert.Equal(ancestorBindingContextLabel.Text, "Foo");
+				Assert.Equal("Foo", ancestorBindingContextLabel.Text);
 				Assert.Null(level3Label.Text);
 			}
+
+			[Theory]
 
 			[InlineData(false), InlineData(true)]
 			public void RelativeSourceTemplatedParentBinding(bool useCompiledXaml)

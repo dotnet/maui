@@ -157,9 +157,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz45299(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void XamlCCustomTypeConverter(bool useCompiledXaml)
 			{

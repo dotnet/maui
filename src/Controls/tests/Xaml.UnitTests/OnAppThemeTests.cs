@@ -5,14 +5,15 @@ using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class OnAppThemeTests : BaseTestFixture
+{
+	public class OnAppThemeTests : BaseTestFixture
 	{
 		MockAppInfo mockAppInfo;
 		MockApplication mockApp;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public override void Setup()
+		protected override void Setup()
 		{
 			base.Setup();
 			AppInfo.SetCurrent(mockAppInfo = new MockAppInfo());
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
-		public override void TearDown()
+		protected override void TearDown()
 		{
 			Application.Current = null;
 			AppInfo.SetCurrent(null);

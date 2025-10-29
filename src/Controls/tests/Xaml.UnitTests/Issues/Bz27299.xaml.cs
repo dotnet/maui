@@ -36,22 +36,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz27299(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void SetUp()
 			{
 				Bz27299ViewModelLocator.Count = 0;
 			}
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void ViewModelLocatorOnlyCalledOnce(bool useCompiledXaml)
 			{
-				Assert.Equal(0, Bz27299ViewModelLocator.Count);
+				Assert.Empty(Bz27299ViewModelLocator);
 				var layout = new Bz27299(useCompiledXaml);
-				Assert.Equal(1, Bz27299ViewModelLocator.Count);
+				Assert.Single(Bz27299ViewModelLocator);
 				Assert.Equal("Foo", layout.label.Text);
 			}
 		}

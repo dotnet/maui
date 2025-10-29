@@ -14,25 +14,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FieldModifier(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class FindByNameTests
+		}
+
+		public class FindByNameTests
 		{
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestFieldModifier(bool useCompiledXaml)
 			{
-				var layout = new FieldModifier();
+				var layout = new FieldModifier(useCompiledXaml);
 				Assert.NotNull(layout.privateLabel);
 				Assert.NotNull(layout.internalLabel);
 				Assert.NotNull(layout.publicLabel);
 
 				var fields = typeof(FieldModifier).GetTypeInfo().DeclaredFields;
 
-				Assert.True(fields.First(fi => fi.Name == "privateLabel").IsPrivate, Is.True);
-
-				Assert.True(fields.First(fi => fi.Name == "internalLabel").IsPrivate, Is.False);
-				Assert.True(fields.First(fi => fi.Name == "internalLabel").IsPublic, Is.False);
-
-				Assert.True(fields.First(fi => fi.Name == "publicLabel").IsPublic, Is.True);
+				Assert.True(fields.First(fi => fi.Name == "privateLabel").IsPrivate);
+				Assert.False(fields.First(fi => fi.Name == "internalLabel").IsPrivate);
+				Assert.False(fields.First(fi => fi.Name == "internalLabel").IsPublic);
+				Assert.True(fields.First(fi => fi.Name == "publicLabel").IsPublic);
 			}
 		}
 	}

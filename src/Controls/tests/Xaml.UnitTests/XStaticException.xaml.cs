@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XStaticException(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			//{x:Static Member=prefix:typeName.staticMemberName}
 			//{x:Static prefix:typeName.staticMemberName}
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// All other cases should throw
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ThrowOnInstanceProperty(bool useCompiledXaml)
 			{

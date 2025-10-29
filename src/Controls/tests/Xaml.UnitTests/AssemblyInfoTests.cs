@@ -6,7 +6,8 @@ using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
-{	public class AssemblyInfoTests
+{
+	public class AssemblyInfoTests
 	{
 		static readonly string[] references = new[]
 		{
@@ -35,11 +36,11 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
-			// Currently we keep the assembly verison at 1.0.0.0
-			Assert.Equal(1, actual.Major, actual.ToString());
-			Assert.Equal(0, actual.Minor, actual.ToString());
-			Assert.Equal(0, actual.Build, actual.ToString());
-			Assert.Equal(0, actual.Revision, actual.ToString());
+			// Currently we keep the assembly verison at1.0.0.0
+			Assert.Equal(1, actual.Major);
+			Assert.Equal(0, actual.Minor);
+			Assert.Equal(0, actual.Build);
+			Assert.Equal(0, actual.Revision);
 		}
 
 		// [Theory, MemberData(nameof(references))]
@@ -87,13 +88,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					if (!File.Exists(fileFromRoot))
 					{
 						throw new Xunit.Sdk.XunitException($"Unable to find {file} at path: {fileFromRoot}");
-						return null;
+						// return null;
 					}
 				}
 				else
 				{
 					throw new Xunit.Sdk.XunitException($"Unable to find {file} at path: {fileFromRoot}");
-					return null;
+					// return null;
 				}
 			}
 			return fileFromRoot;
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			if (string.IsNullOrEmpty(fileFromRootpath))
 			{
 				throw new Xunit.Sdk.XunitException($"Unable to find {file} at path: {fileFromRootpath}");
-				return null;
+				// return null;
 			}
 			return File.ReadAllText(fileFromRootpath);
 		}

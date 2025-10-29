@@ -30,10 +30,12 @@ public partial class Maui19535 : Maui19535CustomThemeDictionary
 	public Maui19535(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -44,7 +46,9 @@ public partial class Maui19535 : Maui19535CustomThemeDictionary
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(true)]
+		[InlineData(false)]
+		public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui19535));

@@ -17,8 +17,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public ConstraintExpression(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void ConstantConstraint(bool useCompiledXaml)
@@ -30,6 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(42, constraint.Compute(null));
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void ConstraintRelativeToParent(bool useCompiledXaml)
@@ -42,6 +45,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(102, constraint.Compute(layout.relativeLayout));
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void ContraintRelativeToView(bool useCompiledXaml)

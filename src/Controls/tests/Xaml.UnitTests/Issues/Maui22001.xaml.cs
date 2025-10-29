@@ -26,7 +26,8 @@ public partial class Maui22001
 	public Maui22001(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
@@ -51,7 +52,9 @@ public partial class Maui22001
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui22001(useCompiledXaml);
 

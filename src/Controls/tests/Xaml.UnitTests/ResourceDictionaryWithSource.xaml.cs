@@ -16,14 +16,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public ResourceDictionaryWithSource(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void RDWithSourceAreFound(bool useCompiledXaml)
 			{
 				var layout = new ResourceDictionaryWithSource(useCompiledXaml);
 				Assert.Equal(Colors.Pink, layout.label.TextColor);
 			}
+
+			[Theory]
 
 			[InlineData(false), InlineData(true)]
 			public void RelativeAndAbsoluteURI(bool useCompiledXaml)
@@ -60,6 +64,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var rd = Activator.CreateInstance(type);
 				Assert.NotNull(rd as ResourceDictionary);
 			}
+
+			[Theory]
 
 			[InlineData(false), InlineData(true)]
 			public void LoadResourcesWithAssembly(bool useCompiledXaml)

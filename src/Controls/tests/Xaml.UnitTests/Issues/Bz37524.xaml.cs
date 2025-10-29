@@ -15,14 +15,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz37524(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void MultiTriggerConditionNotApplied(bool useCompiledXaml)
 			{
 				var layout = new Bz37524(useCompiledXaml);
-				Assert.Equal(false, layout.TheButton.IsEnabled);
+				Assert.False(layout.TheButton.IsEnabled);
 			}
 		}
 	}

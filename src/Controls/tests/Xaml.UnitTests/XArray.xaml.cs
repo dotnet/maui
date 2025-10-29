@@ -21,9 +21,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XArray(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SupportsXArray(bool useCompiledXaml)
 			{
@@ -37,7 +39,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method(bool useCompiledXaml)
+			[InlineData(false)]
+			[InlineData(true)]
+			public void Method()
 			{
 				MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
 				Assert.True(!hasLoggedErrors);

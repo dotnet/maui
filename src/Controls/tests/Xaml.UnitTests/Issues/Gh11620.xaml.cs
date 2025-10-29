@@ -12,9 +12,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh11620(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh11620(useCompiledXaml);

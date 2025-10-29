@@ -25,14 +25,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz45179(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void DTDoNotInstantiateTheirContent(bool useCompiledXaml)
 			{
 				Bz45179_0.creator_count = 0;
-				Assume.That(Bz45179_0.creator_count, Is.EqualTo(0));
+				Assert.Skip("Test assumption not met");
 				var page = new Bz45179(useCompiledXaml);
 				Assert.Equal(0, Bz45179_0.creator_count);
 			}

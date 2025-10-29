@@ -17,9 +17,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DefinitionCollectionTests(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void Method(bool useCompiledXaml)
 			{
 				var layout = new DefinitionCollectionTests(useCompiledXaml);
@@ -28,19 +31,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				Assert.Equal(5, coldef.Count);
 
-				Assert.Equal(new GridLength(1, GridUnitType.Star, coldef[0].Width));
-				Assert.Equal(new GridLength(2, GridUnitType.Star, coldef[1].Width));
-				Assert.Equal(new GridLength(1, GridUnitType.Auto, coldef[2].Width));
-				Assert.Equal(new GridLength(1, GridUnitType.Star, coldef[3].Width));
-				Assert.Equal(new GridLength(300, GridUnitType.Absolute, coldef[4].Width));
+				Assert.Equal(coldef[0].Width, new GridLength(1, GridUnitType.Star));
+				Assert.Equal(coldef[1].Width, new GridLength(2, GridUnitType.Star));
+				Assert.Equal(coldef[2].Width, new GridLength(1, GridUnitType.Auto));
+				Assert.Equal(coldef[3].Width, new GridLength(1, GridUnitType.Star));
+				Assert.Equal(coldef[4].Width, new GridLength(300, GridUnitType.Absolute));
 
 				Assert.Equal(5, rowdef.Count);
-				Assert.Equal(new GridLength(1, GridUnitType.Star, rowdef[0].Height));
-				Assert.Equal(new GridLength(1, GridUnitType.Auto, rowdef[1].Height));
-				Assert.Equal(new GridLength(25, GridUnitType.Absolute, rowdef[2].Height));
-				Assert.Equal(new GridLength(14, GridUnitType.Absolute, rowdef[3].Height));
-				Assert.Equal(new GridLength(20, GridUnitType.Absolute, rowdef[4].Height));
-
+				Assert.Equal(rowdef[0].Height, new GridLength(1, GridUnitType.Star));
+				Assert.Equal(rowdef[1].Height, new GridLength(1, GridUnitType.Auto));
+				Assert.Equal(rowdef[2].Height, new GridLength(25, GridUnitType.Absolute));
+				Assert.Equal(rowdef[3].Height, new GridLength(14, GridUnitType.Absolute));
+				Assert.Equal(rowdef[4].Height, new GridLength(20, GridUnitType.Absolute));
 			}
 
 			[Fact]

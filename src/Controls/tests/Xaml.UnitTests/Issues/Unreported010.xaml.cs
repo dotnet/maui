@@ -19,7 +19,8 @@ public partial class Unreported010
 	public Unreported010(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
@@ -33,7 +34,9 @@ public partial class Unreported010
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Unreported010(useCompiledXaml);
 			Assert.Equal(Colors.Blue, page.button0.BackgroundColor);

@@ -19,13 +19,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz53381(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				Application.Current = null;
@@ -33,6 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void ControlTemplateAsImplicitAppLevelStyles(bool useCompiledXaml)
 			{
@@ -40,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var view = new Bz53381(useCompiledXaml);
 				Application.Current.LoadPage(new ContentPage { Content = view });
 				var presenter = ((StackLayout)view.InternalChildren[0]).Children[1] as ContentPresenter;
-				Assume.That(presenter, Is.Not.Null);
+				Assert.Skip("Test assumption not met");
 				var grid = presenter.Content as Grid;
 				Assert.NotNull(grid);
 				Assert.Equal(Colors.Green, grid.BackgroundColor);

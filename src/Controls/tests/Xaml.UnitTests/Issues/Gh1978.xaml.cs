@@ -17,9 +17,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh1978(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
+			[InlineData(false)]
 			public void ReportError(bool useCompiledXaml)
 			{
 				if (!useCompiledXaml)

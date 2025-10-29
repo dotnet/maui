@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[SetUpFixture]
+	//[SetUpFixture]
 	public class MySetUpClass
 	{
 		// NOTE: xUnit doesn't have OneTimeSetUp. This may need to use ICollectionFixture or ModuleInitializer.

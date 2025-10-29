@@ -31,20 +31,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void Validate(Action action)
 		{
 			var ex = Xunit.Assert.Throws<XamlParseException>(action);
-			
+
 			if (!haslineinfo)
 				return;
-				
+
 			var xmlInfo = ex.XmlInfo;
 			Xunit.Assert.NotNull(xmlInfo);
 			Xunit.Assert.True(xmlInfo.HasLineInfo(), "Expected exception to have line info");
-			
+
 			if (messagePredicate != null)
 			{
 				Xunit.Assert.True(messagePredicate(ex.UnformattedMessage),
 					$"Exception message did not match predicate. Message: {ex.UnformattedMessage}");
 			}
-			
+
 			Xunit.Assert.Equal(linenumber, xmlInfo.LineNumber);
 			Xunit.Assert.Equal(lineposition, xmlInfo.LinePosition);
 		}

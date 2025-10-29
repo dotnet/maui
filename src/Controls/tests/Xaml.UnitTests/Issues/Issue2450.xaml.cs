@@ -16,8 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue2450(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(false)]
 			public void ThrowMeaningfulExceptionOnDuplicateXName(bool useCompiledXaml)
 			{

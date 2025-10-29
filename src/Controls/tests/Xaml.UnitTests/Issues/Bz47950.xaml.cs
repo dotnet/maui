@@ -26,9 +26,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz47950(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var page = new Bz47950(useCompiledXaml);

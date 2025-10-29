@@ -72,8 +72,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public FactoryMethods(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestDefaultCtor(bool useCompiledXaml)
@@ -82,6 +84,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("default ctor", layout.v0.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestStringCtor(bool useCompiledXaml)
@@ -90,6 +93,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("alternate ctor foobar", layout.v1.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestIntCtor(bool useCompiledXaml)
@@ -98,6 +102,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("int ctor 42", layout.v2.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestArgumentlessFactoryMethod(bool useCompiledXaml)
@@ -106,6 +111,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("parameterless factory", layout.v3.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestFactoryMethod(bool useCompiledXaml)
@@ -114,6 +120,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("factory foo42", layout.v4.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestFactoryMethodParametersOrder(bool useCompiledXaml)
@@ -122,6 +129,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("factory 42foo", layout.v5.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestCtorWithxStatic(bool useCompiledXaml)
@@ -130,6 +138,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("alternate ctor Property", layout.v6.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestCtorWithxStaticAttribute(bool useCompiledXaml)
@@ -138,6 +147,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("alternate ctor Property", layout.v7.Content.Content);
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void TestCtorWithArrayParameter(bool useCompiledXaml)

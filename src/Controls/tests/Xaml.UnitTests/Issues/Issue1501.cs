@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			Fired = true;
 		}
-	}	public class Issue1501
+	}
+	public class Issue1501
 	{
 		[Fact]
 		public void ConnectEventsInGestureRecognizers()

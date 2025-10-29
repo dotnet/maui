@@ -14,22 +14,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public AutomationProperties(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests : IDisposable
 		{
-			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
-			public void Setup()
+			public Tests()
 			{
 				Application.Current = new MockApplication();
 			}
 
-			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
-			public void TearDown()
+			public void Dispose()
 			{
 				Application.Current = null;
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void AutomationPropertiesName(bool useCompiledXaml)
@@ -39,6 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.NameProperty));
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void AutomationPropertiesHelpText(bool useCompiledXaml)
@@ -48,6 +47,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("Sets your name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.HelpTextProperty));
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void AutomationPropertiesIsInAccessibleTree(bool useCompiledXaml)
@@ -55,9 +55,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new AutomationProperties(useCompiledXaml);
 				Application.Current.LoadPage(layout);
 
-				Assert.Equal(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
+				Assert.True((bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void AutomationPropertiesLabeledBy(bool useCompiledXaml)

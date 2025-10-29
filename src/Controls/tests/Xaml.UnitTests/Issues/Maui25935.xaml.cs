@@ -20,7 +20,8 @@ public partial class Maui25935
 	public Maui25935(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
@@ -34,7 +35,9 @@ public partial class Maui25935
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui25935(useCompiledXaml);
 			var items = page.Picker.Items.ToArray();

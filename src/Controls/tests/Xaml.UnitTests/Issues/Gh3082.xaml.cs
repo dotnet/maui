@@ -24,8 +24,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		async Task OnClicked(object sender, EventArgs e)
 		{
 			await Task.Delay(1000);
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void ThrowsOnWrongEventHandlerSignature(bool useCompiledXaml)
 			{

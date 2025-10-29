@@ -234,29 +234,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public PlatformViewsAndBindings(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		[Fact(Skip = "fails for now")]
-		public class Tests
-		{
-			MockDeviceInfo mockDeviceInfo;
+		}
 
-			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
-			public void Setup()
+		public class Tests : IDisposable
+		{
+			private MockDeviceInfo mockDeviceInfo;
+
+			public Tests()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
-			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
-			public void TearDown()
+			public void Dispose()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
-			DevicePlatform SetUpPlatform(string platform)
+			private DevicePlatform SetUpPlatform(string platform)
 			{
 				var p = DevicePlatform.Create(platform);
-
 				mockDeviceInfo.Platform = p;
 				if (p == DevicePlatform.iOS)
 				{
@@ -268,18 +264,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					DependencyService.Register<INativeValueConverterService, MockAndroidPlatformValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockAndroidPlatformBindingService>();
 				}
-
 				return p;
 			}
 
+			[Theory(Skip = "fails for now")]
 			[InlineData(false, "iOS")]
 			[InlineData(false, "Android")]
-			[Fact(Skip = "fails for now")]
-			//[InlineData(true)]
 			public void PlatformInContentView(bool useCompiledXaml, string platform)
 			{
 				var realPlatform = SetUpPlatform(platform);
-
 				var layout = new PlatformViewsAndBindings(useCompiledXaml);
 				layout.BindingContext = new
 				{

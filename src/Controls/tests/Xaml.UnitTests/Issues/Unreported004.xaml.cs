@@ -34,8 +34,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static void SetSomeProperty(BindableObject bindable, string value)
 		{
 			bindable.SetValue(SomePropertyProperty, value);
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true), InlineData(false)]
 			public void MultipleGetMethodsAllowed(bool useCompiledXaml)
 			{

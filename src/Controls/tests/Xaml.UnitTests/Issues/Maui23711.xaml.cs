@@ -21,7 +21,8 @@ public partial class Maui23711 : ContentPage
 	public Maui23711(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -44,7 +45,7 @@ public partial class Maui23711 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool compileBindingsWithSource)
+		public void Method(bool compileBindingsWithSource)
 		{
 			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
 			Assert.True(!hasLoggedErrors);

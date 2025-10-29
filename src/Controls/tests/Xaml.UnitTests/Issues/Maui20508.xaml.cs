@@ -18,11 +18,12 @@ public partial class Maui20508
 	public Maui20508(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public void Setup()
+		private void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -32,7 +33,9 @@ public partial class Maui20508
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(true)]
+		[InlineData(false)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui20508(useCompiledXaml) { BindingContext = new { Icon = "boundIcon.png" } };
 			Assert.Equal("boundIcon.png", ((FileImageSource)page.ToolbarItems[0].IconImageSource).File);

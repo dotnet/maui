@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
 	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
 	using ConstraintExpression = Microsoft.Maui.Controls.Compatibility.ConstraintExpression;
-	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;	public class TypeReferenceExtensionsTests
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+	public class TypeReferenceExtensionsTests
 	{
 		class Foo
 		{
@@ -89,6 +90,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		// NOTE: xUnit doesn't have OneTimeSetUp. This may need to use ICollectionFixture or ModuleInitializer.
 		// [OneTimeSetUp]
+		[Xunit.Fact]
 		public void OneTimeSetUp()
 		{
 			resolver = new XamlCAssemblyResolver();
@@ -109,6 +111,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		// NOTE: xUnit doesn't have OneTimeTearDown.
 		// [OneTimeTearDown]
+		[Xunit.Fact]
 		public void OneTimeTearDown()
 		{
 			resolver?.Dispose();
@@ -205,6 +208,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		[InlineData(typeof(Bar<byte>), 1)]
 		[InlineData(typeof(Quux<byte>), 2)]
+		[Theory]
 		[InlineData(typeof(Corge<byte>), 3)]
 		public void TestResolveGenericParameters(Type typeRef, int depth)
 		{
@@ -220,6 +224,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			Assert.Equal("Byte", resolvedType.Name);
 		}
 
+		[Xunit.Fact]
 		public void TestResolveGenericParametersOfGenericMethod()
 		{
 			var method = new GenericInstanceMethod(module.ImportReference(typeof(Grault)).Resolve().Methods[0]);
@@ -230,6 +235,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		}
 
 		[InlineData(typeof(Garply<byte>), typeof(byte))]
+		[Theory]
 		[InlineData(typeof(Waldo<byte>), typeof(Foo<byte>))]
 		public void TestResolveGenericParametersOfMethodOfGeneric(Type typeRef, Type returnType)
 		{

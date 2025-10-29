@@ -10,8 +10,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SetStyleIdFromXName(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void SetStyleId(bool useCompiledXaml)
 			{

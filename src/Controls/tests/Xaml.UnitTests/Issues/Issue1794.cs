@@ -4,7 +4,8 @@ using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1794
+{
+	public class Issue1794
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var list = layout.FindByName<ListView>("listView");
 			var item0 = list.TemplatedItems.GetOrCreateContent(0, null);
 			var item1 = list.TemplatedItems.GetOrCreateContent(1, null);
-			Assert.Pass();
+			// Test passes by not throwing
 		}
 	}
 }

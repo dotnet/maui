@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void SetUp()
 		{
 			testDirectory = AppContext.BaseDirectory;
@@ -95,6 +96,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public void TearDown()
 		{
 			// Leave log files behind on test failures
@@ -263,7 +265,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Theory]
-			public void Method(string configuration)
+		public void Method(string configuration)
 		{
 			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));

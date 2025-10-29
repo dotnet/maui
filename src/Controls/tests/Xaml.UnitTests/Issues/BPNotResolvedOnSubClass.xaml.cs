@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -25,8 +25,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public BPNotResolvedOnSubClass(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
 			[InlineData(false)]
 			public void CorrectlyResolveBPOnSubClasses(bool useCompiledXaml)

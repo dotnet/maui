@@ -18,28 +18,30 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue2016(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void TestSwitches(bool useCompiledXaml)
 			{
 				var page = new Issue2016(useCompiledXaml);
-				Assert.Equal(false, page.a0.IsToggled);
-				Assert.Equal(false, page.b0.IsToggled);
-				Assert.Equal(false, page.s0.IsToggled);
-				Assert.Equal(false, page.t0.IsToggled);
+				Assert.False(page.a0.IsToggled);
+				Assert.False(page.b0.IsToggled);
+				Assert.False(page.s0.IsToggled);
+				Assert.False(page.t0.IsToggled);
 
 				page.a0.IsToggled = true;
 				page.b0.IsToggled = true;
 
-				Assert.Equal(true, page.s0.IsToggled);
-				Assert.Equal(true, page.t0.IsToggled);
+				Assert.True(page.s0.IsToggled);
+				Assert.True(page.t0.IsToggled);
 			}
 		}
 	}

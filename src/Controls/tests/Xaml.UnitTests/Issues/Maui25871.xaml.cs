@@ -21,7 +21,8 @@ public partial class Maui25871 : ContentPage
 	public Maui25871(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]

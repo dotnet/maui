@@ -2,7 +2,8 @@ using System;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1637
+{
+	public class Issue1637
 	{
 		[Fact]
 		public void ImplicitCollectionWithSingleElement()
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Grid>";
 			var grid = new Grid();
 			Assert.DoesNotThrow(() => grid.LoadFromXaml<Grid>(xaml));
-			Assert.Equal(1, grid.RowDefinitions.Count);
+			Assert.Single(grid.RowDefinitions);
 			Assert.True(grid.RowDefinitions[0].Height.IsStar);
 		}
 	}

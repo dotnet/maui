@@ -214,8 +214,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh3539(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
 			public void CompiledBindingCodeIsValid(bool useCompiledXaml)
 			{

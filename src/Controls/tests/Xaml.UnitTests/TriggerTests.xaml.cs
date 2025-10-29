@@ -16,9 +16,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TriggerTests(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ValueIsConverted(bool useCompiledXaml)
 			{
@@ -30,10 +32,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.IsNotEmpty(triggers);
 				var pwTrigger = triggers[0] as Trigger;
 				Assert.Equal(Entry.IsPasswordProperty, pwTrigger.Property);
-				Assert.Equal(true, pwTrigger.Value);
+				Assert.True(pwTrigger.Value);
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ValueIsConvertedWithPropertyCondition(bool useCompiledXaml)
 			{
@@ -46,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var pwTrigger = triggers[0] as MultiTrigger;
 				var pwCondition = pwTrigger.Conditions[0] as PropertyCondition;
 				Assert.Equal(Entry.IsPasswordProperty, pwCondition.Property);
-				Assert.Equal(true, pwCondition.Value);
+				Assert.True(pwCondition.Value);
 			}
 		}
 	}

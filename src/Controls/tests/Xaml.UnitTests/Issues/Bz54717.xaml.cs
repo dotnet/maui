@@ -15,16 +15,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz54717(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void FooBz54717(bool useCompiledXaml)
 			{
@@ -36,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					}
 				};
 				var layout = new Bz54717(useCompiledXaml);
-				Assert.Equal(1, layout.Resources.Count);
+				Assert.Single(layout.Resources);
 				var array = layout.Resources["SomeColors"] as Color[];
 				Assert.Equal(Colors.Red, array[0]);
 				Assert.Equal(Colors.Blue, array[1]);

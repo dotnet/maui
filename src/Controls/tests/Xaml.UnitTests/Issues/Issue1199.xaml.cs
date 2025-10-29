@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -16,9 +16,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue1199(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void AllowCreationOfTypesFromString(bool useCompiledXaml)
 			{

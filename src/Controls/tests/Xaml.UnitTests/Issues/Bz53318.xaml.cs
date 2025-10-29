@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz53318()
 		{
 			InitializeComponent();
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			[Fact]
 			public void DoesCompilesArgsInsideDataTemplate()

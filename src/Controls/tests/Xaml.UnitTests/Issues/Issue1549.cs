@@ -53,10 +53,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			get;
 			set;
 		}
-	}	public class Issue1549
+	}
+	public class Issue1549
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			SeverityColorConverter.count = 0;
@@ -93,7 +95,7 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
 			Assert.Equal(Colors.Blue, label.BackgroundColor);
-			Assert.Equal(1, SeverityColorConverter.count);
+			Assert.Single(SeverityColorConverter);
 		}
 
 		[Fact]
@@ -122,7 +124,7 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
 			Assert.Equal(Colors.Blue, label.BackgroundColor);
-			Assert.Equal(1, SeverityColorConverter.count);
+			Assert.Single(SeverityColorConverter);
 		}
 
 		[Fact]
@@ -185,8 +187,8 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			Assert.Equal("Show Is Locked", label00.Text);
 			Assert.Equal("Show Is Not locked", label01.Text);
 
-			Assert.Equal(true, label00.IsVisible);
-			Assert.Equal(false, label01.IsVisible);
+			Assert.True(label00.IsVisible);
+			Assert.False(label01.IsVisible);
 
 			Assert.Equal(4, InvertBoolenConverter.count);
 

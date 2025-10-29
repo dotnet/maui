@@ -22,13 +22,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public BindingsCompiler(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void Test(bool useCompiledXaml)
@@ -118,12 +120,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				if (useCompiledXaml)
 				{
 					var binding = layout.picker0.ItemDisplayBinding;
-					Assert.True(binding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
+					Assert.IsType<TypedBinding<MockItemViewModel, string>>(binding);
 				}
 
 				//testing invalid bindingcontext type
 				layout.stack.BindingContext = new object();
-				Assert.Equal(null, layout.label0.Text);
+				Assert.Null(layout.label0.Text);
 
 				//testing source
 				Assert.Equal("Text for label12", layout.label12.Text);

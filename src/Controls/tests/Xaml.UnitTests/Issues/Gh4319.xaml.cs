@@ -13,23 +13,28 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4319(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
+
+			[Theory]
 
 			[InlineData(true), InlineData(false)]
 			public void OnPlatformMarkupAndNamedSizes(bool useCompiledXaml)

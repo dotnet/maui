@@ -20,9 +20,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public OnPlatformOptimization(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+
+
+		public public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(string targetFramework)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
@@ -33,6 +38,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
 			}
 
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void ValuesAreSet(bool useCompiledXaml)
@@ -42,7 +48,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("foo", p.label1.Text);
 			}
 
-			[Fact]
 			[Fact(Skip = "capability disabled for now")]
 			public void OnPlatformAreSimplified(string targetFramework)
 			{

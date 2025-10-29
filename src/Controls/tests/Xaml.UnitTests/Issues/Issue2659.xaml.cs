@@ -60,7 +60,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			foreach (View view in stackLayout.Children)
 				action((Button)view);
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			void AssertStyleApplied(Button button)
 			{
@@ -81,6 +82,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetUnsetStyleFromResource(bool useCompiledXaml)
 			{
@@ -107,6 +109,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void SetUnsetLocalProperties(bool useCompiledXaml)
 			{

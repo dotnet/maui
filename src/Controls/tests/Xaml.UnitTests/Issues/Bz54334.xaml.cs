@@ -55,17 +55,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz54334(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+
+		public public class Tests
 		{
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
-			public void TearDown()
+			// [TearDown]
+			void TearDown()
 			{
 				Application.Current = null;
 			}
 
+			[Theory]
 			[InlineData(true)]
-			[InlineData(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
+			[InlineData(false, Skip = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
 			public void FooBz54334(bool useCompiledXaml)
 			{
 				var app = Application.Current = new Bz54334App(useCompiledXaml);

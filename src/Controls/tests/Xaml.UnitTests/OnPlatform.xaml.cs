@@ -18,38 +18,43 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public OnPlatform(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
 
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				DeviceInfo.SetCurrent(null);
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void BoolToVisibility(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
-				Assert.Equal(true, layout.label0.IsVisible);
+				Assert.True(layout.label0.IsVisible);
 
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
-				Assert.Equal(false, layout.label0.IsVisible);
+				Assert.False(layout.label0.IsVisible);
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void DoubleToWidth(bool useCompiledXaml)
 			{
@@ -67,6 +72,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void StringToText(bool useCompiledXaml)
 			{
@@ -80,10 +86,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
 				layout = new OnPlatform(useCompiledXaml);
-				Assert.Equal(null, layout.label0.Text);
+				Assert.Null(layout.label0.Text);
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatformAsResource(bool useCompiledXaml)
 			{
@@ -99,6 +106,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatformAsResourceAreApplied(bool useCompiledXaml)
 			{
@@ -116,6 +124,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatform2Syntax(bool useCompiledXaml)
 			{
@@ -137,6 +146,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatformDefault(bool useCompiledXaml)
 			{
@@ -146,6 +156,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatformInStyle0(bool useCompiledXaml)
 			{
@@ -159,6 +170,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatformInStyle1(bool useCompiledXaml)
 			{
@@ -172,6 +184,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void OnPlatformInline(bool useCompiledXaml)
 			{

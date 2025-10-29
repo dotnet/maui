@@ -17,10 +17,12 @@ public partial class Maui22714
 	public Maui22714(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	public class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -30,10 +32,10 @@ public partial class Maui22714
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Fact]
-		public void TestNonCompiledResourceDictionary(
-			[InlineData(false, true)] bool useCompiledXaml,
-			bool treatWarningsAsErrors)
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void TestNonCompiledResourceDictionary(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 			{

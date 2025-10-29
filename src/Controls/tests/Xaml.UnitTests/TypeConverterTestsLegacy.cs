@@ -120,7 +120,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			return "";
 		}
-	}	public class TypeConverterTestsLegacy : BaseTestFixture
+	}
+	public class TypeConverterTestsLegacy : BaseTestFixture
 	{
 		[Fact]
 		public void TestSetPropertyWithoutConverter()
@@ -249,6 +250,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 
 #if !WINDOWS_PHONE
+		[Theory]
 		[InlineData("en-GB"), InlineData("fr-FR")]
 		public void TestCultureOnThickness(string culture)
 		{

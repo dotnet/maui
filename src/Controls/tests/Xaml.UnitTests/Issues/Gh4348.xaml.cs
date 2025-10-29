@@ -26,8 +26,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4348(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true), InlineData(false)]
 			public void GenericBaseClassResolution(bool useCompiledXaml)
 			{

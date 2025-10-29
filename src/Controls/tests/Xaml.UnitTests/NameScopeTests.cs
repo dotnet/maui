@@ -4,7 +4,8 @@ using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class NameScopeTests : BaseTestFixture
+{
+	public class NameScopeTests : BaseTestFixture
 	{
 		[Fact]
 		public void TopLevelObjectsHaveANameScope()

@@ -45,14 +45,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TypeExtension(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+			// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
 			{
@@ -69,6 +71,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(button.Command);
 			}
 
+			[Xunit.Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			//https://bugzilla.xamarin.com/show_bug.cgi?id=55027

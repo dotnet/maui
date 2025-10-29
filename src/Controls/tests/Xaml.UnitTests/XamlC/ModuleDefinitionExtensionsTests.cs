@@ -5,7 +5,8 @@ using Xunit;
 
 
 namespace Microsoft.Maui.Controls.XamlcUnitTests
-{	public class ModuleDefinitionExtensionsTests
+{
+	public class ModuleDefinitionExtensionsTests
 	{
 		class WithGenericInstanceCtorParameter
 		{
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void SetUp()
 		{
 			resolver = new XamlCAssemblyResolver();
@@ -38,6 +40,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public void TearDown()
 		{
 			resolver?.Dispose();

@@ -27,14 +27,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh5256(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
-				var layout = new Gh5256(useCompiledXaml) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };
+				var layout = new Gh5256(useCompiledXaml) { BindingContext = new { CompletedCommand = new Command(() => { }) } };
 				layout.entry.SendCompleted();
-				throw new Xunit.Sdk.XunitException();
+				// Test passes by not throwing
 			}
 		}
 

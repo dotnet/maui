@@ -66,10 +66,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz34037(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				Bz34037Converter0.Invoked = 0;
@@ -77,7 +79,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				Application.Current = null;
@@ -85,6 +88,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void ConverterParameterOrderDoesNotMatters(bool useCompiledXaml)
 			{

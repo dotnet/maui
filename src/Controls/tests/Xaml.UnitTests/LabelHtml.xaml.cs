@@ -9,9 +9,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public LabelHtml(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var html = "<h1>Hello World!</h1><br/>SecondLine";

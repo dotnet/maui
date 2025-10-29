@@ -84,7 +84,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		Bar = 1 << 1,
 		Baz = 1 << 2,
 		Qux = 1 << 3,
-	}	public class LoaderTests : BaseTestFixture
+	}
+	public class LoaderTests : BaseTestFixture
 	{
 		[Fact]
 		public void TestRootName()
@@ -515,7 +516,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var image = new Image();
 			Assert.Equal(Image.IsOpaqueProperty.DefaultValue, image.IsOpaque);
 			image.LoadFromXaml(xaml);
-			Assert.Equal(true, image.IsOpaque);
+			Assert.True(image.IsOpaque);
 		}
 
 		[Fact]
@@ -599,7 +600,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label Text=""Foo""/>
 				</StackLayout>";
 			var layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(1, layout.Children.Count);
+			Assert.Single(layout.Children);
 			Assert.Equal("Foo", ((Label)(layout.Children[0])).Text);
 		}
 

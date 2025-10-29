@@ -18,15 +18,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public PlatformSpecific(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void PlatformSpecificPropertyIsSet(bool useCompiledXaml)
 			{
 				var layout = new PlatformSpecific(useCompiledXaml);
-				Assert.Equal(layout.On<WindowsOS>().GetCollapseStyle(), CollapseStyle.Partial);
-				Assert.Equal(layout.On<WindowsOS>().CollapsedPaneWidth(), 96d);
+				Assert.Equal(CollapseStyle.Partial, layout.On<WindowsOS>().GetCollapseStyle());
+				Assert.Equal(96d, layout.On<WindowsOS>().CollapsedPaneWidth());
 			}
 		}
 	}

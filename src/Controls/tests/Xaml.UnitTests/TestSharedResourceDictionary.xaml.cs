@@ -14,10 +14,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TestSharedResourceDictionary(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				Application.Current = new MockApplication
@@ -30,13 +32,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				Application.ClearCurrent();
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{
@@ -45,6 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void NoConflictsBetweenSharedRDs(bool useCompiledXaml)
 			{
@@ -54,6 +59,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ImplicitStyleCanBeSharedFromSharedRD(bool useCompiledXaml)
 			{
@@ -71,6 +77,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void MergedRDAtAppLevel(bool useCompiledXaml)
 			{

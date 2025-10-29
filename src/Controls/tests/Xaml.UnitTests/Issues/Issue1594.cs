@@ -4,12 +4,14 @@ using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1594
+{
+	public class Issue1594
 	{
 		MockDeviceInfo mockDeviceInfo;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -17,6 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public void TearDown()
 		{
 			DeviceInfo.SetCurrent(null);

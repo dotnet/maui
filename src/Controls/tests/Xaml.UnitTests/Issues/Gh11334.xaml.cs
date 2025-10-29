@@ -25,12 +25,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			int index = stack.Children.IndexOf(label);
 			Label newLabel = new Label { Text = "New Inserted Label" };
 			stack.Children.Insert(index + 1, newLabel);
-		}		class Tests
+		}
+		public class Tests
 		{
 			bool _debuggerinitialstate;
 
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
@@ -38,7 +40,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
@@ -49,10 +52,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				Assert.Equal(VisualTreeChangeType.Remove, e.ChangeType);
 				Assert.Equal(0, e.ChildIndex);
-				Assert.Pass();
+				// Test passes by not throwing
 			}
 
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh11334(useCompiledXaml);

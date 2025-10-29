@@ -32,13 +32,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh3260(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void AssignContentWithNoContentAttributeDoesNotThrow(bool useCompiledXaml)
 			{
 				var layout = new Gh3260(useCompiledXaml);
-				Assert.Equal(1, layout.mylayout.Children.Count);
+				Assert.Single(layout.mylayout.Children);
 				Assert.Equal(layout.label, layout.mylayout.Children[0]);
 			}
 		}

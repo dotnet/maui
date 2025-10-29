@@ -18,9 +18,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Unreported002(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void TypeConvertersOnAttachedBP(bool useCompiledXaml)
 			{

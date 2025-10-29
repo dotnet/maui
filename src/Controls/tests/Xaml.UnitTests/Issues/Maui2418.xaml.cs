@@ -10,9 +10,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui2418(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				var page = new Maui2418(useCompiledXaml);

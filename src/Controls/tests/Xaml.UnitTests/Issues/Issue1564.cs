@@ -2,7 +2,8 @@ using System;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1564
+{
+	public class Issue1564
 	{
 		[Fact]
 		public void ViewCellAsXamlRoot()

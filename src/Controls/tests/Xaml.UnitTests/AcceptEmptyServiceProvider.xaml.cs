@@ -32,8 +32,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		public IServiceProvider ServiceProvider { get; set; }		class Tests
+		public IServiceProvider ServiceProvider { get; set; }
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
 			[InlineData(false)]
 			public void ServiceProviderIsNullOnAttributedExtensions(bool useCompiledXaml)

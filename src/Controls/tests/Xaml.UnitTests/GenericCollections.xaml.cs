@@ -34,15 +34,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public GenericCollections(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SupportsCrookedGenericScenarios(bool useCompiledXaml)
 		{
-			[InlineData(false)]
-			[InlineData(true)]
-			public void SupportsCrookedGenericScenarios(bool useCompiledXaml)
-			{
-				var p = new GenericCollections();
-				Assert.Equal("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
-			}
+			var p = new GenericCollections(useCompiledXaml);
+			Assert.Equal("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
 		}
 	}
 }

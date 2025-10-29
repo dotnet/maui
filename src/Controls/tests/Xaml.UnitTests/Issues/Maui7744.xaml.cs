@@ -12,7 +12,8 @@ public partial class Maui7744 : ContentPage
 	public Maui7744(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
@@ -20,7 +21,9 @@ public partial class Maui7744 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui7744(useCompiledXaml);
 			Assert.IsType<RoundRectangle>(page.border0.StrokeShape);

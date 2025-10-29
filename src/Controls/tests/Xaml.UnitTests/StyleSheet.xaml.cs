@@ -16,14 +16,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public StyleSheet(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void EmbeddedStyleSheetsAreLoaded(bool useCompiledXaml)
 			{
 				var layout = new StyleSheet(useCompiledXaml);
 				Assert.True(layout.Resources.StyleSheets[0].Styles.Count, Is.GreaterThanOrEqualTo(1));
 			}
+
+			[Theory]
 
 			[InlineData(false), InlineData(true)]
 			public void StyleSheetsAreApplied(bool useCompiledXaml)

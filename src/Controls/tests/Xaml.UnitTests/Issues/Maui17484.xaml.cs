@@ -19,7 +19,8 @@ public partial class Maui17484 : ContentPage
 	public Maui17484(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
@@ -27,7 +28,9 @@ public partial class Maui17484 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui17484)));

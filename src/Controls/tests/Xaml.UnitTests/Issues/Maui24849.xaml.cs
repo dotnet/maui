@@ -25,7 +25,8 @@ public partial class Maui24849 : ContentPage
 	public Maui24849(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -48,7 +49,9 @@ public partial class Maui24849 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Style24849());

@@ -12,16 +12,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh6648(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+
+		public public class Tests
 		{
-			[Theory]
-			public void Method(bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh6648)));
-			}
+			//[Theory]
+			//[InlineData(true)]
+			//[InlineData(false)]
+			//public void Method(bool useCompiledXaml)
+			//{
+			//	if (useCompiledXaml)
+			//		Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh6648)));
+			//}
 
 			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh6648(useCompiledXaml);

@@ -25,9 +25,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Issue3076(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void CanUseBindableObjectDefinedInThisAssembly(bool useCompiledXaml)
 			{
@@ -38,6 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void CanUseBindableObjectDefinedInOtherAssembly(bool useCompiledXaml)
 			{

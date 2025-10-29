@@ -7,12 +7,14 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;	public class Issue1545
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+	public class Issue1545
 	{
 		MockDeviceInfo mockDeviceInfo;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo(platform: DevicePlatform.iOS));
@@ -21,6 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public void TearDown()
 		{
 			DeviceInfo.SetCurrent(null);

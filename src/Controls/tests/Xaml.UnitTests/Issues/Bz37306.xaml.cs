@@ -13,9 +13,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz37306(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void xStringInResourcesDictionaries(bool useCompiledXaml)
 			{

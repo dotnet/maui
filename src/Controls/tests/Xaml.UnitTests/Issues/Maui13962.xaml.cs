@@ -26,7 +26,8 @@ public partial class Maui13962 : ContentView
 	public Maui13962(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
@@ -34,7 +35,9 @@ public partial class Maui13962 : ContentView
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			//shouln't throw
 			var page = new Maui13962(useCompiledXaml);

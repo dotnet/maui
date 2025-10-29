@@ -19,11 +19,12 @@ public partial class Maui25309 : ContentPage
 	public Maui25309(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public void Setup()
+		private void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -31,13 +32,15 @@ public partial class Maui25309 : ContentPage
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
-		public void TearDown()
+		private void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(true)]
+		[InlineData(false)]
+		public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui25309)));

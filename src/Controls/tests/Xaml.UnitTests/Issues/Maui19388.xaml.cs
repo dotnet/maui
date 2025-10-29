@@ -25,7 +25,8 @@ public partial class Maui19388 : ContentPage
 	public Maui19388(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -48,7 +49,9 @@ public partial class Maui19388 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			Application.Current.UserAppTheme = AppTheme.Light;
 			mockDeviceInfo.Platform = DevicePlatform.iOS;

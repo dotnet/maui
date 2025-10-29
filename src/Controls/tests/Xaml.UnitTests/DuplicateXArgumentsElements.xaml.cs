@@ -8,12 +8,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DuplicateXArgumentsElements(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public static class Tests
+		}
+		public static public class Tests
 		{
-			[Fact]
-			public static void ThrowXamlParseException([Theory]
-		[InlineData(true)]
-		[InlineData(false)] bool useCompiledXaml)
+			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
+			public static void ThrowXamlParseException(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 				{

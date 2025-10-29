@@ -19,10 +19,12 @@ public partial class Maui23989
 	public Maui23989(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	public class Test
+	}
+	public class Test
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -33,7 +35,9 @@ public partial class Maui23989
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)).Validate(() => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));

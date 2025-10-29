@@ -4,7 +4,8 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1493
+{
+	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 		}
 
+		[Xunit.Theory]
 		[InlineData("en-US"), InlineData("tr-TR"), InlineData("fr-FR")]
 		//mostly happens in european cultures
 		public void CultureInvariantNumberParsing(string culture)

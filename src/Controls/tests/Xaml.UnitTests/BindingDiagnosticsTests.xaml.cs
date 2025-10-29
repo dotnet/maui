@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 #endif
 		public class Tests
 		{
+			[Theory]
 			[InlineData(false)]
 			//[InlineData(true)]
 			public void Test(bool useCompiledXaml)
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				List<BindingBaseErrorEventArgs> failures = new List<BindingBaseErrorEventArgs>();
 				BindingDiagnostics.BindingFailed += (o, e) => failures.Add(e);
 				var layout = new BindingDiagnosticsTests(useCompiledXaml) { BindingContext = new { foo = "bar" } };
-				Assert.True(failures.Count, Is.GreaterThan(0));
+				Assert.True(failures.Count > 0);
 				var failure = failures[0] as BindingErrorEventArgs;
 				Assert.Equal("foobar", ((Binding)failure.Binding).Path);
 				Assert.Equal(7, failure.XamlSourceInfo.LineNumber);

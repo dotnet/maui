@@ -25,7 +25,8 @@ public partial class Maui22877 : ContentPage
 	public Maui22877(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -48,7 +49,9 @@ public partial class Maui22877 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };

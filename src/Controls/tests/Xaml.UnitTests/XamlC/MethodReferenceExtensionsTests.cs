@@ -6,7 +6,8 @@ using Mono.Cecil;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.XamlcUnitTests
-{	public class MethodReferenceExtensionsTests
+{
+	public class MethodReferenceExtensionsTests
 	{
 		ModuleDefinition module;
 
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void SetUp()
 		{
 			module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
@@ -30,6 +32,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public void TearDown()
 		{
 			module?.Dispose();

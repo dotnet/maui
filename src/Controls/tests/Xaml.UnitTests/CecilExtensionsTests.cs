@@ -6,10 +6,11 @@ using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class CecilExtensionsTests : IAssemblyResolver
+{
+	public class CecilExtensionsTests : IAssemblyResolver
 	{
 		const string testNamespace = "Microsoft.Maui.Controls.Xaml.UnitTests";
-		AssemblyDefinition assembly;
+		AssemblyDefinition assembly = null;
 		readonly List<AssemblyDefinition> assemblies = new List<AssemblyDefinition>();
 		readonly ReaderParameters readerParameters;
 
@@ -23,11 +24,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public void SetUp()
-		{
-			assembly = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, readerParameters);
-			assemblies.Add(assembly);
-		}
+		// public void SetUp()
+		// {
+		// 	assembly = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, readerParameters);
+		// 	assemblies.Add(assembly);
+		// }
 
 		public AssemblyDefinition Resolve(AssemblyNameReference name)
 		{

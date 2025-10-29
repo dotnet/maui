@@ -37,15 +37,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz53203(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
-			public void MarkupOnAttachedBPDoesNotThrowAtCompileTime(bool useCompiledXaml)
+			public void MarkupOnAttachedBPDoesNotThrowAtCompileTime()
 			{
 				MockCompiler.Compile(typeof(Bz53203));
 			}
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void MarkupOnAttachedBP(bool useCompiledXaml)
 			{

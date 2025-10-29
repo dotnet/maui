@@ -32,16 +32,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz53350(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				Application.Current = null;
 			}
 
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void PropertiesWithGenericType(bool useCompiledXaml)
 			{

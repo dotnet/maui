@@ -16,16 +16,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public TypeLoader(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void SetUp()
 			{
 				Application.Current = new MockApplication();
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void LoadTypeFromXmlns(bool useCompiledXaml)
 			{
@@ -36,6 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void LoadTypeFromXmlnsWithoutAssembly(bool useCompiledXaml)
 			{

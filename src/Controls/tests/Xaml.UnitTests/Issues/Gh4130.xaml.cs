@@ -33,9 +33,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		void OnTextChanged(object sender, EventArgs e)
 		{
-			Assert.Pass();
-		}		class Tests
+			// Test passes by not throwing
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false), InlineData(true)]
 			public void NonGenericEventHanlders(bool useCompiledXaml)
 			{

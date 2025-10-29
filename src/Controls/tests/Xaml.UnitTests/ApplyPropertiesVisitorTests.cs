@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public static class ApplyPropertiesVisitorTests
+{
+	public static class ApplyPropertiesVisitorTests
 	{
 		public class MarkupExtension : IMarkupExtension
 		{
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			rootNode.Accept(new CreateValuesVisitor(context), null);
 			rootNode.Accept(new ApplyPropertiesVisitor(context), null);
 
-			CollectionAssert.Equal(new[] { "provided value", "provided value" }, rootElement.ArrayList);
+			Assert.Equal(new[] { "provided value", "provided value" }, rootElement.ArrayList.ToArray());
 		}
 	}
 }

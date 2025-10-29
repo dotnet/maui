@@ -5,7 +5,8 @@ using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class Issue1554
+{
+	public class Issue1554
 	{
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());

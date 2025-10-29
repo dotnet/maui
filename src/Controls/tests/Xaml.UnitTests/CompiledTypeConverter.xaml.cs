@@ -71,8 +71,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public CompiledTypeConverter(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(false)]
 			[InlineData(true)]
 			public void CompiledTypeConverterAreInvoked(bool useCompiledXaml)
@@ -87,8 +89,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("https://picsum.photos/200/300", ((UriImageSource)p.ImageByUrl).Uri.AbsoluteUri);
 				Assert.Equal("foo.png", ((FileImageSource)p.ImageByName).File);
 				Assert.Equal(Colors.Pink, p.BackgroundColor);
-				Assert.IsInstanceOf<Ellipse>(p.EllipseShape);
-				Assert.IsInstanceOf<Line>(p.LineShape);
+				Assert.IsType<Ellipse>(p.EllipseShape);
+				Assert.IsType<Line>(p.LineShape);
 				Assert.Equal(1, ((Line)p.LineShapeTwo).X1);
 				Assert.Equal(2, ((Line)p.LineShapeTwo).Y1);
 				Assert.Equal(1, ((Line)p.LineShapeFour).X1);
@@ -97,7 +99,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(4, ((Line)p.LineShapeFour).Y2);
 				Assert.Equal(3, ((Shapes.Polygon)p.PolygonShape).Points.Count);
 				Assert.Equal(10, ((Shapes.Polyline)p.PolylineShape).Points.Count);
-				Assert.IsInstanceOf<Rectangle>(p.RectangleShape);
+				Assert.IsType<Rectangle>(p.RectangleShape);
 				Assert.Equal(new CornerRadius(1, 2, 3, 4), ((RoundRectangle)p.RoundRectangleShape).CornerRadius);
 				Assert.Equal(3, ((PathGeometry)((Path)p.PathShape).Data).Figures.Count);
 				Assert.Equal(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
@@ -109,7 +111,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-	[InlineData(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
+			[InlineData(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
 			[InlineData(typeof(Microsoft.Maui.Controls.ImageSourceConverter))]
 			[InlineData(typeof(Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter))]
 			[InlineData(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]

@@ -16,15 +16,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public IsCompiledSkip(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void IsCompiled(bool useCompiledXaml)
 		{
-			[InlineData(false)]
-			[InlineData(true)]
-			public void IsCompiled(bool useCompiledXaml)
-			{
-				var layout = new IsCompiledDefault(useCompiledXaml);
-				Assert.Equal(false, typeof(IsCompiledSkip).IsCompiled());
-			}
+			var layout = new IsCompiledSkip(useCompiledXaml);
+			Assert.False(typeof(IsCompiledSkip).IsCompiled());
 		}
 	}
 }

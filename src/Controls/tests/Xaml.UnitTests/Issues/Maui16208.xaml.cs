@@ -26,7 +26,8 @@ public partial class Maui16208
 	public Maui16208(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
@@ -48,7 +49,9 @@ public partial class Maui16208
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 
 			Assert.DoesNotThrow(() => new Maui16208(useCompiledXaml));

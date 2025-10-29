@@ -19,7 +19,8 @@ public partial class Maui17222 : ContentPage
 	public Maui17222(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 #if DEBUG
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
@@ -28,7 +29,9 @@ public partial class Maui17222 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Maui17222BaseStyle(useCompiledXaml));

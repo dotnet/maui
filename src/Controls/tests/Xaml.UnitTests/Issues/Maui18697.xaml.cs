@@ -25,7 +25,8 @@ public partial class Maui18697 : ContentPage
 	public Maui18697(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -48,7 +49,9 @@ public partial class Maui18697 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Method(bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			var page = new Maui18697(useCompiledXaml);

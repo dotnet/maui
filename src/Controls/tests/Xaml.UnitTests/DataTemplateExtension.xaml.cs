@@ -9,9 +9,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public DataTemplateExtension(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+
+		public class Tests
 		{
-			[InlineData(true), InlineData(false)]
+			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void DataTemplateExtension(bool useCompiledXaml)
 			{
 				var layout = new DataTemplateExtension(useCompiledXaml);

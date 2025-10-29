@@ -36,15 +36,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Bz24485(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
+			[Theory]
 			[InlineData(false)]
 			public void BindingContextWithConverter(bool useCompiledXaml)
 			{
 				var layout = new Bz24485(useCompiledXaml);
 				layout.BindingContext = new { Data1 = new object() };
-				Assert.Pass();
+				// Test passes by not throwing
 			}
 		}
 	}

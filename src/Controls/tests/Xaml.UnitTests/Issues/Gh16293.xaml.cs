@@ -13,8 +13,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh16293(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true), InlineData(false)]
 			public void ShouldResolveNested(bool useCompiledXaml)
 			{
@@ -25,6 +27,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("LibraryConstant", layout.Label1.Text);
 				Assert.Equal("NestedLibraryConstant", layout.Label2.Text);
 			}
+
+			[Theory]
 
 			[InlineData(true), InlineData(false)]
 			public void ShouldResolveInternalNested(bool useCompiledXaml)

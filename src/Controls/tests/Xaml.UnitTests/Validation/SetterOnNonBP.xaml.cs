@@ -18,9 +18,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public SetterOnNonBP(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class SetterOnNonBPTests
+		}
+		public class SetterOnNonBPTests
 		{
 			[InlineData(false)]
+			[Theory]
 			[InlineData(true)]
 			public void ShouldThrow(bool useCompiledXaml)
 			{

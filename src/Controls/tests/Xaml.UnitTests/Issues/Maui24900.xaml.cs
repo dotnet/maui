@@ -30,12 +30,14 @@ public partial class Maui24900 : ContentPage
 	void Header_Tapped(object sender, TappedEventArgs e)
 	{
 
-	}	class Test
+	}
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
+		[Xunit.Fact]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
@@ -46,6 +48,7 @@ public partial class Maui24900 : ContentPage
 
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown]
+		[Xunit.Fact]
 		public void TearDown()
 		{
 			AppInfo.SetCurrent(null);
@@ -53,7 +56,9 @@ public partial class Maui24900 : ContentPage
 		}
 
 		[Theory]
-			public void Method(bool useCompiledXaml)
+		[InlineData(true)]
+		[InlineData(false)]
+		public void Method(bool useCompiledXaml)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			Assert.DoesNotThrow(() => new Maui24900(useCompiledXaml));

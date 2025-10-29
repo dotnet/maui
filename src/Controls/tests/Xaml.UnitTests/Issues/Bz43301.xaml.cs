@@ -13,15 +13,17 @@ namespace Foo.Microsoft.Maui.Controls.Bar
 		public Bz43301(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+			[Theory]
 			[InlineData(true)]
 			[InlineData(false)]
 			//No need for any actual [Fact]. If this compiles, the bug is fixed.
 			public void DoesCompile(bool useCompiledXaml)
 			{
 				var layout = new Bz43301(useCompiledXaml);
-				Assert.Pass();
+				// Test passes by not throwing
 			}
 		}
 	}

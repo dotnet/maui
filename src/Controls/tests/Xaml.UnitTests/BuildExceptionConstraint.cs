@@ -32,20 +32,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void Validate(Action action)
 		{
 			var ex = Xunit.Assert.Throws<BuildException>(action);
-			
+
 			if (!_haslineinfo)
 				return;
-				
+
 			var xmlInfo = ex.XmlInfo;
 			Xunit.Assert.NotNull(xmlInfo);
 			Xunit.Assert.True(xmlInfo.HasLineInfo(), $"Expected exception to have line info");
-			
+
 			if (_messagePredicate != null)
 			{
-				Xunit.Assert.True(_messagePredicate(ex.Message), 
+				Xunit.Assert.True(_messagePredicate(ex.Message),
 					$"Exception message did not match predicate. Message: {ex.Message}");
 			}
-			
+
 			Xunit.Assert.Equal(_linenumber, xmlInfo.LineNumber);
 			Xunit.Assert.Equal(_lineposition, xmlInfo.LinePosition);
 		}

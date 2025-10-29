@@ -5,14 +5,15 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{	public class TypeExtensionTests : BaseTestFixture
+{
+	public class TypeExtensionTests : BaseTestFixture
 	{
 		IXamlTypeResolver typeResolver;
 		Internals.XamlServiceProvider serviceProvider;
 
 		// NOTE: xUnit uses constructor for setup. This may need manual conversion.
 		// [SetUp]
-		public override void Setup()
+		protected override void Setup()
 		{
 			base.Setup();
 			var nsManager = new XmlNamespaceManager(new NameTable());

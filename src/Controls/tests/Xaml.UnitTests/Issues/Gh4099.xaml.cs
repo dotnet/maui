@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh4099(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			[InlineData(true)]
 			[Fact(Skip = "Ignore for now, Compiled Converters are disabled")]
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					catch (BuildException xpe)
 					{
 						Assert.Equal(5, xpe.XmlInfo.LineNumber);
-						Assert.Pass();
+						// Test passes by not throwing
 					}
 					throw new Xunit.Sdk.XunitException();
 				}

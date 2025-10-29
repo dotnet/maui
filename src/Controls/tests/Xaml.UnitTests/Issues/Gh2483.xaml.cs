@@ -29,14 +29,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Gh2483(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
+
+			[Theory]
 
 			[InlineData(true), InlineData(false)]
 			public void DupeKeyRd(bool useCompiledXaml)
 			{
 				var layout = new Gh2483(useCompiledXaml);
-				Assert.Pass();
+				// Test passes by not throwing
 			}
 		}
 	}

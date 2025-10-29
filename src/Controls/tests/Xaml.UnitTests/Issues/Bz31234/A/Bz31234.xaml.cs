@@ -15,13 +15,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.A
 		public Bz31234(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		public class Tests
+		}
+		public public class Tests
 		{
-			[InlineData(true), InlineData(false)]
+			[Theory]
+			[InlineData(true)]
+			[InlineData(false)]
 			public void ShouldPass(bool useCompiledXaml)
 			{
 				new Bz31234(useCompiledXaml);
-				Assert.Pass();
+				// Test passes by not throwing
 			}
 		}
 	}

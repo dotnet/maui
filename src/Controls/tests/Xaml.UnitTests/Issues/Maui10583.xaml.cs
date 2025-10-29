@@ -35,10 +35,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public Maui10583(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
-		}		class Tests
+		}
+		public class Tests
 		{
 			// NOTE: xUnit uses constructor for setup. This may need manual conversion.
-		// [SetUp]
+			// [SetUp]
+			[Xunit.Fact]
 			public void Setup()
 			{
 				AppInfo.SetCurrent(new MockAppInfo());
@@ -47,7 +49,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
-		// [TearDown]
+			// [TearDown]
+			[Xunit.Fact]
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
@@ -55,6 +58,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
+			[InlineData(false)]
+			[InlineData(true)]
 			public void Method(bool useCompiledXaml)
 			{
 				if (true)

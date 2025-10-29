@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		CultureInfo _defaultCulture;
 		CultureInfo _defaultUICulture;
 
-		public virtual void Setup()
+		protected virtual void Setup()
 		{
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -28,8 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			AppInfo.SetCurrent(null);
 		}
 
-
-		public virtual void TearDown()
+		protected virtual void TearDown()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceDisplay.SetCurrent(null);
