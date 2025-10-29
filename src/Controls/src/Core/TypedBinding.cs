@@ -554,7 +554,7 @@ namespace Microsoft.Maui.Controls.Internals
 					}
 
 					var dispatcher = (sender as BindableObject)?.Dispatcher;
-					dispatcher?.DispatchIfRequired(ApplyChanges);
+					dispatcher.DispatchIfRequired(ApplyChanges);
 				}
 
 				private void ApplyChanges() => _binding.Apply(fromTarget: false);
