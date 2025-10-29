@@ -7,13 +7,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_Shell : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea Shell Page for per-edge safe area control";
+	public override string Issue => "Test SafeArea Shell Page for per-edge safe area control";
 
-    public Issue28986_Shell(TestDevice device) : base(device)
-    {
-    }
+	public Issue28986_Shell(TestDevice device) : base(device)
+	{
+	}
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void ToolbarExtendsAllTheWayLeftAndRight_Shell()
 	{

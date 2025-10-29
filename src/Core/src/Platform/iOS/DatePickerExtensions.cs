@@ -123,10 +123,7 @@ public static class DatePickerExtensions
 
 	public static void UpdateMinimumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
 	{
-		if (platformDatePicker is not null)
-		{
-			platformDatePicker.MinimumDate = datePicker.MinimumDate?.ToNSDate();
-		}
+		platformDatePicker?.MinimumDate = datePicker.MinimumDate?.ToNSDate();
 	}
 
 	public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
@@ -141,10 +138,7 @@ public static class DatePickerExtensions
 
 	public static void UpdateMaximumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
 	{
-		if (platformDatePicker is not null)
-		{
-			platformDatePicker.MaximumDate = datePicker.MaximumDate?.ToNSDate();
-		}
+		platformDatePicker?.MaximumDate = datePicker.MaximumDate?.ToNSDate();
 	}
 
 	public static void UpdateTextAlignment(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)

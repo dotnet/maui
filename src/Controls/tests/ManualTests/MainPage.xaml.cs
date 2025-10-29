@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Maui.ManualTests.Categories;
 
@@ -22,8 +23,7 @@ public partial class MainPage : ContentPage
 		}
 
 		var cv = sender as CollectionView;
-		if (cv is not null)
-			cv.SelectedItem = null;
+		cv?.SelectedItem = null;
 	}
 
 	private async void Button_Clicked(object sender, EventArgs e)
@@ -35,6 +35,7 @@ public partial class MainPage : ContentPage
 
 public class MainViewModel
 {
+	[RequiresUnreferencedCode()]
 	public MainViewModel()
 	{
 		var a = GetType().Assembly.GetTypes().Where(t => t.IsAssignableTo(typeof(CategoryViewModel)));

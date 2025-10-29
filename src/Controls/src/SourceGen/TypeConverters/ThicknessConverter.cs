@@ -54,7 +54,7 @@ internal class ThicknessConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ThicknessConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.ThicknessConversionFailed);
 		return "default";
 	}
 }

@@ -447,10 +447,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var carouselPosition = carousel.Position;
 
-			if (LoopItemsSource != null)
-			{
-				LoopItemsSource.Loop = carousel.Loop;
-			}
+			LoopItemsSource?.Loop = carousel.Loop;
 
 			CollectionView.ReloadData();
 

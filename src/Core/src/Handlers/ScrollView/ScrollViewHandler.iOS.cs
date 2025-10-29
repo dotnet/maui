@@ -21,10 +21,10 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			
+
 			if (PlatformView is MauiScrollView mauiScrollView)
 				mauiScrollView.View = view;
-				
+
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
