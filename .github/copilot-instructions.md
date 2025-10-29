@@ -142,6 +142,11 @@ dotnet cake --target=dotnet-pack
 - Avoid platform-specific directives (`#if ANDROID`, `#if IOS`, etc.) unless absolutely necessary - tests should run on all applicable platforms by default
 - When a new UI test category is added to `UITestCategories.cs`, also update `ui-tests.yml` to include the new category
 
+**For comprehensive UI testing guidance**, see:
+- [UI Testing Guide](../docs/UITesting-Guide.md) - Complete guide with prerequisites, examples, and best practices
+- [UI Testing Architecture](../docs/design/UITesting-Architecture.md) - CI/CD integration and architecture details
+- [Path-specific UI Test Instructions](instructions/uitests.instructions.md) - Detailed instructions for test files
+
 ### Code Formatting
 
 Before committing any changes, format the codebase using the following command to ensure consistent code style:
