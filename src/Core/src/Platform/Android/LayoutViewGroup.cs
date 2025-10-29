@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 			base.OnDetachedFromWindow();
 			if (_isInsetListenerSet)
 				GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
-				
+
 			_didSafeAreaEdgeConfigurationChange = true;
 			_isInsetListenerSet = false;
 		}
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			Context?.GetGlobalWindowInsetListener()?.ResetView(this);
+			GlobalWindowInsetListener.FindListenerForView(this)?.ResetView(this);
 			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
