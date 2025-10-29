@@ -34,9 +34,10 @@ public class Issue30081 : ContentPage
 
         // Create ScrollView and bind its Orientation
         var scrollView = new ScrollView
-        {
-            Content = scrollViewContent
-        };
+		{
+			Content = scrollViewContent,
+			FlowDirection = FlowDirection.RightToLeft
+		};
         scrollView.SetBinding(ScrollView.OrientationProperty, nameof(ScrollViewViewModel.Orientation));
 
         // Add ScrollView to Grid row 0
