@@ -92,6 +92,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.Source = _source;
 #pragma warning restore CS0618 // Type or member is obsolete
 			ShellFlyoutContentManager.ViewDidLoad();
@@ -103,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View = new AccessibilityNeutralTableView();
 		}
 
-		internal class AccessibilityNeutralTableView : UITableView,IUIAccessibilityContainer
+		internal class AccessibilityNeutralTableView : UITableView, IUIAccessibilityContainer
 		{
 			public AccessibilityNeutralTableView()
 			{
