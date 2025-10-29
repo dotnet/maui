@@ -5,7 +5,6 @@ trigger:
     - main
     - net10.0
     - release/*
-    - internal/release/*
     - inflight/*
   paths:
     include:
@@ -25,7 +24,6 @@ pr:
     - main
     - net10.0
     - release/*
-    - internal/release/*
     - inflight/*
   paths:
     include:
@@ -45,12 +43,6 @@ variables:
 - template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
-- name: PackPlatform
-  type: object
-  default:
-    name: NetCore-Public
-    image: 1es-windows-2022
-    os: windows
 
 - name: BuildConfigurations
   type: object
@@ -59,6 +51,20 @@ parameters:
   - Release
 
 - name: BuildPlatforms
+  type: object
+  default:
+  - name: NetCore1ESPool-Internal
+    image: 1es-windows-2022
+    os: Windows
+    buildScript: $(_buildScript)
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
+  - name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+    buildScript: $(_buildScriptMacOS)
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
+
+- name: BuildPlatformsPublic
   type: object
   default:
   - name: NetCore-Public
@@ -72,11 +78,38 @@ parameters:
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
 
+- name: WindowsPool
+  type: object
+  default:
+    internal:
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2022
+      os: windows
+    public:
+      name: NetCore-Public
+      image: 1es-windows-2022
+      os: windows
+
+- name: MacOSPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+
 stages:
 
 - template: /eng/pipelines/arcade/stage-helix-tests.yml@self
   parameters:
-    runAsPublic: true
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      helixPool: ${{ parameters.WindowsPool.public }}
+      runAsPublic: true
+      helixInternal: 'False'
+    ${{ else }}:
+      helixPool: ${{ parameters.WindowsPool.internal }}
+      runAsPublic: false
+      helixInternal: 'True'
+      HelixAccessToken: $(HelixApiAccessToken)
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
@@ -92,8 +125,12 @@ stages:
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    pool: ${{ parameters.PackPlatform }}
-    runAsPublic: true
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      pool: ${{ parameters.WindowsPool.public }}
+      runAsPublic: true
+    ${{ else }}:
+      pool: ${{ parameters.WindowsPool.internal }}
+      runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
@@ -110,8 +147,12 @@ stages:
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
     buildConfigurations: ${{ parameters.BuildConfigurations }}
-    buildPlatforms: ${{ parameters.BuildPlatforms }}
-    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      buildPlatforms: ${{ parameters.BuildPlatformsPublic }}
+      runAsPublic: true
+    ${{ else }}:
+      buildPlatforms: ${{ parameters.BuildPlatforms }}
+      runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
@@ -130,15 +171,17 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool: ${{ parameters.PackPlatform }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 90
       testOS: Windows
     - name: mac_unit_tests
       displayName: macOS Unit Tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 90
       testOS: macOS
     publishTaskPrefix: ''
@@ -149,80 +192,84 @@ stages:
     publishTaskPrefix: ''
     jobMatrix:
     - name: win_sample_tests
-      pool: ${{ parameters.PackPlatform }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 120
       testCategory: Samples
 
     - name: win_wintemplate_tests
-      pool: ${{ parameters.PackPlatform }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: WindowsTemplates
 
     # - name: mac_wintemplate_tests
-    #   pool:
-    #     name: Azure Pipelines
-    #     vmImage: $(HostedMacImage)
-    #     os: macOS
+    #   pool: ${{ parameters.MacOSPool }}
     #   timeout: 120
     #   testCategory: WindowsTemplates
 
     - name: win_buildtemplate_tests
-      pool: ${{ parameters.PackPlatform }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: Build
 
     - name: win_blazortemplate_tests
-      pool: ${{ parameters.PackPlatform }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 120
       testCategory: Blazor
 
     - name: win_multitemplate_tests
-      pool: ${{ parameters.PackPlatform }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 120
       testCategory: MultiProject
 
     # TODO: macOSTemplates and AOT template categories
 
     - name: mac_runandroid_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 180
       testCategory: RunOnAndroid
 
     - name: mac_runios_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+      pool: ${{ parameters.MacOSPool }}
       timeout: 180
       testCategory: RunOniOS
