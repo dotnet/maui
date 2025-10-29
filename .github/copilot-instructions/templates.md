@@ -84,7 +84,7 @@ When making changes to templates:
 ## Quick Reference
 
 | Directive Type | Wrapper Needed | Example |
-|---|---|---|
+| --- | --- | --- |
 | Platform-specific (`#if WINDOWS`, `#if ANDROID`, etc.) | ✅ Yes - use `//-:cnd:noEmit` | Build-time platform detection |
 | Debug mode (`#if DEBUG`) | ✅ Yes - use `//-:cnd:noEmit` | Build configuration |
 | Template parameters (`#if (IncludeSampleContent)`) | ❌ No | Template instantiation options |
