@@ -71,51 +71,6 @@ namespace Microsoft.Maui.Controls.Internals
 		internal abstract void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource);
 	}
 
-	internal class TypedBinding
-	{
-		/// <summary>
-		/// <para>This factory method was added to simplify creating typed bindings for a property that
-		/// isn't nested which is the most common scenario.</para>
-		/// <para>This factory method must be used carefully. As the name implies, it is only applicable
-		/// when the getter and setter access a property directly on the source object. Whenever the
-		/// property is nested two or more levels deep, create the binding manually and construct the
-		/// handlers array for that usecase.</para>
-		/// </summary>
-		/// <typeparam name="TSource">The type of the source object.</typeparam>
-		/// <typeparam name="TProperty">The type of the property.</typeparam>
-		/// <param name="propertyName">The name of the property.</param>
-		/// <param name="getter">The getter function to retrieve the property value from the source object.</param>
-		/// <param name="setter">The optional setter action to set the property value on the source object.</param>
-		/// <param name="mode">The binding mode.</param>
-		/// <param name="converter">The value converter.</param>
-		/// <param name="converterParameter">The converter parameter.</param>
-		/// <param name="source">The source object.</param>
-		/// <returns>The typed binding.</returns>
-		internal static TypedBinding<TSource, TProperty> ForSingleNestingLevel<TSource, TProperty>(
-			string propertyName,
-			Func<TSource, TProperty> getter,
-			Action<TSource, TProperty> setter = null,
-			BindingMode mode = BindingMode.Default,
-			IValueConverter converter = null,
-			object converterParameter = null,
-			object source = null)
-		{
-			return new TypedBinding<TSource, TProperty>(
-				getter: source => (getter(source), true),
-				setter,
-				handlers: new Tuple<Func<TSource, object>, string>[]
-				{
-					new(static source => source, propertyName),
-				})
-			{
-				Converter = converter,
-				ConverterParameter = converterParameter,
-				Mode = mode,
-				Source = source,
-			};
-		}
-	}
-
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class TypedBinding<TSource, TProperty> : TypedBindingBase
 	{
