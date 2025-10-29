@@ -82,8 +82,8 @@ steps:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      # Use REQUIRED_XCODE for devdiv team project, XCODE for others (e.g., maui-pr)
-      if [[ "$(System.TeamProject)" == "devdiv" ]]; then
+      # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
+      if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
         XCODE_VERSION=$(REQUIRED_XCODE)
       else
         XCODE_VERSION=$(XCODE)
