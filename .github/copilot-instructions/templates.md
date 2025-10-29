@@ -2,16 +2,19 @@
 applies_to:
   - src/Templates/**
 ---
+<!-- This front-matter configures path-specific Copilot instructions for template files -->
 
 # Working with .NET MAUI Templates
 
-When modifying files in the `src/Templates/` directory, you must follow special template semantics and conventions to ensure the templates work correctly when users create new projects.
+## 1. Overview
 
-## Template Conditional Compilation Directives
+When modifying files in the `src/Templates/` directory, you must follow special template semantics and conventions to ensure the templates work correctly when users create new projects. This guide covers conditional compilation directives, naming conventions, file exclusions, and testing procedures.
 
-Templates use special comment markers to control how preprocessor directives are processed during template instantiation:
+## 2. Conditional Compilation
 
-### Platform-Specific Directives (Build-Time)
+Templates use special comment markers to control how preprocessor directives are processed during template instantiation.
+
+### Build-Time Directives (Platform-Specific)
 
 Platform-specific `#if` directives (like `#if WINDOWS`, `#if ANDROID`, `#if IOS`, `#if MACCATALYST`) must be wrapped with `//-:cnd:noEmit` and `//+:cnd:noEmit` markers:
 
@@ -48,7 +51,7 @@ Platform-specific `#if` directives (like `#if WINDOWS`, `#if ANDROID`, `#if IOS`
 //+:cnd:noEmit
 ```
 
-### Template Parameter Directives (Template-Time)
+### Template-Time Directives (Template Parameters)
 
 Template parameter directives (like `#if (IncludeSampleContent)`) do NOT use the `//-:cnd:noEmit` markers:
 
@@ -60,13 +63,13 @@ using CommunityToolkit.Maui;
 
 **Why?** These directives are evaluated when the template is instantiated (when user runs `dotnet new maui`), not when the code is compiled.
 
-## Template Naming Conventions
+## 3. Naming and Placeholders
 
 - Template project names use placeholders like `MauiApp._1` which get replaced with the user's actual project name
 - Namespaces follow the same pattern: `namespace MauiApp._1;`
 - These will be transformed to the user's chosen project name during template instantiation
 
-## Files to Exclude from Template Changes
+## 4. Files to Avoid Editing
 
 Never modify auto-generated files in templates:
 - `cgmanifest.json` - Auto-generated component governance manifest
@@ -74,14 +77,14 @@ Never modify auto-generated files in templates:
 
 These files are regenerated during the build process and should not be manually edited.
 
-## Template Testing
+## 5. Testing and Verification
 
 When making changes to templates:
 1. Build the template project: `dotnet build src/Templates/src/Microsoft.Maui.Templates.csproj`
 2. For comprehensive testing, use the `build.ps1` script in the Templates directory to pack, install, and test the template
 3. Verify the generated project compiles for all target platforms
 
-## Quick Reference
+## 6. Quick Reference Table
 
 | Directive Type | Wrapper Needed | Example |
 | --- | --- | --- |
