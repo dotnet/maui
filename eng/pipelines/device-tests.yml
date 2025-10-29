@@ -124,7 +124,7 @@ stages:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
 
     # Just use the old way for Windows Device Tests
     - template: common/device-tests.yml
