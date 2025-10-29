@@ -67,40 +67,13 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 		}
 
-		internal abstract void ApplyToResolvedSource(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity);
-		internal abstract void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource);
-	}
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public sealed class TypedBinding<TSource, TProperty> : TypedBindingBase
-	{
-		readonly Func<TSource, (TProperty value, bool success)> _getter;
-		readonly Action<TSource, TProperty> _setter;
-		readonly PropertyChangedProxy[] _handlers;
-
-		public TypedBinding(Func<TSource, (TProperty value, bool success)> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string>[] handlers)
-		{
-			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
-			_setter = setter;
-
-			if (handlers == null)
-				return;
-
-			_handlers = new PropertyChangedProxy[handlers.Length];
-			for (var i = 0; i < handlers.Length; i++)
-			{
-				if (handlers[i] is null)
-					continue;
-				_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, this);
-			}
-		}
-
 		readonly WeakReference<object> _weakSource = new WeakReference<object>(null);
 		readonly WeakReference<BindableObject> _weakTarget = new WeakReference<BindableObject>(null);
-		SetterSpecificity _specificity;
-		BindableProperty _targetProperty;
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
+
+		SetterSpecificity _specificity;
+		BindableProperty _targetProperty;
 
 		// Applies the binding to a previously set source and target.
 		internal override void Apply(bool fromTarget = false)
@@ -170,30 +143,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		internal override BindingBase Clone()
-		{
-			Tuple<Func<TSource, object>, string>[] handlers = _handlers == null ? null : new Tuple<Func<TSource, object>, string>[_handlers.Length];
-			if (handlers != null)
-			{
-				for (var i = 0; i < _handlers.Length; i++)
-				{
-					if (_handlers[i] == null)
-						continue;
-					handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
-				}
-			}
-			return new TypedBinding<TSource, TProperty>(_getter, _setter, handlers)
-			{
-				Mode = Mode,
-				Converter = Converter,
-				ConverterParameter = ConverterParameter,
-				StringFormat = StringFormat,
-				Source = Source,
-				UpdateSourceEventName = UpdateSourceEventName,
-			};
-		}
-
-		internal override void ApplyToResolvedSource(object source, BindableObject target, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
+		void ApplyToResolvedSource(object source, BindableObject target, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
 		{
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			BindableObject prevTarget;
@@ -210,23 +160,6 @@ namespace Microsoft.Maui.Controls.Internals
 			ApplyCore(source, target, targetProperty, fromBindingContextChanged, specificity);
 		}
 
-		internal override object GetSourceValue(object value, Type targetPropertyType)
-		{
-			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
-
-			return base.GetSourceValue(value, targetPropertyType);
-		}
-
-		internal override object GetTargetValue(object value, Type sourcePropertyType)
-		{
-			if (Converter != null)
-				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
-
-			//return base.GetTargetValue(value, sourcePropertyType);
-			return value;
-		}
-
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
 			if (Source != null && fromBindingContextChanged && IsApplied)
@@ -235,8 +168,7 @@ namespace Microsoft.Maui.Controls.Internals
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			base.Unapply(fromBindingContextChanged:fromBindingContextChanged);
 #endif
-			if (_handlers != null)
-				Unsubscribe();
+			Unsubscribe();
 
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			_weakSource.SetTarget(null);
@@ -244,86 +176,13 @@ namespace Microsoft.Maui.Controls.Internals
 #endif
 		}
 
-		// ApplyCore is as slim as it should be:
-		// Setting  100000 values						: 17ms.
-		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
-		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
-		{
-			var isTSource = sourceObject is TSource;
-			if (!isTSource && sourceObject is not null)
-			{
-				BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
-			}
-
-			var mode = this.GetRealizedMode(property);
-			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
-				return;
-
-			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
-
-			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
-				Subscribe((TSource)sourceObject);
-
-			if (needsGetter)
-			{
-				var value = FallbackValue ?? property.GetDefaultValue(target);
-				if (isTSource)
-				{
-					try
-					{
-						(var retval, bool success) = _getter((TSource)sourceObject);
-						if (success) //if the getter failed, return the FallbackValue
-							value = GetSourceValue(retval, property.ReturnType);
-					}
-					catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
-					{
-					}
-					catch (Exception ex)
-					{
-						BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from getter: {ex.Message}");
-					}
-				}
-				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
-				{
-					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);
-					return;
-				}
-				target.SetValueCore(property, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
-				return;
-			}
-
-			var needsSetter = (mode == BindingMode.TwoWay && fromTarget) || mode == BindingMode.OneWayToSource;
-			if (needsSetter && _setter != null && isTSource)
-			{
-				var value = GetTargetValue(target.GetValue(property), typeof(TProperty));
-				if (!BindingExpressionHelper.TryConvert(ref value, property, typeof(TProperty), false))
-				{
-					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));
-					return;
-				}
-
-				try
-				{
-					_setter((TSource)sourceObject, (TProperty)value);
-				}
-				catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
-				{
-					// Ignore exceptions that are thrown when the source object is null or the property
-					// cannot be found. This can happen when the source object is a collection and the
-					// property is not found in the collection item.
-				}
-				catch (Exception ex)
-				{
-					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from setter: {ex.Message}");
-				}
-			}
-		}
+		protected abstract void Unsubscribe();
 
 		// SubscribeToAncestryChanges, ClearAncestryChangeSubscriptions, FindAncestryIndex, and
 		// OnElementParentSet are used with RelativeSource ancestor-type bindings, to detect when
 		// there has been an ancestry change requiring re-applying the binding, and to minimize
 		// re-applications especially during visual tree building.
-		internal override void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource)
+		internal void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource)
 		{
 			ClearAncestryChangeSubscriptions();
 			if (chain == null)
@@ -434,6 +293,186 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		// ApplyCore is as slim as it should be:
+		// Setting  100000 values						: 17ms.
+		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
+		private void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
+		{
+			var mode = this.GetRealizedMode(property);
+			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
+				return;
+
+			var shouldSubscribe = mode == BindingMode.OneWay || mode == BindingMode.TwoWay;
+			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
+			var needsSetter = (mode == BindingMode.TwoWay && fromTarget) || mode == BindingMode.OneWayToSource;
+
+			if (shouldSubscribe)
+			{
+				Subscribe(sourceObject);
+			}
+
+			if (needsGetter)
+			{
+				GetValue(sourceObject, target, property, specificity);
+			}
+			else if (needsSetter)
+			{
+				SetValue(sourceObject, target, property);
+			}
+		}
+
+		private protected abstract void Subscribe(object sourceObject);
+		private protected abstract void GetValue(object source, BindableObject target, BindableProperty property, SetterSpecificity specificity);
+		private protected abstract void SetValue(object sourceObject, BindableObject target, BindableProperty property);
+
+#nullable enable
+		private protected void GetValue<TSource, TProperty>(
+			object sourceObject,
+			Func<TSource, (TProperty value, bool success)> getter,
+			BindableObject target,
+			BindableProperty property,
+			SetterSpecificity specificity)
+		{
+			object? value = FallbackValue ?? property.GetDefaultValue(target);
+			if (sourceObject is TSource source)
+			{
+				try
+				{
+					(var retval, bool success) = getter(source);
+					if (success) //if the getter failed, return the FallbackValue
+						value = GetSourceValue(retval, property.ReturnType);
+				}
+				catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
+				{
+				}
+			}
+			else
+			{
+				ReportInvalidSourceType(typeof(TSource), sourceObject);
+			}
+
+			if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
+			{
+				target.SetValueCore(property, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+			}
+			else
+			{
+				BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);
+			}
+		}
+
+		private protected void SetValue<TSource, TProperty>(
+			object sourceObject,
+			Action<TSource, TProperty> setter,
+			BindableObject target,
+			BindableProperty property)
+		{
+			var value = GetTargetValue(target.GetValue(property), typeof(TProperty));
+			if (!BindingExpressionHelper.TryConvert(ref value, property, typeof(TProperty), false)
+				|| value is not TProperty typedValue)
+			{
+				ReportInvalidPropertyType(sourceObject, target, property, value, typeof(TProperty));
+			}
+			else if (sourceObject is not TSource source)
+			{
+				ReportInvalidSourceType(typeof(TSource), sourceObject);
+			}
+			else
+			{
+				setter(source, typedValue);
+			}
+		}
+
+		protected void ReportInvalidSourceType(Type expectedSourceType, object sourceObject)
+		{
+			BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({expectedSourceType}) and the current binding context ({sourceObject.GetType()}).");
+		}
+
+		protected void ReportInvalidPropertyType(object sourceObject, BindableObject target, BindableProperty property, object? value, Type expectedPropertyType)
+		{
+			BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, expectedPropertyType);
+		}
+#nullable disable
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public sealed class TypedBinding<TSource, TProperty> : TypedBindingBase
+	{
+		readonly Func<TSource, (TProperty value, bool success)> _getter;
+		readonly Action<TSource, TProperty> _setter;
+		readonly PropertyChangedProxy[] _handlers;
+
+		public TypedBinding(Func<TSource, (TProperty value, bool success)> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string>[] handlers)
+		{
+			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
+			_setter = setter;
+
+			if (handlers == null)
+				return;
+
+			_handlers = new PropertyChangedProxy[handlers.Length];
+			for (var i = 0; i < handlers.Length; i++)
+			{
+				if (handlers[i] is null)
+					continue;
+				_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, this);
+			}
+		}
+
+		internal override BindingBase Clone()
+		{
+			Tuple<Func<TSource, object>, string>[] handlers = _handlers == null ? null : new Tuple<Func<TSource, object>, string>[_handlers.Length];
+			if (handlers != null)
+			{
+				for (var i = 0; i < _handlers.Length; i++)
+				{
+					if (_handlers[i] == null)
+						continue;
+					handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
+				}
+			}
+
+			return new TypedBinding<TSource, TProperty>(_getter, _setter, handlers)
+			{
+				Mode = Mode,
+				Converter = Converter,
+				ConverterParameter = ConverterParameter,
+				StringFormat = StringFormat,
+				Source = Source,
+				UpdateSourceEventName = UpdateSourceEventName,
+			};
+		}
+
+		internal override object GetSourceValue(object value, Type targetPropertyType)
+		{
+			if (Converter != null)
+				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			return base.GetSourceValue(value, targetPropertyType);
+		}
+
+		internal override object GetTargetValue(object value, Type sourcePropertyType)
+		{
+			if (Converter != null)
+				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			//return base.GetTargetValue(value, sourcePropertyType);
+			return value;
+		}
+
+		private protected override void GetValue(object sourceObject, BindableObject target, BindableProperty property, SetterSpecificity specificity)
+		{
+			GetValue(sourceObject, _getter, target, property, specificity);
+		}
+
+		private protected override void SetValue(object sourceObject, BindableObject target, BindableProperty property)
+		{
+			if (_setter is null)
+				return;
+
+			SetValue(sourceObject, _setter, target, property);
+		}
+
 		class PropertyChangedProxy
 		{
 			public Func<TSource, object> PartGetter { get; }
@@ -487,13 +526,18 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		void Subscribe(TSource sourceObject)
+		private protected override void Subscribe(object sourceObject)
 		{
+			if (sourceObject is not TSource source)
+			{
+				return;
+			}
+
 			for (var i = 0; i < _handlers.Length; i++)
 			{
 				if (_handlers[i] == null)
 					continue;
-				var part = _handlers[i].PartGetter(sourceObject);
+				var part = _handlers[i].PartGetter(source);
 				if (part == null)
 					break;
 				var inpc = part as INotifyPropertyChanged;
@@ -503,10 +547,180 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		void Unsubscribe()
+		protected override void Unsubscribe()
 		{
 			for (var i = 0; i < _handlers.Length; i++)
 				_handlers[i]?.Listener.Unsubscribe();
 		}
 	}
+
+#nullable enable
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public sealed class TypedBinding2<TSource, TProperty> : TypedBindingBase
+	{
+		private readonly Func<TSource, (TProperty value, bool success)> _getter;
+		private readonly Action<TSource, TProperty>? _setter;
+		private readonly int _handlersCount;
+		private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>> _handlers;
+		private PropertyChangedListener?[]? _listeners;
+
+		public TypedBinding2(
+			Func<TSource, (TProperty value, bool success)> getter,
+			Action<TSource, TProperty>? setter,
+			int handlersCount,
+			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>> handlers)
+		{
+			ArgumentNullException.ThrowIfNull(getter, nameof(getter));
+
+			_getter = getter;
+			_setter = setter;
+			_handlersCount = handlersCount;
+			_handlers = handlers;
+		}
+
+		internal override BindingBase Clone()
+		{
+			return new TypedBinding2<TSource, TProperty>(_getter, _setter, _handlersCount, _handlers)
+			{
+				Mode = Mode,
+				Converter = Converter,
+				ConverterParameter = ConverterParameter,
+				StringFormat = StringFormat,
+				Source = Source,
+				UpdateSourceEventName = UpdateSourceEventName,
+			};
+		}
+
+		internal override object? GetSourceValue(object? value, Type targetPropertyType)
+		{
+			if (Converter is not null)
+				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			return base.GetSourceValue(value, targetPropertyType);
+		}
+
+		internal override object? GetTargetValue(object? value, Type sourcePropertyType)
+		{
+			if (Converter is not null)
+				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			//return base.GetTargetValue(value, sourcePropertyType);
+			return value;
+		}
+
+		private protected override void GetValue(object sourceObject, BindableObject target, BindableProperty property, SetterSpecificity specificity)
+		{
+			GetValue(sourceObject, _getter, target, property, specificity);
+		}
+
+		private protected override void SetValue(object sourceObject, BindableObject target, BindableProperty property)
+		{
+			if (_setter is null)
+				return;
+
+			SetValue(sourceObject, _setter, target, property);
+		}
+
+		private protected override void Subscribe(object sourceObject)
+		{
+			if (sourceObject is not TSource source)
+			{
+				return;
+			}
+
+			_listeners ??= new PropertyChangedListener?[_handlersCount];
+
+			var handlers = _handlers(source);
+			int index = 0;
+
+			foreach (var (part, propertyName) in handlers)
+			{
+				ThrowIfOutOfRange(index);
+				
+				if (part is null)
+					break;
+
+				AddListener(part, propertyName, ref _listeners[index++]);
+			}
+
+			UnsubscribeRemainingListeners(index);
+		}
+
+		void ThrowIfOutOfRange(int index)
+		{
+			if (index >= _handlersCount)
+			{
+				throw new IndexOutOfRangeException($"The number of handlers returned by the handler function is more than the specified handlers count of {_handlersCount}.");
+			}
+		}
+
+		void AddListener(INotifyPropertyChanged part, string propertyName, ref PropertyChangedListener? listener)
+		{
+			listener ??= new PropertyChangedListener(this, propertyName);
+			listener.Subscribe(part);
+		}
+
+		void UnsubscribeRemainingListeners(int startIndex)
+		{
+			for (int i = startIndex; i < _listeners?.Length; i++)
+			{
+				_listeners[i]?.Unsubscribe();
+			}
+		}
+
+		private sealed class PropertyChangedListener(TypedBindingBase binding, string propertyName)
+		{
+			private readonly TypedBindingBase _binding = binding;
+			private readonly string _propertyName = propertyName;
+			private readonly BindingExpression.WeakPropertyChangedProxy _listener = new();
+
+			public void Subscribe(INotifyPropertyChanged source)
+			{
+				if (_listener.TryGetSource(out var existingSource))
+				{
+					if (ReferenceEquals(source, existingSource))
+					{
+						// Already subscribed to the same object, no need to do anything
+						return;
+					}
+					else
+					{
+						// Subscribed to a different object, unsubscribe from the previous one
+						_listener.Unsubscribe();
+					}
+				}
+
+				_listener.Subscribe(source, OnPropertyChanged);
+			}
+
+			public void Unsubscribe()
+			{
+				_listener.Unsubscribe();
+			}
+
+			private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			{
+				if (!string.IsNullOrEmpty(e.PropertyName) && !string.Equals(e.PropertyName, _propertyName, StringComparison.Ordinal))
+				{
+					return;
+				}
+
+				var dispatcher = (sender as BindableObject)?.Dispatcher;
+				dispatcher?.DispatchIfRequired(ApplyChanges);
+			}
+
+			private void ApplyChanges() => _binding.Apply(fromTarget: false);
+		}
+
+		protected override void Unsubscribe()
+		{
+			foreach (var listener in _listeners ?? [])
+			{
+				listener?.Unsubscribe();
+			}
+		}
+	}
+#pragma warning restore RS0016 // Add public types and members to the declared API
 }
