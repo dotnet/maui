@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
-#if IOS
+#if IOS || MACCATALYST
 			[nameof(IHybridWebView.FlowDirection)] = MapFlowDirection,
 #endif
 		};
