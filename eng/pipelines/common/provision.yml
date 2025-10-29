@@ -94,7 +94,7 @@ steps:
       sudo xcodebuild -license accept
       # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
       # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-      if [[ "$(XCODE_VERSION)" =~ ^26[.]0.*$ ]]; then
+      if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
         if ! sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0; then
           echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
           sudo xcrun simctl runtime delete all
