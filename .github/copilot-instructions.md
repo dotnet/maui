@@ -112,50 +112,92 @@ dotnet cake --target=dotnet-pack
 
 #### UI Testing Guidelines
 
-When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
+When adding UI tests to validate visual behavior and user interactions, follow this pattern that requires code in TWO separate projects:
 
 **CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
 
 1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
-   - Create the actual UI page that demonstrates the feature or reproduces the issue
-   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
-   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
-   - Ensure the UI provides clear visual feedback for the behavior being tested
+- Create the actual UI page that demonstrates the feature or reproduces the issue
+- Use XAML with proper `AutomationId` attributes on interactive controls for test automation
+- Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
+- Ensure the UI provides clear visual feedback for the behavior being tested
+
+**Example XAML Structure:**
+
+```
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                Title="Issue 22769 - Transparent Background">
+<VerticalStackLayout Padding="20">
+<Label Text="Test instructions"
+                  AutomationId="InstructionsLabel"/>
+<Button Text="Perform Action"
+                   AutomationId="ActionButton"
+                   Clicked="OnActionClicked"/>
+<Label Text="Result"
+                  AutomationId="ResultLabel"/>
+</VerticalStackLayout>
+</ContentPage>
+```
 
 2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
-   - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
-   - Use the `AutomationId` values to locate and interact with UI elements
-   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
-   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes
-   - Test should validate expected behavior through UI interactions and assertions
+- Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
+- Use the `AutomationId` values to locate and interact with UI elements
+- Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
+- Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE category per test)
+- Test should validate expected behavior through UI interactions and assertions
 
-**UI Test Pattern Example:**
-```csharp
-// In TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
-public class IssueXXXXX : _IssuesUITest
+**Example Test Structure:**
+
+```
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public override string Issue => "Description of the issue being tested";
-    
-    public IssueXXXXX(TestDevice device) : base(device) { }
-    
-    [Test]
-    [Category(UITestCategories.Layout)] // or appropriate category
-    public void TestMethodName()
-    {
-        App.WaitForElement("AutomationId");
-        App.Tap("AutomationId");
-        // Add assertions to verify expected behavior
-    }
+   public class IssueXXXXX : _IssuesUITest
+   {
+      public IssueXXXXX(TestDevice device) : base(device) { }
+
+      public override string Issue => "Description of the issue being tested";
+
+      [Test]
+      [Category(UITestCategories.Layout)]  // Use most appropriate category
+      public void TestMethodName()
+      {
+         App.WaitForElement("ActionButton");
+         App.Tap("ActionButton");
+         App.WaitForElement("ResultLabel");
+         VerifyScreenshot();
+      }
+   }
 }
 ```
+
+**Common UI Test Operations:**
+- `App.Tap("AutomationId")` - Click/tap element
+- `App.EnterText("AutomationId", "text")` - Enter text
+- `App.WaitForElement("AutomationId")` - Wait for element to appear
+- `App.ScrollDown("AutomationId")` / `App.ScrollUp("AutomationId")` - Scroll
+- `App.SetOrientationLandscape()` / `App.SetOrientationPortrait()` - Change orientation
+- `VerifyScreenshot()` - Visual verification
+- `App.SetSliderValue("AutomationId", value)` - Set slider
+- `App.SwipeLeftToRight()` / `App.SwipeRightToLeft()` - Gestures
+- `App.DragAndDrop("SourceId", "TargetId")` - Drag and drop
+
+**Test Categories (use only ONE):**
+`UITestCategories.Button`, `UITestCategories.Label`, `UITestCategories.Entry`, `UITestCategories.CollectionView`, `UITestCategories.ListView`, `UITestCategories.Navigation`, `UITestCategories.Layout`, `UITestCategories.Gestures`, `UITestCategories.Shell`, `UITestCategories.Border`, `UITestCategories.Image`, `UITestCategories.Slider`, `UITestCategories.Stepper`
 
 **Before committing UI tests:**
 - Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
 - Verify AutomationId references match between XAML and test code
 - Ensure tests follow the established naming and inheritance patterns
-- There should be only one `[Category]` attribute per test, pick the most appropriate one
+- Use only ONE `[Category]` attribute per test, pick the most appropriate one
+- When adding a new UI test category to `UITestCategories.cs`, also update `ui-tests.yml` to include this new category
 
-IMPORTANT NOTE: When a new UI test category is added to `UITestCategories.cs`, we need to also update the `ui-tests.yml` to include this new category. Make sure to detect this in your reviews.
+**For comprehensive UI testing guidance** (prerequisites, platform-specific patterns, troubleshooting, complete API reference), see: [UI-Testing-Guide.md](.github/UI-Testing-Guide.md)
 
 ### Code Formatting
 
