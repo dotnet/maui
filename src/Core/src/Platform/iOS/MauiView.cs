@@ -145,8 +145,10 @@ namespace Microsoft.Maui.Platform
 
 		// Note: This method was changed from static to instance to access _isKeyboardShowing field
 		// which is needed to determine if SoftInput padding should be applied
-		double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge)
+		double GetSafeAreaForEdge(double originalSafeArea, int edge)
 		{
+			var safeAreaRegion = GetSafeAreaRegionForEdge(edge);
+
 			// Edge-to-edge content - no safe area padding
 			if (safeAreaRegion == SafeAreaRegions.None)
 				return 0;
@@ -347,10 +349,10 @@ namespace Microsoft.Maui.Platform
 			if (View is ISafeAreaView2)
 			{
 				// Apply safe area selectively per edge based on SafeAreaRegions
-				var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left, 0);
-				var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top, 1);
-				var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right, 2);
-				var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom, 3);
+				var left = GetSafeAreaForEdge(baseSafeArea.Left, 0);
+				var top = GetSafeAreaForEdge(baseSafeArea.Top, 1);
+				var right = GetSafeAreaForEdge(baseSafeArea.Right, 2);
+				var bottom = GetSafeAreaForEdge(baseSafeArea.Bottom, 3);
 
 				return new SafeAreaPadding(left, right, top, bottom);
 			}
