@@ -397,20 +397,8 @@ namespace Microsoft.Maui.Platform
 internal static class GlobalWindowInsetListenerExtensions
 {
     /// <summary>
-    /// Gets the shared GlobalWindowInsetListener instance from the current MauiAppCompatActivity.
-    /// </summary>
-    /// <param name="context">The Android context</param>
-    /// <returns>The shared GlobalWindowInsetListener instance, or null if not available</returns>
-    public static GlobalWindowInsetListener? GetGlobalWindowInsetListener(this Context context)
-    {
-        return context.GetActivity() as MauiAppCompatActivity is MauiAppCompatActivity activity
-            ? activity.GlobalWindowInsetListener
-            : null;
-    }
-
-    /// <summary>
-    /// Sets the shared GlobalWindowInsetListener on the specified view.
-    /// This ensures all views use the same listener instance for coordinated inset management.
+    /// Sets the appropriate GlobalWindowInsetListener on the specified view.
+    /// This prioritizes local coordinator layout listeners over global ones.
     /// </summary>
     /// <param name="view">The Android view to set the listener on</param>
     /// <param name="context">The Android context to get the listener from</param>
@@ -431,15 +419,7 @@ internal static class GlobalWindowInsetListenerExtensions
             return false;
         }
 
-        // Set the global listener
-        var globalListener = context.GetGlobalWindowInsetListener();
-        if (globalListener is not null)
-        {
-            ViewCompat.SetOnApplyWindowInsetsListener(view, globalListener);
-            ViewCompat.SetWindowInsetsAnimationCallback(view, globalListener);
-            return true;
-        }
-
+        // If no listener available, this is likely a configuration issue but not critical
         return false;
     }
 
@@ -456,7 +436,7 @@ internal static class GlobalWindowInsetListenerExtensions
         ViewCompat.SetWindowInsetsAnimationCallback(view, null);
 
         // Reset view state - prefer local listener if available, otherwise use global
-        var listener = GlobalWindowInsetListener.FindListenerForView(view) ?? context.GetGlobalWindowInsetListener();
+        var listener = GlobalWindowInsetListener.FindListenerForView(view);
         listener?.ResetView(view);
     }
 }

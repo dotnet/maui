@@ -77,7 +77,7 @@ internal static class SafeAreaExtensions
                 }
             }
 
-            var globalWindowInsetsListener = context.GetGlobalWindowInsetListener();
+            var globalWindowInsetsListener = GlobalWindowInsetListener.FindListenerForView(view);
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
 
             // Check intersection with view bounds to determine which edges actually need padding

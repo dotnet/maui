@@ -268,8 +268,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Use our static registry approach to find and reset the appropriate listener
-			var listener = GlobalWindowInsetListener.FindListenerForView(platformView) ??
-						   handler.MauiContext.Context.GetGlobalWindowInsetListener();          // Check for specific view group types that handle safe area
+			var listener = GlobalWindowInsetListener.FindListenerForView(platformView);
+
+			// Check for specific view group types that handle safe area
 			if (handler.PlatformView is ContentViewGroup cvg)
 			{
 				listener?.ResetAppliedSafeAreas(cvg);

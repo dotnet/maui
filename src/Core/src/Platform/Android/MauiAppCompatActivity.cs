@@ -11,16 +11,6 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
-
-		GlobalWindowInsetListener? _globalWindowInsetListener;
-
-		/// <summary>
-		/// Gets the shared GlobalWindowInsetListener instance for this activity.
-		/// This ensures all views use the same listener instance for coordinated inset management.
-		/// </summary>
-		internal GlobalWindowInsetListener GlobalWindowInsetListener =>
-			_globalWindowInsetListener ??= new GlobalWindowInsetListener();
-
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
 
@@ -44,8 +34,6 @@ namespace Microsoft.Maui
 
 		protected override void OnDestroy()
 		{
-			_globalWindowInsetListener?.Dispose();
-			_globalWindowInsetListener = null;
 			base.OnDestroy();
 		}
 
