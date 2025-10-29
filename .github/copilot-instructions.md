@@ -1,3 +1,7 @@
+---
+description: "Guidance for GitHub Copilot when working on the .NET MAUI repository. Updated 2025-10."
+---
+
 # GitHub Copilot Development Environment Instructions
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
@@ -7,14 +11,24 @@ This document provides specific guidance for GitHub Copilot when working on the 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ### Key Technologies
-- **.NET SDK** - Version depends on the branch:
-  - **main branch**: Use the latest stable version of .NET to build
+
+- **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
+  - **main branch**: Use the latest stable version of .NET to build (currently .NET 10)
   - **net10.0 branch**: Use the latest .NET 10 SDK
   - **etc.**: Each feature branch correlates to its respective .NET version
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
-- **xUnit** for testing
+- **xUnit + NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
+
+**🚨 CRITICAL**: Before any build operation, verify .NET SDK version:
+```bash
+# Check required version
+cat global.json | grep -A 1 '"dotnet"'
+
+# Verify installed version matches
+dotnet --version
+```
 
 ## Development Environment Setup
 
@@ -31,6 +45,8 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 
 ### Initial Repository Setup
 
+**🚀 Mandatory Setup Sequence** - Run these in exact order:
+
 1. **Clone and navigate to repository:**
    ```bash
    git clone https://github.com/dotnet/maui.git
@@ -42,6 +58,15 @@ For .NET installation on Linux, follow the official Microsoft documentation:
    dotnet tool restore
    dotnet build ./Microsoft.Maui.BuildTasks.slnf
    ```
+
+**⚠️ FAILURE RECOVERY**: If restore or build fails:
+```bash
+# Clean and retry
+dotnet clean
+rm -rf bin/ obj/
+dotnet tool restore --force
+dotnet build ./Microsoft.Maui.BuildTasks.slnf --verbosity normal
+```
 
 ## Project Structure
 
@@ -68,14 +93,14 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 
 ### Sample Projects
 ```
-├── Controls 
+├── Controls
 │   ├── samples
 │   │   ├── Maui.Controls.Sample
 │   │   ├── Maui.Controls.Sample.Sandbox
-├── Essentials 
+├── Essentials
 │   ├── samples
 │   │   ├── Essentials.Sample
-├── BlazorWebView 
+├── BlazorWebView
 │   ├── samples
 │   │   ├── BlazorWinFormsApp
 │   │   ├── BlazorWpfApp
@@ -112,92 +137,10 @@ dotnet cake --target=dotnet-pack
 
 #### UI Testing Guidelines
 
-When adding UI tests to validate visual behavior and user interactions, follow this pattern that requires code in TWO separate projects:
-
-**CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
-
-1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
-- Create the actual UI page that demonstrates the feature or reproduces the issue
-- Use XAML with proper `AutomationId` attributes on interactive controls for test automation
-- Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
-- Ensure the UI provides clear visual feedback for the behavior being tested
-
-**Example XAML Structure:**
-
-```
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                Title="Issue 22769 - Transparent Background">
-<VerticalStackLayout Padding="20">
-<Label Text="Test instructions"
-                  AutomationId="InstructionsLabel"/>
-<Button Text="Perform Action"
-                   AutomationId="ActionButton"
-                   Clicked="OnActionClicked"/>
-<Label Text="Result"
-                  AutomationId="ResultLabel"/>
-</VerticalStackLayout>
-</ContentPage>
-```
-
-2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
-- Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
-- Use the `AutomationId` values to locate and interact with UI elements
-- Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
-- Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE category per test)
-- Test should validate expected behavior through UI interactions and assertions
-
-**Example Test Structure:**
-
-```
-using NUnit.Framework;
-using UITest.Appium;
-using UITest.Core;
-
-namespace Microsoft.Maui.TestCases.Tests.Issues
-{
-   public class IssueXXXXX : _IssuesUITest
-   {
-      public IssueXXXXX(TestDevice device) : base(device) { }
-
-      public override string Issue => "Description of the issue being tested";
-
-      [Test]
-      [Category(UITestCategories.Layout)]  // Use most appropriate category
-      public void TestMethodName()
-      {
-         App.WaitForElement("ActionButton");
-         App.Tap("ActionButton");
-         App.WaitForElement("ResultLabel");
-         VerifyScreenshot();
-      }
-   }
-}
-```
-
-**Common UI Test Operations:**
-- `App.Tap("AutomationId")` - Click/tap element
-- `App.EnterText("AutomationId", "text")` - Enter text
-- `App.WaitForElement("AutomationId")` - Wait for element to appear
-- `App.ScrollDown("AutomationId")` / `App.ScrollUp("AutomationId")` - Scroll
-- `App.SetOrientationLandscape()` / `App.SetOrientationPortrait()` - Change orientation
-- `VerifyScreenshot()` - Visual verification
-- `App.SetSliderValue("AutomationId", value)` - Set slider
-- `App.SwipeLeftToRight()` / `App.SwipeRightToLeft()` - Gestures
-- `App.DragAndDrop("SourceId", "TargetId")` - Drag and drop
-
-**Test Categories (use only ONE):**
-`UITestCategories.Button`, `UITestCategories.Label`, `UITestCategories.Entry`, `UITestCategories.CollectionView`, `UITestCategories.ListView`, `UITestCategories.Navigation`, `UITestCategories.Layout`, `UITestCategories.Gestures`, `UITestCategories.Shell`, `UITestCategories.Border`, `UITestCategories.Image`, `UITestCategories.Slider`, `UITestCategories.Stepper`
-
-**Before committing UI tests:**
-- Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
-- Verify AutomationId references match between XAML and test code
-- Ensure tests follow the established naming and inheritance patterns
-- Use only ONE `[Category]` attribute per test, pick the most appropriate one
-- When adding a new UI test category to `UITestCategories.cs`, also update `ui-tests.yml` to include this new category
-
-**For comprehensive UI testing guidance** (prerequisites, platform-specific patterns, troubleshooting, complete API reference), see: [UI-Testing-Guide.md](.github/UI-Testing-Guide.md)
+**Key reminders:**
+- UI tests require code in TWO projects: `TestCases.HostApp/Issues/` (UI page) and `TestCases.Shared.Tests/Tests/Issues/` (test implementation)
+- Avoid platform-specific directives (`#if ANDROID`, `#if IOS`, etc.) unless absolutely necessary - tests should run on all applicable platforms by default
+- When a new UI test category is added to `UITestCategories.cs`, also update `ui-tests.yml` to include the new category
 
 ### Code Formatting
 
@@ -308,6 +251,56 @@ All PRs are required to have this at the top of the description:
 
 Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
 
+## Troubleshooting
+
+### Common Build Issues
+
+**Issue: "Build tasks not found"**
+```bash
+# Solution: Rebuild build tasks
+dotnet clean ./Microsoft.Maui.BuildTasks.slnf
+dotnet build ./Microsoft.Maui.BuildTasks.slnf
+```
+
+**Issue: "Dependency version conflicts"**
+```bash
+# Solution: Full clean and restore
+dotnet clean Microsoft.Maui.sln
+rm -rf bin/ obj/
+dotnet restore Microsoft.Maui.sln --force
+```
+
+**Issue: "Android SDK not found"**
+```bash
+# Solution: Check and install Android components
+android # Opens Android SDK Manager
+# Or set environment variable: export ANDROID_HOME=/path/to/android-sdk
+```
+
+**Issue: "PublicAPI analyzer failures"**
+```bash
+# Solution: Use format analyzers first
+dotnet format analyzers Microsoft.Maui.sln
+# If still failing, check build output for required API entries
+```
+
+### Platform-Specific Troubleshooting
+
+**iOS/Mac Build Issues:**
+- Verify Xcode command line tools: `xcode-select --install`
+- Check Xcode version compatibility with .NET MAUI version
+- Ensure provisioning profiles are current (for device testing)
+
+**Android Build Issues:**
+- Verify OpenJDK 17 installation: `java -version`
+- Check ANDROID_HOME environment variable
+- Update Android SDK components via Android SDK Manager
+
+**Windows Build Issues:**
+- Ensure Windows SDK is installed
+- Verify Visual Studio workloads include .NET MAUI development
+- Check for missing NuGet packages: `dotnet restore --force`
+
 ## Additional Resources
 
 - [Development Guide](.github/DEVELOPMENT.md)
@@ -315,7 +308,3 @@ Always put that at the top, without the block quotes. Without it, the users will
 - [Contributing Guidelines](.github/CONTRIBUTING.md)
 - [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
 - [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)
-
----
-
-**Note for Future Updates:** This document should be expanded as new development patterns, tools, or workflows are discovered. Add sections for specific scenarios, debugging techniques, or tooling as they become relevant to the development process.

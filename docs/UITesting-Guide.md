@@ -499,11 +499,10 @@ If migrating from Xamarin.UITest:
 
 ## Additional Resources
 
+- [UITesting-Architecture.md](design/UITesting-Architecture.md) - CI/CD integration, advanced patterns, and architecture decisions
 - [Appium Documentation](http://appium.io/docs/en/about-appium/intro/)
 - [NUnit Documentation](https://docs.nunit.org/)
 - [.NET MAUI Testing Wiki](https://github.com/dotnet/maui/wiki/UITests)
 - [GitHub Actions UI Tests Workflow](https://github.com/dotnet/maui/blob/main/.github/workflows/ui-tests.yml)
 
 **Last Updated:** October 2025
-
-For more information, see the main [GitHub Copilot Development Environment Instructions](.github/copilot-instructions.md).

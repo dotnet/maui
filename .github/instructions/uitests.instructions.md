@@ -22,6 +22,7 @@ This document provides specific guidance for GitHub Copilot when writing UI test
    - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
    - XXXXX should correspond to a GitHub issue number when applicable
    - Ensure the UI provides clear visual feedback for the behavior being tested
+   - Code-behind must include `[Issue()]` attribute with tracker, number, description, and platform
 
 2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
    - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
@@ -57,8 +58,22 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 ## Complete Test Example
 
+**HostApp Code-Behind** (`TestCases.HostApp/Issues/Issue12345.xaml.cs`):
 ```csharp
-// File: TestCases.Shared.Tests/Tests/Issues/Issue12345.cs
+namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, 12345, "Description of the issue being tested", PlatformAffected.All)]
+public partial class Issue12345 : ContentPage
+{
+    public Issue12345()
+    {
+        InitializeComponent();
+    }
+}
+```
+
+**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/Issue12345.cs`):
+```csharp
 public class Issue12345 : _IssuesUITest
 {
     public override string Issue => "Description of the issue being tested";
@@ -78,6 +93,9 @@ public class Issue12345 : _IssuesUITest
         // Verify expected behavior
         var labelText = App.FindElement("ResultLabel").GetText();
         Assert.That(labelText, Is.EqualTo("Expected Text"));
+
+        // Optional: Visual verification
+        VerifyScreenshot();
     }
 }
 ```
@@ -100,6 +118,18 @@ var rect = App.WaitForElement("AutomationId").GetRect();
 ```csharp
 Assert.That(actualValue, Is.EqualTo(expectedValue).Within(tolerance));
 Assert.That(rect.Height, Is.LessThanOrEqualTo(maxHeight));
+```
+
+### Screenshot Verification
+```csharp
+// Verify visual appearance (automated comparison)
+VerifyScreenshot();
+
+// With custom name
+VerifyScreenshot("CustomTestName");
+
+// Manual screenshot for debugging
+App.Screenshot("TestStep1");
 ```
 
 ## Test Categories
