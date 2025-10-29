@@ -15,8 +15,7 @@ namespace Microsoft.Maui.Layouts
 			var padding = Stack.Padding;
 
 			// If explicit dimensions are set, use them instead of the passed constraints
-			var effectiveWidthConstraint = Dimension.IsExplicitSet(Stack.Width) ? Stack.Width : widthConstraint;
-			var effectiveHeightConstraint = Dimension.IsExplicitSet(Stack.Height) ? Stack.Height : heightConstraint;
+			var (effectiveWidthConstraint, effectiveHeightConstraint) = GetEffectiveConstraints(widthConstraint, heightConstraint);
 
 			double measuredWidth = 0;
 			double measuredHeight = 0;
