@@ -251,8 +251,12 @@ namespace Microsoft.Maui.Controls
 
 			_removePageRequested?.Invoke(this, new NavigationRequestedEventArgs(page, true));
 			RemoveFromInnerChildren(page);
-			page?.DisconnectHandlers();
 
+			// Only disconnect handlers if the removed page is not visible
+			if (page != CurrentPage)
+			{
+				page?.DisconnectHandlers();
+			}
 			if (RootPage == page)
 				RootPage = (Page)InternalChildren.First();
 		}
