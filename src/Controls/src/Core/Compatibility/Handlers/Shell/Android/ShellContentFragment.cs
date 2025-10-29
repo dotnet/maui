@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarTracker _toolbarTracker;
 		bool _disposed;
 		bool _destroyed;
-		GlobalWindowInsetListener? _localInsetListener;
-		CoordinatorLayout? _managedCoordinatorLayout;
+		GlobalWindowInsetListener _localInsetListener;
+		CoordinatorLayout _managedCoordinatorLayout;
 
 		public ShellContentFragment(IShellContext shellContext, ShellContent shellContent)
 		{
