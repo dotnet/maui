@@ -12,7 +12,7 @@ Comprehensive guidance for creating automated UI tests for .NET MAUI using Appiu
 
 ### All Platforms
 
-```
+```bash
 # Restore tools (required)
 
 dotnet tool restore
@@ -48,7 +48,7 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 
 **File:** `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`
 
-```
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -73,16 +73,16 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 
 **File:** `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs`
 
-```
+```csharp
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, XXXXX, "Issue description", PlatformAffected.All)]
 public partial class IssueXXXXX : ContentPage
 {
-public IssueXXXXX()
-{
-    InitializeComponent();
-}
+    public IssueXXXXX()
+    {
+        InitializeComponent();
+    }
 
     private void OnButtonClicked(object sender, EventArgs e)
     {
@@ -96,7 +96,7 @@ public IssueXXXXX()
 
 **File:** `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
 
-```
+```csharp
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -134,7 +134,7 @@ public class IssueXXXXX : _IssuesUITest
 
 ### Element Interaction
 
-```
+```csharp
 // Single tap
 App.Tap("ButtonAutomationId");
 
@@ -158,7 +158,7 @@ App.DecreaseStepper("StepperAutomationId");
 
 ### Gestures
 
-```
+```csharp
 // Swipe left to right
 App.SwipeLeftToRight();
 
@@ -178,7 +178,7 @@ App.TapCoordinates(100, 100);
 
 ### Scrolling
 
-```
+```csharp
 // Scroll down
 App.ScrollDown("CollectionViewId");
 
@@ -196,7 +196,7 @@ swipePercentage: 0.5);
 
 ### Waiting and Queries
 
-```
+```csharp
 // Wait for element
 App.WaitForElement("ElementAutomationId",
 timeout: TimeSpan.FromSeconds(10));
@@ -210,7 +210,7 @@ App.QueryUntilNotPresent(() => App.WaitForElement("ElementId"));
 
 ### Navigation and Device
 
-```
+```csharp
 // Navigate back
 App.Back();
 
@@ -245,7 +245,7 @@ VerifyScreenshot();  // Automated screenshot comparison
 
 Use the most appropriate category per test:
 
-```
+```csharp
 [Category(UITestCategories.Button)]
 [Category(UITestCategories.Label)]
 [Category(UITestCategories.Entry)]
@@ -273,7 +273,7 @@ Each platform can have unique tests:
 
 **Android Tests** (`src/Controls/tests/TestCases.Android.Tests/IssueXXXXX.cs`):
 
-```
+```csharp
 [Test]
 [Category(UITestCategories.Android)]
 public void AndroidOnlyFeature()
@@ -285,7 +285,7 @@ App.ToggleWifi();
 
 **iOS Tests** (`src/Controls/tests/TestCases.iOS.Tests/IssueXXXXX.cs`):
 
-```
+```csharp
 [Test]
 [Category(UITestCategories.iOS)]
 public void iOSOnlyFeature()
@@ -301,35 +301,35 @@ public void iOSOnlyFeature()
 
 **Android:**
 
-```
+```powershell
 ./build.ps1 -Script eng/devices/android.cake --target=uitest-build
 ./build.ps1 -Script eng/devices/android.cake --target=uitest
 ```
 
 **iOS:**
 
-```
+```powershell
 ./build.ps1 -Script eng/devices/ios.cake --target=uitest-build
 ./build.ps1 -Script eng/devices/ios.cake --target=uitest
 ```
 
 **Windows:**
 
-```
+```powershell
 ./build.ps1 -Script eng/devices/windows.cake --target=uitest-build
 ./build.ps1 -Script eng/devices/windows.cake --target=uitest
 ```
 
 **MacCatalyst:**
 
-```
+```powershell
 ./build.ps1 -Script eng/devices/catalyst.cake --target=uitest-build
 ./build.ps1 -Script eng/devices/catalyst.cake --target=uitest
 ```
 
 ### Filter Tests by Category
 
-```
+```bash
 # Single category
 
 dotnet cake eng/devices/android.cake --target=uitest --test-filter="TestCategory=Button"
@@ -360,7 +360,7 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
 
 ### AutomationId Best Practices
 
-```
+```xaml
 // BAD - Generic names
 <Button AutomationId="Button1"/>
 <Label AutomationId="Label2"/>
@@ -388,7 +388,7 @@ Don't:
 
 ### Always Wait for Elements
 
-```
+```csharp
 // BAD - May fail
 App.Tap("ButtonId");
 
@@ -399,7 +399,7 @@ App.Tap("ButtonId");
 
 ### Test Orientation Changes
 
-```
+```csharp
 [Test]
 public void ResponsiveLayoutTest()
 {
@@ -445,7 +445,7 @@ Before committing UI tests:
 
 ## Example: Complete Test
 
-```
+```csharp
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -454,9 +454,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue22769 : _IssuesUITest
 {
-public Issue22769(TestDevice device) : base(device)
-{
-}
+    public Issue22769(TestDevice device) : base(device)
+    {
+    }
 
     public override string Issue => "Background set to Transparent doesn't have the same behavior as BackgroundColor Transparent";
     
