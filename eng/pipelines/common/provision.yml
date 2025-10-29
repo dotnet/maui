@@ -82,13 +82,19 @@ steps:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+      # Use REQUIRED_XCODE for devdiv team project, XCODE for others (e.g., maui-pr)
+      if [[ "$(System.TeamProject)" == "devdiv" ]]; then
+        XCODE_VERSION=$(REQUIRED_XCODE)
+      else
+        XCODE_VERSION=$(XCODE)
+      fi
+      sudo xcode-select -s /Applications/Xcode_${XCODE_VERSION}.app
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
       # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
       # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-      if [[ "$(REQUIRED_XCODE)" =~ ^26[.]0.*$ ]]; then
+      if [[ "$(XCODE_VERSION)" =~ ^26[.]0.*$ ]]; then
         if ! sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0; then
           echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
           sudo xcrun simctl runtime delete all
@@ -105,7 +111,7 @@ steps:
           sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
         fi
       else
-        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
+        sudo xcodebuild -downloadPlatform iOS
       fi
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
