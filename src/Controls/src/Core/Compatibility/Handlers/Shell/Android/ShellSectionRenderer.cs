@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
 		bool _disposed;
-		GlobalWindowInsetListener? _localInsetListener;
-		CoordinatorLayout? _managedCoordinatorLayout;
+		GlobalWindowInsetListener _localInsetListener;
+		CoordinatorLayout _managedCoordinatorLayout;
 		IShellController ShellController => _shellContext.Shell;
 		public event EventHandler AnimationFinished;
 		Fragment IShellObservableFragment.Fragment => this;
