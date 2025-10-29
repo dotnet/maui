@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.IssueEntryTest"
+             Title="Entry Test">
+    <VerticalStackLayout Padding="20" Spacing="20">
+        <Label 
+            Text="Test Instructions:"
+            FontAttributes="Bold"
+            FontSize="18"/>
+        <Label 
+            Text="1. Tap on the Entry below"/>
+        <Label 
+            Text="2. Type 'Hello MAUI' into the Entry"/>
+        <Label 
+            Text="3. Verify the text appears in the Entry"/>
+        <Label 
+            Text="4. Click the Clear button"/>
+        <Label 
+            Text="5. Verify the Entry is empty"/>
+        
+        <Entry 
+            x:Name="TestEntry"
+            AutomationId="TestEntry"
+            Placeholder="Enter text here"
+            BackgroundColor="LightGray"
+            HeightRequest="50"/>
+        
+        <Label 
+            x:Name="ResultLabel"
+            AutomationId="ResultLabel"
+            Text="Entry is empty"
+            FontSize="16"/>
+        
+        <Button 
+            x:Name="ClearButton"
+            AutomationId="ClearButton"
+            Text="Clear Entry"
+            Clicked="OnClearButtonClicked"
+            BackgroundColor="LightCoral"
+            TextColor="White"
+            HeightRequest="50"/>
+    </VerticalStackLayout>
+</ContentPage>
