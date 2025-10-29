@@ -31,10 +31,11 @@ namespace Microsoft.Maui.Handlers
 			[nameof(WebViewClient)] = MapWebViewClient,
 			[nameof(WebChromeClient)] = MapWebChromeClient,
 			[nameof(WebView.Settings)] =  MapWebViewSettings
+#elif __IOS__ || MACCATALYST
+			[nameof(IWebView.FlowDirection)] = MapFlowDirection,
 #elif __IOS__
 			[nameof(WKUIDelegate)] = MapWKUIDelegate,
 			[nameof(IWebView.Background)] = MapBackground,
-			[nameof(IWebView.FlowDirection)] = MapFlowDirection,
 #endif
 		};
 
