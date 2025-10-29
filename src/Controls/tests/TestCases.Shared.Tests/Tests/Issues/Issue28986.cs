@@ -13,7 +13,6 @@ public class Issue28986 : _IssuesUITest
 	{
 	}
 
-#if ANDROID
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SoftInputDoesNotApplyBottomPaddingWhenKeyboardHidden()
@@ -93,7 +92,6 @@ public class Issue28986 : _IssuesUITest
 		Assert.That(softInputRect.Height, Is.EqualTo(noneRect.Height).Within(5),
 			"MainGrid height with SoftInput should match None when keyboard is hidden");
 	}
-#endif
 
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
