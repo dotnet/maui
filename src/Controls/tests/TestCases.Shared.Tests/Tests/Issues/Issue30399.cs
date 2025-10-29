@@ -13,13 +13,21 @@ public class Issue30399 : _IssuesUITest
 
 	public override string Issue => "RTL FlowDirection causes overlap with window control buttons";
 
-	[Test]
+	[Test, Order(1)]
+	[Category(UITestCategories.Window)]
+	public void VerifyTitleBarLTR()
+	{
+		App.WaitForElement("ToggleFlowDirectionButton");
+		// Don't toggle - verify initial LTR state
+		VerifyScreenshot(includeTitleBar: true);
+	}
+
+	[Test, Order(2)]
 	[Category(UITestCategories.Window)]
 	public void VerifyTitleBarRTL()
 	{
 		App.WaitForElement("ToggleFlowDirectionButton");
-		App.Tap("ToggleFlowDirectionButton");
-		App.Tap("ToggleFlowDirectionButton");
+		App.Tap("ToggleFlowDirectionButton");  // Toggle once to RTL
 		VerifyScreenshot(includeTitleBar: true);
 	}
 }
