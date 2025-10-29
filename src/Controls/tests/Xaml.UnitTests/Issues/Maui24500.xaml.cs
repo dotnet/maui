@@ -48,7 +48,7 @@ public partial class Maui24500 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui24500));

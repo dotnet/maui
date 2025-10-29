@@ -33,7 +33,7 @@ public partial class Unreported010
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Unreported010(useCompiledXaml);
 			Assert.Equal(Colors.Blue, page.button0.BackgroundColor);

@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5510)));

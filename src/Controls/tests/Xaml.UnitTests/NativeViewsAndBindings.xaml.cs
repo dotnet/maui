@@ -295,7 +295,7 @@ public partial class NativeViewsAndBindings : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var layout = new NativeViewsAndBindings(useCompiledXaml);
 			layout.BindingContext = new

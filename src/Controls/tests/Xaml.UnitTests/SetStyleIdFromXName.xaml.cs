@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		public class Tests
 		{
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void SetStyleId(bool useCompiledXaml)
 			{
 				var layout = new SetStyleIdFromXName(useCompiledXaml);

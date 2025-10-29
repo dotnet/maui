@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Pass();
 		}		class Tests
 		{
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void NonGenericEventHanlders(bool useCompiledXaml)
 			{
 				var layout = new Gh4130(useCompiledXaml);

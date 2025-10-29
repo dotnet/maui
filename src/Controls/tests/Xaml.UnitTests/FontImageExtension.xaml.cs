@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static Color Color => Colors.Black;
 		public static double Size = 50d;		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void FontImageExtension_Positive(bool useCompiledXaml)
 			{
 				var layout = new FontImageExtension(useCompiledXaml);
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 			}
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void FontImageExtension_Negative(bool useCompiledXaml)
 			{
 				var layout = new FontImageExtension(useCompiledXaml);

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var page = new Maui11204(useCompiledXaml);
 				Assert.Equal(Colors.FloralWhite, page.border.BackgroundColor);
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var page = new Maui11204(useCompiledXaml);
 				Assert.Equal(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);

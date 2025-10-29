@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Theory]
-			public void Method([InlineData("Debug", "Release", "ReleaseProd")] string configuration)
+			public void Method(string configuration)
 		{
 			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
@@ -288,7 +288,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 		}
 
-		[Fact]
 		[Fact(Skip = "source gen changes")]
 		public void ValidateOnly_WithErrors()
 		{
@@ -421,7 +420,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.NotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 
-		[Fact]
 		[Fact(Skip = "source gen changes")]
 		public void TouchXamlFile()
 		{

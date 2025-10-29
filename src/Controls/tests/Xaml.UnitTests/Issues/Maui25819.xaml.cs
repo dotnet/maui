@@ -41,7 +41,9 @@ public partial class Maui25819 : ContentPage
 
 
 		[Fact]
-		public void DoesntThrow([Values] bool inflator)
+		public void DoesntThrow([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);

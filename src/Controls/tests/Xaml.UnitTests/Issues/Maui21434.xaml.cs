@@ -32,7 +32,7 @@ public partial class Maui21434
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui21434(useCompiledXaml);
 			Assert.Equal("ParentText", page.ParentTextLabel?.Text);

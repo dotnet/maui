@@ -33,7 +33,7 @@ public partial class Maui22714
 		[Fact]
 		public void TestNonCompiledResourceDictionary(
 			[InlineData(false, true)] bool useCompiledXaml,
-			[InlineData(false, true)] bool treatWarningsAsErrors)
+			bool treatWarningsAsErrors)
 		{
 			if (useCompiledXaml)
 			{

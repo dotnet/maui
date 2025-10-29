@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void CompiledBindingsNullInPath(bool useCompiledXaml)
 			{
 				var layout = new Gh4102(useCompiledXaml) { BindingContext = new Gh4102VM() };

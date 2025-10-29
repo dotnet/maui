@@ -28,7 +28,7 @@ public partial class Maui17222 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Maui17222BaseStyle(useCompiledXaml));

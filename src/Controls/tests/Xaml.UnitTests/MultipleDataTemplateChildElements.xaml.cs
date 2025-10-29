@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		public static class Tests
 		{
 			[Fact]
-			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
+			public static void ThrowXamlParseException([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 				{

@@ -48,7 +48,7 @@ public partial class Maui22877 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui22877(useCompiledXaml) { BindingContext = new { BoundString = "BoundString" } };

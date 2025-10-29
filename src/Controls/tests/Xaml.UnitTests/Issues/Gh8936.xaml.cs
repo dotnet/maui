@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh8936(useCompiledXaml) { BindingContext = new Gh8936VM() };
 				Assert.Equal("Value", layout.entry0.Text);

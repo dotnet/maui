@@ -39,7 +39,7 @@ public partial class Maui21757
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var resourceDictionary = new Maui21757(useCompiledXaml);
 

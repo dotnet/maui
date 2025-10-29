@@ -48,7 +48,7 @@ public partial class Maui16208
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 
 			Assert.DoesNotThrow(() => new Maui16208(useCompiledXaml));

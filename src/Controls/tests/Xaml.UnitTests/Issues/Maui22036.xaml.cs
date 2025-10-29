@@ -32,7 +32,7 @@ public partial class Maui22036
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Fact]
-		public async Task StyleWithTriggerLeak([InlineData(false, true)] bool useCompiledXaml)
+		public async Task StyleWithTriggerLeak(bool useCompiledXaml)
 		{
 			var style = new Style(typeof(ContentPage));
 			var trigger = new EventTrigger { Event = nameof(Appearing) };

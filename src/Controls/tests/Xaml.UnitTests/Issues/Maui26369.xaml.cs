@@ -51,7 +51,9 @@ public partial class Maui26369 : ContentPage
 		}
 
 		[Fact]
-		public void CompilationDoesNotFail([Values] bool useCompiledXaml)
+		public void CompilationDoesNotFail([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 			{

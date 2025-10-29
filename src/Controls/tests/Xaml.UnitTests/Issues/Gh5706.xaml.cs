@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh5706(useCompiledXaml);
 				layout.searchHandler.BindingContext = new Gh5706VM();

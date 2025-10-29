@@ -34,7 +34,7 @@ public partial class Maui25172 : CoreContentPage<VM25172>
 		}
 
 		[Theory]
-			public void Method([InlineData(true, false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 			{

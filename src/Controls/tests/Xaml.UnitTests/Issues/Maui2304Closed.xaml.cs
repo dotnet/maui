@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Maui2304Closed(useCompiledXaml);
 				Assert.Equal(typeof(OnPlatform<string>), typeof(Maui2304Closed).BaseType);

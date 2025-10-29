@@ -33,7 +33,9 @@ public partial class Maui24384 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Fact]
-		public void ImmutableToIList([Values] bool useCompiledXaml)
+		public void ImmutableToIList([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui24384));

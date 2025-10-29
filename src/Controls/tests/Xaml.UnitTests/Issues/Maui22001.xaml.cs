@@ -51,7 +51,7 @@ public partial class Maui22001
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui22001(useCompiledXaml);
 

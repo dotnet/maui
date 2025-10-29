@@ -48,7 +48,7 @@ public partial class Maui24849 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Style24849());

@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void PickerDateTimesAndXamlC(bool useCompiledXaml)
 			{
 				var page = new Unreported008(useCompiledXaml);

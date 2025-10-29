@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void SizeHasConverter(bool useCompiledXaml)
 			{
 				Gh3280 layout = null;

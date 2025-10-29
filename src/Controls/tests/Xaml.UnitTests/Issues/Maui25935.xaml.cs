@@ -34,7 +34,7 @@ public partial class Maui25935
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui25935(useCompiledXaml);
 			var items = page.Picker.Items.ToArray();

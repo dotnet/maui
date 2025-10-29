@@ -34,7 +34,9 @@ public partial class Maui27121
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Fact]
-		public void XNameAreTrimmed([Values] bool useCompiledXaml)
+		public void XNameAreTrimmed([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			var page = new Maui27121(useCompiledXaml);
 			Assert.NotNull(page.label0);

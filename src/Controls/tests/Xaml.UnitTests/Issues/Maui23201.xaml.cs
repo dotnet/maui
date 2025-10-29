@@ -33,7 +33,7 @@ public partial class Maui23201
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("Black", Colors.DarkGray);
 			Application.Current.Resources.Add("White", Colors.LightGray);

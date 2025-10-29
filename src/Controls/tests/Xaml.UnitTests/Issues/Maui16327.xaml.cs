@@ -41,7 +41,7 @@ public partial class Maui16327 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 

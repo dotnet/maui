@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				Gh7531 layout = null;
 				Assert.DoesNotThrow(() => layout = new Gh7531(useCompiledXaml));

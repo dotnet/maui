@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
 				Assert.True(!hasLoggedErrors);

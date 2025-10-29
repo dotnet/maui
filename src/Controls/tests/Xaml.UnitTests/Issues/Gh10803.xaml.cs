@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh10803(useCompiledXaml);
 				var listview = layout.listview;

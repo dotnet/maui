@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void OnPlatformMarkupAndNamedSizes(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.iOS;

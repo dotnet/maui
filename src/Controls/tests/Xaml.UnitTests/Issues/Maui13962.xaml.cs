@@ -34,7 +34,7 @@ public partial class Maui13962 : ContentView
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			//shouln't throw
 			var page = new Maui13962(useCompiledXaml);

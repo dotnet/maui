@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void CSSPropertiesNotInerited(bool useCompiledXaml)
 			{
 				var layout = new Gh1766(useCompiledXaml);

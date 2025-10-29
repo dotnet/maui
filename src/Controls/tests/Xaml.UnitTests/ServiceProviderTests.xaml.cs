@@ -67,7 +67,9 @@ public partial class ServiceProviderTests : ContentPage
 		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Fact]
-		public void TestServiceProviders([Values] bool useCompiledXaml)
+		public void TestServiceProviders([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			var page = new ServiceProviderTests(useCompiledXaml);
 

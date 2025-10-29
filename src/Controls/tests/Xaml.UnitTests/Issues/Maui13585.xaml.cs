@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var page = new Maui13585(useCompiledXaml);
 				Assert.Equal(Colors.Green, page.styleTriggerWithStaticResources.BackgroundColor);

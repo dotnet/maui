@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 			[Theory]
-			public void Method([InlineData(false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var page = new Maui2418(useCompiledXaml);
 				Assert.NotNull(page);

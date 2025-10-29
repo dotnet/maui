@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var vm = new Issue6280ViewModel();
 				var page = new Issue6280(useCompiledXaml) { BindingContext = vm };

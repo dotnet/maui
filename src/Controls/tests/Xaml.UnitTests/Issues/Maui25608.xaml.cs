@@ -43,7 +43,7 @@ public partial class Maui25608
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			bool bindingFailureReported = false;
 			_bindingFailureHandler = (sender, args) => bindingFailureReported = true;

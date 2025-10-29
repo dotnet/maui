@@ -40,7 +40,7 @@ public partial class Maui21839
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Fact]
-		public async Task VSMLeak([InlineData(false, true)] bool useCompiledXaml)
+		public async Task VSMLeak(bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("buttonStyle",
 				new Style(typeof(Button))

@@ -33,7 +33,7 @@ public partial class Maui23989
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)).Validate(() => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));

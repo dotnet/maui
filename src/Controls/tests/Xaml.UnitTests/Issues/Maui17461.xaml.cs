@@ -29,7 +29,7 @@ public partial class Maui17461 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData("net7.0-ios", "net7.0-android", "net7.0-macos")] string targetFramework)
+			public void Method(string targetFramework)
 		{
 			MockCompiler.Compile(typeof(Maui17461), out var methodDef, targetFramework: targetFramework);
 		}

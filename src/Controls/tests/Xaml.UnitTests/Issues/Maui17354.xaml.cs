@@ -27,7 +27,7 @@ public partial class Maui17354 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui17354(useCompiledXaml);
 			var grid = page.grid;

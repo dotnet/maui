@@ -24,14 +24,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 				var page = new Maui4509(useCompiledXaml);
 				Assert.Equal(2, page.layout.Children.Count);
 			}
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
 				var page = new Maui4509(useCompiledXaml);

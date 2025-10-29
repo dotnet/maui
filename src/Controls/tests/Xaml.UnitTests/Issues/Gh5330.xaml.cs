@@ -12,14 +12,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 			[Theory]
-			public void Method([InlineData(true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5330)));
 			}
 
 			[Theory]
-			public void Method([InlineData(true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh5330(useCompiledXaml) { BindingContext = new Button { Text = "Foo" } };
 				Assert.Equal("Foo", layout.label.Text);

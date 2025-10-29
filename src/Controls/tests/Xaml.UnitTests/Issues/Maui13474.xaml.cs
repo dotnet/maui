@@ -40,7 +40,7 @@ public partial class Maui13474
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui13474(useCompiledXaml);
 			var fontImageSource = page.imageButton.Source as FontImageSource;

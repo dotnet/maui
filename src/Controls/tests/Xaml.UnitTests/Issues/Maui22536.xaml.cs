@@ -31,7 +31,7 @@ public partial class Maui22536
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui22536(useCompiledXaml);
 			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203"));

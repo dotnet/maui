@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void ShouldResolveNested(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal("NestedLibraryConstant", layout.Label2.Text);
 			}
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void ShouldResolveInternalNested(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

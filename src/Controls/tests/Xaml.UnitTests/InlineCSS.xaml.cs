@@ -17,14 +17,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		public class Tests
 		{
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void InlineCSSParsed(bool useCompiledXaml)
 			{
 				var layout = new InlineCSS(useCompiledXaml);
 				Assert.Equal(Colors.Pink, layout.label.TextColor);
 			}
 
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void InitialValue(bool useCompiledXaml)
 			{
 				var layout = new InlineCSS(useCompiledXaml);

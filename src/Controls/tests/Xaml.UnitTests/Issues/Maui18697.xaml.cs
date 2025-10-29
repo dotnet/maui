@@ -48,7 +48,7 @@ public partial class Maui18697 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			var page = new Maui18697(useCompiledXaml);

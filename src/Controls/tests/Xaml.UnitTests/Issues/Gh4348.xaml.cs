@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void GenericBaseClassResolution(bool useCompiledXaml)
 			{
 				var layout = new Gh4348(useCompiledXaml) { BindingContext = new Gh4348VM() };

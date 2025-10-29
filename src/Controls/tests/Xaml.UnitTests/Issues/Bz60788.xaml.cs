@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void KeyedRDWithImplicitStyles(bool useCompiledXaml)
 			{
 				var layout = new Bz60788(useCompiledXaml);

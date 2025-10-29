@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var page = new Maui18976(useCompiledXaml);
 				Assert.True(page.checkbox.IsChecked, Is.False);

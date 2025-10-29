@@ -20,7 +20,7 @@ public partial class Maui7744 : ContentPage
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui7744(useCompiledXaml);
 			Assert.IsType<RoundRectangle>(page.border0.StrokeShape);

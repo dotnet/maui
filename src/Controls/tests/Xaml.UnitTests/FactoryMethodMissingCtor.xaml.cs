@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		public class Tests
 		{
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					new BuildExceptionConstraint(7, 4).Validate(() => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));

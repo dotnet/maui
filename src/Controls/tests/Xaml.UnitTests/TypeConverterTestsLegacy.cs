@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 
 #if !WINDOWS_PHONE
-		[InlineData("en-GB"), TestCase("fr-FR")]
+		[InlineData("en-GB"), InlineData("fr-FR")]
 		public void TestCultureOnThickness(string culture)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		public class Tests
 		{
 			[Theory]
-			public void Method([InlineData("net7.0-ios", "net7.0-android")] string targetFramework)
+			public void Method(string targetFramework)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
 				Assert.True(!hasLoggedErrors);
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Fact]
 			[Fact(Skip = "capability disabled for now")]
-			public void OnPlatformAreSimplified([InlineData("net6.0-ios", "net6.0-android")] string targetFramework)
+			public void OnPlatformAreSimplified(string targetFramework)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out bool hasLoggedErrors, targetFramework);
 				Assert.True(!hasLoggedErrors);

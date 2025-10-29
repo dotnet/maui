@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void NoConflictsInNamescopes(bool useCompiledXaml)
 			{
 				var layout = new Gh3821(useCompiledXaml) { Text = "root" };

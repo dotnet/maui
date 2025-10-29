@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.A
 			//this stub will be replaced at compile time
 		}		public class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void ShouldPass(bool useCompiledXaml)
 			{
 				new Bz31234(useCompiledXaml);

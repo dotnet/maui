@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.Equal("oof", label.Text);
 		}
 
-		[InlineData("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		[InlineData("en-US"), InlineData("tr-TR"), InlineData("fr-FR")]
 		//only happens in european cultures
 		public void Issue1493(string culture)
 		{

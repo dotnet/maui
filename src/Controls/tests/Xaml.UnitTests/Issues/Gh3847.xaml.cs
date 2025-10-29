@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void RelativeSourceSelfBinding(bool useCompiledXaml)
 			{
 				var view = new Gh3847(useCompiledXaml);
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Equal(label.Text, label.StyleId);
 			}
 
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void RelativeSourceAncestorLevelBinding(bool useCompiledXaml)
 			{
 				var view = new Gh3847(useCompiledXaml);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Null(level3Label.Text);
 			}
 
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void RelativeSourceTemplatedParentBinding(bool useCompiledXaml)
 			{
 				var view = new Gh3847(useCompiledXaml);

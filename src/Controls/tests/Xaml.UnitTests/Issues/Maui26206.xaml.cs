@@ -34,7 +34,9 @@ public partial class Maui26206 : ContentPage
 		}
 
 		[Fact]
-		public void MultipleResourcesInRD([Values] bool useCompiledXaml)
+		public void MultipleResourcesInRD([Theory]
+		[InlineData(true)]
+		[InlineData(false)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui26206));

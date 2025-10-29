@@ -35,7 +35,7 @@ public partial class Maui17597 : ContentPage
 		// NOTE: xUnit uses IDisposable.Dispose() for teardown. This may need manual conversion.
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			var page = new Maui17597(useCompiledXaml);
 			Assert.Equal("Remove Text To Disable Button", page.Test_Entry.Text);

@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh11334(useCompiledXaml);
 				VisualDiagnostics.VisualTreeChanged += OnVTChanged;

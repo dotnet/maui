@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void DataTemplateExtension(bool useCompiledXaml)
 			{
 				var layout = new DataTemplateExtension(useCompiledXaml);

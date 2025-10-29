@@ -40,7 +40,7 @@ public partial class Maui21495
 		// [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Fact]
-		public async Task AppThemeLeak([InlineData(false, true)] bool useCompiledXaml)
+		public async Task AppThemeLeak(bool useCompiledXaml)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.HotPink);
 			var page = new Maui21495(useCompiledXaml);

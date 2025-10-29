@@ -44,7 +44,7 @@ public partial class Maui23711 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool compileBindingsWithSource)
+			public void Method(bool compileBindingsWithSource)
 		{
 			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
 			Assert.True(!hasLoggedErrors);

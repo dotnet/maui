@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			set { SetValue(Collection2Property, value); }
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void CollectionProperties(bool useCompiledXaml)
 			{
 				var layout = new Bz60575(useCompiledXaml);

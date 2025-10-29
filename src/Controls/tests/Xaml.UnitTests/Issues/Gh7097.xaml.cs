@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml)
 				{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Fact]
 			//this was later reported as https://github.com/xamarin/Microsoft.Maui.Controls/issues/7286
-			public void RegisteringXNameOnSubPages([InlineData(false, true)] bool useCompiledXaml)
+			public void RegisteringXNameOnSubPages(bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml);
 				var s = layout.FindByName("self");

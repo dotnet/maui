@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			bindable.SetValue(SomePropertyProperty, value);
 		}		class Tests
 		{
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void MultipleGetMethodsAllowed(bool useCompiledXaml)
 			{
 				var page = new Unreported004(useCompiledXaml);

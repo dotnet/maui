@@ -48,7 +48,7 @@ public partial class Maui19388 : ContentPage
 		}
 
 		[Theory]
-			public void Method([InlineData(false, true)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 		{
 			Application.Current.UserAppTheme = AppTheme.Light;
 			mockDeviceInfo.Platform = DevicePlatform.iOS;

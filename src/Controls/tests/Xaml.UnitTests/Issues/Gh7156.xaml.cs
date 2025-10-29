@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Theory]
-			public void Method([InlineData(true, false)] bool useCompiledXaml)
+			public void Method(bool useCompiledXaml)
 			{
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				var layout = new Gh7156(useCompiledXaml);

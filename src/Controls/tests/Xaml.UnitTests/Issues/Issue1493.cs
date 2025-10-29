@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 		}
 
-		[InlineData("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		[InlineData("en-US"), InlineData("tr-TR"), InlineData("fr-FR")]
 		//mostly happens in european cultures
 		public void CultureInvariantNumberParsing(string culture)
 		{

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void DupeKeyRd(bool useCompiledXaml)
 			{
 				var layout = new Gh2483(useCompiledXaml);

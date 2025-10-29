@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 
-			[InlineData(false), TestCase(true)]
+			[InlineData(false), InlineData(true)]
 			public void xNameOnRoot(bool useCompiledXaml)
 			{
 				var layout = new Gh2574(useCompiledXaml);

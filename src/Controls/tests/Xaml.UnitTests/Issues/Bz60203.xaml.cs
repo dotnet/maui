@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}		class Tests
 		{
 
-			[InlineData(true), TestCase(false)]
+			[InlineData(true), InlineData(false)]
 			public void CanCompileMultiTriggersWithDifferentConditions(bool useCompiledXaml)
 			{
 				var layout = new Bz60203(useCompiledXaml);
