@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
-			GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(_root);
+			GlobalWindowInsetListener.SetupViewWithLocalListener(_root);
 
 			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Clean up the coordinator layout and local listener first
 			if (_root is not null)
 			{
-				GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_root);
+				GlobalWindowInsetListener.RemoveViewWithLocalListener(_root);
 			}
 
 			(_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);

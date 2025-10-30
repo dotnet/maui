@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
 
-			GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root);
+			GlobalWindowInsetListener.SetupViewWithLocalListener(root);
 
 			int actionBarHeight = context.GetActionBarHeight();
 
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// Clean up the coordinator layout and local listener first
 				if (_rootView is not null)
 				{
-					GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_rootView);
+					GlobalWindowInsetListener.RemoveViewWithLocalListener(_rootView);
 				}
 
 				UnhookEvents();
