@@ -101,6 +101,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				_emptyViewFormsElement = null;
 
+				// Clear measurement cache to help with memory cleanup
+				_firstItemMeasuredSize = CGSize.Empty;
+				if (ItemsView is CollectionView cv)
+				{
+					CollectionViewMeasurementCache.OnHandlerDisconnected(cv);
+				}
+
 				ItemsViewLayout?.Dispose();
 				CollectionView?.Dispose();
 			}
@@ -318,6 +325,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
+
+			// Clear measurement cache when items source changes as cached measurements are no longer valid
+			_firstItemMeasuredSize = CGSize.Empty;
 
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
@@ -717,9 +727,69 @@ internal static class CollectionViewMeasurementCache
 			typeof(CollectionViewMeasurementCache),
 			Size.Zero);
 
+	internal static readonly BindableProperty CachedItemTemplateProperty =
+		BindableProperty.CreateAttached(
+			"CachedItemTemplate",
+			typeof(DataTemplate),
+			typeof(CollectionViewMeasurementCache),
+			null);
+
 	internal static void SetFirstItemMeasuredSize(BindableObject element, Size value)
 		=> element.SetValue(FirstItemMeasuredSizeProperty, value);
 
 	internal static Size GetFirstItemMeasuredSize(BindableObject element)
 		=> (Size)element.GetValue(FirstItemMeasuredSizeProperty);
+
+	internal static void SetCachedItemTemplate(BindableObject element, DataTemplate value)
+		=> element.SetValue(CachedItemTemplateProperty, value);
+
+	internal static DataTemplate GetCachedItemTemplate(BindableObject element)
+		=> (DataTemplate)element.GetValue(CachedItemTemplateProperty);
+
+	/// <summary>
+	/// Gets the cached measurement size, but first checks if the template has changed and clears if so
+	/// </summary>
+	internal static Size GetFirstItemMeasuredSizeWithTemplateCheck(CollectionView collectionView)
+	{
+		if (collectionView == null)
+			return Size.Zero;
+
+		var currentTemplate = collectionView.ItemTemplate;
+		var cachedTemplate = GetCachedItemTemplate(collectionView);
+
+		// If template changed, clear the cache
+		if (currentTemplate != cachedTemplate)
+		{
+			SetFirstItemMeasuredSize(collectionView, Size.Zero);
+			SetCachedItemTemplate(collectionView, currentTemplate);
+			return Size.Zero;
+		}
+
+		return GetFirstItemMeasuredSize(collectionView);
+	}
+
+	/// <summary>
+	/// Sets the measured size and also updates the cached template
+	/// </summary>
+	internal static void SetFirstItemMeasuredSizeWithTemplate(CollectionView collectionView, Size size)
+	{
+		if (collectionView == null)
+			return;
+
+		SetFirstItemMeasuredSize(collectionView, size);
+		SetCachedItemTemplate(collectionView, collectionView.ItemTemplate);
+	}
+
+	/// <summary>
+	/// Called when handler disconnects to help with cleanup timing
+	/// </summary>
+	internal static void OnHandlerDisconnected(CollectionView collectionView)
+	{
+		if (collectionView == null)
+			return;
+
+		// Clear the cached measurement when handler disconnects to help with memory management
+		SetFirstItemMeasuredSize(collectionView, Size.Zero);
+		SetCachedItemTemplate(collectionView, null);
+	}
 }
