@@ -116,6 +116,7 @@ namespace Microsoft.Maui.Controls
 			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
 			s_routeKeys = null;
+			routeSet.Clear();
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
@@ -234,14 +235,18 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='SetRoute']/Docs/*" />
 		public static void SetRoute(Element obj, string value)
 		{
-			if (!string.IsNullOrEmpty(value) && IsUserDefined(value))
+			obj.SetValue(RouteProperty, value);
+		}
+
+		internal static void ValidateForDuplicates(Element element, string route)
+		{
+			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
 			{
-				if (!routeSet.Add(value))
+				if (!routeSet.Add(route))
 				{
-					throw new ArgumentException($"Duplicated Route: \"{value}\" ");
+					throw new ArgumentException($"Duplicated Route: \"{route}\" ");
 				}
 			}
-			obj.SetValue(RouteProperty, value);
 		}
 
 		static void ValidateRoute(string route, RouteFactory routeFactory)
