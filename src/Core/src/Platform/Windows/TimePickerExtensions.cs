@@ -75,13 +75,6 @@ public static class TimePickerExtensions
 			{
 				UpdateCharacterSpacingInTimePicker(platformTimePicker);
 			}
-			else
-			{
-				platformTimePicker.OnLoaded(() =>
-				{
-					UpdateCharacterSpacingInTimePicker(platformTimePicker);
-				});
-			}
 		}
 
 		static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
