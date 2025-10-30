@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(appbarLayout.ChildCount == 2);
 				Assert.True(appbarLayout.GetChildAt(0) is AndroidX.AppCompat.Widget.Toolbar, "The first child of the view group should be the Toolbar");
-				Assert.True(appbarLayout.GetChildAt(1) is Android.Widget.FrameLayout, "The second child of the view group should be a FrameLayout");
+				Assert.True(appbarLayout.GetChildAt(1) is global::Android.Widget.FrameLayout, "The second child of the view group should be a FrameLayout");
 			});
 		}
 	}

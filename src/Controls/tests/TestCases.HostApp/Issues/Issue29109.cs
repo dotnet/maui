@@ -59,6 +59,7 @@ public class Issue29109Tab1 : ContentPage
 
 		};
 		Content = verticalStackLayout;
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 	}
 }
 
@@ -89,6 +90,7 @@ public class Issue29109Tab2 : ContentPage
 					}
 		};
 		Content = verticalStackLayout;
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 	}
 }
 public class Issue29109Tab3 : ContentPage
@@ -118,5 +120,6 @@ public class Issue29109Tab3 : ContentPage
 					}
 		};
 		Content = verticalStackLayout;
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 	}
 }

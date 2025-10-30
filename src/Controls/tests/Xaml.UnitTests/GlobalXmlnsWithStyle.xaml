@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.GlobalXmlnsWithStyle"
+             Title="GlobalXmlnsWithStyle">
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="Red" />
+            <Setter Property="FontSize" Value="24" />
+        </Style>
+        <Color x:Key="MyColor">#0000FF</Color>
+    </ContentPage.Resources>
+        <Label x:Name="label0"
+            Text="Welcome to .NET MAUI!"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" 
+            BackgroundColor="{StaticResource MyColor}"/>
+</ContentPage>

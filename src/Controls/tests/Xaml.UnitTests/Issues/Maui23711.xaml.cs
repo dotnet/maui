@@ -10,17 +10,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui23711 : ContentPage
 {
 	public Maui23711()
 	{
 		InitializeComponent();
-	}
-
-	public Maui23711(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
 	}
 
 	[TestFixture]
@@ -45,11 +39,11 @@ public partial class Maui23711 : ContentPage
 		}
 
 		[Test]
-		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values(false, true)] bool compileBindingsWithSource)
+		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values] XamlInflator inflator)
 		{
-			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
+			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: inflator == XamlInflator.XamlC);
 			Assert.That(!hasLoggedErrors);
-			Assert.AreEqual(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
+			Assert.AreEqual(inflator == XamlInflator.XamlC, ContainsTypedBindingInstantiation(methodDefinition));
 		}
 
 		static bool ContainsTypedBindingInstantiation(MethodDefinition methodDef)

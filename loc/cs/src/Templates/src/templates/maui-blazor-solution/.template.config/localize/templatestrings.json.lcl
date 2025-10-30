@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A multi-project app for creating a .NET MAUI Blazor Hybrid application with a Blazor Web project with a shared user interface.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Víceprojektová aplikace pro vytvoření hybridní aplikace .NET MAUI Blazor s webovým projektem Blazor se sdíleným uživatelským rozhraním]]></Val>
+            <Val><![CDATA[Víceprojektová aplikace pro vytvoření hybridní aplikace .NET MAUI Blazor s webovým projektem Blazor se sdíleným uživatelským rozhraním.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cílová architektura pro projekt]]></Val>
+            <Val><![CDATA[Cílová architektura pro projekt.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Uses Server while downloading WebAssembly assets, then uses WebAssembly]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Při stahování prostředků WebAssembly používá Server a pak WebAssembly.]]></Val>
+            <Val><![CDATA[Při stahování prostředků WebAssembly používá Server a pak WebAssembly]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Runs on the server]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spouští se na serveru.]]></Val>
+            <Val><![CDATA[Běží na serveru]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -176,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Runs in the browser using WebAssembly]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spustí se v prohlížeči pomocí WebAssembly.]]></Val>
+            <Val><![CDATA[Spustí se v prohlížeči pomocí WebAssembly]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Chooses which interactive render mode to use for interactive components]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Umožňuje zvolit, který interaktivní režim vykreslování se má použít pro interaktivní komponenty.]]></Val>
+            <Val><![CDATA[Umožňuje zvolit, který interaktivní režim vykreslování se má použít pro interaktivní komponenty]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Určuje, jestli se má vypnout protokol HTTPS. Tato možnost platí jenom v případě, že se pro --auth nepoužívá jednotlivec.]]></Val>
+            <Val><![CDATA[Určuje, jestli se má vypnout protokol HTTPS. Tato možnost platí jenom v případě, že se pro --auth nepoužívá Individual.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Overrides the $(ApplicationId) in the project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Přepíše v projektu $(ApplicationId).]]></Val>
+            <Val><![CDATA[Přepíše v projektu $(ApplicationId)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

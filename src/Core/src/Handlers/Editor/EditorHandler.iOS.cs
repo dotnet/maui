@@ -14,27 +14,9 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiTextView CreatePlatformView()
 		{
 			var platformEditor = new MauiTextView();
-
-#if !MACCATALYST
-			var accessoryView = new MauiDoneAccessoryView();
-			accessoryView.SetDataContext(this);
-			accessoryView.SetDoneClicked(OnDoneClicked);
-			platformEditor.InputAccessoryView = accessoryView;
-#endif
-
+			platformEditor.AddMauiDoneAccessoryView(this);
 			return platformEditor;
 		}
-
-#if !MACCATALYST
-		static void OnDoneClicked(object sender)
-		{
-			if (sender is IEditorHandler handler)
-			{
-				handler.PlatformView.ResignFirstResponder();
-				handler.VirtualView.Completed();
-			}
-		}
-#endif
 
 		public override void SetVirtualView(IView view)
 		{

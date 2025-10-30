@@ -74,7 +74,7 @@
 				new Button
 				{
 					Text = "Command",
-					Command = new Command(() => DisplayActionSheet("Hello Command", "Cancel", "Destroy"))
+					Command = new Command(() => DisplayActionSheetAsync("Hello Command", "Cancel", "Destroy"))
 				}
 			);
 

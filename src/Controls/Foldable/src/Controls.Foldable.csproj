@@ -34,11 +34,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' != 'true' and '$(TargetPlatformIdentifier)' == 'android' ">
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.3" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.3" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.3.0.6" />
+    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

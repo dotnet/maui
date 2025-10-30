@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986_SafeAreaBorderOrientation"
+             Title="SafeArea Border Orientation Test"
+             SafeAreaEdges="None">
+
+       <!-- Border with SafeAreaEdges property for orientation testing -->
+       <Border x:Name="TestBorder"
+               SafeAreaEdges="All"
+               BackgroundColor="LightBlue"
+               Stroke="DarkBlue"
+               StrokeThickness="5">
+              <ScrollView SafeAreaEdges="None"
+                          x:Name="BorderContent"
+                          AutomationId="BorderContent"
+                          BackgroundColor="White">
+                     <StackLayout Spacing="20"
+                                  Padding="20">
+                            <Label Text="SafeArea Border Orientation Test"
+                                   FontSize="24"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"/>
+
+                            <Label Text="This test validates safe area behavior during orientation changes."
+                                   FontSize="14"
+                                   HorizontalOptions="Center"/>
+
+                            <Label x:Name="CurrentOrientationLabel"
+                                   Text="Current Orientation: Portrait"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   AutomationId="CurrentOrientation"/>
+
+                            <Label x:Name="BorderDimensionsLabel"
+                                   Text="Border Dimensions: Loading..."
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   AutomationId="BorderDimensions"/>
+
+                            <Label x:Name="SafeAreaInsetsLabel"
+                                   Text="Safe Area Insets: Loading..."
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   AutomationId="SafeAreaInsets"/>
+
+                            <!-- Control panel -->
+                            <Border BackgroundColor="LightGray"
+                                    Stroke="Gray"
+                                    StrokeThickness="2"
+                                    Padding="15">
+                                   <VerticalStackLayout Spacing="15">
+                                          <Label Text="Orientation Test Controls (Use Test API):"
+                                                 FontSize="18"
+                                                 FontAttributes="Bold"
+                                                 HorizontalOptions="Center"/>
+
+                                          <Label Text="Real Orientation Change:"
+                                                 FontSize="14"
+                                                 FontAttributes="Bold"/>
+                                          <Label Text="• Portrait→Landscape: App.SetOrientationLandscape()"
+                                                 FontSize="12"/>
+                                          <Label Text="• Landscape→Portrait: App.SetOrientationPortrait()"
+                                                 FontSize="12"/>
+
+                                          <Button Text="Info: Use SetOrientationLandscape() in Test"
+                                                  Clicked="OnSimulateOrientationClicked"
+                                                  AutomationId="SimulateOrientationButton"/>
+
+                                          <Button Text="Info: Use SetOrientationPortrait() in Test"
+                                                  Clicked="OnResetToPortraitClicked"
+                                                  AutomationId="ResetToPortraitButton"/>
+
+                                          <Button Text="Toggle Border SafeAreaEdges"
+                                                  Clicked="OnToggleSafeAreaEdgesClicked"
+                                                  AutomationId="ToggleSafeAreaEdgesButton"/>
+
+                                          <Label x:Name="TestStatusLabel"
+                                                 Text="Test Status: Ready - Use real orientation APIs in tests"
+                                                 FontSize="14"
+                                                 HorizontalOptions="Center"
+                                                 AutomationId="TestStatus"/>
+                                   </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Test content for soft input -->
+                            <Border BackgroundColor="LightYellow"
+                                    Stroke="Orange"
+                                    StrokeThickness="2"
+                                    Padding="15">
+                                   <VerticalStackLayout Spacing="10">
+                                          <Label Text="Soft Input Test (Bottom Edge: SoftInput):"
+                                                 FontSize="16"
+                                                 FontAttributes="Bold"/>
+
+                                          <Entry x:Name="TestEntry"
+                                                 Placeholder="Tap to show keyboard"
+                                                 AutomationId="TestEntry"/>
+
+                                          <Button Text="Set Bottom Edge to SoftInput"
+                                                  Clicked="OnSetBottomSoftInputClicked"
+                                                  AutomationId="SetBottomSoftInputButton"/>
+
+                                          <Button Text="Set Bottom Edge to All"
+                                                  Clicked="OnSetBottomAllClicked"
+                                                  AutomationId="SetBottomAllButton"/>
+
+                                          <Label x:Name="KeyboardStatusLabel"
+                                                 Text="Keyboard Status: Hidden"
+                                                 FontSize="14"
+                                                 AutomationId="KeyboardStatus"/>
+                                   </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Sample content to test positioning -->
+                            <StackLayout Spacing="10">
+                                   <Label Text="Sample Content for Position Testing"
+                                          FontSize="18"
+                                          FontAttributes="Bold"/>
+                                   <BoxView Color="Red"
+                                            HeightRequest="50"
+                                            WidthRequest="100"
+                                            HorizontalOptions="Start"
+                                            AutomationId="TopLeftMarker"/>
+                                   <BoxView Color="Green"
+                                            HeightRequest="50"
+                                            WidthRequest="100"
+                                            HorizontalOptions="End"
+                                            AutomationId="TopRightMarker"/>
+                                   <Label Text="Content Line 1"/>
+                                   <Label Text="Content Line 2"/>
+                                   <Label Text="Content Line 3"/>
+                                   <Label Text="Content Line 4"/>
+                                   <Label Text="Content Line 5"/>
+                                   <BoxView Color="Blue"
+                                            HeightRequest="50"
+                                            WidthRequest="100"
+                                            HorizontalOptions="Center"
+                                            AutomationId="BottomMarker"/>
+                                   <Label Text="End of Test Content"
+                                          FontSize="18"
+                                          FontAttributes="Bold"/>
+                            </StackLayout>
+                     </StackLayout>
+              </ScrollView>
+       </Border>
+</ContentPage>

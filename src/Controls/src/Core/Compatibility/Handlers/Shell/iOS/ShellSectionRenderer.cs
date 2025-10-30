@@ -324,6 +324,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.Dispose(disposing);
 		}
 
+		/// <summary>
+		/// Override this method to provide a custom image for the secondary toolbar menu button.
+		/// The default implementation uses the "ellipsis.circle" system image.
+		/// This image is used for the menu button that appears when there are secondary toolbar items
+		/// </summary>
+		/// <returns>The image to use for the secondary toolbar menu button.</returns>
+		public virtual UIImage GetSecondaryToolbarMenuButtonImage()
+		{
+			// Use the ellipsis.circle system image for the menu button by default
+			// as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
+			return UIImage.GetSystemImage("ellipsis.circle");
+		}
+
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
@@ -371,7 +384,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-				UpdateNavigationBarHidden();
 				UpdateNavigationBarHasShadow();
 			}
 		}
@@ -535,7 +547,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
+				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}
@@ -711,7 +724,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateNavigationBarHidden()
 		{
-			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), true);
+			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
 		}
 
 		void UpdateNavigationBarHasShadow()
@@ -793,8 +806,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
 				}
-
-				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 
 				var coordinator = viewController.GetTransitionCoordinator();
 				if (coordinator != null && coordinator.IsInteractive)

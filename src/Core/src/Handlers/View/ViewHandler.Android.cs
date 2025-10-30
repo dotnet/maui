@@ -251,10 +251,37 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
-			if (VirtualView != null)
+			VirtualView?.IsFocused = e.HasFocus;
+		}
+
+		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
+		{
+			if (handler.IsConnectingHandler())
 			{
-				VirtualView.IsFocused = e.HasFocus;
+				return;
 			}
+			
+			if (handler.MauiContext?.Context is null || handler.PlatformView is not PlatformView platformView)
+			{
+				return;
+			}
+
+			switch (platformView)
+			{
+				case ContentViewGroup cvg:
+        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(cvg);
+					cvg.MarkSafeAreaEdgeConfigurationChanged();
+					break;
+				case LayoutViewGroup lvg:
+        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(lvg);
+					lvg.MarkSafeAreaEdgeConfigurationChanged();
+					break;
+				case MauiScrollView msv:
+        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(msv);
+					msv.MarkSafeAreaEdgeConfigurationChanged();
+					break;
+			}
+			view.InvalidateMeasure();
 		}
 	}
 }

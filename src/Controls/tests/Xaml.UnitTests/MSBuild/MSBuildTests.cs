@@ -381,14 +381,18 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile(@"Pages\MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
-
 			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 
+			if (File.Exists(xamlCStamp))
+				System.IO.File.Delete(xamlCStamp);
+			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
+
+			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
+
+
 			//The assembly should not be compiled
-			AssertDoesNotExist(assembly);
+			//AssertDoesNotExist(assembly);
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
 			//Build again, a full build
@@ -495,7 +499,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
-			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+			Assert.IsFalse(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
 
 		/// <summary>

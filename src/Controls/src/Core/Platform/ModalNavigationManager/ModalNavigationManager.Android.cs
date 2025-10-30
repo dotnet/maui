@@ -13,6 +13,7 @@ using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using AndroidX.Core.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -205,6 +206,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
+			GlobalWindowInsetListener? _modalInsetListener;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
 
@@ -311,6 +313,15 @@ namespace Microsoft.Maui.Controls.Platform
 				var rootView = _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
 
+				var context = rootView.Context ?? inflater.Context;
+				if (context is not null)
+				{
+					// Modal pages get their own separate GlobalWindowInsetListener instance
+					// This prevents cross-contamination with the main window's inset tracking
+					_modalInsetListener = new GlobalWindowInsetListener();
+					ViewCompat.SetOnApplyWindowInsetsListener(rootView, _modalInsetListener);
+				}
+
 				if (IsAnimated)
 				{
 					_ = new GenericGlobalLayoutListener((listener, view) =>
@@ -365,6 +376,20 @@ namespace Microsoft.Maui.Controls.Platform
 					_modal.Toolbar.Handler = null;
 				}
 
+				// Clean up the modal's separate GlobalWindowInsetListener
+				if (_modalInsetListener is not null)
+				{
+					_modalInsetListener.ResetAllViews();
+					_modalInsetListener.Dispose();
+					_modalInsetListener = null;
+				}
+
+				var rootView = _navigationRootManager?.RootView;
+				if (rootView is not null)
+				{
+					ViewCompat.SetOnApplyWindowInsetsListener(rootView, null);
+				}
+
 				_modal.Handler = null;
 				_modal = null!;
 				_mauiWindowContext = null!;
@@ -398,6 +423,61 @@ namespace Microsoft.Maui.Controls.Platform
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
 				}
 
+				public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyDown(keyCode, e);
+				}
+
+				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyLongPress>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyLongPress(keyCode, e);
+				}
+
+				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyMultiple>(del =>
+					{
+						handled = del(this, keyCode, repeatCount, e) || handled;
+					});
+
+					return handled || base.OnKeyMultiple(keyCode, repeatCount, e);
+				}
+
+				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyShortcut>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyShortcut(keyCode, e);
+				}
+
+				public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyUp(keyCode, e);
+				}
+
 				sealed class CallBack : OnBackPressedCallback
 				{
 					WeakReference<CustomComponentDialog> _customComponentDialog;
@@ -415,45 +495,14 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
-						Window? window = activity.GetWindow() as Window;
-						EventHandler? eventHandler = null;
-						eventHandler = OnPopCanceled;
-						if (window is not null)
-						{
-							window.PopCanceled += eventHandler;
-						}
-
-						var preventBackPropagation = false;
-
 						try
 						{
 							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
 							{
-								preventBackPropagation = del(activity) || preventBackPropagation;
+								del(activity);
 							});
 						}
-						finally
-						{
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
-
-						if (!preventBackPropagation)
-						{
-							customComponentDialog.OnBackPressedDispatcher.OnBackPressed();
-						}
-
-						eventHandler = null;
-						void OnPopCanceled(object? sender, EventArgs e)
-						{
-							preventBackPropagation = true;
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
+						finally { }
 					}
 				}
 			}

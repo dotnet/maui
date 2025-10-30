@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.IO;
+using Windows.Foundation;
 using Windows.Storage.Streams;
+using WinRect = Windows.Foundation.Rect;
 
 #if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
@@ -64,7 +66,6 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			return ResizeInternal(maxWidth, maxHeight, 0, 0, maxWidth, maxHeight, disposeOriginal);
 		}
-
 
 		IImage ResizeInternal(float canvasWidth, float canvasHeight, float drawX, float drawY, float drawWidth, float drawHeight, bool disposeOriginal)
 		{

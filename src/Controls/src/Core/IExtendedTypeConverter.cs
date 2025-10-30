@@ -1,10 +1,8 @@
-#nullable disable
 using System;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls;
+
+public interface IExtendedTypeConverter
 {
-	public interface IExtendedTypeConverter
-	{
-		object ConvertFromInvariantString(string value, IServiceProvider serviceProvider);
-	}
+	object? ConvertFromInvariantString(string value, IServiceProvider serviceProvider);
 }

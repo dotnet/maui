@@ -5,6 +5,7 @@ public class Issue27474 : ContentPage
 {
 	public Issue27474()
 	{
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = new Picker
 		{
 			AutomationId = "Picker",

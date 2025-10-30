@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Platform
 {
-	public class PlatformTouchGraphicsView : UserControl
+	public partial class PlatformTouchGraphicsView : UserControl
 	{
 		IGraphicsView? _graphicsView;
 		readonly W2DGraphicsView _platformGraphicsView;

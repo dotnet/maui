@@ -35,8 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 			var pageWithTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Top Tabs" } };
 			var pageWithoutTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Bottom Tabs" } };
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			pageWithTopTabs.On<iOS>().SetUseSafeArea(true);
 			pageWithoutTopTabs.On<iOS>().SetUseSafeArea(true);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var mainTab1 = new Tab()
 			{
@@ -67,6 +69,69 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = mainTab2;
 				await OnFrameSetToNotEmpty(pageWithoutTopTabs.Content);
 				var boundsWithoutTopTabs = pageWithoutTopTabs.Content.GetPlatformViewBounds();
+				Assert.Equal(ShellSectionRootRenderer.HeaderHeight, (boundsWithTopTabs.Top - boundsWithoutTopTabs.Top), 1);
+
+				shell.CurrentItem = mainTab1;
+				await OnFrameSetToNotEmpty(pageWithTopTabs.Content);
+
+				var boundsWithTopTabsNavigatedBack = pageWithTopTabs.Content.GetPlatformViewBounds();
+				Assert.Equal(boundsWithTopTabsNavigatedBack, boundsWithTopTabs);
+			});
+		}
+
+		[Theory(DisplayName = "SafeArea works with both old and new APIs")]
+		[InlineData(true)] // Use new SafeArea API
+		[InlineData(false)] // Use old UseSafeArea API
+		public async Task SafeAreaBehaviorConsistency(bool useNewApi)
+		{
+			SetupBuilder();
+			var pageWithTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Top Tabs" } };
+			var pageWithoutTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Bottom Tabs" } };
+
+			if (useNewApi)
+			{
+				pageWithTopTabs.SafeAreaEdges = SafeAreaEdges.Container;
+				pageWithoutTopTabs.SafeAreaEdges = SafeAreaEdges.Container;
+			}
+			else
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				pageWithTopTabs.On<iOS>().SetUseSafeArea(true);
+				pageWithoutTopTabs.On<iOS>().SetUseSafeArea(true);
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			var mainTab1 = new Tab()
+			{
+				Items =
+				{
+					new ShellContent() { Content = pageWithTopTabs, Title = "tab 1" },
+					new ShellContent() { Content = new ContentPage(), Title = "tab 2" }
+				}
+			};
+
+			var mainTab2 = new Tab()
+			{
+				Items =
+				{
+					new ShellContent() { Content = pageWithoutTopTabs, Title = "tab 3"  }
+				}
+			};
+
+			var shell = new Shell()
+			{
+				Items = { mainTab1, mainTab2 }
+			};
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(pageWithTopTabs.Content);
+				var boundsWithTopTabs = pageWithTopTabs.Content.GetPlatformViewBounds();
+				shell.CurrentItem = mainTab2;
+				await OnFrameSetToNotEmpty(pageWithoutTopTabs.Content);
+				var boundsWithoutTopTabs = pageWithoutTopTabs.Content.GetPlatformViewBounds();
+				
+				// Both APIs should produce consistent results
 				Assert.Equal(ShellSectionRootRenderer.HeaderHeight, (boundsWithTopTabs.Top - boundsWithoutTopTabs.Top), 1);
 
 				shell.CurrentItem = mainTab1;

@@ -88,17 +88,33 @@ namespace Microsoft.Maui.Handlers
 			{
 				await pickerController.DismissViewControllerAsync(true);
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = false;
+					virtualView.IsFocused = virtualView.IsOpen = false;
 				uITextField.EditingDidEnd -= editingDidEndHandler;
 			};
 
 			uITextField.EditingDidEnd += editingDidEndHandler;
 
 			var platformWindow = MauiContext?.GetPlatformWindow();
-			platformWindow?.BeginInvokeOnMainThread(() =>
+			if (platformWindow is null)
 			{
-				_ = platformWindow?.RootViewController?.PresentViewControllerAsync(pickerController, true);
+				return;
+			}
+
+			var currentViewController = GetCurrentViewController(platformWindow.RootViewController);
+			platformWindow.BeginInvokeOnMainThread(() =>
+			{
+				currentViewController?.PresentViewControllerAsync(pickerController, true);
 			});
+		}
+
+		static UIViewController? GetCurrentViewController(UIViewController? viewController)
+		{
+			while (viewController?.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+ 
+			return viewController;
 		}
 #endif
 
@@ -134,7 +150,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
-		// Uncomment me on NET8 [Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
@@ -179,6 +195,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
+		}
+
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateIsOpen(picker);
 		}
 
 		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
@@ -250,7 +271,7 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = true;
+					virtualView.IsFocused = virtualView.IsOpen = true;
 #if MACCATALYST
 				if (Handler is not PickerHandler handler)
 					return;
@@ -271,7 +292,7 @@ namespace Microsoft.Maui.Handlers
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = false;
+					virtualView.IsFocused = virtualView.IsOpen = false;
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)

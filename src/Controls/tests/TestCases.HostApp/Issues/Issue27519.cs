@@ -5,6 +5,7 @@
 	{
 		public Issue27519()
 		{
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			var items = new List<string>
 			{
 				"1: First", "2: Second", "3: Third", "4: Fourth", "5: Fifth" ,

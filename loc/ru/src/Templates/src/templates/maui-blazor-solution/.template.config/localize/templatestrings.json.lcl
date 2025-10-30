@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A multi-project app for creating a .NET MAUI Blazor Hybrid application with a Blazor Web project with a shared user interface.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Многопроектное приложение для создания гибридного приложения .NET MAUI Blazor с проектом Blazor Web с общим пользовательским интерфейсом.]]></Val>
+            <Val><![CDATA[Многопроектное приложение для создания приложения .NET MAUI Blazor Hybrid с проектом Blazor Web с общим пользовательским интерфейсом.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Определяет, делать ли каждую страницу интерактивной, применяя интерактивный режим отрисовки на верхнем уровне. Если установлено значение ЛОЖЬ, страницы по умолчанию будут использовать статическую серверную отрисовку и могут быть помечены как интерактивные для каждой страницы или для каждого компонента.]]></Val>
+            <Val><![CDATA[Определяет, делать ли каждую страницу интерактивной, применяя интерактивный режим отрисовки на верхнем уровне. Если установлено значение false, страницы по умолчанию будут использовать статическую серверную отрисовку и могут быть помечены как интерактивные для каждой страницы или для каждого компонента.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
+            <Val><![CDATA[Целевое значение DOTNET_TFM_VALUE]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Uses Server while downloading WebAssembly assets, then uses WebAssembly]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Использует сервер при загрузке ресурсов WebAssembly, затем использует WebAssembly.]]></Val>
+            <Val><![CDATA[Использует сервер при загрузке ресурсов WebAssembly, затем использует WebAssembly]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

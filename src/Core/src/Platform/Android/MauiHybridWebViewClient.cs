@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using Android.Webkit;
+using Java.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
 using AWebView = Android.Webkit.WebView;
@@ -33,39 +32,93 @@ namespace Microsoft.Maui.Platform
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
-			var response = GetResponseStream(view, request);
+			var url = request?.Url?.ToString();
 
-			if (response is not null)
+			var logger = Handler?.MauiContext?.CreateLogger<MauiHybridWebViewClient>();
+
+			logger?.LogDebug("Intercepting request for {Url}.", url);
+
+			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
-				return response;
+				// 1. Check if the app wants to modify or override the request
+				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, view, request, url, logger);
+				if (response is not null)
+				{
+					return response;
+				}
+
+				// 2. Check if the request is for a local resource
+				response = GetResponse(url, request, logger);
+				if (response is not null)
+				{
+					return response;
+				}
 			}
+
+			// 3. Otherwise, we let the request go through as is
+			logger?.LogDebug("Request for {Url} was not handled.", url);
 
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? GetResponseStream(AWebView? view, IWebResourceRequest? request)
+		private WebResourceResponse? GetResponse(string fullUrl, IWebResourceRequest request, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
 				return null;
 			}
 
-			var fullUrl = request?.Url?.ToString();
-			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(fullUrl);
+			var requestUri = WebUtils.RemovePossibleQueryString(fullUrl);
 			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
 			{
 				return null;
 			}
 
-			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
-			// 1. Try special InvokeDotNet path
+			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString();
+
+			// 1.a. Try the special "_framework/hybridwebview.js" path
+			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
+			{
+				logger?.LogDebug("Request for {Url} will return the hybrid web view script.", fullUrl);
+				var jsStream = HybridWebViewHandler.GetEmbeddedStream(HybridWebViewHandler.HybridWebViewDotJsPath);
+				if (jsStream is not null)
+				{
+					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), jsStream);
+				}
+			}
+
+			// 1.b. Try special InvokeDotNet path
 			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
 			{
-				var fullUri = new Uri(fullUrl!);
-				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
-				var responseStream = new DotNetInvokeAsyncStream(contentBytesTask, Handler);
+				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
+
+				// Only accept requests that have the expected headers
+				if (!HybridWebViewHandler.HasExpectedHeaders(request.RequestHeaders))
+				{
+					logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+				}
+
+				// Only accept POST requests
+				if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+				{
+					logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.Method);
+					return new WebResourceResponse(null, "UTF-8", 405, "Method Not Allowed", null, null);
+				}
+
+				// On Android, POST body is not available in ShouldInterceptRequest, so we use a custom header
+				string? requestBody = null;
+				request.RequestHeaders?.TryGetValue(HybridWebViewHandler.InvokeDotNetBodyHeaderName, out requestBody);
+				if (string.IsNullOrEmpty(requestBody))
+				{
+					logger?.LogError("InvokeDotNet request missing X-Maui-Request-Body header");
+					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+				}
+
+				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
+				var responseStream = new AsyncStream(contentBytesTask, logger);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
 			}
 
@@ -81,7 +134,7 @@ namespace Microsoft.Maui.Platform
 				if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 				{
 					contentType = "text/plain";
-					Handler.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
+					logger?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 				}
 			}
 
@@ -91,6 +144,7 @@ namespace Microsoft.Maui.Platform
 			if (contentStream is not null)
 			{
 				// 3.a. If something was found, return the content
+				logger?.LogDebug("Request for {Url} will return an app package file.", fullUrl);
 
 				// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
 
@@ -98,12 +152,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 3.b. Otherwise, return a 404
-			var notFoundContent = "Resource not found (404)";
-
-			var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
-			var notFoundContentStream = new MemoryStream(notFoundByteArray);
-
-			return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
+			logger?.LogDebug("Request for {Url} could not be fulfilled.", fullUrl);
+			return new WebResourceResponse(null, "UTF-8", 404, "Not Found", null, null);
 		}
 
 		private Stream? PlatformOpenAppPackageFile(string filename)
@@ -143,124 +193,6 @@ namespace Microsoft.Maui.Platform
 		internal void Disconnect()
 		{
 			_handler.SetTarget(null);
-		}
-
-		private class DotNetInvokeAsyncStream : Stream
-		{
-			private const int PauseThreshold = 32 * 1024;
-			private const int ResumeThreshold = 16 * 1024;
-
-			private readonly Task<byte[]?> _task;
-			private readonly WeakReference<HybridWebViewHandler> _handler;
-			private readonly Pipe _pipe;
-
-			private bool _isDisposed;
-
-			private HybridWebViewHandler? Handler => _handler?.GetTargetOrDefault();
-
-			public override bool CanRead => !_isDisposed;
-
-			public override bool CanSeek => false;
-
-			public override bool CanWrite => false;
-
-			public override long Length => throw new NotSupportedException();
-
-			public override long Position
-			{
-				get => throw new NotSupportedException();
-				set => throw new NotSupportedException();
-			}
-
-			public DotNetInvokeAsyncStream(Task<byte[]?> invokeTask, HybridWebViewHandler handler)
-			{
-				_task = invokeTask;
-				_handler = new(handler);
-
-				_pipe = new Pipe(new PipeOptions(
-					pauseWriterThreshold: PauseThreshold,
-					resumeWriterThreshold: ResumeThreshold,
-					useSynchronizationContext: false));
-
-				InvokeMethodAndWriteBytes();
-			}
-
-			private async void InvokeMethodAndWriteBytes()
-			{
-				try
-				{
-					var data = await _task;
-
-					// the stream or handler may be disposed after the method completes
-					ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
-					ArgumentNullException.ThrowIfNull(Handler, nameof(Handler));
-
-					// copy the data into the pipe
-					if (data is not null && data.Length > 0)
-					{
-						var memory = _pipe.Writer.GetMemory(data.Length);
-						data.CopyTo(memory);
-						_pipe.Writer.Advance(data.Length);
-					}
-
-					_pipe.Writer.Complete();
-				}
-				catch (Exception ex)
-				{
-					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
-
-					_pipe.Writer.Complete(ex);
-				}
-			}
-
-			public override void Flush() =>
-				throw new NotSupportedException();
-
-			public override int Read(byte[] buffer, int offset, int count)
-			{
-				ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
-				ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
-				ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
-				ArgumentOutOfRangeException.ThrowIfGreaterThan(offset + count, buffer.Length, nameof(count));
-				ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
-
-				// this is a blocking read, so we need to wait for data to be available
-				var readResult = _pipe.Reader.ReadAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
-				var slice = readResult.Buffer.Slice(0, Math.Min(count, readResult.Buffer.Length));
-
-				var bytesRead = 0;
-				foreach (var span in slice)
-				{
-					var bytesToCopy = Math.Min(count, span.Length);
-					span.CopyTo(new Memory<byte>(buffer, offset, bytesToCopy));
-					offset += bytesToCopy;
-					count -= bytesToCopy;
-					bytesRead += bytesToCopy;
-				}
-
-				_pipe.Reader.AdvanceTo(slice.End);
-
-				return bytesRead;
-			}
-
-			public override long Seek(long offset, SeekOrigin origin) =>
-				throw new NotSupportedException();
-
-			public override void SetLength(long value) =>
-				throw new NotSupportedException();
-
-			public override void Write(byte[] buffer, int offset, int count) =>
-				throw new NotSupportedException();
-
-			protected override void Dispose(bool disposing)
-			{
-				_isDisposed = true;
-
-				_pipe.Writer.Complete();
-				_pipe.Reader.Complete();
-
-				base.Dispose(disposing);
-			}
 		}
 	}
 }

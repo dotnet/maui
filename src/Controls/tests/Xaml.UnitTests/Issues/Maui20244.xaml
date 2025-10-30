@@ -5,16 +5,16 @@
              xmlns:System="clr-namespace:System;assembly=mscorlib" 
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui20244">
     <ContentPage.Resources>
-        <x:String x:Key="GridColDef">*, *, *, *, *, auto</x:String>
+        <x:String x:Key="GridRowDef">*, *, *, *, *, auto</x:String>
     </ContentPage.Resources>
     <StackLayout>
         <StackLayout.Resources>
             <ResourceDictionary>
                 <Color x:Key="reddish">#FF0000</Color>
-                <x:String x:Key="GridRowDef">*, *, auto</x:String>
+                <x:String x:Key="GridColDef">*, *, auto</x:String>
             </ResourceDictionary>
         </StackLayout.Resources>
             
-        <Grid x:Name="grid" RowDefinitions="{StaticResource GridColDef}" ColumnDefinitions="{StaticResource GridRowDef}" />
+        <Grid x:Name="grid" RowDefinitions="{StaticResource GridRowDef}" ColumnDefinitions="{StaticResource GridColDef}" />
     </StackLayout>
 </ContentPage>

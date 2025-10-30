@@ -68,6 +68,12 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty NavBarIsVisibleProperty =
 			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnNavBarIsVisibleChanged);
 
+		/// <summary>
+		/// Determines if the navigation bar visibility change should be animated.
+		/// </summary>
+		public static readonly BindableProperty NavBarVisibilityAnimationEnabledProperty =
+			BindableProperty.CreateAttached("NavBarVisibilityAnimationEnabled", typeof(bool), typeof(Shell), true);
+
 		private static void OnNavBarIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			// Nav bar visibility change is only interesting from the Shell down to the current Page.
@@ -279,6 +285,22 @@ namespace Microsoft.Maui.Controls
 		/// <param name="obj">The object that modifies the navigation bar visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the navigation bar as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
+
+		/// <summary>
+		/// Gets a value indicating whether the navigation bar visibility change is animated for the given <paramref name="obj"/>.
+		/// </summary>
+		/// <param name="obj">The object that retrieves the animation setting.</param>
+		/// <returns><see langword="true"/> if the animation is enabled; otherwise, <see langword="false"/>.</returns>
+		public static bool GetNavBarVisibilityAnimationEnabled(BindableObject obj) => (bool)obj.GetValue(NavBarVisibilityAnimationEnabledProperty);
+
+		/// <summary>
+		/// Sets whether the navigation bar visibility change should be animated for the given <paramref name="obj"/>.
+		/// By default, the value of the property is <see langword="true"/>.
+		/// </summary>
+		/// <param name="obj">The object that modifies the animation setting.</param>
+		/// <param name="value"><see langword="true"/> to enable animation; otherwise, <see langword="false"/>.</param>
+		public static void SetNavBarVisibilityAnimationEnabled(BindableObject obj, bool value) => obj.SetValue(NavBarVisibilityAnimationEnabledProperty, value);
+
 
 		/// <summary>
 		/// Gets a value that represents if the navigation bar has a shadow when the given <paramref name="obj"/> is active.
@@ -1571,7 +1593,7 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.PageSwap;
+			NavigationType navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
@@ -1579,13 +1601,13 @@ namespace Microsoft.Maui.Controls
 					navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
 					navigationType = NavigationType.Push;
@@ -1599,7 +1621,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
 			_previousPage = null;
 
 			if (CurrentPage != null)
@@ -1625,8 +1647,35 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
+				NavigationType navigationType = NavigationType.Replace;
+
+				switch (args.Source)
+				{
+					case ShellNavigationSource.Pop:
+						navigationType = NavigationType.Pop;
+						break;
+					case ShellNavigationSource.ShellItemChanged:
+						navigationType = NavigationType.Replace;
+						break;
+					case ShellNavigationSource.ShellSectionChanged:
+						navigationType = NavigationType.Replace;
+						break;
+					case ShellNavigationSource.ShellContentChanged:
+						navigationType = NavigationType.Replace;
+						break;
+					case ShellNavigationSource.Push:
+						navigationType = NavigationType.Push;
+						break;
+					case ShellNavigationSource.PopToRoot:
+						navigationType = NavigationType.PopToRoot;
+						break;
+					case ShellNavigationSource.Insert:
+						navigationType = NavigationType.Insert;
+						break;
+				}
+
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 			}
 		}
 

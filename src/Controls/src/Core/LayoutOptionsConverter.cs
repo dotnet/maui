@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -12,14 +11,14 @@ namespace Microsoft.Maui.Controls
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> true;
 
 #pragma warning disable CS0618 // Type or member is obsolete (AndExpand options)
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value?.ToString();
 
@@ -48,16 +47,18 @@ namespace Microsoft.Maui.Controls
 					case "FillAndExpand":
 						return LayoutOptions.FillAndExpand;
 				}
-				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
-				if (field != null)
-					return (LayoutOptions)field.GetValue(null);
+				FieldInfo? field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
+				if (field is not null)
+				{
+					return field.GetValue(null);
+				}
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
 		}
 #pragma warning restore CS0618 // Type or member is obsolete
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not LayoutOptions options)
 				throw new NotSupportedException();
@@ -72,13 +73,13 @@ namespace Microsoft.Maui.Controls
 			throw new NotSupportedException();
 		}
 
-		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext? context)
 			=> true;
 
-		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context)
 			=> false;
 
-		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext? context)
 			=> new(new[] {
 				"Start",
 				"Center",

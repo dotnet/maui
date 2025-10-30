@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Maui.Controls.Sample.Issues.Issue29091Tabbed">
+        <ContentPage IconImageSource="groceries.png"
+                     Title="Tab1">
+                <Grid>
+                        <Label Text="Tab1" HorizontalOptions="Center" VerticalOptions="Center" AutomationId="Tab1Loaded"/>
+                </Grid>
+        </ContentPage>
+        <ContentPage IconImageSource="coffee.png"
+                     Title="Tab2"/>
+        <ContentPage IconImageSource="seth.png"
+                     Title="Tab3"/>
+</TabbedPage>

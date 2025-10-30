@@ -2,6 +2,7 @@
 using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 28530, "[Catalyst] CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView", PlatformAffected.macOS)]
 public partial class Issue28530 : ContentPage
 {

@@ -3,6 +3,6 @@
   "name": "Knihovna .NET MAUI Class",
   "description": "Projekt pro vytvoření knihovny tříd .NET MAUI",
   "postActions/openInEditor/description": "Otevře soubor Class1.cs v editoru.",
-  "symbols/Framework/description": "Cílová architektura pro projekt",
+  "symbols/Framework/description": "Cílová architektura pro projekt.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Cílový DOTNET_TFM_VALUE"
 }

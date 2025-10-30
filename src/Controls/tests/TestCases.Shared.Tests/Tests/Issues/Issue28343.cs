@@ -1,10 +1,10 @@
+#if TEST_FAILS_ON_CATALYST // App.ScrollUp does nothing: https://github.com/dotnet/maui/issues/31216
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 	[Category(UITestCategories.RefreshView)]
 	public class Issue28343 : _IssuesUITest
 	{
@@ -22,12 +22,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshNotTriggered");
 			App.WaitForElement("ListItem0");
 			App.ScrollUp("CollectionView");
+			Thread.Sleep(1000);
 			App.WaitForElement("RefreshNotTriggered");
+			App.WaitForElement("ScrollToUpButton");
+			App.Tap("ScrollToUpButton");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
-
 		}
 
-#if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/28361
 		[Test]
 		public void ProgressSpinnerRemainsDisabledAfterSwappingContent()
 		{
@@ -39,15 +40,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RefreshNotTriggered");
 			VerifyScreenshot("Issue28343_ProgressSpinnerDisabled");
 		}
-#endif
 
 		[Test]
 		public void ProgressSpinnerWorksWhenReEnabled()
 		{
 			App.WaitForElement("SetToEnabled").Tap();
-			App.ScrollUp("CollectionView");
+			App.ScrollUp("CollectionView", ScrollStrategy.Gesture, swipePercentage:0.99, swipeSpeed:2500);
 			App.WaitForElement("RefreshTriggered");
 		}
 	}
-#endif
 }
+#endif

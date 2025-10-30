@@ -1,51 +1,37 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
+using System.Linq;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh3821 : ContentPage
 {
-	//[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh3821 : ContentPage
+	public Gh3821() => InitializeComponent();
+
+	string _text;
+	public string Text
 	{
-		public Gh3821()
+		get => _text;
+		set
 		{
-			InitializeComponent();
+			_text = value;
+			OnPropertyChanged();
 		}
+	}
 
-		public Gh3821(bool useCompiledXaml)
+	[TestFixture]
+	class Tests
+	{
+		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+
+		[Test]
+		public void NoConflictsInNamescopes([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		string _text;
-		public string Text
-		{
-			get => _text;
-			set
-			{
-				_text = value;
-				OnPropertyChanged();
-			}
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(true), TestCase(false)]
-			public void NoConflictsInNamescopes(bool useCompiledXaml)
-			{
-				var layout = new Gh3821(useCompiledXaml) { Text = "root" };
-				var view = ((Gh3821View)((StackLayout)layout.Content).Children[0]);
-				var label0 = ((Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content);
-				Assert.That(label0.Text, Is.EqualTo("root"));
-			}
+			var layout = new Gh3821(inflator) { Text = "root" };
+			var label0 = (Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content;
+			Assert.That(label0.Text, Is.EqualTo("root"));
 		}
 	}
 }

@@ -24,12 +24,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public partial class CellControl : ContentControl
 	{
 		public static readonly DependencyProperty CellProperty = DependencyProperty.Register("Cell", typeof(object), typeof(CellControl),
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			new PropertyMetadata(null, (o, e) => ((CellControl)o).SetSource((Cell)e.OldValue, (Cell)e.NewValue)));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public static readonly DependencyProperty IsGroupHeaderProperty = DependencyProperty.Register("IsGroupHeader", typeof(bool), typeof(CellControl), null);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static readonly BindableProperty MeasuredEstimateProperty = BindableProperty.Create("MeasuredEstimate", typeof(double), typeof(ListView), -1d);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly Lazy<ListView> _listView;
+#pragma warning restore CS0618 // Type or member is obsolete
 		readonly PropertyChangedEventHandler _propertyChangedHandler;
 		WBrush _defaultOnColor;
 
@@ -40,7 +48,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public CellControl()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			_listView = new Lazy<ListView>(GetListView);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			DataContextChanged += OnDataContextChanged;
 
@@ -70,14 +80,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// 🚀 unsubscribe from propertychanged
 			Cell.PropertyChanged -= _propertyChangedHandler;
 			// Allows the Cell to unsubscribe from Parent.PropertyChanged
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Cell.Parent is ListView)
 				Cell.Parent = null;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public Cell Cell
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			get { return (Cell)GetValue(CellProperty); }
+#pragma warning restore CS0618 // Type or member is obsolete
 			set { SetValue(CellProperty, value); }
 		}
 
@@ -94,7 +110,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			ListView lv = _listView.Value;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			// set the Cell now that we have a reference to the ListView, since it will have been skipped
 			// on DataContextChanged.
@@ -137,7 +155,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return result;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		ListView GetListView()
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			DependencyObject parent = VisualTreeHelper.GetParent(this);
 			while (parent != null)
@@ -155,7 +175,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return null;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		Microsoft.UI.Xaml.DataTemplate GetTemplate(Cell cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return (UI.Xaml.DataTemplate)cell.ToHandler(cell.FindMauiContext()).PlatformView;
 		}
@@ -166,19 +188,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SetupContextMenu();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection(Cell);
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == SwitchCell.OnProperty.PropertyName ||
 				e.PropertyName == SwitchCell.OnColorProperty.PropertyName)
 			{
 				UpdateOnColor();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateOnColor()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (!(Cell is SwitchCell switchCell))
 				return;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var color = switchCell.OnColor.IsDefault()
 				? _defaultOnColor
@@ -240,6 +268,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetDefaultSwitchColor()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
 				var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
@@ -248,6 +277,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_defaultOnColor = rect.Fill;
 				UpdateOnColor();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -269,10 +299,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Cell has an ItemTemplate. Instead, we'll store the new data item, and it will be
 			// set on MeasureOverrideDelegate. However, if the parent is a TableView, we'll already 
 			// have a complete Cell object to work with, so we can move ahead.
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (_isListViewRealized || args.NewValue is Cell)
 				SetCell(args.NewValue);
 			else if (args.NewValue != null)
 				_newValue = args.NewValue;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		private void OnCellContentRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -327,7 +359,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetCell(object newContext)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = newContext as Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (cell != null)
 			{
@@ -340,11 +374,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// If there is a ListView, load the Cell content from the ItemTemplate.
 			// Otherwise, the given Cell is already a templated Cell from a TableView.
+#pragma warning disable CS0618 // Type or member is obsolete
 			ListView lv = _listView.Value;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (lv != null)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				Cell oldCell = Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 				bool isGroupHeader = IsGroupHeader;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 				object bindingContext = newContext;
@@ -373,7 +411,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else if (template != null)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					cell = template.CreateContent() as Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 				else
 				{
@@ -392,7 +432,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// This provides the Group Header styling (e.g., larger font, etc.) when the
 				// template is loaded later.
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				cell.SetIsGroupHeader<ItemsView<Cell>, Cell>(isGroupHeader);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			// 🚀 Only set the cell if it DID change
@@ -410,7 +454,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		void SetSource(Cell oldCell, Cell newCell)
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (oldCell != null)
 			{
@@ -468,7 +516,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		void UpdateContent(Cell newCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			Microsoft.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
 			if (dt != _currentTemplate || Content == null)
@@ -485,10 +535,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return new FrameworkElementAutomationPeer(this);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		void UpdateFlowDirection(Cell newCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (newCell is ViewCell)
 				return;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			this.UpdateFlowDirection(newCell.Parent as VisualElement);
 		}

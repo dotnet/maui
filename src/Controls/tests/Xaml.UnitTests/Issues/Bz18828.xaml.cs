@@ -32,19 +32,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz18828(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
 
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void GridItemsLayoutWithConverter(bool useCompiledXaml)
+			[Test]
+			public void GridItemsLayoutWithConverter([Values] XamlInflator inflator)
 			{
-				var layout = new Bz18828(useCompiledXaml);
+				var layout = new Bz18828(inflator);
 				Assert.True(((GridItemsLayout)layout.collectionView.ItemsLayout).Span == 2);
 			}
 		}

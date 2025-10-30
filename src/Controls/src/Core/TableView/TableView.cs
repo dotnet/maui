@@ -12,6 +12,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableView']/Docs/*" />
+	[Obsolete("Please use CollectionView instead.")]
 	[ContentProperty(nameof(Root))]
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateText(this SearchView searchView, InputView inputView)
 		{
 			var oldQuery = searchView.Query ?? string.Empty;
-			var newQuery = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			var newQuery = TextTransformUtilities.GetTransformedText(inputView.Text, inputView.TextTransform);
 
 			if (oldQuery != newQuery)
 				searchView.SetQuery(newQuery, false);

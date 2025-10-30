@@ -117,7 +117,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var height = Height ?? MeasuredHeight;
+#pragma warning disable CS0618 // Type or member is obsolete
 			var width = Width ?? Frame.Width;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (double.IsNaN(height))
 				return;

@@ -1,12 +1,12 @@
 {
   "author": "Microsoft",
   "name": "App .NET MAUI Blazor Hybrid",
-  "description": "Progetto per la creazione di un'applicazione .NET MAUI per iOS, Android, Mac Catalyst, WinUI e Tizen con Blazor Hybrid",
+  "description": "Progetto per la creazione di un'applicazione .NET MAUI per iOS, Android, Mac Catalyst e WinUI con Blazor Hybrid",
   "postActions/openInEditor/description": "Apre Components/Pages/Home.razor nell'editor.",
   "symbols/applicationId/description": "Esegue l'override di $(ApplicationId) nel progetto",
-  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/description": "Framework di destinazione per il progetto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE di destinazione",
-  "symbols/IncludeSampleContent/displayName": "_Include pagine di esempio",
+  "symbols/IncludeSampleContent/displayName": "_Includi pagine di esempio",
   "symbols/IncludeSampleContent/description": "Consente di configurare se aggiungere pagine di esempio e stile per mostrare modelli di utilizzo di base.",
   "symbols/Empty/description": "Consente di configurare se omettere pagine di esempio e stile che mostrano modelli di utilizzo di base."
 }
