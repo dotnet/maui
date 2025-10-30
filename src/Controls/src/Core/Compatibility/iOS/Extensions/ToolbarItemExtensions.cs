@@ -2,7 +2,10 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -13,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
-		public static UIKit.UIBarButtonItem ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName)
+		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName)
 		{
 			return ToUIBarButtonItem(item, false, false);
 		}
@@ -23,6 +26,65 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
 				return new SecondaryToolbarItem(item);
 			return new PrimaryToolbarItem(item, forceName);
+		}
+
+		internal static SecondarySubToolbarItem ToSecondarySubToolbarItem(this ToolbarItem item)
+		{
+			var weakItem = new WeakReference<ToolbarItem>(item);
+
+			var action = UIAction.Create(item.Text, null, null, _ =>
+			{
+				if (weakItem.TryGetTarget(out var targetItem))
+				{
+					if (targetItem is IMenuItemController menuItemController)
+					{
+						menuItemController.Activate();
+					}
+					else
+					{
+						targetItem.Command?.Execute(targetItem.CommandParameter);
+					}
+				}
+			});
+
+			if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+			{
+				item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+				{
+					action.Image = result?.Value;
+				});
+			}
+
+			return new SecondarySubToolbarItem(item, action);
+		}
+
+		static UIImage ScaleImageToSystemDefaults(ImageSource imageSource, UIImage uIImage)
+		{
+			var icon = uIImage;
+
+			var originalImageSize = icon?.Size ?? CGSize.Empty;
+
+			// The largest height you can use for navigation bar icons in iOS.
+			// Per Apple's Human Interface Guidelines, the navigation bar height is 44 points,
+			// so using the full height ensures maximum visual clarity and maintains consistency
+			// with iOS design standards. This allows icons to utilize the entire available
+			// vertical space within the navigation bar container.
+			var defaultIconHeight = 44f;
+			var buffer = 0.1;
+			// We only check height because the navigation bar constrains vertical space (44pt height),
+			// but allows horizontal flexibility. Width can vary based on icon design and content,
+			// while height must fit within the fixed navigation bar bounds to avoid clipping.
+
+			// if the image is bigger than the default available size, resize it
+			if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
+			{
+				if (imageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+				{
+					icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+				}
+			}
+
+			return icon;
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem
@@ -47,8 +109,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void OnClicked(object sender, EventArgs e)
@@ -112,9 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
-						Image = item.IconImageSource is not FontImageSource
-							? result?.Value.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
-							: result?.Value;
+						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
 					});
 				}
@@ -135,6 +197,83 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		internal sealed class SecondarySubToolbarItem
+		{
+			readonly WeakReference<ToolbarItem> _item;
+			readonly WeakReference<UIAction> _nativeItem;
+
+			public UIAction PlatformAction
+			{
+				get
+				{
+					if (_nativeItem.TryGetTarget(out var nativeItem))
+					{
+						return nativeItem;
+					}
+
+					return null;
+				}
+			}
+
+			public SecondarySubToolbarItem(ToolbarItem item, UIAction nativeItem)
+			{
+				_item = new(item);
+				_nativeItem = new(nativeItem);
+
+				UpdateText(item);
+				UpdateIcon(item);
+				UpdateIsEnabled(item);
+
+				item.PropertyChanged += OnPropertyChanged;
+
+				if (item is not null && !string.IsNullOrEmpty(item.AutomationId)
+					&& _nativeItem.TryGetTarget(out var nativeAction))
+				{
+					nativeAction.AccessibilityIdentifier = item.AutomationId;
+				}
+
+				//this.SetAccessibilityHint(item);
+				//this.SetAccessibilityLabel(item);
+			}
+
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (!_item.TryGetTarget(out var item))
+					return;
+
+				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
+					UpdateText(item);
+				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+					UpdateIcon(item);
+				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
+					UpdateIsEnabled(item);
+			}
+
+			void UpdateIcon(ToolbarItem item)
+			{
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.Image = item.IconImageSource?.GetPlatformMenuImage(item.FindMauiContext());
+				}
+			}
+
+			void UpdateIsEnabled(ToolbarItem item)
+			{
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.UpdateIsEnabled(item.IsEnabled);
+				}
+			}
+
+			void UpdateText(ToolbarItem item)
+			{
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.Title = item.Text;
+				}
+			}
+		}
+
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
 			readonly WeakReference<ToolbarItem> _item;
@@ -151,9 +290,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
-
+#pragma warning disable CS0618 // Type or member is obsolete
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void OnClicked(object sender, EventArgs e)
@@ -186,17 +326,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 					this.SetAccessibilityHint(item);
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
-#pragma warning restore CS0618 // Type or member is obsolete
 					this.SetAccessibilityLabel(item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void UpdateIcon(ToolbarItem item)
 			{
-				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+				if (item.IconImageSource is not null && !item.IconImageSource.IsEmpty)
 				{
 					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
 					{
-						((SecondaryToolbarItemContent)CustomView).Image = result?.Value;
+						((SecondaryToolbarItemContent)CustomView).Image = ScaleImageToSystemDefaults(item.IconImageSource, result?.Value);
 					});
 				}
 				else

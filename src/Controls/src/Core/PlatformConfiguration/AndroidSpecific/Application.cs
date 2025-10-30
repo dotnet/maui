@@ -3,18 +3,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using FormsElement = Maui.Controls.Application;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WindowSoftInputModeAdjust.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust']/Docs/*" />
+	/// <summary>Enumerates values that control how an on-screen input interface is visually accommodated. This is a bindable property.</summary>
 	public enum WindowSoftInputModeAdjust
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WindowSoftInputModeAdjust.xml" path="//Member[@MemberName='Pan']/Docs/*" />
+		/// <summary>Indicates that the content of the control will pan, possibly off of the screen, to accommodate the input interface.</summary>
 		Pan,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WindowSoftInputModeAdjust.xml" path="//Member[@MemberName='Resize']/Docs/*" />
+		/// <summary>Indicates that the content of the control will resize to accommodate the input interface.</summary>
 		Resize,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WindowSoftInputModeAdjust.xml" path="//Member[@MemberName='Unspecified']/Docs/*" />
+		/// <summary>Indicates that the behavior of the control for oversized content is not specified.</summary>
 		Unspecified
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Application']/Docs/*" />
+	/// <summary>The application instance that Microsoft.Maui.Controls created on the Android platform.</summary>
 	public static class Application
 	{
 		/// <summary>Bindable property for <see cref="WindowSoftInputModeAdjust"/>.</summary>
@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (WindowSoftInputModeAdjust)element.GetValue(WindowSoftInputModeAdjustProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="//Member[@MemberName='SetWindowSoftInputModeAdjust']/Docs/*" />
+		/// <summary>Sets a value that controls whether the soft input mode of the provided <paramref name="element"/> pans or resizes its content to allow the display of the on-screen input UI.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static void SetWindowSoftInputModeAdjust(BindableObject element, WindowSoftInputModeAdjust value)
 		{
 			element.SetValue(WindowSoftInputModeAdjustProperty, value);
@@ -40,7 +42,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetWindowSoftInputModeAdjust(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="//Member[@MemberName='UseWindowSoftInputModeAdjust']/Docs/*" />
+		/// <summary>Sets a value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
+		/// <returns>A value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> UseWindowSoftInputModeAdjust(this IPlatformElementConfiguration<Android, FormsElement> config, WindowSoftInputModeAdjust value)
 		{
 			SetWindowSoftInputModeAdjust(config.Element, value);

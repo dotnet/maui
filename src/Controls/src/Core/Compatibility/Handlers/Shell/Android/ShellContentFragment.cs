@@ -6,6 +6,7 @@ using Android.Views;
 using Android.Views.Animations;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using AndroidAnimation = Android.Views.Animations.Animation;
@@ -142,6 +143,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
+
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_root, this.Context);
+
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
@@ -170,9 +174,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_destroyed)
 				return;
-			
+
 			_destroyed = true;
-			
+
 			// If the user taps very quickly on back button multiple times to pop a page,
 			// the app enters background state in the middle of the animation causing the fragment to be destroyed without completing the animation.
 			// That'll cause `IAnimationListener.onAnimationEnd` to not be called, so we need to call it manually if something is still subscribed to the event

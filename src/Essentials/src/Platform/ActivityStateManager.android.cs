@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
+using AndroidX.Activity;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -14,9 +16,9 @@ namespace Microsoft.Maui.ApplicationModel
 	public interface IActivityStateManager
 	{
 		/// <summary>
-		/// Initializes the <see cref="ActivityStateManager"/> for the given <see cref="Android.App.Application"/>.
+		/// Initializes the <see cref="ActivityStateManager"/> for the given <see cref="global::Android.App.Application"/>.
 		/// </summary>
-		/// <param name="application">The <see cref="Android.App.Application"/> to use for initialization.</param>
+		/// <param name="application">The <see cref="global::Android.App.Application"/> to use for initialization.</param>
 		void Init(Application application);
 
 		/// <summary>
@@ -79,6 +81,12 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			if (activity.Application is not Application application)
 				throw new InvalidOperationException("Activity was not attached to an application.");
+
+			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
+			{
+				PickVisualMediaForResult.Instance.Register(componentActivity);
+				PickMultipleVisualMediaForResult.Instance.Register(componentActivity);
+			}
 
 			Init(application);
 			lifecycleListener!.Activity = activity;

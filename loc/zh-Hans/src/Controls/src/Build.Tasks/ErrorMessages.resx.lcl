@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot set the content of "{0}" as it doesn't have a [ContentProperty]5D; attribute.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[无法设置“{0}”的内容，因为它没有 [ContentProperty]5D; 属性。]]></Val>
+            <Val><![CDATA[无法设置“{0}”的内容，因为它没有 [ContentProperty]5D; 特性。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Xaml“{0}”无效。]]></Val>
+            <Val><![CDATA[XAML“{0}”无效。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Property, Property setter or BindableProperty "{0}" is deprecated.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[属性、属性资源库或 BindableProperty "{0}" 已弃用。]]></Val>
+            <Val><![CDATA[属性、属性资源库或 BindableProperty“{0}”已弃用。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -266,7 +266,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resources in ResourceDictionary require a x:Key attribute.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ResourceDictionary 中的资源需具有 x:Key 属性。]]></Val>
+            <Val><![CDATA[ResourceDictionary 中的资源需具有 x:Key 特性。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -311,7 +311,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Source property is not a string literal.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[源属性不是字符串文本。]]></Val>
+            <Val><![CDATA[源属性不是字符串字面量。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Style property or Content is not a string literal.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[样式属性或内容不是字符串文本。]]></Val>
+            <Val><![CDATA[样式属性或内容不是字符串字面量。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -350,7 +350,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Consider attributing the markup extension "{0}" with [RequireService]5D; or [AcceptEmptyServiceProvider]5D; if it doesn't require any.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[如果标记扩展 "{0}" 不需要任何服务，请考虑使用 [RequireService]5D; 或 [AcceptEmptyServiceProvider]5D; 来标注它。]]></Val>
+            <Val><![CDATA[如果标记扩展“{0}”不需要任何服务，请考虑使用 [RequireService]5D; 或 [AcceptEmptyServiceProvider]5D; 来标注它。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

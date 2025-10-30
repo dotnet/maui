@@ -489,12 +489,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var scrollView = new ScrollView() { IsPlatformEnabled = true };
 			scrollView.Content = outerGrid;
 
-			var layoutSize = scrollView.Measure(411, 603, MeasureFlags.IncludeMargins);
+			//var layoutSize = scrollView.Measure(411, 603, MeasureFlags.IncludeMargins);
+
+			ICrossPlatformLayout crossPlatformLayout = scrollView;
+			crossPlatformLayout.CrossPlatformMeasure(411, 603);
+			var layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 411, 603));
 
 			// The containing ScrollView should measure a width of about 411; the absolute column at the end of the grid
 			// shouldn't expand the ScrollView's measure to 447-ish. It's this expansion of the ScrollView that causes
 			// all subsequent parts of layout to go pear-shaped.
-			AssertEqualWithTolerance(411, layoutSize.Request.Width, 2);
+			AssertEqualWithTolerance(411, layoutSize.Width, 2);
 		}
 
 		[Fact]
@@ -1958,11 +1962,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 				Content = grid,
 			};
-			view.Layout(new Rect(0, 0, 100, 100));
+
+			ICrossPlatformLayout crossPlatformLayout = view;
+			crossPlatformLayout.CrossPlatformMeasure(100, 100);
+			var layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 100, 100));
 			Assert.Equal(100, grid.Width);
 			Assert.Equal(20, grid.Height);
 
-			view.Layout(new Rect(0, 0, 50, 50));
+
+			crossPlatformLayout.CrossPlatformMeasure(50, 50);
+			layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 			Assert.Equal(50, grid.Width);
 			Assert.Equal(10, grid.Height);
 		}
@@ -1992,11 +2001,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 				Content = grid,
 			};
-			view.Layout(new Rect(0, 0, 100, 100));
+
+			ICrossPlatformLayout crossPlatformLayout = view;
+			crossPlatformLayout.CrossPlatformMeasure(100, 100);
+			var layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 100, 100));
 			Assert.Equal(100, grid.Width);
 			Assert.Equal(20, grid.Height);
 
-			view.Layout(new Rect(0, 0, 50, 50));
+
+			crossPlatformLayout.CrossPlatformMeasure(50, 50);
+			layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 			Assert.Equal(50, grid.Width);
 			Assert.Equal(10, grid.Height);
 		}
@@ -2331,7 +2345,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 				Content = grid,
 			};
-			view.Layout(new Rect(0, 0, 800, 800));
+
+
+			ICrossPlatformLayout crossPlatformLayout = view;
+			crossPlatformLayout.CrossPlatformMeasure(800, 800);
+			var layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 
 			Assert.Equal(boxRow0Column0.MinimumWidthRequest, boxRow0Column0.Width);
@@ -2385,7 +2403,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 				Content = grid,
 			};
-			view.Layout(new Rect(0, 0, 800, 800));
+
+
+			ICrossPlatformLayout crossPlatformLayout = view;
+			crossPlatformLayout.CrossPlatformMeasure(800, 800);
+			var layoutSize = crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 			Assert.Equal(boxRow0Column0.MinimumHeightRequest, boxRow0Column0.Height);
 			Assert.Equal(boxRow0Column1.MinimumHeightRequest, boxRow0Column1.Height);

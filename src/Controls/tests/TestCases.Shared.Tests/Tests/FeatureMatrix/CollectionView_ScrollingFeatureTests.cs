@@ -4,6 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_ScrollingFeatureTests : UITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";

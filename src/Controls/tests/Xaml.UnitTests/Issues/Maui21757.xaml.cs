@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
@@ -17,17 +10,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui21757
 {
-	public Maui21757()
-	{
-		InitializeComponent();
-	}
+	public Maui21757() => InitializeComponent();
 
-	public Maui21757(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -40,9 +24,13 @@ public partial class Maui21757
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values(false, true)] bool useCompiledXaml)
+		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values] XamlInflator inflator)
 		{
-			var resourceDictionary = new Maui21757(useCompiledXaml);
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui21757));
+			}
+			var resourceDictionary = new Maui21757(inflator);
 
 			var styleA = resourceDictionary["A"] as Style;
 			Assert.NotNull(styleA);

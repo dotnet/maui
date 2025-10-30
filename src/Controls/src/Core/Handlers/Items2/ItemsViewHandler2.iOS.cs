@@ -117,7 +117,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			// TODO: Fix handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
+			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
+			{
+				itemsLayout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
+			}
 		}
 
 		//TODO: this is being called 2 times on startup, one from OnCreatePlatformView and otehr from the mapper for the layout
@@ -183,6 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var contentSize = Controller.GetSize();
+			contentSize = EnsureContentSizeForScrollDirection(widthConstraint, heightConstraint, contentSize);
 
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
@@ -194,6 +198,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			return new Size(width, height);
+		}
+
+		Size EnsureContentSizeForScrollDirection(double widthConstraint, double heightConstraint, Size contentSize)
+		{
+			// Get the CollectionView orientation
+			var scrollDirection = Controller.GetScrollDirection();
+
+			// If contentSize is zero in the relevant dimension (height for vertical, width for horizontal),
+			// it means none of the content has been realized yet; we need to return the expansive size
+			// the collection view wants by default to get it to start measuring its content
+			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
+				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
+			{
+				var desiredSize = base.GetDesiredSize(widthConstraint, heightConstraint);
+				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					contentSize.Height = desiredSize.Height;
+				}
+				else
+				{
+					contentSize.Width = desiredSize.Width;
+				}
+			}
+
+			return contentSize;
 		}
 	}
 }

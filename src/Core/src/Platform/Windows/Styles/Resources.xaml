@@ -4,20 +4,68 @@
     xmlns:windows="using:Microsoft.Maui.Platform"
     x:Class="Microsoft.Maui.Platform.Resources">
 
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
-        <ResourceDictionary Source="MauiSliderStyle.xaml" />
-        <ResourceDictionary Source="MauiStepperStyle.xaml" />
-        <ResourceDictionary Source="WindowRootViewStyle.xaml" />
-    </ResourceDictionary.MergedDictionaries>
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
+    <ResourceDictionary Source="MauiSliderStyle.xaml" />
+    <ResourceDictionary Source="MauiStepperStyle.xaml" />
+    <ResourceDictionary Source="WindowRootViewStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
 
-    <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>
+  <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>
 
-    <windows:ColorConverter x:Key="ColorConverter" />
+  <windows:ColorConverter x:Key="ColorConverter" />
 
-    <Style x:Key="MauiFlyoutPresenterStyle" TargetType="FlyoutPresenter">
-        <Setter Property="MaxHeight" Value="250"/>
-        <Setter Property="MaxWidth" Value="300"/>
+  <x:Double x:Key="FlyoutMinWidth">350</x:Double>
+
+  <Style x:Key="MauiFlyoutPresenterStyle" TargetType="FlyoutPresenter">
+    <Setter Property="MaxHeight" Value="{x:Null}" />
+    <Setter Property="MaxWidth" Value="{x:Null}" />
+    <Setter Property="MinWidth" Value="{StaticResource FlyoutMinWidth}"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="FlyoutPresenter">
+          <Border Margin="20"
+                  MinWidth="{TemplateBinding MinWidth}"
+                  MaxWidth="{TemplateBinding MaxWidth}"
+                  MaxHeight="{TemplateBinding MaxHeight}"
+                  Padding="{ThemeResource FlyoutBorderThemePadding}"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  CornerRadius="{StaticResource OverlayCornerRadius}"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}">
+            <ScrollViewer x:Name="FlyoutScrollViewer"
+                          AutomationProperties.AccessibilityView="Raw"
+                          HorizontalScrollBarVisibility="Disabled"
+                          HorizontalScrollMode="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          VerticalScrollMode="Auto"
+                          ZoomMode="Disabled">
+              <ContentPresenter Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}" />
+            </ScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <DataTemplate x:Key="MauiActionSheetItemTemplate">
+    <TextBlock Text="{Binding}"
+               TextWrapping="Wrap"
+               Padding="12,8"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Center" />
+  </DataTemplate>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
     </Style>
-
 </ResourceDictionary>

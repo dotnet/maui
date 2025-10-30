@@ -14,7 +14,7 @@ using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiStepper : Control
+	public partial class MauiStepper : Control
 	{
 		Button _plus;
 		Button _minus;
@@ -258,9 +258,6 @@ namespace Microsoft.Maui.Platform
 		void UpdateValue(double delta)
 		{
 			double newValue = Value + delta;
-			if (newValue > Maximum || newValue < Minimum)
-				return;
-
 			Value = newValue;
 		}
 

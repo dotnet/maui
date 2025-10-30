@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
@@ -13,6 +14,9 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
+		/// <summary>Bindable property for <see cref="ReturnType"/>.</summary>
+		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(SearchBar), ReturnType.Search);
+
 		/// <summary>Bindable property for <see cref="SearchCommand"/>.</summary>
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create(
 			nameof(SearchCommand), typeof(ICommand), typeof(SearchBar), null,
@@ -28,6 +32,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create(nameof(CancelButtonColor), typeof(Color), typeof(SearchBar), default(Color));
+
+		/// <summary>Bindable property for <see cref="SearchIconColor"/>.</summary>
+		public static readonly BindableProperty SearchIconColorProperty = BindableProperty.Create(nameof(SearchIconColor), typeof(Color), typeof(SearchBar), default(Color));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
@@ -72,11 +79,28 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<SearchBar>> _platformConfigurationRegistry;
 
+		/// <summary>
+		/// Determines what the return key on the on-screen keyboard should look like. This is a bindable property.
+		/// </summary>
+		public ReturnType ReturnType
+		{
+			get => (ReturnType)GetValue(ReturnTypeProperty);
+			set => SetValue(ReturnTypeProperty, value);
+		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CancelButtonColor']/Docs/*" />
 		public Color CancelButtonColor
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }
 			set { SetValue(CancelButtonColorProperty, value); }
+		}
+		/// <summary>
+		/// Gets or sets the color of the search icon in the <see cref="SearchBar"/>.
+		/// </summary>
+		public Color SearchIconColor
+		{
+			get { return (Color)GetValue(SearchIconColorProperty); }
+			set { SetValue(SearchIconColorProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
@@ -115,6 +139,26 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
 		}
 
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current == null)
+				return;
+
+			if (args.NewHandler == null || args.OldHandler is not null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			if (args.NewHandler != null && args.OldHandler == null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(PlaceholderColor));
+			OnPropertyChanged(nameof(TextColor));
+			OnPropertyChanged(nameof(CancelButtonColor));
+		}
+
 		ICommand ICommandElement.Command => SearchCommand;
 
 		object ICommandElement.CommandParameter => SearchCommandParameter;
@@ -148,7 +192,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		bool ITextInput.IsTextPredictionEnabled => true;
+		bool ITextInput.IsTextPredictionEnabled => IsTextPredictionEnabled;
 
 		void ISearchBar.SearchButtonPressed()
 		{

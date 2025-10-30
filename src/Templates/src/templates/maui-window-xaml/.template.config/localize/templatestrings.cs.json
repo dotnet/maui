@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (XAML)",
-  "description": "Okno pro zobrazení stránky pomocí jazyka XAML",
+  "description": "Okno pro zobrazení stránky pomocí XAML.",
   "postActions/openInEditor/description": "Otevře soubor NewWindow1.xaml v editoru.",
   "symbols/namespace/description": "obor názvů pro vygenerovaný kód"
 }

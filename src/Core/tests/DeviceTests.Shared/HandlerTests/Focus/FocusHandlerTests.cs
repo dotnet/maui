@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class FocusHandlerTests<THandler, TStub, TLayoutStub> : HandlerTestBasement<THandler, TStub>
+	public abstract partial class FocusHandlerTests<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler, TStub, TLayoutStub> : HandlerTestBasement<THandler, TStub>
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, new()
 		where TLayoutStub : IStubBase, ILayout, new()

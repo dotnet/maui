@@ -1,11 +1,13 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29661, "[iOS, Mac] StrokeDashArray Property not Rendering", PlatformAffected.iOS)]
 public class Issue29661 : ContentPage
 {
 	public Issue29661()
 	{
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		var label = new Label
 		{
 			Text = "Test for Border with StrokeDashArray",

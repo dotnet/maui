@@ -5,7 +5,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="Type[@FullName='Microsoft.Maui.Controls.Grid']/Docs/*" />
+	/// <summary>A layout that arranges views in rows and columns.</summary>
 	[ContentProperty(nameof(Children))]
 	public class Grid : Layout, IGridLayout
 	{
@@ -64,49 +64,63 @@ namespace Microsoft.Maui.Controls
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumn'][1]/Docs/*" />
+		/// <summary>Gets the column of the <paramref name="bindable" /> child element.</summary>
+		/// <param name="bindable">An element that belongs to the Grid layout.</param>
+		/// <returns>The column that the child element is in.</returns>
 		public static int GetColumn(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(ColumnProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumnSpan'][1]/Docs/*" />
+		/// <returns>The number of columns spanned by the element; defaults to 1.</returns>
 		public static int GetColumnSpan(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(ColumnSpanProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRow'][1]/Docs/*" />
+		/// <summary>Gets the row of the <paramref name="bindable" /> child element.</summary>
+		/// <param name="bindable">An element that belongs to the Grid layout.</param>
+		/// <returns>The row that the child element is in.</returns>
 		public static int GetRow(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(RowProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRowSpan'][1]/Docs/*" />
+		/// <summary>Gets the row span of the <paramref name="bindable" /> child element.</summary>
+		/// <param name="bindable">An element that belongs to the Grid layout.</param>
+		/// <returns>The row span value of the given element.</returns>
 		public static int GetRowSpan(BindableObject bindable)
 		{
 			return (int)bindable.GetValue(RowSpanProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumn'][1]/Docs/*" />
+		/// <summary>Changes the column in which a child element will be placed.</summary>
+		/// <param name="bindable">A child element of this Grid to move to a different column.</param>
+		/// <param name="value">The column in which to place the child element.</param>
 		public static void SetColumn(BindableObject bindable, int value)
 		{
 			bindable.SetValue(ColumnProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumnSpan'][1]/Docs/*" />
+		/// <summary>Changes the column span of the specified child element.</summary>
+		/// <param name="bindable">A child element of this Grid on which to assign a new column span.</param>
+		/// <param name="value">The new column span.</param>
 		public static void SetColumnSpan(BindableObject bindable, int value)
 		{
 			bindable.SetValue(ColumnSpanProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRow'][1]/Docs/*" />
+		/// <summary>Changes the row in which a child element will be placed.</summary>
+		/// <param name="bindable">A child element of this Grid to move to a different row.</param>
+		/// <param name="value">The row in which to place the child element.</param>
 		public static void SetRow(BindableObject bindable, int value)
 		{
 			bindable.SetValue(RowProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRowSpan'][1]/Docs/*" />
+		/// <summary>Changes the row span of the specified child element.</summary>
+		/// <param name="bindable">A child element of this Grid on which to assign a new row span.</param>
+		/// <param name="value">The new row span.</param>
 		public static void SetRowSpan(BindableObject bindable, int value)
 		{
 			bindable.SetValue(RowSpanProperty, value);
@@ -119,7 +133,7 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnDefinitions']/Docs/*" />
+		/// <summary>Provides the interface for the bound property that gets or sets the ordered collection of <see cref="Microsoft.Maui.Controls.ColumnDefinition"/> objects that control the layout of columns in the <see cref="Microsoft.Maui.Controls.Grid"/>.</summary>
 		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
@@ -127,7 +141,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ColumnDefinitionsProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowDefinitions']/Docs/*" />
+		/// <summary>Provides the interface for the bound property that gets or sets the collection of RowDefinition objects that control the heights of each row.</summary>
+		/// <remarks>
+		/// <see cref="RowDefinition.Height" /> is set to <see cref="Microsoft.Maui.GridLength.Star" />.
+		/// </remarks>
 		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
@@ -135,20 +152,26 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RowDefinitionsProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpacing']/Docs/*" />
+		/// <summary>Gets or sets the amount of space between rows in the Grid. This is a bindable property.</summary>
 		public double RowSpacing
 		{
 			get { return (double)GetValue(RowSpacingProperty); }
 			set { SetValue(RowSpacingProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpacing']/Docs/*" />
+		/// <summary>Gets or sets the amount of space between columns in the Grid. This is a bindable property.</summary>
 		public double ColumnSpacing
 		{
 			get { return (double)GetValue(ColumnSpacingProperty); }
 			set { SetValue(ColumnSpacingProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets the zero-based column index for the provided <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view whose column index to retrieve. Can be a <see cref="BindableObject" /> or a virtual (non-bindable) view.</param>
+		/// <returns>The zero-based column index; defaults to 0 for views that have not been positioned explicitly.</returns>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public int GetColumn(IView view)
 		{
 			return view switch
@@ -158,6 +181,12 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <summary>
+		/// Gets the number of columns spanned by the provided <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view whose column span to retrieve.</param>
+		/// <returns>The column span; defaults to 1.</returns>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public int GetColumnSpan(IView view)
 		{
 			return view switch
@@ -167,6 +196,12 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <summary>
+		/// Gets the zero-based row index for the provided <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view whose row index to retrieve.</param>
+		/// <returns>The zero-based row index; defaults to 0.</returns>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public int GetRow(IView view)
 		{
 			return view switch
@@ -176,6 +211,12 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <summary>
+		/// Gets the number of rows spanned by the provided <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view whose row span to retrieve.</param>
+		/// <returns>The row span; defaults to 1.</returns>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public int GetRowSpan(IView view)
 		{
 			return view switch
@@ -185,16 +226,33 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <summary>
+		/// Adds a <see cref="RowDefinition" /> to the <see cref="RowDefinitions" /> collection.
+		/// </summary>
+		/// <param name="gridRowDefinition">The row definition to add.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="gridRowDefinition" /> is <c>null</c>.</exception>
 		public void AddRowDefinition(RowDefinition gridRowDefinition)
 		{
 			RowDefinitions.Add(gridRowDefinition);
 		}
 
+		/// <summary>
+		/// Adds a <see cref="ColumnDefinition" /> to the <see cref="ColumnDefinitions" /> collection.
+		/// </summary>
+		/// <param name="gridColumnDefinition">The column definition to add.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="gridColumnDefinition" /> is <c>null</c>.</exception>
 		public void AddColumnDefinition(ColumnDefinition gridColumnDefinition)
 		{
 			ColumnDefinitions.Add(gridColumnDefinition);
 		}
 
+		/// <summary>
+		/// Sets the zero-based row index for the specified <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view to position.</param>
+		/// <param name="row">The zero-based row index (must be &gt;= 0).</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="row" /> is negative.</exception>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public void SetRow(IView view, int row)
 		{
 			switch (view)
@@ -209,6 +267,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Sets the number of rows spanned by the specified <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view to modify.</param>
+		/// <param name="span">The span (must be &gt;= 1).</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="span" /> is less than 1.</exception>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public void SetRowSpan(IView view, int span)
 		{
 			switch (view)
@@ -223,6 +288,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Sets the zero-based column index for the specified <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view to position.</param>
+		/// <param name="col">The zero-based column index (must be &gt;= 0).</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="col" /> is negative.</exception>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public void SetColumn(IView view, int col)
 		{
 			switch (view)
@@ -237,6 +309,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Sets the number of columns spanned by the specified <paramref name="view" />.
+		/// </summary>
+		/// <param name="view">The child view to modify.</param>
+		/// <param name="span">The span (must be &gt;= 1).</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="span" /> is less than 1.</exception>
+		/// <exception cref="KeyNotFoundException">Thrown if <paramref name="view" /> is a non-bindable view that has not been added to the grid.</exception>
 		public void SetColumnSpan(IView view, int span)
 		{
 			switch (view)
@@ -357,7 +436,7 @@ namespace Microsoft.Maui.Controls
 			UpdateRowColumnBindingContexts();
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			var result = LayoutConstraint.None;
 
@@ -371,7 +450,7 @@ namespace Microsoft.Maui.Controls
 				result |= LayoutConstraint.HorizontallyFixed;
 			}
 
-			view.ComputedConstraint = result;
+			return result;
 		}
 
 		bool ViewHasFixedHeightDefinition(BindableObject view)

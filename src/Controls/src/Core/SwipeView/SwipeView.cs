@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			elements.Add(TopItems);
 			elements.Add(BottomItems);
 
-			foreach (var item in InternalChildren)
+			foreach (var item in LogicalChildrenInternal)
 			{
 				if (item is IVisualTreeElement vte)
 				{
@@ -187,10 +187,10 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<CloseRequestedEventArgs> CloseRequested;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Open']/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>Opens the SwipeView to reveal the specified swipe item.</summary>
+		/// <param name="openSwipeItem">Specifies which side of the SwipeView to open (Left, Right, Top, or Bottom).</param>
+		/// <param name="animated">Whether to animate the opening transition. Defaults to true.</param>
 		public void Open(OpenSwipeItem openSwipeItem, bool animated = true)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			OpenRequested?.Invoke(this, new OpenRequestedEventArgs(openSwipeItem, animated));
 			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));
@@ -292,11 +292,13 @@ namespace Microsoft.Maui.Controls
 					scrollView.Scrolled -= OnParentScrolled;
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (_scrollParent is ListView listView)
 				{
 					listView.Scrolled -= OnParentScrolled;
 					return;
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
 				{
@@ -318,13 +320,17 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				_scrollParent = this.FindParentOfType<ListView>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (_scrollParent is ListView listView)
 				{
 					listView.Scrolled += OnParentScrolled;
 					return;
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				_scrollParent = this.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
 

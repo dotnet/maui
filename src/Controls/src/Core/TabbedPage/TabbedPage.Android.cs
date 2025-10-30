@@ -16,11 +16,24 @@ namespace Microsoft.Maui.Controls
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 		TabbedPageManager? _tabbedPageManager;
 
+		public TabbedPageManager TabbedPageManager
+		{
+			get => _tabbedPageManager ??= new (MauiContext);
+			set
+			{
+				if (_tabbedPageManager is not null && _tabbedPageManager != value)
+				{
+					throw new InvalidOperationException("TabbedPageManager cannot be assigned to new instance.");
+				}
+
+				_tabbedPageManager = value ?? new(MauiContext);
+			}
+		}
+
 		ViewPager2 CreatePlatformView()
 		{
-			_tabbedPageManager ??= new TabbedPageManager(MauiContext);
-			_tabbedPageManager.SetElement(this);
-			return _tabbedPageManager.ViewPager;
+			TabbedPageManager.SetElement(this);
+			return TabbedPageManager.ViewPager;
 		}
 
 		static AView? OnCreatePlatformView(ViewHandler<ITabbedView, AView> arg)
@@ -97,6 +110,12 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsSwipePagingEnabled(ITabbedViewHandler handler, TabbedPage view)
 		{
 			view._tabbedPageManager?.UpdateSwipePaging();
+		}
+
+		[Obsolete]
+		internal static void MapOffscreenPageLimit(ITabbedViewHandler handler, TabbedPage view)
+		{
+			view._tabbedPageManager?.UpdateOffscreenPageLimit();
 		}
 	}
 }

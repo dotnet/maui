@@ -274,7 +274,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				}
 			};
 #else
-			var recognizer = new NSClickGestureRecognizer(g => OnCalloutClicked(annotation));
+			var recognizer = new NSGestureRecognizer(target: null, action: null);
+			recognizer.ShouldBegin = (gestureRecognizer) => {
+				OnCalloutClicked(annotation);
+				return true;
+			};
 #endif
 			mapPin.AddGestureRecognizer(recognizer);
 		}

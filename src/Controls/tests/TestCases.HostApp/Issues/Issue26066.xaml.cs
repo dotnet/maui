@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Issues
 		public ObservableCollection<Issue22035Model> Images { get; set; } = new();
 		public ObservableCollection<Issue22035Model> Images2 { get; set; } = new();
 
-		public ICommand ShowDialogCommand => new Command(async () => await Application.Current.MainPage.DisplayAlert("New Dialog", "Hello from Espinho", "OK"));
+		public ICommand ShowDialogCommand => new Command(async () => await Application.Current.MainPage.DisplayAlertAsync("New Dialog", "Hello from Espinho", "OK"));
 
 		public ICommand LoadCommand => new Command(() => LoadItems(Images, "CV1"));
 

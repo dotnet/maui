@@ -7,7 +7,7 @@
         <ResourceDictionary>
             <Color x:Key="notpink">Purple</Color>
             <Color x:Key="pink">Pink</Color>
-            <ResourceDictionary Source="AppResources/Colors.xaml" />
+            <ResourceDictionary Source="AppResources/Colors.rtxc.xaml" />
         </ResourceDictionary>
     </ContentPage.Resources>
     <Label x:Name="label" TextColor="{StaticResource notpink}" BackgroundColor="{StaticResource Primary}"/>

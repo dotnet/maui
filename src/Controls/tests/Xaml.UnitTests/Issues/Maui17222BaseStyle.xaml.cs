@@ -9,9 +9,4 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class Maui17222BaseStyle : ResourceDictionary
 {
 	public Maui17222BaseStyle() => InitializeComponent();
-
-	public Maui17222BaseStyle(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 }

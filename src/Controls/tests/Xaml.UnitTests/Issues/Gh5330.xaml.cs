@@ -1,32 +1,25 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh5330 : ContentPage
 {
-	public partial class Gh5330 : ContentPage
+	public Gh5330() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Gh5330() => InitializeComponent();
-		public Gh5330(bool useCompiledXaml)
+		[Test]
+		public void DoesntFailOnxType([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			new Gh5330(inflator);
 		}
 
-		[TestFixture]
-		class Tests
+		[Test]
+		public void CompiledBindingWithxType([Values] XamlInflator inflator)
 		{
-			[Test]
-			public void DoesntFailOnxType([Values(true)] bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5330)));
-			}
-
-			[Test]
-			public void CompiledBindingWithxType([Values(true)] bool useCompiledXaml)
-			{
-				var layout = new Gh5330(useCompiledXaml) { BindingContext = new Button { Text = "Foo" } };
-				Assert.That(layout.label.Text, Is.EqualTo("Foo"));
-			}
+			var layout = new Gh5330(inflator) { BindingContext = new Button { Text = "Foo" } };
+			Assert.That(layout.label.Text, Is.EqualTo("Foo"));
 		}
 	}
 }

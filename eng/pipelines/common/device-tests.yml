@@ -1,15 +1,14 @@
 parameters:
-  androidPool: { }
-  iosPool: { }
-  catalystPool: { }
-  windowsPool: { }
+  androidPool: {}
+  iosPool: {}
+  catalystPool: {}
+  windowsPool: {}
   androidApiLevels: [ 33 ]
   iosVersions: [ 'latest' ]
   iosDeviceVersions: [ '15' ]
   catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   skipProvisioning: true
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -19,16 +18,16 @@ parameters:
     tfm: ''
     dependsOn: ''
   projects:
-    - name: name
-      desc: Human Description
-      android: /optional/path/to/android.csproj
-      ios: /optional/path/to/ios.csproj
-      catalyst: /optional/path/to/catalyst.csproj
+  - name: name
+    desc: Human Description
+    android: /optional/path/to/android.csproj
+    ios: /optional/path/to/ios.csproj
+    catalyst: /optional/path/to/catalyst.csproj
   platforms:
-    - android
-    - ios
-    - catalyst
-    - windows
+  - android
+  - ios
+  - catalyst
+  - windows
 
 stages:
 
@@ -39,7 +38,7 @@ stages:
       dependsOn: []
     ${{ else }}:
       dependsOn:
-        - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+      - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
     jobs:
 
     - ${{ if eq(platform, 'android') }}:
@@ -62,10 +61,35 @@ stages:
                 configuration: ${{ project.androidConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+
+    - ${{ if eq(platform, 'android') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              buildAndTest: false
+              platform: android
+              timeoutInMinutes: 60
+              pool: ${{ parameters.androidPool }}
+              versions: ${{ parameters.androidApiLevels }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.android }}
+                versionsExclude: ${{ project.androidApiLevelsCoreClrExclude }}
+                configuration: ${{ project.androidConfiguration }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
               agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
+              useCoreClr: true
 
     - ${{ if eq(platform, 'ios') }}:
       - ${{ each project in parameters.projects }}:
@@ -86,7 +110,6 @@ stages:
                 configuration: ${{ project.iOSConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
-              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
@@ -110,7 +133,6 @@ stages:
                 configuration: ${{ project.iOSConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
-              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
@@ -136,7 +158,6 @@ stages:
                   configuration: ${{ project.windowsConfiguration }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 skipProvisioning: ${{ parameters.skipProvisioning }}
-                agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                 artifactName: ${{ parameters.artifactName }}
                 artifactItemPattern: ${{ parameters.artifactItemPattern }}
                 useArtifacts: ${{ parameters.useArtifacts }}

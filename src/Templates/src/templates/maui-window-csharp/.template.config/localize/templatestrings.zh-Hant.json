@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (C#)",
-  "description": "顯示使用 C# 顯示頁面的視窗。",
+  "description": "使用 C# 顯示頁面的視窗。",
   "postActions/openInEditor/description": "在編輯器中開啟 NewWindow1.cs。",
   "symbols/namespace/description": "適用於產生之程式碼的命名空間。"
 }

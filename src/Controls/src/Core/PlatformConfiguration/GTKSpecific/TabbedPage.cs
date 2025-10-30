@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Maui.Controls.TabbedPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.TabbedPage']/Docs/*" />
+	/// <summary>Controls the tab position on tabbed pages on the GTK platform.</summary>
 	public static class TabbedPage
 	{
 		/// <summary>Bindable property for <see cref="TabPosition"/>.</summary>

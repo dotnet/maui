@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 
 			_container.ButtonPressEvent -= OnContainerButtonPressEvent;
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>().Any() || gestures.GetGesturesFor<ClickGestureRecognizer>().Any())
+			if (gestures.GetGesturesFor<TapGestureRecognizer>().Any())
 			{
 				_container.ButtonPressEvent += OnContainerButtonPressEvent;
 			}
@@ -374,23 +374,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 
 				foreach (TapGestureRecognizer recognizer in tapGestures)
 					recognizer.SendTapped(view);
-
-				IEnumerable<ClickGestureRecognizer> clickGestures = view.GestureRecognizers
-					.GetGesturesFor<ClickGestureRecognizer>(g => g.NumberOfClicksRequired == numClicks &&
-															g.Buttons == ButtonsMask.Primary);
-
-				foreach (ClickGestureRecognizer recognizer in clickGestures)
-					recognizer.SendClicked(view, ButtonsMask.Primary);
 			}
 			else
 			{
-				// right click
-				IEnumerable<ClickGestureRecognizer> rightClickGestures = view.GestureRecognizers
-					.GetGesturesFor<ClickGestureRecognizer>(g => g.NumberOfClicksRequired == numClicks &&
-															g.Buttons == ButtonsMask.Secondary);
-
-				foreach (ClickGestureRecognizer recognizer in rightClickGestures)
-					recognizer.SendClicked(view, ButtonsMask.Secondary);
+				// right click - no equivalent for TapGestureRecognizer
 			}
 		}
 

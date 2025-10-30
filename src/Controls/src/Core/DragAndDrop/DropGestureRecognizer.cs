@@ -89,18 +89,18 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DropCommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='SendDragOver']/Docs/*" />
+		/// <param name="args">The event arguments.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDragOver(DragEventArgs args)
 		{
 			DragOverCommand?.Execute(DragOverCommandParameter);
-			DragOver?.Invoke(this, args);
+			DragOver?.Invoke(Parent ?? this, args);
 		}
 
 		internal void SendDragLeave(DragEventArgs args)
 		{
 			DragLeaveCommand?.Execute(DragLeaveCommandParameter);
-			DragLeave?.Invoke(this, args);
+			DragLeave?.Invoke(Parent ?? this, args);
 		}
 
 		internal async Task SendDrop(DropEventArgs args)
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			DropCommand?.Execute(DropCommandParameter);
-			Drop?.Invoke(this, args);
+			Drop?.Invoke(Parent ?? this, args);
 
 			if (!args.Handled)
 			{

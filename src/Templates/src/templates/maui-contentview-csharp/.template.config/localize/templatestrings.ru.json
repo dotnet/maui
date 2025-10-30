@@ -3,5 +3,5 @@
   "name": ".NET MAUI ContentView (C#)",
   "description": "Представление для отображения содержимого с помощью C#. Это очень удобно для создания ваших собственных и повторно используемых элементов управления.",
   "postActions/openInEditor/description": "Открывает NewContent1.cs в редакторе.",
-  "symbols/namespace/description": "Пространство имен для созданного кода."
+  "symbols/namespace/description": "Пространство имен для сформированного кода."
 }

@@ -5,9 +5,11 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using static Android.Views.View;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -22,6 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
+		bool? _focusableDefaultValue;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -125,6 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Context cannot be null here");
 
 			var context = Control.Context;
+			var pointerHandler = InitializePointerHandler();
 			var listener = new InnerGestureListener(
 				new TapGestureHandler(() => View, () =>
 				{
@@ -136,10 +140,12 @@ namespace Microsoft.Maui.Controls.Platform
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler(),
-				InitializePointerHandler()
+				pointerHandler
 			);
 
-			return new TapAndPanGestureDetector(context, listener);
+			var detector = new TapAndPanGestureDetector(context, listener);
+			detector.SetPointerGestureHandler(pointerHandler);
+			return detector;
 		}
 
 		ScaleGestureDetector InitializeScaleDetector()
@@ -159,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool ViewHasPinchGestures()
 		{
-			if (View == null)
+			if (View is null)
 				return false;
 
 			int count = View.GestureRecognizers.Count;
@@ -210,12 +216,58 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			// Always unsubscribe first to avoid duplicates
+
 			platformView.Touch -= OnPlatformViewTouched;
+			platformView.KeyPress -= OnKeyPress;
+
 
 			if (shouldAddTouchEvent)
 			{
 				platformView.Touch += OnPlatformViewTouched;
+
+				// If we have a TapGestureRecognizer, we need to handle key presses
+				if (View.HasAccessibleTapGesture())
+				{
+					platformView.KeyPress += OnKeyPress;
+					_focusableDefaultValue ??= platformView.Focusable;
+					platformView.Focusable = true;
+				}
 			}
+			else
+			{
+				_focusableDefaultValue = null;
+			}
+		}
+
+		void OnKeyPress(object? sender, KeyEventArgs e)
+		{
+			if (e.Event?.Action != KeyEventActions.Up)
+			{
+				e.Handled = false;
+				return;
+			}
+
+			if (View is null || sender is not AView platformView)
+			{
+				e.Handled = false;
+				return;
+			}
+
+			if (e.KeyCode.IsConfirmKey() &&
+				View.HasAccessibleTapGesture(out var tapGestureRecognizer) &&
+				e.Event.HasNoModifiers)
+			{
+				if (!platformView.Enabled)
+				{
+					e.Handled = true;
+					return;
+				}
+
+				if (!e.Event.IsCanceled)
+					tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+			}
+
+			e.Handled = false;
 		}
 
 		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
@@ -236,8 +288,13 @@ namespace Microsoft.Maui.Controls.Platform
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
 		{
 			var platformView = Control;
-			if (platformView != null)
+			if (platformView is not null)
+			{
+				platformView.Focusable = _focusableDefaultValue ?? platformView.Focusable;
+				_focusableDefaultValue = null;
 				platformView.Touch -= OnPlatformViewTouched;
+				platformView.KeyPress -= OnKeyPress;
+			}
 
 			_handler = null;
 			if (oldElement != null)

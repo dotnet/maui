@@ -15,7 +15,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
+	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
+	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ListView>>(() => new PlatformConfigurationRegistry<ListView>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates and initializes a new instance of the <see cref="Microsoft.Maui.Controls.ListView"/> class.</summary>
 		public ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : this()
 		{
 			// Unknown => UnitTest "platform"
@@ -124,14 +125,14 @@ namespace Microsoft.Maui.Controls
 				CachingStrategy = cachingStrategy;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='Footer']/Docs/*" />
+		/// <summary>Gets or sets the string, binding, or view that will be displayed at the bottom of the list view. This is a bindable property.</summary>
 		public object Footer
 		{
 			get { return GetValue(FooterProperty); }
 			set { SetValue(FooterProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='FooterTemplate']/Docs/*" />
+		/// <summary>Gets or sets a data template to use to format a data object for display at the bottom of the list view. This is a bindable property.</summary>
 		public DataTemplate FooterTemplate
 		{
 			get { return (DataTemplate)GetValue(FooterTemplateProperty); }
@@ -151,7 +152,10 @@ namespace Microsoft.Maui.Controls
 				SetChildInheritedBindingContext(footer, bc);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupDisplayBinding']/Docs/*" />
+		/// <summary>Gets or sets the binding to use for displaying the group header.</summary>
+		/// <remarks>This binding can be used to simply set a the text of the group headers without defining a full template and uses the default visuals
+		/// of the platform to display it. The binding is applied to the
+		/// This property is mutually exclusive with</remarks>
 		[DoesNotInheritDataType]
 		public BindingBase GroupDisplayBinding
 		{
@@ -170,14 +174,19 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupHeaderTemplate']/Docs/*" />
+		/// <summary>Gets or sets a <see cref="Microsoft.Maui.Controls.DataTemplate"/> for group headers.</summary>
+		/// <remarks>Use this property to define a template for a
+		/// GroupHeaderTemplate is mutually exclusive with
+		/// Empty groups will still display a group header.</remarks>
 		public DataTemplate GroupHeaderTemplate
 		{
 			get { return (DataTemplate)GetValue(GroupHeaderTemplateProperty); }
 			set { SetValue(GroupHeaderTemplateProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupShortNameBinding']/Docs/*" />
+		/// <summary>Gets or sets a binding for the name to display in grouped jump lists.</summary>
+		/// <remarks>When grouping items in a
+		/// Note: On Android, there is no displayed jump list.</remarks>
 		[DoesNotInheritDataType]
 		public BindingBase GroupShortNameBinding
 		{
@@ -194,77 +203,78 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HasUnevenRows']/Docs/*" />
+		/// <summary>Gets or sets a Boolean value that indicates whether this <see cref="Microsoft.Maui.Controls.ListView"/> element has uneven rows.</summary>
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
 			set { SetValue(HasUnevenRowsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='Header']/Docs/*" />
+		/// <summary>Gets or sets the string, binding, or view that will be displayed at the top of the list view. This is a bindable property.</summary>
 		public object Header
 		{
 			get { return GetValue(HeaderProperty); }
 			set { SetValue(HeaderProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HeaderTemplate']/Docs/*" />
+		/// <summary>Gets or sets a data template to use to format a data object for display at the top of the list view. This is a bindable property.</summary>
 		public DataTemplate HeaderTemplate
 		{
 			get { return (DataTemplate)GetValue(HeaderTemplateProperty); }
 			set { SetValue(HeaderTemplateProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='IsGroupingEnabled']/Docs/*" />
+		/// <summary>Gets or sets whether or not grouping is enabled for <see cref="Microsoft.Maui.Controls.ListView"/>.</summary>
 		public bool IsGroupingEnabled
 		{
 			get { return (bool)GetValue(IsGroupingEnabledProperty); }
 			set { SetValue(IsGroupingEnabledProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='IsPullToRefreshEnabled']/Docs/*" />
+		/// <summary>Gets or sets a value that tells whether the user can swipe down to cause the application to refresh. This is a bindable property.</summary>
 		public bool IsPullToRefreshEnabled
 		{
 			get { return (bool)GetValue(IsPullToRefreshEnabledProperty); }
 			set { SetValue(IsPullToRefreshEnabledProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='IsRefreshing']/Docs/*" />
+		/// <summary>Gets or sets a value that tells whether the list view is currently refreshing. This is a bindable property.</summary>
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
 			set { SetValue(IsRefreshingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RefreshCommand']/Docs/*" />
+		/// <summary>Gets or sets the command that is run when the list view enters the refreshing state. This is a bindable property.</summary>
 		public ICommand RefreshCommand
 		{
 			get { return (ICommand)GetValue(RefreshCommandProperty); }
 			set { SetValue(RefreshCommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RowHeight']/Docs/*" />
+		/// <summary>Gets or sets a value that represents the height of a row. This is a bindable property.</summary>
 		public int RowHeight
 		{
 			get { return (int)GetValue(RowHeightProperty); }
 			set { SetValue(RowHeightProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SelectedItem']/Docs/*" />
+		/// <summary>Gets or sets the currently selected item from the <see cref="Microsoft.Maui.Controls.ItemsView{T}.ItemsSource"/>.</summary>
 		public object SelectedItem
 		{
 			get { return GetValue(SelectedItemProperty); }
 			set { SetValue(SelectedItemProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SelectionMode']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether and how many items can be selected. This is a bindable property.</summary>
 		public ListViewSelectionMode SelectionMode
 		{
 			get { return (ListViewSelectionMode)GetValue(SelectionModeProperty); }
 			set { SetValue(SelectionModeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SeparatorColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the bar that separates list items.</summary>
+		/// <remarks>The default value is <c>Color.Default</c>. This property has no effect if <see cref="Microsoft.Maui.Controls.ListView.SeparatorVisibility"/> is <see langword="false"/>.</remarks>
 		public Color SeparatorColor
 		{
 			get { return (Color)GetValue(SeparatorColorProperty); }
@@ -278,7 +288,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RefreshControlColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SeparatorVisibility']/Docs/*" />
+		/// <summary>Gets or sets a value that tells whether separators are visible between items. This is a bindable property.</summary>
 		public SeparatorVisibility SeparatorVisibility
 		{
 			get { return (SeparatorVisibility)GetValue(SeparatorVisibilityProperty); }
@@ -298,10 +308,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='CachingStrategy']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public ListViewCachingStrategy CachingStrategy { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RefreshAllowed']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool RefreshAllowed
 		{
@@ -316,43 +328,50 @@ namespace Microsoft.Maui.Controls
 			get { return _refreshAllowed; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='FooterElement']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element FooterElement
 		{
 			get { return _footerElement; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HeaderElement']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element HeaderElement
 		{
 			get { return _headerElement; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SendCellAppearing']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellAppearing(Cell cell)
 			=> ItemAppearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SendCellDisappearing']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellDisappearing(Cell cell)
 			=> ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SendScrolled']/Docs/*" />
+		/// <param name="args">The event arguments.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendScrolled(ScrolledEventArgs args)
 			=> Scrolled?.Invoke(this, args);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SendRefreshing']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendRefreshing()
 		{
 			BeginRefresh();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='BeginRefresh']/Docs/*" />
+		/// <summary>Enters the refreshing state by setting the <see cref="Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="true"/>.</summary>
 		public void BeginRefresh()
 		{
 			if (!RefreshAllowed)
@@ -365,7 +384,7 @@ namespace Microsoft.Maui.Controls
 			command?.Execute(null);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='EndRefresh']/Docs/*" />
+		/// <summary>Exits the refreshing state by setting the <see cref="Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="false"/>.</summary>
 		public void EndRefresh()
 		{
 			SetValue(IsRefreshingProperty, false);
@@ -413,8 +432,10 @@ namespace Microsoft.Maui.Controls
 
 		protected override Cell CreateDefault(object item)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			TextCell textCell = new TextCell();
 			textCell.SetBinding(TextCell.TextProperty, static (object cell) => cell, BindingMode.OneWay, _toStringValueConverter);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return textCell;
 		}
 
@@ -445,8 +466,10 @@ namespace Microsoft.Maui.Controls
 		protected override void SetupContent(Cell content, int index)
 		{
 			base.SetupContent(content, index);
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (content is ViewCell viewCell && viewCell.View != null && HasUnevenRows)
 				viewCell.View.ComputedConstraint = LayoutConstraint.None;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (content != null)
 			{
@@ -471,14 +494,18 @@ namespace Microsoft.Maui.Controls
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='CreateDefaultCell']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="item">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Cell CreateDefaultCell(object item)
 		{
 			return CreateDefault(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GetDisplayTextFromGroup']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="cell">Internal parameter for platform use.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string GetDisplayTextFromGroup(object cell)
 		{

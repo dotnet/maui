@@ -7,13 +7,6 @@
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
 
     <!--
-      Indicates that the Microsoft.Maui.Controls.Compatibility package should be implicitly
-      referenced.  This will eventually switch to false by default and become opt, in,
-      however Visual Studio currently depends on this assembly being loaded for Live Visual Tree.
-    -->
-    <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">false</UseMauiCompat>
-
-    <!--
       If opted into NuGet Central Package Management, $(DisableMauiImplicitPackageReferences) defaults to true
       https://learn.microsoft.com/nuget/consume-packages/Central-Package-Management
     -->
@@ -38,7 +31,7 @@
 
     One thing to note: the old and unsupported $(UseMauiNuGets) property is the same as the new
     $(DisableMauiImplicitPackageReferences) property and is just kept for compatibility. It should
-    not be used any any project, but there are some existing projects that have used them.
+    not be used any project, but there are some existing projects that have used them.
   -->
   <ItemGroup Condition=" '$(DisableMauiImplicitPackageReferences)' != 'true' and '$(UseMauiNuGets)' != 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" Condition=" '$(UseMauiAssets)' == 'true' " />
@@ -49,9 +42,6 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' ">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
-    </_MauiImplicitPackageReference>
-    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsMauiImplicitOptionalPackageReference="true" Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' ">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
