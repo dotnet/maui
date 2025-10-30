@@ -8,9 +8,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -644,6 +646,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			list.Add("Baz");
 			Assert.Equal(3, layout.Children.Count);
 		}
+
+		[Fact("BindableLayout updates children in main thread when observable collection changes in background thread")]
+		public Task UpdatesChildrenInMainThreadWhenObservableCollectionChangesInBackgroundThread()
+			=> DispatcherTest.Run(async () =>
+			{
+				var isOnBackgroundThread = false;
+				var invokeOnMainThreadWasCalled = false;
+				var childAdded = 0;
+				DispatcherProviderStubOptions.InvokeOnMainThread = action =>
+				{
+					invokeOnMainThreadWasCalled = true;
+					action();
+					Assert.Equal(2, childAdded);
+				};
+				DispatcherProviderStubOptions.IsInvokeRequired = () => isOnBackgroundThread;
+
+				var layout = new StackLayout { IsPlatformEnabled = true };
+				var list = new ObservableCollection<string> { "Foo" };
+				BindableLayout.SetItemsSource(layout, list);
+				layout.ChildAdded += (s, e) => childAdded++;
+
+				list.Add("Baz");
+				Assert.False(invokeOnMainThreadWasCalled);
+				Assert.Equal(1, childAdded);
+				
+				isOnBackgroundThread = true;
+				list.Add("Qux");
+				Assert.True(invokeOnMainThreadWasCalled);
+			});
 
 		[Fact("BindableLayout disconnects handlers when removing views")]
 		public void DisconnectsHandlersWhenRemovingViews()
