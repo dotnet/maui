@@ -32,8 +32,7 @@ public static class TimePickerExtensions
 	{
 		if (picker is not null)
 		{
-			var timeToUse = timePicker?.Time ?? DateTime.Now.TimeOfDay;
-			picker.Date = new DateTime(1, 1, 1).Add(timeToUse).ToNSDate();
+			picker.Date = new DateTime(1, 1, 1).Add(timePicker?.Time ?? TimeSpan.Zero).ToNSDate();
 		}
 	}
 
