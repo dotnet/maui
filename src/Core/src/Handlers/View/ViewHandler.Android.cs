@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			
+
 			if (handler.MauiContext?.Context is null || handler.PlatformView is not PlatformView platformView)
 			{
 				return;
@@ -269,15 +269,15 @@ namespace Microsoft.Maui.Handlers
 			switch (platformView)
 			{
 				case ContentViewGroup cvg:
-        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(cvg);
+					handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(cvg);
 					cvg.MarkSafeAreaEdgeConfigurationChanged();
 					break;
 				case LayoutViewGroup lvg:
-        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(lvg);
+					handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(lvg);
 					lvg.MarkSafeAreaEdgeConfigurationChanged();
 					break;
 				case MauiScrollView msv:
-        			handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(msv);
+					handler.MauiContext.Context.GetGlobalWindowInsetListener()?.ResetAppliedSafeAreas(msv);
 					msv.MarkSafeAreaEdgeConfigurationChanged();
 					break;
 			}
