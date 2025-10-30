@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+    x:Class="Maui.Controls.Sample.ShellFlyoutControlPage"
+    x:DataType="local:ShellViewModel"
+    FlyoutWidth="{Binding FlyoutWidth}"
+    FlyoutHeight="{Binding FlyoutHeight}"
+    FlyoutIcon="{Binding FlyoutIcon}"
+    FlyoutBackdrop="{Binding FlyoutBackdrop}"
+    FlyoutVerticalScrollMode="{Binding FlyoutVerticalScrollMode}"
+    ItemTemplate="{Binding FlyoutItemTemplate}"
+    MenuItemTemplate="{Binding MenuItemTemplate}"
+    FlowDirection="{Binding FlowDirection}"
+    IsEnabled="{Binding IsEnabled}"
+    AutomationId="ShellFlyout">
+    <FlyoutItem
+        x:Name="HomeFlyoutItem"
+        Title="FlyoutItems"
+        AutomationId="HomeFlyoutItem"
+        FlyoutItemIsVisible="{Binding FlyoutItemIsVisible}">
+        <ShellContent Title="Home"
+                AutomationId="Home">
+            <ContentPage AutomationId="HomeContentPage">
+                <ContentPage.ToolbarItems>
+                    <ToolbarItem AutomationId="Options"
+                                 Text="Options"
+                                 Clicked="NavigateToOptionsPage_Clicked"/>
+                </ContentPage.ToolbarItems>
+                <VerticalStackLayout Padding="20">
+                    <Label Text="This is Home page content."
+                           FontAttributes="Bold"
+                           FontSize="18"
+                           TextColor="DarkBlue"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           AutomationId="HomePageTitle"/>
+                    <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"
+                           AutomationId="HomeCurrentItemLabel"/>
+                </VerticalStackLayout>
+            </ContentPage>
+        </ShellContent>
+
+        <ShellContent Title="Reports"
+                AutomationId="Reports">
+            <ContentPage AutomationId="ReportsContentPage">
+                <VerticalStackLayout Padding="20">
+                    <Label Text="This is Reports page content."
+                           FontAttributes="Bold"
+                           FontSize="18"
+                           TextColor="DarkGreen"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           AutomationId="ReportsPageTitle"/>
+                    <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"
+                           AutomationId="ReportsCurrentItemLabel"/>
+                </VerticalStackLayout>
+            </ContentPage>
+        </ShellContent>
+    </FlyoutItem>
+
+    <MenuItem Text="OpenFlyout"
+              Clicked="OnOpenFlyoutClicked"
+              AutomationId="OpenFlyout"/>
+    <MenuItem Text="FlyoutBehavior"
+              Clicked="OnSetFlyoutBehaviorClicked"
+              AutomationId="FlyoutBehavior"/>
+</Shell>
