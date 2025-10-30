@@ -6,6 +6,7 @@ using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
+using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 
@@ -97,6 +98,15 @@ namespace Microsoft.Maui.Platform
 			var parent = view.Parent;
 			while (parent is not null)
 			{
+				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
+				// We want the layout listener logic to get applied to the MaterialToolbar itself
+				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
+				if (view is not MaterialToolbar &&
+					(parent is NestedScrollView || parent is AppBarLayout || parent is MauiScrollView || parent is RecyclerView))
+				{
+					return null;
+				}
+
 				if (parent is AView parentView)
 				{
 					// Check if this parent view is registered
@@ -439,13 +449,6 @@ internal static class GlobalWindowInsetListenerExtensions
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
 			return true;
-		}
-
-		// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
-		if (view is not MaterialToolbar &&
-			view.FindParent(parent => parent is NestedScrollView || parent is AppBarLayout || parent is MauiScrollView) is not null)
-		{
-			return false;
 		}
 
 		// If no listener available, this is likely a configuration issue but not critical
