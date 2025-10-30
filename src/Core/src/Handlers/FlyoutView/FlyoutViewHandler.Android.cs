@@ -4,6 +4,7 @@ using Android.App.Roles;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
@@ -31,8 +32,6 @@ namespace Microsoft.Maui.Handlers
 
 			_navigationRoot = li.Inflate(Resource.Layout.navigationlayout, null)
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
-
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_navigationRoot, this.Context);
 
 			_navigationRoot.Id = View.GenerateViewId();
 			return dl;
@@ -286,6 +285,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
+			GlobalWindowInsetListener.SetupViewWithLocalListener(platformView);
+
+			if (_navigationRoot is CoordinatorLayout cl)
+			{
+				GlobalWindowInsetListener.SetupViewWithLocalListener(cl);
+			}
+
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged += OnDrawerStateChanged;
@@ -295,6 +301,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			GlobalWindowInsetListener.UnregisterView(platformView);
+			if (_navigationRoot is CoordinatorLayout cl)
+			{
+				GlobalWindowInsetListener.UnregisterView(cl);
+				_navigationRoot = null;
+			}
+
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
