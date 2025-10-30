@@ -1146,5 +1146,36 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke(value);
 				return value;
 			});
+
+		[Fact(DisplayName = "Duplicate Routes Should Throws Exception")]
+		public void ShouldThrowsArgumentExceptionOnDuplicateRoutes()
+		{
+			var shell = new Shell();
+			var sameRoute = $"DuplicateRoute";
+
+			var flyoutItem1 = new FlyoutItem();
+			var shellContent1 = new ShellContent
+			{
+				Title = "Home"
+			};
+			flyoutItem1.Items.Add(shellContent1);
+			shell.Items.Add(flyoutItem1);
+
+			var flyoutItem2 = new FlyoutItem();
+			var shellContent2 = new ShellContent
+			{
+				Title = "Home"
+			};
+			flyoutItem2.Items.Add(shellContent2);
+			shell.Items.Add(flyoutItem2);
+
+			shellContent1.Route = sameRoute;
+			var exception = Assert.Throws<ArgumentException>(() =>
+			{
+				shellContent2.Route = sameRoute;
+			});
+
+			Assert.Equal($"Duplicated Route: \"{sameRoute}\" ", exception.Message);
+		}
 	}
 }
