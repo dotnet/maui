@@ -423,16 +423,20 @@ namespace Microsoft.Maui.Maps.Handlers
 				Marker? marker;
 
 				var pinHandler = pin.ToHandler(MauiContext);
-				if (pinHandler is IMapPinHandler iMapPinHandler)
+				if (pinHandler is MapPinHandler mapPinHandler)
 				{
-					marker = Map.AddMarker(iMapPinHandler.PlatformView);
+					marker = Map.AddMarker(mapPinHandler.PlatformView);
 					if (marker == null)
 					{
 						throw new System.Exception("Map.AddMarker returned null");
 					}
+
+					// Store the marker reference in the MapPinHandler for future property updates
+					mapPinHandler.Marker = marker;
+
 					// associate pin with marker for later lookup in event handlers
 					pin.MarkerId = marker.Id;
-					_markers.Add(marker!);
+					_markers.Add(marker);
 				}
 
 			}

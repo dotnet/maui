@@ -4,9 +4,11 @@ Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.MapElementHandlerUpdate(Mic
 override Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.GetHashCode() -> int
 override Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.ToString() -> string!
+override Microsoft.Maui.Maps.Handlers.MapPinHandler.DisconnectHandler(Android.Gms.Maps.Model.MarkerOptions! platformView) -> void
 static Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.operator !=(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? left, Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? right) -> bool
 static Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.operator ==(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? left, Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? right) -> bool
 virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.<Clone>$() -> Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate!
 virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Equals(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? other) -> bool
 virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool
+
