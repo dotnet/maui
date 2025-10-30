@@ -7,7 +7,7 @@ public class Issue32275 : TestShell
 	{
 		FlyoutBehavior = FlyoutBehavior.Flyout;
 
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			Items.Add(new FlyoutItem
 			{
