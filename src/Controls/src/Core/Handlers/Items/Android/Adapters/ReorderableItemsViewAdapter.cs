@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Func<View, Context, ItemContentView> createView = null) : base(reorderableItemsView, createView)
 		{
 		}
-		internal bool IsDataTemplateSelectorUsed()
+
+		internal bool IsDataTemplateSelector()
 		{
 			if (this.ItemsView.ItemTemplate is DataTemplateSelector)
 			{
