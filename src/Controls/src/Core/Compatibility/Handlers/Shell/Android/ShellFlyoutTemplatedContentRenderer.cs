@@ -135,20 +135,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 				var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+				var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
 				var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
 				int flyoutViewBottomInset = 0;
 
 				if (FooterView is not null)
 				{
-					v.SetPadding(0, 0, 0, bottomInset);
+					v.SetPadding(leftInset, 0, 0, bottomInset);
 					flyoutViewBottomInset = 0;
 				}
                 else
                 {
 					flyoutViewBottomInset = bottomInset;
-					v.SetPadding(0, 0, 0, 0);
-                }
+					v.SetPadding(leftInset, 0, 0, 0);
+				}
 
 				if (appbarLayout.MeasuredHeight > 0)
 				{
@@ -163,7 +164,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 				{
-					bgImage.SetPadding(0, topInset, 0, bottomInset);
+					bgImage.SetPadding(leftInset, topInset, 0, bottomInset);
 				}
 
 				return WindowInsetsCompat.Consumed;
