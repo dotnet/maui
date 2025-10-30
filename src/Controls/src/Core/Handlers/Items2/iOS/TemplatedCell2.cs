@@ -95,8 +95,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (ShouldUseCachedFirstItemSize(out var itemsView))
 					{
-						// Always get the cached first item size from the CollectionView
-						var cached = CollectionViewMeasurementCache.GetFirstItemMeasuredSize(itemsView);
+						// Always get the cached first item size from the CollectionView (with template check)
+						var cached = CollectionViewMeasurementCache.GetFirstItemMeasuredSizeWithTemplateCheck(itemsView);
 						if (!cached.IsZero)
 						{
 							_measuredSize = cached;
@@ -110,6 +110,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						else
 						{
 							_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+							// Update the cache with the new measurement for this template
+							if (_measuredSize.Width > 0 && _measuredSize.Height > 0)
+							{
+								CollectionViewMeasurementCache.SetFirstItemMeasuredSizeWithTemplate(itemsView, _measuredSize);
+							}
 						}
 					}
 					else
@@ -198,10 +203,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
 			View virtualView = null;
-			if (CurrentTemplate != template)
+			bool templateChanged = CurrentTemplate != template;
+
+			if (templateChanged)
 			{
 				CurrentTemplate = template;
 				virtualView = template.CreateContent(bindingContext, itemsView) as View;
+				// Template cache invalidation is now handled automatically by the cache layer
 			}
 			else if (PlatformHandler?.VirtualView is View existingView)
 			{
