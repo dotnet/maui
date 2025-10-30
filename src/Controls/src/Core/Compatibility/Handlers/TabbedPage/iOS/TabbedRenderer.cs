@@ -470,16 +470,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 			}
 		}
-    
-    void UpdateTabBarItems()
+
+		void UpdateTabBarItems()
 		{
 			foreach (var page in Tabbed.InternalChildren)
 			{
 				UpdateTabBarItem((Page)page);
 			}
 		}
-    
-    void UpdateFlowDirection()
+		
+		void UpdateFlowDirection()
 		{
 			if (Tabbed is null)
 				return;
