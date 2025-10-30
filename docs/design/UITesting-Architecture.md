@@ -1,3 +1,7 @@
+---
+description: "Architecture decisions, CI/CD integration, and advanced topics for .NET MAUI UI testing."
+---
+
 # UI Testing Architecture and CI Integration
 
 This document covers the architecture decisions, CI/CD integration, and advanced topics for .NET MAUI UI testing.

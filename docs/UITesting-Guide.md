@@ -1,3 +1,7 @@
+---
+description: "Comprehensive guidance for creating automated UI tests for .NET MAUI using Appium and NUnit."
+---
+
 # UI Testing Guide for .NET MAUI Repository
 
 Comprehensive guidance for creating automated UI tests for .NET MAUI using Appium and NUnit. This document works in conjunction with the main Copilot Instructions.
