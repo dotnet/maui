@@ -483,6 +483,21 @@ namespace Microsoft.Maui.Controls
 
 		internal bool InMeasureMode { get; set; }
 
+		double GetConstraintOrAvailable(Flex.Item item, double constraint, double availableMeasure)
+		{
+			if (constraint != 0)
+				return constraint;
+
+			// When constraint is 0, check if this item belongs to the root FlexLayout
+			if (item.Root == _root)
+			{
+				// Use the stored measure dimension if available and not infinity
+				return double.IsPositiveInfinity(availableMeasure) ? double.PositiveInfinity : availableMeasure;
+			}
+
+			return double.PositiveInfinity;
+		}
+
 		void AddFlexItem(int index, IView child)
 		{
 			if (_root == null)
@@ -509,33 +524,8 @@ namespace Microsoft.Maui.Controls
 
 						// Instead of using infinity when constraint is 0, use the root's available dimensions
 						// This ensures that text-based controls (Labels, Buttons) on Windows can wrap properly
-						if (sizeConstraints.Width == 0)
-						{
-							var root = item.Root;
-							if (root != null && root == _root)
-							{
-								// Use the stored measure width if available and not infinity
-								sizeConstraints.Width = double.IsPositiveInfinity(_measureWidth) ? double.PositiveInfinity : _measureWidth;
-							}
-							else
-							{
-								sizeConstraints.Width = double.PositiveInfinity;
-							}
-						}
-
-						if (sizeConstraints.Height == 0)
-						{
-							var root = item.Root;
-							if (root != null && root == _root)
-							{
-								// Use the stored measure height if available and not infinity
-								sizeConstraints.Height = double.IsPositiveInfinity(_measureHeight) ? double.PositiveInfinity : _measureHeight;
-							}
-							else
-							{
-								sizeConstraints.Height = double.PositiveInfinity;
-							}
-						}
+						sizeConstraints.Width = GetConstraintOrAvailable(item, sizeConstraints.Width, _measureWidth);
+						sizeConstraints.Height = GetConstraintOrAvailable(item, sizeConstraints.Height, _measureHeight);
 
 						if (child is Image)
 						{

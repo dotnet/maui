@@ -30,8 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var label1Rect = App.WaitForElement("Label1")[0].GetRect();
 			var label2Rect = App.WaitForElement("Label2")[0].GetRect();
 
-			// Labels with Grow=1 in a row should have similar widths (within reasonable tolerance)
-			// and should both be visible (height > 0)
+			// Labels with Grow=1 in a row should both be visible with reasonable dimensions
 			Assert.Greater(label1Rect.Height, 0, "Label1 should be visible");
 			Assert.Greater(label2Rect.Height, 0, "Label2 should be visible");
 			
