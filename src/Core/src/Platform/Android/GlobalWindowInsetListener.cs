@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
 using Android.Views;
-using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
@@ -13,16 +12,16 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Platform
 {
 	/// <summary>
-	/// Registry entry for tracking CoordinatorLayout instances and their associated listeners.
-	/// Uses WeakReference to avoid memory leaks when layouts are disposed.
+	/// Registry entry for tracking view instances and their associated listeners.
+	/// Uses WeakReference to avoid memory leaks when views are disposed.
 	/// </summary>
-	internal record CoordinatorLayoutEntry(WeakReference<CoordinatorLayout> Layout, GlobalWindowInsetListener Listener);
+	internal record ViewEntry(WeakReference<object> View, GlobalWindowInsetListener Listener);
 
 	/// <summary>
 	/// Manages window insets and safe area handling for Android views.
 	/// This class can be used as a global listener (one per activity) or as local listeners
-	/// attached to specific CoordinatorLayouts for better isolation in complex navigation scenarios.
-	/// 
+	/// attached to specific views for better isolation in complex navigation scenarios.
+	///
 	/// Thread Safety: All public methods should be called on the UI thread.
 	/// Android view operations are not thread-safe and must execute on the main thread.
 	/// </summary>
@@ -33,52 +32,52 @@ namespace Microsoft.Maui.Platform
 
 		AView? _pendingView;
 
-		// Static tracking for CoordinatorLayouts that have local inset listeners.
+		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
 		// relying on a global activity-level listener.
 		// Thread Safety: All access must be on UI thread (enforced by Android's threading model).
-		static readonly List<CoordinatorLayoutEntry> _registeredCoordinatorLayouts = new();
+		static readonly List<ViewEntry> _registeredViews = new();
 
 		/// <summary>
-		/// Registers a CoordinatorLayout to use this local listener instead of the global one.
-		/// This enables per-layout inset management for better isolation in complex scenarios.
+		/// Registers a view to use this local listener instead of the global one.
+		/// This enables per-view inset management for better isolation in complex scenarios.
 		/// Must be called on UI thread.
 		/// </summary>
-		/// <param name="coordinatorLayout">The CoordinatorLayout to register</param>
-		internal void RegisterCoordinatorLayout(CoordinatorLayout coordinatorLayout)
+		/// <param name="view">The view to register</param>
+		internal void RegisterView(AView view)
 		{
 			// Clean up dead references and check for existing registration
-			for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
+			for (int i = _registeredViews.Count - 1; i >= 0; i--)
 			{
-				var entry = _registeredCoordinatorLayouts[i];
-				if (!entry.Layout.TryGetTarget(out var existingLayout))
+				var entry = _registeredViews[i];
+				if (!entry.View.TryGetTarget(out var existingView))
 				{
-					_registeredCoordinatorLayouts.RemoveAt(i);
+					_registeredViews.RemoveAt(i);
 				}
-				else if (existingLayout == coordinatorLayout)
+				else if (existingView == view)
 				{
 					// Already registered, no need to add again
 					return;
 				}
 			}
 
-			// Add this layout to the registry
-			_registeredCoordinatorLayouts.Add(new CoordinatorLayoutEntry(new WeakReference<CoordinatorLayout>(coordinatorLayout), this));
+			// Add this view to the registry
+			_registeredViews.Add(new ViewEntry(new WeakReference<object>(view), this));
 		}
 
 		/// <summary>
-		/// Unregisters a CoordinatorLayout from using this local listener.
+		/// Unregisters a view from using this local listener.
 		/// Must be called on UI thread.
 		/// </summary>
-		/// <param name="coordinatorLayout">The CoordinatorLayout to unregister</param>
-		internal static GlobalWindowInsetListener? UnregisterCoordinatorLayout(CoordinatorLayout coordinatorLayout)
+		/// <param name="view">The view to unregister</param>
+		internal static GlobalWindowInsetListener? UnregisterView(AView view)
 		{
-			for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
+			for (int i = _registeredViews.Count - 1; i >= 0; i--)
 			{
-				if (_registeredCoordinatorLayouts[i].Layout.TryGetTarget(out var layout) && layout == coordinatorLayout)
+				if (_registeredViews[i].View.TryGetTarget(out var registeredView) && registeredView == view)
 				{
-					var listener = _registeredCoordinatorLayouts[i].Listener;
-					_registeredCoordinatorLayouts.RemoveAt(i);
+					var listener = _registeredViews[i].Listener;
+					_registeredViews.RemoveAt(i);
 					return listener;
 				}
 			}
@@ -86,99 +85,81 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Finds the appropriate GlobalWindowInsetListener for a given view by checking
-		/// if it's contained within any registered CoordinatorLayout.
+		/// Finds the appropriate GlobalWindowInsetListener for a given view by walking
+		/// up the view hierarchy until a registered view is found.
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="view">The view to find a listener for</param>
-		/// <returns>The local listener if view is in a registered CoordinatorLayout, null otherwise</returns>
+		/// <returns>The local listener if view is in a registered view hierarchy, null otherwise</returns>
 		internal static GlobalWindowInsetListener? FindListenerForView(AView view)
 		{
-			// Clean up dead references and find listener
-			for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
+			// Walk up the view hierarchy looking for a registered view
+			var parent = view.Parent;
+			while (parent is not null)
 			{
-				var entry = _registeredCoordinatorLayouts[i];
-				if (!entry.Layout.TryGetTarget(out var layout))
+				if (parent is AView parentView)
 				{
-					_registeredCoordinatorLayouts.RemoveAt(i);
+					// Check if this parent view is registered
+					// Clean up dead references while searching
+					for (int i = _registeredViews.Count - 1; i >= 0; i--)
+					{
+						var entry = _registeredViews[i];
+						if (!entry.View.TryGetTarget(out var registeredView))
+						{
+							_registeredViews.RemoveAt(i);
+						}
+						else if (ReferenceEquals(registeredView, parentView))
+						{
+							return entry.Listener;
+						}
+					}
 				}
-				else if (IsViewContainedIn(view, layout))
-				{
-					return entry.Listener;
-				}
+
+				parent = parent.Parent;
 			}
 
 			return null;
 		}
 
 		/// <summary>
-		/// Checks if a view is contained within the specified layout's hierarchy.
-		/// Optimized with early termination when encountering another CoordinatorLayout.
+		/// Sets up a view to use this listener for inset handling.
+		/// This method registers the view and attaches the listener.
+		/// Must be called on UI thread.
 		/// </summary>
-		/// <param name="view">The view to check</param>
-		/// <param name="layout">The target layout</param>
-		/// <returns>True if view is a descendant of layout</returns>
-		static bool IsViewContainedIn(AView view, ViewGroup layout)
+		/// <param name="view">The view to set up</param>
+		/// <returns>The same view for method chaining</returns>
+		internal static AView SetupViewWithLocalListener(AView view, GlobalWindowInsetListener? listener = null)
 		{
-			var parent = view.Parent;
-			while (parent is not null)
-			{
-				if (parent == layout)
-				{
-					return true;
-				}
+			listener ??= new GlobalWindowInsetListener();
+			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
+			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
 
-				// Early termination: if we hit a different CoordinatorLayout,
-				// this view belongs to that layout's hierarchy instead
-				if (parent is CoordinatorLayout && parent != layout)
-				{
-					return false;
-				}
+			listener.RegisterView(view);
 
-				parent = parent.Parent;
-			}
-			return false;
+			return view;
 		}
 
 		/// <summary>
-		/// Sets up a CoordinatorLayout to use this listener for inset handling.
-		/// This method registers the layout and attaches the listener.
+		/// Removes the local listener from a view and properly cleans up.
+		/// This resets all tracked views and unregisters the view.
 		/// Must be called on UI thread.
 		/// </summary>
-		/// <param name="coordinatorLayout">The CoordinatorLayout to set up</param>
-		/// <returns>The same CoordinatorLayout for method chaining</returns>
-		internal static CoordinatorLayout SetupCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout)
+		/// <param name="view">The view to clean up</param>
+		internal static void RemoveViewWithLocalListener(AView view)
 		{
-			var listener = new GlobalWindowInsetListener();
-			ViewCompat.SetOnApplyWindowInsetsListener(coordinatorLayout, listener);
-			ViewCompat.SetWindowInsetsAnimationCallback(coordinatorLayout, listener);
+			// Remove the listener from the view
+			ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+			ViewCompat.SetWindowInsetsAnimationCallback(view, null);
 
-			listener.RegisterCoordinatorLayout(coordinatorLayout);
-
-			return coordinatorLayout;
-		}
-
-		/// <summary>
-		/// Removes the local listener from a CoordinatorLayout and properly cleans up.
-		/// This resets all tracked views and unregisters the layout.
-		/// Must be called on UI thread.
-		/// </summary>
-		/// <param name="coordinatorLayout">The CoordinatorLayout to clean up</param>
-		internal static void RemoveCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout)
-		{
-			// Remove the listener from the coordinator layout
-			ViewCompat.SetOnApplyWindowInsetsListener(coordinatorLayout, null);
-			ViewCompat.SetWindowInsetsAnimationCallback(coordinatorLayout, null);
-
-			// Reset any tracked views within this coordinator layout
-			UnregisterCoordinatorLayout(coordinatorLayout)?.ResetAppliedSafeAreas(coordinatorLayout);
+			// Reset any tracked views within this view
+			UnregisterView(view)?.ResetAppliedSafeAreas(view);
 		}
 
 		public GlobalWindowInsetListener() : base(DispatchModeStop)
 		{
 		}
 
-		public WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
+		public virtual WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 		{
 			if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
 			{
@@ -440,19 +421,19 @@ namespace Microsoft.Maui.Platform
 /// <summary>
 /// Extension methods to access WindowInsetListener instances.
 /// These methods support both the legacy global listener pattern and the new
-/// per-CoordinatorLayout local listener pattern.
+/// per-view local listener pattern.
 /// </summary>
 internal static class GlobalWindowInsetListenerExtensions
 {
 	/// <summary>
 	/// Sets the appropriate GlobalWindowInsetListener on the specified view.
-	/// This prioritizes local coordinator layout listeners over global ones.
+	/// This prioritizes local view listeners over global ones.
 	/// </summary>
 	/// <param name="view">The Android view to set the listener on</param>
 	/// <param name="context">The Android context to get the listener from</param>
 	public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
 	{
-		// Check if this view is contained within a registered CoordinatorLayout first
+		// Check if this view is contained within a registered view first
 		if (GlobalWindowInsetListener.FindListenerForView(view) is GlobalWindowInsetListener localListener)
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);

@@ -76,19 +76,21 @@ namespace Microsoft.Maui.Platform
 					   .JavaCast<CoordinatorLayout>();
 
 				// Set up the CoordinatorLayout with a local inset listener
-				if (navigationLayout != null)
+				if (navigationLayout is not null)
 				{
 					_managedCoordinatorLayout = navigationLayout;
-					navigationLayout = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(navigationLayout);
+					GlobalWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
 				}
 
 				_rootView = navigationLayout;
-			}           // if the incoming view is a Drawer Layout then the Drawer Layout
-						// will be the root view and internally handle all if its view management
-						// this is mainly used for FlyoutView
-						//
-						// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
-						// and place the content there
+			}           
+			
+			// if the incoming view is a Drawer Layout then the Drawer Layout
+			// will be the root view and internally handle all if its view management
+			// this is mainly used for FlyoutView
+			//
+			// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
+			// and place the content there
 			if (DrawerLayout == null)
 			{
 				SetContentView(view);
@@ -119,7 +121,7 @@ namespace Microsoft.Maui.Platform
 			// Clean up the coordinator layout and local listener first
 			if (_managedCoordinatorLayout is not null)
 			{
-				GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout);
+				GlobalWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
 			}
 
 			ClearPlatformParts();
