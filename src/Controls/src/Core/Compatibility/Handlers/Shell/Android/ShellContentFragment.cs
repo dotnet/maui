@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarAppearanceTracker _appearanceTracker;
 		Page _page;
 		IPlatformViewHandler _viewhandler;
-		AView _root;
+		CoordinatorLayout _root;
 		ShellPageContainer _shellPageContainer;
 		ShellContent _shellContent;
 		AToolbar _toolbar;
@@ -75,7 +75,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		bool _destroyed;
 		GlobalWindowInsetListener _localInsetListener;
-		CoordinatorLayout _managedCoordinatorLayout;
 
 		public ShellContentFragment(IShellContext shellContext, ShellContent shellContent)
 		{
@@ -139,12 +138,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
 			// Set up the CoordinatorLayout with a local inset listener
-			if (_root is CoordinatorLayout rootLayout)
-			{
-				_localInsetListener = new GlobalWindowInsetListener();
-				_managedCoordinatorLayout = rootLayout;
-				_root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(rootLayout, _localInsetListener);
-			}
+			_localInsetListener = new GlobalWindowInsetListener();
+			GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(_root, _localInsetListener);
 
 			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
@@ -192,9 +187,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
 
 			// Clean up the coordinator layout and local listener first
-			if (_managedCoordinatorLayout is not null && _localInsetListener is not null)
+			if (_root is not null && _localInsetListener is not null)
 			{
-				GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout, _localInsetListener);
+				GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_root, _localInsetListener);
 			}
 
 			(_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
@@ -229,7 +224,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContent = null;
 			_shellPageContainer = null;
 			_localInsetListener = null;
-			_managedCoordinatorLayout = null;
 		}
 
 		protected override void Dispose(bool disposing)
