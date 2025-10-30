@@ -100,10 +100,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					return null;
 				}
-                set
-                {
+				set
+				{
 					_flyoutViewRef = new WeakReference<AView>(value);
-                }
+				}
 			}
 			public AView FooterView
 			{
@@ -114,10 +114,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					return null;
 				}
-                set
-                {
+				set
+				{
 					_footerViewRef = new WeakReference<AView>(value);
-                }
+				}
 			}
 
 			public WindowsListener(ImageView bgImage)
@@ -142,13 +142,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (FooterView is not null)
 				{
-					v.SetPadding(leftInset, 0, 0, bottomInset);
+					v.SetPadding(leftInset, topInset, 0, bottomInset);
 					flyoutViewBottomInset = 0;
 				}
-                else
-                {
+				else
+				{
 					flyoutViewBottomInset = bottomInset;
-					v.SetPadding(leftInset, 0, 0, 0);
+					v.SetPadding(leftInset, topInset, 0, 0);
 				}
 
 				if (appbarLayout.MeasuredHeight > 0)
@@ -158,9 +158,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					FlyoutView?.SetPadding(0, topInset, 0, flyoutViewBottomInset);
+					FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
 					appbarLayout?.SetPadding(0, 0, 0, 0);
-                }
+				}
 
 				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 				{
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return WindowInsetsCompat.Consumed;
 			}
 		}
-		
+
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
