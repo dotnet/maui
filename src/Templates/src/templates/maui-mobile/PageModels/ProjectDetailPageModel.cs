@@ -191,11 +191,11 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	{
 		if (value)
 		{
-			SemanticScreenReader.Announce("State Expanded");
+			SemanticScreenReader.Announce("Category ComboBox, State Expanded");
 		}
 		else
 		{
-			SemanticScreenReader.Announce("State Collapsed");
+			SemanticScreenReader.Announce("Category ComboBox, State Collapsed");
 		}
 	}
 
