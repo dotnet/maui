@@ -40,11 +40,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (   parentNode is ElementNode node1
+			if (parentNode is ElementNode node1
 				&& IsResourceDictionary(node1)
 				&& !node1.Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (   parentNode is ListNode
+			else if (parentNode is ListNode
 					 && IsResourceDictionary((ElementNode)parentNode.Parent)
 					 && !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -69,11 +69,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			if (node is not ElementNode enode)
 				return false;
-			if (   parentNode is ElementNode node1
+			if (parentNode is ElementNode node1
 				&& IsResourceDictionary(node1)
 				&& !node1.Properties.ContainsKey(XmlName.xKey))
 				return true;
-			if (   parentNode is ListNode
+			if (parentNode is ListNode
 				&& IsResourceDictionary((ElementNode)parentNode.Parent)
 				&& !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;

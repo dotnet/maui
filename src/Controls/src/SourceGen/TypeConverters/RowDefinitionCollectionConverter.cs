@@ -28,7 +28,7 @@ internal class RowDefinitionCollectionConverter : ISGTypeConverter
 			return $"new {rowDefinitionCollectionType.ToFQDisplayString()}([{string.Join(", ", rowDefinitions)}])";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.RowDefinitionCollectionConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.RowDefinitionCollectionConversionFailed);
 		return "default";
 	}
 }
