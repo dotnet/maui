@@ -1,15 +1,16 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
-
-internal class PathGeometryConverter : ISGTypeConverter
+ 
+class PathGeometryConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "PathGeometry", "Microsoft.Maui.Controls.Shapes.PathGeometry" };
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))

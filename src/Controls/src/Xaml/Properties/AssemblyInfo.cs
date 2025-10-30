@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.Benchmarks")]
 [assembly: InternalsVisibleTo("MockSourceGenerator.Generated")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Build.Tasks")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.Design")]

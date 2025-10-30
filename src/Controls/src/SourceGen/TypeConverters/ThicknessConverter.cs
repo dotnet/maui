@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -7,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ThicknessConverter : ISGTypeConverter
+class ThicknessConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "Thickness", "Microsoft.Maui.Thickness" };
+	public IEnumerable<string> SupportedTypes => ["Thickness", "Microsoft.Maui.Thickness"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
