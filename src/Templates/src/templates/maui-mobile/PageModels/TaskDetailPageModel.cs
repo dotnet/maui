@@ -125,11 +125,11 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	{
 		if (value)
 		{
-			SemanticScreenReader.Announce("State Expanded");
+			SemanticScreenReader.Announce("Project ComboBox, State Expanded");
 		}
 		else
 		{
-			SemanticScreenReader.Announce("State Collapsed");
+			SemanticScreenReader.Announce("Project ComboBox, State Collapsed");
 		}
 	}
 
