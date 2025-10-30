@@ -180,7 +180,12 @@ namespace Microsoft.Maui.Platform
 			{
 				case FlyoutBehavior.Flyout:
 					IsPaneToggleButtonVisible = true;
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					// Updating the same PaneDisplayMode at the runtime causes selection related issues
+					// the selected item not updating correctly. So only set it when it's different.
+					if (PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
+					{
+						PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					}
 					break;
 				case FlyoutBehavior.Locked:
 					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
