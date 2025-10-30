@@ -39,7 +39,7 @@ public class Issue32239MainPage : ContentPage
 
 public class Issue32239Page1 : ContentPage
 {
-	private Issue32239Page2 _page2;
+	Issue32239Page2 _page2;
 
 	public Issue32239Page1()
 	{
@@ -79,7 +79,7 @@ public class Issue32239Page1 : ContentPage
 }
 public class Issue32239Page2 : ContentPage
 {
-	private readonly Label _statusLabel;
+	Label _statusLabel;
 
 	public Issue32239Page2()
 	{
@@ -124,7 +124,7 @@ public class Issue32239Page2 : ContentPage
 		};
 	}
 
-	public void UpdateStatus(string status)
+	internal void UpdateStatus(string status)
 	{
 		_statusLabel.Text = status;
 	}
