@@ -583,6 +583,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}
+			else if (showEmptyView)
+			{
+				UpdateEmptyViewHeaderAndFooterState();
+			}
 		}
 
 		internal void AdjustScrollForItemUpdate()
@@ -628,6 +632,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			RecyclerViewScrollListener.Dispose();
 			ClearOnScrollListeners();
 			RecyclerViewScrollListener = null;
+		}
+
+		void UpdateEmptyViewHeaderAndFooterState()
+		{
+			if (ItemsView is not StructuredItemsView structuredItemsView || _emptyViewAdapter is null)
+			{
+				return;
+			}
+
+			bool headerChanged = _emptyViewAdapter.Header != structuredItemsView.Header ||
+										_emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate;
+
+			bool footerChanged = _emptyViewAdapter.Footer != structuredItemsView.Footer ||
+										_emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate;
+			if (headerChanged)
+			{
+				_emptyViewAdapter.Header = structuredItemsView.Header;
+				_emptyViewAdapter.HeaderTemplate = structuredItemsView.HeaderTemplate;
+			}
+
+			if (footerChanged)
+			{
+				_emptyViewAdapter.Footer = structuredItemsView.Footer;
+				_emptyViewAdapter.FooterTemplate = structuredItemsView.FooterTemplate;
+			}
+
+			if (headerChanged || footerChanged)
+			{
+				_emptyViewAdapter.EmptyView = ItemsView?.EmptyView;
+				_emptyViewAdapter.EmptyViewTemplate = ItemsView?.EmptyViewTemplate;
+				_emptyViewAdapter.NotifyDataSetChanged();
+			}
 		}
 	}
 }
