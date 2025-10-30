@@ -35,7 +35,11 @@ namespace Microsoft.Maui.Controls.Platform
 						Color modalBkgndColor = modalPage.BackgroundColor;
 						Brush modalBackground = modalPage.Background;
 
-						if (modalBkgndColor?.Alpha < 1 || Brush.IsTransparent(modalBackground))
+						bool shouldUseOverFullScreen = !Brush.IsNullOrEmpty(modalBackground)
+							? Brush.HasTransparency(modalBackground)
+							: modalBkgndColor?.Alpha < 1;
+
+						if (shouldUseOverFullScreen)
 						{
 							result = UIKit.UIModalPresentationStyle.OverFullScreen;
 						}
