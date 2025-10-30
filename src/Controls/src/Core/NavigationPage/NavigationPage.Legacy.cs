@@ -252,7 +252,8 @@ namespace Microsoft.Maui.Controls
 			_removePageRequested?.Invoke(this, new NavigationRequestedEventArgs(page, true));
 			RemoveFromInnerChildren(page);
 
-			// Only disconnect handlers if the removed page is not visible
+			// Only disconnect handlers if the removed page is not visible.
+			// When the current page is removed, the handler is disconnected through PopAsync().
 			if (page != CurrentPage)
 			{
 				page?.DisconnectHandlers();
