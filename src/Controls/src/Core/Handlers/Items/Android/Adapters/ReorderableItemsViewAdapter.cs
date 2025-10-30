@@ -17,12 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal bool IsDataTemplateSelector()
 		{
-			if (ItemsView.ItemTemplate is DataTemplateSelector)
-			{
-				return true;
-			}
-
-			return false;
+			return ItemsView.ItemTemplate is DataTemplateSelector;
 		}
 
 		public bool OnItemMove(int fromPosition, int toPosition)
