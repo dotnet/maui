@@ -21,12 +21,12 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI using Blazor Hybrid]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst, WinUI и Tizen с помощью Blazor Hybrid]]></Val>
+            <Val><![CDATA[Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst и WinUI с использованием Blazor Hybrid]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
+            <Val><![CDATA[Целевое значение DOTNET_TFM_VALUE]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

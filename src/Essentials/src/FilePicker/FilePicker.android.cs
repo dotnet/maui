@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
+using Environment = Android.OS.Environment;
 
 namespace Microsoft.Maui.Storage
 {
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Storage
 					// The uri returned is only temporary and only lives as long as the Activity that requested it,
 					// so this means that it will always be cleaned up by the time we need it because we are using
 					// an intermediate activity.
-					bool requireExtendedAccess = !(OperatingSystem.IsAndroidVersionAtLeast(30) && Android.OS.Environment.IsExternalStorageManager);
+					bool requireExtendedAccess = !(OperatingSystem.IsAndroidVersionAtLeast(30) && Environment.IsExternalStorageManager);
 
 					if (intent.ClipData == null)
 					{

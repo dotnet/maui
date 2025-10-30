@@ -1,45 +1,35 @@
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Gh5256Entry : Entry
 {
-	public class Gh5256Entry : Entry
-	{
-		public Gh5256Entry()
-		{
-			base.Completed += (o, e) => this.Completed?.Execute(o);
-		}
-		public static readonly BindableProperty CompletedProperty =
-			BindableProperty.Create("Completed", typeof(ICommand), typeof(Gh5256Entry), default(ICommand));
+	public Gh5256Entry() => base.Completed += (o, e) => this.Completed?.Execute(o);
+	public static readonly BindableProperty CompletedProperty =
+		BindableProperty.Create(nameof(Completed), typeof(ICommand), typeof(Gh5256Entry), default(ICommand));
 
-		public new ICommand Completed
+	public new ICommand Completed
+	{
+		get => (ICommand)GetValue(CompletedProperty);
+		set => SetValue(CompletedProperty, value);
+	}
+}
+
+public partial class Gh5256 : ContentPage
+{
+	public Gh5256() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void EventOverriding([Values] XamlInflator inflator)
 		{
-			get => (ICommand)GetValue(CompletedProperty);
-			set => SetValue(CompletedProperty, value);
+			var layout = new Gh5256(inflator) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };
+			layout.entry.SendCompleted();
+			Assert.Fail();
 		}
 	}
 
-	//[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh5256 : ContentPage
-	{
-		public Gh5256() => InitializeComponent();
-		public Gh5256(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[Test]
-			public void EventOverriding([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new Gh5256(useCompiledXaml) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };
-				layout.entry.SendCompleted();
-				Assert.Fail();
-			}
-		}
-
-	}
 }

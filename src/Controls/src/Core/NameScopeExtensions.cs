@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Controls
 	{
 		public static T FindByName<T>(this Element element, string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			try
 			{
 				return (T)element.FindByName(name);
@@ -21,6 +24,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static T FindByName<T>(this INameScope namescope, string name)
-			=> (T)namescope.FindByName(name);
+		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
+			return (T)namescope.FindByName(name);
+		}
 	}
 }

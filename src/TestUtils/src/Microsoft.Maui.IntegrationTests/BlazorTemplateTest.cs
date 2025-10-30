@@ -18,28 +18,28 @@ public class BlazorTemplateTest : BaseTemplateTests
 	// And alternately testing other options for a healthy mix.
 	// additionalDotNetBuildParams is a space-separated list of additional properties to pass to .NET MAUI build
 	// Like "TrimMode=partial" for faster builds with AOT
-	[TestCase(DotNetCurrent, "Debug", "-I None --Empty", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I Server --Empty", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I Auto --Empty", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I None", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I WebAssembly", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I Server", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I Auto", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", false, "")]
-	[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity None --empty", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity WebAssembly --empty", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity Server --empty", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity Auto --empty", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity None", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity WebAssembly", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity Server", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity Auto", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity None --empty --use-program-main", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity WebAssembly --empty --use-program-main", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity Server --empty --use-program-main", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity Auto --empty --use-program-main", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity None --use-program-main", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity WebAssembly --use-program-main", false, "TrimMode=partial")]
+	[TestCase(DotNetCurrent, "Debug", "--interactivity Server --use-program-main", false, "")]
+	[TestCase(DotNetCurrent, "Release", "--interactivity Auto --use-program-main", false, "TrimMode=partial")]
 
 	// Then, some scenarios with tricky names in Debug builds only
 	// This doesn't work on Android in Release, so we skip that for now
 	// See https://github.com/dotnet/android/issues/9107
 	// [TestCase(DotNetCurrent, "Debug", "", true)]
-	// [TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
+	// [TestCase(DotNetCurrent, "Debug", "--interactivity Server --use-program-main", true)]
 	public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName, string additionalDotNetBuildParams)
 	{
 		const string templateShortName = "maui-blazor-web";
@@ -73,8 +73,6 @@ public class BlazorTemplateTest : BaseTemplateTests
 		TestContext.WriteLine($"Blazor Web app project file: {webAppProjectFile} (exists? {File.Exists(webAppProjectFile)})");
 		TestContext.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
 		TestContext.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
-
-		EnableTizen(mauiAppProjectFile);
 
 		TestContext.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
 		Assert.IsTrue(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),

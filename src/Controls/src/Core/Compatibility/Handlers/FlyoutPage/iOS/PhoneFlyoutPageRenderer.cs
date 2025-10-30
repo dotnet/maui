@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
+		[Obsolete]
 		public void SetElementSize(Size size)
 		{
-			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -124,6 +124,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidAppear(animated);
 			Page.SendAppearing();
+			if (!_intialLayoutFinished)
+			{
+				_intialLayoutFinished = true;
+				SetInitialPresented();
+			}
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -156,19 +161,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdatePresented(((FlyoutPage)Element).IsPresented);
 
 			UpdateLeftBarButton();
-		}
-
-		public override void ViewWillLayoutSubviews()
-		{
-			// Orientation doesn't seem to be set to a stable correct value until here.
-			// So, we officially process orientation here.
-			if (!_intialLayoutFinished)
-			{
-				_intialLayoutFinished = true;
-				SetInitialPresented();
-			}
-
-			base.ViewWillLayoutSubviews();
 		}
 
 		public override void ViewDidLoad()

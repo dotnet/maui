@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 28330, "Stepper allows to increment when value equals to maximum", PlatformAffected.All)]
 public class Issue28330 : TestContentPage
 {

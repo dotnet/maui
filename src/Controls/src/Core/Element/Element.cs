@@ -511,7 +511,8 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		//this is only used by XAMLC, not added to public API
+		//this is only used by Xaml inflators, to avoid crash hen VSM applies before parenting. Not added to the public API
+		//https://github.com/dotnet/maui/issues/16208
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public INameScope transientNamescope;
 
@@ -540,6 +541,9 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public object FindByName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");
@@ -549,6 +553,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void INameScope.RegisterName(string name, object scopedElement)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.RegisterName(name, scopedElement);
 		}
@@ -556,6 +563,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void INameScope.UnregisterName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.UnregisterName(name);
 		}
@@ -921,6 +931,9 @@ namespace Microsoft.Maui.Controls
 
 		internal INameScope GetNameScope()
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var element = this;
 			do
 			{
@@ -1096,6 +1109,47 @@ namespace Microsoft.Maui.Controls
 		{
 			get => HandlerProperties.GetDisconnectPolicy(this);
 			set => HandlerProperties.SetDisconnectPolicy(this, value);
+		}
+
+		internal virtual bool TrySetValue(string text)
+		{
+			if (this is Label label)
+			{
+				label.Text = text;
+				return true;
+			}
+			else if (this is Entry entry)
+			{
+				entry.Text = text;
+				return true;
+			}
+			else if (this is Editor editor)
+			{
+				editor.Text = text;
+				return true;
+			}
+			else if (this is Switch sw && bool.TryParse(text, out bool swResult))
+			{
+				sw.IsToggled = swResult;
+				return true;
+			}
+			else if (this is RadioButton rb && bool.TryParse(text, out bool rbResult))
+			{
+				rb.IsChecked = rbResult;
+				return true;
+			}
+			else if (this is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
+			{
+				tp.Time = tpResult;
+				return true;
+			}
+			else if (this is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
+			{
+				dp.Date = dpResult;
+				return true;
+			}
+
+			return false;
 		}
 
 		class TemporaryWrapper : IList<Element>

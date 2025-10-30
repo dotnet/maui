@@ -1,143 +1,124 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+
+public class Icons
 {
+	public const string CLOSE = "ic_close.png";
+}
 
-	public class Icons
+public class MockxStatic
+{
+	public static string MockStaticProperty { get { return "Property"; } }
+	public const string MockConstant = "Constant";
+	public static string MockField = "Field";
+	public static string MockFieldRef = Icons.CLOSE;
+	public string InstanceProperty { get { return "InstanceProperty"; } }
+	public static readonly Color BackgroundColor = Colors.Fuchsia;
+
+	public class Nested
 	{
-		public const string CLOSE = "ic_close.png";
+		public static string Foo = "FOO";
 	}
+}
 
-	public class MockxStatic
+public enum MockEnum : long
+{
+	First,
+	Second,
+	Third,
+}
+
+public partial class XStatic : ContentPage
+{
+	public XStatic() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public static string MockStaticProperty { get { return "Property"; } }
-		public const string MockConstant = "Constant";
-		public static string MockField = "Field";
-		public static string MockFieldRef = Icons.CLOSE;
-		public string InstanceProperty { get { return "InstanceProperty"; } }
-		public static readonly Color BackgroundColor = Colors.Fuchsia;
+		//{x:Static Member=prefix:typeName.staticMemberName}
+		//{x:Static prefix:typeName.staticMemberName}
 
-		public class Nested
-		{
-			public static string Foo = "FOO";
-		}
-	}
+		//The code entity that is referenced must be one of the following:
+		// - A constant
+		// - A static property
+		// - A field
+		// - An enumeration value
+		// All other cases should throw
 
-	public enum MockEnum : long
-	{
-		First,
-		Second,
-		Third,
-	}
-
-	public partial class XStatic : ContentPage
-	{
-		public XStatic()
+		[Test]
+		public void StaticProperty([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-		public XStatic(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("Property", layout.staticproperty.Text);
 		}
 
-		[TestFixture]
-		public class Tests
+		[Test]
+		public void MemberOptional([Values] XamlInflator inflator)
 		{
-			//{x:Static Member=prefix:typeName.staticMemberName}
-			//{x:Static prefix:typeName.staticMemberName}
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("Property", layout.memberisoptional.Text);
+		}
 
-			//The code entity that is referenced must be one of the following:
-			// - A constant
-			// - A static property
-			// - A field
-			// - An enumeration value
-			// All other cases should throw
+		[Test]
+		public void FieldColor([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual(Colors.Fuchsia, layout.color.TextColor);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void StaticProperty(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Property", layout.staticproperty.Text);
-			}
+		[Test]
+		public void Constant([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("Constant", layout.constant.Text);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void MemberOptional(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Property", layout.memberisoptional.Text);
-			}
+		//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
+		[Test]
+		public void ConstantInARemoteAssembly([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("CompatibilityGalleryControls", layout.remoteConstant.Text);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void FieldColor(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(Colors.Fuchsia, layout.color.TextColor);
-			}
+		[Test]
+		public void Field([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("Field", layout.field.Text);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Constant(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Constant", layout.constant.Text);
-			}
+		[Test]
+		public void Enum([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual(ScrollOrientation.Both, layout.enuM.Orientation);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
-			public void ConstantInARemoteAssembly(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("CompatibilityGalleryControls", layout.remoteConstant.Text);
-			}
+		[Test]
+		public void FieldRef([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("ic_close.png", layout.field2.Text);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Field(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("Field", layout.field.Text);
-			}
+		// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
+		[Test]
+		public void xStaticAndImplicitOperators([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Enum(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(ScrollOrientation.Both, layout.enuM.Orientation);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void FieldRef(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("ic_close.png", layout.field2.Text);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
-			public void xStaticAndImplicitOperators(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			// https://bugzilla.xamarin.com/show_bug.cgi?id=55096
-			public void xStaticAndNestedClasses(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(MockxStatic.Nested.Foo, layout.nestedField.Text);
-			}
+		// https://bugzilla.xamarin.com/show_bug.cgi?id=55096
+		[Test]
+		public void xStaticAndNestedClasses([Values] XamlInflator inflator)
+		{
+			var layout = new XStatic(inflator);
+			Assert.AreEqual(MockxStatic.Nested.Foo, layout.nestedField.Text);
 		}
 	}
 }

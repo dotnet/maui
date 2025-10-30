@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29372, "CarouselView ItemsLayout Not Updating at Runtime", PlatformAffected.All)]
 public partial class Issue29372 : ContentPage
 {

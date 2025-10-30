@@ -65,4 +65,7 @@
                VerticalAlignment="Center" />
   </DataTemplate>
 
+    <Style TargetType="TextBlock">
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
+    </Style>
 </ResourceDictionary>

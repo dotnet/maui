@@ -9,11 +9,11 @@ namespace Microsoft.Maui.Controls.Xaml
 		public HydrationContext()
 		{
 			Values = new Dictionary<INode, object>();
-			Types = new Dictionary<IElementNode, Type>();
+			Types = new Dictionary<ElementNode, Type>();
 		}
 
 		public Dictionary<INode, object> Values { get; }
-		public Dictionary<IElementNode, Type> Types { get; }
+		public Dictionary<ElementNode, Type> Types { get; }
 		public HydrationContext ParentContext { get; set; }
 		public Action<Exception> ExceptionHandler { get; set; }
 		public object RootElement { get; set; }

@@ -46,13 +46,18 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				// for that, we inspect an arbitrary custom HTML element attribute to see if we can find it. If we can find it, then surely
 				// the DOM content is loaded, so we can continue with the test.
 
-				await Retry(async () =>
-				{
-					var testHtmlLoadedAttributeValue = await wv2.CoreWebView2.ExecuteScriptAsync("(document.head.attributes['testhtmlloaded']?.value === 'true')");
+				await Retry(
+					async () =>
+					{
+						var testHtmlLoadedAttributeValue = await wv2.CoreWebView2.ExecuteScriptAsync("(document.head.attributes['testhtmlloaded']?.value === 'true')");
 
-					// If the event didn't fire, AND we couldn't find the custom HTML element attribute, then the test content didn't load
-					return testHtmlLoadedAttributeValue == "true";
-				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete.")));
+						// If the event didn't fire, AND we couldn't find the custom HTML element attribute, then the test content didn't load
+						return testHtmlLoadedAttributeValue == "true";
+					},
+					timeoutInMS =>
+					{
+						return Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete."));
+					});
 			}
 			return;
 		}
@@ -60,17 +65,6 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		public static async Task<string> ExecuteScriptAsync(WebView2 webView2, string script)
 		{
 			return await webView2.CoreWebView2.ExecuteScriptAsync(javaScript: script);
-		}
-
-		public static async Task WaitForControlDiv(WebView2 webView2, string controlValueToWaitFor)
-		{
-			var quotedExpectedValue = "\"" + controlValueToWaitFor + "\"";
-
-			await Retry(async () =>
-			{
-				var controlValue = await ExecuteScriptAsync(webView2, "document.getElementById('controlDiv').innerText");
-				return controlValue == quotedExpectedValue;
-			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'.")));
 		}
 	}
 }

@@ -10,51 +10,52 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui25608_2
 {
-	public Maui25608_2()
-	{
-		InitializeComponent();
-	}
+	public Maui25608_2() => InitializeComponent();
 
-	public Maui25608_2(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
-		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
+		bool enableDiagnosticsInitialState;
 
 		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
+			BindingDiagnostics.BindingFailed += BindingFailed;
+			bindingFailureReported = false;
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			if (_bindingFailureHandler is not null)
-			{
-				BindingDiagnostics.BindingFailed -= _bindingFailureHandler;
-			}
+			BindingDiagnostics.BindingFailed -= BindingFailed;
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void TestInvalidBindingWithRelativeSource([Values(false, true)] bool useCompiledXaml)
-		{
-			bool bindingFailureReported = false;
-			_bindingFailureHandler = (sender, args) =>
-			{
-				bindingFailureReported = true;
-				Assert.AreEqual("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
-			};
-			BindingDiagnostics.BindingFailed += _bindingFailureHandler;
+		bool bindingFailureReported = false;
 
-			var page = new Maui25608_2(useCompiledXaml);
+		void BindingFailed(object sender, BindingBaseErrorEventArgs args)
+		{
+			bindingFailureReported = true;
+			Assert.AreEqual("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
+		}
+
+		[Test]
+		public void TestInvalidBindingWithRelativeSource([Values] XamlInflator inflator)
+		{
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui25608_2));
+
+				Assert.Ignore("not testing for sourcegen, it crashes the test runner");
+			}
+
+
+			var page = new Maui25608_2(inflator);
 
 			Assert.AreNotEqual(25, page.Image.HeightRequest);
 			Assert.IsTrue(bindingFailureReported);

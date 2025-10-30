@@ -70,14 +70,14 @@ public partial class TimePickerControlMainPage : ContentPage
 		{
 			if (e.PropertyName == nameof(TimePicker.Time))
 			{
-				DisplayCultureSpecificTime(timePicker.Time, _viewModel.Culture);
+				DisplayCultureSpecificTime(timePicker.Time ?? TimeSpan.Zero, _viewModel.Culture);
 			}
 		};
 		_viewModel.PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == nameof(TimePickerViewModel.Culture))
 			{
-				DisplayCultureSpecificTime(timePicker.Time, _viewModel.Culture);
+				DisplayCultureSpecificTime(timePicker.Time ?? TimeSpan.Zero, _viewModel.Culture);
 			}
 		};
 

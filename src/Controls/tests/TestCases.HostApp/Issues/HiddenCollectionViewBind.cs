@@ -8,6 +8,7 @@
 
 		public HiddenCollectionViewBind()
 		{
+			this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			var cv = new CollectionView
 			{
 				IsVisible = false,

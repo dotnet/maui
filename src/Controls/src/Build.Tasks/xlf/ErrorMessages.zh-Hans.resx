@@ -168,7 +168,7 @@
     <comment>0 is type name</comment>
   </data>
   <data name="ContentPropertyAttributeMissing" xml:space="preserve">
-    <value>无法设置“{0}”的内容，因为它没有 [ContentProperty] 属性。</value>
+    <value>无法设置“{0}”的内容，因为它没有 [ContentProperty] 特性。</value>
     <comment>0 is type name</comment>
   </data>
   <data name="Conversion" xml:space="preserve">
@@ -180,7 +180,7 @@
     <comment>0 is enum value</comment>
   </data>
   <data name="InvalidXaml" xml:space="preserve">
-    <value>Xaml“{0}”无效。</value>
+    <value>XAML“{0}”无效。</value>
     <comment>0 is the invalid xaml snippet</comment>
   </data>
   <data name="MarkupNotClosed" xml:space="preserve">
@@ -206,7 +206,7 @@
     <comment>0 is the duplicated key</comment>
   </data>
   <data name="ObsoleteProperty" xml:space="preserve">
-    <value>属性、属性资源库或 BindableProperty "{0}" 已弃用。</value>
+    <value>属性、属性资源库或 BindableProperty“{0}”已弃用。</value>
   </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>“{1}”上缺少强制属性“{0}”。</value>
@@ -221,7 +221,7 @@
     <comment>0 is key name</comment>
   </data>
   <data name="ResourceDictMissingKey" xml:space="preserve">
-    <value>ResourceDictionary 中的资源需具有 x:Key 属性。</value>
+    <value>ResourceDictionary 中的资源需具有 x:Key 特性。</value>
   </data>
   <data name="ResourceMissing" xml:space="preserve">
     <value>找不到资源“{0}”。</value>
@@ -234,13 +234,13 @@
     <value>样式表需要源或内容。</value>
   </data>
   <data name="StyleSheetSourceNotALiteral" xml:space="preserve">
-    <value>源属性不是字符串文本。</value>
+    <value>源属性不是字符串字面量。</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
     <value>样式表不能同时具有源和内容。</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
-    <value>样式属性或内容不是字符串文本。</value>
+    <value>样式属性或内容不是字符串字面量。</value>
   </data>
   <data name="TypeResolution" xml:space="preserve">
     <value>无法解析类型“{0}”。</value>
@@ -250,7 +250,7 @@
     <value>x:DataType 需要字符串字面量、{{x:Type}} 标记或 {{x:Null}}。</value>
   </data>
   <data name="UnattributedMarkupType" xml:space="preserve">
-    <value>如果标记扩展 "{0}" 不需要任何服务，请考虑使用 [RequireService] 或 [AcceptEmptyServiceProvider] 来标注它。</value>
+    <value>如果标记扩展“{0}”不需要任何服务，请考虑使用 [RequireService] 或 [AcceptEmptyServiceProvider] 来标注它。</value>
     <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">

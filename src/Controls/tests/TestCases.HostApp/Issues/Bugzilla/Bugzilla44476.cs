@@ -13,6 +13,7 @@
 			public MainPage()
 			{
 				BackgroundColor = Colors.Maroon;
+				SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 #pragma warning disable CS0618 // Type or member is obsolete
 				Navigation.PushAsync(new FlyoutPage
 				{

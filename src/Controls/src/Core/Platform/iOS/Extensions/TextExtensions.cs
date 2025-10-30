@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// a different length that the one that has been set in the control.
 			var newTextLength = !string.IsNullOrWhiteSpace(inputView.Text) ? textInput.TextInRange(textRange)?.Length ?? 0 : 0;
 
-			var newText = TextTransformUtilites.GetTransformedText(
+			var newText = TextTransformUtilities.GetTransformedText(
 				inputView?.Text,
 				textInput.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
 				);

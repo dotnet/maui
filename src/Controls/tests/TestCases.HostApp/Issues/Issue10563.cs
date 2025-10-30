@@ -67,7 +67,7 @@
 				Text = "Issue 10563"
 			};
 
-			swipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "SwipeItem Invoked", "Ok"); };
+			swipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "SwipeItem Invoked", "Ok"); };
 
 			var swipeItems = new SwipeItems { swipeItem };
 

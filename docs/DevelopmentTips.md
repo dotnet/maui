@@ -21,6 +21,16 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 The below parameters can be used with the `dotnet cake` command in the root of your locally cloned .NET MAUI repository folder.
 
+#### PublicAPI Management
+`--target=publicapi`
+- Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)
+- Use this when you've added new public APIs and are getting build errors about missing API declarations
+- Automatically skips Windows-specific files when not running on Windows, and always skips Tizen files
+
+```bash
+dotnet cake --target=publicapi
+```
+
 #### Clean
 `--clean`
 - Occasionally, when switching branches or syncing with the main branch, incremental builds may stop working. A common fix for this is to use git clean -xdf to delete all locally cached build information. However, the issue with git clean -xdf is that it will also wipe out any uncommitted changes. Using --clean to recursively delete the local obj/bin folders should hopefully resolve the issue while preserving your changes.
@@ -45,7 +55,7 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
-This method uses the arcade build infraestructure. For more information you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
+This method uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
 
 ```
 ./build.sh -restore -pack
@@ -206,15 +216,17 @@ Check available queues at [helix.dot.net](https://helix.dot.net). The current co
 
 ### Running Device Tests Locally
 
-#### Step 1: Build Build Tasks
+The following commands assume you are on the root of the maui repository.
+
+#### Step 1: Build MSBuild Tasks
 First, restore tools and build the required MSBuild tasks:
 
 ```bash
 # Restore dotnet tools
 dotnet tool restore
 
-# Build the Build tasks (required)
-./build.sh -restore -build -configuration Release -projects './Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog -warnAsError false
+# Build the MSBuild tasks (required)
+./build.sh -restore -build -configuration Release -projects $(PWD)/Microsoft.Maui.BuildTasks.slnf /bl:BuildBuildTasks.binlog -warnAsError false
 ```
 
 #### Step 2: Build Device Tests
@@ -228,15 +240,26 @@ Build the device test projects:
 #### Step 3: Send to Helix
 Submit the tests to Helix for execution:
 
+We need to set some variables. More info about Helix can be found [here](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md) 
+
+
+```bash
+export BUILD_REASON=pr
+export BUILD_REPOSITORY_NAME=maui
+export BUILD_SOURCEBRANCH=main
+export SYSTEM_TEAMPROJECT=dnceng
+export SYSTEM_ACCESSTOKEN='' 
+```
+
 ```bash
 # Send to Helix for Android
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix.binlog -verbosity:diag
+./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix_android.binlog -verbosity:diag
 
 # Send to Helix for iOS  
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=ios /bl:sendhelix.binlog -verbosity:diag
+./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=ios /bl:sendhelix_ios.binlog -verbosity:diag
 
 # Send to Helix for Mac Catalyst
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=maccatalyst /bl:sendhelix.binlog -verbosity:diag
+./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=maccatalyst /bl:sendhelix_catalyst.binlog -verbosity:diag
 ```
 
 ### Windows Commands
@@ -244,7 +267,15 @@ Submit the tests to Helix for execution:
 For Windows development, use the corresponding `.cmd` files:
 
 ```cmd
-REM Build Build tasks
+set BUILD_REASON=pr
+set BUILD_REPOSITORY_NAME=maui
+set BUILD_SOURCEBRANCH=main
+set SYSTEM_TEAMPROJECT=dnceng
+set SYSTEM_ACCESSTOKEN=
+```
+
+```cmd
+REM Build MSBuild tasks
 .\build.cmd -restore -build -configuration Release -projects ".\Microsoft.Maui.BuildTasks.slnf" /bl:BuildBuildTasks.binlog -warnAsError false
 
 REM Build device tests
@@ -268,7 +299,7 @@ The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
 
 #### Common Issues
 
-1. **Build failures**: Ensure you've built the BuildTasks first
+1. **Build failures**: Ensure you've built the MSBuild tasks first
 2. **Missing devices**: Check queue availability at [helix.dot.net](https://helix.dot.net)  
 3. **Authentication**: For CI scenarios, ensure proper Azure DevOps access tokens
 4. **Timeouts**: Tests have generous timeouts but may need adjustment for complex scenarios

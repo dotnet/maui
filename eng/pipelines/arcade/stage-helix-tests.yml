@@ -15,9 +15,21 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
 - name: runAsPublic
   type: boolean
   default: true
+- name: helixInternal
+  type: string
+  default: ''
+- name: HelixAccessToken
+  type: string
+  default: ''
 - name: creator
   type: string
   default: 'maui'
@@ -35,20 +47,9 @@ parameters:
   default:
   - Debug
   - Release
-- name: buildPlatforms
+- name: helixPool
   type: object
-  default:
-  - name: NetCore-Public
-    image: 1es-windows-2022
-    os: Windows
-    buildScript: $(_helixScript)
-    sln: $(buildProjects)
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
-    os: macOS
-    buildScript: $(_helixScriptMacOS)
-    sln: $(buildProjectsMac)
-
+ 
 stages:
 - stage: HelixTests
   displayName: Run Helix Unit Tests
@@ -58,13 +59,10 @@ stages:
     - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml@self', '/eng/common/templates-official/jobs/jobs.yml@self') }}
       parameters:
         helixRepo: dotnet/maui
-        pool:
-          name: NetCore-Public
-          vmImage: 1es-windows-2022
-          os: windows
-        enableMicrobuild: true
+        pool: ${{ parameters.helixPool }}
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
         enablePublishUsingPipelines: true
-        enablePublishBuildAssets: true
+        enablePublishBuildAssets: ${{ parameters.publishAssets }}
         enableTelemetry: true
         enableSourceBuild: ${{ parameters.enableSourceBuild }}
         enableSourceIndex: ${{ parameters.enableSourceIndex }}
@@ -89,7 +87,9 @@ stages:
           - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)
             displayName: 🛠️ Build BuildTasks
 
-          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
+          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
             displayName: Run Helix Tests
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) # We need to set this env var to publish helix results to Azure Dev Ops
+              HelixAccessToken: ${{ parameters.HelixAccessToken }}
+    

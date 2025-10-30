@@ -1,18 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
-	class SetNamescopesAndRegisterNamesVisitor : IXamlNodeVisitor
+	class SetNamescopesAndRegisterNamesVisitor(ILContext context) : IXamlNodeVisitor
 	{
-		public SetNamescopesAndRegisterNamesVisitor(ILContext context) => Context = context;
-
-		ILContext Context { get; }
+		ILContext Context { get; } = context;
 
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.TopDown;
 		public bool StopOnDataTemplate => true;
@@ -32,8 +28,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			Context.Scopes[node] = Context.Scopes[parentNode];
 			if (!IsXNameProperty(node, parentNode))
 				return;
-			RegisterName((string)node.Value, Context.Scopes[node].Item1, Context.Scopes[node].Item2, Context.Variables[(IElementNode)parentNode], node);
-			SetStyleId((string)node.Value, Context.Variables[(IElementNode)parentNode]);
+			RegisterName((string)node.Value, Context.Scopes[node].Item1, Context.Scopes[node].Item2, Context.Variables[(ElementNode)parentNode], node);
+			SetStyleId((string)node.Value, Context.Variables[(ElementNode)parentNode]);
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)
@@ -49,7 +45,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node))
 			{
 				namescopeVarDef = CreateNamescope();
-				namesInNamescope = new List<string>();
+				namesInNamescope = [];
 				setNameScope = true;
 			}
 			else
@@ -89,14 +85,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		static bool IsDataTemplate(INode node, INode parentNode)
-			=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent) && createContent == node;
+			=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent) && createContent == node;
 
 		static bool IsStyle(INode node, INode parentNode) => parentNode is ElementNode pnode && pnode.XmlType.Name == "Style";
 
 		static bool IsVisualStateGroupList(ElementNode node) => node != null && node.XmlType.Name == "VisualStateGroup" && node.Parent is IListNode;
 
 		static bool IsXNameProperty(ValueNode node, INode parentNode)
-			=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
+			=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
 
 		VariableDefinition GetOrCreateNameScope(ElementNode node)
 		{
@@ -111,7 +107,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context.IL.Append(Context.Variables[node].LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, namescoperef), module));
 				Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"),
 																		   methodName: "GetNameScope",
-																		   parameterTypes: new[] { namescoperef },
+																		   parameterTypes: [namescoperef],
 																		   isStatic: true));
 				Context.IL.Emit(OpCodes.Dup);
 				Context.IL.Emit(OpCodes.Brtrue, stloc);

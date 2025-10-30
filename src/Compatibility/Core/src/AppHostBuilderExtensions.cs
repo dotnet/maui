@@ -57,6 +57,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			Controls.Hosting.CompatibilityCheck.ResetCompatibilityCheck();
 		}
 
+		[Obsolete("The compatibility functionality is deprecated. This will be removed in the future, please make sure to migrate to handlers. " +
+		"You might already not be using any of the compatibility functionality anymore, in that case please remove this call, and the reference " +
+		"to the Compatibility NuGet package, as it will introduce unnecessary overhead that negatively impacts performance. " +
+		"Learn how to transition off of the Compatibility packages on Microsoft Learn: https://aka.ms/maui/renderer-to-handler")]
 		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
 			Controls.Hosting.CompatibilityCheck.UseCompatibility();

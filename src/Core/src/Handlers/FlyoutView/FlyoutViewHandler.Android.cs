@@ -4,6 +4,7 @@ using Android.App.Roles;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Lifecycle;
@@ -30,6 +31,8 @@ namespace Microsoft.Maui.Handlers
 
 			_navigationRoot = li.Inflate(Resource.Layout.navigationlayout, null)
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
+
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_navigationRoot, this.Context);
 
 			_navigationRoot.Id = View.GenerateViewId();
 			return dl;
@@ -243,8 +246,6 @@ namespace Microsoft.Maui.Handlers
 				// recognizers inside the flyout won't fire
 				DrawerLayout.AddView(flyoutView, layoutParameters);
 			}
-
-			DrawerLayout.CloseDrawer(flyoutView);
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);

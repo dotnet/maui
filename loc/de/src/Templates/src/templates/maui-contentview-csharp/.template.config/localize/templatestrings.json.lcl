@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A view for displaying content using C#. This is very suitable for creating your own custom and reusable controls.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Eine Ansicht für die Anzeige von Inhalten mit C#. Diese eignet sich sehr zum Erstellen Ihrer eigenen benutzerdefinierten und wiederverwendbaren Steuerelemente.]]></Val>
+            <Val><![CDATA[Eine Ansicht für die Anzeige von Inhalten mit C#. Dies eignet sich sehr zum Erstellen eigener benutzerdefinierter und wiederverwendbarer Steuerelemente.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI ContentView (C#)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

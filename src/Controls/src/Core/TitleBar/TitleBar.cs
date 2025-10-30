@@ -363,7 +363,9 @@ namespace Microsoft.Maui.Controls
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
 				},
+#pragma warning disable CS0618 // Type or member is obsolete
 				IgnoreSafeArea = true,
+#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			contentGrid.SetBinding(
