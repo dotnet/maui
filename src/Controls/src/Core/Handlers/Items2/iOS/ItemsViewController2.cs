@@ -292,8 +292,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				itemsView.UpdateFlowDirection(ItemsView);
 
-				// Ensure the CollectionView itself gets the flow direction update for proper layout behavior
-				CollectionView?.UpdateFlowDirection(ItemsView);
+				// For horizontal orientation, we need to update the CollectionView's flow direction
+				// to ensure proper scroll behavior and layout direction (RTL scrolls right-to-left)
+				// Vertical orientation doesn't require this as scroll direction remains top-to-bottom
+				if (IsHorizontal)
+				{
+					CollectionView?.UpdateFlowDirection(ItemsView);
+				}
 				
 				if (ItemsView.ItemTemplate is not null)
 				{
