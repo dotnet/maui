@@ -43,6 +43,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
 			Controller?.DisposeItemsSource();
+
+			// Help with cache cleanup when handler disconnects
+			if (ItemsView is CollectionView cv)
+			{
+				CollectionViewMeasurementCache.OnHandlerDisconnected(cv);
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 
@@ -77,6 +84,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			MapItemsUpdatingScrollMode(handler, itemsView);
+
+			// Clear cached measurements when items source changes
+			if (itemsView is CollectionView cv)
+			{
+				CollectionViewMeasurementCache.OnHandlerDisconnected(cv);
+			}
+
 			handler.Controller?.UpdateItemsSource();
 		}
 
