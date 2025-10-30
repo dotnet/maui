@@ -71,16 +71,18 @@ namespace Microsoft.Maui.Platform
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="coordinatorLayout">The CoordinatorLayout to unregister</param>
-		internal static void UnregisterCoordinatorLayout(CoordinatorLayout coordinatorLayout)
+		internal static GlobalWindowInsetListener? UnregisterCoordinatorLayout(CoordinatorLayout coordinatorLayout)
 		{
 			for (int i = _registeredCoordinatorLayouts.Count - 1; i >= 0; i--)
 			{
 				if (_registeredCoordinatorLayouts[i].Layout.TryGetTarget(out var layout) && layout == coordinatorLayout)
 				{
+					var listener = _registeredCoordinatorLayouts[i].Listener;
 					_registeredCoordinatorLayouts.RemoveAt(i);
-					break;
+					return listener;
 				}
 			}
+			return null;
 		}
 
 		/// <summary>
@@ -144,10 +146,10 @@ namespace Microsoft.Maui.Platform
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="coordinatorLayout">The CoordinatorLayout to set up</param>
-		/// <param name="listener">The listener to attach</param>
 		/// <returns>The same CoordinatorLayout for method chaining</returns>
-		internal static CoordinatorLayout SetupCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout, GlobalWindowInsetListener listener)
+		internal static CoordinatorLayout SetupCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout)
 		{
+			var listener = new GlobalWindowInsetListener();
 			ViewCompat.SetOnApplyWindowInsetsListener(coordinatorLayout, listener);
 			ViewCompat.SetWindowInsetsAnimationCallback(coordinatorLayout, listener);
 
@@ -162,18 +164,14 @@ namespace Microsoft.Maui.Platform
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="coordinatorLayout">The CoordinatorLayout to clean up</param>
-		/// <param name="listener">The listener to remove</param>
-		internal static void RemoveCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout, GlobalWindowInsetListener listener)
+		internal static void RemoveCoordinatorLayoutWithLocalListener(CoordinatorLayout coordinatorLayout)
 		{
 			// Remove the listener from the coordinator layout
 			ViewCompat.SetOnApplyWindowInsetsListener(coordinatorLayout, null);
 			ViewCompat.SetWindowInsetsAnimationCallback(coordinatorLayout, null);
 
-			// Unregister from the registry
-			UnregisterCoordinatorLayout(coordinatorLayout);
-
 			// Reset any tracked views within this coordinator layout
-			listener.ResetAppliedSafeAreas(coordinatorLayout);
+			UnregisterCoordinatorLayout(coordinatorLayout)?.ResetAppliedSafeAreas(coordinatorLayout);
 		}
 
 		public GlobalWindowInsetListener() : base(DispatchModeStop)
