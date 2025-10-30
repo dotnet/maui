@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion IOnClickListener
 
 		readonly IShellContext _shellContext;
-		AView _rootView;
+		CoordinatorLayout _rootView;
 		bool _selecting;
 		TabLayout _tablayout;
 		IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
@@ -78,7 +78,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ViewPager2 _viewPager;
 		bool _disposed;
 		GlobalWindowInsetListener _localInsetListener;
-		CoordinatorLayout _managedCoordinatorLayout;
 		IShellController ShellController => _shellContext.Shell;
 		public event EventHandler AnimationFinished;
 		Fragment IShellObservableFragment.Fragment => this;
@@ -108,8 +107,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// Set up the CoordinatorLayout with a local inset listener
 			_localInsetListener = new GlobalWindowInsetListener();
-			_managedCoordinatorLayout = root;
-			root = GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, _localInsetListener);
+			GlobalWindowInsetListener.SetupCoordinatorLayoutWithLocalListener(root, _localInsetListener);
 
 			int actionBarHeight = context.GetActionBarHeight();
 
@@ -204,9 +202,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_rootView != null)
 			{
 				// Clean up the coordinator layout and local listener first
-				if (_managedCoordinatorLayout is not null && _localInsetListener is not null)
+				if (_rootView is not null && _localInsetListener is not null)
 				{
-					GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_managedCoordinatorLayout, _localInsetListener);
+					GlobalWindowInsetListener.RemoveCoordinatorLayoutWithLocalListener(_rootView, _localInsetListener);
 				}
 
 				UnhookEvents();
@@ -236,7 +234,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_viewPager = null;
 			_rootView = null;
 			_localInsetListener = null;
-			_managedCoordinatorLayout = null;
 
 		}
 
