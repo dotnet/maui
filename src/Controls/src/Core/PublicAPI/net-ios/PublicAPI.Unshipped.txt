@@ -38,6 +38,9 @@ Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.Controls.ContentPresenter.Padding.set -> void
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~Microsoft.Maui.Controls.ContentPresenter.RaiseChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.UpdateChildrenLayout() -> void
 Microsoft.Maui.Controls.ContentView.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
