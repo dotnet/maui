@@ -94,7 +94,7 @@ stages:
           skipAndroidCreateAvds: true
           skipProvisioning: true
           skipXcode: false
-          skipSimulatorSetup: true
+          skipSimulatorSetup: false
   # Just use the old way for Windows Device Tests
   - template: common/device-tests.yml
     parameters:
