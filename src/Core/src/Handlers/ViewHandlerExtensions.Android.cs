@@ -88,13 +88,68 @@ namespace Microsoft.Maui
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			var heightSpec = context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			var (widthSpec, widthDp, widthExact) = context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var (heightSpec, heightDp, heightExact) = context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
-			var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
-			var measuredWidth = (int)(packed >> 32);
-			var measuredHeight = (int)(packed & 0xffffffffL);
+			if (platformView is PlatformViewGroup platformViewGroup)
+			{
+				return GetDesiredSizeFromPlatformViewGroup(context, platformViewGroup, widthSpec, heightSpec, widthDp, heightDp, widthExact, heightExact);
+			}
+			
+			var packedValue = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
 
+			var measuredWidth = (int)(packedValue >> 32);
+			var measuredHeight = (int)(packedValue & 0xffffffffL);
+			// Convert back to xplat sizes for the return value
+			return context.FromPixels(measuredWidth, measuredHeight);
+		}
+
+		static Size GetDesiredSizeFromPlatformViewGroup(Context context, PlatformViewGroup platformViewGroup, int widthSpec, int heightSpec, double widthDp, double heightDp,
+			bool widthExact, bool heightExact)
+		{
+			int measuredWidth;
+			int measuredHeight;
+
+			// If it's a WrapperView we need to check the wrapped view instead
+			var unwrappedView = ((platformViewGroup as WrapperView)?.WrappedView ?? platformViewGroup) as PlatformViewGroup;
+			var crossPlatformLayout = (unwrappedView as ICrossPlatformLayoutBacking)?.CrossPlatformLayout;
+
+			// This instance of PlatformViewGroup is not backed by a crossPlatformLayout, so we need to go through the default measure method
+			if (crossPlatformLayout is null)
+			{
+				var nativePacked = PlatformInterop.MeasureAndGetWidthAndHeight(platformViewGroup, widthSpec, heightSpec);
+
+				var nativeWidth = (int)(nativePacked >> 32);
+				var nativeHeight = (int)(nativePacked & 0xffffffffL);
+				// Convert back to xplat sizes for the return value
+				return context.FromPixels(nativeWidth, nativeHeight);
+			}
+				
+			var packed = platformViewGroup.MeasureAndGetWidthAndHeight(widthSpec, heightSpec);
+			if (packed != PlatformViewGroup.NeedsMeasure)
+			{
+				measuredWidth = (int)(packed >> 32);
+				measuredHeight = (int)(packed & 0xffffffffL);
+				// Convert back to xplat sizes for the return value
+				return context.FromPixels(measuredWidth, measuredHeight);
+			}
+				
+			var measure = crossPlatformLayout.CrossPlatformMeasure(widthDp, heightDp);
+				
+			// If the measure spec was exact, we should return the explicit size value, even if the content
+			// measure came out to a different size
+			var measuredWidthDp = widthExact ? widthDp : measure.Width;
+			var measuredHeightDp = heightExact ? heightDp : measure.Height;
+				
+			measuredWidth = (int)context.ToPixels(measuredWidthDp);
+			measuredHeight = (int)context.ToPixels(measuredHeightDp);
+
+			// Minimum values win over everything
+			measuredWidth = Math.Max(platformViewGroup.MinimumWidth, measuredWidth);
+			measuredHeight = Math.Max(platformViewGroup.MinimumHeight, measuredHeight);
+			
+			platformViewGroup.OverrideMeasuredDimension(measuredWidth, measuredHeight);
+			
 			// Convert back to xplat sizes for the return value
 			return context.FromPixels(measuredWidth, measuredHeight);
 		}

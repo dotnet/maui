@@ -16,6 +16,10 @@
   <attr path="//class[@name='PlatformAppCompatTextView']/method" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformAppCompatTextView']/constructor" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformWrapperView']/method[@name='updateShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformViewGroup']/method[@name='measureAndGetWidthAndHeight']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformViewGroup']/method[@name='overrideMeasuredDimension']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformViewGroup']/method[@name='doMeasure']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformViewGroup']/field[@name='NEEDS_MEASURE']" name="visibility">internal</attr>
 
   <remove-node path="//package[@name='com.bumptech.glide']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide']" />
