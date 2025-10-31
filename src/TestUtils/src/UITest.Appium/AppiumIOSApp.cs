@@ -89,7 +89,13 @@ namespace UITest.Appium
 			// XCTest requires the app's main thread to be idling in order to execute any action on it, so WDA might not even start/freeze if the app under test is constantly hogging the main thread.
 			// The default value is 10 (seconds).
 			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5);
-
+			
+			// Shows the Xcode build logs in the Appium server output.
+			options.AddAdditionalAppiumOption("showXcodeLog", true);
+			
+			// Shows device/system logs from the iOS simulator or real device.
+			options.AddAdditionalAppiumOption("showIOSLog", true);
+			
 			return options;
 		}
 	}
