@@ -23,6 +23,8 @@
                      <RowDefinition Height="Auto"/>
                      <RowDefinition Height="Auto"/>
                      <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
               <Grid.ColumnDefinitions>
                      <ColumnDefinition Width="*"/>
@@ -237,6 +239,38 @@
               <!-- Quick Presets Section -->
               <Label Grid.Row="4"
                      Grid.ColumnSpan="4"
+                     Text="Visual Options"
+                     FontSize="16"
+                     FontAttributes="Bold"
+                     HorizontalOptions="Center"
+                     TextColor="Gray"
+                     Margin="0,10,0,5"/>
+
+              <!-- Row 4: Visual Options -->
+              <VerticalStackLayout Grid.Row="5"
+                                   Grid.ColumnSpan="4"
+                                   Spacing="10"
+                                   Padding="10,5">
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox IsChecked="{Binding IsVisible}"
+                                      AutomationId="VisibilityCheckBox"/>
+                            <Label Text="Is Visible"
+                                   VerticalOptions="Center"
+                                   FontSize="14"/>
+                     </HorizontalStackLayout>
+
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox IsChecked="{Binding HasShadow}"
+                                      AutomationId="ShadowCheckBox"/>
+                            <Label Text="Has Shadow"
+                                   VerticalOptions="Center"
+                                   FontSize="14"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- Quick Presets Section -->
+              <Label Grid.Row="6"
+                     Grid.ColumnSpan="4"
                      Text="Quick Presets"
                      FontSize="16"
                      FontAttributes="Bold"
@@ -244,8 +278,8 @@
                      TextColor="Gray"
                      Margin="0,10,0,5"/>
 
-              <!-- Row 5: Preset Buttons Row 1 -->
-              <Button Grid.Row="5"
+              <!-- Row 7: Preset Buttons Row 1 -->
+              <Button Grid.Row="7"
                       Grid.Column="0"
                       Text="45° Rotate"
                       Clicked="Preset45Rotate_Clicked"
@@ -253,7 +287,7 @@
                       Padding="5"
                       AutomationId="Preset45RotateButton"/>
 
-              <Button Grid.Row="5"
+              <Button Grid.Row="7"
                       Grid.Column="1"
                       Text="2x Scale"
                       Clicked="Preset2xScale_Clicked"
@@ -261,7 +295,7 @@
                       Padding="5"
                       AutomationId="Preset2xScaleButton"/>
 
-              <Button Grid.Row="5"
+              <Button Grid.Row="7"
                       Grid.Column="2"
                       Text="Flip X"
                       Clicked="PresetFlipX_Clicked"
@@ -269,7 +303,7 @@
                       Padding="5"
                       AutomationId="PresetFlipXButton"/>
 
-              <Button Grid.Row="5"
+              <Button Grid.Row="7"
                       Grid.Column="3"
                       Text="Skew Demo"
                       Clicked="PresetSkew_Clicked"
@@ -277,8 +311,8 @@
                       Padding="5"
                       AutomationId="PresetSkewButton"/>
 
-              <!-- Row 6: Preset Buttons Row 2 -->
-              <Button Grid.Row="6"
+              <!-- Row 8: Preset Buttons Row 2 -->
+              <Button Grid.Row="8"
                       Grid.Column="0"
                       Text="3D Cube"
                       Clicked="Preset3DCube_Clicked"
@@ -286,7 +320,7 @@
                       Padding="5"
                       AutomationId="Preset3DCubeButton"/>
 
-              <Button Grid.Row="6"
+              <Button Grid.Row="8"
                       Grid.Column="1"
                       Text="Reset All"
                       Command="{Binding ResetCommand}"
@@ -295,10 +329,10 @@
                       AutomationId="PresetResetAllButton"/>
 
               <!-- Empty cells for better spacing -->
-              <BoxView Grid.Row="6"
+              <BoxView Grid.Row="8"
                        Grid.Column="2"
                        BackgroundColor="Transparent"/>
-              <BoxView Grid.Row="6"
+              <BoxView Grid.Row="8"
                        Grid.Column="3"
                        BackgroundColor="Transparent"/>
 
