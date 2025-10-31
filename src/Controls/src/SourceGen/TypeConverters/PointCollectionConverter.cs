@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -7,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class PointCollectionConverter : ISGTypeConverter
+class PointCollectionConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "PointCollection", "Microsoft.Maui.Controls.PointCollection" };
+	public IEnumerable<string> SupportedTypes => ["PointCollection", "Microsoft.Maui.Controls.PointCollection"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -36,7 +37,7 @@ internal class PointCollectionConverter : ISGTypeConverter
 					}
 					else
 					{
-						pointCollection.Add(pointConverter.Convert($"{FormatInvariant(x)},{FormatInvariant(number)}", node, toType, context));
+						pointCollection.Add(pointConverter.Convert($"{FormatInvariant(x)},{FormatInvariant(number)}", node, toType, writer, context));
 						hasX = false;
 					}
 				}
