@@ -203,22 +203,23 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
    echo "Using iPhone Xs with UDID: $UDID"
    ```
 
-   **Step 2: Deploy app and launch simulator**
+   **Step 2: Build the iOS app**
    ```bash
    # Use local dotnet if available, otherwise use global dotnet
-   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Run -p:_DeviceName=":v2:udid=$UDID"
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
    # OR:
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Run -p:_DeviceName=":v2:udid=$UDID"
-
-   # This command will:
-   # 1. Build the iOS app
-   # 2. Boot the simulator if it's not already running
-   # 3. Install and launch the app on the simulator
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
    ```
 
-   **Step 3: Verify app is running (optional but recommended)**
+   **Step 3: Boot simulator and install app (non-blocking)**
    ```bash
-   # Check that simulator is now booted
+   # Boot the simulator (will error if already booted, which is fine)
+   xcrun simctl boot $UDID 2>/dev/null || true
+
+   # Install the app to the simulator
+   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+
+   # Verify simulator is booted
    xcrun simctl list devices | grep "$UDID"
    ```
 
