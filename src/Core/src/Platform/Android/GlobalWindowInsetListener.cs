@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 				// We want the layout listener logic to get applied to the MaterialToolbar itself
 				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
 				if (view is not MaterialToolbar &&
-					(parent is NestedScrollView || parent is AppBarLayout || parent is MauiScrollView || parent is RecyclerView))
+					(parent is AppBarLayout || parent is MauiScrollView || parent is IMauiRecyclerView))
 				{
 					return null;
 				}

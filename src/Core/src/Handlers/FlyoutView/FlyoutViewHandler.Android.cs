@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
-			GlobalWindowInsetListener.SetupViewWithLocalListener(platformView);
+			new GlobalWindowInsetListener().RegisterView(platformView);
 
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
