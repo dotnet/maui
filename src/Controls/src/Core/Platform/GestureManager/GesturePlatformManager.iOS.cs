@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
-				if (item == childTapGestureRecognizer && view != null)
+					if (item == childTapGestureRecognizer && view != null)
 						childTapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
 		}
@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Controls.Platform
 					eventTracker._handler?.VirtualView is View view)
 				{
 					ButtonsMask button = ButtonsMask.Primary;
-					
+
 					// Try to get actual button information from the CustomPressGestureRecognizer
 					if (pointerGesture is CustomPressGestureRecognizer customPress)
 					{
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// For Mac Catalyst, add context menu interaction to detect right-clicks for PointerGestureRecognizer
 			// since right-click events don't come through the normal Presses* events
-			if (OperatingSystem.IsMacCatalyst() && 
+			if (OperatingSystem.IsMacCatalyst() &&
 				weakRecognizer.Target is PointerGestureRecognizer pgr &&
 				(pgr.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 			{
@@ -982,24 +982,24 @@ namespace Microsoft.Maui.Controls.Platform
 						// Check if this recognizer should respond to secondary button
 						if ((pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 						{
-								pointerGestureRecognizer.SendPointerPressed(view,
-									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
-									null,
-									ButtonsMask.Secondary);
+							pointerGestureRecognizer.SendPointerPressed(view,
+								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
+								null,
+								ButtonsMask.Secondary);
 
-								// Immediately send pointer released event
-								if (_gestureManager.Target is GesturePlatformManager gt
-									&& _recognizer.Target is PointerGestureRecognizer pgr2
-									&& gt._handler?.VirtualView is View view2)
-								{
-									view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
-										(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
-										null,
-										ButtonsMask.Secondary));
-								}
+							// Immediately send pointer released event
+							if (_gestureManager.Target is GesturePlatformManager gt
+								&& _recognizer.Target is PointerGestureRecognizer pgr2
+								&& gt._handler?.VirtualView is View view2)
+							{
+								view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
+									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
+									null,
+									ButtonsMask.Secondary));
+							}
 						}
 					}
-					
+
 					// Return null to prevent actual context menu from appearing
 					// We only want to detect the right-click, not show a menu
 					return null;

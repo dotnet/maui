@@ -100,8 +100,7 @@ namespace Microsoft.Maui.Controls
 			((SealedList<TriggerAction>)ExitActions).IsReadOnly = true;
 			if (Setters != null)
 				((SealedList<Setter>)Setters).IsReadOnly = true;
-			if (Condition != null)
-				Condition.IsSealed = true;
+			Condition?.IsSealed = true;
 		}
 
 		void OnConditionChanged(BindableObject bindable, bool oldValue, bool newValue)
