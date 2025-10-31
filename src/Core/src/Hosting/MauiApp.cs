@@ -15,6 +15,11 @@ namespace Microsoft.Maui.Hosting
 		internal MauiApp(IServiceProvider services)
 		{
 			_services = services;
+
+#if IOS || MACCATALYST
+			// Initialize CALayer autoresize to super layer support
+			CALayerAutoresizeToSuperLayer.EnsureInitialized();
+#endif
 		}
 
 		/// <summary>
