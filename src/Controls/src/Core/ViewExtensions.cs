@@ -585,5 +585,24 @@ namespace Microsoft.Maui.Controls
 		{
 			(view as IView)?.InvalidateMeasure();
 		}
+
+		internal static bool HasSelectedVisualState(this VisualElement element)
+        {
+			if (element is null)
+			{
+				return false;	
+			}
+
+            var groups = VisualStateManager.GetVisualStateGroups(element);
+            foreach (var group in groups)
+            {
+                if (group.CurrentState?.Name is VisualStateManager.CommonStates.Selected)
+                {
+                    return true;
+                }
+            }
+ 
+            return false;
+        }
 	}
 }
