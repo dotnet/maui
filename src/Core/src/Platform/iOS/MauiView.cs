@@ -716,5 +716,32 @@ namespace Microsoft.Maui.Platform
 
 			UpdateKeyboardSubscription();
 		}
+
+		/// <summary>
+		/// Called when the focus environment updates. This method propagates native iOS focus
+		/// changes to the cross-platform layer by updating the IsFocused property of the
+		/// associated IView when this MauiView gains or loses focus.
+		/// </summary>
+		/// <param name="context">Information about the focus update</param>
+		/// <param name="coordinator">Coordinator for focus animations</param>
+		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
+		{
+			base.DidUpdateFocus(context, coordinator);
+
+			if (context.NextFocusedView == this)
+			{
+				if (CrossPlatformLayout is IView view)
+				{
+					view.IsFocused = true;
+				}
+			}
+			else
+			{
+				if (CrossPlatformLayout is IView view)
+				{
+					view.IsFocused = false;
+				}
+			}
+		}
 	}
 }
