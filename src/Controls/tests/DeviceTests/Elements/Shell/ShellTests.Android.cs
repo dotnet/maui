@@ -751,5 +751,43 @@ namespace Microsoft.Maui.DeviceTests
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
 		}
+
+		[Fact(DisplayName = "ShellFragmentContainer does not override OnDestroy")]
+		public async Task ShellFragmentContainerDoesNotOverrideOnDestroy()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "TestRoute",
+							Content = page
+						}
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Verify that ShellFragmentContainer does not override OnDestroy
+				// The bug was that it overrode OnDestroy to call _mauiContext.GetDispatcher().Dispatch(Dispose)
+				// which would throw ObjectDisposedException if the service provider was already disposed
+				var onDestroyMethod = typeof(ShellFragmentContainer).GetMethod(
+					"OnDestroy", 
+					System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
+				
+				// OnDestroy should not be declared on ShellFragmentContainer (DeclaredOnly flag ensures we only check this type)
+				// It should use the base Fragment.OnDestroy instead
+				Assert.Null(onDestroyMethod);
+			});
+		}
 	}
 }
