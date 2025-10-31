@@ -24,4 +24,14 @@ internal static class DiagnosticInstrumentation
 		RuntimeFeature.IsMeterSupported
 			? new LayoutArrangeInstrumentation(view)
 			: null;
+
+	/// <summary>
+	/// Starts image loading instrumentation for the specified view.
+	/// </summary>
+	/// <param name="view">The view to instrument.</param>
+	/// <returns>Returns an instance of <see cref="ImageLoadingInstrumentation"/> if instrumentation is supported; otherwise, null.</returns>
+	public static ImageLoadingInstrumentation? StartImageLoading(IView view) =>
+		RuntimeFeature.IsMeterSupported
+			? new ImageLoadingInstrumentation(view)
+			: null;
 }
