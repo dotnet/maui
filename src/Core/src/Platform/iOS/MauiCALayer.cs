@@ -29,9 +29,6 @@ namespace Microsoft.Maui.Platform
 
 		nfloat _strokeMiterLimit;
 
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeObserver_DoesNotLeak test.")]
-		CALayerAutosizeObserver? _boundsObserver;
-
 		public MauiCALayer()
 		{
 			_bounds = new CGRect();
@@ -39,24 +36,9 @@ namespace Microsoft.Maui.Platform
 			ContentsScale = UIScreen.MainScreen.Scale;
 		}
 
-		protected override void Dispose(bool disposing)
-		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = null;
-			base.Dispose(disposing);
-		}
-
-		public override void RemoveFromSuperLayer()
-		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = null;
-			base.RemoveFromSuperLayer();
-		}
-
 		void IAutoSizableCALayer.AutoSizeToSuperLayer()
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = CALayerAutosizeObserver.Attach(this);
+			this.SetAutoSizeToSuperLayer(true);
 		}
 
 		public override void AddAnimation(CAAnimation animation, string? key)
