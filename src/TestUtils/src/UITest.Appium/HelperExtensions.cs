@@ -1015,6 +1015,15 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Sends the tab key in the app.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SendTabKey(this IApp app)
+		{
+			app.CommandExecutor.Execute("sendTabKey", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Performs a left to right swipe gesture on the screen. 
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
