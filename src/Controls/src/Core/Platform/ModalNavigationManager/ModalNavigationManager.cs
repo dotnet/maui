@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	public partial class ModalNavigationManager
 	{
 		Window _window;
 		public IReadOnlyList<Page> ModalStack => _modalPages.Pages;

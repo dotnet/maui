@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	public partial class ModalNavigationManager
 	{
 		WindowRootViewContainer Container =>
 			_window.NativeWindow.Content as WindowRootViewContainer ??

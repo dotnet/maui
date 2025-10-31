@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class AlertManager
+	public partial class AlertManager
 	{
 		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext)
 		{
