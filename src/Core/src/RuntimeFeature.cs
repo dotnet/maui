@@ -18,7 +18,6 @@ namespace Microsoft.Maui
 
 		const bool IsIVisualAssemblyScanningEnabledByDefault = false;
 		const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
-		const bool IsQueryPropertyAttributeSupportedByDefault = true;
 		const bool IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault = true;
 		const bool AreBindingInterceptorsSupportedByDefault = true;
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
@@ -46,15 +45,6 @@ namespace Microsoft.Maui
 			=> AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsShellSearchResultsRendererDisplayMemberNameSupported)}", out bool isSupported)
 				? isSupported
 				: IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault;
-
-#if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsQueryPropertyAttributeSupported)}")]
-		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
-#endif
-		public static bool IsQueryPropertyAttributeSupported =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsQueryPropertyAttributeSupported)}", out bool isSupported)
-				? isSupported
-				: IsQueryPropertyAttributeSupportedByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsImplicitCastOperatorsUsageViaReflectionSupported)}")]

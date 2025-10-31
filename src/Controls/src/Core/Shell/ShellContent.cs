@@ -379,56 +379,11 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			if (RuntimeFeature.IsQueryPropertyAttributeSupported)
+			// Once we've applied the attributes to ContentPage lets remove the 
+			// parameters used during navigation
+			if (content is ContentPage)
 			{
-				var type = content.GetType();
-				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-				if (queryPropertyAttributes.Length == 0)
-				{
-					ClearQueryIfAppliedToPage(query, content);
-					return;
-				}
-
-				foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
-				{
-					if (query.TryGetValue(attrib.QueryId, out var value))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						{
-							if (prop.PropertyType == typeof(string))
-							{
-								if (value != null)
-									value = global::System.Net.WebUtility.UrlDecode((string)value);
-
-								prop.SetValue(content, value);
-							}
-							else
-							{
-								var castValue = Convert.ChangeType(value, prop.PropertyType);
-								prop.SetValue(content, castValue);
-							}
-						}
-					}
-					else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-							prop.SetValue(content, null);
-					}
-				}
-			}
-
-			ClearQueryIfAppliedToPage(query, content);
-
-			static void ClearQueryIfAppliedToPage(ShellRouteParameters query, object content)
-			{
-				// Once we've applied the attributes to ContentPage lets remove the 
-				// parameters used during navigation
-				if (content is ContentPage)
-					query.ResetToQueryParameters();
+				query.ResetToQueryParameters();
 			}
 		}
 

@@ -301,10 +301,6 @@
                                       Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
                                       Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
-                                      Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
-                                      Value="$(MauiQueryPropertyAttributeSupport)"
-                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
                                       Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
                                       Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
