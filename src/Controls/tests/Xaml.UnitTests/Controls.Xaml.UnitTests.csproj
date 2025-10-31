@@ -83,6 +83,8 @@
     <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
+
+    <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
   </ItemGroup>
 
 </Project>

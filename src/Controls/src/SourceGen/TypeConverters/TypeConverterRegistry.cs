@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -40,10 +41,10 @@ internal static class TypeConverterRegistry
 	/// <summary>
 	/// Converts a value using the appropriate registered converter.
 	/// </summary>
-	public static string Convert(string typeName, string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public static string Convert(string typeName, string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, LocalVariable? parentVar = null)
 	{
 		var converter = GetConverter(typeName);
-		return converter?.Convert(value, node, toType, context, parentVar) ?? "default";
+		return converter?.Convert(value, node, toType, writer, context, parentVar) ?? "default";
 	}
 
 	/// <summary>
@@ -73,6 +74,7 @@ internal static class TypeConverterRegistry
 		Register(new ConstraintConverter());
 		Register(new BindablePropertyConverter());
 		Register(new RDSourceConverter());
+		Register(new TypeTypeConverter());
 
 		return true;
 	}

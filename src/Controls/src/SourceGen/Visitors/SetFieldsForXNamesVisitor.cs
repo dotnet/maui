@@ -42,7 +42,7 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 			return;
 
 
-		Writer.WriteLine($"this.{EscapeIdentifier((string)(node.Value))} = {Context.Variables[(ElementNode)parentNode].Name};");
+		Writer.WriteLine($"this.{EscapeIdentifier((string)(node.Value))} = {Context.Variables[(ElementNode)parentNode].ValueAccessor};");
 	}
 
 	public void Visit(MarkupNode node, INode parentNode)
