@@ -365,6 +365,7 @@ namespace Microsoft.Maui.Controls
 			ApplyQueryAttributes(bindable, newValue as ShellRouteParameters, oldValue as ShellRouteParameters);
 		}
 
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Query attribute application tolerates missing properties when trimmed.")]
 		static void ApplyQueryAttributes(object content, ShellRouteParameters query, ShellRouteParameters oldQuery)
 		{
 			query = query ?? new ShellRouteParameters();
