@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 				if (navigationLayout is not null)
 				{
 					_managedCoordinatorLayout = navigationLayout;
-					GlobalWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
+					MauiWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
 				}
 
 				_rootView = navigationLayout;
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Platform
 			// Clean up the coordinator layout and local listener first
 			if (_managedCoordinatorLayout is not null)
 			{
-				GlobalWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
+				MauiWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
 			}
 
 			ClearPlatformParts();
