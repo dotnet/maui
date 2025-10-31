@@ -20,6 +20,7 @@ public class Issue22887 : _IssuesUITest
 	public void ImageShouldLoadFromSubfolder()
 	{
 		App.WaitForElement("ImageView", timeoutMessage: "Image is not rendered in the view");
+		VerifyScreenshot();
 
 	}
 }
