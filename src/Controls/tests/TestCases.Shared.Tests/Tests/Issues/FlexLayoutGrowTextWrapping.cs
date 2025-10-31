@@ -27,8 +27,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Label6");
 
 			// Get the bounds of labels to verify they're laid out properly
-			var label1Rect = App.WaitForElement("Label1")[0].GetRect();
-			var label2Rect = App.WaitForElement("Label2")[0].GetRect();
+			var label1Rect = App.WaitForElement("Label1").GetRect();
+			var label2Rect = App.WaitForElement("Label2").GetRect();
 
 			// Labels with Grow=1 in a row should both be visible with reasonable dimensions
 			Assert.Greater(label1Rect.Height, 0, "Label1 should be visible");
@@ -39,8 +39,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.Greater(label2Rect.Width, 50, "Label2 should have reasonable width");
 
 			// Verify the buttons are also properly laid out
-			var button1Rect = App.WaitForElement("Button1")[0].GetRect();
-			var button2Rect = App.WaitForElement("Button2")[0].GetRect();
+			var button1Rect = App.WaitForElement("Button1").GetRect();
+			var button2Rect = App.WaitForElement("Button2").GetRect();
 			
 			Assert.Greater(button1Rect.Height, 0, "Button1 should be visible");
 			Assert.Greater(button2Rect.Height, 0, "Button2 should be visible");
