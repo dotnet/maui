@@ -18,5 +18,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
 		}
+
+		internal static void MapInputTransparent(ISearchBarHandler handler, SearchBar searchBar)
+		{
+			Platform.SearchBarExtensions.UpdateInputTransparent(handler.PlatformView, searchBar);
+		}
 	}
 }
