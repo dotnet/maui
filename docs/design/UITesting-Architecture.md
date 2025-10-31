@@ -1,5 +1,6 @@
 ---
 description: "Architecture decisions, CI/CD integration, and advanced topics for .NET MAUI UI testing."
+date: 2025-10-30
 ---
 
 # UI Testing Architecture and CI Integration

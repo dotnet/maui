@@ -1,5 +1,6 @@
 ---
-description: "Guidance for GitHub Copilot when working on the .NET MAUI repository. Updated 2025-10."
+description: "Guidance for GitHub Copilot when working on the .NET MAUI repository."
+date: 2025-10-30
 ---
 
 # GitHub Copilot Development Environment Instructions

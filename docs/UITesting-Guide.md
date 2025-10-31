@@ -1,5 +1,6 @@
 ---
 description: "Comprehensive guidance for creating automated UI tests for .NET MAUI using Appium and NUnit."
+date: 2025-10-30
 ---
 
 # UI Testing Guide for .NET MAUI Repository

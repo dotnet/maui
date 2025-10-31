@@ -1,5 +1,6 @@
 ---
 applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCases.HostApp/**"
+date: 2025-10-30
 ---
 
 # UI Testing Guidelines for .NET MAUI
