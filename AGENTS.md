@@ -184,11 +184,42 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
    dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
    ```
 
-2. **Deploy TestCases.HostApp to iOS (iPhone Xs, iOS 18.5):**
+2. **Deploy TestCases.HostApp to iOS simulator (3-step process):**
+
+   **Step 1: Find iPhone Xs with highest API level**
    ```bash
-   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Install -p:_DeviceName=":v2:udid=$(xcrun simctl list devices | grep -A 20 'iOS 18.5' | grep 'iPhone Xs' | sed -n 's/.*(\([^)]*\)).*/\1/p')"
+   # View all iPhone Xs devices with their iOS versions
+   xcrun simctl list devices available | awk '/^--.*iOS/ {version=$0} /iPhone Xs/ {print version " -> " $0}'
+
+   # Extract UDID of iPhone Xs with highest iOS version (last in list)
+   UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+
+   # Verify UDID was found
+   if [ -z "$UDID" ]; then
+       echo "ERROR: No iPhone Xs simulator found. Please create an iPhone Xs simulator before running iOS tests."
+       exit 1
+   fi
+
+   echo "Using iPhone Xs with UDID: $UDID"
+   ```
+
+   **Step 2: Deploy app and launch simulator**
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Run -p:_DeviceName=":v2:udid=$UDID"
    # OR:
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Install -p:_DeviceName=":v2:udid=$(xcrun simctl list devices | grep -A 20 'iOS 18.5' | grep 'iPhone Xs' | sed -n 's/.*(\([^)]*\)).*/\1/p')"
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Run -p:_DeviceName=":v2:udid=$UDID"
+
+   # This command will:
+   # 1. Build the iOS app
+   # 2. Boot the simulator if it's not already running
+   # 3. Install and launch the app on the simulator
+   ```
+
+   **Step 3: Verify app is running (optional but recommended)**
+   ```bash
+   # Check that simulator is now booted
+   xcrun simctl list devices | grep "$UDID"
    ```
 
 3. **Run specific tests:**

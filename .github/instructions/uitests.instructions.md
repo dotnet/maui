@@ -219,11 +219,27 @@ When developing and debugging a specific test:
    ```
 
 **iOS:**
-1. Deploy the TestCases.HostApp (defaults to iPhone Xs, iOS 18.5):
+1. Deploy the TestCases.HostApp:
    ```bash
-   UDID=$(xcrun simctl list devices | grep -A 20 "iOS 18.5" | grep "iPhone Xs" | sed -n 's/.*(\([^)]*\)).*/\1/p')
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+   # Get iPhone Xs simulator UDID with highest API level (iOS runtime)
+   # First check for booted iPhone Xs, then fall back to any available iPhone Xs
+   UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | grep "Booted" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+
+   # If no booted iPhone Xs found, get the last available one (highest iOS version in list)
+   if [ -z "$UDID" ]; then
+       UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+   fi
+
+   # Error if no iPhone Xs found
+   if [ -z "$UDID" ]; then
+       echo "ERROR: No iPhone Xs simulator found. Please create an iPhone Xs simulator before running iOS tests."
+       exit 1
+   fi
+
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Run -p:_DeviceName=":v2:udid=$UDID"
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Run -p:_DeviceName=":v2:udid=$UDID"
    ```
 
 2. Run your specific test:
