@@ -156,6 +156,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isUpdating = false;
 		}
 
+		internal void UpdateScrollingConstraints()
+		{
+			CollectionView.AlwaysBounceVertical = !IsHorizontal;
+			CollectionView.AlwaysBounceHorizontal = IsHorizontal;
+		}
+
 		void Setup(CarouselView carouselView)
 		{
 			InitializeCarouselViewLoopManager();
