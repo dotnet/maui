@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -42,6 +43,9 @@ namespace Microsoft.Maui.Controls
 
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
+
+		// Margin space (80px) required for Mac Catalyst window traffic light controls when not in fullscreen
+		const int MacCatalystMargin = 80; 
 
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
@@ -252,6 +256,9 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+#if MACCATALYST
+			SizeChanged += OnSizeChanged;
+#endif
 
 			if (ControlTemplate is null)
 			{
@@ -259,9 +266,34 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#if MACCATALYST
+		void OnSizeChanged(object? sender, EventArgs e)
+		{
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			{
+				if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+				{
+					var windowScene = uiwindow.WindowScene;
+					if (windowScene != null)
+					{
+						var fullScreen = windowScene.FullScreen;
+						if (_templateRoot is Grid contentGrid)
+						{
+							// If in fullscreen, remove left margin, otherwise set 80px margin
+							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(MacCatalystMargin, 0, 0, 0);
+						}
+					}
+				}
+			}
+		}
+#endif
+
 		internal void Cleanup()
 		{
 			PropertyChanged -= TitleBar_PropertyChanged;
+#if MACCATALYST
+			SizeChanged -= OnSizeChanged;
+#endif
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
@@ -348,7 +380,7 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = new Thickness(80, 0, 0, 0),
+				Margin = new Thickness(MacCatalystMargin, 0, 0, 0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
