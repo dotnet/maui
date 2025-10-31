@@ -574,6 +574,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			bool shouldHide = NavPage.OnThisPlatform().HideNavigationBarSeparator();
 
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				bool isStatusBarHiddenExplicitlySet = NavPage.IsSet(PrefersStatusBarHiddenProperty);
+				if(!isStatusBarHiddenExplicitlySet)
+                {
+                    shouldHide = true;
+                }
+			}
+
 			// Just setting the ShadowImage is good for iOS11
 			if (_defaultNavBarShadowImage == null)
 				_defaultNavBarShadowImage = NavigationBar.ShadowImage;
@@ -631,7 +640,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateTranslucent()
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
-			NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				bool isNavigationBarTranslucentExplicitlySet = NavPage.IsSet(IsNavigationBarTranslucentProperty);
+				if (isNavigationBarTranslucentExplicitlySet)
+				{
+					NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+				}
+			}
+			else
+			{
+				NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
@@ -785,8 +805,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 				if (_currentBarBackgroundColor is null)
 				{
-					navigationBarAppearance.ConfigureWithOpaqueBackground();
-					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
+					if (!OperatingSystem.IsIOSVersionAtLeast(26))
+					{
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
+						navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
+					}
 
 					var parentingViewController = GetParentingViewController();
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
@@ -1049,7 +1072,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// We only check height because the navigation bar constrains vertical space (44pt height),
 				// but allows horizontal flexibility. Width can vary based on icon design and content,
 				// while height must fit within the fixed navigation bar bounds to avoid clipping.
-				
+
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
