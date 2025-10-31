@@ -71,7 +71,11 @@ namespace Microsoft.Maui.Controls
 
 				if (args.OldItems != null)
 					foreach (Element element in args.OldItems)
+					{
 						RemoveLogicalChild(element);
+						// Clean up the route from the routing system when element is removed
+						Routing.RemoveElementRoute(element);
+					}
 			};
 		}
 
