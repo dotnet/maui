@@ -72,8 +72,10 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			.Combine(referenceCompilationProvider)
 			.Select(static (t, ct) =>
 			{
+				var sw = System.Diagnostics.Stopwatch.StartNew();
 				var compilation = t.Right;
 				var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+				var sourceCount = 0;
 				foreach (var (source, xamlItem, diagnostics) in t.Left)
 				{
 					ct.ThrowIfCancellationRequested();
@@ -82,8 +84,10 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					{
 						var tree = CSharpSyntaxTree.ParseText(source, options: options, cancellationToken: ct);
 						compilation = compilation.AddSyntaxTrees(tree);
+						sourceCount++;
 					}
 				}
+				LogToFile($"CompilationWithCodeBehindProvider added {sourceCount} syntax trees in {sw.Elapsed.TotalMilliseconds} ms");
 				return compilation;
 			})
 			.WithTrackingName(TrackingNames.CompilationWithCodeBehindProvider);
@@ -100,7 +104,9 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		// Register the XAML pipeline for CodeBehind
 		initContext.RegisterSourceOutput(xamlSourceProviderForCB, static (sourceProductionContext, provider) =>
 		{
+			var sw = System.Diagnostics.Stopwatch.StartNew();
 			var (source, xamlItem, diagnostics) = provider;
+			var filePath = xamlItem?.ProjectItem?.RelativePath ?? "unknown";
 
 			try
 			{
@@ -108,18 +114,27 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					foreach (var diag in diagnostics)
 						sourceProductionContext.ReportDiagnostic(diag);
 				if (source != null)
+				{
 					sourceProductionContext.AddSource(GetHintName(xamlItem?.ProjectItem, "sg"), source);
+					LogToFile($"RegisterSourceOutput (CodeBehind) for '{filePath}' added source in {sw.Elapsed.TotalMilliseconds} ms");
+				}
+				else
+				{
+					LogToFile($"RegisterSourceOutput (CodeBehind) for '{filePath}' skipped (no source) in {sw.Elapsed.TotalMilliseconds} ms");
+				}
 			}
 			catch (Exception e)
 			{
 				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+				LogToFile($"RegisterSourceOutput (CodeBehind) for '{filePath}' threw after {sw.Elapsed.TotalMilliseconds} ms: {e.Message}");
 			}
 		});
 
 		// Register the XAML pipeline for InitializeComponent
 		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (sourceProductionContext, provider) =>
 		{
+			var sw = System.Diagnostics.Stopwatch.StartNew();
 			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
 
 			if (xamlItem?.ProjectItem?.RelativePath is not string relativePath)
@@ -128,7 +143,10 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			}
 
 			if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
+			{
+				LogToFile($"RegisterImplementationSourceOutput (InitializeComponent) for '{relativePath}' skipped (ShouldGenerateSourceGenInitializeComponent returned false) after {sw.Elapsed.TotalMilliseconds} ms");
 				return;
+			}
 
 			if (!CanSourceGenXaml(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache))
 			{
@@ -138,21 +156,29 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					var location = LocationCreate(relativePath, lineInfo, string.Empty);
 					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
 				}
+				LogToFile($"RegisterImplementationSourceOutput (InitializeComponent) for '{relativePath}' skipped (CanSourceGenXaml returned false) after {sw.Elapsed.TotalMilliseconds} ms");
 				return;
 			}
 
 			try
 			{
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
+				{
+					LogToFile($"RegisterImplementationSourceOutput (InitializeComponent) for '{relativePath}' skipped on second eligibility check after {sw.Elapsed.TotalMilliseconds} ms");
 					return;
+				}
 
+				var icSw = System.Diagnostics.Stopwatch.StartNew();
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+				LogToFile($"InitializeComponentCodeWriter.GenerateInitializeComponent for '{relativePath}' produced {code.Length} characters in {icSw.Elapsed.TotalMilliseconds} ms");
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+				LogToFile($"RegisterImplementationSourceOutput (InitializeComponent) for '{relativePath}' completed in {sw.Elapsed.TotalMilliseconds} ms");
 			}
 			catch (Exception e)
 			{
 				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+				LogToFile($"RegisterImplementationSourceOutput (InitializeComponent) for '{relativePath}' threw after {sw.Elapsed.TotalMilliseconds} ms: {e.Message}");
 			}
 		});
 
@@ -187,9 +213,17 @@ $"""
 		// Register the global xmlns definitions. create equivalent XmlnsDefintion for the global ones, so most of the 1sr and 3rd party tooling should keep working
 		initContext.RegisterSourceOutput(xmlnsDefinitionsProvider, static (sourceProductionContext, xmlnsCache) =>
 		{
+			var sw = System.Diagnostics.Stopwatch.StartNew();
 			var source = GenerateGlobalXmlns(sourceProductionContext, xmlnsCache);
 			if (!string.IsNullOrEmpty(source))
+			{
 				sourceProductionContext.AddSource("Global.Xmlns.cs", SourceText.From(source!, Encoding.UTF8));
+				LogToFile($"RegisterSourceOutput (Global.Xmlns) emitted source in {sw.Elapsed.TotalMilliseconds} ms");
+			}
+			else
+			{
+				LogToFile($"RegisterSourceOutput (Global.Xmlns) skipped (no source) in {sw.Elapsed.TotalMilliseconds} ms");
+			}
 		});
 	}
 
@@ -208,8 +242,13 @@ $"""
 
 	private static string? GenerateGlobalXmlns(SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache)
 	{
+		var sw = System.Diagnostics.Stopwatch.StartNew();
+		
 		if (xmlnsCache.GlobalGeneratedXmlnsDefinitions.Count == 0)
+		{
+			LogToFile($"GenerateGlobalXmlns returned null (no definitions) after {sw.Elapsed.TotalMilliseconds} ms");
 			return null;
+		}
 
 		var sb = new StringBuilder();
 		sb.AppendLine(AutoGeneratedHeaderText);
@@ -217,14 +256,20 @@ $"""
 		foreach (var xmlns in xmlnsCache.GlobalGeneratedXmlnsDefinitions)
 			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition(\"{xmlns.XmlNamespace}\", \"{xmlns.Target}\", AssemblyName = \"{EscapeIdentifier(xmlns.AssemblyName)}\")]");
 
+		LogToFile($"GenerateGlobalXmlns generated {xmlnsCache.GlobalGeneratedXmlnsDefinitions.Count} xmlns definitions in {sw.Elapsed.TotalMilliseconds} ms");
 		return sb.ToString();
 	}
 
 	static bool ShouldGenerateSourceGenInitializeComponent(XamlProjectItemForIC xamlItem, AssemblyCaches xmlnsCache, Compilation compilation)
 	{
-		var text = xamlItem.ProjectItem.AdditionalText.GetText();
+		var sw = System.Diagnostics.Stopwatch.StartNew();
+		var filePath = xamlItem.ProjectItem?.RelativePath ?? "unknown";
+		var text = xamlItem.ProjectItem?.AdditionalText.GetText();
 		if (text == null)
+		{
+			LogToFile($"ShouldGenerateSourceGenInitializeComponent for '{filePath}' returned false (no text) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
 
 		XmlNode? root;
 		XmlNamespaceManager nsmgr;
@@ -232,13 +277,17 @@ $"""
 		{
 			(root, nsmgr) = LoadXmlDocument(text, xmlnsCache, CancellationToken.None);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			LogToFile($"ShouldGenerateSourceGenInitializeComponent for '{filePath}' returned false (exception) after {sw.Elapsed.TotalMilliseconds} ms: {ex.Message}");
 			return false;
 		}
 
 		if (root == null)
+		{
+			LogToFile($"ShouldGenerateSourceGenInitializeComponent for '{filePath}' returned false (no root) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
 
 		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
 					 ?? root.Attributes["Class", XamlParser.X2009Uri];
@@ -259,30 +308,50 @@ $"""
 				return attr?.ConstructorArguments[2].Value as INamedTypeSymbol;
 			}
 
-			rootType = GetTypeForResourcePath(xamlItem.ProjectItem.RelativePath!, compilation.Assembly);
+			rootType = GetTypeForResourcePath(xamlItem.ProjectItem?.RelativePath!, compilation.Assembly);
 		}
 
 		if (rootType == null)
+		{
+			LogToFile($"ShouldGenerateSourceGenInitializeComponent for '{filePath}' returned false (no root type) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
 
-		var xamlInflators = xamlItem.ProjectItem.Inflator;
+		var xamlInflators = xamlItem.ProjectItem?.Inflator ?? (XamlInflator)0;
 
 		if ((xamlInflators & XamlInflator.SourceGen) != XamlInflator.SourceGen)
+		{
+			LogToFile($"ShouldGenerateSourceGenInitializeComponent for '{filePath}' returned false (inflator not SourceGen: {xamlInflators}) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
 
+		LogToFile($"ShouldGenerateSourceGenInitializeComponent for '{filePath}' returned true after {sw.Elapsed.TotalMilliseconds} ms");
 		return true;
 	}
 
 	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
+		var sw = System.Diagnostics.Stopwatch.StartNew();
+		var filePath = xamlItem?.ProjectItem?.RelativePath ?? "unknown";
+		
 		ProjectItem? projItem;
 		if (xamlItem == null || (projItem = xamlItem.ProjectItem) == null)
+		{
+			LogToFile($"CanSourceGenXaml for '{filePath}' returned false (no xaml item or project item) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
 		var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
 		if (itemName == null)
+		{
+			LogToFile($"CanSourceGenXaml for '{filePath}' returned false (no item name) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
 		if (xamlItem.Root == null)
+		{
+			LogToFile($"CanSourceGenXaml for '{filePath}' returned false (no root) after {sw.Elapsed.TotalMilliseconds} ms");
 			return false;
+		}
+		LogToFile($"CanSourceGenXaml for '{filePath}' returned true after {sw.Elapsed.TotalMilliseconds} ms");
 		return true;
 	}
 
@@ -470,6 +539,9 @@ $"""
 
 	static void GenerateCssCodeBehind(ProjectItem projItem, SourceProductionContext sourceProductionContext)
 	{
+		var sw = System.Diagnostics.Stopwatch.StartNew();
+		var filePath = projItem.RelativePath ?? "unknown";
+		
 		var sb = new StringBuilder();
 		var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
@@ -479,6 +551,7 @@ $"""
 		}
 
 		sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+		LogToFile($"GenerateCssCodeBehind for '{filePath}' completed in {sw.Elapsed.TotalMilliseconds} ms");
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
