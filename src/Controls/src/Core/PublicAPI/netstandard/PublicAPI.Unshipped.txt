@@ -232,6 +232,10 @@ const Microsoft.Maui.Controls.BrushTypeConverter.LinearGradient = "linear-gradie
 const Microsoft.Maui.Controls.BrushTypeConverter.RadialGradient = "radial-gradient" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Rgb = "rgb" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Rgba = "rgba" -> string!
+~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
 *REMOVED*~override Microsoft.Maui.Controls.Accelerator.Equals(object obj) -> bool
 *REMOVED*override Microsoft.Maui.Controls.Accelerator.GetHashCode() -> int
 *REMOVED*~override Microsoft.Maui.Controls.Accelerator.ToString() -> string
@@ -458,6 +462,8 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.ButtonsProperty
 static readonly Microsoft.Maui.Controls.Window.IsActivatedProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.IsMaximizableProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.IsMinimizableProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangedDelegate<TPropertyType>.Invoke(Microsoft.Maui.Controls.BindableObject bindable, TPropertyType oldValue, TPropertyType newValue) -> void
 ~virtual Microsoft.Maui.Controls.BindableProperty.BindingPropertyChangingDelegate.Invoke(Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue) -> void
