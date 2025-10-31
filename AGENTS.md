@@ -2,9 +2,28 @@
 
 This file provides guidance to AI coding assistants when working with code in this repository.
 
+**🔄 IMPORTANT: Synchronization with Copilot Instructions**
+
+When updating this file, you MUST:
+1. Analyze ALL copilot instruction files:
+   - `.github/copilot-instructions.md` (repository-wide instructions)
+   - `.github/instructions/*.instructions.md` (path-specific instructions)
+2. Determine which information is useful for AI coding assistants and should be added to AGENTS.md
+3. Update `.github/copilot-instructions.md` with corresponding changes to keep both files synchronized
+4. Ensure no duplication - AGENTS.md should contain universal guidance, while copilot-instructions.md may have GitHub Copilot-specific details
+
 ## Project Overview
 
 .NET MAUI is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
+
+### Key Technologies
+
+- **.NET SDK** - Version always defined in `global.json` at repository root
+- **C#** and **XAML** for application development
+- **Cake build system** for compilation and packaging
+- **MSBuild** with custom build tasks
+- **xUnit + NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
+- **Appium WebDriver** for UI test automation
 
 ## Essential Setup Commands
 
@@ -133,6 +152,8 @@ Key test projects to ensure pass:
 
 ### Running UI Tests
 
+**Option 1: Using Cake build system (for full CI-like test runs):**
+
 ```bash
 # Android
 ./build.ps1 -Script eng/devices/android.cake --target=uitest
@@ -151,6 +172,40 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="TestCategory
 
 # Filter by test name
 dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifiedName~Issue12345"
+```
+
+**Option 2: Running specific tests directly (for rapid development):**
+
+1. **Deploy TestCases.HostApp to Android:**
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+2. **Deploy TestCases.HostApp to iOS (iPhone Xs, iOS 18.5):**
+   ```bash
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Install -p:_DeviceName=":v2:udid=$(xcrun simctl list devices | grep -A 20 'iOS 18.5' | grep 'iPhone Xs' | sed -n 's/.*(\([^)]*\)).*/\1/p')"
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios -t:Install -p:_DeviceName=":v2:udid=$(xcrun simctl list devices | grep -A 20 'iOS 18.5' | grep 'iPhone Xs' | sed -n 's/.*(\([^)]*\)).*/\1/p')"
+   ```
+
+3. **Run specific tests:**
+   ```bash
+   # Run specific test by name
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+
+   # Run all tests for a category
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "Category=CollectionView"
+   ```
+
+**Troubleshooting UI Tests:**
+
+If Android HostApp crashes with navigation fragment errors:
+```bash
+# Solution: Build with --no-incremental to regenerate resource IDs
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
 ```
 
 ### UI Tests
@@ -184,6 +239,13 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
 - `cgmanifest.json` - Auto-generated during CI builds
 - `templatestrings.json` - Auto-generated localization files
 
+### File Reset Guidelines for AI Agents
+
+Since coding agents function as both CI and pair programmers, they need to handle CI-generated files appropriately:
+
+- **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
+- **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
+
 ### PublicAPI.Unshipped.txt Management
 
 - Never disable analyzers or set nowarn to bypass PublicAPI errors
@@ -216,6 +278,25 @@ Follow [.NET Foundation coding style](https://github.com/dotnet/runtime/blob/mai
 - Do not use the `private` keyword (default accessibility)
 - Use hard tabs over spaces
 
+## Platform-Specific Development
+
+### Android
+- Requires Android SDK and OpenJDK 17
+- Set `ANDROID_HOME` environment variable
+- Install Android SDK components via Android SDK Manager
+
+### iOS (requires macOS)
+- Requires current stable Xcode installation
+- Xcode command-line tools must be installed
+- Pair to Mac required when developing on Windows
+
+### Windows
+- Requires Windows SDK
+- Visual Studio workloads must include .NET MAUI development
+
+### macOS/Mac Catalyst
+- Requires Xcode installation
+
 ## Troubleshooting
 
 ### Common Build Issues
@@ -242,9 +323,24 @@ dotnet format analyzers Microsoft.Maui.sln
 # If still failing, check build output for required API entries
 ```
 
+### Platform-Specific Troubleshooting
+
+**iOS/Mac Build Issues:**
+- Verify Xcode command line tools: `xcode-select --install`
+- Check Xcode version compatibility with .NET MAUI version
+- Ensure provisioning profiles are current (for device testing)
+
+**Android Build Issues:**
+- Verify OpenJDK 17 installation: `java -version`
+- Check ANDROID_HOME environment variable
+- Update Android SDK components via Android SDK Manager
+
+**Windows Build Issues:**
+- Ensure Windows SDK is installed
+- Verify Visual Studio workloads include .NET MAUI development
+- Check for missing NuGet packages: `dotnet restore --force`
+
 ## Additional Resources
 
-- [Development Guide](.github/DEVELOPMENT.md)
-- [Development Tips](docs/DevelopmentTips.md)
-- [Contributing Guidelines](.github/CONTRIBUTING.md)
-- [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
+- [UI Testing Guide](docs/UITesting-Guide.md)
+- [UI Testing Architecture](docs/design/UITesting-Architecture.md)

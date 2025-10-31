@@ -1,6 +1,5 @@
 ---
 applyTo: "src/Templates/**"
-date: 2025-10-30
 ---
 
 # Working with .NET MAUI Templates

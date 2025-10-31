@@ -302,7 +302,43 @@ public void iOSOnlyFeature()
 
 ## Running Tests
 
-### Command Line
+### Quick Start: Running Specific Tests
+
+For rapid development and debugging, you can run specific tests directly:
+
+**Android:**
+
+1. Deploy TestCases.HostApp to Android emulator/device:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+**iOS:**
+
+1. Deploy TestCases.HostApp to iOS simulator (defaults to iPhone Xs, iOS 18.5):
+   ```bash
+   # Get simulator UDID and build/install
+   UDID=$(xcrun simctl list devices | grep -A 20 "iOS 18.5" | grep "iPhone Xs" | sed -n 's/.*(\([^)]*\)).*/\1/p')
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+### Full Test Suite: Using Cake Build System
+
+For comprehensive CI-like test runs:
 
 **Android:**
 
@@ -434,6 +470,41 @@ Don't:
 * Test multiple unrelated concepts in one test.
 * Skip assertions (tests should validate something).
 * Rely solely on element existence without visual validation.
+
+## Troubleshooting
+
+### Android App Crashes on Launch
+
+If you encounter navigation fragment errors or resource ID issues when launching the Android HostApp:
+
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Build with `--no-incremental` to force a clean build and regenerate Android resource IDs:
+
+```bash
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+```
+
+**Debugging Steps:**
+
+1. Monitor logcat for crash details:
+   ```bash
+   adb logcat -c  # Clear logcat buffer
+   adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)" &
+   ```
+
+2. Try clean build if incremental builds fail:
+   ```bash
+   dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+3. Check Android emulator is running:
+   ```bash
+   adb devices
+   ```
 
 ## Pre-Commit Checklist
 

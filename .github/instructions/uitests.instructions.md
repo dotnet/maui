@@ -1,6 +1,5 @@
 ---
 applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCases.HostApp/**"
-date: 2025-10-30
 ---
 
 # UI Testing Guidelines for .NET MAUI
@@ -199,6 +198,58 @@ public void SoftInputBehaviorTest()
 #endif
 ```
 
+## Running UI Tests Locally
+
+### Quick Test Execution (for rapid development)
+
+When developing and debugging a specific test:
+
+**Android:**
+1. Deploy the TestCases.HostApp:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+2. Run your specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+   ```
+
+**iOS:**
+1. Deploy the TestCases.HostApp (defaults to iPhone Xs, iOS 18.5):
+   ```bash
+   UDID=$(xcrun simctl list devices | grep -A 20 "iOS 18.5" | grep "iPhone Xs" | sed -n 's/.*(\([^)]*\)).*/\1/p')
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+   ```
+
+2. Run your specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+   ```
+
+### Troubleshooting
+
+**Android App Crashes on Launch:**
+
+If you encounter navigation fragment errors or resource ID issues:
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Build with `--no-incremental` to force a clean build:
+```bash
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+```
+
+**Other debugging steps:**
+1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
+2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
+3. Check emulator: `adb devices`
+
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
@@ -211,6 +262,7 @@ Verify the following checklist before committing UI tests:
 - [ ] Confirm only ONE `[Category]` attribute is used per test
 - [ ] Verify tests run on all applicable platforms (iOS, Android, Windows, MacCatalyst) unless platform-specific
 - [ ] Document any platform-specific limitations with clear comments
+- [ ] Test passes locally on at least one platform
 
 ### Test State Management
 
