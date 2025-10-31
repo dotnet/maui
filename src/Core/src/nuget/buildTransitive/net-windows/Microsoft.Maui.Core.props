@@ -5,6 +5,8 @@
     <EnableMsixTooling Condition=" '$(EnableMsixTooling)' == '' ">true</EnableMsixTooling>
     <!-- The C++ SDK references are not needed for new apps -->
     <WinUISDKReferences Condition=" '$(WinUISDKReferences)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WinUISDKReferences>
+    <!-- Suppress WindowsAppSDK duplicate import warning: Microsoft.Build.Msix.props imported by both Microsoft.WinUI.props and Microsoft.UI.Xaml.Markup.Compiler.BeforeCommon.targets -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB4011</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Core.props" />
