@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
-  <DataCollectionRunSettings>
-    <DataCollectionProviders>
-      <DataCollectionProvider friendlyName="Code Coverage">
-        <Configuration>
-          <Module>
-            <Exclude>
-              <Module name="*" />
-            </Exclude>
-            <Include>
-              <Module name="Microsoft.Maui*.dll" />
-            </Include>
-          </Module>
-        </Configuration>
-      </DataCollectionProvider>
-    </DataCollectionProviders>
-  </DataCollectionRunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0">
+                <Configuration>
+                    <CodeCoverage>
+                        <Format>cobertura</Format>
+                        <ModulePaths>
+                            <Include>
+                                <ModulePath>.*Microsoft\.Maui.*\.dll</ModulePath>
+                            </Include>
+                            <Exclude>
+                                <ModulePath>.*Tests.dll</ModulePath>
+                                <ModulePath>.*Test.*\.dll</ModulePath>
+                                <ModulePath>.*\.UnitTests\.dll</ModulePath>
+                                <ModulePath>.*\.DeviceTests\.dll</ModulePath>
+                            </Exclude>
+                        </ModulePaths>
+                    </CodeCoverage>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
 </RunSettings>

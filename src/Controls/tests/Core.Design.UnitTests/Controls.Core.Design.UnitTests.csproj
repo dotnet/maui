@@ -10,6 +10,10 @@
     <Reference Include="System.Xaml" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
+    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftCodeCoveragePackageVersion)">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <ProjectReference Include="..\..\src\Core.Design\Controls.Core.Design.csproj" />
   </ItemGroup>
   <ItemGroup>
