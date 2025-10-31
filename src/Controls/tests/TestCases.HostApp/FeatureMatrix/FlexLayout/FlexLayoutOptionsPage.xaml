@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.FlexLayoutOptionsPage"
+             x:DataType="local:FlexLayoutViewModel"
+             Title="OptionsPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+             ColumnDefinitions="Auto,Auto">
+
+              <!-- AlignContent -->
+              <Label Grid.Row="0"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="AlignContent: "/>
+              <VerticalStackLayout Grid.Row="0"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="Stretch"
+                                         IsChecked="True"
+                                         AutomationId="AlignContentStretchButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="Center"
+                                         AutomationId="AlignContentCenterButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="Start"
+                                         AutomationId="AlignContentStartButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="End"
+                                         AutomationId="AlignContentEndButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="SpaceAround"
+                                         AutomationId="AlignContentSpaceAroundButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="SpaceBetween"
+                                         AutomationId="AlignContentSpaceBetweenButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                            <RadioButton GroupName="AlignContent"
+                                         Content="SpaceEvenly"
+                                         AutomationId="AlignContentSpaceEvenlyButton"
+                                         CheckedChanged="OnAlignContentChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- AlignItems -->
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="AlignItems: "/>
+              <VerticalStackLayout Grid.Row="1"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="AlignItems"
+                                         Content="Stretch"
+                                         IsChecked="True"
+                                         AutomationId="AlignItemsStretchButton"
+                                         CheckedChanged="OnAlignItemsChanged"/>
+                            <RadioButton GroupName="AlignItems"
+                                         Content="Center"
+                                         AutomationId="AlignItemsCenterButton"
+                                         CheckedChanged="OnAlignItemsChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="AlignItems"
+                                         Content="Start"
+                                         AutomationId="AlignItemsStartButton"
+                                         CheckedChanged="OnAlignItemsChanged"/>
+                            <RadioButton GroupName="AlignItems"
+                                         Content="End"
+                                         AutomationId="AlignItemsEndButton"
+                                         CheckedChanged="OnAlignItemsChanged"/>
+                            <Button AutomationId="SpecificHeightButton"
+                                    Clicked="OnSpecificHeightButtonClicked"
+                                    Text="Height"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- Direction -->
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="Direction: "/>
+              <VerticalStackLayout Grid.Row="2"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Direction"
+                                         Content="Row"
+                                         IsChecked="True"
+                                         AutomationId="DirectionRowButton"
+                                         CheckedChanged="OnDirectionChanged"/>
+                            <RadioButton GroupName="Direction"
+                                         Content="RowReverse"
+                                         AutomationId="DirectionRowReverseButton"
+                                         CheckedChanged="OnDirectionChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Direction"
+                                         Content="Column"
+                                         AutomationId="DirectionColumnButton"
+                                         CheckedChanged="OnDirectionChanged"/>
+                            <RadioButton GroupName="Direction"
+                                         Content="ColumnReverse"
+                                         AutomationId="DirectionColumnReverseButton"
+                                         CheckedChanged="OnDirectionChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- JustifyContent -->
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="JustifyContent: "/>
+              <VerticalStackLayout Grid.Row="3"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="JustifyContent"
+                                         Content="Start"
+                                         IsChecked="True"
+                                         AutomationId="JustifyContentStartButton"
+                                         CheckedChanged="OnJustifyContentChanged"/>
+                            <RadioButton GroupName="JustifyContent"
+                                         Content="SpaceAround"
+                                         AutomationId="JustifyContentSpaceAroundButton"
+                                         CheckedChanged="OnJustifyContentChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="JustifyContent"
+                                         Content="SpaceEvenly"
+                                         AutomationId="JustifyContentSpaceEvenlyButton"
+                                         CheckedChanged="OnJustifyContentChanged"/>
+                            <RadioButton GroupName="JustifyContent"
+                                         Content="End"
+                                         AutomationId="JustifyContentEndButton"
+                                         CheckedChanged="OnJustifyContentChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="JustifyContent"
+                                         Content="SpaceBetween"
+                                         AutomationId="JustifyContentSpaceBetweenButton"
+                                         CheckedChanged="OnJustifyContentChanged"/>
+                            <RadioButton GroupName="JustifyContent"
+                                         Content="Center"
+                                         AutomationId="JustifyContentCenterButton"
+                                         CheckedChanged="OnJustifyContentChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- Wrap -->
+              <Label Grid.Row="4"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="Wrap: "/>
+              <VerticalStackLayout Grid.Row="4"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Wrap"
+                                         Content="NoWrap"
+                                         IsChecked="True"
+                                         AutomationId="WrapNoWrapButton"
+                                         CheckedChanged="OnWrapChanged"/>
+                            <RadioButton GroupName="Wrap"
+                                         Content="Reverse"
+                                         AutomationId="WrapReverseButton"
+                                         CheckedChanged="OnWrapChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="1">
+                            <RadioButton GroupName="Wrap"
+                                         Content="Wrap"
+                                         AutomationId="WrapWrapButton"
+                                         CheckedChanged="OnWrapChanged"/>
+                            <Button AutomationId="HeightAndWidthRequestButton"
+                                    Text="HeightAndWidthRequest"
+                                    Clicked="OnHeightAndWidthRequestClicked"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- Child1 Properties -->
+              <Label Grid.Row="5"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="Child1 AlignSelf: "/>
+              <VerticalStackLayout Grid.Row="5"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Child1AlignSelf"
+                                         Content="Auto"
+                                         IsChecked="True"
+                                         AutomationId="Child1AlignSelfAutoButton"
+                                         CheckedChanged="OnChild1AlignSelfChanged"/>
+                            <RadioButton GroupName="Child1AlignSelf"
+                                         Content="Center"
+                                         AutomationId="Child1AlignSelfCenterButton"
+                                         CheckedChanged="OnChild1AlignSelfChanged"/>
+                            <RadioButton GroupName="Child1AlignSelf"
+                                         Content="Start"
+                                         AutomationId="Child1AlignSelfStartButton"
+                                         CheckedChanged="OnChild1AlignSelfChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Child1AlignSelf"
+                                         Content="End"
+                                         AutomationId="Child1AlignSelfEndButton"
+                                         CheckedChanged="OnChild1AlignSelfChanged"/>
+                            <RadioButton GroupName="Child1AlignSelf"
+                                         Content="Stretch"
+                                         AutomationId="Child1AlignSelfStretchButton"
+                                         CheckedChanged="OnChild1AlignSelfChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <Label Grid.Row="6"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="Child1"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="1">
+                     <Label Margin="7,0,0,0"
+                            Text="Grow:"
+                            TextColor="Black"
+                            VerticalOptions="Center"/>
+                     <Entry WidthRequest="20"
+                            Keyboard="Numeric"
+                            Text="{Binding Child1Grow}"
+                            AutomationId="Child1GrowEntry"/>
+                     <Label Text="Shrink:"
+                            TextColor="Black"
+                            VerticalOptions="Center"/>
+                     <Entry WidthRequest="20"
+                            Keyboard="Numeric"
+                            Text="{Binding ChildShrink}"
+                            AutomationId="ChildShrinkEntry"/>
+                     <Label Text="Order:"
+                            TextColor="Black"
+                            VerticalOptions="Center"/>
+                     <Entry WidthRequest="20"
+                            Keyboard="Numeric"
+                            Text="{Binding Child1Order}"
+                            AutomationId="Child1OrderEntry"/>
+              </HorizontalStackLayout>
+
+              <Label Grid.Row="7"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="Child1 Basis: "/>
+              <VerticalStackLayout Grid.Row="7"
+                                   Grid.Column="1">
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Child1Basis"
+                                         Content="Auto"
+                                         IsChecked="True"
+                                         AutomationId="Child1BasisAutoButton"
+                                         CheckedChanged="OnChild1BasisChanged"/>
+                            <RadioButton GroupName="Child1Basis"
+                                         Content="Fixed100"
+                                         AutomationId="Child1BasisFixed100Button"
+                                         CheckedChanged="OnChild1BasisChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton GroupName="Child1Basis"
+                                         Content="Percent50"
+                                         AutomationId="Child1BasisPercent50Button"
+                                         CheckedChanged="OnChild1BasisChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <Label Grid.Row="8"
+                     Grid.Column="0"
+                     FontSize="18"
+                     Text="Child1 Position: "/>
+              <HorizontalStackLayout Grid.Row="8"
+                                     Grid.Column="1">
+                     <RadioButton GroupName="Child1Position"
+                                  Content="Relative"
+                                  IsChecked="True"
+                                  AutomationId="Child1PositionRelativeButton"
+                                  CheckedChanged="OnChild1PositionChanged"/>
+                     <RadioButton GroupName="Child1Position"
+                                  Content="Absolute"
+                                  AutomationId="Child1PositionAbsoluteButton"
+                                  CheckedChanged="OnChild1PositionChanged"/>
+              </HorizontalStackLayout>
+       </Grid>
+</ContentPage>
