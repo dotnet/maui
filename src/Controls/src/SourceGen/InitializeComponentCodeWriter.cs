@@ -98,10 +98,21 @@ static class InitializeComponentCodeWriter
 						codeWriter.WriteLine(
 $$"""
 // Fallback to Runtime inflation if the page was updated by HotReload
+		static string? getPathForType(global::System.Type type)
+		{
+			var assembly = type.Assembly;
+			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
+			{
+				if (xria.Type == type)
+					return xria.Path;
+			}
+			return null;
+		}
+
 		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
 		{
 			AssemblyName = typeof({{rootType.ToFQDisplayString()}}).Assembly.GetName(),
-			ResourcePath = global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({{rootType.ToFQDisplayString()}})),
+			ResourcePath = getPathForType(typeof({{rootType.ToFQDisplayString()}})),
 			Instance = this,
 		});
 

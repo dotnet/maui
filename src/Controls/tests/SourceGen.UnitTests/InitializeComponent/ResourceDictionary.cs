@@ -37,10 +37,21 @@ public partial class __TypeDBD64C1C77CDA760
 	private partial void InitializeComponent()
 	{
 		// Fallback to Runtime inflation if the page was updated by HotReload
+		static string? getPathForType(global::System.Type type)
+		{
+			var assembly = type.Assembly;
+			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
+			{
+				if (xria.Type == type)
+					return xria.Path;
+			}
+			return null;
+		}
+
 		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
 		{
 			AssemblyName = typeof(global::__XamlGeneratedCode__.__TypeDBD64C1C77CDA760).Assembly.GetName(),
-			ResourcePath = global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof(global::__XamlGeneratedCode__.__TypeDBD64C1C77CDA760)),
+			ResourcePath = getPathForType(typeof(global::__XamlGeneratedCode__.__TypeDBD64C1C77CDA760)),
 			Instance = this,
 		});
 
