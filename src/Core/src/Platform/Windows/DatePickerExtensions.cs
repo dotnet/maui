@@ -55,9 +55,31 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
+			// Store the character spacing value to apply it when ready
+			var characterSpacing = datePicker.CharacterSpacing;
+
+			// Apply immediately if loaded, otherwise wait for load
+			if (platformDatePicker.IsLoaded)
+			{
+				ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing);
+			}
+			else
+			{
+				// Wait for the control to load, then apply character spacing
+				platformDatePicker.OnLoaded(() => ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing));
+			}
 		}
 
+		static void ApplyCharacterSpacingToTextBlocks(CalendarDatePicker platformDatePicker, double characterSpacing)
+		{
+			var characterSpacingEm = characterSpacing.ToEm();
+			var dateTextBlock = platformDatePicker.GetDescendantByName<TextBlock>("DateText");
+			if (dateTextBlock is not null)
+			{
+				dateTextBlock.CharacterSpacing = characterSpacingEm;
+			}
+		}
+		
 		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
 			platformDatePicker.UpdateFont(datePicker.Font, fontManager);
 
