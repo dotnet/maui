@@ -48,16 +48,12 @@
                              TranslationY="{Binding TranslationY}"
                              AnchorX="{Binding AnchorX}"
                              AnchorY="{Binding AnchorY}"
+                             IsVisible="{Binding IsVisible}"
+                             Shadow="{Binding BoxShadow}"
                              AutomationId="TransformableElement">
                             <Border.StrokeShape>
                                    <RoundRectangle CornerRadius="10"/>
                             </Border.StrokeShape>
-                            <Border.Shadow>
-                                   <Shadow Brush="Black"
-                                           Offset="2,2"
-                                           Radius="5"
-                                           Opacity="0.3"/>
-                            </Border.Shadow>
 
                             <StackLayout Orientation="Vertical"
                                          HorizontalOptions="Center"
