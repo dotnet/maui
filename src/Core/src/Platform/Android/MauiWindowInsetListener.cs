@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 	/// Registry entry for tracking view instances and their associated listeners.
 	/// Uses WeakReference to avoid memory leaks when views are disposed.
 	/// </summary>
-	internal record ViewEntry(WeakReference<object> View, GlobalWindowInsetListener Listener);
+	internal record ViewEntry(WeakReference<object> View, MauiWindowInsetListener Listener);
 
 	/// <summary>
 	/// Manages window insets and safe area handling for Android views.
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 	/// Thread Safety: All public methods should be called on the UI thread.
 	/// Android view operations are not thread-safe and must execute on the main thread.
 	/// </summary>
-	internal class GlobalWindowInsetListener : WindowInsetsAnimationCompat.Callback, IOnApplyWindowInsetsListener
+	internal class MauiWindowInsetListener : WindowInsetsAnimationCompat.Callback, IOnApplyWindowInsetsListener
 	{
 		readonly HashSet<AView> _trackedViews = [];
 		bool IsImeAnimating { get; set; }
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="view">The view to unregister</param>
-		internal static GlobalWindowInsetListener? UnregisterView(AView view)
+		internal static MauiWindowInsetListener? UnregisterView(AView view)
 		{
 			for (int i = _registeredViews.Count - 1; i >= 0; i--)
 			{
@@ -86,13 +86,13 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Finds the appropriate GlobalWindowInsetListener for a given view by walking
+		/// Finds the appropriate MauiWindowInsetListener for a given view by walking
 		/// up the view hierarchy until a registered view is found.
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="view">The view to find a listener for</param>
 		/// <returns>The local listener if view is in a registered view hierarchy, null otherwise</returns>
-		internal static GlobalWindowInsetListener? FindListenerForView(AView view)
+		internal static MauiWindowInsetListener? FindListenerForView(AView view)
 		{
 			// Walk up the view hierarchy looking for a registered view
 			var parent = view.Parent;
@@ -138,15 +138,31 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="view">The view to set up</param>
 		/// <returns>The same view for method chaining</returns>
-		internal static AView SetupViewWithLocalListener(AView view, GlobalWindowInsetListener? listener = null)
+		internal static AView SetupViewWithLocalListener(AView view, MauiWindowInsetListener? listener = null)
 		{
-			listener ??= new GlobalWindowInsetListener();
+			listener ??= new MauiWindowInsetListener();
 			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
 
 			listener.RegisterView(view);
 
 			return view;
+		}
+
+		/// <summary>
+		/// Registers a parent view so its children can find an inset listener, without attaching
+		/// the listener to the parent itself. This is useful when you want child views to handle
+		/// insets but don't want the parent view to consume them.
+		/// Must be called on UI thread.
+		/// </summary>
+		/// <param name="parentView">The parent view to register</param>
+		/// <param name="listener">Optional listener to use. If null, a new one is created.</param>
+		/// <returns>The listener that was registered</returns>
+		internal static MauiWindowInsetListener RegisterParentForChildViews(AView parentView, MauiWindowInsetListener? listener = null)
+		{
+			listener ??= new MauiWindowInsetListener();
+			listener.RegisterView(parentView);
+			return listener;
 		}
 
 		/// <summary>
@@ -165,7 +181,7 @@ namespace Microsoft.Maui.Platform
 			UnregisterView(view)?.ResetAppliedSafeAreas(view);
 		}
 
-		public GlobalWindowInsetListener() : base(DispatchModeStop)
+		public MauiWindowInsetListener() : base(DispatchModeStop)
 		{
 		}
 
@@ -433,18 +449,18 @@ namespace Microsoft.Maui.Platform
 /// These methods support both the legacy global listener pattern and the new
 /// per-view local listener pattern.
 /// </summary>
-internal static class GlobalWindowInsetListenerExtensions
+internal static class MauiWindowInsetListenerExtensions
 {
 	/// <summary>
-	/// Sets the appropriate GlobalWindowInsetListener on the specified view.
+	/// Sets the appropriate MauiWindowInsetListener on the specified view.
 	/// This prioritizes local view listeners over global ones.
 	/// </summary>
 	/// <param name="view">The Android view to set the listener on</param>
 	/// <param name="context">The Android context to get the listener from</param>
-	public static bool TrySetGlobalWindowInsetListener(this View view, Context context)
+	public static bool TrySetMauiWindowInsetListener(this View view, Context context)
 	{
 		// Check if this view is contained within a registered view first
-		if (GlobalWindowInsetListener.FindListenerForView(view) is GlobalWindowInsetListener localListener)
+		if (MauiWindowInsetListener.FindListenerForView(view) is MauiWindowInsetListener localListener)
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
@@ -456,19 +472,19 @@ internal static class GlobalWindowInsetListenerExtensions
 	}
 
 	/// <summary>
-	/// Removes the GlobalWindowInsetListener from the specified view and resets its tracked state.
+	/// Removes the MauiWindowInsetListener from the specified view and resets its tracked state.
 	/// This should be called when a view is being detached to ensure proper cleanup.
 	/// </summary>
 	/// <param name="view">The Android view to remove the listener from</param>
 	/// <param name="context">The Android context to get the listener from</param>
-	public static void RemoveGlobalWindowInsetListener(this View view, Context context)
+	public static void RemoveMauiWindowInsetListener(this View view, Context context)
 	{
 		// Clear the listeners first
 		ViewCompat.SetOnApplyWindowInsetsListener(view, null);
 		ViewCompat.SetWindowInsetsAnimationCallback(view, null);
 
 		// Reset view state - prefer local listener if available, otherwise use global
-		var listener = GlobalWindowInsetListener.FindListenerForView(view);
+		var listener = MauiWindowInsetListener.FindListenerForView(view);
 		listener?.ResetView(view);
 	}
 }

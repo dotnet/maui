@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Keep this minimal.
 		// - Will be replaced by the planned comprehensive window insets solution.
 		// - Do not extend; add new logic to the forthcoming implementation instead.
-		internal class WindowsListener : GlobalWindowInsetListener, IOnApplyWindowInsetsListener
+		internal class WindowsListener : MauiWindowInsetListener, IOnApplyWindowInsetsListener
 		{
 			private WeakReference<ImageView> _bgImageRef;
 			private WeakReference<AView> _flyoutViewRef;
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			};
 
 			_windowsListener = new WindowsListener(_bgImage);
-			GlobalWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
+			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
 
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
@@ -727,7 +727,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_rootView is CoordinatorLayout coordinator)
 			{
-				GlobalWindowInsetListener.RemoveViewWithLocalListener(coordinator);
+				MauiWindowInsetListener.RemoveViewWithLocalListener(coordinator);
 			}
 
 			if (_shellContext?.Shell != null)

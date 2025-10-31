@@ -285,11 +285,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
-			new GlobalWindowInsetListener().RegisterView(platformView);
+			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
 
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
-				GlobalWindowInsetListener.SetupViewWithLocalListener(cl);
+				MauiWindowInsetListener.SetupViewWithLocalListener(cl);
 			}
 
 			if (platformView is DrawerLayout dl)
@@ -301,10 +301,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
-			GlobalWindowInsetListener.UnregisterView(platformView);
+			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
-				GlobalWindowInsetListener.UnregisterView(cl);
+				MauiWindowInsetListener.UnregisterView(cl);
 				_navigationRoot = null;
 			}
 
