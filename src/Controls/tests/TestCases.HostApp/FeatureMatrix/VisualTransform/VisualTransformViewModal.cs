@@ -15,6 +15,7 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 	private double _scaleX = 1.0;
 	private double _scaleY = 1.0;
 	private string _transform = null;
+	private bool _isVisible = true;
 
 	// Additional Related Properties
 	private double _translationX = 0.0;
@@ -23,6 +24,50 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 	private double _anchorY = 0.5;
 
 	// Core Transformation Properties
+	public bool IsVisible
+	{
+		get => _isVisible;
+		set
+		{
+			_isVisible = value;
+			OnPropertyChanged();
+		}
+	}
+	private bool _hasShadow = false;
+	private Shadow _boxShadow = null;
+	public bool HasShadow
+	{
+		get => _hasShadow;
+		set
+		{
+			if (_hasShadow != value)
+			{
+				_hasShadow = value;
+				BoxShadow = value
+					? new Shadow
+					{
+						Radius = 10,
+						Opacity = 1.0f,
+						Brush = Colors.Black.AsPaint(),
+						Offset = new Point(5, 5)
+					}
+					: null;
+				OnPropertyChanged(nameof(HasShadow));
+			}
+		}
+	}
+	public Shadow BoxShadow
+	{
+		get => _boxShadow;
+		private set
+		{
+			if (_boxShadow != value)
+			{
+				_boxShadow = value;
+				OnPropertyChanged(nameof(BoxShadow));
+			}
+		}
+	}
 	public double Rotation
 	{
 		get => _rotation;
@@ -35,7 +80,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double RotationX
 	{
 		get => _rotationX;
@@ -48,7 +92,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double RotationY
 	{
 		get => _rotationY;
@@ -61,7 +104,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double Scale
 	{
 		get => _scale;
@@ -74,7 +116,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double ScaleX
 	{
 		get => _scaleX;
@@ -87,7 +128,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double ScaleY
 	{
 		get => _scaleY;
@@ -100,7 +140,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public string Transform
 	{
 		get => _transform;
@@ -127,7 +166,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double TranslationY
 	{
 		get => _translationY;
@@ -140,7 +178,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double AnchorX
 	{
 		get => _anchorX;
@@ -153,7 +190,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-
 	public double AnchorY
 	{
 		get => _anchorY;
@@ -169,7 +205,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 
 	// Reset Command
 	public ICommand ResetCommand => new Command(Reset);
-
 	private void Reset()
 	{
 		Rotation = 0.0;
@@ -183,6 +218,8 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 		TranslationY = 0.0;
 		AnchorX = 0.5;
 		AnchorY = 0.5;
+		IsVisible = true;
+		HasShadow = false;
 	}
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
