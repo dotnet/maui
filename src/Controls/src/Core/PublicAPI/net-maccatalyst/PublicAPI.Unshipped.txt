@@ -499,3 +499,7 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+Microsoft.Maui.Controls.BoxView.~BoxView() -> void
+~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.BoxView.Fill.set -> void
+~static readonly Microsoft.Maui.Controls.BoxView.FillProperty -> Microsoft.Maui.Controls.BindableProperty
