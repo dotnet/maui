@@ -102,8 +102,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var navigationController = GetUINavigationController(GetViewController());
 
-			if (navigationController != null)
-				navigationController.InteractivePopGestureRecognizer.Enabled = true;
+			navigationController?.InteractivePopGestureRecognizer.Enabled = true;
 
 			if (touches.AnyObject is UITouch anyObject)
 			{
@@ -227,8 +226,7 @@ namespace Microsoft.Maui.Platform
 					switch (panGestureRecognizer.State)
 					{
 						case UIGestureRecognizerState.Began:
-							if (navigationController != null)
-								navigationController.InteractivePopGestureRecognizer.Enabled = false;
+							navigationController?.InteractivePopGestureRecognizer.Enabled = false;
 
 							view.HandleTouchInteractions(GestureStatus.Started, point);
 							break;
@@ -236,14 +234,12 @@ namespace Microsoft.Maui.Platform
 							view.HandleTouchInteractions(GestureStatus.Running, point);
 							break;
 						case UIGestureRecognizerState.Ended:
-							if (navigationController != null)
-								navigationController.InteractivePopGestureRecognizer.Enabled = true;
+							navigationController?.InteractivePopGestureRecognizer.Enabled = true;
 
 							view.HandleTouchInteractions(GestureStatus.Completed, point);
 							break;
 						case UIGestureRecognizerState.Cancelled:
-							if (navigationController != null)
-								navigationController.InteractivePopGestureRecognizer.Enabled = true;
+							navigationController?.InteractivePopGestureRecognizer.Enabled = true;
 
 							view.HandleTouchInteractions(GestureStatus.Canceled, point);
 							break;
@@ -532,8 +528,7 @@ namespace Microsoft.Maui.Platform
 
 			var parent = this.GetParentOfType<UIScrollView>();
 
-			if (parent != null)
-				parent.ScrollEnabled = _isScrollEnabled;
+			parent?.ScrollEnabled = _isScrollEnabled;
 		}
 
 		bool TouchInsideContent(CGPoint point)
