@@ -1647,7 +1647,6 @@ Microsoft.Maui.Platform.LayoutPanel
 Microsoft.Maui.Platform.LayoutPanel.ClipsToBounds.get -> bool
 Microsoft.Maui.Platform.LayoutPanel.ClipsToBounds.set -> void
 Microsoft.Maui.Platform.LayoutPanel.LayoutPanel() -> void
-Microsoft.Maui.Platform.LayoutPanel.UpdateInputTransparent(bool inputTransparent, Microsoft.UI.Xaml.Media.Brush? background) -> void
 Microsoft.Maui.Platform.LayoutPanelExtensions
 Microsoft.Maui.Platform.MauiAutoSuggestBox
 Microsoft.Maui.Platform.MauiButton
@@ -3004,7 +3003,6 @@ static Microsoft.Maui.Platform.ViewExtensions.UpdateBorder(this Microsoft.UI.Xam
 static Microsoft.Maui.Platform.ViewExtensions.UpdateClip(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateFlowDirection(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateHeight(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.IView! view) -> void
-static Microsoft.Maui.Platform.ViewExtensions.UpdateInputTransparent(this Microsoft.Maui.Platform.LayoutPanel! layoutPanel, Microsoft.Maui.ILayoutHandler! handler, Microsoft.Maui.ILayout! layout) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateInputTransparent(this Microsoft.UI.Xaml.FrameworkElement! nativeView, Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateIsEnabled(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateMaximumHeight(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.IView! view) -> void
