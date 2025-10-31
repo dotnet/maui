@@ -29,8 +29,8 @@ public class Issue30539 : _IssuesUITest
 
 		for (int i = 0; i < maxAttempts; i++)
 		{
-			var text = navigatingLabel.GetText();
-			if (text.Contains("Navigating event triggered"))
+			var text = navigatingLabel?.GetText();
+			if (text != null && text.Contains("Navigating event triggered", StringComparison.Ordinal))
 			{
 				break;
 			}
@@ -43,16 +43,16 @@ public class Issue30539 : _IssuesUITest
 		}
 
 		// Verify that the Navigating event was triggered
-		Assert.That(navigatingLabel.GetText(), Is.EqualTo("Navigating event triggered"));
+		Assert.That(navigatingLabel?.GetText(), Is.EqualTo("Navigating event triggered"));
 
 		// Verify that the URL was captured
 		var urlLabel = App.WaitForElement("UrlLabel");
-		var urlText = urlLabel.GetText();
+		var urlText = urlLabel?.GetText();
 		Assert.That(urlText, Does.Contain("URL:"));
 		Assert.That(urlText, Does.Contain("microsoft.com").Or.Contains("github.com"));
 
 		// Verify that navigation can be cancelled
 		var cancelLabel = App.WaitForElement("CancelLabel");
-		Assert.That(cancelLabel.GetText(), Does.Contain("Can cancel: Yes"));
+		Assert.That(cancelLabel?.GetText(), Does.Contain("Can cancel: Yes"));
 	}
 }
