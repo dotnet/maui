@@ -92,6 +92,6 @@ internal partial class TestPage
 		var (result, generated) = RunGenerator(xaml, code);
 		Assert.False(result.Diagnostics.Any());
 
-		Assert.Equal(expected.Replace("\r\n", "\n", StringComparison.Ordinal), generated?.Replace("\r\n", "\n", StringComparison.Ordinal));
+		TestAssertions.AssertEqualIgnoringLineEndings(expected, generated);
 	}
 }
