@@ -81,7 +81,7 @@ stages:
     parameters:
       pool: ${{ parameters.macOSPool }}
       runAsPublic: true
-      TargetFrameworkVersion: targetFrameworkVersion.tfm
+      TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:
