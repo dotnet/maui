@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		bool _isUpdating = false;
 		int _section = 0;
+		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 
 		// We need to keep track of the old views to update the visual states
@@ -131,13 +132,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		private protected override async void AttachingToWindow()
 		{
 			base.AttachingToWindow();
+			// Refresh the current visible item to catch any ItemsSource changes that occurred on other pages
+			// This ensures that updates made on other pages are reflected when navigating back
+			if (_wasDetachedFromWindow)
+			{
+				RefreshVisibleItems();
+			}
 			Setup(ItemsView);
+			_wasDetachedFromWindow = false;
 			// if we navigate back on NavigationController LayoutSubviews might not fire.
 			await UpdateInitialPosition();
 		}
 
+		void RefreshVisibleItems()
+		{
+			if (CollectionView is null || ItemsSource?.ItemCount == 0)
+			{
+				return;
+			}
+			// Get current visible item index paths to ensure proper refresh of carousel items
+			// Create a defensive copy to avoid issues if ItemsSource changes during execution
+			var indexPaths = CollectionView.IndexPathsForVisibleItems;
+			if (indexPaths?.Length > 0)
+			{
+				// Create a copy of the array to prevent concurrent modification issues
+				var indexPathsCopy = new NSIndexPath[indexPaths.Length];
+				Array.Copy(indexPaths, indexPathsCopy, indexPaths.Length);
+
+				CollectionView.ReloadItems(indexPathsCopy);
+			}
+		}
+
 		private protected override void DetachingFromWindow()
 		{
+			_wasDetachedFromWindow = true;
 			base.DetachingFromWindow();
 			TearDown(ItemsView);
 		}
