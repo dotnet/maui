@@ -7,13 +7,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_ContentPage : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
+	public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
 
-    public Issue28986_ContentPage(TestDevice device) : base(device)
-    {
-    }
+	public Issue28986_ContentPage(TestDevice device) : base(device)
+	{
+	}
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaMainGridBasicFunctionality()
 	{
@@ -98,7 +98,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 	}
 
 
-	#if TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_ANDROID
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaPerEdgeValidation()
@@ -129,6 +129,6 @@ public class Issue28986_ContentPage : _IssuesUITest
 			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		});
 	}
-	#endif
+#endif
 }
 #endif

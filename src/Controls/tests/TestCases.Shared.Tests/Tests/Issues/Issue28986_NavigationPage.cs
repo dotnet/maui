@@ -7,13 +7,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_NavigationPage : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea Navigation Page for per-edge safe area control";
+	public override string Issue => "Test SafeArea Navigation Page for per-edge safe area control";
 
-    public Issue28986_NavigationPage(TestDevice device) : base(device)
-    {
-    }
+	public Issue28986_NavigationPage(TestDevice device) : base(device)
+	{
+	}
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void ToolbarExtendsAllTheWayLeftAndRight_NavigationPage()
 	{

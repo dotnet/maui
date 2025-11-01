@@ -26,7 +26,6 @@ public partial class CategoryPage : ContentPage
 		}
 
 		var cv = sender as CollectionView;
-		if (cv is not null)
-			cv.SelectedItem = null;
+		cv?.SelectedItem = null;
 	}
 }

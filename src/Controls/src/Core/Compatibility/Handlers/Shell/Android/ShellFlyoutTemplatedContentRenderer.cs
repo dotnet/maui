@@ -100,10 +100,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					return null;
 				}
-                set
-                {
+				set
+				{
 					_flyoutViewRef = new WeakReference<AView>(value);
-                }
+				}
 			}
 			public AView FooterView
 			{
@@ -114,10 +114,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					return null;
 				}
-                set
-                {
+				set
+				{
 					_footerViewRef = new WeakReference<AView>(value);
-                }
+				}
 			}
 
 			public WindowsListener(ImageView bgImage)
@@ -144,11 +144,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					v.SetPadding(0, 0, 0, bottomInset);
 					flyoutViewBottomInset = 0;
 				}
-                else
-                {
+				else
+				{
 					flyoutViewBottomInset = bottomInset;
 					v.SetPadding(0, 0, 0, 0);
-                }
+				}
 
 				if (appbarLayout.MeasuredHeight > 0)
 				{
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					FlyoutView?.SetPadding(0, topInset, 0, flyoutViewBottomInset);
 					appbarLayout?.SetPadding(0, 0, 0, 0);
-                }
+				}
 
 				if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 				{
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return WindowInsetsCompat.Consumed;
 			}
 		}
-		
+
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
@@ -726,14 +726,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_flyoutHeader = null;
 
-			if (_footerView != null)
-				_footerView.View = null;
+			_footerView?.View = null;
 
 			_headerView?.Disconnect();
 			DisconnectRecyclerView();
 
-			if (_contentView != null)
-				_contentView.View = null;
+			_contentView?.View = null;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -764,8 +762,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_headerView != null)
 					_headerView.LayoutChange -= OnHeaderViewLayoutChange;
 
-				if (_contentView != null)
-					_contentView.View = null;
+				_contentView?.View = null;
 
 				_flyoutContentView?.Dispose();
 				_headerView?.Dispose();

@@ -335,10 +335,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					UpdateQueryIcon();
 				}
-				else if (autoSuggestBox is not null)
+				else
 				{
 					// there is no current search handler, so hide the autoSuggestBox
-					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
+					autoSuggestBox?.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
 		}

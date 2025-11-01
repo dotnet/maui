@@ -6,11 +6,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-    public enum Maui32056Enum : byte
-    {
-        A = 0,
-        B = 1
-    }
+public enum Maui32056Enum : byte
+{
+	A = 0,
+	B = 1
+}
 
 public partial class Maui32056 : ContentPage
 {
@@ -40,7 +40,7 @@ public partial class Maui32056 : ContentPage
 				Assert.IsFalse(hasLoggedErrors);
 			}
 			var page = new Maui32056(inflator);
-			Assert.AreEqual(Maui32056Enum.A.ToString(), page.label0.Text);			
+			Assert.AreEqual(Maui32056Enum.A.ToString(), page.label0.Text);
 		}
 	}
 }

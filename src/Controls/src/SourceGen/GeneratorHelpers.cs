@@ -45,7 +45,7 @@ static class GeneratorHelpers
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAndCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
@@ -383,7 +383,7 @@ static class GeneratorHelpers
 			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
 		}
 		return (code, xamlItem, diagnostics);
-    }
+	}
 
 	/// <summary>
 	/// Formats a value as a culture-independent C# literal for source generation.

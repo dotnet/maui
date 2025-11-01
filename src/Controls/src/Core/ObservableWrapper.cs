@@ -144,13 +144,11 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				int innerIndex = ToInnerIndex(index);
-				if (value != null)
-					value.Owned = true;
+				value?.Owned = true;
 				TTrack old = _list[innerIndex];
 				_list[innerIndex] = value;
 
-				if (old != null)
-					old.Owned = false;
+				old?.Owned = false;
 			}
 		}
 

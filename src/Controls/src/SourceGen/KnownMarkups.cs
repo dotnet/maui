@@ -116,7 +116,7 @@ internal class KnownMarkups
 		return true;
 	}
 
-	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
 
@@ -156,7 +156,7 @@ internal class KnownMarkups
 		return false;
 	}
 
-	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
 		string? key = null;
@@ -220,7 +220,7 @@ internal class KnownMarkups
 		}
 	}
 
-	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: true, getNodeValue, out returnType, out value);
 	}
@@ -230,11 +230,11 @@ internal class KnownMarkups
 		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: false, getNodeValue, out returnType, out value);
 	}
 
-	private static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, bool isTemplateBinding,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	private static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, bool isTemplateBinding, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
-		if (   context.Variables.TryGetValue(markupNode, out ILocalValue extVariable)
+		if (context.Variables.TryGetValue(markupNode, out ILocalValue extVariable)
 			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
 			&& dataTypeSymbol is not null)
 		{
@@ -304,7 +304,7 @@ internal class KnownMarkups
 				expression += $", source:global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent";
 			}
 			else
-            {
+			{
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "Source"), out var sourceNode))
 					expression += $", source: {getNodeValue(sourceNode, context.Compilation.GetTypeByMetadataName("System.String")!).ValueAccessor}";
 				expression += ") {";
@@ -314,7 +314,7 @@ internal class KnownMarkups
 					expression += $"FallbackValue = {getNodeValue(fallbackValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "TargetNullValue"), out var targetNullValueNode))
 					expression += $"TargetNullValue = {getNodeValue(targetNullValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
-            }
+			}
 
 			expression += "}";
 			value = expression;
@@ -608,8 +608,8 @@ internal class KnownMarkups
 		// At least one value must be set
 		if (lightValue is null && darkValue is null && defaultValue is null)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
-				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError,
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""),
 				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
 			value = string.Empty;
 			return false;
@@ -617,13 +617,13 @@ internal class KnownMarkups
 
 		// Build the AppThemeBinding initialization expression
 		var parts = new List<string>();
-		
+
 		if (lightValue is not null)
 			parts.Add($"Light = {lightValue}");
-		
+
 		if (darkValue is not null)
 			parts.Add($"Dark = {darkValue}");
-		
+
 		if (defaultValue is not null)
 			parts.Add($"Default = {defaultValue}");
 
@@ -658,7 +658,7 @@ internal class KnownMarkups
 			returnType = lvalue.Type;
 			return true;
 		}
-		
+
 		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
 		{
 			returnType = context.Compilation.ObjectType;

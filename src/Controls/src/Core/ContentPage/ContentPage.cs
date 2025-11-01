@@ -2,11 +2,10 @@
 
 using System;
 using System.Diagnostics;
-
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {

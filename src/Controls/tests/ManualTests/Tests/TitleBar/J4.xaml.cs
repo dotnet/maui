@@ -44,10 +44,7 @@ public partial class J4 : ContentPage
 
 	private void SetWindowTitleBar(object sender, EventArgs e)
 	{
-		if (this.Window != null)
-		{
-			this.Window.TitleBar = TitleBar;
-		}
+		this.Window?.TitleBar = TitleBar;
 	}
 #endif
 }

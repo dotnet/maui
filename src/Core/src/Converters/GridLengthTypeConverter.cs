@@ -62,7 +62,7 @@ public sealed class GridLengthTypeConverter : TypeConverter
 	}
 
 	public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
-	
+
 	public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
 	{
 		if (destinationType == typeof(string) && value is GridLength length)

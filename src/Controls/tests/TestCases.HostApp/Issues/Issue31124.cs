@@ -15,7 +15,7 @@ public class Issue31124 : ContentPage
 	void InitializeComponent()
 	{
 		Title = "DatePicker Null Test";
-			
+
 		_datePicker = new DatePicker
 		{
 			AutomationId = "TestDatePicker",
@@ -51,8 +51,8 @@ public class Issue31124 : ContentPage
 				_datePicker,
 				_setNullButton,
 				_dateLabel,
-				new Label 
-				{ 
+				new Label
+				{
 					Text = "Expected: After clicking button, date should be null",
 					FontSize = 12,
 					TextColor = Colors.Gray
@@ -65,7 +65,7 @@ public class Issue31124 : ContentPage
 	{
 		// Set datePicker.Date to null
 		_datePicker.Date = null;
-			
+
 		// Update the label to show the current date
 		_dateLabel.Text = $"Current Date: {_datePicker.Date:d}";
 	}

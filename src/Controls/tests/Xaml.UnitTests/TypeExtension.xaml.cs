@@ -8,6 +8,7 @@ using NUnit.Framework;
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
 public enum NavigationOperation
 {
 	Forward,

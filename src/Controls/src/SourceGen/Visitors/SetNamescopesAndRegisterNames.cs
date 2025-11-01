@@ -113,7 +113,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-	public static  ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
+	public static ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
 	{
 		var namescope = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))

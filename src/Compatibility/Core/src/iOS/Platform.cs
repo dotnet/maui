@@ -30,8 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 #endif
 				var view = bindable as VisualElement;
-				if (view != null)
-					view.IsPlatformEnabled = newvalue != null;
+				view?.IsPlatformEnabled = newvalue != null;
 
 				if (bindable is IView mauiView)
 				{
@@ -520,8 +519,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
 					n =>
 					{
-						if (alert.PopoverPresentationController != null)
-							alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
+						alert.PopoverPresentationController?.SourceRect = window.RootViewController.View.Bounds;
 					});
 
 				arguments.Result.Task.ContinueWith(t =>

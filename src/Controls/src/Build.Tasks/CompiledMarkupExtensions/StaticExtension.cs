@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						return [Instruction.Create(OpCodes.Ldc_I4, (uint)fieldDef.Constant)];
 					if (fieldDef.Constant is byte)
 						return [Instruction.Create(OpCodes.Ldc_I4, (int)(byte)fieldDef.Constant)];
-						if (fieldDef.Constant is sbyte)
+					if (fieldDef.Constant is sbyte)
 						return [Instruction.Create(OpCodes.Ldc_I4, (int)(sbyte)fieldDef.Constant)];
 					if (fieldDef.Constant is short)
 						return [Instruction.Create(OpCodes.Ldc_I4, (int)(short)fieldDef.Constant)];

@@ -27,7 +27,7 @@ public partial class DataTemplateExtension : ContentPage
 			Assert.That(obj, Is.TypeOf<DataTemplateExtension>());
 		}
 
-				public void ExtensionsAreReplaced([Values(XamlInflator.SourceGen)] XamlInflator inflator)
+		public void ExtensionsAreReplaced([Values(XamlInflator.SourceGen)] XamlInflator inflator)
 		{
 			var result = CreateMauiCompilation()
 				.WithAdditionalSource(
