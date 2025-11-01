@@ -143,16 +143,29 @@ namespace Microsoft.Maui.Platform
 			return SafeAreaRegions.None;
 		}
 
-		static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea)
+		// Note: This method was changed from static to instance to access _isKeyboardShowing field
+		// which is needed to determine if SoftInput padding should be applied
+		double GetSafeAreaForEdge(double originalSafeArea, int edge)
 		{
+			var safeAreaRegion = GetSafeAreaRegionForEdge(edge);
+
 			// Edge-to-edge content - no safe area padding
 			if (safeAreaRegion == SafeAreaRegions.None)
 				return 0;
 
+			// Handle SoftInput specifically - only apply padding when keyboard is actually showing
+			if (edge == 3 && SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
+			{
+				// SoftInput only applies padding when keyboard is showing
+				// When keyboard is hidden, return 0 to avoid showing home indicator padding
+				if (!_isKeyboardShowing)
+					return 0;
+			}
+
 			// All other regions respect safe area in some form
 			// This includes:
 			// - Default: Platform default behavior
-			// - All: Obey all safe area insets  
+			// - All: Obey all safe area insets
 			// - SoftInput: Always pad for keyboard/soft input
 			// - Container: Content flows under keyboard but stays out of bars/notch
 			// - Any combination of the above flags
@@ -336,10 +349,10 @@ namespace Microsoft.Maui.Platform
 			if (View is ISafeAreaView2)
 			{
 				// Apply safe area selectively per edge based on SafeAreaRegions
-				var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0), baseSafeArea.Left);
-				var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1), baseSafeArea.Top);
-				var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2), baseSafeArea.Right);
-				var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3), baseSafeArea.Bottom);
+				var left = GetSafeAreaForEdge(baseSafeArea.Left, 0);
+				var top = GetSafeAreaForEdge(baseSafeArea.Top, 1);
+				var right = GetSafeAreaForEdge(baseSafeArea.Right, 2);
+				var bottom = GetSafeAreaForEdge(baseSafeArea.Bottom, 3);
 
 				return new SafeAreaPadding(left, right, top, bottom);
 			}
