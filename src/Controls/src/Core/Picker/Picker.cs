@@ -410,7 +410,8 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex();
+			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
