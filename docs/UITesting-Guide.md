@@ -302,7 +302,87 @@ public void iOSOnlyFeature()
 
 ## Running Tests
 
-### Command Line
+### Quick Start: Running Specific Tests
+
+For rapid development and debugging, you can run specific tests directly:
+
+**Android:**
+
+1. Deploy TestCases.HostApp to Android emulator/device:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+**iOS (3-step process):**
+
+1. **Find iPhone Xs with highest API level:**
+   ```bash
+   # View all iPhone Xs devices with their iOS versions
+   xcrun simctl list devices available | awk '/^--.*iOS/ {version=$0} /iPhone Xs/ {print version " -> " $0}'
+
+   # Extract UDID of iPhone Xs with highest iOS version (last in list)
+   UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+
+   # Verify UDID was found
+   if [ -z "$UDID" ]; then
+       echo "ERROR: No iPhone Xs simulator found. Please create an iPhone Xs simulator before running iOS tests."
+       exit 1
+   fi
+
+   echo "Using iPhone Xs with UDID: $UDID"
+   ```
+
+2. **Build the iOS app:**
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+   ```
+
+3. **Boot simulator and install app (non-blocking):**
+   ```bash
+   # Boot the simulator (will error if already booted, which is fine)
+   xcrun simctl boot $UDID 2>/dev/null || true
+
+   # Install the app to the simulator
+   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+
+   # Verify simulator is booted
+   xcrun simctl list devices | grep "$UDID"
+   ```
+
+4. **Run specific test:**
+   ```bash
+   dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+**MacCatalyst:**
+
+1. Deploy TestCases.HostApp to MacCatalyst:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+### Full Test Suite: Using Cake Build System
+
+For comprehensive CI-like test runs:
 
 **Android:**
 
@@ -434,6 +514,41 @@ Don't:
 * Test multiple unrelated concepts in one test.
 * Skip assertions (tests should validate something).
 * Rely solely on element existence without visual validation.
+
+## Troubleshooting
+
+### Android App Crashes on Launch
+
+If you encounter navigation fragment errors or resource ID issues when launching the Android HostApp:
+
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Build with `--no-incremental` to force a clean build and regenerate Android resource IDs:
+
+```bash
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+```
+
+**Debugging Steps:**
+
+1. Monitor logcat for crash details:
+   ```bash
+   adb logcat -c  # Clear logcat buffer
+   adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)" &
+   ```
+
+2. Try clean build if incremental builds fail:
+   ```bash
+   dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+3. Check Android emulator is running:
+   ```bash
+   adb devices
+   ```
 
 ## Pre-Commit Checklist
 

@@ -1,6 +1,5 @@
 ---
 applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCases.HostApp/**"
-date: 2025-10-30
 ---
 
 # UI Testing Guidelines for .NET MAUI
@@ -199,6 +198,104 @@ public void SoftInputBehaviorTest()
 #endif
 ```
 
+## Running UI Tests Locally
+
+### Quick Test Execution (for rapid development)
+
+When developing and debugging a specific test:
+
+**Android:**
+1. Deploy the TestCases.HostApp:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+2. Run your specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+   ```
+
+**iOS (3-step process):**
+
+**Step 1: Find iPhone Xs with highest API level**
+```bash
+# View all iPhone Xs devices with their iOS versions
+xcrun simctl list devices available | awk '/^--.*iOS/ {version=$0} /iPhone Xs/ {print version " -> " $0}'
+
+# Extract UDID of iPhone Xs with highest iOS version (last in list)
+UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+
+# Verify UDID was found
+if [ -z "$UDID" ]; then
+    echo "ERROR: No iPhone Xs simulator found. Please create an iPhone Xs simulator before running iOS tests."
+    exit 1
+fi
+
+echo "Using iPhone Xs with UDID: $UDID"
+```
+
+**Step 2: Build the iOS app**
+```bash
+# Use local dotnet if available, otherwise use global dotnet
+./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+# OR:
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+```
+
+**Step 3: Boot simulator and install app (non-blocking)**
+```bash
+# Boot the simulator (will error if already booted, which is fine)
+xcrun simctl boot $UDID 2>/dev/null || true
+
+# Install the app to the simulator
+xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+
+# Verify simulator is booted
+xcrun simctl list devices | grep "$UDID"
+```
+
+**Step 4: Run your specific test**
+```bash
+dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
+
+**MacCatalyst:**
+
+**Step 1: Deploy TestCases.HostApp to MacCatalyst**
+```bash
+# Use local dotnet if available, otherwise use global dotnet
+./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+# OR:
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+```
+
+**Step 2: Run your specific test**
+```bash
+dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
+
+### Troubleshooting
+
+**Android App Crashes on Launch:**
+
+If you encounter navigation fragment errors or resource ID issues:
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Build with `--no-incremental` to force a clean build:
+```bash
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+```
+
+**Other debugging steps:**
+1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
+2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
+3. Check emulator: `adb devices`
+
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
@@ -211,6 +308,7 @@ Verify the following checklist before committing UI tests:
 - [ ] Confirm only ONE `[Category]` attribute is used per test
 - [ ] Verify tests run on all applicable platforms (iOS, Android, Windows, MacCatalyst) unless platform-specific
 - [ ] Document any platform-specific limitations with clear comments
+- [ ] Test passes locally on at least one platform
 
 ### Test State Management
 
