@@ -4,6 +4,15 @@ Microsoft.Maui.Converters.GridLengthTypeConverter.GridLengthTypeConverter() -> v
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter
 Microsoft.Maui.Converters.SafeAreaEdgesTypeConverter.SafeAreaEdgesTypeConverter() -> void
 Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
+Microsoft.Maui.PlatformDrawable
+Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
+override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
+Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
 Microsoft.Maui.Handlers.DataFlowDirection
