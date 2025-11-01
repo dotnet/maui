@@ -1,8 +1,7 @@
 ---
-applies_to:
-  - src/Templates/**
+applyTo: "src/Templates/**"
+date: 2025-10-30
 ---
-<!-- This front-matter configures path-specific Copilot instructions for template files -->
 
 # Working with .NET MAUI Templates
 
