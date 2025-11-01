@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, RouteFactory> s_routes = new(StringComparer.Ordinal);
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
+		readonly static HashSet<string> routeSet = new HashSet<string>();
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
@@ -115,6 +116,7 @@ namespace Microsoft.Maui.Controls
 			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
 			s_routeKeys = null;
+			routeSet.Clear();
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
@@ -220,6 +222,7 @@ namespace Microsoft.Maui.Controls
 			{
 				s_routeKeys = null;
 			}
+			RemoveRouteFromSet(route);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs/*" />
@@ -234,6 +237,42 @@ namespace Microsoft.Maui.Controls
 		public static void SetRoute(Element obj, string value)
 		{
 			obj.SetValue(RouteProperty, value);
+		}
+
+		private static void RemoveRouteFromSet(string route)
+		{
+			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
+			{
+				routeSet.Remove(route);
+			}
+		}
+
+		internal static void ValidateForDuplicates(Element element, string route)
+		{
+			var currentRoute = GetRoute(element);
+
+			// Remove the old route when it's being changed
+			if (!string.IsNullOrEmpty(currentRoute) && IsUserDefined(currentRoute) && currentRoute != route)
+			{
+				RemoveRouteFromSet(currentRoute);
+			}
+
+			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
+			{
+				if (!routeSet.Add(route))
+				{
+					throw new ArgumentException($"Duplicated Route: \"{route}\" ");
+				}
+			}
+		}
+
+		internal static void RemoveElementRoute(Element element)
+		{
+			if (element == null)
+				return;
+
+			var route = GetRoute(element);
+			RemoveRouteFromSet(route);
 		}
 
 		static void ValidateRoute(string route, RouteFactory routeFactory)
