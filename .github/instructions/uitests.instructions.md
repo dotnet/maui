@@ -262,6 +262,21 @@ xcrun simctl list devices | grep "$UDID"
 dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
 ```
 
+**MacCatalyst:**
+
+**Step 1: Deploy TestCases.HostApp to MacCatalyst**
+```bash
+# Use local dotnet if available, otherwise use global dotnet
+./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+# OR:
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+```
+
+**Step 2: Run your specific test**
+```bash
+dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
+
 ### Troubleshooting
 
 **Android App Crashes on Launch:**

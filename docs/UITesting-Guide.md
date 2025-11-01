@@ -365,6 +365,21 @@ For rapid development and debugging, you can run specific tests directly:
    dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue11311"
    ```
 
+**MacCatalyst:**
+
+1. Deploy TestCases.HostApp to MacCatalyst:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
 ### Full Test Suite: Using Cake Build System
 
 For comprehensive CI-like test runs:

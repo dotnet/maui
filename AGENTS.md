@@ -223,10 +223,22 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
    xcrun simctl list devices | grep "$UDID"
    ```
 
-3. **Run specific tests:**
+3. **Deploy TestCases.HostApp to MacCatalyst:**
    ```bash
-   # Run specific test by name
+   # Build and run the MacCatalyst app
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   ```
+
+4. **Run specific tests:**
+   ```bash
+   # Android tests
    dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+
+   # iOS tests
+   dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+
+   # MacCatalyst tests
+   dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
 
    # Run all tests for a category
    dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "Category=CollectionView"
