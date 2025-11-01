@@ -147,10 +147,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ButtonsPropertyCanBeSet()
 		{
 			var gesture = new PointerGestureRecognizer();
-			
+
 			gesture.Buttons = ButtonsMask.Secondary;
 			Assert.Equal(ButtonsMask.Secondary, gesture.Buttons);
-			
+
 			gesture.Buttons = ButtonsMask.Primary | ButtonsMask.Secondary;
 			Assert.Equal(ButtonsMask.Primary | ButtonsMask.Secondary, gesture.Buttons);
 		}
@@ -160,10 +160,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			var bindingContext = new { TestButtons = ButtonsMask.Secondary };
-			
+
 			gesture.SetBinding(PointerGestureRecognizer.ButtonsProperty, "TestButtons");
 			gesture.BindingContext = bindingContext;
-			
+
 			Assert.Equal(ButtonsMask.Secondary, gesture.Buttons);
 		}
 
@@ -173,14 +173,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var gesture = new PointerGestureRecognizer();
 			bool propertyChanged = false;
 			string changedProperty = null;
-			
-			gesture.PropertyChanged += (sender, e) => {
+
+			gesture.PropertyChanged += (sender, e) =>
+			{
 				propertyChanged = true;
 				changedProperty = e.PropertyName;
 			};
-			
+
 			gesture.Buttons = ButtonsMask.Secondary;
-			
+
 			Assert.True(propertyChanged);
 			Assert.Equal(nameof(PointerGestureRecognizer.Buttons), changedProperty);
 		}
@@ -201,7 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			gesture.Buttons = ButtonsMask.Primary;
-			
+
 			// Verify only primary button is accepted
 			Assert.Equal(ButtonsMask.Primary, gesture.Buttons);
 		}
@@ -211,7 +212,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			gesture.Buttons = ButtonsMask.Secondary;
-			
+
 			// Verify only secondary button is accepted
 			Assert.Equal(ButtonsMask.Secondary, gesture.Buttons);
 		}
@@ -221,7 +222,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			gesture.Buttons = ButtonsMask.Primary | ButtonsMask.Secondary;
-			
+
 			// Verify both buttons are accepted
 			Assert.Equal(ButtonsMask.Primary | ButtonsMask.Secondary, gesture.Buttons);
 		}
@@ -231,18 +232,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			var propertyChangedCount = 0;
-			
-			gesture.PropertyChanged += (sender, e) => {
+
+			gesture.PropertyChanged += (sender, e) =>
+			{
 				if (e.PropertyName == nameof(PointerGestureRecognizer.Buttons))
 					propertyChangedCount++;
 			};
-			
+
 			gesture.Buttons = ButtonsMask.Secondary;
 			Assert.Equal(1, propertyChangedCount);
-			
+
 			gesture.Buttons = ButtonsMask.Primary | ButtonsMask.Secondary;
 			Assert.Equal(2, propertyChangedCount);
-			
+
 			// Setting same value shouldn't trigger change
 			gesture.Buttons = ButtonsMask.Primary | ButtonsMask.Secondary;
 			Assert.Equal(2, propertyChangedCount);
@@ -253,7 +255,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var pointerGesture = new PointerGestureRecognizer();
 			var tapGesture = new TapGestureRecognizer();
-			
+
 			// Both should have the same default value
 			Assert.Equal(tapGesture.Buttons, pointerGesture.Buttons);
 			Assert.Equal(ButtonsMask.Primary, pointerGesture.Buttons);
@@ -264,12 +266,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			var source = new ButtonsSource();
-			
+
 			gesture.SetBinding(PointerGestureRecognizer.ButtonsProperty, nameof(ButtonsSource.Buttons));
 			gesture.BindingContext = source;
-			
+
 			Assert.Equal(ButtonsMask.Secondary, gesture.Buttons);
-			
+
 			source.Buttons = ButtonsMask.Primary | ButtonsMask.Secondary;
 			Assert.Equal(ButtonsMask.Primary | ButtonsMask.Secondary, gesture.Buttons);
 		}
@@ -279,15 +281,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gesture = new PointerGestureRecognizer();
 			var source = new ButtonsSource();
-			
-			gesture.SetBinding(PointerGestureRecognizer.ButtonsProperty, 
+
+			gesture.SetBinding(PointerGestureRecognizer.ButtonsProperty,
 				new Binding(nameof(ButtonsSource.Buttons), BindingMode.TwoWay));
 			gesture.BindingContext = source;
-			
+
 			// Change source, verify gesture updates
 			source.Buttons = ButtonsMask.Primary | ButtonsMask.Secondary;
 			Assert.Equal(ButtonsMask.Primary | ButtonsMask.Secondary, gesture.Buttons);
-			
+
 			// Change gesture, verify source updates
 			gesture.Buttons = ButtonsMask.Secondary;
 			Assert.Equal(ButtonsMask.Secondary, source.Buttons);
@@ -299,11 +301,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var gesture = new PointerGestureRecognizer();
 			var button = new Button();
 			bool eventFired = false;
-			
+
 			// Test that events properly connect with button filtering
 			gesture.PointerPressed += (s, e) => eventFired = true;
 			button.GestureRecognizers.Add(gesture);
-			
+
 			// Verify gesture is properly added
 			Assert.Contains(gesture, button.GestureRecognizers);
 			Assert.Equal(ButtonsMask.Primary, gesture.Buttons);
@@ -315,10 +317,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Verify that existing code using PointerGestureRecognizer without setting Buttons still works
 			var gesture = new PointerGestureRecognizer();
 			var view = new Label { Text = "Test" };
-			
+
 			// Add gesture without explicitly setting Buttons property
 			view.GestureRecognizers.Add(gesture);
-			
+
 			// Should use default value (Primary button)
 			Assert.Equal(ButtonsMask.Primary, gesture.Buttons);
 			Assert.Contains(gesture, view.GestureRecognizers);
@@ -329,24 +331,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var pointerGesture = new PointerGestureRecognizer();
 			var tapGesture = new TapGestureRecognizer();
-			
+
 			// Both gesture types should have consistent button handling
 			Assert.Equal(pointerGesture.Buttons, tapGesture.Buttons);
-			
+
 			// Setting the same value on both should work identically
 			var testMask = ButtonsMask.Secondary | ButtonsMask.Primary;
 			pointerGesture.Buttons = testMask;
 			tapGesture.Buttons = testMask;
-			
+
 			Assert.Equal(tapGesture.Buttons, pointerGesture.Buttons);
 			Assert.Equal(testMask, pointerGesture.Buttons);
 		}
 
 		private class ButtonsSource : BindableObject
 		{
-			public static readonly BindableProperty ButtonsProperty = 
+			public static readonly BindableProperty ButtonsProperty =
 				BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(ButtonsSource), ButtonsMask.Secondary);
-			
+
 			public ButtonsMask Buttons
 			{
 				get => (ButtonsMask)GetValue(ButtonsProperty);

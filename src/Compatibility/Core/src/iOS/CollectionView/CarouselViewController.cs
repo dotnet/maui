@@ -308,8 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var carouselPosition = Carousel.Position;
 
-			if (LoopItemsSource != null)
-				LoopItemsSource.Loop = Carousel.Loop;
+			LoopItemsSource?.Loop = Carousel.Loop;
 
 			CollectionView.ReloadData();
 

@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
+
 public class EditorViewModel : INotifyPropertyChanged
 {
 	private string _text = "Test Editor";

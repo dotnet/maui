@@ -66,8 +66,7 @@ public sealed class ListGroup<T> : List<T>, INotifyPropertyChanged, INotifyColle
 			if (_isExpanded == value)
 				return;
 
-			if (Cell != null)
-				Cell.Height = value ? 75 : 40;
+			Cell?.Height = value ? 75 : 40;
 
 			_isExpanded = value;
 			OnPropertyChanged();

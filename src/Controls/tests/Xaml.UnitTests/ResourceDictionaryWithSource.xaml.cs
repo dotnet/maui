@@ -51,7 +51,7 @@ public partial class ResourceDictionaryWithSource : ContentPage
 			var rdLoaded = layout.Resources[key] as ResourceDictionary;
 			Assert.That(rdLoaded, Is.Not.Null);
 			Assert.That(rdLoaded["MediumGrayTextColor"], Is.TypeOf<Color>());
-			Assert.That(rdLoaded["MediumGrayTextColor"] as Color, Is.EqualTo(Color.Parse("#ff4d4d4d")));			
+			Assert.That(rdLoaded["MediumGrayTextColor"] as Color, Is.EqualTo(Color.Parse("#ff4d4d4d")));
 		}
 
 		[Test]

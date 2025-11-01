@@ -10,7 +10,7 @@ public class Issue1323 : TestTabbedPage
 		BarTextColor = Color.FromArgb("#ffffff");
 		BackgroundColor = Color.FromArgb("#61a60e");
 
-		var page = new ContentPage { SafeAreaEdges = new (SafeAreaRegions.Container), Title = "Page 1", Content = new Button { Text = "Pop", Command = new Command(async () => await Navigation.PopModalAsync()) } };
+		var page = new ContentPage { SafeAreaEdges = new(SafeAreaRegions.Container), Title = "Page 1", Content = new Button { Text = "Pop", Command = new Command(async () => await Navigation.PopModalAsync()) } };
 		var page2 = new ContentPage { Title = "Page 2" };
 		var page3 = new ContentPage { Title = "Page 3" };
 		var page4 = new ContentPage { Title = "Page 4" };
