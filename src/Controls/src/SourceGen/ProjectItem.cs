@@ -19,7 +19,11 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo"))
 				return false;
-			return !Options.IsDisabled("build_property.MauiXamlLineInfo");
+			if (Options.IsEnabled("build_property.MauiXamlLineInfo"))
+				return true;
+			if (Options.IsDisabled("build_property.MauiXamlLineInfo"))
+				return false;
+			return Configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase);
 		}
 	}
 
