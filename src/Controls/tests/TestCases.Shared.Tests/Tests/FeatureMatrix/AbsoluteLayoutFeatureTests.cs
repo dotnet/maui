@@ -4,9 +4,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class AbsoluteLayoutFeatureTests : UITest
+public class AbsoluteLayoutFeatureTests : _GalleryUITest
 {
 	public const string AbsoluteLayoutFeatureMatrix = "AbsoluteLayout Feature Matrix";
+	public override string GalleryPageName => AbsoluteLayoutFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string XEntry = "XEntry";
@@ -25,12 +26,6 @@ public class AbsoluteLayoutFeatureTests : UITest
 	public AbsoluteLayoutFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(AbsoluteLayoutFeatureMatrix);
 	}
 
 	[Test, Order(1)]
