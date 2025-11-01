@@ -33,7 +33,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 	{
 		// Verify Tab 1 is initially loaded and shows correct navigation info
 		App.WaitForElement(Tab1Content);
-		
+
 		var onNavigatedToText = App.FindElement(Tab1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
 		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
@@ -41,7 +41,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Initially, OnNavigatingFrom and OnNavigatedFrom should show "-"
 		var onNavigatingFromText = App.FindElement(Tab1OnNavigatingFromLabel).GetText();
 		Assert.That(onNavigatingFromText, Does.Contain("-"));
-		
+
 		var onNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(onNavigatedFromText, Is.EqualTo("-"));
 	}
@@ -66,7 +66,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Go back to Tab 1 to check its OnNavigatingFrom and OnNavigatedFrom
 		App.TapTab("Tab 1");
 		App.WaitForElement(Tab1Content);
-		
+
 		var tab1OnNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(tab1OnNavigatedFromText, Does.Contain("DestinationPage: Issue21814TabItem2"));
 	}
@@ -92,7 +92,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Go back to Tab 2 to verify its navigation from parameters
 		App.TapTab("Tab 2");
 		App.WaitForElement(Tab2Content);
-		
+
 		var tab2OnNavigatedFromText = App.FindElement(Tab2OnNavigatedFromLabel).GetText();
 		Assert.That(tab2OnNavigatedFromText, Does.Contain("DestinationPage: Issue21814TabItem3"));
 	}
@@ -118,11 +118,11 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Verify Tab 1's navigation from parameters point to Tab 3
 		App.TapTab("Tab 1");
 		App.WaitForElement(Tab1Content);
-		
+
 		var tab1OnNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(tab1OnNavigatedFromText, Does.Contain("DestinationPage: Issue21814TabItem3"));
 	}
-	
+
 	[Test, Order(5)]
 	[Category(UITestCategories.TabbedPage)]
 	[Category(UITestCategories.Navigation)]
@@ -131,15 +131,15 @@ public class Issue21814TabbedPage : _IssuesUITest
 	{
 		// Start on Tab 1
 		App.WaitForElement(Tab1Content);
-            
+
 		// Get initial state
 		var initialOnNavigatedFrom = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
-            
+
 		// Tap Tab 1 multiple times (should not trigger navigation events)
 		App.TapTab("Tab 1");
 		App.TapTab("Tab 1");
 		App.TapTab("Tab 1");
-            
+
 		// Verify no navigation events were triggered
 		var currentOnNavigatedFrom = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(currentOnNavigatedFrom, Is.EqualTo(initialOnNavigatedFrom));

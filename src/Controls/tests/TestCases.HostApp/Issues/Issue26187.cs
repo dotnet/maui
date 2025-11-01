@@ -69,10 +69,7 @@ namespace Maui.Controls.Sample.Issues
 
 			// Clear Selection
 			var cv = sender as CollectionView;
-			if (cv is not null)
-			{
-				cv.SelectedItem = null;
-			}
+			cv?.SelectedItem = null;
 		}
 
 		class NewPage : ContentPage

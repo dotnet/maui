@@ -29,7 +29,7 @@ internal class RectConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.RectConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.RectConversionFailed);
 		return "default";
 	}
 }

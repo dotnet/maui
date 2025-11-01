@@ -918,17 +918,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var rootServiceProvider = serviceCollection.BuildServiceProvider();
 
 			var appContext = new MauiContext(rootServiceProvider);
-			
+
 			// Simulate the window creation flow
 			var windowContext = appContext.MakeWindowScope(new object(), out var scope);
-			
+
 			// Verify we can get scoped services
 			var service1 = windowContext.Services.GetRequiredService<TestScopedService>();
 			var service2 = windowContext.Services.GetRequiredService<TestScopedService>();
-			
+
 			// Should be the same instance since it's scoped
 			Assert.Same(service1, service2);
-			
+
 			// Create window and set up handler
 			var window = new TestWindow(new ContentPage());
 			var handler = new WindowHandlerStub();

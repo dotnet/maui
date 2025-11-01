@@ -15,48 +15,48 @@ namespace Microsoft.Maui.Essentials;
 /// </summary>
 internal static partial class ImageProcessor
 {
-    /// <summary>
-    /// Determines if the image needs rotation based on the provided options.
-    /// </summary>
-    /// <param name="options">The media picker options.</param>
-    /// <returns>True if rotation is needed based on the provided options.</returns>
-    public static bool IsRotationNeeded(MediaPickerOptions? options)
-    {
-        return options?.RotateImage ?? false;
-    }
+	/// <summary>
+	/// Determines if the image needs rotation based on the provided options.
+	/// </summary>
+	/// <param name="options">The media picker options.</param>
+	/// <returns>True if rotation is needed based on the provided options.</returns>
+	public static bool IsRotationNeeded(MediaPickerOptions? options)
+	{
+		return options?.RotateImage ?? false;
+	}
 
-    /// <summary>
-    /// Platform-specific EXIF rotation implementation.
-    /// </summary>
-    public static partial Task<Stream> RotateImageAsync(Stream inputStream, string? originalFileName);
+	/// <summary>
+	/// Platform-specific EXIF rotation implementation.
+	/// </summary>
+	public static partial Task<Stream> RotateImageAsync(Stream inputStream, string? originalFileName);
 
-    /// <summary>
-    /// Platform-specific metadata extraction implementation.
-    /// </summary>
-    public static partial Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName);
+	/// <summary>
+	/// Platform-specific metadata extraction implementation.
+	/// </summary>
+	public static partial Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName);
 
-    /// <summary>
-    /// Platform-specific metadata application implementation.
-    /// </summary>
-    public static partial Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName);
+	/// <summary>
+	/// Platform-specific metadata application implementation.
+	/// </summary>
+	public static partial Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName);
 
-    /// <summary>
-    /// Processes an image by applying EXIF rotation, resizing and compression using MAUI Graphics.
-    /// </summary>
-    /// <param name="inputStream">The input image stream.</param>
-    /// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
-    /// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
-    /// <param name="qualityPercent">Compression quality percentage (0-100).</param>
-    /// <param name="originalFileName">Original filename to determine format preservation logic.</param>
-    /// <param name="rotateImage">Whether to apply EXIF rotation correction.</param>
-    /// <param name="preserveMetaData">Whether to preserve metadata (including EXIF data) in the processed image.</param>
-    /// <returns>A new stream containing the processed image.</returns>
-    public static async Task<Stream?> ProcessImageAsync(Stream inputStream,
-        int? maxWidth, int? maxHeight, int qualityPercent, string? originalFileName = null, bool rotateImage = false, bool preserveMetaData = true)
-    {
+	/// <summary>
+	/// Processes an image by applying EXIF rotation, resizing and compression using MAUI Graphics.
+	/// </summary>
+	/// <param name="inputStream">The input image stream.</param>
+	/// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
+	/// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
+	/// <param name="qualityPercent">Compression quality percentage (0-100).</param>
+	/// <param name="originalFileName">Original filename to determine format preservation logic.</param>
+	/// <param name="rotateImage">Whether to apply EXIF rotation correction.</param>
+	/// <param name="preserveMetaData">Whether to preserve metadata (including EXIF data) in the processed image.</param>
+	/// <returns>A new stream containing the processed image.</returns>
+	public static async Task<Stream?> ProcessImageAsync(Stream inputStream,
+		int? maxWidth, int? maxHeight, int qualityPercent, string? originalFileName = null, bool rotateImage = false, bool preserveMetaData = true)
+	{
 #if !(IOS || ANDROID || WINDOWS)
-        await Task.CompletedTask; // Avoid async warning
-        return null;
+		await Task.CompletedTask; // Avoid async warning
+		return null;
 #else
         if (inputStream is null)
         {
@@ -142,7 +142,7 @@ internal static partial class ImageProcessor
             }
         }
 #endif
-    }
+	}
 
 #if IOS || ANDROID || WINDOWS
     /// <summary>
@@ -206,33 +206,33 @@ internal static partial class ImageProcessor
     }
 #endif
 
-    /// <summary>
-    /// Determines if image processing is needed based on the provided options.
-    /// </summary>
-    public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
-    {
+	/// <summary>
+	/// Determines if image processing is needed based on the provided options.
+	/// </summary>
+	public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
+	{
 #if !(IOS || ANDROID || WINDOWS)
-        // On platforms without MAUI Graphics support, always return false - no processing available
-        return false;
+		// On platforms without MAUI Graphics support, always return false - no processing available
+		return false;
 #else
         return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100;
 #endif
-    }
+	}
 
-    /// <summary>
-    /// Determines the output file extension based on processed image data and quality settings.
-    /// </summary>
-    /// <param name="imageData">The processed image stream to analyze</param>
-    /// <param name="qualityPercent">Compression quality percentage</param>
-    /// <param name="originalFileName">Original filename for format hints (optional)</param>
-    /// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
-    public static string DetermineOutputExtension(Stream? imageData, int qualityPercent, string? originalFileName = null)
-    {
+	/// <summary>
+	/// Determines the output file extension based on processed image data and quality settings.
+	/// </summary>
+	/// <param name="imageData">The processed image stream to analyze</param>
+	/// <param name="qualityPercent">Compression quality percentage</param>
+	/// <param name="originalFileName">Original filename for format hints (optional)</param>
+	/// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
+	public static string DetermineOutputExtension(Stream? imageData, int qualityPercent, string? originalFileName = null)
+	{
 #if !(IOS || ANDROID)
-        // On platforms without MAUI Graphics support, fall back to simple logic
-        bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
-                              originalFileName!.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
-        return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
+		// On platforms without MAUI Graphics support, fall back to simple logic
+		bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
+							  originalFileName!.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
+		return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
 #else
         // Try to detect format from the actual processed image data
         var detectedFormat = DetectImageFormat(imageData);
@@ -250,7 +250,7 @@ internal static partial class ImageProcessor
         // Otherwise: use JPEG for better compression
         return (qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng)) ? ".png" : ".jpg";
 #endif
-    }
+	}
 
 #if IOS || ANDROID || WINDOWS
     /// <summary>

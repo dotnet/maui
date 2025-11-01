@@ -47,31 +47,31 @@ static class ServiceProviderExtensions
 				|| requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideParentValues")!, SymbolEqualityComparer.Default)
 				|| requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!, SymbolEqualityComparer.Default)
 				|| requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IReferenceProvider")!, SymbolEqualityComparer.Default))
+		{
+			var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!);
+			writer.WriteLine($"var {simpleValueTargetProvider} = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(");
+			writer.Indent++;
+			writer.WriteLine($"new object?[] {{{string.Join(", ", parentObjects)}}},");
+			var bpinfo = bpFieldSymbol?.ToFQDisplayString() ?? String.Empty;
+			var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToFQDisplayString()}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
+			writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
+			if (context.Scopes.TryGetValue(node, out var scope))
 			{
-				var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!);
-				writer.WriteLine($"var {simpleValueTargetProvider} = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(");
-				writer.Indent++;
-				writer.WriteLine($"new object?[] {{{string.Join(", ", parentObjects)}}},");
-				var bpinfo = bpFieldSymbol?.ToFQDisplayString() ?? String.Empty;
-				var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToFQDisplayString()}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
-				writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
-				if (context.Scopes.TryGetValue(node, out var scope))
+				List<string> scopes = [scope.namescope.Name];
+				var values = context.ParentContext?.Scopes.Select(s => s.Value.namescope.Name).Distinct();
+				scopes.AddRange(values ?? Enumerable.Empty<string>());
+				using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE", orElse: () => writer.WriteLine($"null,")))
 				{
-					List<string> scopes = [scope.namescope.Name];
-					var values = context.ParentContext?.Scopes.Select(s => s.Value.namescope.Name).Distinct();
-					scopes.AddRange(values ?? Enumerable.Empty<string>());
-					using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE", orElse: () => writer.WriteLine($"null,")))
-					{
-						writer.WriteLine($"new [] {{ {string.Join(", ", scopes)} }},");
-					}
+					writer.WriteLine($"new [] {{ {string.Join(", ", scopes)} }},");
 				}
-				else
-					writer.WriteLine($"null,");
-				writer.WriteLine($"this);");
-				writer.Indent--;
-				writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), {simpleValueTargetProvider});");
-				writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), {simpleValueTargetProvider});");
 			}
+			else
+				writer.WriteLine($"null,");
+			writer.WriteLine($"this);");
+			writer.Indent--;
+			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), {simpleValueTargetProvider});");
+			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), {simpleValueTargetProvider});");
+		}
 
 		if (createAllServices
 			|| requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IXamlTypeResolver")!, SymbolEqualityComparer.Default))

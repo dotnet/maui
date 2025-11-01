@@ -65,15 +65,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (BackgroundColor == null)
 				BackgroundColor = Background;
 
-			if (_contentPresenter != null)
-				_contentPresenter.Background = BackgroundColor;
+			_contentPresenter?.Background = BackgroundColor;
 			Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 		}
 
 		void UpdateBorderRadius()
 		{
-			if (_contentPresenter != null)
-				_contentPresenter.CornerRadius = WinUIHelpers.CreateCornerRadius(BorderRadius);
+			_contentPresenter?.CornerRadius = WinUIHelpers.CreateCornerRadius(BorderRadius);
 		}
 	}
 }
