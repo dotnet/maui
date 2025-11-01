@@ -7,8 +7,8 @@ public class ResourceDictionary : SourceGenXamlInitializeComponentTestBase
 {
 	[Fact]
 	public void ResourceDictionaryWithoutXClass()
-    {
-        var xaml =
+	{
+		var xaml =
 """
 <?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary
@@ -53,6 +53,6 @@ public partial class __TypeDBD64C1C77CDA760
 		Assert.False(result.Diagnostics.Any());
 
 		Assert.Equal(expected, generated);
-		
-    }
+
+	}
 }

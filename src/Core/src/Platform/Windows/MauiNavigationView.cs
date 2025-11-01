@@ -232,11 +232,9 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateNavigationViewBackButtonMargin()
 		{
-			if (NavigationViewBackButton != null)
-				NavigationViewBackButton.Margin = NavigationViewBackButtonMargin;
+			NavigationViewBackButton?.Margin = NavigationViewBackButtonMargin;
 
-			if (NavigationViewCloseButton != null)
-				NavigationViewCloseButton.Margin = NavigationViewBackButtonMargin;
+			NavigationViewCloseButton?.Margin = NavigationViewBackButtonMargin;
 		}
 		#endregion
 
@@ -258,8 +256,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateNavigationViewButtonHolderGridMargin()
 		{
-			if (ButtonHolderGrid != null)
-				ButtonHolderGrid.Margin = NavigationViewButtonHolderGridMargin;
+			ButtonHolderGrid?.Margin = NavigationViewButtonHolderGridMargin;
 		}
 		#endregion
 

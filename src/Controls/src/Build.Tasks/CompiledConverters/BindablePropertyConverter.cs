@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (parts.Length == 1)
 			{
 				var parent = node.Parent?.Parent as ElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as ElementNode;
-				if (node.Parent is ElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(Setter), nameof(PropertyCondition)))				
+				if (node.Parent is ElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(Setter), nameof(PropertyCondition)))
 				{
 					if (parent.XmlType.IsOfAnyType(nameof(Trigger), nameof(DataTrigger), nameof(MultiTrigger), nameof(Style)))
 					{
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parent.Parent}", lineInfo);
 
 			//3. if the VSG is in a VSGL, skip that as it could be implicit
-			if (   target.Parent is ListNode
+			if (target.Parent is ListNode
 				|| target.Parent is ElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(VisualStateGroupList)))
 				target = target.Parent.Parent as ElementNode;
 			else

@@ -19,7 +19,7 @@ static class SetPropertyHelpers
 
 		if (propertyName.Equals(XmlName._CreateContent))
 			return; //already handled
-			
+
 		//TODO I believe ContentProperty should be resolved here
 		var localName = propertyName.LocalName;
 		bool attached = false;
@@ -229,7 +229,7 @@ static class SetPropertyHelpers
 		}
 	}
 
-	static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node,  SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
 		if (bpFieldSymbol == null)
 			return false;
@@ -263,7 +263,7 @@ static class SetPropertyHelpers
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var valueString = valueNode.ConvertTo(bpFieldSymbol, writer,context, parentVar);
+				var valueString = valueNode.ConvertTo(bpFieldSymbol, writer, context, parentVar);
 				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {valueString});");
 			}
 		}
@@ -409,9 +409,9 @@ static class SetPropertyHelpers
 
 		if (localName != null)
 			//one of those will return true, but we need the propertyType
-			_ = CanGetValue(parentVar, bpFieldSymbol, attached, context, out  propertyType) || CanGet(parentVar, localName, context, out propertyType, out propertySymbol);
-		
-		else		
+			_ = CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType) || CanGet(parentVar, localName, context, out propertyType, out propertySymbol);
+
+		else
 			propertyType = parentVar.Type;
 
 		if (CanAddToResourceDictionary(parentVar, propertyType!, (ElementNode)valueNode, context, getNodeValue))
@@ -421,7 +421,7 @@ static class SetPropertyHelpers
 				rdAccessor = new DirectValue(propertyType!, GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, valueNode, context));
 			else
 				rdAccessor = parentVar;
-				
+
 			AddToResourceDictionary(writer, rdAccessor, (ElementNode)valueNode, context, getNodeValue);
 			return;
 		}

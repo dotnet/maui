@@ -74,38 +74,23 @@ namespace Microsoft.Maui.Controls.Platform
 
 				Visibility = WVisibility.Visible;
 
-				if (_moreButton != null)
-				{
-					_moreButton.Visibility = WVisibility.Collapsed;
-				}
+				_moreButton?.Visibility = WVisibility.Collapsed;
 
-				if (_primaryItemsControl != null)
-				{
-					_primaryItemsControl.Visibility = WVisibility.Collapsed;
-				}
+				_primaryItemsControl?.Visibility = WVisibility.Collapsed;
 
 				return;
 			}
 
 			// We're in one of the acceptable toolbar locations from the other platforms so the normal rules apply
 
-			if (_primaryItemsControl != null)
-			{
-				// This is normally visible by default, but it might have been collapsed by the toolbar consistency rules above
-				_primaryItemsControl.Visibility = WVisibility.Visible;
-			}
+			// This is normally visible by default, but it might have been collapsed by the toolbar consistency rules above
+			_primaryItemsControl?.Visibility = WVisibility.Visible;
 
 			// Are there any commands to display?
 			var visibility = PrimaryCommands.Count + SecondaryCommands.Count > 0 ? WVisibility.Visible : WVisibility.Collapsed;
 
-			if (_moreButton != null)
-			{
-				// The "..." button should only be visible if we have commands to display
-				_moreButton.Visibility = visibility;
-
-				// There *is* an OverflowButtonVisibility property that does more or less the same thing, 
-				// but it became available in 10.0.14393.0 and we have to support 10.0.10240
-			}
+			// The "..." button should only be visible if we have commands to display
+			_moreButton?.Visibility = visibility;
 
 			if (frameworkElement != null && frameworkElement.Visibility != WVisibility.Collapsed)
 			{

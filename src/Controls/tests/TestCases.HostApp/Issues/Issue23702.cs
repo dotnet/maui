@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 23702, "CollectionView with GridItemsLayout (Span=1) doesn't adapt to window width reduction on Windows platform", PlatformAffected.WinRT)]
 public class Issue23702 : ContentPage
 {
@@ -41,8 +42,8 @@ public class Issue23702 : ContentPage
 			ItemsLayout = new GridItemsLayout(1, ItemsLayoutOrientation.Vertical),
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var stackLayout = new StackLayout 
-				{ 
+				var stackLayout = new StackLayout
+				{
 					HeightRequest = 80,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					Orientation = StackOrientation.Horizontal,
@@ -56,7 +57,7 @@ public class Issue23702 : ContentPage
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};
 				label.SetBinding(Label.TextProperty, ".");
-				
+
 				var border = new Border
 				{
 					Stroke = Colors.Red,
@@ -72,7 +73,7 @@ public class Issue23702 : ContentPage
 						_widthLabel.Text = Math.Round(sl.Width).ToString();
 					}
 				};
-				
+
 				stackLayout.Children.Add(border);
 				return stackLayout;
 			})
