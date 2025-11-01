@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 		Page CurrentPlatformModalPage =>
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : throw new InvalidOperationException("Modal Stack is Empty");
 
+		bool _isPoppingModalStackToRoot => _window.Page is Shell shell && shell.CurrentItem.CurrentItem.IsPoppingModalStackToRoot;
+
 		Page? CurrentPage
 		{
 			get
@@ -203,6 +205,11 @@ namespace Microsoft.Maui.Controls.Platform
 			await _waitForModalToFinishTask;
 
 			Page modal = _modalPages[_modalPages.Count - 1].Page;
+
+			// If we are popping multiple pages and animation is disabled, 
+			// remove pages from the bottom of the stack to avoid visual flickering.
+			if (_isPoppingModalStackToRoot && !animated)
+				modal = _modalPages[0].Page;
 
 			if (_window.OnModalPopping(modal))
 			{
