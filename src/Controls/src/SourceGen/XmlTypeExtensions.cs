@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class XmlTypeExtensions
 {
-	public static ITypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache)
+	public static ITypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache)
 	{
 		if (TryResolveTypeSymbol(xmlType, reportDiagnostic, compilation, xmlnsCache, out var symbol))
 			return symbol!;
@@ -28,115 +28,63 @@ static class XmlTypeExtensions
 		throw new Exception($"Unable to resolve {xmlType.NamespaceUri}:{xmlType.Name}");
 	}
 
-	//todo this shouldn't report diagnostic directly, but that require changing GetTypeReference
-	public static bool TryResolveTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, out INamedTypeSymbol? symbol)
+	static Dictionary<Compilation, Dictionary<XmlType, INamedTypeSymbol>> s_typeSymbolCache = new();
+	public static bool TryResolveTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, out INamedTypeSymbol? symbol)
 	{
-		//TODO we need to cache types symbols at this level
+		if (!s_typeSymbolCache.TryGetValue(compilation, out var xmlTypeCache))
+		{
+			xmlTypeCache = [];
+			s_typeSymbolCache[compilation] = xmlTypeCache;
+		}
 
-		//This is a shortcut as we don't look for extensions, but used to work in the past, at least for XamlG
-		// var ns = GetClrNamespace(xmlType.NamespaceUri);
-		// if (ns != null )
-		// {
-		// 	var ss = compilation.GetTypesByMetadataName($"{ns}.{xmlType.Name}");
-		// 	var symbols = ss.Where(t=>t.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
-		// 				.ToImmutableArray();
-		// 	if (symbols.Length == 1)
-		// 	{
-		// 		symbol = symbols.Single();
-		// 		if (symbol.IsGenericType && xmlType.TypeArguments is not null)
-		// 		{
-		// 			var typeArguments = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
-		// 			symbol = symbol.Construct(typeArguments);
-		// 		}
-		// 		return true;
-		// 	}
-		// 	if (symbols.Length > 1)
-		// 	{
-		// 		symbol = null;
-		// 		if (reportDiagnostic is not null)
-		// 			reportDiagnostic(Diagnostic.Create(Descriptors.DuplicateTypeError, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
+		if (xmlTypeCache.TryGetValue(xmlType, out symbol))
+			return true;
 
-		// 		return false;
-		// 	}
-		// }
+		var name = xmlType.Name.Split(':').Last(); //strip prefix
+		var genericSuffix = xmlType.TypeArguments is not null ? $"`{xmlType.TypeArguments.Count}" : string.Empty;
 
-		var xmlnsDefinitions = xmlnsCache.XmlnsDefinitions;
-		var symbols = xmlType.GetTypeReferences(
-			xmlnsDefinitions,
-			compilation.AssemblyName!,
-			typeInfo =>
+		if (!xmlnsCache.ClrNamespacesForXmlns.TryGetValue(xmlType.NamespaceUri, out var namespaces))
+		{
+			XmlnsHelper.ParseXmlns(xmlType.NamespaceUri, out _, out var ns, out _, out _);
+			namespaces = [ns!];						
+		}
+
+		var extsuffixes = (name != "DataTemplate" && !name.EndsWith("Extension", StringComparison.Ordinal)) ? new [] {"Extension", string.Empty} : [string.Empty];
+		foreach (var suffix in extsuffixes)
+        {		
+			var types = namespaces.Select(ns => $"{ns}.{name}{suffix}{genericSuffix}").SelectMany(typeName => compilation.GetTypesByMetadataName(typeName)).Where(ts => ts.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible)).Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>().ToArray();
+
+			if (types.Length > 1)
 			{
-				var ts = compilation.GetTypesByMetadataName($"{typeInfo.clrNamespace}.{typeInfo.typeName}")
-						.Where(t => t.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible));
-				if (ts.Count() == 1)
-					return ts.Single();
-				if (ts.Count() > 1 && reportDiagnostic is not null)
+				symbol = null;
+				if (reportDiagnostic is not null)
 					reportDiagnostic(Diagnostic.Create(Descriptors.DuplicateTypeError, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
-
-				return null;
+				return false;
 			}
-		).Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>();
-
-		if (symbols is null || !symbols.Any())
-		{
-			symbol = null;
-			return false;
-		}
-
-		if (symbols.Count() > 1)
-		{
-			symbol = null;
-			if (reportDiagnostic is not null)
-				reportDiagnostic(Diagnostic.Create(Descriptors.DuplicateTypeError, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
-			return false;
-		}
-
-		symbol = symbols.Single();
-		if (symbol is null)
-			return false;
-
-		if (symbol.IsGenericType && xmlType.TypeArguments is not null)
-		{
-			var typeArguments = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
-			symbol = symbol.Construct(typeArguments);
-		}
-		return true;
+			if (types.Length == 1)
+			{
+				symbol = types[0];
+				if (symbol.IsGenericType && xmlType.TypeArguments is not null)
+				{
+					var typeArgs = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
+					symbol = symbol.Construct(typeArgs);
+				}
+				xmlTypeCache[xmlType] = symbol;
+				return true;
+			}
+        }
+		symbol = null;
+		return false;
 	}
 
-	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, INode node)
+	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, INode node)
 		=> GetTypeSymbol(nameAndPrefix, reportDiagnostic, compilation, xmlnsCache, node.NamespaceResolver, (IXmlLineInfo)node);
 
-	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
+	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
 	{
 		XmlType xmlType = TypeArgumentsParser.ParseSingle(nameAndPrefix, resolver, lineInfo);
 		return xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
 	}
-
-	//FIXME should return a ITypeSymbol, and properly construct it for generics. globalalias param should go away
-	// public static ITypeSymbol GetTypeSymbol(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
-	// {
-	// 	if (typeCache.TryGetValue(xmlType, out string returnType))
-	// 	{
-	// 		if (globalAlias)
-	// 			returnType = $"global::{returnType}";
-	// 		return returnType;
-	// 	}
-
-	// 	var ns = GetClrNamespace(xmlType.NamespaceUri);
-	// 	if (ns != null)
-	// 		returnType = $"{ns}.{xmlType.Name}";
-	// 	else
-	// 		// It's an external, non-built-in namespace URL.
-	// 		returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
-
-	// 	if (xmlType.TypeArguments != null)
-	// 		returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
-
-	// 	typeCache[xmlType] = returnType;
-	// 	if (globalAlias)
-	// 		returnType = $"global::{returnType}";
-	// 	return returnType;
-	// }
 
 	static string? GetClrNamespace(string namespaceuri)
 	{

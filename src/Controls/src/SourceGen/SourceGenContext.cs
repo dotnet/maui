@@ -9,7 +9,7 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
 {
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
@@ -17,7 +17,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IndentedTextWriter? RefStructWriter { get; set; }
 
 	public Compilation Compilation => compilation;
-	public AssemblyCaches XmlnsCache => assemblyCaches;
+	public AssemblyAttributes XmlnsCache => assemblyCaches;
 	public ITypeSymbol RootType => rootType;
 	public IDictionary<XmlType, ITypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();

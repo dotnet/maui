@@ -20,7 +20,7 @@ static class CodeBehindCodeWriter
 
 	internal static readonly string[] accessModifiers = ["private", "public", "internal", "protected"];
 
-	public static string GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, Action<Diagnostic>? reportDiagnostic, CancellationToken ct, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	public static string GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, Action<Diagnostic>? reportDiagnostic, CancellationToken ct, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		var projItem = xamlItem?.ProjectItem;
 
@@ -273,7 +273,7 @@ static class CodeBehindCodeWriter
 		return sb.ToString();
 	}
 
-	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out ITypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
+	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out ITypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -389,7 +389,7 @@ static class CodeBehindCodeWriter
 		return string.Join(", ", warnings);
 	}
 
-	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic)
+	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic)
 	{
 		var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 		if (xPrefix == null)

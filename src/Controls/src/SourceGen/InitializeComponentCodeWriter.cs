@@ -17,7 +17,7 @@ static class InitializeComponentCodeWriter
 
 	public static string GeneratedCodeAttribute => $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{typeof(InitializeComponentCodeWriter).Assembly.FullName}\", \"{typeof(InitializeComponentCodeWriter).Assembly.GetName().Version}\")]";
 
-	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		using (var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine })
 		{

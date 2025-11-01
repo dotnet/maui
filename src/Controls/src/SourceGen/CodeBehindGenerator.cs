@@ -206,7 +206,7 @@ $"""
 		return $"{prefix}{fileNameNoExtension}.{kind}.{suffix}.cs";
 	}
 
-	private static string? GenerateGlobalXmlns(SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache)
+	private static string? GenerateGlobalXmlns(SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache)
 	{
 		if (xmlnsCache.GlobalGeneratedXmlnsDefinitions.Count == 0)
 			return null;
@@ -220,7 +220,7 @@ $"""
 		return sb.ToString();
 	}
 
-	static bool ShouldGenerateSourceGenInitializeComponent(XamlProjectItemForIC xamlItem, AssemblyCaches xmlnsCache, Compilation compilation)
+	static bool ShouldGenerateSourceGenInitializeComponent(XamlProjectItemForIC xamlItem, AssemblyAttributes xmlnsCache, Compilation compilation)
 	{
 		var text = xamlItem.ProjectItem.AdditionalText.GetText();
 		if (text == null)
@@ -273,7 +273,7 @@ $"""
 		return true;
 	}
 
-	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		ProjectItem? projItem;
 		if (xamlItem == null || (projItem = xamlItem.ProjectItem) == null)
@@ -286,74 +286,6 @@ $"""
 		return true;
 	}
 
-	// static IEnumerable<(string name, string? type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, Action<Diagnostic> reportDiagnostic)
-	// {
-	// 	var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
-	// 	if (xPrefix == null)
-	// 	{
-	// 		yield break;
-	// 	}
-
-	// 	XmlNodeList names =
-	// 		root.SelectNodes(
-	// 			"//*[@" + xPrefix + ":Name" +
-	// 			"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style) and not(ancestor:: __f__:VisualStateManager.VisualStateGroups)" +
-	// 			"and not(ancestor:: __g__:DataTemplate) and not(ancestor:: __g__:ControlTemplate) and not(ancestor:: __g__:Style) and not(ancestor:: __g__:VisualStateManager.VisualStateGroups)]", nsmgr);
-	// 	foreach (XmlNode node in names)
-	// 	{
-	// 		cancellationToken.ThrowIfCancellationRequested();
-
-	// 		var name = GetAttributeValue(node, "Name", XamlParser.X2006Uri, XamlParser.X2009Uri) ?? throw new Exception();
-	// 		var typeArguments = GetAttributeValue(node, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-	// 		var fieldModifier = GetAttributeValue(node, "FieldModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
-
-	// 		var xmlType = new XmlType(node.NamespaceURI, node.LocalName,
-	// 								  typeArguments != null
-	// 								  ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null)
-	// 								  : null);
-
-	// 		var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
-	// 		if (!new[] { "private", "public", "internal", "protected" }.Contains(accessModifier)) //quick validation
-	// 		{
-	// 			accessModifier = "private";
-	// 		}
-
-	// 		yield return (name ?? "", GetTypeName(xmlType, compilation, xmlnsCache, typeCache, reportDiagnostic), accessModifier);
-	// 	}
-	// }
-
-	// static string? GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, Action<Diagnostic> reportDiagnostic)
-	// {
-	// 	if (typeCache.TryGetValue(xmlType, out string returnType))
-	// 	{
-	// 		return returnType;
-	// 	}
-
-	// 	var ns = GetClrNamespace(xmlType.NamespaceUri);
-	// 	if (ns != null)
-	// 	{
-	// 		returnType = $"{ns}.{xmlType.Name}";
-	// 	}
-	// 	else
-	// 	{
-	// 		// It's an external, non-built-in namespace URL.
-	// 		returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache, reportDiagnostic);
-	// 	}
-
-	// 	if (xmlType.TypeArguments != null)
-	// 	{
-	// 		returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache, reportDiagnostic)))}>";
-	// 	}
-
-	// 	if (returnType == null)
-	// 	{
-	// 		return null;
-	// 	}
-
-	// 	returnType = $"global::{returnType}";
-	// 	typeCache[xmlType] = returnType;
-	// 	return returnType;
-	// }
 
 	static string? GetClrNamespace(string namespaceuri)
 	{
@@ -370,102 +302,6 @@ $"""
 		}
 
 		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
-	}
-
-	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, Action<Diagnostic> reportDiagnostic)
-	{
-#nullable disable
-		IEnumerable<string> typeNames = xmlType.GetTypeReferences<string>(xmlnsCache.XmlnsDefinitions, null,
-			(typeInfo) =>
-			{
-				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
-				string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
-				IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
-
-				if (types.Count == 0)
-				{
-					return null;
-				}
-
-				foreach (INamedTypeSymbol type in types)
-				{
-					// skip over types that are not in the correct assemblies
-					if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
-					{
-						continue;
-					}
-
-					if (!IsPublicOrVisibleInternal(type, xmlnsCache.InternalsVisible))
-					{
-						continue;
-					}
-
-					int i = fullName.IndexOf('`');
-					if (i > 0)
-					{
-						fullName = fullName.Substring(0, i);
-					}
-					return fullName;
-				}
-
-				return null;
-			});
-
-		if (typeNames.Distinct().Skip(1).Any())
-		{
-			reportDiagnostic(Diagnostic.Create(Descriptors.AmbiguousType, Location.None,
-				new[] { xmlType.Name, xmlType.NamespaceUri }.ToArray()));
-
-		}
-		return typeNames.FirstOrDefault();
-#nullable enable
-	}
-
-	static bool IsPublicOrVisibleInternal(INamedTypeSymbol type, IEnumerable<IAssemblySymbol> internalsVisible)
-	{
-		// return types that are public
-		if (type.DeclaredAccessibility == Accessibility.Public)
-		{
-			return true;
-		}
-
-		// only return internal types if they are visible to us
-		if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	static string? GetAttributeValue(XmlNode node, string localName, params string[] namespaceURIs)
-	{
-		if (node == null)
-		{
-			throw new ArgumentNullException(nameof(node));
-		}
-
-		if (localName == null)
-		{
-			throw new ArgumentNullException(nameof(localName));
-		}
-
-		if (namespaceURIs == null)
-		{
-			throw new ArgumentNullException(nameof(namespaceURIs));
-		}
-
-		foreach (var namespaceURI in namespaceURIs)
-		{
-			var attr = node.Attributes[localName, namespaceURI];
-			if (attr == null)
-			{
-				continue;
-			}
-
-			return attr.Value;
-		}
-		return null;
 	}
 
 	static void GenerateCssCodeBehind(ProjectItem projItem, SourceProductionContext sourceProductionContext)
