@@ -45,12 +45,12 @@ namespace Microsoft.Maui.Handlers
 				GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(mt, mt.Context);
 			}
 		}
-		
+
 		void OnViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
 		{
 			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
-            GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(PlatformView, context);
-        }
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(PlatformView, context);
+		}
 
 		private protected override void OnDisconnectHandler(object platformView)
 		{
@@ -62,7 +62,8 @@ namespace Microsoft.Maui.Handlers
 				mt.ViewAttachedToWindow -= OnViewAttachedToWindow;
 				mt.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
 
-			};
+			}
+			;
 		}
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)

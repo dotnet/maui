@@ -38,7 +38,7 @@ public partial class HotReloadStaticResourceException : ContentPage
 			Controls.Internals.ResourceLoader.ExceptionHandler2 = (ex) =>
 			{
 				var (exception, filepath) = ex;
-				
+
 			};
 			var page = new HotReloadStaticResourceException(inflator);
 		}
