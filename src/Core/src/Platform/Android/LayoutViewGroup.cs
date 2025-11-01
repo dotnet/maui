@@ -13,7 +13,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : PlatformViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
+	public class LayoutViewGroup : PlatformViewGroup, ICrossPlatformLayoutBacking, IHandleWindowInsets
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
@@ -225,17 +225,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return base.OnTouchEvent(e);
-		}
-
-		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
-		{
-			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
-				layoutElement.IsThisMyPlatformView(this))
-			{
-				return layoutElement;
-			}
-
-			return null;
 		}
 	}
 }

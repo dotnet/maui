@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	/// and safe area handling. This view bridges the gap between iOS native UIView
 	/// and MAUI's cross-platform layout system.
 	/// </summary>
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
 		/// <summary>
 		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
@@ -601,29 +601,6 @@ namespace Microsoft.Maui.Platform
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
 				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
-		}
-
-		/// <summary>
-		/// Provides the visual tree element that this platform view represents.
-		/// This is used by the visual tree system to navigate between platform and cross-platform views.
-		/// </summary>
-		/// <returns>The IVisualTreeElement this view represents, or null if none</returns>
-		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
-		{
-
-			if (View is IVisualTreeElement viewElement &&
-				viewElement.IsThisMyPlatformView(this))
-			{
-				return viewElement;
-			}
-
-			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
-				layoutElement.IsThisMyPlatformView(this))
-			{
-				return layoutElement;
-			}
-
-			return null;
 		}
 
 		/// <summary>
