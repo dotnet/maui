@@ -22,7 +22,7 @@ static class NamingHelpers
 	{
 		while (context.ParentContext != null)
 			context = context.ParentContext;
-			
+
 		return CreateUniqueVariableNameImpl(context, baseName, lowFirst: false);
 	}
 
@@ -71,7 +71,7 @@ static class NamingHelpers
 		if (string.IsNullOrEmpty(name))
 			return name;
 		name = Regex.Replace(name, "([A-Z])([A-Z]+)($|[A-Z])", m => m.Groups[1].Value + m.Groups[2].Value.ToLowerInvariant() + m.Groups[3].Value);
-		
+
 		return lowFirst ? char.ToLowerInvariant(name[0]) + name.Substring(1) : name;
 	}
 }

@@ -266,10 +266,7 @@ namespace Microsoft.Maui.Platform
 				navigationView.OpenPaneLength = 320;
 			}
 
-			if (navigationView.PaneContentGrid is not null)
-			{
-				navigationView.PaneContentGrid.Width = navigationView.OpenPaneLength;
-			}
+			navigationView.PaneContentGrid?.Width = navigationView.OpenPaneLength;
 
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;

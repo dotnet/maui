@@ -7,224 +7,224 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea per-edge safe area control";
+	public override string Issue => "Test SafeArea per-edge safe area control";
 
-    public Issue28986_SafeAreaBorderOrientation(TestDevice device) : base(device)
-    {
-    }
+	public Issue28986_SafeAreaBorderOrientation(TestDevice device) : base(device)
+	{
+	}
 
-    [Test]
-    [Category(UITestCategories.SafeAreaEdges)]
-    public void SafeAreaBorderOrientationPortraitToLandscape()
-    {
-        var borderContent = App.WaitForElement("BorderContent");
-        var displayDensity = App.GetDisplayDensity();
-        // 1. Verify initial portrait state and record measurements
-        var portraitBounds = borderContent.GetRect();
-        var portraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var portraitDimensions = App.WaitForElement("BorderDimensions").GetText();
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaBorderOrientationPortraitToLandscape()
+	{
+		var borderContent = App.WaitForElement("BorderContent");
+		var displayDensity = App.GetDisplayDensity();
+		// 1. Verify initial portrait state and record measurements
+		var portraitBounds = borderContent.GetRect();
+		var portraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var portraitDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // Ensure we start in portrait (orientation detection is now real-time)
-        Assert.That(portraitBounds.Height, Is.GreaterThan(portraitBounds.Width * 0.8),
-            "Should start in portrait orientation (height > width)");
+		// Ensure we start in portrait (orientation detection is now real-time)
+		Assert.That(portraitBounds.Height, Is.GreaterThan(portraitBounds.Width * 0.8),
+			"Should start in portrait orientation (height > width)");
 
-        // 2. Change orientation to landscape using real device orientation change
-        App.SetOrientationLandscape();
+		// 2. Change orientation to landscape using real device orientation change
+		App.SetOrientationLandscape();
 
-        // Wait for the orientation change to complete and layout to settle
-        System.Threading.Thread.Sleep(2000); // Increased wait time for real orientation change
+		// Wait for the orientation change to complete and layout to settle
+		System.Threading.Thread.Sleep(2000); // Increased wait time for real orientation change
 
-        // 3. Verify landscape state - dimensions should be different from portrait
-        var landscapeBounds = borderContent.GetRect();
-        var landscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var landscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
+		// 3. Verify landscape state - dimensions should be different from portrait
+		var landscapeBounds = borderContent.GetRect();
+		var landscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var landscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // 4. Verify orientation actually changed through dimension analysis
-        Assert.That(landscapeBounds.Width, Is.GreaterThan(landscapeBounds.Height * 0.8),
-            "Should now be in landscape orientation (width > height)");
+		// 4. Verify orientation actually changed through dimension analysis
+		Assert.That(landscapeBounds.Width, Is.GreaterThan(landscapeBounds.Height * 0.8),
+			"Should now be in landscape orientation (width > height)");
 
-        // 5. Verify that the safe area adapts correctly
-        Assert.That(portraitSafeArea, Is.Not.EqualTo(landscapeSafeArea),
-            "Safe area insets should adapt when changing from portrait to landscape");
+		// 5. Verify that the safe area adapts correctly
+		Assert.That(portraitSafeArea, Is.Not.EqualTo(landscapeSafeArea),
+			"Safe area insets should adapt when changing from portrait to landscape");
 
-        // 6. Verify border dimensions change appropriately
-        Assert.That(portraitDimensions, Is.Not.EqualTo(landscapeDimensions),
-            "Border dimensions should differ between portrait and landscape orientations");
+		// 6. Verify border dimensions change appropriately
+		Assert.That(portraitDimensions, Is.Not.EqualTo(landscapeDimensions),
+			"Border dimensions should differ between portrait and landscape orientations");
 
-        // 7. Verify aspect ratio changes appropriately for orientation
-        var portraitAspectRatio = portraitBounds.Height / portraitBounds.Width;
-        var landscapeAspectRatio = landscapeBounds.Height / landscapeBounds.Width;
-        Assert.That(portraitAspectRatio, Is.GreaterThan(landscapeAspectRatio),
-            "Portrait should have a higher aspect ratio than landscape");
+		// 7. Verify aspect ratio changes appropriately for orientation
+		var portraitAspectRatio = portraitBounds.Height / portraitBounds.Width;
+		var landscapeAspectRatio = landscapeBounds.Height / landscapeBounds.Width;
+		Assert.That(portraitAspectRatio, Is.GreaterThan(landscapeAspectRatio),
+			"Portrait should have a higher aspect ratio than landscape");
 
-        // 8. Verify insets adjust appropriately on notched devices
-        // On devices with notches/safe areas, the values should differ significantly
-        Assert.That(landscapeBounds.Width, Is.GreaterThan(portraitBounds.Height * 0.7),
-            "Landscape width should be significantly different, confirming safe area adaptation");
+		// 8. Verify insets adjust appropriately on notched devices
+		// On devices with notches/safe areas, the values should differ significantly
+		Assert.That(landscapeBounds.Width, Is.GreaterThan(portraitBounds.Height * 0.7),
+			"Landscape width should be significantly different, confirming safe area adaptation");
 
-        // 9. Verify the border remains visible and functional
-        Assert.That(landscapeBounds.Width, Is.GreaterThan(0), "Border should remain visible in landscape");
-        Assert.That(landscapeBounds.Height, Is.GreaterThan(0), "Border should remain visible in landscape");
-    }
+		// 9. Verify the border remains visible and functional
+		Assert.That(landscapeBounds.Width, Is.GreaterThan(0), "Border should remain visible in landscape");
+		Assert.That(landscapeBounds.Height, Is.GreaterThan(0), "Border should remain visible in landscape");
+	}
 
-    [Test]
-    [Category(UITestCategories.SafeAreaEdges)]
-    public void SafeAreaBorderOrientationLandscapeToPortrait()
-    {
-        var borderContent = App.WaitForElement("BorderContent");
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaBorderOrientationLandscapeToPortrait()
+	{
+		var borderContent = App.WaitForElement("BorderContent");
 
-        // 1. Start by changing to landscape orientation first
-        App.SetOrientationLandscape();
+		// 1. Start by changing to landscape orientation first
+		App.SetOrientationLandscape();
 
-        // Wait for the orientation change to complete and layout to settle
-        System.Threading.Thread.Sleep(2000);
+		// Wait for the orientation change to complete and layout to settle
+		System.Threading.Thread.Sleep(2000);
 
-        // 2. Record landscape state as baseline
-        var landscapeBounds = borderContent.GetRect();
-        var landscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var landscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
+		// 2. Record landscape state as baseline
+		var landscapeBounds = borderContent.GetRect();
+		var landscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var landscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // Verify we're actually in landscape
-        Assert.That(landscapeBounds.Width, Is.GreaterThan(landscapeBounds.Height * 0.8),
-            "Should be in landscape orientation (width > height)");
+		// Verify we're actually in landscape
+		Assert.That(landscapeBounds.Width, Is.GreaterThan(landscapeBounds.Height * 0.8),
+			"Should be in landscape orientation (width > height)");
 
-        // 3. Change back to portrait orientation  
-        App.SetOrientationPortrait();
+		// 3. Change back to portrait orientation  
+		App.SetOrientationPortrait();
 
-        // Wait for the orientation change to complete and layout to settle
-        System.Threading.Thread.Sleep(2000);
+		// Wait for the orientation change to complete and layout to settle
+		System.Threading.Thread.Sleep(2000);
 
-        // 4. Record portrait state after reversion
-        var portraitBounds = borderContent.GetRect();
-        var portraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var portraitDimensions = App.WaitForElement("BorderDimensions").GetText();
+		// 4. Record portrait state after reversion
+		var portraitBounds = borderContent.GetRect();
+		var portraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var portraitDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // 5. Verify orientation actually changed back through dimension analysis
-        Assert.That(portraitBounds.Height, Is.GreaterThan(portraitBounds.Width * 0.8),
-            "Should now be back in portrait orientation (height > width)");
+		// 5. Verify orientation actually changed back through dimension analysis
+		Assert.That(portraitBounds.Height, Is.GreaterThan(portraitBounds.Width * 0.8),
+			"Should now be back in portrait orientation (height > width)");
 
-        // 6. Ensure the safe area reverts correctly
-        Assert.That(landscapeSafeArea, Is.Not.EqualTo(portraitSafeArea),
-            "Safe area should revert when changing from landscape back to portrait");
+		// 6. Ensure the safe area reverts correctly
+		Assert.That(landscapeSafeArea, Is.Not.EqualTo(portraitSafeArea),
+			"Safe area should revert when changing from landscape back to portrait");
 
-        // 7. Verify border dimensions differ between orientations
-        Assert.That(landscapeDimensions, Is.Not.EqualTo(portraitDimensions),
-            "Border dimensions should differ between landscape and portrait orientations");
+		// 7. Verify border dimensions differ between orientations
+		Assert.That(landscapeDimensions, Is.Not.EqualTo(portraitDimensions),
+			"Border dimensions should differ between landscape and portrait orientations");
 
-        // 8. Verify aspect ratio behavior - portrait should be taller than wide
-        var portraitAspectRatio = portraitBounds.Height / portraitBounds.Width;
-        var landscapeAspectRatio = landscapeBounds.Height / landscapeBounds.Width;
+		// 8. Verify aspect ratio behavior - portrait should be taller than wide
+		var portraitAspectRatio = portraitBounds.Height / portraitBounds.Width;
+		var landscapeAspectRatio = landscapeBounds.Height / landscapeBounds.Width;
 
-        Assert.That(portraitAspectRatio, Is.GreaterThan(landscapeAspectRatio),
-            "Portrait should have a higher aspect ratio (taller than wide) compared to landscape");
+		Assert.That(portraitAspectRatio, Is.GreaterThan(landscapeAspectRatio),
+			"Portrait should have a higher aspect ratio (taller than wide) compared to landscape");
 
-        // 9. Verify border visibility is maintained during transition
-        Assert.That(portraitBounds.Width, Is.GreaterThan(0), "Border should remain visible after orientation change");
-        Assert.That(portraitBounds.Height, Is.GreaterThan(0), "Border should remain visible after orientation change");
+		// 9. Verify border visibility is maintained during transition
+		Assert.That(portraitBounds.Width, Is.GreaterThan(0), "Border should remain visible after orientation change");
+		Assert.That(portraitBounds.Height, Is.GreaterThan(0), "Border should remain visible after orientation change");
 
-        // 10. Verify successful orientation reversion through significant dimension changes
-        Assert.That(portraitBounds.Height, Is.GreaterThan(landscapeBounds.Height * 0.8),
-            "Portrait height should be significantly different from landscape, confirming orientation reversion");
-    }
+		// 10. Verify successful orientation reversion through significant dimension changes
+		Assert.That(portraitBounds.Height, Is.GreaterThan(landscapeBounds.Height * 0.8),
+			"Portrait height should be significantly different from landscape, confirming orientation reversion");
+	}
 
-    [Test]
-    [Category(UITestCategories.SafeAreaEdges)]
-    public void SafeAreaBorderMultipleOrientationChanges()
-    {
-        var borderContent = App.WaitForElement("BorderContent");
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaBorderMultipleOrientationChanges()
+	{
+		var borderContent = App.WaitForElement("BorderContent");
 
-        // 1. Record initial portrait state
-        var initialPortraitBounds = borderContent.GetRect();
-        var initialPortraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var initialPortraitDimensions = App.WaitForElement("BorderDimensions").GetText();
+		// 1. Record initial portrait state
+		var initialPortraitBounds = borderContent.GetRect();
+		var initialPortraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var initialPortraitDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // Verify starting orientation
-        Assert.That(initialPortraitBounds.Height, Is.GreaterThan(initialPortraitBounds.Width * 0.8),
-            "Should start in portrait orientation");
+		// Verify starting orientation
+		Assert.That(initialPortraitBounds.Height, Is.GreaterThan(initialPortraitBounds.Width * 0.8),
+			"Should start in portrait orientation");
 
-        // 2. First orientation change: Portrait → Landscape
-        App.SetOrientationLandscape();
-        System.Threading.Thread.Sleep(2000); // Wait for orientation change and layout to settle
+		// 2. First orientation change: Portrait → Landscape
+		App.SetOrientationLandscape();
+		System.Threading.Thread.Sleep(2000); // Wait for orientation change and layout to settle
 
-        var firstLandscapeBounds = borderContent.GetRect();
-        var firstLandscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var firstLandscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
+		var firstLandscapeBounds = borderContent.GetRect();
+		var firstLandscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var firstLandscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // Verify first landscape state
-        Assert.That(firstLandscapeBounds.Width, Is.GreaterThan(firstLandscapeBounds.Height * 0.8),
-            "Should be in landscape after first change");
+		// Verify first landscape state
+		Assert.That(firstLandscapeBounds.Width, Is.GreaterThan(firstLandscapeBounds.Height * 0.8),
+			"Should be in landscape after first change");
 
-        // 3. Second orientation change: Landscape → Portrait
-        App.SetOrientationPortrait();
-        Thread.Sleep(2000); // Wait for orientation change and layout to settle
+		// 3. Second orientation change: Landscape → Portrait
+		App.SetOrientationPortrait();
+		Thread.Sleep(2000); // Wait for orientation change and layout to settle
 
-        var secondPortraitBounds = borderContent.GetRect();
+		var secondPortraitBounds = borderContent.GetRect();
 
-        // Verify back to portrait
-        Assert.That(secondPortraitBounds.Height, Is.GreaterThan(secondPortraitBounds.Width * 0.8),
-            "Should be back to portrait after second change");
+		// Verify back to portrait
+		Assert.That(secondPortraitBounds.Height, Is.GreaterThan(secondPortraitBounds.Width * 0.8),
+			"Should be back to portrait after second change");
 
-        // 4. Third orientation change: Portrait → Landscape  
-        App.SetOrientationLandscape();
-        Thread.Sleep(2000); // Wait for orientation change and layout to settle
+		// 4. Third orientation change: Portrait → Landscape  
+		App.SetOrientationLandscape();
+		Thread.Sleep(2000); // Wait for orientation change and layout to settle
 
-        var secondLandscapeBounds = borderContent.GetRect();
-        var secondLandscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var secondLandscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
+		var secondLandscapeBounds = borderContent.GetRect();
+		var secondLandscapeSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var secondLandscapeDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // Verify second landscape state
-        Assert.That(secondLandscapeBounds.Width, Is.GreaterThan(secondLandscapeBounds.Height * 0.8),
-            "Should be in landscape after third change");
+		// Verify second landscape state
+		Assert.That(secondLandscapeBounds.Width, Is.GreaterThan(secondLandscapeBounds.Height * 0.8),
+			"Should be in landscape after third change");
 
-        // 5. Fourth orientation change: Landscape → Portrait (final)
-        App.SetOrientationPortrait();
-        System.Threading.Thread.Sleep(2000); // Wait for orientation change and layout to settle
+		// 5. Fourth orientation change: Landscape → Portrait (final)
+		App.SetOrientationPortrait();
+		System.Threading.Thread.Sleep(2000); // Wait for orientation change and layout to settle
 
-        var finalPortraitBounds = borderContent.GetRect();
-        var finalPortraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
-        var finalPortraitDimensions = App.WaitForElement("BorderDimensions").GetText();
+		var finalPortraitBounds = borderContent.GetRect();
+		var finalPortraitSafeArea = App.WaitForElement("SafeAreaInsets").GetText();
+		var finalPortraitDimensions = App.WaitForElement("BorderDimensions").GetText();
 
-        // Verify final portrait state
-        Assert.That(finalPortraitBounds.Height, Is.GreaterThan(finalPortraitBounds.Width * 0.8),
-            "Should be back to portrait in final state");
+		// Verify final portrait state
+		Assert.That(finalPortraitBounds.Height, Is.GreaterThan(finalPortraitBounds.Width * 0.8),
+			"Should be back to portrait in final state");
 
-        // 6. Verify border visibility is maintained throughout all changes
-        Assert.That(borderContent.GetRect().Width, Is.GreaterThan(0), "Border should remain visible after multiple orientation changes");
-        Assert.That(borderContent.GetRect().Height, Is.GreaterThan(0), "Border should remain visible after multiple orientation changes");
+		// 6. Verify border visibility is maintained throughout all changes
+		Assert.That(borderContent.GetRect().Width, Is.GreaterThan(0), "Border should remain visible after multiple orientation changes");
+		Assert.That(borderContent.GetRect().Height, Is.GreaterThan(0), "Border should remain visible after multiple orientation changes");
 
-        // 7. Verify positioning consistency within same orientation (with tolerance for real orientation changes)
-        const double positionTolerance = 10.0; // Increased tolerance for real device orientation changes
+		// 7. Verify positioning consistency within same orientation (with tolerance for real orientation changes)
+		const double positionTolerance = 10.0; // Increased tolerance for real device orientation changes
 
-        Assert.That(Math.Abs(initialPortraitBounds.X - finalPortraitBounds.X), Is.LessThanOrEqualTo(positionTolerance),
-            "Portrait X position should be consistent between multiple orientation cycles");
-        Assert.That(Math.Abs(initialPortraitBounds.Y - finalPortraitBounds.Y), Is.LessThanOrEqualTo(positionTolerance),
-            "Portrait Y position should be consistent between multiple orientation cycles");
+		Assert.That(Math.Abs(initialPortraitBounds.X - finalPortraitBounds.X), Is.LessThanOrEqualTo(positionTolerance),
+			"Portrait X position should be consistent between multiple orientation cycles");
+		Assert.That(Math.Abs(initialPortraitBounds.Y - finalPortraitBounds.Y), Is.LessThanOrEqualTo(positionTolerance),
+			"Portrait Y position should be consistent between multiple orientation cycles");
 
-        // 8. Verify landscape positioning consistency
-        Assert.That(Math.Abs(firstLandscapeBounds.X - secondLandscapeBounds.X), Is.LessThanOrEqualTo(positionTolerance),
-            "Landscape X position should be consistent between orientation cycles");
-        Assert.That(Math.Abs(firstLandscapeBounds.Y - secondLandscapeBounds.Y), Is.LessThanOrEqualTo(positionTolerance),
-            "Landscape Y position should be consistent between orientation cycles");
+		// 8. Verify landscape positioning consistency
+		Assert.That(Math.Abs(firstLandscapeBounds.X - secondLandscapeBounds.X), Is.LessThanOrEqualTo(positionTolerance),
+			"Landscape X position should be consistent between orientation cycles");
+		Assert.That(Math.Abs(firstLandscapeBounds.Y - secondLandscapeBounds.Y), Is.LessThanOrEqualTo(positionTolerance),
+			"Landscape Y position should be consistent between orientation cycles");
 
-        // 9. Verify safe area consistency within same orientation
-        Assert.That(initialPortraitSafeArea, Is.EqualTo(finalPortraitSafeArea),
-            "Safe area should be consistent in portrait orientation across multiple cycles");
-        Assert.That(firstLandscapeSafeArea, Is.EqualTo(secondLandscapeSafeArea),
-            "Safe area should be consistent in landscape orientation across multiple cycles");
+		// 9. Verify safe area consistency within same orientation
+		Assert.That(initialPortraitSafeArea, Is.EqualTo(finalPortraitSafeArea),
+			"Safe area should be consistent in portrait orientation across multiple cycles");
+		Assert.That(firstLandscapeSafeArea, Is.EqualTo(secondLandscapeSafeArea),
+			"Safe area should be consistent in landscape orientation across multiple cycles");
 
-        // 10. Verify overall stability - no crashes or errors
-        var testStatus = App.WaitForElement("TestStatus");
-        Assert.That(testStatus.GetText(), Does.Not.Contain("Error"),
-            "No errors should occur during multiple orientation changes");
+		// 10. Verify overall stability - no crashes or errors
+		var testStatus = App.WaitForElement("TestStatus");
+		Assert.That(testStatus.GetText(), Does.Not.Contain("Error"),
+			"No errors should occur during multiple orientation changes");
 
-        // 11. Verify dimensions still differ appropriately between orientations after multiple cycles
-        Assert.That(initialPortraitDimensions, Is.Not.EqualTo(firstLandscapeDimensions),
-            "Dimensions should still differ between portrait and landscape after multiple changes");
-        Assert.That(finalPortraitDimensions, Is.Not.EqualTo(secondLandscapeDimensions),
-            "Dimensions should still differ between portrait and landscape after multiple changes");
-    }
+		// 11. Verify dimensions still differ appropriately between orientations after multiple cycles
+		Assert.That(initialPortraitDimensions, Is.Not.EqualTo(firstLandscapeDimensions),
+			"Dimensions should still differ between portrait and landscape after multiple changes");
+		Assert.That(finalPortraitDimensions, Is.Not.EqualTo(secondLandscapeDimensions),
+			"Dimensions should still differ between portrait and landscape after multiple changes");
+	}
 
-#if TEST_FAILS_ON_ANDROID 
+#if TEST_FAILS_ON_ANDROID
     [Test]
     [Category(UITestCategories.SafeAreaEdges)]
     public void SafeAreaBorderSoftInputBehavior()

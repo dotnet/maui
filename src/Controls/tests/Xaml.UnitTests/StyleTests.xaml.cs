@@ -93,7 +93,7 @@ public partial class StyleTests : ContentPage
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
-				[Test]
+		[Test]
 		public void StyleCtorIsInvokedWithType([Values(XamlInflator.SourceGen)] XamlInflator inflator)
 		{
 			var result = CreateMauiCompilation()

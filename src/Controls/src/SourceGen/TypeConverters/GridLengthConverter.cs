@@ -47,7 +47,7 @@ class GridLengthConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.GridLengthConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.GridLengthConversionFailed);
 		return "default";
 	}
 }

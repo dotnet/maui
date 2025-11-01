@@ -133,14 +133,14 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-		
-// This test is passing locally for android
-// the way the view positions with headless vs not headless
-// is causing this to be an issue
-// we have a number of ui tests and other tests that validate 
-// header scroll.
-// Because this works locally I'm not
-// worried for this pr.
+
+		// This test is passing locally for android
+		// the way the view positions with headless vs not headless
+		// is causing this to be an issue
+		// we have a number of ui tests and other tests that validate 
+		// header scroll.
+		// Because this works locally I'm not
+		// worried for this pr.
 #if IOS
 		// This is mainly relevant for android because android will auto offset the content
 		// based on the height of the flyout header.
@@ -171,169 +171,169 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
-				#if IOS
+#if IOS
 				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top);
-				#else
+#else
 				// On android the we pad the top of the header frame by the safe area because how layout works
 				// so that is already included in the headerFrame Height
 				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height);
-				#endif
+#endif
 			});
 		}
-		
-                [Theory]
-                [ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
-                public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
-                        FlyoutHeaderBehavior behavior,
-                        string contentType,
-                        int? headerMarginTop,
-                        int? headerMarginBottom,
-                        int contentMarginTop,
-                        int contentMarginBottom)
-                {
-                        // flyoutHeader.Margin.Top gets set to the SafeAreaPadding
-                        // so we have to account for that in the default setup
-                        var headerMargin = new Thickness(0, headerMarginTop ?? 0, 0, headerMarginBottom ?? 0);
-                        var contentMargin = new Thickness(0, contentMarginTop, 0, contentMarginBottom);
-                        var flyoutHeader = new Label() { Text = "Flyout Header", BackgroundColor = Colors.AliceBlue };
 
-                        // If margin top is null we don't set anything so safe area is added automatically
-                        if (headerMarginTop.HasValue)
-                        {
-                                flyoutHeader.Margin = headerMargin;
-                        }
+		[Theory]
+		[ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
+		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
+				FlyoutHeaderBehavior behavior,
+				string contentType,
+				int? headerMarginTop,
+				int? headerMarginBottom,
+				int contentMarginTop,
+				int contentMarginBottom)
+		{
+			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
+			// so we have to account for that in the default setup
+			var headerMargin = new Thickness(0, headerMarginTop ?? 0, 0, headerMarginBottom ?? 0);
+			var contentMargin = new Thickness(0, contentMarginTop, 0, contentMarginBottom);
+			var flyoutHeader = new Label() { Text = "Flyout Header", BackgroundColor = Colors.AliceBlue };
 
-                        await RunShellTest(shell =>
-                        {
-                                shell.FlyoutHeader = flyoutHeader;
-                                shell.FlyoutFooter = new Label() { Text = "Flyout Footer" };
-                                shell.FlyoutHeaderBehavior = behavior;
-                                shell.FlyoutContent = ShellFlyoutHeaderBehaviorAndContentTestCases.GetFlyoutContentAction(contentType, contentMargin);
-                        },
-                        async (shell, handler) =>
-                        {
-                                if (!headerMarginTop.HasValue)
-                                {
-                                        headerMargin.Top = GetSafeArea(handler.ToPlatform()).Top;
-                                }
+			// If margin top is null we don't set anything so safe area is added automatically
+			if (headerMarginTop.HasValue)
+			{
+				flyoutHeader.Margin = headerMargin;
+			}
 
-                                await OpenFlyout(handler);
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutHeader = flyoutHeader;
+				shell.FlyoutFooter = new Label() { Text = "Flyout Footer" };
+				shell.FlyoutHeaderBehavior = behavior;
+				shell.FlyoutContent = ShellFlyoutHeaderBehaviorAndContentTestCases.GetFlyoutContentAction(contentType, contentMargin);
+			},
+			async (shell, handler) =>
+			{
+				if (!headerMarginTop.HasValue)
+				{
+					headerMargin.Top = GetSafeArea(handler.ToPlatform()).Top;
+				}
 
-                                var flyoutFrame = GetFlyoutFrame(handler);
-                                var headerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutHeader);
-                                var contentFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutContent);
-                                var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
+				await OpenFlyout(handler);
 
-                                // validate header position
-                                AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-                                AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, epsilon: 0.3, message: "Header Y");
-                                AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
+				var flyoutFrame = GetFlyoutFrame(handler);
+				var headerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutHeader);
+				var contentFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutContent);
+				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
-                                // validate content position
-                                var expectedContentY = headerMargin.Top + headerMargin.Bottom + contentMargin.Top;
+				// validate header position
+				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
+				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, epsilon: 0.3, message: "Header Y");
+				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
+
+				// validate content position
+				var expectedContentY = headerMargin.Top + headerMargin.Bottom + contentMargin.Top;
 
 #if IOS
-                                if (contentType != "ScrollView")
+				if (contentType != "ScrollView")
 #endif
-                                {
-                                        expectedContentY += headerFrame.Height;
-                                }
+				{
+					expectedContentY += headerFrame.Height;
+				}
 #if IOS
-                                else
-                                {
-                                        var scrollViewContentInsetTop = ((UIScrollView)((IView)shell.FlyoutContent).Handler.PlatformView).ContentInset.Top;
-                                        AssertionExtensions.CloseEnough(headerFrame.Height, scrollViewContentInsetTop, message: "Content ScrollView Inset Y");
-                                }
+				else
+				{
+					var scrollViewContentInsetTop = ((UIScrollView)((IView)shell.FlyoutContent).Handler.PlatformView).ContentInset.Top;
+					AssertionExtensions.CloseEnough(headerFrame.Height, scrollViewContentInsetTop, message: "Content ScrollView Inset Y");
+				}
 #endif
 
-                                AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
-                                AssertionExtensions.CloseEnough(expectedContentY, contentFrame.Y, epsilon: 0.5, message: "Content Y");
-                                AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
+				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
+				AssertionExtensions.CloseEnough(expectedContentY, contentFrame.Y, epsilon: 0.5, message: "Content Y");
+				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
 
-                                // validate footer position
-                                var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
-                                AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
-                                AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
+				// validate footer position
+				var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
+				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
+				AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
+				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
-                                //All three views should measure to the height of the flyout
-                                AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
-                        });
-                }
+				//All three views should measure to the height of the flyout
+				AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+			});
+		}
 #endif
 #endif
 
 #if ANDROID || IOS
 
-// This test is passing locally for android
-// the way the view positions with headless vs not headless
-// is causing this to be an issue
-// we have a number of ui tests and other tests that validate 
-// header scroll.
-// Because this works locally I'm not
-// worried for this pr.
+		// This test is passing locally for android
+		// the way the view positions with headless vs not headless
+		// is causing this to be an issue
+		// we have a number of ui tests and other tests that validate 
+		// header scroll.
+		// Because this works locally I'm not
+		// worried for this pr.
 #if IOS
-        [Theory]
+		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
 		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
-                {
-                        var headerRequestedHeight = 250;
-                        var headerMinHeight = 100;
+		{
+			var headerRequestedHeight = 250;
+			var headerMinHeight = 100;
 
-                        await RunShellTest(shell =>
-                        {
-                                shell.FlyoutHeaderBehavior = flyoutHeaderBehavior;
-                                var layout = new VerticalStackLayout()
-                                {
-                                        new Label()
-                                        {
-                                                Text = "Header Content"
-                                        }
-                                };
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutHeaderBehavior = flyoutHeaderBehavior;
+				var layout = new VerticalStackLayout()
+					{
+										new Label()
+										{
+												Text = "Header Content"
+										}
+					};
 
-                                layout.HeightRequest = headerRequestedHeight;
+				layout.HeightRequest = headerRequestedHeight;
 
-                                shell.FlyoutHeader = new ScrollView()
-                                {
-                                        MinimumHeightRequest = headerMinHeight,
-                                        Content = layout
-                                };
+				shell.FlyoutHeader = new ScrollView()
+				{
+					MinimumHeightRequest = headerMinHeight,
+					Content = layout
+				};
 
-                                ShellFlyoutHeaderScrollTestCases.SetFlyoutContent(contentType, shell);
-                        },
-                        async (shell, handler) =>
-                        {
-                                await OpenFlyout(handler);
+				ShellFlyoutHeaderScrollTestCases.SetFlyoutContent(contentType, shell);
+			},
+			async (shell, handler) =>
+			{
+				await OpenFlyout(handler);
 
-                                var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
-                                AssertionExtensions.CloseEnough(headerRequestedHeight, initialBox.Height, 0.3);
+				AssertionExtensions.CloseEnough(headerRequestedHeight, initialBox.Height, 0.3);
 
-                                var bottomOffset = await ScrollFlyoutToBottom(handler);
-                                var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				var bottomOffset = await ScrollFlyoutToBottom(handler);
+				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
-                                if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
-                                {
-                                        AssertionExtensions.CloseEnough(headerMinHeight, scrolledBox.Height, 0.3, "Collapsed Header Height");
-                                }
-                                else
-                                {
-                                        AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
+				if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
+				{
+					AssertionExtensions.CloseEnough(headerMinHeight, scrolledBox.Height, 0.3, "Collapsed Header Height");
+				}
+				else
+				{
+					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
 
-                                        if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
-                                        {
-                                                // scrolledBoy.Y is negative because the header is scrolled up
-                                                var diff = scrolledBox.Y + headerRequestedHeight;
-                                                var epsilon = 0.3;
-                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
-                                        }
-                                        else
-                                        {
-                                                AssertionExtensions.CloseEnough(GetSafeArea(handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
-                                        }
-                                }
-                        });
-                }
+					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
+					{
+						// scrolledBoy.Y is negative because the header is scrolled up
+						var diff = scrolledBox.Y + headerRequestedHeight;
+						var epsilon = 0.3;
+						Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+					}
+					else
+					{
+						AssertionExtensions.CloseEnough(GetSafeArea(handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
+					}
+				}
+			});
+		}
 
 #endif
 
@@ -377,11 +377,11 @@ namespace Microsoft.Maui.DeviceTests
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
 				else
 				{
-					#if ANDROID
+#if ANDROID
 						verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
-					#else
-						verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea(handler.ToPlatform()).Top)) - 30);
-					#endif
+#else
+					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea(handler.ToPlatform()).Top)) - 30);
+#endif
 				}
 
 				Assert.True(leftDiff < 0.2, $"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
@@ -421,7 +421,7 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS || ANDROID
 			return Thickness.Zero;
 #endif
-			
+
 		}
 #endif
 

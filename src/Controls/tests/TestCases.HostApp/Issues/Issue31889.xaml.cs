@@ -10,17 +10,11 @@ public partial class Issue31889 : ContentPage
 	}
 	public void OnLightThemeButtonClicked(object sender, EventArgs e)
 	{
-		if (Application.Current is not null)
-		{
-			Application.Current.UserAppTheme = AppTheme.Light;
-		}
+		Application.Current?.UserAppTheme = AppTheme.Light;
 	}
 
 	public void OnDarkThemeButtonClicked(object sender, EventArgs e)
 	{
-		if (Application.Current is not null)
-		{
-			Application.Current.UserAppTheme = AppTheme.Dark;
-		}
+		Application.Current?.UserAppTheme = AppTheme.Dark;
 	}
 }

@@ -36,7 +36,7 @@ class FontSizeConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

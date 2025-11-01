@@ -29,7 +29,7 @@ class ColumnDefinitionCollectionConverter : ISGTypeConverter
 			return $"new {columnDefinitionCollectionType.ToFQDisplayString()}([{string.Join(", ", columnDefinitions)}])";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.ColumnDefinitionCollectionConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.ColumnDefinitionCollectionConversionFailed);
 		return "default";
 	}
 }
