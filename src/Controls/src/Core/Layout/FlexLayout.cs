@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Controls
 	public class FlexLayout : Layout, IFlexLayout
 	{
 		Flex.Item _root;
+		double _measureWidth;
+		double _measureHeight;
 
 		/// <summary>Bindable property for attached property <see cref="Direction"/>.</summary>
 		public static readonly BindableProperty DirectionProperty =
@@ -481,6 +483,21 @@ namespace Microsoft.Maui.Controls
 
 		internal bool InMeasureMode { get; set; }
 
+		double GetConstraintOrAvailable(Flex.Item item, double constraint, double availableMeasure)
+		{
+			if (constraint != 0)
+				return constraint;
+
+			// When constraint is 0, check if this item belongs to the root FlexLayout
+			if (item.Root == _root)
+			{
+				// Use the stored measure dimension if available and not infinity
+				return double.IsPositiveInfinity(availableMeasure) ? double.PositiveInfinity : availableMeasure;
+			}
+
+			return double.PositiveInfinity;
+		}
+
 		void AddFlexItem(int index, IView child)
 		{
 			if (_root == null)
@@ -505,8 +522,10 @@ namespace Microsoft.Maui.Controls
 					{
 						var sizeConstraints = item.GetConstraints();
 
-						sizeConstraints.Width = (inMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
-						sizeConstraints.Height = (inMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+						// Instead of using infinity when constraint is 0, use the root's available dimensions
+						// This ensures that text-based controls (Labels, Buttons) on Windows can wrap properly
+						sizeConstraints.Width = GetConstraintOrAvailable(item, sizeConstraints.Width, _measureWidth);
+						sizeConstraints.Height = GetConstraintOrAvailable(item, sizeConstraints.Height, _measureHeight);
 
 						if (child is Image)
 						{
@@ -576,6 +595,10 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
+
+			// Store the available dimensions for use in SelfSizing callbacks
+			_measureWidth = width;
+			_measureHeight = height;
 
 			var useMeasureHack = NeedsMeasureHack(width, height);
 			if (useMeasureHack)
