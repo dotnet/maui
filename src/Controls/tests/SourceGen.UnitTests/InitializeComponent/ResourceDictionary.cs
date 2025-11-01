@@ -36,6 +36,31 @@ public partial class __TypeDBD64C1C77CDA760
 {
 	private partial void InitializeComponent()
 	{
+		// Fallback to Runtime inflation if the page was updated by HotReload
+		static string? getPathForType(global::System.Type type)
+		{
+			var assembly = type.Assembly;
+			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
+			{
+				if (xria.Type == type)
+					return xria.Path;
+			}
+			return null;
+		}
+
+		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
+		{
+			AssemblyName = typeof(global::__XamlGeneratedCode__.__TypeDBD64C1C77CDA760).Assembly.GetName(),
+			ResourcePath = getPathForType(typeof(global::__XamlGeneratedCode__.__TypeDBD64C1C77CDA760)),
+			Instance = this,
+		});
+
+		if (rlr?.ResourceContent != null)
+		{
+			this.InitializeComponentRuntime();
+			return;
+		}
+
 		var color = new global::Microsoft.Maui.Graphics.Color(1f, 0.29411766f, 0.078431375f, 1f) /* #FF4B14 */;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color!, new global::System.Uri(@"Styles.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
 		var __root = this;
