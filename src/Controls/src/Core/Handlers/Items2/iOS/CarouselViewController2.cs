@@ -193,6 +193,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return indexPath.Row;
 		}
 
+		bool IsValidIndexPath(NSIndexPath indexPath)
+		{
+			return !(indexPath == null || indexPath.Section < 0 || indexPath.Row < 0 || indexPath.Row >= CollectionView.NumberOfItemsInSection(indexPath.Section));
+		}
+
 		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		// void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		// {
@@ -551,7 +556,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 					var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 
-					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
+					if (IsValidIndexPath(projectedPosition))
+					{
+						CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
+					}
 
 					//Set the position on VirtualView to update the CurrentItem also
 					SetPosition(position);
