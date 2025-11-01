@@ -116,6 +116,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new TitleBarControlPage(), "TitleBar Feature Matrix"),
 			new GalleryPageFactory(() => new IndicatorViewControlPage(), "IndicatorView Feature Matrix"),
 			new GalleryPageFactory(() => new LayoutControlPage(), "ScrollView With LayoutOptions Feature Matrix"),
+			new GalleryPageFactory(() => new MapControlPage(), "Map Feature Matrix"),
 		};
 
 
