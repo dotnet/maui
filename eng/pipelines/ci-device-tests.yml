@@ -1,0 +1,132 @@
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - net9.0
+    - net10.0
+    - inflight/*
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - src/Templates/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    - net9.0
+    - net10.0
+    - inflight/*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - src/Templates/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - THIRD-PARTY-NOTICES.TXT
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
+
+parameters:
+
+- name: BuildEverything
+  type: boolean
+  default: false
+
+- name: windowsPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: windows-2022
+
+- name: macOSPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+
+- name: targetFrameworkVersions
+  type: object
+  default:
+  - tfm: net10.0
+
+stages:
+- ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
+
+  # Use Helix for iOS / Android and MacCatalyst Device Tests
+  - template: /eng/pipelines/arcade/stage-device-tests.yml@self
+    parameters:
+      pool: ${{ parameters.macOSPool }}
+      runAsPublic: true
+      TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      prepareSteps:
+      - template: /eng/pipelines/common/provision.yml@self
+        parameters:
+          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+          skipJdk: false
+          skipAndroidCommonSdks: false
+          skipAndroidPlatformApis: false
+          onlyAndroidPlatformDefaultApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+          skipProvisioning: true
+          skipXcode: false
+          skipSimulatorSetup: false
+  # Just use the old way for Windows Device Tests
+  - template: common/device-tests.yml
+    parameters:
+      windowsPool: ${{ parameters.windowsPool }}
+      targetFrameworkVersion: ${{ targetFrameworkVersion }}
+      windowsVersions: [ 'packaged', 'unpackaged' ]
+      skipProvisioning: true
+      projects:
+      - name: essentials
+        desc: Essentials
+        windowsConfiguration: 'Debug'
+        windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
+        windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+      - name: graphics
+        desc: Graphics
+        windowsConfiguration: 'Debug'
+        windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
+        windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+      - name: core
+        desc: Core
+        windowsConfiguration: 'Debug'
+        windowsPackageId: 'com.microsoft.maui.core.devicetests'
+        windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+      - name: controls
+        desc: Controls
+        windowsConfiguration: 'Debug'
+        windowsPackageId: 'com.microsoft.maui.controls.devicetests'
+        windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+      - name: blazorwebview
+        desc: BlazorWebView
+        windowsConfiguration: 'Debug'
+        windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
+        windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+      platforms:
+      - windows

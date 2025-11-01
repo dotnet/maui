@@ -14,13 +14,43 @@ steps:
   - powershell: |
         if ([Environment]::OSVersion.Platform -eq "Unix") {
             $DOTNET_ROOT = "${{ parameters.mauiSourcePath }}/.dotnet"
+            $env:DOTNET_ROOT = $DOTNET_ROOT
+            $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+            $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_ROOT
+            $env:MSBuildEnableWorkloadResolver = "true"
             $env:PATH = "${DOTNET_ROOT}:$env:PATH"
             $dotnetPath = "${DOTNET_ROOT}/dotnet"
+            $env:DOTNET_PATH = $dotnetPath
+            $env:DOTNET_HOST_PATH = $dotnetPath
         } else {
             $DOTNET_ROOT = "${{ parameters.mauiSourcePath }}\.dotnet"
+            $env:DOTNET_ROOT = $DOTNET_ROOT
+            $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+            $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_ROOT
+            $env:MSBuildEnableWorkloadResolver = "true"
             $env:PATH = "${DOTNET_ROOT};$env:PATH"
             $dotnetPath = "${DOTNET_ROOT}\dotnet.exe"
+            $env:DOTNET_PATH = $dotnetPath
+            $env:DOTNET_HOST_PATH = $dotnetPath
         }
+        Write-Host "##vso[task.setvariable variable=DOTNET_ROOT;]$DOTNET_ROOT";
+        Write-Host "##vso[task.setvariable variable=DOTNET_PATH;]$env:DOTNET_PATH";
+        Write-Host "##vso[task.setvariable variable=DOTNET_HOST_PATH;]$env:DOTNET_HOST_PATH";
+        Write-Host "##vso[task.setvariable variable=DOTNET_MULTILEVEL_LOOKUP;]$env:DOTNET_MULTILEVEL_LOOKUP";
+        Write-Host "##vso[task.setvariable variable=MSBuildEnableWorkloadResolver;]$env:MSBuildEnableWorkloadResolver";
+        Write-Host "##vso[task.setvariable variable=PATH;]$env:PATH";
+        write-host "DOTNET_ROOT: $DOTNET_ROOT"
+        Write-Host "PATH: $env:PATH"
+
+    displayName: Setup DOTNET_ROOT and PATH
+
+  - powershell: |
+        $dotnetPath = $env:DOTNET_PATH
+        Write-Host "The env variables:"
+        dir env:
+        Write-Host "Print dotnet info: "
+        & $dotnetPath --info
+        Write-Host "Running command: $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}"
         & $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}
         if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}") -and $LASTEXITCODE -ne 0) {
             Write-Host "##vso[task.logissue type=error]Test suite had $LASTEXITCODE failure(s)."
