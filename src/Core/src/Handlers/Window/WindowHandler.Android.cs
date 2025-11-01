@@ -1,13 +1,14 @@
 using System;
 using Android.App;
+using Android.Content.Res;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Google.Android.Material.AppBar;
-using AView = Android.Views.View;
+using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
-using Android.Content.Res;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -99,6 +100,10 @@ namespace Microsoft.Maui.Handlers
 
 			if (_rootManager != null)
 				_rootManager.RootViewChanged -= OnRootViewChanged;
+
+			// The MauiCoordinatorLayout will automatically unregister from the static registry
+			// when it's detached from the window, but we can ensure cleanup here as well
+			_rootManager = null;
 		}
 
 		void OnRootViewChanged(object? sender, EventArgs e)
@@ -125,7 +130,12 @@ namespace Microsoft.Maui.Handlers
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.Connect(window.Content);
-			return rootManager.RootView;
+
+			// The NavigationRootManager creates a MauiCoordinatorLayout which automatically
+			// registers its MauiWindowInsetListener in the static registry for child views to use
+			var rootView = rootManager.RootView;
+
+			return rootView;
 		}
 
 		void UpdateVirtualViewFrame(Activity activity)

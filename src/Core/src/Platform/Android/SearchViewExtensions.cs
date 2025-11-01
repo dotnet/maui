@@ -8,8 +8,8 @@ using Android.Util;
 using Android.Views.InputMethods;
 using Android.Widget;
 using static Android.Content.Res.Resources;
-using SearchView = AndroidX.AppCompat.Widget.SearchView;
 using AAttribute = Android.Resource.Attribute;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -194,10 +194,7 @@ namespace Microsoft.Maui.Platform
 			if (editText == null)
 				return;
 
-			if (editText != null)
-			{
-				editText.Enabled = searchBar.IsEnabled;
-			}
+			editText?.Enabled = searchBar.IsEnabled;
 		}
 
 		public static void UpdateKeyboard(this SearchView searchView, ISearchBar searchBar)

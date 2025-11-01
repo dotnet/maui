@@ -61,14 +61,14 @@ namespace Microsoft.Maui.Platform
 		public override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			_isInsetListenerSet = GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(this, _context);
+			_isInsetListenerSet = MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(this, _context);
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
 			if (_isInsetListenerSet)
-				GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(this, _context);
+				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(this, _context);
 
 			_isInsetListenerSet = false;
 			_didSafeAreaEdgeConfigurationChange = true;
@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			Context?.GetGlobalWindowInsetListener()?.ResetView(this);
+			MauiWindowInsetListener.FindListenerForView(this)?.ResetView(this);
 			_didSafeAreaEdgeConfigurationChange = true;
 		}
 
