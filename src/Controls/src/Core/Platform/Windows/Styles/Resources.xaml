@@ -4,13 +4,13 @@
     x:Class="Microsoft.Maui.Controls.Platform.Resources">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="MauiControlsPageControlStyle.xaml" />
-        <ResourceDictionary Source="RadioButtonControlStyle.xaml" />
-        <ResourceDictionary Source="ShellStyles.xaml" />
-        <ResourceDictionary Source="../CollectionView/ItemsViewStyles.xaml" />
-        <ResourceDictionary Source="../TabbedPage/TabbedPageStyle.xaml" />
-        <ResourceDictionary Source="../../../Compatibility/Handlers/ListView/Windows/ListViewStyles.xaml" />
-        <ResourceDictionary Source="../../../Compatibility/Handlers/TableView/Windows/TableViewStyles.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/MauiControlsPageControlStyle.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/RadioButtonControlStyle.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/ShellStyles.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Platform/Windows/CollectionView/ItemsViewStyles.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Platform/Windows/TabbedPage/TabbedPageStyle.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Compatibility/Handlers/ListView/Windows/ListViewStyles.xaml" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls/Compatibility/Handlers/TableView/Windows/TableViewStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiControlsIncluded">true</x:Boolean>

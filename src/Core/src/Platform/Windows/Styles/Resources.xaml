@@ -5,10 +5,10 @@
     x:Class="Microsoft.Maui.Platform.Resources">
 
   <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
-    <ResourceDictionary Source="MauiSliderStyle.xaml" />
-    <ResourceDictionary Source="MauiStepperStyle.xaml" />
-    <ResourceDictionary Source="WindowRootViewStyle.xaml" />
+    <ResourceDictionary Source="ms-appx:///Microsoft.Maui/Platform/Windows/Styles/MauiComboBoxStyle.xaml" />
+    <ResourceDictionary Source="ms-appx:///Microsoft.Maui/Platform/Windows/Styles/MauiSliderStyle.xaml" />
+    <ResourceDictionary Source="ms-appx:///Microsoft.Maui/Platform/Windows/Styles/MauiStepperStyle.xaml" />
+    <ResourceDictionary Source="ms-appx:///Microsoft.Maui/Platform/Windows/Styles/WindowRootViewStyle.xaml" />
   </ResourceDictionary.MergedDictionaries>
 
   <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>
