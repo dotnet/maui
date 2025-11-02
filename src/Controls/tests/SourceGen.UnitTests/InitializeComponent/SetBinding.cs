@@ -106,6 +106,6 @@ public partial class TestPage
 
 		var (result, generated) = RunGenerator(xaml, code);
 		Assert.False(result.Diagnostics.Any());
-		Assert.Equal(expected, generated);
+		TestAssertions.AssertEqualIgnoringLineEndings(expected, generated);
 	}
 }

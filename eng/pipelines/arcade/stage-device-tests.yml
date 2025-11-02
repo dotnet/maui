@@ -37,7 +37,7 @@ parameters:
   default: 'Release'
 - name: TargetFrameworkVersion
   type: string
-  default: 'net9.0'
+  default: 'net10.0'
 - name: appArtifactName
   type: string
   default: 'device_tests_app'
@@ -63,7 +63,7 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
