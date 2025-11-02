@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+       x:Class="Maui.Controls.Sample.Issues.Issue32287">
+
+  <Shell.TitleView>
+    <Label Text="I'm a custom title"
+           FontSize="20"
+           BackgroundColor="Green"
+           HorizontalTextAlignment="Center"
+           VerticalTextAlignment="Center"/>
+  </Shell.TitleView>
+
+  <ShellContent Title="Home page"
+                Route="MainPage">
+    <ShellContent.ContentTemplate>
+      <DataTemplate>
+        <ContentPage>
+          <Label Text="Hello, World!"
+                 VerticalOptions="Center"
+                 HorizontalOptions="Center"
+                 AutomationId="Label"/>
+        </ContentPage>
+      </DataTemplate>
+    </ShellContent.ContentTemplate>
+  </ShellContent>
+</Shell>
