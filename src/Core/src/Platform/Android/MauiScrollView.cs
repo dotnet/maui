@@ -209,20 +209,24 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void UpdateFlowDirection(Microsoft.Maui.FlowDirection flowDirection)
+		internal void UpdateFlowDirection(IView view)
 		{
-			if (_hScrollView != null)
-			{
-				var layoutDirection = flowDirection == Microsoft.Maui.FlowDirection.RightToLeft
+			var flowDirection = view.FlowDirection;
+			var layoutDirection = flowDirection == Microsoft.Maui.FlowDirection.RightToLeft
 					? Android.Views.LayoutDirection.Rtl
 					: Android.Views.LayoutDirection.Ltr;
-
+			if (_hScrollView != null)
+			{
 				if (_prevLayoutDirection != layoutDirection)
 				{
 					_prevLayoutDirection = layoutDirection;
 					_hScrollView.LayoutDirection = layoutDirection;
 					_checkedForRtlScroll = false; // Reset to allow re-evaluation
 				}
+			}
+			else
+			{
+				ViewExtensions.UpdateFlowDirection(this, view);
 			}
 		}
 
