@@ -940,7 +940,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateAutomationId();
 		}
 
-		void BookmarkButtonClicked(object sender, EventArgs e)
+		void BookmarkButtonClicked(object? sender, EventArgs e)
 		{
 			(SearchHandler as ISearchHandlerController)?.ClearPlaceholderClicked();
 		}
@@ -991,7 +991,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			(SearchHandler as ISearchHandlerController)?.QueryConfirmed();
 			_searchController.Active = false;
-			((ISearchHandlerController)SearchHandler).QueryConfirmed();
 		}
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
@@ -1143,7 +1142,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
 			}
-
 			_context = null;
 			SearchHandler = null;
 			Page = null;
