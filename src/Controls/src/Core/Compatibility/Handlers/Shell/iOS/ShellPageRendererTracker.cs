@@ -306,8 +306,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (titleView.Parent != null)
 				{
-					var view = new TitleViewContainer(titleView);
-					NavigationItem.TitleView = view;
+					// For iOS 26+ and Mac Catalyst 26+, we use autoresizing masks and need to adjust the frame manually
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						if (ViewController?.NavigationController?.NavigationBar.Frame is CGRect frame)
+						{
+							var view = new TitleViewContainer(titleView, frame);
+							NavigationItem.TitleView = view;
+						}
+					}
+					else
+					{
+						var view = new TitleViewContainer(titleView);
+						NavigationItem.TitleView = view;
+					}
 				}
 				else
 				{
@@ -684,7 +696,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchHeight = true;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+				// For iOS 26+, we need to use autoresizing masks instead of constraints to ensure proper TitleView display
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					TranslatesAutoresizingMaskIntoConstraints = true;
+					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -693,6 +711,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					TranslatesAutoresizingMaskIntoConstraints = true;
 					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
 				}
+			}
+
+			internal TitleViewContainer(View view, CGRect navigationBarFrame) : this(view)
+			{
+				Frame = new CGRect(Frame.X, Frame.Y, navigationBarFrame.Width, navigationBarFrame.Height);
 			}
 
 			public override CGRect Frame
