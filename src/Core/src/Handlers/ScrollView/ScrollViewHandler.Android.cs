@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.PlatformView is MauiScrollView mauiScrollView && scrollView is IView view)
 			{
-				mauiScrollView.UpdateFlowDirection(view.FlowDirection);
+				mauiScrollView.UpdateFlowDirection(view);
 			}
 		}
 
