@@ -25,25 +25,66 @@ namespace Microsoft.Maui
 	internal static class XUnitValidationHelpers
 	{
 		/// <summary>
-		/// Validates that a test method does not have multiple [Category] attributes.
-		/// Using multiple [Category] attributes causes tests to be skipped.
-		/// Instead, use a single [Category] attribute with multiple parameters: [Category("Cat1", "Cat2")]
+		/// Validates that a test has exactly one category total.
+		/// Multiple categories (whether from multiple attributes, multiple values in one attribute,
+		/// or categories on both class and method) cause tests to be skipped.
 		/// </summary>
 		internal static void ValidateSingleCategoryAttribute(ITestMethod testMethod)
 		{
-			var categoryAttributes = testMethod.Method
-				.GetCustomAttributes(typeof(CategoryAttribute));
+			var testName = $"{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}";
 
-			var count = categoryAttributes.Count();
+			// Get all category attributes from both class and method
+			var methodCategories = testMethod.Method
+				.GetCustomAttributes(typeof(CategoryAttribute))
+				.ToList();
 
-			if (count > 1)
+			var classCategories = testMethod.TestClass.Class
+				.GetCustomAttributes(typeof(CategoryAttribute))
+				.ToList();
+
+			// Count total category attributes
+			var totalCategoryAttributes = methodCategories.Count + classCategories.Count;
+
+			if (totalCategoryAttributes == 0)
 			{
-				var testName = $"{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}";
-				throw new InvalidOperationException(
-					$"Test '{testName}' has {count} [Category] attributes. " +
-					"Multiple [Category] attributes cause tests to be skipped. " +
-					"Instead, use a single [Category] attribute with multiple parameters. " +
-					"For example: [Category(\"Category1\", \"Category2\")]");
+				// No categories - this is fine
+				return;
+			}
+
+			// Now count the actual number of category strings
+			int totalCategoryStrings = 0;
+
+			foreach (var attr in methodCategories.Concat(classCategories))
+			{
+				var args = attr.GetConstructorArguments().FirstOrDefault();
+				if (args is object[] categoryArray)
+				{
+					totalCategoryStrings += categoryArray.Length;
+				}
+			}
+
+			if (totalCategoryStrings > 1)
+			{
+				var errorDetails = new System.Text.StringBuilder();
+				errorDetails.AppendLine($"Test '{testName}' has {totalCategoryStrings} categories.");
+				errorDetails.AppendLine("Only a single category is allowed per test.");
+
+				if (classCategories.Count > 0 && methodCategories.Count > 0)
+				{
+					errorDetails.AppendLine("Categories found on both class and method.");
+				}
+				else if (totalCategoryAttributes > 1)
+				{
+					errorDetails.AppendLine("Multiple [Category] attributes found.");
+				}
+				else if (totalCategoryStrings > 1)
+				{
+					errorDetails.AppendLine("Multiple categories in a single [Category] attribute.");
+				}
+
+				errorDetails.AppendLine("Use a single [Category(\"CategoryName\")] on either the class or method, not both.");
+
+				throw new InvalidOperationException(errorDetails.ToString());
 			}
 		}
 	}
