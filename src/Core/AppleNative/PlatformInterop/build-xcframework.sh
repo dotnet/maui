@@ -51,6 +51,6 @@ xcodebuild -create-xcframework \
 
 # Zip the $XCFRAMEWORK_DIR directory
 cd "$OUTPUT_DIR"
-zip -r "../${FRAMEWORK_NAME}.xcframework.zip" "${FRAMEWORK_NAME}.xcframework"
+zip -r --symlinks "../${FRAMEWORK_NAME}.xcframework.zip" "${FRAMEWORK_NAME}.xcframework"
 cd ..
 rm -rf "$OUTPUT_DIR"
