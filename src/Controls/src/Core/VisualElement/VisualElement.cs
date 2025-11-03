@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly(nameof(Behaviors), typeof(IList<Behavior>), typeof(VisualElement), default(IList<Behavior>),
+		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly(nameof(Behaviors), typeof(IList<IBehavior>), typeof(VisualElement), default(IList<IBehavior>),
 			defaultValueCreator: bindable =>
 			{
 				var collection = new AttachedCollection<Behavior>();
@@ -567,11 +567,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the list of <see cref="Behavior"/> objects associated to this element. This is a read-only bindable property.
+		/// Gets the list of <see cref="IBehavior"/> objects associated to this element. This is a read-only bindable property.
 		/// </summary>
-		public IList<Behavior> Behaviors
+		public IList<IBehavior> Behaviors
 		{
-			get { return (IList<Behavior>)GetValue(BehaviorsProperty); }
+			get { return (IList<IBehavior>)GetValue(BehaviorsProperty); }
 		}
 
 		/// <summary>

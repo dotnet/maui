@@ -1594,7 +1594,7 @@
 ~Microsoft.Maui.Controls.VisualElement.Background.set -> void
 ~Microsoft.Maui.Controls.VisualElement.BackgroundColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.VisualElement.BackgroundColor.set -> void
-~Microsoft.Maui.Controls.VisualElement.Behaviors.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Behavior>
+~Microsoft.Maui.Controls.VisualElement.Behaviors.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.IBehavior>
 ~Microsoft.Maui.Controls.VisualElement.Clip.get -> Microsoft.Maui.Controls.Shapes.Geometry
 ~Microsoft.Maui.Controls.VisualElement.Clip.set -> void
 ~Microsoft.Maui.Controls.VisualElement.Resources.get -> Microsoft.Maui.Controls.ResourceDictionary

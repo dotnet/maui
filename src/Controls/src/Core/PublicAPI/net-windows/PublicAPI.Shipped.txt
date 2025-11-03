@@ -535,6 +535,9 @@
 ~Microsoft.Maui.Controls.IAppLinks.DeregisterLink(Microsoft.Maui.Controls.IAppLinkEntry appLink) -> void
 ~Microsoft.Maui.Controls.IAppLinks.DeregisterLink(System.Uri appLinkUri) -> void
 ~Microsoft.Maui.Controls.IAppLinks.RegisterLink(Microsoft.Maui.Controls.IAppLinkEntry appLink) -> void
+~Microsoft.Maui.Controls.IAttachedObject.AttachTo(Microsoft.Maui.Controls.BindableObject bindable) -> void
+~Microsoft.Maui.Controls.IAttachedObject.DetachFrom(Microsoft.Maui.Controls.BindableObject bindable) -> void
+~Microsoft.Maui.Controls.IBehavior<T>
 ~Microsoft.Maui.Controls.IBindableLayout.Children.get -> System.Collections.IList
 ~Microsoft.Maui.Controls.IBorderElement.Background.get -> Microsoft.Maui.Controls.Brush
 ~Microsoft.Maui.Controls.IBorderElement.BackgroundColor.get -> Microsoft.Maui.Graphics.Color
@@ -1664,7 +1667,7 @@
 ~Microsoft.Maui.Controls.VisualElement.Background.set -> void
 ~Microsoft.Maui.Controls.VisualElement.BackgroundColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.VisualElement.BackgroundColor.set -> void
-~Microsoft.Maui.Controls.VisualElement.Behaviors.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Behavior>
+~Microsoft.Maui.Controls.VisualElement.Behaviors.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.IBehavior>
 ~Microsoft.Maui.Controls.VisualElement.Clip.get -> Microsoft.Maui.Controls.Shapes.Geometry
 ~Microsoft.Maui.Controls.VisualElement.Clip.set -> void
 ~Microsoft.Maui.Controls.VisualElement.Resources.get -> Microsoft.Maui.Controls.ResourceDictionary
@@ -4904,6 +4907,8 @@ Microsoft.Maui.Controls.IAppLinkEntry
 Microsoft.Maui.Controls.IAppLinkEntry.IsLinkActive.get -> bool
 Microsoft.Maui.Controls.IAppLinkEntry.IsLinkActive.set -> void
 Microsoft.Maui.Controls.IAppLinks
+Microsoft.Maui.Controls.IAttachedObject
+Microsoft.Maui.Controls.IBehavior
 Microsoft.Maui.Controls.IBindableLayout
 Microsoft.Maui.Controls.IBorderElement
 Microsoft.Maui.Controls.IBorderElement.BorderWidth.get -> double

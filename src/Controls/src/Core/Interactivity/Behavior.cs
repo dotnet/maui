@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	/// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events.
 	/// </summary>
 	/// <remarks>Application developers should specialize the <see cref="Behavior{T}" /> generic class, instead of directly using <see cref="Behavior" />.</remarks>
-	public abstract class Behavior : BindableObject, IAttachedObject
+	public abstract class Behavior : BindableObject, IBehavior
 	{
 		/// <summary>
 		/// Creates a new <see cref="Behavior" /> with default values.
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 	/// <inheritdoc/>
 	/// <typeparam name="T">The type of object this behavior will be applied to.</typeparam>
-	public abstract class Behavior<T> : Behavior where T : BindableObject
+	public abstract class Behavior<T> : Behavior, IBehavior<T> where T : BindableObject
 	{
 		/// <inheritdoc/>
 		protected Behavior() : base(typeof(T))
