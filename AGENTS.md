@@ -176,7 +176,9 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
 
 **Option 2: Running specific tests directly (for rapid development):**
 
-1. **Deploy TestCases.HostApp to Android:**
+**Android:**
+
+1. Deploy the TestCases.HostApp:
    ```bash
    # Use local dotnet if available, otherwise use global dotnet
    ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
@@ -184,73 +186,202 @@ dotnet cake eng/devices/android.cake --target=uitest --test-filter="FullyQualifi
    dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
    ```
 
-2. **Deploy TestCases.HostApp to iOS simulator (3-step process):**
-
-   **Step 1: Find iPhone Xs with highest API level**
+2. Run your specific test:
    ```bash
-   # View all iPhone Xs devices with their iOS versions
-   xcrun simctl list devices available | awk '/^--.*iOS/ {version=$0} /iPhone Xs/ {print version " -> " $0}'
+   # Set DEVICE_UDID environment variable so Appium tests know which device to use
+   # Get the device ID from: adb devices
+   export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
 
-   # Extract UDID of iPhone Xs with highest iOS version (last in list)
-   UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
-
-   # Verify UDID was found
-   if [ -z "$UDID" ]; then
-       echo "ERROR: No iPhone Xs simulator found. Please create an iPhone Xs simulator before running iOS tests."
-       exit 1
-   fi
-
-   echo "Using iPhone Xs with UDID: $UDID"
+   # Run the test
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue12345"
    ```
 
-   **Step 2: Build the iOS app**
-   ```bash
-   # Use local dotnet if available, otherwise use global dotnet
-   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-   # OR:
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-   ```
+**iOS (4-step process):**
 
-   **Step 3: Boot simulator and install app (non-blocking)**
-   ```bash
-   # Boot the simulator (will error if already booted, which is fine)
-   xcrun simctl boot $UDID 2>/dev/null || true
+**Important: Device and iOS Version Selection**
 
-   # Install the app to the simulator
-   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+When the user requests to run tests on iOS:
+- **Default behavior (no device, no iOS version specified)**: Use iPhone Xs with the highest available iOS version
+- **User specifies iOS version only** (e.g., "iOS 26.0", "iOS 18.4"):
+  - First, try to find iPhone Xs with that iOS version
+  - If iPhone Xs not available for that iOS version, use ANY available device with that iOS version
+  - Set `IOS_VERSION` variable, leave `DEVICE_NAME` empty to allow fallback
+- **User specifies device only** (e.g., "iPhone 16 Pro", "iPhone 15"):
+  - Set `DEVICE_NAME` variable with the specified device
+  - Use highest available iOS version for that device
+- **User specifies both device AND iOS version**: Set both `IOS_VERSION` and `DEVICE_NAME` variables
 
-   # Verify simulator is booted
-   xcrun simctl list devices | grep "$UDID"
-   ```
+Examples of interpreting user requests:
+- "Run on iOS 26.0" → Set `IOS_VERSION="26.0"`, leave `DEVICE_NAME` empty (will try iPhone Xs first, then fallback to any iOS 26.0 device)
+- "Run on iPhone 16 Pro" → Set `DEVICE_NAME="iPhone 16 Pro"`, use highest iOS version
+- "Run on iPhone 15 with iOS 18.0" → Set both `DEVICE_NAME="iPhone 15"` and `IOS_VERSION="18.0"`
+- No specific request → Use defaults (iPhone Xs with highest iOS)
 
-3. **Deploy TestCases.HostApp to MacCatalyst:**
-   ```bash
-   # Build and run the MacCatalyst app
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
-   ```
+**Step 1: Find iOS Simulator**
 
-4. **Run specific tests:**
-   ```bash
-   # Android tests
-   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+```bash
+# Set device name and iOS version based on user request
+# Leave DEVICE_NAME empty when user only specifies iOS version (to allow fallback)
+DEVICE_NAME="${DEVICE_NAME:-}"
+IOS_VERSION="${IOS_VERSION:-}"
 
-   # iOS tests
-   dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+# Determine search strategy
+if [ -z "$IOS_VERSION" ]; then
+    # No iOS version specified - use iPhone Xs with highest available iOS
+    DEVICE_NAME="${DEVICE_NAME:-iPhone Xs}"
+    JQ_FILTER='
+      .devices
+      | to_entries
+      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS")))
+      | map({
+          key: .key,
+          version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)),
+          devices: .value
+        })
+      | sort_by(.version)
+      | reverse
+      | map(select(.devices | any(.name == "'"$DEVICE_NAME"'")))
+      | first
+      | .devices[]
+      | select(.name == "'"$DEVICE_NAME"'")
+      | .udid'
+else
+    # Specific iOS version requested
+    IOS_VERSION_FILTER="iOS-${IOS_VERSION//./-}"
 
-   # MacCatalyst tests
-   dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+    if [ -z "$DEVICE_NAME" ]; then
+        # iOS version specified, but no device - try iPhone Xs first, then fallback to any device
+        JQ_FILTER='
+          .devices
+          | to_entries
+          | map(select(.key | contains("'"$IOS_VERSION_FILTER"'")))
+          | first
+          | .value
+          | (map(select(.name == "iPhone Xs")) + .)[0]
+          | .udid'
+    else
+        # Both iOS version and device specified
+        JQ_FILTER='
+          .devices
+          | to_entries
+          | map(select(.key | contains("'"$IOS_VERSION_FILTER"'")))
+          | map(.value)
+          | flatten
+          | map(select(.name == "'"$DEVICE_NAME"'"))
+          | first
+          | .udid'
+    fi
+fi
 
-   # Run all tests for a category
-   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "Category=CollectionView"
-   ```
+# Extract UDID using the constructed filter
+UDID=$(xcrun simctl list devices available --json | jq -r "$JQ_FILTER")
+
+# Get the actual device name that was found
+if [ ! -z "$UDID" ] && [ "$UDID" != "null" ]; then
+    FOUND_DEVICE=$(xcrun simctl list devices available --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .name')
+fi
+
+# Verify UDID was found and is not empty
+if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+    if [ -z "$IOS_VERSION" ]; then
+        DEVICE_NAME="${DEVICE_NAME:-iPhone Xs}"
+        echo "ERROR: No $DEVICE_NAME simulator found. Please create a $DEVICE_NAME simulator before running iOS tests."
+    elif [ -z "$DEVICE_NAME" ]; then
+        echo "ERROR: No simulator found for iOS $IOS_VERSION. Please install iOS $IOS_VERSION runtime."
+    else
+        echo "ERROR: No $DEVICE_NAME simulator found for iOS $IOS_VERSION. Please create one before running iOS tests."
+    fi
+    exit 1
+fi
+
+echo "Using $FOUND_DEVICE with UDID: $UDID"
+```
+
+**Examples of device/version selection:**
+```bash
+# Default: iPhone Xs with highest iOS version
+# (no environment variables needed)
+
+# Specific iOS version (will try iPhone Xs first, then any device):
+export IOS_VERSION="26.0"
+# Leave DEVICE_NAME unset
+
+# Specific device with highest iOS version:
+export DEVICE_NAME="iPhone 16 Pro"
+# Leave IOS_VERSION unset
+
+# Specific device AND specific iOS version:
+export DEVICE_NAME="iPhone 15"
+export IOS_VERSION="18.0"
+```
+
+**Step 2: Build the iOS app**
+```bash
+# Use local dotnet if available, otherwise use global dotnet
+./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+# OR:
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+```
+
+**Step 3: Boot simulator and install app**
+```bash
+# Boot the simulator (will error if already booted, which is fine)
+xcrun simctl boot $UDID 2>/dev/null || true
+
+# Install the app to the simulator
+xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+
+# Verify simulator is booted
+STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
+if [ "$STATE" != "Booted" ]; then
+    echo "ERROR: Simulator failed to boot. Current state: $STATE"
+    exit 1
+fi
+echo "Simulator is booted and ready"
+```
+
+**Step 4: Run your specific test**
+```bash
+# Set DEVICE_UDID environment variable so Appium tests know which device to use
+export DEVICE_UDID=$UDID
+
+# Run the test
+dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
+
+**MacCatalyst:**
+
+**Step 1: Deploy TestCases.HostApp to MacCatalyst**
+```bash
+# Use local dotnet if available, otherwise use global dotnet
+./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+# OR:
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+```
+
+**Step 2: Run your specific test**
+```bash
+dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
 
 **Troubleshooting UI Tests:**
 
-If Android HostApp crashes with navigation fragment errors:
+**Android App Crashes on Launch:**
+
+If you encounter navigation fragment errors or resource ID issues:
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Build with `--no-incremental` to force a clean build:
 ```bash
-# Solution: Build with --no-incremental to regenerate resource IDs
 dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
 ```
+
+**Other debugging steps:**
+1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
+2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
+3. Check emulator: `adb devices`
 
 ### UI Tests
 
