@@ -69,11 +69,11 @@ jobs:
         shell: pwsh
       
       - name: Build BuildTasks
-        run: ./eng/build.ps1 -restore -build -configuration Debug -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:artifacts/logs/buildtasks.binlog
+        run: ./eng/build.ps1 -restore -build -configuration Debug -projects "${{ github.workspace }}/Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:artifacts/logs/buildtasks.binlog
         shell: pwsh
       
       - name: Build .NET MAUI SDK
-        run: ./eng/build.ps1 -restore -build -configuration Debug -projects "Microsoft.Maui.sln" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /p:CodesignRequireProvisioningProfile=false /p:EnableWindowsTargeting=true /bl:artifacts/logs/build-windows.binlog
+        run: ./eng/build.ps1 -restore -build -configuration Debug -projects "${{ github.workspace }}/Microsoft.Maui.sln" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /p:CodesignRequireProvisioningProfile=false /p:EnableWindowsTargeting=true /bl:artifacts/logs/build-windows.binlog
         shell: pwsh
       
       - name: Run Controls.Xaml.UnitTests
@@ -159,10 +159,10 @@ jobs:
           echo "ANDROID_HOME set to: $PREFERRED_SDK"
       
       - name: Build BuildTasks
-        run: ./eng/build.sh -restore -build -configuration Debug -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:artifacts/logs/buildtasks.binlog
+        run: ./eng/build.sh -restore -build -configuration Debug -projects "${{ github.workspace }}/Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:artifacts/logs/buildtasks.binlog
       
       - name: Build .NET MAUI SDK (macOS)
-        run: ./eng/build.sh -restore -build -configuration Debug -projects "Microsoft.Maui-mac.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /p:CodesignRequireProvisioningProfile=false /bl:artifacts/logs/build-macos.binlog
+        run: ./eng/build.sh -restore -build -configuration Debug -projects "${{ github.workspace }}/Microsoft.Maui-mac.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /p:CodesignRequireProvisioningProfile=false /bl:artifacts/logs/build-macos.binlog
       
       - name: Run Controls.Xaml.UnitTests
         run: dotnet test src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Controls.Xaml.UnitTests /bl:artifacts/logs/test-xaml-unittests.binlog /p:_SkipUpdateBuildNumber=true --no-build
