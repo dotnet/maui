@@ -28,11 +28,13 @@ jobs:
             NuGet.config
             Microsoft.Maui.BuildTasks.slnf
       
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-          dotnet-quality: 'preview'
+      - name: Setup .NET using Arcade
+        run: |
+          chmod +x ./eng/common/dotnet-install.sh
+          ./eng/common/dotnet-install.sh --version $(jq -r '.tools.dotnet' global.json) --install-dir ./bin/dotnet
+          echo "${{ github.workspace }}/bin/dotnet" >> $GITHUB_PATH
+          echo "DOTNET_ROOT=${{ github.workspace }}/bin/dotnet" >> $GITHUB_ENV
+        shell: bash
       
       - name: Verify .NET version
         run: dotnet --version

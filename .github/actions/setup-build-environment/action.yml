@@ -20,12 +20,18 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: ${{ inputs.dotnet-version == 'global.json' && 'global.json' || '' }}
-        dotnet-version: ${{ inputs.dotnet-version != 'global.json' && inputs.dotnet-version || '' }}
-        dotnet-quality: 'preview'
+    - name: Setup .NET using Arcade
+      shell: bash
+      run: |
+        chmod +x ./eng/common/dotnet-install.sh
+        if [ "${{ inputs.dotnet-version }}" == "global.json" ]; then
+          version=$(jq -r '.tools.dotnet' global.json)
+        else
+          version="${{ inputs.dotnet-version }}"
+        fi
+        ./eng/common/dotnet-install.sh --version $version --install-dir ./bin/dotnet
+        echo "${{ github.workspace }}/bin/dotnet" >> $GITHUB_PATH
+        echo "DOTNET_ROOT=${{ github.workspace }}/bin/dotnet" >> $GITHUB_ENV
     
     - name: Verify .NET version
       shell: bash
