@@ -677,15 +677,15 @@ namespace Microsoft.Maui.Controls
 
 				if (newPage.Handler != null)
 				{
-				if (newPage.Handler is not null)
-				{
-					OnPageHandlerChanged(newPage, EventArgs.Empty);
-				}
+					if (newPage.Handler is not null)
+					{
+						OnPageHandlerChanged(newPage, EventArgs.Empty);
+					}
 
-				if (Parent != null)
-				{
-					SendWindowAppearing();
-				}
+					if (Parent != null)
+					{
+						SendWindowAppearing();
+					}
 				}
 			}
 
