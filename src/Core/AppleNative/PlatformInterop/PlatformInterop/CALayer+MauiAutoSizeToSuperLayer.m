@@ -1,10 +1,10 @@
 #import <objc/runtime.h>
 #import <UIKit/UIKit.h>
-#import "CALayer+AutoSizeToSuperLayer.h"
+#import "CALayer+MauiAutoSizeToSuperLayer.h"
 
-@implementation CALayer (AutoSizeToSuperLayer)
+@implementation CALayer (MauiAutoSizeToSuperLayer)
 
-static char CALayerAutoSizeToSuperLayer;
+static char CALayerMauiAutoSizeToSuperLayer;
 
 + (void)load
 {
@@ -18,24 +18,24 @@ static char CALayerAutoSizeToSuperLayer;
 
 - (void)maui_setBounds:(CGRect)bounds
 {
-    // Loop through sublayers and adjust their frames if autoSizeToSuperLayer is enabled
+    // Loop through sublayers and adjust their frames if mauiAutoSizeToSuperLayer is enabled
     for (CALayer *layer in self.sublayers)
-        if (layer.autoSizeToSuperLayer && !CGRectEqualToRect(self.frame, bounds))
+        if (layer.mauiAutoSizeToSuperLayer && !CGRectEqualToRect(self.frame, bounds))
             [layer setFrame:bounds];
 
     // Call the original setBounds: method (exchanged with maui_setBounds:)
     [self maui_setBounds:bounds];
 }
 
-- (BOOL)autoSizeToSuperLayer
+- (BOOL)mauiAutoSizeToSuperLayer
 {
-    NSNumber *autoSizeNumber = objc_getAssociatedObject(self, &CALayerAutoSizeToSuperLayer);
+    NSNumber *autoSizeNumber = objc_getAssociatedObject(self, &CALayerMauiAutoSizeToSuperLayer);
     return (BOOL)[autoSizeNumber boolValue];
 }
 
-- (void)setAutoSizeToSuperLayer:(BOOL)autoSize
+- (void)setMauiAutoSizeToSuperLayer:(BOOL)autoSize
 {
-    objc_setAssociatedObject(self, &CALayerAutoSizeToSuperLayer, @(autoSize), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, &CALayerMauiAutoSizeToSuperLayer, @(autoSize), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
     if (autoSize && self.superlayer)
         [self setFrame:self.superlayer.bounds];
