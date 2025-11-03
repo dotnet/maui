@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Platform
 	[Category]
 	[Internal]
 	[BaseType(typeof(CALayer))]
-	internal interface CALayer_AutoSizeToSuperLayer
+	internal interface CALayer_MauiAutoSizeToSuperLayer
 	{
-		[Export("autoSizeToSuperLayer")]
-		bool GetAutoSizeToSuperLayer();
+		[Export("mauiAutoSizeToSuperLayer")]
+		bool GetMauiAutoSizeToSuperLayer();
 
-		[Export("setAutoSizeToSuperLayer:")]
-		void SetAutoSizeToSuperLayer(bool value);
+		[Export("setMauiAutoSizeToSuperLayer:")]
+		void SetMauiAutoSizeToSuperLayer(bool value);
 	}
 }
