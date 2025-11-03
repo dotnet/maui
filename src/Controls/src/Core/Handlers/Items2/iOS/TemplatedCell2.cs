@@ -117,9 +117,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private protected virtual Size GetMeasureConstraints(UICollectionViewLayoutAttributes preferredAttributes)
 		{
+			// For vertical layouts: constrain width, allow height to expand
+			// For horizontal layouts: allow both dimensions to expand so cells can measure their full content
 			var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
 				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
-				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+				: new Size(double.PositiveInfinity, double.PositiveInfinity);
 			return constraints;
 		}
 

@@ -1,5 +1,67 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns:system="clr-namespace:System;assembly=netstandard"
+             x:Class="Maui.Controls.Sample.MainPage">
+    <Grid RowDefinitions="Auto, Auto, *">
+        <Label
+            Grid.Row="0"
+            Text="header"
+            BackgroundColor="CornflowerBlue"
+            />
+
+        <CollectionView
+            x:Name="TestCollectionView"
+            Grid.Row="1"
+            BackgroundColor="LightCoral"
+            ItemsSource="{Binding MyItemList}"
+            >
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout
+                    ItemSpacing="4"
+                    Orientation="Horizontal"
+                    />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="system:String">
+                    <Border
+                        x:Name="ItemBorder"
+                        BackgroundColor="White"
+                        Stroke="Black"
+                        VerticalOptions="Start"
+                        >
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="4" />
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow
+                                Offset="2,2"
+                                Brush="Black"
+                                Opacity="0.4"
+                                Radius="2"
+                                />
+                        </Border.Shadow>
+                        <StackLayout
+                            Padding="8"
+                            HorizontalOptions="Center"
+                            Orientation="Horizontal"
+                            Spacing="4"
+                            VerticalOptions="Start"
+                            >
+                            <Label
+                                x:Name="ItemLabel"
+                                Text="{Binding .}"
+                                VerticalOptions="Start"
+                                />
+                        </StackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label
+            Grid.Row="2"
+            Text="Content"
+            BackgroundColor="Aquamarine"
+            />
+    </Grid>
 </ContentPage>
