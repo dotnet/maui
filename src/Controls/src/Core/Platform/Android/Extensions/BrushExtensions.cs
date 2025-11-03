@@ -39,12 +39,6 @@ namespace Microsoft.Maui.Controls.Platform
 			gradientStrokeDrawable.SetBrush(brush);
 			view.Background = gradientStrokeDrawable;
 
-			// Remove elevation for BottomNavigationView
-			// to prevent visual separation lines, especially with gradients
-			if (view is BottomNavigationView bottomNavView)
-			{
-				bottomNavView.Elevation = 0;
-			}
 		}
 
 		public static void UpdateBackground(this Paint paint, Brush brush, int height, int width) =>
