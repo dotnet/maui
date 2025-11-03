@@ -20,6 +20,34 @@ namespace Microsoft.Maui
 	}
 
 	/// <summary>
+	/// Helper methods for XUnit test validation
+	/// </summary>
+	internal static class XUnitValidationHelpers
+	{
+		/// <summary>
+		/// Validates that a test method does not have multiple [Category] attributes.
+		/// Using multiple [Category] attributes causes tests to be skipped.
+		/// Instead, use a single [Category] attribute with multiple parameters: [Category("Cat1", "Cat2")]
+		/// </summary>
+		internal static void ValidateSingleCategoryAttribute(ITestMethod testMethod)
+		{
+			var categoryAttributes = testMethod.Method
+				.GetCustomAttributes(typeof(CategoryAttribute))
+				.ToList();
+
+			if (categoryAttributes.Count > 1)
+			{
+				var testName = $"{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}";
+				throw new InvalidOperationException(
+					$"Test '{testName}' has {categoryAttributes.Count} [Category] attributes. " +
+					"Multiple [Category] attributes cause tests to be skipped. " +
+					"Instead, use a single [Category] attribute with multiple parameters. " +
+					"For example: [Category(\"Category1\", \"Category2\")]");
+			}
+		}
+	}
+
+	/// <summary>
 	/// Custom trait discoverer which adds a Category trait for filtering, etc.
 	/// </summary>
 	public class CategoryDiscoverer : ITraitDiscoverer
@@ -56,6 +84,8 @@ namespace Microsoft.Maui
 		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions,
 			ITestMethod testMethod, IAttributeInfo factAttribute)
 		{
+			XUnitValidationHelpers.ValidateSingleCategoryAttribute(testMethod);
+
 			var cases = base.Discover(discoveryOptions, testMethod, factAttribute);
 
 			foreach (var testCase in cases)
@@ -77,6 +107,8 @@ namespace Microsoft.Maui
 		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions,
 			ITestMethod testMethod, IAttributeInfo factAttribute)
 		{
+			XUnitValidationHelpers.ValidateSingleCategoryAttribute(testMethod);
+
 			var testCases = base.Discover(discoveryOptions, testMethod, factAttribute);
 
 			foreach (var testCase in testCases)
