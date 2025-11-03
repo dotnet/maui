@@ -51,6 +51,10 @@ variables:
   value: false
 - name: _InternalBuildArgs
   value: ''
+- name: cfsNugetWarnLevel
+  value: warn
+- name: nugetMultiFeedWarnLevel
+  value: none
 
 # Variable groups required for all builds
 - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui'),  ne(variables['Build.DefinitionName'], 'maui-pr-devicetests')) }}:

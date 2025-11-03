@@ -34,10 +34,28 @@ parameters:
   skipInternalFeeds: true
 
 steps:
+
+##################################################
+#               Provisioning Feeds               #
+##################################################
+
+- ${{ if ne(parameters.skipInternalFeeds, 'true') }}:
+  - template: ../../common/templates-official/steps/enable-internal-sources.yml
+    parameters:
+      legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      
+  - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
+    parameters:
+      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+      outputVariableName: ${{ parameters.outputVariableName }}
+      expiryInHours: ${{ parameters.expiryInHours }}
+      base64Encode: ${{ parameters.base64Encode }}
+
+
 ##################################################
 #               Provisioning macOS               #
 ##################################################
-
+  
 #check if the _tool directory exists and remove it
 - pwsh: |
     $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
@@ -276,17 +294,3 @@ steps:
     condition: succeeded()
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
-
-##################################################
-#               Provisioning Feeds               #
-##################################################
-
-- ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
-  - template: ../../common/templates-official/steps/enable-internal-sources.yml
-
-  - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
-    parameters:
-      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
-      outputVariableName: ${{ parameters.outputVariableName }}
-      expiryInHours: ${{ parameters.expiryInHours }}
-      base64Encode: ${{ parameters.base64Encode }}
