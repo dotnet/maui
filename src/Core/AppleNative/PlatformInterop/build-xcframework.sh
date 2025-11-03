@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 PROJECT="PlatformInterop"
 SCHEME="PlatformInterop"
 CONFIGURATION="Release"
