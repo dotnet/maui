@@ -5,11 +5,13 @@
        x:Class="Maui.Controls.Sample.Issues.Issue32287">
 
   <Shell.TitleView>
-    <Label Text="I'm a custom title"
+    <Label x:Name="TitleLabel"
+           Text="I'm a custom title"
            FontSize="20"
            BackgroundColor="Green"
            HorizontalTextAlignment="Center"
-           VerticalTextAlignment="Center"/>
+           VerticalTextAlignment="Center"
+           AutomationId="TitleLabel"/>
   </Shell.TitleView>
 
   <ShellContent Title="Home page"
@@ -17,10 +19,18 @@
     <ShellContent.ContentTemplate>
       <DataTemplate>
         <ContentPage>
-          <Label Text="Hello, World!"
-                 VerticalOptions="Center"
-                 HorizontalOptions="Center"
-                 AutomationId="Label"/>
+          <VerticalStackLayout VerticalOptions="Center"
+                               HorizontalOptions="Center"
+                               Spacing="20">
+            <Label Text="Hello, World!"
+                   AutomationId="Label"/>
+            <Button Text="Increase Title Font Size"
+                    AutomationId="IncreaseFontSizeButton"
+                    Clicked="OnIncreaseFontSizeClicked"/>
+            <Button Text="Decrease Title Font Size"
+                    AutomationId="DecreaseFontSizeButton"
+                    Clicked="OnDecreaseFontSizeClicked"/>
+          </VerticalStackLayout>
         </ContentPage>
       </DataTemplate>
     </ShellContent.ContentTemplate>
