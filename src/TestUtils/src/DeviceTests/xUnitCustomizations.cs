@@ -32,14 +32,15 @@ namespace Microsoft.Maui
 		internal static void ValidateSingleCategoryAttribute(ITestMethod testMethod)
 		{
 			var categoryAttributes = testMethod.Method
-				.GetCustomAttributes(typeof(CategoryAttribute))
-				.ToList();
+				.GetCustomAttributes(typeof(CategoryAttribute));
 
-			if (categoryAttributes.Count > 1)
+			var count = categoryAttributes.Count();
+
+			if (count > 1)
 			{
 				var testName = $"{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}";
 				throw new InvalidOperationException(
-					$"Test '{testName}' has {categoryAttributes.Count} [Category] attributes. " +
+					$"Test '{testName}' has {count} [Category] attributes. " +
 					"Multiple [Category] attributes cause tests to be skipped. " +
 					"Instead, use a single [Category] attribute with multiple parameters. " +
 					"For example: [Category(\"Category1\", \"Category2\")]");
