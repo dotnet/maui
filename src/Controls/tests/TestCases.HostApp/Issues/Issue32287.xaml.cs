@@ -7,4 +7,20 @@ public partial class Issue32287 : Shell
 	{
 		InitializeComponent();
 	}
+
+	private void OnIncreaseFontSizeClicked(object sender, EventArgs e)
+	{
+		if (TitleLabel != null)
+		{
+			TitleLabel.FontSize += 5;
+		}
+	}
+
+	private void OnDecreaseFontSizeClicked(object sender, EventArgs e)
+	{
+		if (TitleLabel != null && TitleLabel.FontSize > 10)
+		{
+			TitleLabel.FontSize -= 5;
+		}
+	}
 }
