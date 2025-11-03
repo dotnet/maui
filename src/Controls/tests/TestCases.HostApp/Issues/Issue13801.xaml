@@ -14,5 +14,33 @@
                   StrokeThickness="5"
                   Data="M 0 0 L 100 0 L 100 100 L 0 100 Z"
                   Margin="-10"/>
+            <Label Text="Polyline with Margin"
+                   Margin="0,15,0,0"/>
+            <Polyline Stroke="Purple"
+                      StrokeThickness="5"
+                      Points="10,10 40,25 70,10 70,40 40,55 10,40 10,10"
+                      Margin="20"
+                      HorizontalOptions="Start"/>
+            <Polyline Stroke="Pink"
+                      StrokeThickness="5"
+                      Points="10,10 40,25 70,10 70,40 40,55 10,40 10,10"
+                      Margin="-10"
+                      HorizontalOptions="Start"/>
+            <Label Text="Line with Margin"
+                   Margin="0,15,0,0"/>
+            <Line Stroke="Green"
+                  StrokeThickness="5"
+                  X1="0"
+                  Y1="0"
+                  X2="100"
+                  Y2="50"
+                  Margin="20"/>
+            <Line Stroke="Orange"
+                  StrokeThickness="5"
+                  X1="0"
+                  Y1="0"
+                  X2="100"
+                  Y2="50"
+                  Margin="-10"/>
       </StackLayout>
 </ContentPage>
