@@ -52,7 +52,12 @@ xcodebuild -create-xcframework \
   -output "$XCFRAMEWORK_DIR"
 
 # Zip the $XCFRAMEWORK_DIR directory
-cd "$OUTPUT_DIR"
-zip -r --symlinks "../${FRAMEWORK_NAME}.xcframework.zip" "${FRAMEWORK_NAME}.xcframework"
-cd ..
+# Create zip using ditto (preserves metadata better than zip for frameworks)
+(
+  cd "$OUTPUT_DIR"
+  ditto -c -k --sequesterRsrc --keepParent "${FRAMEWORK_NAME}.xcframework" "../${FRAMEWORK_NAME}.xcframework.zip"
+)
+
 rm -rf "$OUTPUT_DIR"
+
+

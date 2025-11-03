@@ -8,7 +8,7 @@ class StaticCAShapeLayer : CAShapeLayer, IAutoSizableCALayer
 {
 	void IAutoSizableCALayer.AutoSizeToSuperLayer()
 	{
-		this.SetAutoSizeToSuperLayer(true);
+		this.SetMauiAutoSizeToSuperLayer(true);
 	}
 
 	public override void AddAnimation(CAAnimation animation, string? key)
