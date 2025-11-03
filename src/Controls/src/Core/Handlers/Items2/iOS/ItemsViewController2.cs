@@ -312,6 +312,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						}
 					}
 				}
+
+				// Explicitly apply semantic content attribute to the native UICollectionView so
+				// compositional layout mirrors columns in RTL. The platform view's semantic attribute
+				// does not automatically propagate to native children which are not backed by IView.
+				UISemanticContentAttribute desiredAttr = UISemanticContentAttribute.Unspecified;
+				switch (ItemsView.FlowDirection)
+				{
+					case FlowDirection.LeftToRight:
+						desiredAttr = UISemanticContentAttribute.ForceLeftToRight;
+						break;
+					case FlowDirection.RightToLeft:
+						desiredAttr = UISemanticContentAttribute.ForceRightToLeft;
+						break;
+					case FlowDirection.MatchParent:
+						// Let it inherit from the parent view we just updated
+						desiredAttr = UISemanticContentAttribute.Unspecified;
+						break;
+				}
+
+				if (CollectionView.SemanticContentAttribute != desiredAttr)
+				{
+					CollectionView.SemanticContentAttribute = desiredAttr;
+				}
 			}
 
 			if (_emptyViewDisplayed)
