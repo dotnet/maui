@@ -227,7 +227,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (animate)
 			{
-				transaction.SetCustomAnimations(global::Android.Resource.Animation.FadeIn, global::Android.Resource.Animation.FadeOut);
+				transaction.SetCustomAnimations(
+					global::Android.Resource.Animation.FadeIn,
+					global::Android.Resource.Animation.FadeOut,
+					global::Android.Resource.Animation.FadeIn,
+					global::Android.Resource.Animation.FadeOut
+				);
 			}
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
