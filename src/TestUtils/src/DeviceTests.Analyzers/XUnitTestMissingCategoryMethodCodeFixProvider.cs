@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace UITest.Analyzers.XUnit
+namespace DeviceTests.Analyzers
 {
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(XUnitTestMissingCategoryMethodCodeFixProvider)), Shared]
 	public class XUnitTestMissingCategoryMethodCodeFixProvider : CodeFixProvider
