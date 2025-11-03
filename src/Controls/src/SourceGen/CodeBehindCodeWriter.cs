@@ -322,7 +322,7 @@ static class CodeBehindCodeWriter
 			var typeArgs = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 			try
 			{
-				var basetype = new XmlType(root.NamespaceURI, root.LocalName, typeArgs != null ? TypeArgumentsParser.ParseExpression(typeArgs, nsmgr, null) : null).GetTypeSymbol(null, compilation, xmlnsCache);
+				var basetype = new XmlType(root.NamespaceURI, root.LocalName, typeArgs != null ? TypeArgumentsParser.ParseExpression(typeArgs, nsmgr, null) : null).GetTypeSymbol(null, compilation, xmlnsCache, typeCache);
 			}
 			catch
 			{
@@ -348,7 +348,7 @@ static class CodeBehindCodeWriter
 
 		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, reportDiagnostic);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
+		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache);
 
 		// x:ClassModifier attribute
 		var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -419,7 +419,7 @@ static class CodeBehindCodeWriter
 			if (!accessModifiers.Contains(accessModifier)) //quick validation
 				accessModifier = "private";
 
-			yield return (name ?? "", xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)?.ToFQDisplayString() ?? "", accessModifier);
+			yield return (name ?? "", xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache)?.ToFQDisplayString() ?? "", accessModifier);
 		}
 	}
 

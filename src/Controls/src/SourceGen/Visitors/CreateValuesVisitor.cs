@@ -35,7 +35,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
 	{
-		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var type) || type is null)
+		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
 
 		//x:Array

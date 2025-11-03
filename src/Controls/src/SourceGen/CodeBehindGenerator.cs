@@ -94,7 +94,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
 
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
-			.Combine(xmlnsDefinitionsProviderForIC, referenceTypeCacheProvider, compilationWithCodeBehindProvider)
+			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
 
 		// Register the XAML pipeline for CodeBehind
