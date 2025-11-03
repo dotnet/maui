@@ -20,7 +20,8 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup .NET using Arcade
+    - name: Setup .NET using Arcade (Unix)
+      if: runner.os != 'Windows'
       shell: bash
       run: |
         chmod +x ./eng/common/dotnet-install.sh
@@ -32,6 +33,19 @@ runs:
         ./eng/common/dotnet-install.sh --version $version --install-dir ./bin/dotnet
         echo "${{ github.workspace }}/bin/dotnet" >> $GITHUB_PATH
         echo "DOTNET_ROOT=${{ github.workspace }}/bin/dotnet" >> $GITHUB_ENV
+    
+    - name: Setup .NET using Arcade (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        if ("${{ inputs.dotnet-version }}" -eq "global.json") {
+          $version = (Get-Content global.json | ConvertFrom-Json).tools.dotnet
+        } else {
+          $version = "${{ inputs.dotnet-version }}"
+        }
+        ./eng/common/dotnet-install.ps1 -Version $version -InstallDir ./bin/dotnet
+        echo "${{ github.workspace }}\bin\dotnet" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "DOTNET_ROOT=${{ github.workspace }}\bin\dotnet" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
     
     - name: Verify .NET version
       shell: bash

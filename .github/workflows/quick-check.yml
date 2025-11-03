@@ -30,11 +30,11 @@ jobs:
       
       - name: Setup .NET using Arcade
         run: |
-          chmod +x ./eng/common/dotnet-install.sh
-          ./eng/common/dotnet-install.sh --version $(jq -r '.tools.dotnet' global.json) --install-dir ./bin/dotnet
-          echo "${{ github.workspace }}/bin/dotnet" >> $GITHUB_PATH
-          echo "DOTNET_ROOT=${{ github.workspace }}/bin/dotnet" >> $GITHUB_ENV
-        shell: bash
+          $version = (Get-Content global.json | ConvertFrom-Json).tools.dotnet
+          ./eng/common/dotnet-install.ps1 -Version $version -InstallDir ./bin/dotnet
+          echo "${{ github.workspace }}\bin\dotnet" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "DOTNET_ROOT=${{ github.workspace }}\bin\dotnet" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
       
       - name: Verify .NET version
         run: dotnet --version
