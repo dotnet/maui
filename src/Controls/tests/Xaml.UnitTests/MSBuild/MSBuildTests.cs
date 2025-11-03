@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.CodeBehindGenerator");
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"), nonEmpty: true);
-			
+
 			var sg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"));
 			var xsg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"));
 			if (configuration == "Debug")
@@ -283,10 +283,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				StringAssert.Contains("InitializeComponentRuntime", xsg);
 			}
 			else
-            {
+			{
 				StringAssert.DoesNotContain("InitializeComponentRuntime", sg);
 				StringAssert.DoesNotContain("InitializeComponentRuntime", xsg);
-            }
+			}
 
 		}
 

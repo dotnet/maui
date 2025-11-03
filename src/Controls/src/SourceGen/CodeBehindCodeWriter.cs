@@ -73,7 +73,7 @@ static class CodeBehindCodeWriter
 
 		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generateDefaultCtor;
 		var xamlInflators = projItem.Inflator;
-		
+
 		//if there's only the XamlC inflator, prevent non-assigned errors
 		if (xamlInflators == XamlInflator.XamlC)
 			sb.AppendLine("#pragma warning disable CS0649");
@@ -149,7 +149,8 @@ static class CodeBehindCodeWriter
 				InitComp("InitializeComponent");
 			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponent");
-			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen) {
+			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
 				InitComp("InitializeComponent", partialsignature: true);
 				//generate InitCompRuntime for HotReload fallback
 				if (projItem.EnableDiagnostics)
@@ -174,7 +175,7 @@ static class CodeBehindCodeWriter
 			if (namedFields != null && namedFields.Any())
 			{
 				sb.AppendLine($"#if NET5_0_OR_GREATER");
-				foreach ((var fname, _, _) in namedFields)				
+				foreach ((var fname, _, _) in namedFields)
 					sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
 
 				sb.AppendLine($"#endif");

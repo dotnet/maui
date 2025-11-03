@@ -24,8 +24,8 @@ public partial class Maui32319 : ContentPage
 
 		[Test]
 		public void DynamicResourceOnBO([Values] XamlInflator inflator)
-        {
-			Assert.DoesNotThrow(() =>  new Maui32319(inflator));
-        }
+		{
+			Assert.DoesNotThrow(() => new Maui32319(inflator));
+		}
 	}
 }

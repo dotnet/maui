@@ -84,7 +84,7 @@ namespace Microsoft.Maui
 				return false;
 			if (region == SafeAreaRegions.All)
 				return true;
-			return (region & SafeAreaRegions.Container) == SafeAreaRegions.Container;	
+			return (region & SafeAreaRegions.Container) == SafeAreaRegions.Container;
 		}
 
 		/// <summary>

@@ -10,7 +10,7 @@ public class LineEndingNormalizedEqualityComparerTests
 		var comparer = LineEndingNormalizedEqualityComparer.Instance;
 		var text1 = "Hello\nWorld\nTest";
 		var text2 = "Hello\r\nWorld\rTest";
-		
+
 		Assert.True(comparer.Equals(text1, text2));
 	}
 
@@ -20,7 +20,7 @@ public class LineEndingNormalizedEqualityComparerTests
 		var comparer = LineEndingNormalizedEqualityComparer.Instance;
 		var text1 = "Hello\nWorld";
 		var text2 = "Hello\nDifferent";
-		
+
 		Assert.False(comparer.Equals(text1, text2));
 	}
 
@@ -30,7 +30,7 @@ public class LineEndingNormalizedEqualityComparerTests
 		var comparer = LineEndingNormalizedEqualityComparer.Instance;
 		var text1 = "Hello\nWorld\nTest";
 		var text2 = "Hello\r\nWorld\rTest";
-		
+
 		Assert.Equal(comparer.GetHashCode(text1), comparer.GetHashCode(text2));
 	}
 }

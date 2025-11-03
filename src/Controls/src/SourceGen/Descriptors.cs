@@ -186,13 +186,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
-			public static DiagnosticDescriptor RequiredProperty = new DiagnosticDescriptor(
-			id: "MAUIX2005",
-			title: new LocalizableResourceString(nameof(MauiGResources.RequiredPropertyTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.RequiredPropertyMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			isEnabledByDefault: true);
+		public static DiagnosticDescriptor RequiredProperty = new DiagnosticDescriptor(
+		id: "MAUIX2005",
+		title: new LocalizableResourceString(nameof(MauiGResources.RequiredPropertyTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+		messageFormat: new LocalizableResourceString(nameof(MauiGResources.RequiredPropertyMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+		category: "XamlInflation",
+		defaultSeverity: DiagnosticSeverity.Warning,
+		isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");

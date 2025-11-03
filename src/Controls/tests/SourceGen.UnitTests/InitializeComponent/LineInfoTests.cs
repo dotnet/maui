@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 {
-    [Fact]
-    public void DiagnosticShowsLocationInInputXamlFile()
-    {
-        var xaml =
+	[Fact]
+	public void DiagnosticShowsLocationInInputXamlFile()
+	{
+		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
@@ -27,17 +27,17 @@ public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 </ContentPage>
 """;
 
-        var (result, _) = RunGenerator(xaml, string.Empty);
+		var (result, _) = RunGenerator(xaml, string.Empty);
 
-        var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
-        var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
-        Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
-    }
+		var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
+		var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
+		Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
+	}
 
 	[Fact]
 	public void LineInfoDisabledDefault()
-    {
-        var xaml =
+	{
+		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
@@ -54,14 +54,14 @@ public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 </ContentPage>
 """;
 
-        var (result, _) = RunGenerator(xaml, string.Empty, lineinfo: "default");
+		var (result, _) = RunGenerator(xaml, string.Empty, lineinfo: "default");
 
-        var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
-        var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
+		var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
+		var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
 #if RELEASE
         Assert.False(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));        
 #else
 		Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
 #endif
-    }
+	}
 }

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class HotReload : ContentPage
 {
 	public HotReload() => InitializeComponent();
-	
+
 	[TestFixture]
 	class Tests
 	{

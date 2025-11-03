@@ -265,8 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected virtual void SetAutomationId(string id)
 		{
-			if (NativeView != null)
-				NativeView.AccessibilityIdentifier = id;
+			NativeView?.AccessibilityIdentifier = id;
 		}
 
 		void OnHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
