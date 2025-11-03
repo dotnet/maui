@@ -1,5 +1,36 @@
 The `eng` folder contains and is used by parts of the https://github.com/dotnet/arcade SDK.
 
+## GitHub Actions CI
+
+The repository includes a minimal GitHub Actions workflow at `.github/workflows/pr-validation.yml` for early PR feedback.
+
+### PR Validation Workflow
+
+The PR validation workflow runs on:
+- Pull requests to `main`, `net10.0`, and `release/*` branches
+- Automatically canceled for new commits (concurrency control)
+- Skips markdown, documentation, and metadata changes
+
+**Jobs:**
+1. **Windows Build + Unit Tests** (`windows-2022`)
+   - Builds `Microsoft.Maui.BuildTasks.slnf` and `Microsoft.Maui.sln`
+   - Provisions Android SDK and JDK 17
+   - Runs unit tests: Controls.Xaml.UnitTests, Resizetizer.UnitTests, Graphics.Tests
+
+2. **macOS Build + Unit Tests** (`macos-15`)
+   - Builds `Microsoft.Maui.BuildTasks.slnf` and `Microsoft.Maui-mac.slnf`
+   - Provisions Xcode 16.1, Android SDK, and JDK 17
+   - Runs the same unit tests as Windows
+
+**Key Features:**
+- Uses .NET SDK version from `global.json`
+- Leverages existing build scripts from `eng/build.ps1` and `eng/build.sh`
+- Uploads build logs and test results as artifacts
+- 90-minute timeout per job
+- Publishes test results for easy review
+
+This workflow provides quick feedback on build and unit test status without running the full CI pipeline.
+
 ## Dependency Management
 The Arcade SDK contains a tool known as [`darc`][0], which can be used to manage
 and query the relationships between repositories in the dotnet ecosystem.
