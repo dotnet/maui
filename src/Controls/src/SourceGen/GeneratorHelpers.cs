@@ -45,7 +45,7 @@ static class GeneratorHelpers
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAndCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);

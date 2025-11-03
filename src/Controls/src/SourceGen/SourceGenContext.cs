@@ -13,7 +13,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 {
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
-	
+
 	public IndentedTextWriter? RefStructWriter { get; set; }
 
 	public Compilation Compilation => compilation;
