@@ -104,6 +104,9 @@ namespace Microsoft.Maui.Networking
 
 	class ReachabilityListener : IDisposable
 	{
+		// Delay to allow connection status to stabilize before notifying listeners
+		const int ConnectionStatusChangeDelayMs = 100;
+		
 		NWPathMonitor pathMonitor;
 		Action<NWPath> pathUpdateHandler;
 
@@ -113,7 +116,7 @@ namespace Microsoft.Maui.Networking
 			pathUpdateHandler = async (NWPath path) =>
 			{
 				// Add in artificial delay so the connection status has time to change
-				await Task.Delay(100);
+				await Task.Delay(ConnectionStatusChangeDelayMs);
 				ReachabilityChanged?.Invoke();
 			};
 			
