@@ -273,7 +273,7 @@ $"""
 		return true;
 	}
 
-	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		ProjectItem? projItem;
 		if (xamlItem == null || (projItem = xamlItem.ProjectItem) == null)

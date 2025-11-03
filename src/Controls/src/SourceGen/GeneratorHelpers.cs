@@ -369,9 +369,9 @@ static class GeneratorHelpers
 		}
 	}
 
-	public static IDictionary<XmlType, ITypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken) => new Dictionary<XmlType, ITypeSymbol>();
+	public static IDictionary<XmlType, INamedTypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken) => new Dictionary<XmlType, INamedTypeSymbol>();
 
-	public static (string? source, XamlProjectItemForCB? xamlItem, IList<Diagnostic>? diagnostics) GetSource((XamlProjectItemForCB? xamlItem, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
+	public static (string? source, XamlProjectItemForCB? xamlItem, IList<Diagnostic>? diagnostics) GetSource((XamlProjectItemForCB? xamlItem, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var (xamlItem, xmlnsCache, typeCache, compilation) = tuple;

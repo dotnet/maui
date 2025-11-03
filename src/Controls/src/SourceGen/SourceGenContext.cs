@@ -9,7 +9,7 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
 {
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
@@ -19,7 +19,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public Compilation Compilation => compilation;
 	public AssemblyAttributes XmlnsCache => assemblyCaches;
 	public ITypeSymbol RootType => rootType;
-	public IDictionary<XmlType, ITypeSymbol> TypeCache => typeCache;
+	public IDictionary<XmlType, INamedTypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
 	public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);

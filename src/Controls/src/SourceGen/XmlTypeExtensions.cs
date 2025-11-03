@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class XmlTypeExtensions
 {
-	public static ITypeSymbol? GetTypeSymbol(this XmlType xmlType, SourceGenContext context)
+	public static INamedTypeSymbol? GetTypeSymbol(this XmlType xmlType, SourceGenContext context)
 		=> xmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache);
 
-	public static ITypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	public static INamedTypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		if (TryResolveTypeSymbol(xmlType, reportDiagnostic, compilation, xmlnsCache, typeCache, out var symbol))
 			return symbol!;
@@ -26,25 +26,22 @@ static class XmlTypeExtensions
 		throw new Exception($"Unable to resolve {xmlType.NamespaceUri}:{xmlType.Name}");
 	}
 
-	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, SourceGenContext context, INode node)
+	public static INamedTypeSymbol? GetTypeSymbol(this string nameAndPrefix, SourceGenContext context, INode node)
 		=> GetTypeSymbol(nameAndPrefix, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
 
-	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, INode node)
+	public static INamedTypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, INode node)
 		=> GetTypeSymbol(nameAndPrefix, reportDiagnostic, compilation, xmlnsCache, typeCache, node.NamespaceResolver, (IXmlLineInfo)node);
 
-	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
+	public static INamedTypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
 	{
 		XmlType xmlType = TypeArgumentsParser.ParseSingle(nameAndPrefix, resolver, lineInfo);
 		return xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache);
 	}
 
-	public static bool TryResolveTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, out INamedTypeSymbol? symbol)
+	public static bool TryResolveTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, out INamedTypeSymbol? symbol)
 	{
-		if (typeCache.TryGetValue(xmlType, out var s))
-		{
-			symbol = s as INamedTypeSymbol;
+		if (typeCache.TryGetValue(xmlType, out symbol))			
 			return true;
-		}
 
 		var name = xmlType.Name.Split(':').Last(); //strip prefix
 		var genericSuffix = xmlType.TypeArguments is not null ? $"`{xmlType.TypeArguments.Count}" : string.Empty;
@@ -84,7 +81,5 @@ static class XmlTypeExtensions
 	}
 
 	public static bool RepresentsType(this XmlType xmlType, string namespaceUri, string name)
-	{
-		return xmlType.Name == name && xmlType.NamespaceUri == namespaceUri;
-	}
+		=> xmlType.Name == name && xmlType.NamespaceUri == namespaceUri;
 }
