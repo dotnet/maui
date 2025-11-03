@@ -7,7 +7,7 @@ The repository includes a minimal GitHub Actions workflow at `.github/workflows/
 ### PR Validation Workflow
 
 The PR validation workflow runs on:
-- Pull requests to `main`, `net10.0`, and `release/*` branches
+- All pull requests
 - Automatically canceled for new commits (concurrency control)
 - Skips markdown, documentation, and metadata changes
 

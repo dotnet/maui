@@ -2,10 +2,6 @@ name: PR Validation
 
 on:
   pull_request:
-    branches:
-      - main
-      - net10.0
-      - 'release/*'
     paths-ignore:
       - '**.md'
       - 'eng/Version.Details.xml'
@@ -126,7 +122,7 @@ jobs:
       
       - name: Select Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.0.1.app
+          sudo xcode-select -s /Applications/Xcode_16.1.app
           xcrun xcode-select --print-path
           xcodebuild -version
           sudo xcodebuild -license accept
