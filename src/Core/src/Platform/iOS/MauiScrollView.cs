@@ -525,7 +525,7 @@ namespace Microsoft.Maui.Platform
 
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
-					var horizontalOffset = Math.Max(0, contentSize.Width - bounds.Width);
+					var horizontalOffset = contentSize.Width - bounds.Width;
 					
 					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 					{
@@ -545,9 +545,8 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// When switching between LTR and RTL, or when orientation changes while in RTL,
-			// we need to re-arrange and offset content exactly once to avoid cumulative shifts 
-			// or incorrect offsets on subsequent layouts.
+			// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
+			// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 			_previousScrollOrientation = currentScrollOrientation;
 
