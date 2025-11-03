@@ -144,7 +144,9 @@ public class TabbedPageManager
 					LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					{
 						Gravity = (int)GravityFlags.Bottom
-					}
+					},
+					// Set elevation to 0 to prevent visual separation lines, especially with gradients
+					Elevation = 0
 				};
 			}
 			else
