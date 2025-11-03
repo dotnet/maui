@@ -12,10 +12,21 @@ public class Issue32266 : _IssuesUITest
 
 	public override string Issue => "TimePicker on Windows Defaults to Midnight When Time Value Is Null";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.TimePicker)]
-	public void VerifyTimePickerNotMidnightOnNull()
+	public void VerifyTimePickerIsNullOnInitialLoad()
 	{
+		App.WaitForElement("Issue32266TimePicker");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.TimePicker)]
+	public void VerifyClearedTimeDoesNotShowMidnight()
+	{
+		App.WaitForElement("SetTimeButton");
+		App.Tap("SetTimeButton");
+
 		App.WaitForElement("ClearTimeButton");
 		App.Tap("ClearTimeButton");
 
