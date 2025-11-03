@@ -49,10 +49,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPaneClosed(NavigationView sender, object args)
 		{
-			if (VirtualView is not null)
-			{
-				VirtualView.IsPresented = sender.IsPaneOpen;
-			}
+			VirtualView?.IsPresented = sender.IsPaneOpen;
 		}
 
 		static void UpdateDetail(IFlyoutViewHandler handler)

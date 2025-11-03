@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = mainTab2;
 				await OnFrameSetToNotEmpty(pageWithoutTopTabs.Content);
 				var boundsWithoutTopTabs = pageWithoutTopTabs.Content.GetPlatformViewBounds();
-				
+
 				// Both APIs should produce consistent results
 				Assert.Equal(ShellSectionRootRenderer.HeaderHeight, (boundsWithTopTabs.Top - boundsWithoutTopTabs.Top), 1);
 
