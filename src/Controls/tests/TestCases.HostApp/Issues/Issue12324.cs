@@ -1,5 +1,3 @@
-#if TEST_FAILS_ON_CATALYST // TabBar not visible on Catalyst: https://github.com/dotnet/maui/issues/32329
-
 using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 namespace Controls.TestCases.HostApp.Issues;
 
@@ -36,4 +34,3 @@ public class Issue12324 : TabbedPage
 		});
 	}
 }
-#endif
