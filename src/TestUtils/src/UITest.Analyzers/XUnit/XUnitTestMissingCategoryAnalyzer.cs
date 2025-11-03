@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Immutable;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+
+namespace UITest.Analyzers.XUnit
+{
+	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+	public class XUnitTestMissingCategoryAnalyzer : DiagnosticAnalyzer
+	{
+		public const string DiagnosticId = "MAUI1002";
+
+		const string Title = "Test methods should have a Category";
+		const string MessageFormat = "Test method '{0}' should be marked with a `[Category]` attribute on the method or its parent class";
+		const string Description = "xUnit device test methods should be marked with a `[Category]` attribute on the method or its parent class.";
+
+		private const string Category = "Testing";
+
+		private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+			DiagnosticId,
+			Title,
+			MessageFormat,
+			Category,
+			DiagnosticSeverity.Warning,
+			isEnabledByDefault: true,
+			description: Description);
+
+		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+
+		public override void Initialize(AnalysisContext context)
+		{
+			context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+			context.EnableConcurrentExecution();
+			context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+		}
+
+		private static void AnalyzeSymbol(SymbolAnalysisContext context)
+		{
+			var methodSymbol = (IMethodSymbol)context.Symbol;
+
+			// Check if the method has xUnit test attributes ([Fact] or [Theory])
+			var hasFactAttribute = methodSymbol.GetAttributes().Any(attr =>
+				attr?.AttributeClass?.Name == "FactAttribute" ||
+				attr?.AttributeClass?.Name == "TheoryAttribute");
+
+			if (!hasFactAttribute)
+				return;
+
+			// Check if the method has the [Category] attribute
+			var hasCategoryAttribute = methodSymbol.GetAttributes().Any(attr =>
+				attr?.AttributeClass?.Name == "CategoryAttribute");
+
+			if (!hasCategoryAttribute)
+			{
+				// If the method does not have a [Category] attribute, check the containing class and base classes
+				var currentType = methodSymbol.ContainingType;
+				while (currentType != null && !hasCategoryAttribute)
+				{
+					hasCategoryAttribute = currentType.GetAttributes().Any(attr =>
+						attr?.AttributeClass?.Name == "CategoryAttribute");
+					currentType = currentType.BaseType;
+				}
+			}
+
+			// If it has [Fact] or [Theory] but not [Category], report a diagnostic
+			if (!hasCategoryAttribute)
+			{
+				var diagnostic = Diagnostic.Create(Rule, methodSymbol.Locations[0], methodSymbol.Name);
+				context.ReportDiagnostic(diagnostic);
+			}
+		}
+	}
+}
