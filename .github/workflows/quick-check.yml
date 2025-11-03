@@ -1,0 +1,100 @@
+name: Quick Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  quick-build:
+    name: Quick Build Check
+    runs-on: windows-latest
+    timeout-minutes: 15
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            src
+            eng
+            Directory.Build.props
+            Directory.Build.targets
+            global.json
+            NuGet.config
+            Microsoft.Maui.BuildTasks.slnf
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      
+      - name: Quick build check
+        id: quick-build
+        run: |
+          $ErrorActionPreference = "Continue"
+          
+          dotnet tool restore
+          $restoreExitCode = $LASTEXITCODE
+          
+          dotnet build ./Microsoft.Maui.BuildTasks.slnf --configuration Release --no-restore
+          $buildTasksExitCode = $LASTEXITCODE
+          
+          dotnet build ./src/Core/src/Core.csproj --configuration Release --no-restore
+          $coreExitCode = $LASTEXITCODE
+          
+          dotnet build ./src/Controls/src/Core/Controls.Core.csproj --configuration Release --no-restore
+          $controlsExitCode = $LASTEXITCODE
+          
+          if ($restoreExitCode -ne 0 -or $buildTasksExitCode -ne 0 -or $coreExitCode -ne 0 -or $controlsExitCode -ne 0) {
+            echo "overall_status=failed" >> $env:GITHUB_OUTPUT
+            exit 1
+          } else {
+            echo "overall_status=success" >> $env:GITHUB_OUTPUT
+          }
+        shell: pwsh
+      
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.quick-build.outputs.overall_status }}';
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            
+            let comment = '### 🚀 Quick Check ';
+            
+            if (status === 'success') {
+              comment += 'Passed ✅\n\n';
+              comment += 'Initial build validation succeeded. Full CI is now running.\n';
+            } else {
+              comment += 'Failed ❌\n\n';
+              comment += '**Build errors detected.** Please check the logs for details.\n\n';
+            }
+            
+            comment += `🔗 **[View logs](${runUrl})** for details`;
+            
+            // Find and update or create comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('🚀 Quick Check')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }

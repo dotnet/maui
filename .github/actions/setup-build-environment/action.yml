@@ -1,0 +1,54 @@
+name: Setup Build Environment
+description: 'Reusable action to setup .NET MAUI build environment'
+
+inputs:
+  os:
+    description: 'Operating system (Windows, macOS, Linux)'
+    required: true
+    type: string
+  dotnet-version:
+    description: 'Dotnet version to install (use "global.json" to read from global.json)'
+    required: false
+    type: string
+    default: 'global.json'
+  enable-caching:
+    description: 'Enable NuGet package caching'
+    required: false
+    type: boolean
+    default: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: ${{ inputs.dotnet-version == 'global.json' && 'global.json' || '' }}
+        dotnet-version: ${{ inputs.dotnet-version != 'global.json' && inputs.dotnet-version || '' }}
+    
+    - name: Setup MSBuild (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Setup Xcode (macOS)
+      if: runner.os == 'macOS'
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    
+    - name: Cache NuGet packages
+      if: inputs.enable-caching == 'true'
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props', '**/Versions.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
+    - name: Restore tools
+      shell: bash
+      run: dotnet tool restore
+    
+    - name: Build prerequisites
+      shell: bash
+      run: dotnet build ./Microsoft.Maui.BuildTasks.slnf --configuration Release

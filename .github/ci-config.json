@@ -1,0 +1,54 @@
+{
+  "build": {
+    "timeout_minutes": 30,
+    "configurations": ["Release"],
+    "platforms": ["windows-latest", "macos-latest"],
+    "required_build_tasks": [
+      "Microsoft.Maui.BuildTasks.slnf"
+    ],
+    "core_projects": [
+      "src/Core/src/Core.csproj",
+      "src/Controls/src/Core/Controls.Core.csproj",
+      "src/Essentials/src/Essentials.csproj"
+    ]
+  },
+  "tests": {
+    "unit_test_projects": [
+      "src/Core/tests/UnitTests/Core.UnitTests.csproj",
+      "src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj",
+      "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj",
+      "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj",
+      "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj",
+      "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
+    ],
+    "timeout_minutes": 20,
+    "categories": [
+      "Button", "Label", "Entry", "Layout", "Navigation", 
+      "Shell", "CollectionView", "ListView", "Gestures"
+    ]
+  },
+  "cache": {
+    "nuget_cache_days": 7,
+    "artifacts_retention_days": 5,
+    "cache_paths": [
+      "~/.nuget/packages",
+      "**/obj",
+      "artifacts/obj"
+    ]
+  },
+  "error_patterns": {
+    "compiler": "error CS[0-9]+:",
+    "msbuild": "error MSB[0-9]+:",
+    "nuget": "error NU[0-9]+:",
+    "publicapi": "error RS[0-9]+:",
+    "xaml": "error XFC[0-9]+:",
+    "test_failure": "Failed\\s+[A-Za-z0-9_]+\\."
+  },
+  "quick_fixes": {
+    "CS0246": "Add missing using statement or assembly reference",
+    "MSB3073": "Check build task dependencies - run 'dotnet build Microsoft.Maui.BuildTasks.slnf' first",
+    "NU1101": "Package not found - check NuGet sources or package version",
+    "RS0016": "PublicAPI violation - run 'dotnet format analyzers Microsoft.Maui.sln'",
+    "XFC0002": "XAML compilation error - check type names and namespaces"
+  }
+}

@@ -1,0 +1,201 @@
+name: PR Verification
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+jobs:
+  build-matrix:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            platform: Windows
+            solution: Microsoft.Maui-windows.slnf
+          - os: macos-latest
+            platform: macOS
+            solution: Microsoft.Maui-mac.slnf
+    
+    runs-on: ${{ matrix.os }}
+    
+    outputs:
+      windows-status: ${{ matrix.platform == 'Windows' && job.status || '' }}
+      mac-status: ${{ matrix.platform == 'macOS' && job.status || '' }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      
+      - name: Restore tools
+        run: dotnet tool restore
+      
+      - name: Build Build Tasks (Critical)
+        run: dotnet build ./Microsoft.Maui.BuildTasks.slnf --configuration Release
+      
+      - name: Build MAUI SDK
+        run: dotnet cake --target=dotnet-build --configuration=Release --verbosity=normal
+      
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-logs-${{ matrix.platform }}
+          path: |
+            **/*.binlog
+            artifacts/logs/**
+          retention-days: 5
+
+  unit-tests:
+    name: Unit Tests (${{ matrix.os }})
+    needs: build-matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      
+      - name: Restore tools
+        run: dotnet tool restore
+      
+      - name: Build Build Tasks
+        run: dotnet build ./Microsoft.Maui.BuildTasks.slnf --configuration Release
+      
+      - name: Run Unit Tests
+        run: dotnet cake --target=dotnet-test --configuration=Release --verbosity=normal
+        continue-on-error: true
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ runner.os }}
+          path: |
+            **/TestResults/**/*.trx
+            **/TestResults/**/*.xml
+          retention-days: 5
+      
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results - ${{ runner.os }}
+          path: '**/TestResults/**/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: true
+
+  pr-comment-reporter:
+    name: PR Status Reporter
+    runs-on: ubuntu-latest
+    needs: [build-matrix, unit-tests]
+    if: always()
+    permissions:
+      pull-requests: write
+      checks: read
+    
+    steps:
+      - name: Generate PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get job statuses
+            const buildResult = '${{ needs.build-matrix.result }}';
+            const testResult = '${{ needs.unit-tests.result }}';
+            
+            let comment = '## 🤖 PR Build Status\n\n';
+            
+            // Overall status
+            const overallSuccess = buildResult === 'success' && testResult === 'success';
+            if (overallSuccess) {
+              comment += '### ✅ All checks passed!\n\n';
+            } else {
+              comment += '### ❌ Build or tests failed\n\n';
+            }
+            
+            // Build status table
+            comment += '| Platform | Build | Tests | Logs |\n';
+            comment += '|----------|-------|-------|------|\n';
+            
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            
+            // Windows row
+            const winBuildIcon = buildResult === 'success' ? '✅' : '❌';
+            const winTestIcon = testResult === 'success' ? '✅' : '❌';
+            comment += `| Windows | ${winBuildIcon} | ${winTestIcon} | [View](${runUrl}) |\n`;
+            
+            // macOS row
+            const macBuildIcon = buildResult === 'success' ? '✅' : '❌';
+            const macTestIcon = testResult === 'success' ? '✅' : '❌';
+            comment += `| macOS | ${macBuildIcon} | ${macTestIcon} | [View](${runUrl}) |\n`;
+            
+            comment += '\n';
+            
+            if (!overallSuccess) {
+              comment += `📁 **[View build logs and details](${runUrl})** for more information\n\n`;
+            }
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('🤖 PR Build Status')
+            );
+            
+            // Update or create comment
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
