@@ -126,7 +126,7 @@ jobs:
       
       - name: Select Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.1.app
+          sudo xcode-select -s /Applications/Xcode_26.0.1.app
           xcrun xcode-select --print-path
           xcodebuild -version
           sudo xcodebuild -license accept
