@@ -9,8 +9,6 @@ on:
     paths-ignore:
       - '**.md'
       - 'eng/Version.Details.xml'
-      - '.github/*'
-      - '.github/**'
       - 'docs/**'
       - 'LICENSE.TXT'
       - 'PATENTS.TXT'
