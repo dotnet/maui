@@ -631,7 +631,7 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 			{
 				oldPage.SendDisappearing();
-				oldPage.ConfigureAsOutgoingPage(newValue as Page, NavigationType.PageSwap);
+				oldPage.ConfigureAsOutgoingPage(newValue as Page, NavigationType.Replace);
 			}
 		}
 

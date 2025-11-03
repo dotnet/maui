@@ -34,6 +34,7 @@ Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.get -> Microsoft.Maui.SafeArea
 Microsoft.Maui.Controls.ContentPage.SafeAreaEdges.set -> void
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidAppear(bool animated) -> void
 ~Microsoft.Maui.Controls.ContentPresenter.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.ContentPresenter.LowerChild(Microsoft.Maui.Controls.View view) -> void
 Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
@@ -499,3 +500,4 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidDisappear(bool animated) -> void

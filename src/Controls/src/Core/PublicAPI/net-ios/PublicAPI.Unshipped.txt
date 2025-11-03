@@ -499,3 +499,5 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.VisualElement.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> Microsoft.Maui.Controls.LayoutConstraint
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidAppear(bool animated) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidDisappear(bool animated) -> void

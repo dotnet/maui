@@ -768,15 +768,20 @@ namespace Microsoft.Maui.Controls
 			set => ToolbarElement.SetValue(ref _toolbar, value, Handler);
 		}
 
-		internal void SendNavigatedTo(NavigatedToEventArgs args)
+	internal void SendNavigatedTo(NavigatedToEventArgs args)
+	{
+		HasNavigatedTo = true;
+		NavigatedTo?.Invoke(this, args);
+		OnNavigatedTo(args);
+		
+		// Only propagate to current page if it hasn't already received NavigatedTo
+		// This prevents duplicate events when multiple navigation systems are involved
+		var currentPage = (this as IPageContainer<Page>)?.CurrentPage;
+		if (currentPage != null && !currentPage.HasNavigatedTo)
 		{
-			HasNavigatedTo = true;
-			NavigatedTo?.Invoke(this, args);
-			OnNavigatedTo(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+			currentPage.SendNavigatedTo(args);
 		}
-
-		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
+	}		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
 			NavigatingFrom?.Invoke(this, args);
 			OnNavigatingFrom(args);
@@ -884,7 +889,7 @@ namespace Microsoft.Maui.Controls
 			// Only fire NavigatingFrom if we previously fired NavigatedTo (to maintain event pairing)
 			if (HasNavigatedTo)
 			{
-				SendNavigatingFrom(new NavigatingFromEventArgs());
+				SendNavigatingFrom(new NavigatingFromEventArgs(incomingPage , navigationType));
 			}
 
 			if (IsLoaded)
@@ -909,7 +914,7 @@ namespace Microsoft.Maui.Controls
 		internal void ConfigureAsIncomingPage(Page? outgoingPage)
 		{
 			// Configure the outgoing page first (preventing potential duplicate event wiring)
-			outgoingPage?.ConfigureAsOutgoingPage(this, NavigationType.PageSwap);
+			outgoingPage?.ConfigureAsOutgoingPage(this, NavigationType.Replace);
 
 			// Clean up any existing navigation event subscriptions to prevent duplicates
 			CleanupNavigationEventSubscription();
@@ -924,7 +929,7 @@ namespace Microsoft.Maui.Controls
 				// Page is already loaded, fire NavigatedTo immediately if not already fired
 				if (!HasNavigatedTo)
 				{
-					SendNavigatedTo(new NavigatedToEventArgs(outgoingPage));
+					SendNavigatedTo(new NavigatedToEventArgs(outgoingPage, NavigationType.Replace));
 				}
 
 				// Set up handler for future unloaded events
@@ -943,7 +948,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (sender is Page loadedPage && !loadedPage.HasNavigatedTo)
 				{
-					loadedPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+					loadedPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
 
 					// Remove the loaded event handler to prevent duplicate firing
 					if (onPageLoaded != null)
@@ -979,8 +984,7 @@ namespace Microsoft.Maui.Controls
 				if (sender is Page unloadedPage && unloadedPage.HasNavigatedTo)
 				{
 					// Fire navigation events when page unloads (ensure proper event pairing)
-					unloadedPage.SendNavigatingFrom(new NavigatingFromEventArgs());
-					unloadedPage.SendNavigatedFrom(new NavigatedFromEventArgs(unloadedPage, NavigationType.PageSwap));
+					unloadedPage.SendNavigatedFrom(new NavigatedFromEventArgs(unloadedPage, NavigationType.Replace));
 				}
 
 				// Remove the unloaded event handler to prevent duplicate firing
