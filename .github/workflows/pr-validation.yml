@@ -1,0 +1,193 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - net10.0
+      - 'release/*'
+    paths-ignore:
+      - '**.md'
+      - 'eng/Version.Details.xml'
+      - '.github/*'
+      - '.github/**'
+      - 'docs/**'
+      - 'LICENSE.TXT'
+      - 'PATENTS.TXT'
+      - 'THIRD-PARTY-NOTICES.TXT'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    name: Build Windows + Unit Tests
+    runs-on: windows-2022
+    timeout-minutes: 90
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      
+      - name: Display .NET SDK version
+        run: dotnet --version
+        shell: pwsh
+      
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      
+      - name: Restore .NET tools
+        run: dotnet tool restore
+        shell: pwsh
+      
+      - name: Provision Android SDK
+        run: |
+          dotnet build -t:ProvisionJdk -bl:"$env:GITHUB_WORKSPACE/artifacts/logs/provision-jdk.binlog" src/Provisioning/Provisioning.csproj -v:minimal
+          dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$env:GITHUB_WORKSPACE/artifacts/logs/provision-androidsdk-common.binlog" src/Provisioning/Provisioning.csproj -v:minimal
+          dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="true" -bl:"$env:GITHUB_WORKSPACE/artifacts/logs/provision-androidsdk-platform-apis.binlog" src/Provisioning/Provisioning.csproj -v:minimal
+        shell: pwsh
+      
+      - name: Set Android SDK Environment Variables
+        run: |
+          $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
+          $preferredSdk = $jsonOutput.SdkInfo.Path
+          echo "ANDROID_SDK_ROOT=$preferredSdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "ANDROID_HOME=$preferredSdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "ANDROID_SDK_ROOT set to: $preferredSdk"
+          Write-Host "ANDROID_HOME set to: $preferredSdk"
+        shell: pwsh
+      
+      - name: Build BuildTasks
+        run: ./eng/build.ps1 -restore -build -configuration Debug -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:artifacts/logs/buildtasks.binlog
+        shell: pwsh
+      
+      - name: Build .NET MAUI SDK
+        run: ./eng/build.ps1 -restore -build -configuration Debug -projects "Microsoft.Maui.sln" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /p:CodesignRequireProvisioningProfile=false /p:EnableWindowsTargeting=true /bl:artifacts/logs/build-windows.binlog
+        shell: pwsh
+      
+      - name: Run Controls.Xaml.UnitTests
+        run: dotnet test src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Controls.Xaml.UnitTests /bl:artifacts/logs/test-xaml-unittests.binlog /p:_SkipUpdateBuildNumber=true --no-build
+        shell: pwsh
+        continue-on-error: true
+      
+      - name: Run Resizetizer.UnitTests
+        run: dotnet test src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Resizetizer.UnitTests /p:_SkipUpdateBuildNumber=true --no-build
+        shell: pwsh
+        continue-on-error: true
+      
+      - name: Run Graphics.Tests
+        run: dotnet test src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Graphics.Tests /p:_SkipUpdateBuildNumber=true --no-build
+        shell: pwsh
+        continue-on-error: true
+      
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        if: always()
+        with:
+          files: |
+            artifacts/test-results/**/*.trx
+          check_name: "Windows Test Results"
+      
+      - name: Upload Build Logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-logs
+          path: artifacts/logs/**/*
+          retention-days: 7
+  
+  build-macos:
+    name: Build macOS + Unit Tests
+    runs-on: macos-15
+    timeout-minutes: 90
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      
+      - name: Display .NET SDK version
+        run: dotnet --version
+      
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.1.app
+          xcrun xcode-select --print-path
+          xcodebuild -version
+          sudo xcodebuild -license accept
+          sudo xcodebuild -runFirstLaunch
+        continue-on-error: true
+      
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      
+      - name: Restore .NET tools
+        run: dotnet tool restore
+      
+      - name: Provision Android SDK
+        run: |
+          dotnet build -t:ProvisionJdk -bl:"$GITHUB_WORKSPACE/artifacts/logs/provision-jdk.binlog" src/Provisioning/Provisioning.csproj -v:minimal
+          dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$GITHUB_WORKSPACE/artifacts/logs/provision-androidsdk-common.binlog" src/Provisioning/Provisioning.csproj -v:minimal
+          dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="true" -bl:"$GITHUB_WORKSPACE/artifacts/logs/provision-androidsdk-platform-apis.binlog" src/Provisioning/Provisioning.csproj -v:minimal
+      
+      - name: Set Android SDK Environment Variables
+        run: |
+          PREFERRED_SDK=$(dotnet android sdk info --format=Json | python3 -c "import sys, json; print(json.load(sys.stdin)['SdkInfo']['Path'])")
+          echo "ANDROID_SDK_ROOT=$PREFERRED_SDK" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$PREFERRED_SDK" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT set to: $PREFERRED_SDK"
+          echo "ANDROID_HOME set to: $PREFERRED_SDK"
+      
+      - name: Build BuildTasks
+        run: ./eng/build.sh -restore -build -configuration Debug -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:artifacts/logs/buildtasks.binlog
+      
+      - name: Build .NET MAUI SDK (macOS)
+        run: ./eng/build.sh -restore -build -configuration Debug -projects "Microsoft.Maui-mac.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /p:CodesignRequireProvisioningProfile=false /bl:artifacts/logs/build-macos.binlog
+      
+      - name: Run Controls.Xaml.UnitTests
+        run: dotnet test src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Controls.Xaml.UnitTests /bl:artifacts/logs/test-xaml-unittests.binlog /p:_SkipUpdateBuildNumber=true --no-build
+        continue-on-error: true
+      
+      - name: Run Resizetizer.UnitTests
+        run: dotnet test src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Resizetizer.UnitTests /p:_SkipUpdateBuildNumber=true --no-build
+        continue-on-error: true
+      
+      - name: Run Graphics.Tests
+        run: dotnet test src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj -c Debug --logger trx --results-directory artifacts/test-results/Graphics.Tests /p:_SkipUpdateBuildNumber=true --no-build
+        continue-on-error: true
+      
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          files: |
+            artifacts/test-results/**/*.trx
+          check_name: "macOS Test Results"
+      
+      - name: Upload Build Logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-logs
+          path: artifacts/logs/**/*
+          retention-days: 7
