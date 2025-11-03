@@ -25,9 +25,10 @@ namespace Microsoft.Maui
 	internal static class XUnitValidationHelpers
 	{
 		/// <summary>
-		/// Validates that a test has exactly one category total.
-		/// Multiple categories (whether from multiple attributes, multiple values in one attribute,
+		/// Validates that a test has exactly one unique category.
+		/// Multiple different categories (whether from multiple attributes, multiple values in one attribute,
 		/// or categories on both class and method) cause tests to be skipped.
+		/// Duplicate categories (same category appearing multiple times) are allowed.
 		/// </summary>
 		internal static void ValidateSingleCategoryAttribute(ITestMethod testMethod)
 		{
@@ -51,23 +52,27 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			// Now count the actual number of category strings
-			int totalCategoryStrings = 0;
+			// Collect all unique category strings
+			var allCategoryStrings = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
 
 			foreach (var attr in methodCategories.Concat(classCategories))
 			{
 				var args = attr.GetConstructorArguments().FirstOrDefault();
-				if (args is object[] categoryArray)
+				if (args is string[] categoryArray)
 				{
-					totalCategoryStrings += categoryArray.Length;
+					foreach (var category in categoryArray)
+					{
+						allCategoryStrings.Add(category);
+					}
 				}
 			}
 
-			if (totalCategoryStrings > 1)
+			// Check if there are multiple UNIQUE categories
+			if (allCategoryStrings.Count > 1)
 			{
 				var errorDetails = new System.Text.StringBuilder();
-				errorDetails.AppendLine($"Test '{testName}' has {totalCategoryStrings} categories.");
-				errorDetails.AppendLine("Only a single category is allowed per test.");
+				errorDetails.AppendLine($"Test '{testName}' has {allCategoryStrings.Count} unique categories: {string.Join(", ", allCategoryStrings)}");
+				errorDetails.AppendLine("Only a single unique category is allowed per test.");
 
 				if (classCategories.Count > 0 && methodCategories.Count > 0)
 				{
@@ -77,7 +82,7 @@ namespace Microsoft.Maui
 				{
 					errorDetails.AppendLine("Multiple [Category] attributes found.");
 				}
-				else if (totalCategoryStrings > 1)
+				else
 				{
 					errorDetails.AppendLine("Multiple categories in a single [Category] attribute.");
 				}
