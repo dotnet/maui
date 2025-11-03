@@ -288,47 +288,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateFlowDirection()
 		{
-			if (ItemsView.Handler.PlatformView is UIView itemsView)
-			{
-				itemsView.UpdateFlowDirection(ItemsView);
+			// For horizontal orientation, we need to update the CollectionView's flow direction
+			// to ensure proper scroll behavior and layout direction (RTL scrolls right-to-left)
+			// Vertical orientation doesn't require this as scroll direction remains top-to-bottom
 
-				// For horizontal orientation, we need to update the CollectionView's flow direction
-				// to ensure proper scroll behavior and layout direction (RTL scrolls right-to-left)
-				// Vertical orientation doesn't require this as scroll direction remains top-to-bottom
-				if (IsHorizontal)
+			if (IsHorizontal)
+			{
+				CollectionView?.UpdateFlowDirection(ItemsView);
+			}
+			else
+			{
+				if (ItemsView.Handler.PlatformView is UIView itemsView)
 				{
-					CollectionView?.UpdateFlowDirection(ItemsView);
-				}
-				
-				if (ItemsView.ItemTemplate is not null)
-				{
-					foreach (var child in ItemsView.LogicalChildrenInternal)
+					itemsView.UpdateFlowDirection(ItemsView);
+					
+					if (ItemsView.ItemTemplate is not null)
 					{
-						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
+						foreach (var child in ItemsView.LogicalChildrenInternal)
 						{
-							view.UpdateFlowDirection(ve);
+							if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
+							{
+								view.UpdateFlowDirection(ve);
+							}
+						}
+					}
+					else
+					{
+						// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
+						if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+						{
+							foreach (var cell in visibleCells.OfType<DefaultCell2>())
+							{
+								cell.Label.UpdateFlowDirection(ItemsView);
+							}
 						}
 					}
 				}
-				else
+
+				if (_emptyViewDisplayed)
 				{
-					// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
-					if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
-					{
-						foreach (var cell in visibleCells.OfType<DefaultCell2>())
-						{
-							cell.Label.UpdateFlowDirection(ItemsView);
-						}
-					}
+					AlignEmptyView();
 				}
-			}
 
-			if (_emptyViewDisplayed)
-			{
-				AlignEmptyView();
+				Layout.InvalidateLayout();
 			}
-
-			Layout.InvalidateLayout();
 		}
 
 		public override nint NumberOfSections(UICollectionView collectionView)
