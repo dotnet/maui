@@ -11,6 +11,8 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_ROLL_FORWARD: Major
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
 jobs:
@@ -44,6 +46,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          dotnet-quality: 'preview'
+      
+      - name: Verify .NET version
+        run: dotnet --version
       
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -55,6 +61,10 @@ jobs:
       
       - name: Restore tools
         run: dotnet tool restore
+      
+      - name: Install MAUI workload
+        run: dotnet workload install maui --skip-manifest-update
+        continue-on-error: true
       
       - name: Build Build Tasks (Critical)
         run: dotnet build ./Microsoft.Maui.BuildTasks.slnf --configuration Release
@@ -92,9 +102,17 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          dotnet-quality: 'preview'
+      
+      - name: Verify .NET version
+        run: dotnet --version
       
       - name: Restore tools
         run: dotnet tool restore
+      
+      - name: Install MAUI workload
+        run: dotnet workload install maui --skip-manifest-update
+        continue-on-error: true
       
       - name: Build Build Tasks
         run: dotnet build ./Microsoft.Maui.BuildTasks.slnf --configuration Release

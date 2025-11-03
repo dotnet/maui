@@ -4,6 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_ROLL_FORWARD: Major
+
 jobs:
   quick-build:
     name: Quick Build Check
@@ -26,6 +32,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          dotnet-quality: 'preview'
+      
+      - name: Verify .NET version
+        run: dotnet --version
+      
+      - name: Install MAUI workload
+        run: dotnet workload install maui --skip-manifest-update
+        continue-on-error: true
       
       - name: Quick build check
         id: quick-build

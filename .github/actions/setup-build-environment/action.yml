@@ -25,6 +25,16 @@ runs:
       with:
         global-json-file: ${{ inputs.dotnet-version == 'global.json' && 'global.json' || '' }}
         dotnet-version: ${{ inputs.dotnet-version != 'global.json' && inputs.dotnet-version || '' }}
+        dotnet-quality: 'preview'
+    
+    - name: Verify .NET version
+      shell: bash
+      run: dotnet --version
+    
+    - name: Install MAUI workload
+      shell: bash
+      run: dotnet workload install maui --skip-manifest-update
+      continue-on-error: true
     
     - name: Setup MSBuild (Windows)
       if: runner.os == 'Windows'
