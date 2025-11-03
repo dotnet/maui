@@ -309,8 +309,8 @@ dotnet format analyzers Microsoft.Maui.sln
 
 ## Additional Resources
 
-- [Development Guide](.github/DEVELOPMENT.md)
-- [Development Tips](docs/DevelopmentTips.md)
-- [Contributing Guidelines](.github/CONTRIBUTING.md)
+- [Development Guide](/.github/DEVELOPMENT.md)
+- [Development Tips](/docs/DevelopmentTips.md)
+- [Contributing Guidelines](/.github/CONTRIBUTING.md)
 - [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
 - [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)
