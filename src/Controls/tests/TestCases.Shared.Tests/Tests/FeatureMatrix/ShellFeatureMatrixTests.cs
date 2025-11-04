@@ -116,6 +116,46 @@ public class ShellFeatureTests : UITest
 
 	[Test, Order(6)]
 	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_FlyoutHeaderAndFooterTemplate()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutHeader");
+		App.Tap("FlyoutHeader");
+		App.WaitForElement("FlyoutFooterTemplate");
+		App.Tap("FlyoutFooterTemplate");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		App.WaitForElement(FooterTemplate);
+		App.WaitForElement(Header);
+		App.WaitForElement(OpenFlyout);
+		App.Tap(OpenFlyout);
+	}
+
+	[Test, Order(7)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_FlyoutHeaderTemplateAndFooter()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutHeaderTemplate");
+		App.Tap("FlyoutHeaderTemplate");
+		App.WaitForElement("FlyoutFooter");
+		App.Tap("FlyoutFooter");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		App.WaitForElement(Footer);
+		App.WaitForElement(HeaderTemplate);
+		App.WaitForElement(OpenFlyout);
+		App.Tap(OpenFlyout);
+	}
+
+	[Test, Order(8)]
+	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyoutHeaderFooter_Width()
 	{
 		App.WaitForElement(Options);
@@ -137,7 +177,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 	}
 
-	[Test, Order(7)]
+	[Test, Order(9)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyoutHeaderFooter_Height()
 	{
@@ -160,7 +200,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 	}
 
-	[Test, Order(8)]
+	[Test, Order(10)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyoutHeaderFooterTemplate_Width()
 	{
@@ -183,7 +223,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 	}
 
-	[Test, Order(9)]
+	[Test, Order(11)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyoutHeaderFooterTemplate_Height()
 	{
@@ -206,7 +246,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 	}
 
-	[Test, Order(10)]
+	[Test, Order(12)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutVerticalScrollModeEnabled()
 	{
@@ -224,7 +264,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(11)]
+	[Test, Order(13)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorFixed()
 	{
@@ -251,7 +291,7 @@ public class ShellFeatureTests : UITest
 
 	}
 
-	[Test, Order(12)]
+	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorScroll()
 	{
@@ -272,7 +312,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(13)]
+	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorCollapseOnScroll()
 	{
@@ -298,7 +338,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 	}
 
-	[Test, Order(14)]
+	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutContent()
 	{
@@ -313,7 +353,7 @@ public class ShellFeatureTests : UITest
 		App.Tap("CloseFlyoutContentButton");
 	}
 
-	[Test, Order(15)]
+	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutContentTemplate()
 	{
@@ -328,7 +368,7 @@ public class ShellFeatureTests : UITest
 		App.Tap("CloseFlyoutContentTemplateButton");
 	}
 
-	[Test, Order(16)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderAndFooter()
 	{
@@ -348,7 +388,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 	}
 
-	[Test, Order(17)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutItemVisibility()
 	{
@@ -362,7 +402,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(18)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_DisplayOptionsAsMultipleItems()
 	{
@@ -379,7 +419,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(19)]
+	[Test, Order(21)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_Width()
 	{
@@ -397,7 +437,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(20)]
+	[Test, Order(22)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_Height()
 	{
@@ -415,7 +455,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(21)]
+	[Test, Order(23)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundColor()
 	{
@@ -432,7 +472,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(22)]
+	[Test, Order(24)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBackDrop()
 	{
@@ -449,7 +489,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(23)]
+	[Test, Order(25)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_DisplayOptionsAsMultipleItemsAndBackgroundColor()
 	{
@@ -468,7 +508,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(24)]
+	[Test, Order(26)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBehaviorDisabledAndRTL()
 	{
@@ -485,7 +525,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(25)]
+	[Test, Order(27)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageAspect_AspectFit()
 	{
@@ -502,7 +542,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(26)]
+	[Test, Order(28)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageAspect_Fill()
 	{
@@ -521,7 +561,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(27)]
+	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundImage()
 	{
@@ -544,7 +584,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(28)]
+	[Test, Order(30)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageAndBackDrop()
 	{
@@ -563,8 +603,8 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID
-	[Test, Order(29)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
+	[Test, Order(31)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutVerticalScrollModeDisabled()
 	{
@@ -585,7 +625,7 @@ public class ShellFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(30)]
+	[Test, Order(32)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageSetToNull()
 	{
@@ -602,7 +642,8 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(31)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST
+	[Test, Order(33)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_SetItemTemplateAndMenuItemTemplate()
 	{
@@ -620,8 +661,9 @@ public class ShellFeatureTests : UITest
 		App.TapShellFlyoutIcon();
 		VerifyScreenshot();
 	}
+#endif
 
-	[Test, Order(32)]
+	[Test, Order(34)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBehaviorDisabled()
 	{
@@ -636,7 +678,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(33)]
+	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIconAndRTL()
 	{
@@ -651,7 +693,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(34)]
+	[Test, Order(36)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_CurrentItemWithDisplayOptions()
 	{
@@ -668,7 +710,7 @@ public class ShellFeatureTests : UITest
 		Assert.That(text1, Is.EqualTo("Current Item: Home"));
 	}
 
-	[Test, Order(35)]
+	[Test, Order(37)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIcon()
 	{
@@ -681,7 +723,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(36)]
+	[Test, Order(38)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlowDirection()
 	{
@@ -694,7 +736,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(37)]
+	[Test, Order(39)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_ShellContentAndBackgroundColor()
 	{
@@ -710,7 +752,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(38)]
+	[Test, Order(40)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_ShellContentAndBackgroundImage()
 	{
@@ -728,7 +770,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(39)]
+	[Test, Order(41)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImage()
 	{
@@ -745,7 +787,114 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(40)]
+	[Test, Order(42)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_BackgroundImageWithHeaderAndFooter()
+	{
+		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
+		App.Tap(OpenFlyout);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutHeader");
+		App.Tap("FlyoutHeader");
+		App.WaitForElement("FlyoutFooter");
+		App.Tap("FlyoutFooter");
+		App.WaitForElement("FlyoutBackgroundDotnetImage");
+		App.Tap("FlyoutBackgroundDotnetImage");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		VerifyScreenshot();
+	}
+
+	[Test, Order(43)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_BackgroundColorWithHeaderAndFooter()
+	{
+		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
+		App.Tap(OpenFlyout);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutHeader");
+		App.Tap("FlyoutHeader");
+		App.WaitForElement("FlyoutFooter");
+		App.Tap("FlyoutFooter");
+		App.WaitForElement("FlyoutBackgroundColorBlue");
+		App.Tap("FlyoutBackgroundColorBlue");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		VerifyScreenshot();
+	}
+
+	[Test, Order(44)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_DisplayOptionsWithHeaderAndFooter()
+	{
+		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
+		App.Tap(OpenFlyout);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutHeader");
+		App.Tap("FlyoutHeader");
+		App.WaitForElement("FlyoutFooter");
+		App.Tap("FlyoutFooter");
+		App.WaitForElement("FlyoutDisplayOptionsAsMultipleItems");
+		App.Tap("FlyoutDisplayOptionsAsMultipleItems");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		VerifyScreenshot();
+	}
+
+	[Test, Order(45)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_DisplayOptionsWithHeaderTemplateAndFooterTemplate()
+	{
+		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
+		App.Tap(OpenFlyout);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutHeaderTemplate");
+		App.Tap("FlyoutHeaderTemplate");
+		App.WaitForElement("FlyoutFooterTemplate");
+		App.Tap("FlyoutFooterTemplate");
+		App.WaitForElement("FlyoutDisplayOptionsAsMultipleItems");
+		App.Tap("FlyoutDisplayOptionsAsMultipleItems");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		VerifyScreenshot();
+	}
+
+	[Test, Order(46)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_HeightAndWidthWithBackgroundColor()
+	{
+		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
+		App.Tap(OpenFlyout);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutBackgroundColorBlue");
+		App.Tap("FlyoutBackgroundColorBlue");
+		App.WaitForElement("FlyoutWidthEntry");
+		App.ClearText("FlyoutWidthEntry");
+		App.EnterText("FlyoutWidthEntry", "300");
+		App.WaitForElement("FlyoutHeightEntry");
+		App.ClearText("FlyoutHeightEntry");
+		App.EnterText("FlyoutHeightEntry", "400");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.TapShellFlyoutIcon();
+		VerifyScreenshot();
+	}
+
+	[Test, Order(47)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIsPresented()
 	{
@@ -759,10 +908,9 @@ public class ShellFeatureTests : UITest
 		App.Tap(OpenFlyout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
 	}
 
-	[Test, Order(41)]
+	[Test, Order(48)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBehaviorLocked()
 	{
@@ -781,7 +929,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(Apply);
 	}
 
-	[Test, Order(42)]
+	[Test, Order(49)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIsPresentedAndRTL()
 	{
@@ -794,7 +942,8 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(43)]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST
+	[Test, Order(50)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBehaviorLockedAndRTL()
 	{
@@ -810,4 +959,5 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlyoutBehaviorLocked");
 		VerifyScreenshot();
 	}
+#endif
 }
