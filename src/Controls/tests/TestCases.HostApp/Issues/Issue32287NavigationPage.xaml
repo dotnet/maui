@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<NavigationPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-                x:Class="Maui.Controls.Sample.Issues.Issue32287NavigationPage">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue32287NavigationPage"
+             Title="Issue32287NavigationPage">
 
   <NavigationPage.TitleView>
     <Label x:Name="TitleLabel"
@@ -14,19 +15,17 @@
            AutomationId="TitleLabel"/>
   </NavigationPage.TitleView>
 
-  <ContentPage>
-    <VerticalStackLayout VerticalOptions="Center"
-                         HorizontalOptions="Center"
-                         Spacing="20">
-      <Label Text="Hello, World!"
-             AutomationId="Label"/>
-      <Button Text="Increase Title Font Size"
-              AutomationId="IncreaseFontSizeButton"
-              Clicked="OnIncreaseFontSizeClicked"/>
-      <Button Text="Decrease Title Font Size"
-              AutomationId="DecreaseFontSizeButton"
-              Clicked="OnDecreaseFontSizeClicked"/>
-    </VerticalStackLayout>
-  </ContentPage>
+  <VerticalStackLayout VerticalOptions="Center"
+                       HorizontalOptions="Center"
+                       Spacing="20">
+    <Label Text="Hello, World!"
+           AutomationId="Label"/>
+    <Button Text="Increase Title Font Size"
+            AutomationId="IncreaseFontSizeButton"
+            Clicked="OnIncreaseFontSizeClicked"/>
+    <Button Text="Decrease Title Font Size"
+            AutomationId="DecreaseFontSizeButton"
+            Clicked="OnDecreaseFontSizeClicked"/>
+  </VerticalStackLayout>
 
-</NavigationPage>
+</ContentPage>
