@@ -55,14 +55,10 @@ namespace DeviceTests.Analyzers
 
 			if (!hasCategoryAttribute)
 			{
-				// If the method does not have a [Category] attribute, check the containing class and base classes
-				var currentType = methodSymbol.ContainingType;
-				while (currentType != null && !hasCategoryAttribute)
-				{
-					hasCategoryAttribute = currentType.GetAttributes().Any(attr =>
-						attr?.AttributeClass?.Name == "CategoryAttribute");
-					currentType = currentType.BaseType;
-				}
+				// Check the containing class (declaring class only, NOT base classes)
+				// xUnit does NOT inherit [Category] from base classes, so we shouldn't check them
+				hasCategoryAttribute = methodSymbol.ContainingType.GetAttributes().Any(attr =>
+					attr?.AttributeClass?.Name == "CategoryAttribute");
 			}
 
 			// If it has [Fact] or [Theory] but not [Category], report a diagnostic
