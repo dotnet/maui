@@ -8,9 +8,7 @@ public class Issue12324 : TabbedPage
 	public Issue12324()
 	{
 		// Set tabs to bottom placement on Android
-#if Android
 		AndroidSpecific.TabbedPage.SetToolbarPlacement(this, AndroidSpecific.ToolbarPlacement.Bottom);
-#endif
 		BarBackground = new RadialGradientBrush
 		{
 			GradientStops = new GradientStopCollection
