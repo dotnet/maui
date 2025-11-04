@@ -12,7 +12,7 @@ namespace DeviceTests.Analyzers
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public class XUnitTestMultipleCategoriesAnalyzer : DiagnosticAnalyzer
 	{
-		public const string DiagnosticId = "MAUI1001";
+		public const string DiagnosticId = "MAUIT1002";
 
 		const string Title = "Test methods should have only one unique category";
 		const string MessageFormat = "Test method '{0}' has {1} unique categories: {2}. Only a single unique category is allowed per test.";

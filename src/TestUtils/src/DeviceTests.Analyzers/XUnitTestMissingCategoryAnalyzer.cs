@@ -11,7 +11,7 @@ namespace DeviceTests.Analyzers
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public class XUnitTestMissingCategoryAnalyzer : DiagnosticAnalyzer
 	{
-		public const string DiagnosticId = "MAUI1002";
+		public const string DiagnosticId = "MAUIT1001";
 
 		const string Title = "Test methods should have a Category";
 		const string MessageFormat = "Test method '{0}' should be marked with a `[Category]` attribute on the method or its parent class";
@@ -24,7 +24,7 @@ namespace DeviceTests.Analyzers
 			Title,
 			MessageFormat,
 			Category,
-			DiagnosticSeverity.Warning,
+			DiagnosticSeverity.Error,
 			isEnabledByDefault: true,
 			description: Description);
 

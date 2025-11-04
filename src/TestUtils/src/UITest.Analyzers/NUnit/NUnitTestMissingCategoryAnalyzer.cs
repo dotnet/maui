@@ -13,7 +13,7 @@ namespace UITest.Analyzers.NUnit
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public class NUnitTestMissingCategoryAnalyzer : DiagnosticAnalyzer
 	{
-		public const string DiagnosticId = "NUnitTestMissingCategoryAnalyzer";
+		public const string DiagnosticId = "MAUIT1001";
 
 		const string Title = "Test methods should have a Category";
 		const string MessageFormat = "Test method '{0}' should be marked with a `[Category]` attribute on the method or its parent class";
@@ -21,7 +21,7 @@ namespace UITest.Analyzers.NUnit
 
 		private const string Category = "Testing";
 
-		private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+		private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
 
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
 
