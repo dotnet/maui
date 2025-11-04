@@ -114,6 +114,23 @@ namespace Microsoft.Maui.Controls
 		public SearchBar()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
+			
+			// Hook into TextChanged to execute SearchCommand when text becomes empty
+			// This supports filtering scenarios where clearing the search should show all results
+			TextChanged += OnSearchBarTextChanged;
+		}
+
+		void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+		{
+			// Execute SearchCommand when text becomes empty to support filtering scenarios
+			if (!string.IsNullOrEmpty(e.OldTextValue) && string.IsNullOrEmpty(e.NewTextValue))
+			{
+				ICommand cmd = SearchCommand;
+				if (cmd != null && cmd.CanExecute(SearchCommandParameter))
+				{
+					cmd.Execute(SearchCommandParameter);
+				}
+			}
 		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
@@ -157,22 +174,6 @@ namespace Microsoft.Maui.Controls
 
 			cmd?.Execute(SearchCommandParameter);
 			SearchButtonPressed?.Invoke(this, EventArgs.Empty);
-		}
-
-		protected override void OnTextChanged(string oldValue, string newValue)
-		{
-			base.OnTextChanged(oldValue, newValue);
-
-			// Execute SearchCommand when text becomes empty to support filtering scenarios
-			// where clearing the search should show all results
-			if (!string.IsNullOrEmpty(oldValue) && string.IsNullOrEmpty(newValue))
-			{
-				ICommand cmd = SearchCommand;
-				if (cmd != null && cmd.CanExecute(SearchCommandParameter))
-				{
-					cmd.Execute(SearchCommandParameter);
-				}
-			}
 		}
 
 		/// <inheritdoc/>
