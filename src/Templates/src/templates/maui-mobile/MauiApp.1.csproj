@@ -18,8 +18,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 <!--#if (IncludeSampleContent) -->
-		<!-- https://github.com/CommunityToolkit/Maui/issues/2921 -->
-		<NoWarn>NU1608</NoWarn>
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 <!--#endif -->
 
