@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Configures whether to omit sample pages and styling that demonstrate basic usage patterns.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configure s'il faut omettre les exemples de pages et de style qui illustrent les modèles d'utilisation de base.]]></Val>
+            <Val><![CDATA[Configure s'il faut omettre les exemples de pages et le style qui illustrent les modèles d'utilisation de base.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Infrastructure cible du projet.]]></Val>
+            <Val><![CDATA[Framework cible du projet.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

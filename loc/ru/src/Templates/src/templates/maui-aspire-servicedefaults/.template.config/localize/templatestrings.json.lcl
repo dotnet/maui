@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Целевое значение DOTNET_TFM_VALUE]]></Val>
+            <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
