@@ -10,22 +10,9 @@
 		AB0B2BC82E3529AF00B2B77C /* PlatformInterop.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PlatformInterop.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		ABA294752E353D38009AF558 /* Exceptions for "PlatformInterop" folder in "PlatformInterop" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			publicHeaders = (
-				"CALayer+AutoSizeToSuperLayer.h",
-			);
-			target = AB0B2BC72E3529AE00B2B77C /* PlatformInterop */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AB0B2BCA2E3529AF00B2B77C /* PlatformInterop */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				ABA294752E353D38009AF558 /* Exceptions for "PlatformInterop" folder in "PlatformInterop" target */,
-			);
 			path = PlatformInterop;
 			sourceTree = "<group>";
 		};
@@ -180,6 +167,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -216,6 +204,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

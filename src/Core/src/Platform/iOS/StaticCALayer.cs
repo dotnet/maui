@@ -1,14 +1,28 @@
-using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
-using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
 class StaticCALayer : CALayer, IAutoSizableCALayer
 {
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
+    readonly CALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
+
+	protected override void Dispose(bool disposing)
+	{
+		_autosizeToSuperLayerBehavior.Detach();
+		base.Dispose(disposing);
+	}
+
+	public override void RemoveFromSuperLayer()
+	{
+		_autosizeToSuperLayerBehavior.Detach();
+		base.RemoveFromSuperLayer();
+	}
+
 	void IAutoSizableCALayer.AutoSizeToSuperLayer()
 	{
-		this.SetMauiAutoSizeToSuperLayer(true);
+		_autosizeToSuperLayerBehavior.Attach(this);
 	}
 
 	public override void AddAnimation(CAAnimation animation, string? key)

@@ -105,6 +105,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Platform\iOS\CALayerAutosizeObserver.cs" />
+  </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
