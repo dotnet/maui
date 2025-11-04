@@ -40,7 +40,18 @@ namespace Microsoft.Maui.Networking
 
 		static NWPath GetCurrentPath()
 		{
-			return SharedMonitor?.CurrentPath;
+			var monitor = SharedMonitor;
+			var path = monitor?.CurrentPath;
+			
+			// If path is null, the monitor might not have received its first update yet
+			// Force initialization by accessing the monitor
+			if (path == null && monitor != null)
+			{
+				// Monitor is started but path not yet available - this is expected on first call
+				// The monitor will update CurrentPath asynchronously
+			}
+			
+			return path;
 		}
 
 		internal static NetworkStatus RemoteHostStatus()
@@ -120,7 +131,7 @@ namespace Microsoft.Maui.Networking
 				ReachabilityChanged?.Invoke();
 			};
 			
-			pathMonitor.SnapshotHandler += pathUpdateHandler;
+			pathMonitor.SnapshotHandler = pathUpdateHandler;
 			pathMonitor.SetQueue(DispatchQueue.DefaultGlobalQueue);
 			pathMonitor.Start();
 
@@ -139,11 +150,8 @@ namespace Microsoft.Maui.Networking
 		{
 			if (pathMonitor != null)
 			{
-				if (pathUpdateHandler != null)
-				{
-					pathMonitor.SnapshotHandler -= pathUpdateHandler;
-					pathUpdateHandler = null;
-				}
+				pathMonitor.SnapshotHandler = null;
+				pathUpdateHandler = null;
 				pathMonitor.Cancel();
 				pathMonitor.Dispose();
 				pathMonitor = null;
