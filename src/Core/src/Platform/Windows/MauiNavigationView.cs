@@ -180,7 +180,14 @@ namespace Microsoft.Maui.Platform
 			{
 				case FlyoutBehavior.Flyout:
 					IsPaneToggleButtonVisible = true;
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					// WinUI bug: Setting PaneDisplayMode to the same value and updating SelectedItem during navigation
+					// causes the selection and selected item indicator to not update correctly.
+					// Workaround: Only set PaneDisplayMode when the value actually changes.
+					// Related: https://github.com/microsoft/microsoft-ui-xaml/issues/9812
+					if (PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
+					{
+						PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					}
 					break;
 				case FlyoutBehavior.Locked:
 					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
