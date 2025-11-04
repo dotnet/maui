@@ -1,9 +1,16 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 32287, "Using custom TitleView in NavigationPage causes content to be covered in iOS 26", PlatformAffected.iOS)]
-public partial class Issue32287NavigationPage : ContentPage
+public class Issue32287NavigationPage : NavigationPage
 {
-	public Issue32287NavigationPage()
+	public Issue32287NavigationPage() : base(new Issue32287NavigationPageContent())
+	{
+	}
+}
+
+public partial class Issue32287NavigationPageContent : ContentPage
+{
+	public Issue32287NavigationPageContent()
 	{
 		InitializeComponent();
 	}

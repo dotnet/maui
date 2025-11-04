@@ -2,8 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-             x:Class="Maui.Controls.Sample.Issues.Issue32287NavigationPage"
-             Title="Issue32287NavigationPage">
+             x:Class="Maui.Controls.Sample.Issues.Issue32287NavigationPageContent"
+             Title="Home page">
 
   <NavigationPage.TitleView>
     <Label x:Name="TitleLabel"
