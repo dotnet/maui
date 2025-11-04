@@ -210,6 +210,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.BindingSourceGen.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.Analyzers", "src\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj", "{DA001142-4777-4EDE-97D5-B1AC08162F99}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTests.Analyzers", "src\TestUtils\src\DeviceTests.Analyzers\DeviceTests.Analyzers.csproj", "{D1FAFCF9-571A-4502-BD16-5642A4F1D2EB}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Embedding", "src\Controls\samples\Controls.Sample.Embedding\Maui.Controls.Sample.Embedding.csproj", "{4ADCBA87-30DB-44F5-85E9-94A4F4132FD9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{A426B2FC-F012-436B-BDD9-BEC0025DB96B}"
