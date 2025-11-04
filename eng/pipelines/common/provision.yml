@@ -142,7 +142,7 @@ steps:
           sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0 || RC=$?
           if [[ "$RC" == "70" ]]; then
             echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
-          elif [[ "$RC" == 0" ]]; then
+          elif [[ "$RC" == "0" ]]; then
             echo "Successfully installed the requested iOS simulator"
           else
             echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
