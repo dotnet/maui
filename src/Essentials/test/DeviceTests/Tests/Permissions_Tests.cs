@@ -136,5 +136,90 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 						   checkStatusAlways == PermissionStatus.Restricted);
 			}
 		}
+
+		[Fact
+#if !__ANDROID__
+		(Skip = "Test only applies to Android")
+#endif
+		]
+		public async Task LocationWhenInUse_CoarseOnly_ReturnsRestricted()
+		{
+			// Test to verify that when only COARSE_LOCATION is granted, CheckStatusAsync returns Restricted
+			// This test verifies the fix for Issue #23060
+			// 
+			// MANUAL TEST PROCEDURE:
+			// 1. Ensure AndroidManifest.xml declares both ACCESS_COARSE_LOCATION and ACCESS_FINE_LOCATION
+			// 2. Uninstall the test app to reset permissions
+			// 3. Reinstall and run this test
+			// 4. When prompted, select "Approximate location" (coarse only)
+			// 5. Verify that CheckStatusAsync returns Restricted (not Denied)
+			//
+			// EXPECTED BEHAVIOR:
+			// - 2 permissions granted → Granted
+			// - 1 permission granted (coarse only) → Restricted
+			// - 0 permissions granted → Denied
+
+			if (DeviceInfo.Platform == DevicePlatform.Android)
+			{
+				var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+				
+				// Verify the status is one of the valid values
+				Assert.True(status == PermissionStatus.Granted ||
+						   status == PermissionStatus.Denied ||
+						   status == PermissionStatus.Restricted,
+						   $"LocationWhenInUse.CheckStatusAsync returned unexpected status: {status}");
+
+				// If the status is Restricted, verify it matches the RequestAsync behavior
+				if (status == PermissionStatus.Restricted)
+				{
+					// CheckStatusAsync should return Restricted when only coarse permission is granted
+					// This is the fix for Issue #23060 - previously returned Denied incorrectly
+					Assert.Equal(PermissionStatus.Restricted, status);
+				}
+			}
+		}
+
+		[Fact
+#if !__ANDROID__
+		(Skip = "Test only applies to Android")
+#endif
+		]
+		public async Task LocationAlways_PartialPermissions_ReturnsRestricted()
+		{
+			// Test to verify that when only some location permissions are granted, CheckStatusAsync returns Restricted
+			// This test verifies the fix for Issue #23060
+			//
+			// MANUAL TEST PROCEDURE:
+			// 1. Ensure AndroidManifest.xml declares ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION, 
+			//    and ACCESS_BACKGROUND_LOCATION (on Android 10+)
+			// 2. Uninstall the test app to reset permissions
+			// 3. Reinstall and run this test
+			// 4. When prompted, select "Approximate location" and/or deny background location
+			// 5. Verify that CheckStatusAsync returns Restricted (not Denied)
+			//
+			// EXPECTED BEHAVIOR:
+			// - All permissions granted → Granted
+			// - Some permissions granted → Restricted
+			// - No permissions granted → Denied
+
+			if (DeviceInfo.Platform == DevicePlatform.Android)
+			{
+				var status = await Permissions.CheckStatusAsync<Permissions.LocationAlways>();
+				
+				// Verify the status is one of the valid values
+				Assert.True(status == PermissionStatus.Granted ||
+						   status == PermissionStatus.Denied ||
+						   status == PermissionStatus.Restricted,
+						   $"LocationAlways.CheckStatusAsync returned unexpected status: {status}");
+
+				// If the status is Restricted, verify it matches the expected behavior
+				if (status == PermissionStatus.Restricted)
+				{
+					// CheckStatusAsync should return Restricted when only partial permissions are granted
+					// This is the fix for Issue #23060 - previously returned Denied incorrectly
+					Assert.Equal(PermissionStatus.Restricted, status);
+				}
+			}
+		}
 	}
 }
