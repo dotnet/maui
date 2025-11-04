@@ -43,6 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
 			Controller?.DisposeItemsSource();
+			// Reset ScrollsToTop to default value when disconnecting
+			if (Controller?.CollectionView != null)
+				Controller.CollectionView.ScrollsToTop = false;
 			base.DisconnectHandler(platformView);
 		}
 
