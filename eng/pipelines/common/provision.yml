@@ -1,7 +1,7 @@
 parameters:
   # Xcode
   skipXcode: false
-  skipSimulatorSetup: false
+  skipSimulatorSetup: true
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
