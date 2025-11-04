@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Controls.SourceGen;
 #nullable enable
 static class NamingHelpers
 {
-	static IDictionary<object, IDictionary<string, int>> _lastId = new Dictionary<object, IDictionary<string, int>>();
-
 	public static string CreateUniqueVariableName(SourceGenContext context, ISymbol symbol)
 	{
 		while (context.ParentContext != null)
@@ -26,7 +24,7 @@ static class NamingHelpers
 		return CreateUniqueVariableNameImpl(context, baseName, lowFirst: false);
 	}
 
-	internal static string CreateUniqueVariableNameImpl(object context, ISymbol symbol, bool lowFirst = true)
+	internal static string CreateUniqueVariableNameImpl(SourceGenContext context, ISymbol symbol, bool lowFirst = true)
 	{
 		string suffix = "";
 		if (symbol is IArrayTypeSymbol arrayTypeSymbol)
@@ -50,18 +48,18 @@ static class NamingHelpers
 #pragma warning restore RS0030 // Do not use banned APIs
 	}
 
-	static string CreateUniqueVariableNameImpl(object context, string baseName, bool lowFirst)
+	static string CreateUniqueVariableNameImpl(SourceGenContext context, string baseName, bool lowFirst)
 	{
 		baseName = CamelCase(baseName, lowFirst);
-		if (!_lastId.TryGetValue(context, out var lastIdForContext))
+		var lastIdForContext = context.lastIdForName;
+		var lastId = 0;
+		lock (lastIdForContext)
 		{
-			lastIdForContext = new Dictionary<string, int>();
-			_lastId[context] = lastIdForContext;
-		}
-		if (!lastIdForContext.TryGetValue(baseName, out var lastId))
-			lastId = 0;
+			if (!lastIdForContext.TryGetValue(baseName, out lastId))
+				lastId = 0;
 
-		lastIdForContext[baseName] = lastId + 1;
+			lastIdForContext[baseName] = lastId + 1;
+		}
 		return lastId == 0 && SyntaxFacts.GetKeywordKind(baseName) == SyntaxKind.None ? baseName : $"{baseName}{lastId}";
 	}
 

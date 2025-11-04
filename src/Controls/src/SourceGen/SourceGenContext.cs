@@ -11,6 +11,16 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
 {
+	internal static SourceGenContext CreateNewForTests() => new SourceGenContext(
+		null!,
+		null!,
+		default,
+		null!,
+		new Dictionary<XmlType, INamedTypeSymbol>(),
+		null!,
+		null,
+		null!);
+
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
 	
@@ -32,6 +42,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<(ILocalValue, IFieldSymbol?, IPropertySymbol?), ILocalValue> VariablesProperties { get; } = new Dictionary<(ILocalValue, IFieldSymbol?, IPropertySymbol?), ILocalValue>();
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public ProjectItem ProjectItem { get; } = projectItem;
+
+	public Dictionary<string, int> lastIdForName = [];
 
 	public void AddLocalMethod(string code)
 	{
