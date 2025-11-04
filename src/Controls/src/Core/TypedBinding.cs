@@ -206,23 +206,6 @@ namespace Microsoft.Maui.Controls.Internals
 			};
 		}
 
-		internal override object GetSourceValue(object value, Type targetPropertyType)
-		{
-			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
-
-			return base.GetSourceValue(value, targetPropertyType);
-		}
-
-		internal override object GetTargetValue(object value, Type sourcePropertyType)
-		{
-			if (Converter != null)
-				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
-
-			//return base.GetTargetValue(value, sourcePropertyType);
-			return value;
-		}
-
 		internal override void ApplyToResolvedSource(object source, BindableObject target, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
 		{
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
@@ -238,6 +221,23 @@ namespace Microsoft.Maui.Controls.Internals
 			_weakSource.SetTarget(source);
 
 			ApplyCore(source, target, targetProperty, fromBindingContextChanged, specificity);
+		}
+
+		internal override object GetSourceValue(object value, Type targetPropertyType)
+		{
+			if (Converter != null)
+				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			return base.GetSourceValue(value, targetPropertyType);
+		}
+
+		internal override object GetTargetValue(object value, Type sourcePropertyType)
+		{
+			if (Converter != null)
+				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			//return base.GetTargetValue(value, sourcePropertyType);
+			return value;
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
@@ -290,6 +290,10 @@ namespace Microsoft.Maui.Controls.Internals
 					catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
 					{
 					}
+					catch (Exception ex)
+					{
+						BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from getter: {ex.Message}");
+					}
 				}
 				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
@@ -319,6 +323,10 @@ namespace Microsoft.Maui.Controls.Internals
 					// Ignore exceptions that are thrown when the source object is null or the property
 					// cannot be found. This can happen when the source object is a collection and the
 					// property is not found in the collection item.
+				}
+				catch (Exception ex)
+				{
+					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from setter: {ex.Message}");
 				}
 			}
 		}
@@ -438,12 +446,138 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		class PropertyChangedProxy
+		{
+			public Func<TSource, object> PartGetter { get; }
+			public string PropertyName { get; }
+			public BindingExpression.WeakPropertyChangedProxy Listener { get; }
+			readonly BindingBase _binding;
+			PropertyChangedEventHandler handler;
+
+			~PropertyChangedProxy() => Listener?.Unsubscribe();
+
+			public INotifyPropertyChanged Part
+			{
+				get
+				{
+					if (Listener != null && Listener.TryGetSource(out var target))
+						return target;
+					return null;
+				}
+				set
+				{
+					if (Listener != null)
+					{
+						//Already subscribed
+						if (Listener.TryGetSource(out var source) && ReferenceEquals(value, source))
+							return;
+
+						//clear out previous subscription
+						Listener.Unsubscribe();
+						Listener.Subscribe(value, handler);
+					}
+				}
+			}
+
+			public PropertyChangedProxy(Func<TSource, object> partGetter, string propertyName, BindingBase binding)
+			{
+				PartGetter = partGetter;
+				PropertyName = propertyName;
+				_binding = binding;
+				Listener = new BindingExpression.WeakPropertyChangedProxy();
+				//avoid GC collection, keep a ref to the OnPropertyChanged handler
+				handler = new PropertyChangedEventHandler(OnPropertyChanged);
+			}
+
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (!string.IsNullOrEmpty(e.PropertyName) && string.CompareOrdinal(e.PropertyName, PropertyName) != 0)
+					return;
+
+				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
+				dispatcher.DispatchIfRequired(() => _binding.Apply(false));
+			}
+		}
+
 #nullable enable
 		private interface IPropertyChangeHandler
 		{
 			void Subscribe(object sourceObject);
 			void Unsubscribe();
 			IPropertyChangeHandler Clone();
+		}
+
+		private struct LegacyPropertyChangeHandler : IPropertyChangeHandler
+		{
+			private readonly TypedBindingBase _binding;
+			private readonly PropertyChangedProxy[]? _handlers;
+
+			public LegacyPropertyChangeHandler(
+				TypedBindingBase binding,
+				Tuple<Func<TSource, object>, string>[]? handlers)
+			{
+				_binding = binding;
+				
+				if (handlers == null)
+					return;
+
+				_handlers = new PropertyChangedProxy[handlers.Length];
+				for (var i = 0; i < handlers.Length; i++)
+				{
+					if (handlers[i] is null)
+						continue;
+					_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, binding);
+				}
+			}
+
+			public void Subscribe(object sourceObject)
+			{
+				if (sourceObject is not TSource source || _handlers is null)
+				{
+					return;
+				}
+
+				for (var i = 0; i < _handlers.Length; i++)
+				{
+					if (_handlers[i] == null)
+						continue;
+					var part = _handlers[i].PartGetter(source);
+					if (part == null)
+						break;
+					var inpc = part as INotifyPropertyChanged;
+					if (inpc == null)
+						continue;
+					_handlers[i].Part = (inpc);
+				}
+			}
+
+			public void Unsubscribe()
+			{
+				if (_handlers is null)
+					return;
+
+				for (var i = 0; i < _handlers.Length; i++)
+				{
+					_handlers[i]?.Listener.Unsubscribe();
+				}
+			}
+
+			public IPropertyChangeHandler Clone()
+			{
+				Tuple<Func<TSource, object>, string>[]? handlers = null;
+				if (_handlers != null)
+				{
+					handlers = new Tuple<Func<TSource, object>, string>[_handlers.Length];
+					for (var i = 0; i < _handlers.Length; i++)
+					{
+						if (_handlers[i] == null)
+							continue;
+						handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
+					}
+				}
+				
+				return new LegacyPropertyChangeHandler(_binding, handlers);
+			}
 		}
 
 		private struct PropertyChangeHandler(
@@ -537,132 +671,6 @@ namespace Microsoft.Maui.Controls.Internals
 				{
 					_listeners[i]?.Unsubscribe();
 					_listeners[i] = null;
-				}
-			}
-		}
-
-		private struct LegacyPropertyChangeHandler : IPropertyChangeHandler
-		{
-			private readonly TypedBindingBase _binding;
-			private readonly PropertyChangedProxy[]? _handlers;
-
-			public LegacyPropertyChangeHandler(
-				TypedBindingBase binding,
-				Tuple<Func<TSource, object>, string>[]? handlers)
-			{
-				_binding = binding;
-				
-				if (handlers == null)
-					return;
-
-				_handlers = new PropertyChangedProxy[handlers.Length];
-				for (var i = 0; i < handlers.Length; i++)
-				{
-					if (handlers[i] is null)
-						continue;
-					_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, binding);
-				}
-			}
-
-			public IPropertyChangeHandler Clone()
-			{
-				Tuple<Func<TSource, object>, string>[]? handlers = null;
-				if (_handlers != null)
-				{
-					handlers = new Tuple<Func<TSource, object>, string>[_handlers.Length];
-					for (var i = 0; i < _handlers.Length; i++)
-					{
-						if (_handlers[i] == null)
-							continue;
-						handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
-					}
-				}
-				
-				return new LegacyPropertyChangeHandler(_binding, handlers);
-			}
-
-			public void Subscribe(object sourceObject)
-			{
-				if (sourceObject is not TSource source || _handlers is null)
-				{
-					return;
-				}
-
-				for (var i = 0; i < _handlers.Length; i++)
-				{
-					if (_handlers[i] == null)
-						continue;
-					var part = _handlers[i].PartGetter(source);
-					if (part == null)
-						break;
-					var inpc = part as INotifyPropertyChanged;
-					if (inpc == null)
-						continue;
-					_handlers[i].Part = (inpc);
-				}
-			}
-
-			public void Unsubscribe()
-			{
-				if (_handlers is null)
-					return;
-
-				for (var i = 0; i < _handlers.Length; i++)
-				{
-					_handlers[i]?.Listener.Unsubscribe();
-				}
-			}
-
-			class PropertyChangedProxy
-			{
-				public Func<TSource, object> PartGetter { get; }
-				public string PropertyName { get; }
-				public BindingExpression.WeakPropertyChangedProxy Listener { get; }
-				readonly BindingBase _binding;
-				PropertyChangedEventHandler handler;
-
-				~PropertyChangedProxy() => Listener?.Unsubscribe();
-
-				public INotifyPropertyChanged? Part
-				{
-					get
-					{
-						if (Listener != null && Listener.TryGetSource(out var target))
-							return target;
-						return null;
-					}
-					set
-					{
-						if (Listener != null)
-						{
-							//Already subscribed
-							if (Listener.TryGetSource(out var source) && ReferenceEquals(value, source))
-								return;
-
-							//clear out previous subscription
-							Listener.Unsubscribe();
-							Listener.Subscribe(value, handler);
-						}
-					}
-				}
-
-				public PropertyChangedProxy(Func<TSource, object> partGetter, string propertyName, BindingBase binding)
-				{
-					PartGetter = partGetter;
-					PropertyName = propertyName;
-					_binding = binding;
-					Listener = new BindingExpression.WeakPropertyChangedProxy();
-					//avoid GC collection, keep a ref to the OnPropertyChanged handler
-					handler = new PropertyChangedEventHandler(OnPropertyChanged);
-				}
-
-				void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-				{
-					if (!string.IsNullOrEmpty(e.PropertyName) && string.CompareOrdinal(e.PropertyName, PropertyName) != 0)
-						return;
-
-					IDispatcher? dispatcher = (sender as BindableObject)?.Dispatcher;
-					dispatcher.DispatchIfRequired(() => _binding.Apply(false));
 				}
 			}
 		}
