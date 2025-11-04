@@ -452,124 +452,91 @@ namespace Microsoft.Maui.Controls.Internals
 			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers) : IPropertyChangeHandler
 		{
 			private readonly TypedBindingBase _binding = binding;
-			public readonly int _handlersCount = handlersCount;
-			public readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers = handlers;
-			private PropertyChangedListener?[]? _listeners;
+			private readonly BindingExpression.WeakPropertyChangedProxy?[] _listeners = new BindingExpression.WeakPropertyChangedProxy?[handlersCount];
+			private readonly string?[] _propertyNames = new string?[handlersCount];
+			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers = handlers;
 
 			public IPropertyChangeHandler Clone()
-			{
-				return new PropertyChangeHandler(_binding, _handlersCount, _handlers);
-			}
+				=> new PropertyChangeHandler(_binding, _listeners.Length, _handlers);
 
 			public void Subscribe(object sourceObject)
 			{
-				if (sourceObject is not TSource source)
+				if (sourceObject is not TSource source || _handlers is null)
 				{
 					return;
 				}
-				else if (_handlers is null)
-				{
-					if (_handlersCount > 0)
-					{
-						throw new InvalidOperationException("The number of handlers count is greater than zero, but no handlers function was provided.");
-					}
 
-					return;
-				}
-
-				_listeners ??= new PropertyChangedListener?[_handlersCount];
-
-				var handlers = _handlers(source);
 				int index = 0;
 
-				foreach (var (part, propertyName) in handlers)
+				foreach ((INotifyPropertyChanged? part, string propertyName) in _handlers(source))
 				{
-					ThrowIfOutOfRange(index);
-					
-					if (part is null)
+					if (part is null || index >= _listeners.Length)
 						break;
 
-					AddListener(part, propertyName, ref _listeners[index++]);
-				}
+					_propertyNames[index] = propertyName;
+					var listener = _listeners[index] ??= new();
+					index++;
 
-				UnsubscribeRemainingListeners(index);
-			}
-
-
-			void ThrowIfOutOfRange(int index)
-			{
-				if (index >= _handlersCount)
-				{
-					throw new IndexOutOfRangeException($"The number of handlers returned by the handler function is more than the specified handlers count of {_handlersCount}.");
-				}
-			}
-
-			void AddListener(INotifyPropertyChanged part, string propertyName, ref PropertyChangedListener? listener)
-			{
-				listener ??= new PropertyChangedListener(_binding, propertyName);
-				listener.Subscribe(part);
-			}
-
-			void UnsubscribeRemainingListeners(int startIndex)
-			{
-				for (int i = startIndex; i < _listeners?.Length; i++)
-				{
-					_listeners[i]?.Unsubscribe();
-				}
-			}
-
-			private sealed class PropertyChangedListener(TypedBindingBase binding, string propertyName)
-			{
-				private readonly TypedBindingBase _binding = binding;
-				private readonly string _propertyName = propertyName;
-				private readonly BindingExpression.WeakPropertyChangedProxy _listener = new();
-
-				public void Subscribe(INotifyPropertyChanged source)
-				{
-					if (_listener.TryGetSource(out var existingSource))
+					// Check if we're already subscribed to the same object
+					if (listener.TryGetSource(out var existingSource) && ReferenceEquals(part, existingSource))
 					{
-						if (ReferenceEquals(source, existingSource))
-						{
-							// Already subscribed to the same object, no need to do anything
-							return;
-						}
-						else
-						{
-							// Subscribed to a different object, unsubscribe from the previous one
-							_listener.Unsubscribe();
-						}
+						// Already subscribed to the same object, no need to re-subscribe
+						continue;
 					}
 
-					_listener.Subscribe(source, OnPropertyChanged);
+					// Different object or first subscription, unsubscribe from old and subscribe to new
+					listener.Unsubscribe();
+					listener.Subscribe(part, OnPropertyChanged);
 				}
 
-				public void Unsubscribe()
-				{
-					_listener.Unsubscribe();
-				}
+				Unsubscribe(startIndex: index);
+			}
 
-				private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			{
+				if (ShouldApplyChanges(sender, e.PropertyName))
 				{
-					if (!string.IsNullOrEmpty(e.PropertyName) && !string.Equals(e.PropertyName, _propertyName, StringComparison.Ordinal))
-					{
-						return;
-					}
-
 					var dispatcher = (sender as BindableObject)?.Dispatcher;
 					dispatcher.DispatchIfRequired(ApplyChanges);
 				}
+			}
 
-				private void ApplyChanges() => _binding.Apply(fromTarget: false);
+			bool ShouldApplyChanges(object? sender, string? propertyName)
+			{
+				for (int i = 0; i < _listeners.Length; i++)
+				{
+					if (_listeners[i] is {} listener
+						&& listener.TryGetSource(out var source)
+						&& ReferenceEquals(source, sender)
+						&& MatchEventPropertyName(_propertyNames[i], propertyName))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			void ApplyChanges()
+			{
+				_binding.Apply(fromTarget: false);
+			}
+
+			static bool MatchEventPropertyName(string? expectedPropertyName, string? eventPropertyName)
+			{
+				return string.IsNullOrEmpty(eventPropertyName)
+					|| string.Equals(expectedPropertyName, eventPropertyName, StringComparison.Ordinal);
 			}
 
 			public void Unsubscribe()
-			{
-				if (_listeners is null)
-					return;
+				=> Unsubscribe(startIndex: 0);
 
-				foreach (var listener in _listeners)
+			void Unsubscribe(int startIndex)
+			{
+				for (int i = startIndex; i < _listeners.Length; i++)
 				{
-					listener?.Unsubscribe();
+					_listeners[i]?.Unsubscribe();
+					_listeners[i] = null;
 				}
 			}
 		}
