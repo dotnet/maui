@@ -4,7 +4,7 @@
 	  <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsTestProject>true</IsTestProject>
+    <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
     <DefineConstants>$(DefineConstants);WINDOWS;WINTEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_IOS</DefineConstants>
   </PropertyGroup>

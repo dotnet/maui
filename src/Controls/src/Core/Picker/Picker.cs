@@ -65,6 +65,11 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
+		public static readonly BindableProperty IsOpenProperty =
+			BindableProperty.Create(nameof(IPicker.IsOpen), typeof(bool), typeof(Picker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
+
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
 		/// <summary>Initializes a new instance of the Picker class.</summary>
@@ -110,7 +115,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="source">The source parameter.</param>
 		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
@@ -224,7 +229,20 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((Picker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+
 		public event EventHandler SelectedIndexChanged;
+		public event EventHandler<PickerOpenedEventArgs> Opened;
+		public event EventHandler<PickerClosedEventArgs> Closed;
 
 		static readonly BindableProperty s_displayProperty =
 			BindableProperty.Create("Display", typeof(string), typeof(Picker), default(string));
@@ -289,6 +307,43 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).IsLocked = false;
 				((LockableObservableListWrapper)Items).InternalClear();
 			}
+		}
+
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is Picker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler?.VirtualView is not Picker picker)
+				return;
+
+			if (picker.IsOpen)
+				picker.Opened?.Invoke(picker, PickerOpenedEventArgs.Empty);
+			else
+				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

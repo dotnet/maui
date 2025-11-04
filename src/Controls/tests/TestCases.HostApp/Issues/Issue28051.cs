@@ -139,14 +139,14 @@ public class LongPressBehavior : PlatformBehavior<Element, Microsoft.UI.Xaml.Fra
 #else
 public class LongPressBehavior : PlatformBehavior<Element, object>
 {
-    protected override void OnAttachedTo(Element bindable, object platformView)
-    {
-        BindingContext = bindable.BindingContext;
-    }
- 
-    protected override void OnDetachedFrom(Element bindable, object platformView)
-    {
-        BindingContext = null;
-    }
+	protected override void OnAttachedTo(Element bindable, object platformView)
+	{
+		BindingContext = bindable.BindingContext;
+	}
+
+	protected override void OnDetachedFrom(Element bindable, object platformView)
+	{
+		BindingContext = null;
+	}
 }
 #endif

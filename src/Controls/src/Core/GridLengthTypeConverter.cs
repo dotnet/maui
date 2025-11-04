@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -7,15 +6,16 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.GridLengthTypeConverter")]
+	[Obsolete("Microsoft.Maui.Controls.GridLengthTypeConverter is obsolete. Use Microsoft.Maui.Converters.GridLengthConverter instead.")]
 	public class GridLengthTypeConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> true;
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value as string ?? value?.ToString();
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls
 			throw new FormatException($"Invalid GridLength format: {value.ToString()}");
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not GridLength length)
 				throw new NotSupportedException();

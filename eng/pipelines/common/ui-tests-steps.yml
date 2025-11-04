@@ -25,6 +25,11 @@ steps:
     artifact: ui-tests-samples-nativeaot
 
 - task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
+  inputs:
+    artifact: ui-tests-samples-coreclr
+
+- task: DownloadPipelineArtifact@2
   condition: eq('${{ parameters.platform }}' , 'windows')
   inputs:
     artifact: ui-tests-samples-windows
@@ -64,6 +69,7 @@ steps:
     skipAndroidCreateAvds: true
     androidEmulatorApiLevel: ${{ parameters.version }}
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true

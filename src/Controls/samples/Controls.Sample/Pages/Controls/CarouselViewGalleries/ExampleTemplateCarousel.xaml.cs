@@ -33,9 +33,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 					if (e.TotalY < _minYScroll)
 					{
 						var scaledValue = 1 - (Math.Abs(e.TotalY) / _maxYScroll);
-						this.ScaleTo(0.9);
-						this.FadeTo(scaledValue);
-						this.TranslateTo(X, Y + e.TotalY);
+						this.ScaleToAsync(0.9);
+						this.FadeToAsync(scaledValue);
+						this.TranslateToAsync(X, Y + e.TotalY);
 					}
 					if (e.TotalY < _diffYScroll)
 					{
@@ -47,15 +47,15 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				{
 					if (_delete)
 					{
-						this.FadeTo(0.1);
-						this.TranslateTo(X, Y - 1000);
+						this.FadeToAsync(0.1);
+						this.TranslateToAsync(X, Y - 1000);
 						WeakReferenceMessenger.Default.Send(this, "remove");
 					}
 					else
 					{
-						this.ScaleTo(1);
-						this.FadeTo(1);
-						this.TranslateTo(X, _initialY);
+						this.ScaleToAsync(1);
+						this.FadeToAsync(1);
+						this.TranslateToAsync(X, _initialY);
 					}
 				}
 			};

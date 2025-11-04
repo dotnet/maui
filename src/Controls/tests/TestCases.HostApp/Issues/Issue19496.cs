@@ -18,6 +18,7 @@
 			};
 
 			ContentPage contentPage = new ContentPage();
+			contentPage.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 
 			contentPage.Content = new Button()
 			{

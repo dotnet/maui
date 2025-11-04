@@ -28,13 +28,17 @@ steps:
     arguments: -InputPath '$(System.DefaultWorkingDirectory)/PostBuildLogs' 
       -BinlogToolVersion ${{parameters.BinlogToolVersion}}
       -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
+      -runtimeSourceFeed https://ci.dot.net/internal 
+      -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
       '$(publishing-dnceng-devdiv-code-r-build-re)'
       '$(MaestroAccessToken)'
       '$(dn-bot-all-orgs-artifact-feeds-rw)'
       '$(akams-client-id)'
       '$(microsoft-symbol-server-pat)'
       '$(symweb-symbol-server-pat)'
+      '$(dnceng-symbol-server-pat)'
       '$(dn-bot-all-orgs-build-rw-code-rw)'
+      '$(System.AccessToken)'
       ${{parameters.CustomSensitiveDataList}}
   continueOnError: true
   condition: always()
@@ -45,6 +49,7 @@ steps:
     SourceFolder: '$(System.DefaultWorkingDirectory)/PostBuildLogs'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)/PostBuildLogs'
+  condition: always()
 
 - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
   parameters:

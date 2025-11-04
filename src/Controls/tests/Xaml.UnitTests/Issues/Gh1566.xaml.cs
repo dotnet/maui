@@ -1,31 +1,20 @@
-using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh1566
 {
-	public partial class Gh1566
+	public Gh1566() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Gh1566()
+		[Test]
+		public void ObsoletePropsDoNotThrow([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Gh1566(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void ObsoletePropsDoNotThrow(bool useCompiledXaml)
-			{
-				var layout = new Gh1566(useCompiledXaml);
-				Assert.That(layout.frame.BorderColor, Is.EqualTo(Colors.Red));
-			}
+			var layout = new Gh1566(inflator);
+			Assert.That(layout.frame.BorderColor, Is.EqualTo(Colors.Red));
 		}
 	}
 }

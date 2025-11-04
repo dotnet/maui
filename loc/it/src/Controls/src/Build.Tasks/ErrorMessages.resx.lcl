@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The name of the BindableProperty {0} does not end with "Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Il nome dell'elemento BindableProperty {0} non termina con "Property".]]></Val>
+            <Val><![CDATA[Il nome di BindableProperty {0} non termina con "Property".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[EventHandler "{0}" with correct signature not found in type "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nel tipo "{1}" non è stato trovato alcun elemento EventHandler "{0}" con la firma corretta.]]></Val>
+            <Val><![CDATA[Non è stato trovato alcun elemento EventHandler "{0}" con la firma corretta nel tipo "{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[In "{1}" manca la proprietà obbligatoria "{0}".]]></Val>
+            <Val><![CDATA[Proprietà obbligatoria "{0}" mancante in "{1}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resource "{0}" not found.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La risorsa "{0}" non è stata trovata.]]></Val>
+            <Val><![CDATA[Risorsa "{0}" non trovata.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Undeclared xmlns prefix "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Il prefisso xmlns "{0}" non è dichiarato.]]></Val>
+            <Val><![CDATA[Prefisso xmlns non dichiarato "{0}".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

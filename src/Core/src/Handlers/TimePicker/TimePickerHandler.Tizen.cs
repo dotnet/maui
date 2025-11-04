@@ -52,6 +52,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateCharacterSpacing(timePicker);
 		}
 
+		[MissingMapper]
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker) { }
+
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{
 			if (e.Touch.GetState(0) != Tizen.NUI.PointStateType.Up)

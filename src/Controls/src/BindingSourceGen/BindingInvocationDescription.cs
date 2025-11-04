@@ -4,15 +4,16 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public sealed record BindingInvocationDescription(
-	InterceptableLocationRecord InterceptableLocation,
-	SimpleLocation SimpleLocation,
+	InterceptableLocationRecord? InterceptableLocation,
+	SimpleLocation? SimpleLocation,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
 	EquatableArray<IPathPart> Path,
 	SetterOptions SetterOptions,
 	bool NullableContextEnabled,
-	InterceptedMethodType MethodType);
-
+	InterceptedMethodType MethodType,
+	bool IsPublic = true,
+	bool RequiresAllUnsafeGetters = false);
 
 public sealed record InterceptableLocationRecord(int Version, string Data);
 

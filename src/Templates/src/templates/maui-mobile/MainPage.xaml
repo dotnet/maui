@@ -11,7 +11,7 @@
                 Source="dotnet_bot.png"
                 HeightRequest="185"
                 Aspect="AspectFit"
-                SemanticProperties.Description="dot net bot in a hovercraft number nine" />
+                SemanticProperties.Description="dot net bot in a submarine number ten" />
 
             <Label
                 Text="Hello, World!"

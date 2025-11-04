@@ -1,9 +1,9 @@
-#nullable disable
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Controls
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.RowDefinitionCollectionTypeConverter")]
 	public class RowDefinitionCollectionTypeConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value as string ?? value?.ToString()
 				?? throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(RowDefinitionCollection)));
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			var definitions = new List<RowDefinition>(count);
 			foreach (var range in unsplit.Split(','))
 			{
-				var length = GridLengthTypeConverter.ParseStringToGridLength(unsplit[range]);
+				var length = Converters.GridLengthTypeConverter.ParseStringToGridLength(unsplit[range]);
 				definitions.Add(new RowDefinition(length));
 			}
 #else
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 			var definitions = new List<RowDefinition>(count);
 			foreach (var lengthStr in lengths)
 			{
-				var length = GridLengthTypeConverter.ParseStringToGridLength(lengthStr);
+				var length = Converters.GridLengthTypeConverter.ParseStringToGridLength(lengthStr);
 				definitions.Add(new RowDefinition(length));
 			}
 #endif
@@ -50,8 +50,7 @@ namespace Microsoft.Maui.Controls
 			return new RowDefinitionCollection(definitions, copy: false);
 		}
 
-
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not RowDefinitionCollection definitions)
 				throw new NotSupportedException();
@@ -62,7 +61,7 @@ namespace Microsoft.Maui.Controls
 			if (count == 0)
 				return string.Empty;
 			if (count == 1)
-				return GridLengthTypeConverter.ConvertToString(definitions[0].Height);
+				return Converters.GridLengthTypeConverter.ConvertToString(definitions[0].Height);
 
 			// for multiple items
 			var pool = ArrayPool<string>.Shared;
@@ -70,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < definitions.Count; i++)
 			{
 				var definition = definitions[i];
-				rentedArray[i] = GridLengthTypeConverter.ConvertToString(definition.Height);
+				rentedArray[i] = Converters.GridLengthTypeConverter.ConvertToString(definition.Height);
 			}
 			var result = string.Join(", ", rentedArray, 0, definitions.Count);
 			pool.Return(rentedArray);

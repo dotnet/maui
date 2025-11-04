@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Platform
 
 				if (animated)
 				{
-					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, null);
+					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, () => { });
 				}
 				else
 				{
@@ -645,7 +645,7 @@ namespace Microsoft.Maui.Platform
 							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
 							break;
 					}
-				}, null);
+				}, () => { });
 			}
 		}
 

@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<EventArgs> Focused;
 		public event EventHandler<EventArgs> Unfocused;
 
+		internal event EventHandler<EventArgs> ShowSoftInputRequested;
+		internal event EventHandler<EventArgs> HideSoftInputRequested;
+
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
 
@@ -82,6 +85,16 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
+		}
+
+		public void ShowSoftInputAsync()
+		{
+			ShowSoftInputRequested?.Invoke(this, new EventArgs());
+		}
+
+		public void HideSoftInputAsync()
+		{
+			HideSoftInputRequested?.Invoke(this, new EventArgs());
 		}
 
 		protected virtual void OnFocused()
@@ -178,7 +191,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='CancelButtonColor']/Docs/*" />
 		public Color CancelButtonColor

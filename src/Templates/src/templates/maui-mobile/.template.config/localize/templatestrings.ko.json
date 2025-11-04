@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI 앱",
-  "description": "iOS, Android, Mac Catalyst, WinUI 및 Tizen용 .NET MAUI 애플리케이션을 만들기 위한 프로젝트",
+  "description": "iOS, Android, Mac Catalyst 및 WinUI용 .NET MAUI 애플리케이션을 만들기 위한 프로젝트",
   "postActions/openInEditor/description": "편집기에서 MainPage.xaml을 엽니다.",
   "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행",

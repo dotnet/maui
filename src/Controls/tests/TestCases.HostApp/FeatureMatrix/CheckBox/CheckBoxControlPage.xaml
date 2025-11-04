@@ -7,18 +7,20 @@
              Title="CheckBoxFeature">
 
         <Grid Padding="20"
-              RowDefinitions="*, Auto, Auto, Auto"
+              RowDefinitions="*, Auto, Auto, Auto, Auto"
               ColumnDefinitions="0.5*, 0.5*"
               RowSpacing="10">
                 <!-- CheckBox Control -->
 
                 <CheckBox IsChecked="{Binding IsChecked}"
                           Color="{Binding Color}"
-                                Grid.ColumnSpan="2"
+                          Grid.ColumnSpan="2"
                           HorizontalOptions="Center"
                           VerticalOptions="Center"
                           IsEnabled="{Binding IsEnabled}"
                           IsVisible="{Binding IsVisible}"
+                          Command="{Binding CheckBoxCommand}"
+                          CommandParameter="{Binding CommandParameter}"
                           CheckedChanged="OnCheckBoxCheckedChanged"
                           AutomationId="CheckBoxControl"/>
 
@@ -57,10 +59,28 @@
                        AutomationId="CheckedChangedStatusLabel"
                        Margin="0,0,10,10"/>
 
+                <!-- Command Status -->
+                <Label Grid.Row="3"
+                       Grid.Column="0"
+                       FontSize="16"
+                       Text="Command Status:"
+                       IsVisible="{Binding IsCommandStatusLabelVisible}"
+                       VerticalTextAlignment="Start"
+                       HorizontalTextAlignment="Start"
+                       Margin="80,0,10,10"/>
+                <Label Grid.Row="3"
+                       Grid.Column="1"
+                       Text="{Binding CommandStatus}"
+                       FontSize="16"
+                       VerticalTextAlignment="Start"
+                       HorizontalTextAlignment="Start"
+                       AutomationId="CommandStatusLabel"
+                       Margin="0,0,10,10"/>
+
                 <StackLayout Spacing="10"
                              Padding="10"
-                             Grid.Row="3"
-                                Grid.ColumnSpan="2">
+                             Grid.Row="4"
+                             Grid.ColumnSpan="2">
 
                         <Label Text="CheckBox Properties"
                                FontAttributes="Bold"
@@ -92,11 +112,21 @@
                                 </StackLayout>
                         </StackLayout>
 
+                        <!-- Command Parameter -->
+                        <StackLayout Orientation="Horizontal">
+                                <Label Text="Command Parameter"
+                                       FontAttributes="Bold"
+                                       Margin="0,15,0,0"/>
+                                <Entry Text="{Binding CommandParameter}"
+                                       Placeholder="Enter command parameter"
+                                       AutomationId="CommandParameterEntry"/>
+                        </StackLayout>
+
                         <!-- Color -->
 
                         <Grid ColumnDefinitions="*,0.3*,0.3*,0.3*"
                               ColumnSpacing="15"
-                                        HorizontalOptions="Start">
+                              HorizontalOptions="Start">
                                 <Label Text="Color"
                                        FontAttributes="Bold"
                                        VerticalOptions="Center"/>

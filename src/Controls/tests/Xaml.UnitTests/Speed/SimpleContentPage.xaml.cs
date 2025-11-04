@@ -1,82 +1,66 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class SimpleContentPageCode : ContentPage
 {
-	public class SimpleContentPageCode : ContentPage
+	public SimpleContentPageCode()
 	{
-		public SimpleContentPageCode()
+		Content = new Label
 		{
-			Content = new Label
-			{
-				Text = "Hello, Microsoft.Maui.Controls!",
-				VerticalOptions = LayoutOptions.CenterAndExpand,
-				HorizontalOptions = LayoutOptions.CenterAndExpand
-			};
-		}
-
-		public SimpleContentPageCode(bool useCompiledXaml) : this()
-		{
-		}
+			Text = "Hello, Microsoft.Maui.Controls!",
+			VerticalOptions = LayoutOptions.CenterAndExpand,
+			HorizontalOptions = LayoutOptions.CenterAndExpand
+		};
 	}
-	public partial class SimpleContentPage : ContentPage
+}
+
+public partial class SimpleContentPage : ContentPage
+{
+	public SimpleContentPage() => InitializeComponent();
+
+	[TestFixture]
+	public class Tests
 	{
-		public SimpleContentPage()
+		[Test]
+		[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]
+		public void XamlCIs20TimesFasterThanXaml()
 		{
-			InitializeComponent();
+			var swXamlC = new Stopwatch();
+			var swXaml = new Stopwatch();
+
+			swXamlC.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPage(XamlInflator.XamlC);
+			swXamlC.Stop();
+
+			swXaml.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPage(XamlInflator.Runtime);
+			swXaml.Stop();
+
+			Assert.Less(swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
 		}
 
-		public SimpleContentPage(bool useCompiledXaml)
+		[Test]
+		[Ignore(nameof(XamlCIsNotMuchSlowerThanCode))]
+		public void XamlCIsNotMuchSlowerThanCode()
 		{
-			//this stub will be replaced at compile time
-		}
+			var swXamlC = new Stopwatch();
+			var swCode = new Stopwatch();
 
-		[TestFixture]
-		public class Tests
-		{
-			[Test]
-			[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]
-			public void XamlCIs20TimesFasterThanXaml()
-			{
-				var swXamlC = new Stopwatch();
-				var swXaml = new Stopwatch();
+			swXamlC.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPage(XamlInflator.XamlC);
+			swXamlC.Stop();
 
-				swXamlC.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage(true);
-				swXamlC.Stop();
+			swCode.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPageCode();
+			swCode.Stop();
 
-				swXaml.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage(false);
-				swXaml.Stop();
-
-				Assert.Less(swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
-			}
-
-			[Test]
-			[Ignore(nameof(XamlCIsNotMuchSlowerThanCode))]
-			public void XamlCIsNotMuchSlowerThanCode()
-			{
-				var swXamlC = new Stopwatch();
-				var swCode = new Stopwatch();
-
-				swXamlC.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage(true);
-				swXamlC.Stop();
-
-				swCode.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPageCode(false);
-				swCode.Stop();
-
-				Assert.LessOrEqual(swXamlC.ElapsedMilliseconds * .2, swCode.ElapsedMilliseconds);
-			}
+			Assert.LessOrEqual(swXamlC.ElapsedMilliseconds * .2, swCode.ElapsedMilliseconds);
 		}
 	}
 }

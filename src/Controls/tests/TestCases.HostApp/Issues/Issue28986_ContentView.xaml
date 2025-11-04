@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986_ContentView"
+             Title="SafeArea ContentView Test"
+             SafeAreaEdges="None">
+
+    <!-- ContentView with SafeAreaEdges property -->
+    <ContentView x:Name="TestContentView"
+                 SafeAreaEdges="Default"
+                 BackgroundColor="LightGreen">
+        <ScrollView SafeAreaEdges="None"
+                    AutomationId="ContentViewContent"
+                    x:Name="ContentViewContent">
+            <StackLayout Spacing="20"
+                         Padding="20">
+                <Label Text="SafeArea ContentView Test"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="This ContentView has SafeAreaEdges='All' and should extend behind system UI areas. The red background shows areas outside safe area."
+                       FontSize="14"
+                       HorizontalOptions="Center"/>
+
+                <Label x:Name="CurrentSettingsLabel"
+                       Text="Current ContentView SafeAreaEdges: All"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       AutomationId="CurrentSettings"/>
+
+                <!-- Control panel for ContentView SafeAreaEdges -->
+                <Border BackgroundColor="White"
+                        Stroke="Gray"
+                        StrokeThickness="2"
+                        Padding="15">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="ContentView SafeAreaEdges Control:"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Top -->
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="1"
+                                         Orientation="Horizontal"
+                                         HorizontalOptions="Center">
+                                <Label Text="Top:"
+                                       VerticalOptions="Center"/>
+                                <Picker x:Name="TopPicker"
+                                        SelectedIndex="0"
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="TopPicker">
+                                    <Picker.Items>
+                                        <x:String>None</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>Container</x:String>
+                                        <x:String>Default</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+
+                            <!-- Left and Right -->
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="0"
+                                         Orientation="Horizontal"
+                                         HorizontalOptions="Center">
+                                <Label Text="Left:"
+                                       VerticalOptions="Center"/>
+                                <Picker x:Name="LeftPicker"
+                                        SelectedIndex="0"
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="LeftPicker">
+                                    <Picker.Items>
+                                        <x:String>None</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>Container</x:String>
+                                        <x:String>Default</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="2"
+                                         Orientation="Horizontal"
+                                         HorizontalOptions="Center">
+                                <Label Text="Right:"
+                                       VerticalOptions="Center"/>
+                                <Picker x:Name="RightPicker"
+                                        SelectedIndex="0"
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="RightPicker">
+                                    <Picker.Items>
+                                        <x:String>None</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>Container</x:String>
+                                        <x:String>Default</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+
+                            <!-- Bottom -->
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="1"
+                                         Orientation="Horizontal"
+                                         HorizontalOptions="Center">
+                                <Label Text="Bottom:"
+                                       VerticalOptions="Center"/>
+                                <Picker x:Name="BottomPicker"
+                                        SelectedIndex="0"
+                                        SelectedIndexChanged="OnEdgePickerChanged"
+                                        AutomationId="BottomPicker">
+                                    <Picker.Items>
+                                        <x:String>None</x:String>
+                                        <x:String>SoftInput</x:String>
+                                        <x:String>Container</x:String>
+                                        <x:String>Default</x:String>
+                                        <x:String>All</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </StackLayout>
+
+                            <!-- SoftInput test area -->
+                            <StackLayout Grid.Row="3"
+                                         Grid.Column="0"
+                                         Grid.ColumnSpan="3"
+                                         Orientation="Horizontal"
+                                         HorizontalOptions="Center">
+                                <Label Text="SoftInput Test:"
+                                       VerticalOptions="Center"/>
+                                <Entry x:Name="SoftInputTestEntry"
+                                       Placeholder="Tap to show keyboard"
+                                       WidthRequest="200"
+                                       AutomationId="SoftInputTestEntry"/>
+                            </StackLayout>
+                        </Grid>
+
+                        <Button Text="Reset All to Default"
+                                Clicked="OnResetDefaultClicked"
+                                AutomationId="ResetDefaultButton"/>
+                        <Button Text="Reset All to None"
+                                Clicked="OnResetNoneClicked"
+                                AutomationId="ResetNoneButton"/>
+                        <Button Text="Reset All to All"
+                                Clicked="OnResetAllClicked"
+                                AutomationId="ResetAllButton"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Sample content -->
+                <Label Text="ContentView Sample Content"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Label Text="This content is inside the ContentView that has SafeAreaEdges settings."/>
+                <Label Text="The ContentView should respect the SafeAreaEdges settings on each edge."/>
+                <Label Text="Line 1"/>
+                <Label Text="Line 2"/>
+                <Label Text="Line 3"/>
+                <Label Text="Line 4"/>
+                <Label Text="Line 5"/>
+                <Label Text="Line 6"/>
+                <Label Text="Line 7"/>
+                <Label Text="Line 8"/>
+                <Label Text="Line 9"/>
+                <Label Text="Line 10"/>
+                <Label Text="End of ContentView Content"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+            </StackLayout>
+        </ScrollView>
+    </ContentView>
+</ContentPage>

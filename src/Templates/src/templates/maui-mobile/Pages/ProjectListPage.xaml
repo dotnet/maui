@@ -6,40 +6,44 @@
              xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.ProjectListPage"
-             x:DataType="pageModels:ProjectListPageModel"
              x:Name="ProjectList"
+             x:DataType="pageModels:ProjectListPageModel"
              Title="Projects">
 
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
+                x:Name="AppearingBehavior"
                 BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectList}, x:DataType=ContentPage}"
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
     <Grid>
-      <ScrollView>
-        <VerticalStackLayout 
-            BindableLayout.ItemsSource="{Binding Projects}" 
-            Margin="{StaticResource LayoutPadding}" 
-            Spacing="{StaticResource LayoutSpacing}">
-            <BindableLayout.ItemTemplate>
+        <CollectionView ItemsSource="{Binding Projects}"
+            Margin="{StaticResource LayoutPadding}"
+            x:Name="ProjectsCollectionView"
+            SelectionMode="Single"
+            SelectedItem="{Binding SelectedProject}"
+            SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}"
+            SelectionChangedCommandParameter="{Binding SelectedProject}">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="7.5"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
-                    <Border>
+                    <Border SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
                         <VerticalStackLayout Padding="10">
                             <Label Text="{Binding Name}" FontSize="24" />
                             <Label Text="{Binding Description}" />
                         </VerticalStackLayout>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}" CommandParameter="{Binding .}"/>
-                        </Border.GestureRecognizers>
                     </Border>
                 </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-      </ScrollView>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-        <controls:AddButton 
-            Command="{Binding AddProjectCommand}" />
+        <controls:AddButton
+        Command="{Binding AddProjectCommand}"
+        SemanticProperties.Description="Add project" 
+        ToolTipProperties.Text="Add project" />
     </Grid>
 </ContentPage>

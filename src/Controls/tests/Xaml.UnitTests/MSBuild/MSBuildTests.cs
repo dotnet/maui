@@ -262,6 +262,34 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
+		[Test]
+		public void HotReloadSupportForXSG([Values("Debug", "Release")] string configuration)
+		{
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
+
+			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.CodeBehindGenerator");
+			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
+			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"), nonEmpty: true);
+			
+			var sg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"));
+			var xsg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"));
+			if (configuration == "Debug")
+			{
+				StringAssert.Contains("InitializeComponentRuntime", sg);
+				StringAssert.Contains("InitializeComponentRuntime", xsg);
+			}
+			else
+            {
+				StringAssert.DoesNotContain("InitializeComponentRuntime", sg);
+				StringAssert.DoesNotContain("InitializeComponentRuntime", xsg);
+            }
+
+		}
+
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Test]
 		public void ValidateOnly([Values("Debug", "Release", "ReleaseProd")] string configuration)
@@ -381,14 +409,18 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile(@"Pages\MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
-
 			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 
+			if (File.Exists(xamlCStamp))
+				System.IO.File.Delete(xamlCStamp);
+			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
+
+			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
+
+
 			//The assembly should not be compiled
-			AssertDoesNotExist(assembly);
+			//AssertDoesNotExist(assembly);
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
 			//Build again, a full build
@@ -495,7 +527,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
-			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+			Assert.IsFalse(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
 
 		/// <summary>

@@ -6,11 +6,13 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 9.0.100
+  value: 10.0.100-preview.2.25164.34
 - name: REQUIRED_XCODE
-  value: 16.3.0
+  value: 26.0.0
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 16.3.0
+  value: 26.0.0
+- name: XCODE
+  value: 26.0.1
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Localization variables
@@ -49,13 +51,17 @@ variables:
   value: false
 - name: _InternalBuildArgs
   value: ''
+- name: cfsNugetWarnLevel
+  value: warn
+- name: nugetMultiFeedWarnLevel
+  value: none
 
 # Variable groups required for all builds
 - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui'),  ne(variables['Build.DefinitionName'], 'maui-pr-devicetests')) }}:
   - group: maui-provisionator # This is just needed for the provisionator
   - group: MAUI # This is the main MAUI variable group that contains secret for the apple certificate
 
-- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   - name: internalProvisioning
     value: true
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:

@@ -9,6 +9,7 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
@@ -100,6 +101,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
+			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(root, this.Context);
 			int actionBarHeight = context.GetActionBarHeight();
 
 			var shellToolbar = new Toolbar(shellSection);

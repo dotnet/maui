@@ -10,35 +10,14 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
-		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
-
-		internal void Subscribe(Window window)
+		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext)
 		{
-			var platformWindow = window.MauiContext.GetPlatformWindow();
+			var platformWindow = mauiContext.GetPlatformWindow();
 
-			if (Subscriptions.Any(s => s.PlatformView == platformWindow))
-				return;
-
-			Subscriptions.Add(new AlertRequestHelper(window, platformWindow));
+			return new AlertRequestHelper(Window, platformWindow);
 		}
 
-		internal void Unsubscribe(Window window)
-		{
-			IMauiContext? mauiContext = window?.Handler?.MauiContext;
-			var platformWindow = mauiContext?.GetPlatformWindow();
-
-			var toRemove = platformWindow is null ?
-				Subscriptions.Where(s => s.VirtualView == window).ToList() :
-				Subscriptions.Where(s => s.PlatformView == platformWindow).ToList();
-
-			foreach (AlertRequestHelper alertRequestHelper in toRemove)
-			{
-				alertRequestHelper.Dispose();
-				Subscriptions.Remove(alertRequestHelper);
-			}
-		}
-
-		internal sealed class AlertRequestHelper : IDisposable
+		internal sealed partial class AlertRequestHelper
 		{
 			Task<bool>? CurrentAlert;
 			Task<string?>? CurrentPrompt;
@@ -47,35 +26,19 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				VirtualView = virtualView;
 				PlatformView = platformView;
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Subscribe<Page, bool>(PlatformView, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(PlatformView, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName, OnActionSheetRequested);
-#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public Window VirtualView { get; }
 
 			public UI.Xaml.Window PlatformView { get; }
 
-			public void Dispose()
-			{
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Unsubscribe<Page, bool>(PlatformView, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(PlatformView, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
-
-			void OnPageBusy(Page sender, bool enabled)
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET11.
+			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
 			}
 
-			async void OnAlertRequested(Page sender, AlertArguments arguments)
+			public async partial void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
 					return;
@@ -136,7 +99,7 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentAlert = null;
 			}
 
-			async void OnPromptRequested(Page sender, PromptArguments arguments)
+			public async partial void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
 					return;
@@ -179,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPrompt = null;
 			}
 
-			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
+			public partial void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
 					return;

@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--  
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="XamlParsingErrorMessage" xml:space="preserve">
+    <value>Wystąpił błąd podczas analizowania kodu Xaml: {0}.</value>
+    <comment>{0} is the error message</comment>
+  </data>
+  <data name="XamlParsingFailed" xml:space="preserve">
+    <value>Analizowanie kodu XAML nie powiodło się</value>
+  </data>
+  <data name="ExpressionNotClosed" xml:space="preserve">
+    <value>Wyrażenie musi kończyć się wyrazem „}”.</value>
+  </data>
+  <data name="RectConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować elementu „{0}” na wartość Rect. Oczekiwany format to „x, y, w, h”</value>
+  </data>
+  <data name="ConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na „{1}”.</value>
+  </data>
+  <data name="PointConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość Punkt. Oczekiwany format to „x, y”.</value>
+  </data>
+  <data name="ThicknessConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość Grubość. Oczekiwany format to "h, v" lub "l, t, r, b" lub "l".</value>
+  </data>
+  <data name="CornerRadiusConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość CornerRadius. Oczekiwany format to „tl, tr, bl, br” lub „l”.</value>
+  </data>
+  <data name="SymbolResolution" xml:space="preserve">
+    <value>Rozpoznawanie symboli nie powiodło się</value>
+  </data>
+  <data name="TypeResolutionMessage" xml:space="preserve">
+    <value>Nie można rozpoznać typu „{0}”.</value>
+    <comment>{0} is a xmlnamespace and typename</comment>
+  </data>
+  <data name="DuplicateTypeError" xml:space="preserve">
+    <value>Znaleziono wiele typów dla „{0}”.</value>
+  </data>
+  <data name="MemberResolution" xml:space="preserve">
+    <value>Nie znaleziono właściwości z ułatwieniami dostępu, właściwości BindableProperty ani zdarzenia dla elementu „{0}” lub niezgodności typu między wartością i właściwością.</value>
+    <comment>{0} is a property name</comment>
+  </data>
+  <data name="EasingConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość Rozmycie. Oczekiwana wartość to „Linear”, „SinOut”, „SinIn”, „SinInOut”, „CubicIn”, „CubicInOut”, „BounceOut”, „BounceIn”, „SpringIn” lub „SpringOut”.</value>
+  </data>
+  <data name="FlexBasisConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość FlexBasis, Oczekiwane wartości to „Auto” lub „n%”, „n”, gdzie n jest wartością liczbową.</value>
+  </data>
+  <data name="FlowDirectionConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość FlowDirection, Oczekiwane wartości to „rtl”, „ltr”, „inherit”, „MatchParent”, „LeftToRight” lub „RightToLeft”.</value>
+  </data>
+  <data name="GridLengthConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość GridLength. Oczekiwane wartości to „*”, „n*”, „Auto” lub „n”, gdzie n jest wartością liczbową.</value>
+  </data>
+  <data name="ListStringConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość Lista&lt;ciąg&gt;. Oczekiwany format to „x, y, z”.</value>
+  </data>
+  <data name="StrokeShapeConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość Kształt (lub element podrzędny).</value>
+  </data>
+  <data name="ColumnDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na wartość ColumnDefinitionCollection. Oczekiwane wartości to „*”, „n*”, „Auto” lub „n” (lub kombinacja tych oddzielonych przecinkami), gdzie n jest wartością liczbową.</value>
+  </data>
+  <data name="RowDefinitionCollectionConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na kolekcję RowDefinitionCollection. Oczekiwane wartości to „*”, „n*”, „Auto” lub „n” (lub kombinacja tych oddzielonych przecinkami), gdzie n jest wartością liczbową.</value>
+  </data>
+  <data name="LayoutOptionsConversionFailed" xml:space="preserve">
+    <value>Nie można przekonwertować wartości „{0}” na LayoutOptions, oczekiwane wartości to „Start”, „Center, „End” lub „Fill”.</value>
+  </data>
+  <data name="MethodResolution" xml:space="preserve">
+    <value>Nie znaleziono metody dla „{0}”.</value>
+    <comment>0 is a method or ctor name</comment>
+  </data>
+  <data name="DuplicateKeyInRD" xml:space="preserve">
+    <value>zduplikowany klucz w słowniku zasobów</value>
+  </data>
+  <data name="ConversionFailedTitle" xml:space="preserve">
+    <value>Konwersja nie powiodła się</value>
+    <comment>
+</comment>
+  </data>
+  <data name="RequiredPropertyTitle" xml:space="preserve">
+    <value>Use of 'required'</value>
+    <comment>/</comment>
+  </data>
+  <data name="RequiredPropertyMessage" xml:space="preserve">
+    <value>{0} has the 'required' keyword. Support for this in XAML is limited at the moment, avoid using it. We're still doing a best effort to provide a value.</value>
+    <comment>0 is a property identifier</comment>
+  </data>
+</root>
