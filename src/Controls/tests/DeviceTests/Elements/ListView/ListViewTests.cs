@@ -184,6 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Test uses string binding path to validate behavior; trimming safety not under test.")]
 		public async Task EntryCellBindingCorrectlyUpdates()
 		{
 			SetupBuilder();
@@ -394,6 +395,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact("Cells Repopulate After Null ItemsSource")]
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Test uses string binding path to validate behavior; trimming safety not under test.")]
 		public async Task CellsRepopulateAfterNullItemsSource()
 		{
 			SetupBuilder();

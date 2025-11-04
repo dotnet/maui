@@ -87,6 +87,8 @@ namespace Microsoft.Maui.Controls.Xaml
 #pragma warning disable CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
 		[ModuleInitializer]
 #pragma warning restore CA2255
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload only path; runtime XAML loading optional in trimmed apps.")]
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Hot reload only path; dynamic code optional.")]
 		internal static void Init()
 		{
 			// This code will be trimmed in production builds
