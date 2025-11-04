@@ -309,6 +309,7 @@ dotnet format analyzers Microsoft.Maui.sln
 - [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
 - [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
 - [RTL Testing Guide](../docs/RTL-Testing-Guide.md) - Comprehensive guide for RTL (Right-to-Left) testing and development
+- [Instrumentation Guide](/.github/instructions/instrumentation.instructions.md) - Patterns for instrumenting MAUI code for debugging and testing
 - [Development Guide](/.github/DEVELOPMENT.md)
 - [Development Tips](/docs/DevelopmentTips.md)
 - [Contributing Guidelines](/.github/CONTRIBUTING.md)
