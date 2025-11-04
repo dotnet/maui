@@ -6,7 +6,6 @@ namespace Maui.Controls.Sample;
 
 public class ShellViewModel : INotifyPropertyChanged
 {
-
     private FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
     private FlyoutHeaderBehavior _flyoutHeaderBehavior = FlyoutHeaderBehavior.Default;
     private ScrollMode _flyoutVerticalScrollMode = ScrollMode.Enabled;
@@ -15,20 +14,22 @@ public class ShellViewModel : INotifyPropertyChanged
     private double _flyoutHeight = -1;
     private Color _flyoutBackgroundColor;
     private Aspect _flyoutBackgroundImageAspect = Aspect.AspectFill;
-    private string _flyoutIcon ;
+    private string _flyoutIcon;
     private string _flyoutBackgroundImage;
     private object _flyoutHeader;
     private object _flyoutFooter;
     private DataTemplate _flyoutHeaderTemplate;
     private DataTemplate _flyoutFooterTemplate;
+    private object _flyoutContent;
+    private DataTemplate _flyoutContentTemplate;
     private FlyoutDisplayOptions _flyoutDisplayOptions = FlyoutDisplayOptions.AsSingleItem;
     private bool _flyoutItemIsVisible = true;
     private string _selectedFlyoutTemplate;
     private Brush _flyoutBackdrop = Brush.Default;
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private bool _isEnabled = true;
-    private DataTemplate _flyoutItemTemplate;
- 
+    private DataTemplate _itemTemplate;
+
     public FlyoutDisplayOptions FlyoutDisplayOptions
     {
         get => _flyoutDisplayOptions;
@@ -63,6 +64,16 @@ public class ShellViewModel : INotifyPropertyChanged
     {
         get => _flyoutFooterTemplate;
         set { _flyoutFooterTemplate = value; OnPropertyChanged(); }
+    }
+    public object FlyoutContent
+    {
+        get => _flyoutContent;
+        set { _flyoutContent = value; OnPropertyChanged(); }
+    }
+    public DataTemplate FlyoutContentTemplate
+    {
+        get => _flyoutContentTemplate;
+        set { _flyoutContentTemplate = value; OnPropertyChanged(); }
     }
     public FlyoutBehavior FlyoutBehavior
     {
@@ -126,10 +137,10 @@ public class ShellViewModel : INotifyPropertyChanged
             }
         }
     }
-    public DataTemplate FlyoutItemTemplate
+    public DataTemplate ItemTemplate
     {
-        get => _flyoutItemTemplate;
-        set { _flyoutItemTemplate = value; OnPropertyChanged(); }
+        get => _itemTemplate;
+        set { _itemTemplate = value; OnPropertyChanged(); }
     }
 
     private DataTemplate _menuItemTemplate;
@@ -144,75 +155,34 @@ public class ShellViewModel : INotifyPropertyChanged
         get => _flowDirection;
         set { _flowDirection = value; OnPropertyChanged(); }
     }
-
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set { _isEnabled = value; OnPropertyChanged(); }
-    }
-
     private string _currentItemTitle = "Home";
     public string CurrentItemTitle
     {
         get => _currentItemTitle;
         set { _currentItemTitle = value; OnPropertyChanged(); }
     }
-
     public ShellViewModel()
     {
-        FlyoutItemTemplate = new DataTemplate(() =>
+        ItemTemplate = new DataTemplate(() =>
         {
-            var grid = new Grid 
-            { 
-                Padding = new Thickness(10),
-                Margin = new Thickness(5, 2),  
-            };
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            
             var label = new Label
             {
-                VerticalOptions = LayoutOptions.Center,
-                HorizontalOptions = LayoutOptions.Center,  
-                TextColor = Colors.DarkBlue,
-                FontSize = 16,
-
+                Padding = new Thickness(10),
             };
             label.SetBinding(Label.TextProperty, "Title");
-            grid.Children.Add(label);
-            Grid.SetColumn(label, 0);
-            Grid.SetRow(label, 0);
-            return grid;
+            return label;
         });
 
         MenuItemTemplate = new DataTemplate(() =>
         {
-            var grid = new Grid 
-            { 
+            var label = new Label
+            {
                 Padding = new Thickness(10),
-                Margin = new Thickness(5, 2),  
-                
-                BackgroundColor = Colors.Transparent
-            };
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            
-            var label = new Label 
-            { 
-                VerticalOptions = LayoutOptions.Center, 
-                HorizontalOptions = LayoutOptions.Center,
-                TextColor = Colors.DarkRed,
-                FontSize = 16,
-                
             };
             label.SetBinding(Label.TextProperty, "Text");
-            grid.Children.Add(label);
-            Grid.SetColumn(label, 0);
-            Grid.SetRow(label, 0);
-            return grid;
+            return label;
         });
     }
-
     public event PropertyChangedEventHandler PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string name = "")
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

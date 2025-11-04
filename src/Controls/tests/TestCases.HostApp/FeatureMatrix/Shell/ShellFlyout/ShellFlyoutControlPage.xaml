@@ -8,20 +8,32 @@
     FlyoutWidth="{Binding FlyoutWidth}"
     FlyoutHeight="{Binding FlyoutHeight}"
     FlyoutIcon="{Binding FlyoutIcon}"
+    FlyoutIsPresented="{Binding FlyoutIsPresented}"
+    FlyoutBehavior="{Binding FlyoutBehavior, Mode=TwoWay}"
+    FlyoutHeader="{Binding FlyoutHeader, Mode=TwoWay}"
+    FlyoutFooter="{Binding FlyoutFooter, Mode=TwoWay}"
+    FlyoutHeaderTemplate="{Binding FlyoutHeaderTemplate, Mode=TwoWay}"
+    FlyoutFooterTemplate="{Binding FlyoutFooterTemplate, Mode=TwoWay}"
+    FlyoutContent="{Binding FlyoutContent, Mode=TwoWay}"
+    FlyoutContentTemplate="{Binding FlyoutContentTemplate, Mode=TwoWay}"
+    FlyoutBackgroundColor="{Binding FlyoutBackgroundColor, Mode=TwoWay}"
+    FlyoutBackgroundImage="{Binding FlyoutBackgroundImage, Mode=TwoWay}"
+    FlyoutBackgroundImageAspect="{Binding FlyoutBackgroundImageAspect, Mode=TwoWay}"
+    FlyoutHeaderBehavior="{Binding FlyoutHeaderBehavior, Mode=TwoWay}"
     FlyoutBackdrop="{Binding FlyoutBackdrop}"
     FlyoutVerticalScrollMode="{Binding FlyoutVerticalScrollMode}"
-    ItemTemplate="{Binding FlyoutItemTemplate}"
-    MenuItemTemplate="{Binding MenuItemTemplate}"
+    ItemTemplate="{Binding ItemTemplate, Mode=TwoWay}"
+    MenuItemTemplate="{Binding MenuItemTemplate,Mode=TwoWay}"
     FlowDirection="{Binding FlowDirection}"
-    IsEnabled="{Binding IsEnabled}"
     AutomationId="ShellFlyout">
     <FlyoutItem
         x:Name="HomeFlyoutItem"
         Title="FlyoutItems"
-        AutomationId="HomeFlyoutItem"
-        FlyoutItemIsVisible="{Binding FlyoutItemIsVisible}">
+        AutomationId="FlyoutItems"
+        FlyoutItemIsVisible="{Binding FlyoutItemIsVisible,Mode=TwoWay}"
+        FlyoutDisplayOptions="{Binding FlyoutDisplayOptions,Mode=TwoWay}">
         <ShellContent Title="Home"
-                AutomationId="Home">
+                      AutomationId="Home">
             <ContentPage AutomationId="HomeContentPage">
                 <ContentPage.ToolbarItems>
                     <ToolbarItem AutomationId="Options"
@@ -41,12 +53,13 @@
                            TextColor="Gray"
                            HorizontalOptions="Center"
                            AutomationId="HomeCurrentItemLabel"/>
+
                 </VerticalStackLayout>
             </ContentPage>
         </ShellContent>
 
         <ShellContent Title="Reports"
-                AutomationId="Reports">
+                      AutomationId="Reports">
             <ContentPage AutomationId="ReportsContentPage">
                 <VerticalStackLayout Padding="20">
                     <Label Text="This is Reports page content."
