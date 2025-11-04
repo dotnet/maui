@@ -3,7 +3,7 @@
   "name": ".NET MAUI для .NET Aspire Service Defaults",
   "description": "Шаблон проекта для создания проекта с параметрами по умолчанию службы .NET Aspire для .NET MAUI.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Целевое значение DOTNET_TFM_VALUE",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
