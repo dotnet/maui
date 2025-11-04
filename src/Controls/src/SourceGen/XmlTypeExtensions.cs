@@ -80,6 +80,21 @@ static class XmlTypeExtensions
 		return false;
 	}
 
+	public static string? GetClrNamespace(this string namespaceuri)
+	{
+		if (namespaceuri == XamlParser.X2009Uri)
+			return "System";
+
+		if (namespaceuri != XamlParser.X2006Uri &&
+			!namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) &&
+			!namespaceuri.StartsWith("using:", StringComparison.InvariantCulture))
+		{
+			return null;
+		}
+
+		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
+	}
+
 	public static bool RepresentsType(this XmlType xmlType, string namespaceUri, string name)
 		=> xmlType.Name == name && xmlType.NamespaceUri == namespaceUri;
 }

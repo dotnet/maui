@@ -286,24 +286,6 @@ $"""
 		return true;
 	}
 
-
-	static string? GetClrNamespace(string namespaceuri)
-	{
-		if (namespaceuri == XamlParser.X2009Uri)
-		{
-			return "System";
-		}
-
-		if (namespaceuri != XamlParser.X2006Uri &&
-			!namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) &&
-			!namespaceuri.StartsWith("using:", StringComparison.InvariantCulture))
-		{
-			return null;
-		}
-
-		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
-	}
-
 	static void GenerateCssCodeBehind(ProjectItem projItem, SourceProductionContext sourceProductionContext)
 	{
 		var sb = new StringBuilder();
