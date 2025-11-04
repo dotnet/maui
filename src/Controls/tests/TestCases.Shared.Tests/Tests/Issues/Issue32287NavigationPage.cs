@@ -32,6 +32,8 @@ public class Issue32287NavigationPage : _IssuesUITest
 		VerifyScreenshot();
 	}
 
+	// Rotation tests are only supported on iOS and Android.
+	// Windows and MacCatalyst do not support SetOrientationLandscape/SetOrientationPortrait methods.
 #if ANDROID && IOS
 	[Test]
 	[Category(UITestCategories.Navigation)]
