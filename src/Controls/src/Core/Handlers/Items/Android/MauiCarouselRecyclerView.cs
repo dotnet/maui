@@ -19,12 +19,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _isVisible;
 		bool _disposed;
 		bool _isInternalPositionUpdate;
-
+		readonly float _touchSlop;
+		volatile float _initialTouchX;
+		volatile float _initialTouchY;
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
-		float _touchSlop;
-		float _initialTouchX;
-		float _initialTouchY;
 
 		protected CarouselView Carousel => ItemsView as CarouselView;
 
@@ -35,6 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_touchSlop = ViewConfiguration.Get(context).ScaledTouchSlop;
 		}
 
+		// Gets or sets a value indicating whether swipe gestures are enabled for the carousel.
 		public bool IsSwipeEnabled { get; set; }
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
