@@ -4,6 +4,7 @@ namespace Maui.Controls.Sample.Issues
 	public class IssueEntryTextChangedCrash : TestContentPage
 	{
 		private const string entryId = "TestEntry";
+		private const string emojiEntryId = "EmojiEntry";
 		private const string labelId = "TestLabel";
 
 		protected override void Init()
@@ -23,11 +24,19 @@ namespace Maui.Controls.Sample.Issues
 
 			entry.TextChanged += OnEntryTextChanged;
 
+			var emojiEntry = new Entry
+			{
+				Text = "👨‍👩‍👧‍👦",
+				AutomationId = emojiEntryId
+			};
+
+			emojiEntry.TextChanged += OnEmojiEntryTextChanged;
+
 			Content = new VerticalStackLayout
 			{
 				Padding = 20,
 				Spacing = 10,
-				Children = { label, entry }
+				Children = { label, entry, emojiEntry }
 			};
 		}
 
@@ -36,6 +45,15 @@ namespace Maui.Controls.Sample.Issues
 			if (string.IsNullOrEmpty(e.NewTextValue))
 			{
 				((Entry)sender).Text = "0";
+			}
+		}
+
+		void OnEmojiEntryTextChanged(object sender, TextChangedEventArgs e)
+		{
+			// Test with multi-codepoint emoji sequence
+			if (string.IsNullOrEmpty(e.NewTextValue))
+			{
+				((Entry)sender).Text = "👨‍👩‍👧‍👦";
 			}
 		}
 	}

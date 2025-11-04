@@ -28,7 +28,8 @@ namespace Microsoft.Maui.Platform
 
 			// Ensure the selection position doesn't exceed the actual text length
 			// to prevent crashes when text is modified by text watchers (e.g., EmojiCompat)
-			int selectionPosition = Math.Min(editText.Text?.Length ?? 0, editText.Length());
+			// Use editText.Length() as the authoritative source after text watchers have processed
+			int selectionPosition = Math.Min(entry.Text?.Length ?? 0, editText.Length());
 			editText.SetSelection(selectionPosition);
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
@@ -40,7 +41,8 @@ namespace Microsoft.Maui.Platform
 
 			// Ensure the selection position doesn't exceed the actual text length
 			// to prevent crashes when text is modified by text watchers (e.g., EmojiCompat)
-			int selectionPosition = Math.Min(editText.Text?.Length ?? 0, editText.Length());
+			// Use editText.Length() as the authoritative source after text watchers have processed
+			int selectionPosition = Math.Min(editor.Text?.Length ?? 0, editText.Length());
 			editText.SetSelection(selectionPosition);
 		}
 
