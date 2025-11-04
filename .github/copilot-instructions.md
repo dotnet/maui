@@ -1,11 +1,14 @@
 ---
 description: "Guidance for GitHub Copilot when working on the .NET MAUI repository."
-date: 2025-10-30
 ---
 
 # GitHub Copilot Development Environment Instructions
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
+
+**🔄 IMPORTANT: Synchronization with AGENTS.md**
+
+When updating this file, you MUST also update `AGENTS.md` (in repository root) to ensure both instruction files remain synchronized. AGENTS.md provides universal guidance for all AI coding assistants, while this file is specifically for GitHub Copilot.
 
 ## Repository Overview
 
@@ -21,6 +24,7 @@ This document provides specific guidance for GitHub Copilot when working on the 
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
 - **xUnit + NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
+- **Appium WebDriver** for UI test automation
 
 **🚨 CRITICAL**: Before any build operation, verify .NET SDK version:
 ```bash
@@ -136,17 +140,9 @@ dotnet cake --target=dotnet-pack
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
-#### UI Testing Guidelines
+#### UI Testing
 
-**Key reminders:**
-- UI tests require code in TWO projects: `TestCases.HostApp/Issues/` (UI page) and `TestCases.Shared.Tests/Tests/Issues/` (test implementation)
-- Avoid platform-specific directives (`#if ANDROID`, `#if IOS`, etc.) unless absolutely necessary - tests should run on all applicable platforms by default
-- When a new UI test category is added to `UITestCategories.cs`, also update `ui-tests.yml` to include the new category
-
-**For comprehensive UI testing guidance**, see:
-- [UI Testing Guide](../docs/UITesting-Guide.md) - Complete guide with prerequisites, examples, and best practices
-- [UI Testing Architecture](../docs/design/UITesting-Architecture.md) - CI/CD integration and architecture details
-- [Path-specific UI Test Instructions](instructions/uitests.instructions.md) - Detailed instructions for test files
+UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesting-Guide.md) for comprehensive documentation.
 
 ### Code Formatting
 
@@ -309,6 +305,8 @@ dotnet format analyzers Microsoft.Maui.sln
 
 ## Additional Resources
 
+- [UI Testing Guide](../docs/UITesting-Guide.md)
+- [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
 - [Development Guide](/.github/DEVELOPMENT.md)
 - [Development Tips](/docs/DevelopmentTips.md)
 - [Contributing Guidelines](/.github/CONTRIBUTING.md)
