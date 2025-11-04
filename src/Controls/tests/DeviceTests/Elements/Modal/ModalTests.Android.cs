@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Google.Android.Material.AppBar;
 using Java.Lang;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					// Find the AppBarLayout in the modal's view hierarchy
 					var platformView = flyoutPage.ToPlatform();
-					var appBarLayout = platformView?.FindViewById<Google.Android.Material.AppBar.AppBarLayout>(Resource.Id.navigationlayout_appbar);
+					var appBarLayout = platformView?.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 
 					// The AppBarLayout should be found even though it's nested in the DrawerLayout
 					Assert.NotNull(appBarLayout);
