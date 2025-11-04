@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, RouteFactory> s_routes = new(StringComparer.Ordinal);
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
-		readonly static HashSet<string> routeSet = new HashSet<string>();
+		readonly static ConcurrentDictionary<string, byte> routeSet = new ConcurrentDictionary<string, byte>();
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
@@ -243,7 +244,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
 			{
-				routeSet.Remove(route);
+				routeSet.TryRemove(route, out _);
 			}
 		}
 
@@ -259,7 +260,7 @@ namespace Microsoft.Maui.Controls
 
 			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
 			{
-				if (!routeSet.Add(route))
+				if (!routeSet.TryAdd(route, 0))
 				{
 					throw new ArgumentException($"Duplicated Route: \"{route}\" ");
 				}
