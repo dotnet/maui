@@ -355,9 +355,6 @@ dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csp
 # Boot the simulator (will error if already booted, which is fine)
 xcrun simctl boot $UDID 2>/dev/null || true
 
-# Install the app to the simulator
-xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
-
 # Verify simulator is booted
 STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
 if [ "$STATE" != "Booted" ]; then
@@ -365,6 +362,9 @@ if [ "$STATE" != "Booted" ]; then
     exit 1
 fi
 echo "Simulator is booted and ready"
+
+# Install the app to the simulator
+xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
 ```
 
 **Step 4: Run your specific test**
