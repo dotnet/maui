@@ -11,7 +11,7 @@ public class Issue32200 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	public void NavagionPageTitleViewShouldRespectMargins()
+	public void NavigationPageTitleViewShouldRespectMargins()
 	{
 		App.WaitForElement("Label");
 		VerifyScreenshot();
