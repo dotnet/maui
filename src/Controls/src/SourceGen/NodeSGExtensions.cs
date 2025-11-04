@@ -576,7 +576,7 @@ static class NodeSGExtensions
 			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
 			//it's either a value
 			if (ttnode is ValueNode { Value: string tt })
-				return XmlTypeExtensions.GetTypeSymbol(tt, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
 			//or a x:Type that we parsed earlier
 			if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
 				return typeSymbol;
@@ -604,7 +604,7 @@ static class NodeSGExtensions
 		}
 		else if (parts.Length == 2)
 		{
-			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context, node);
 			string propertyName = parts[1];
 			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
 		}
@@ -640,7 +640,7 @@ static class NodeSGExtensions
 		else
 			typeName = target.XmlType;
 
-		return typeName!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache);
+		return typeName!.GetTypeSymbol(context);
 	}
 
 	public static bool RepresentsType(this INode node, string namespaceUri, string name)

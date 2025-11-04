@@ -17,7 +17,7 @@ static class InitializeComponentCodeWriter
 
 	public static string GeneratedCodeAttribute => $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{typeof(InitializeComponentCodeWriter).Assembly.FullName}\", \"{typeof(InitializeComponentCodeWriter).Assembly.GetName().Version}\")]";
 
-	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		using (var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine })
 		{
@@ -89,7 +89,7 @@ static class InitializeComponentCodeWriter
 			{
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
-				xamlItem.Root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var baseType);
+				xamlItem.Root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 				using (newblock())
 				{

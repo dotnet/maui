@@ -34,7 +34,7 @@ internal class KnownMarkups
 		var typename = member.Substring(0, dotIdx);
 		var membername = member.Substring(dotIdx + 1);
 
-		var typeSymbol = typename.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, markupNode);
+		var typeSymbol = typename.GetTypeSymbol(context, markupNode);
 		if (typeSymbol == null)
 		{
 			//FIXME
@@ -91,7 +91,7 @@ internal class KnownMarkups
 			return null;
 		}
 
-		var typeSymbol = typeName!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, xTypeNode);
+		var typeSymbol = typeName!.GetTypeSymbol(context, xTypeNode);
 		if (typeSymbol == null)
 		{
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typeSymbol}"));
@@ -426,7 +426,7 @@ internal class KnownMarkups
 				return false;
 			}
 
-			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out INamedTypeSymbol? symbol) && symbol is not null)
+			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) && symbol is not null)
 			{
 				// TODO report the right diagnostic
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot resolve x:DataType type"));
@@ -482,7 +482,7 @@ internal class KnownMarkups
 		static bool DoesNotInheritDataType(ElementNode node, SourceGenContext context)
 		{
 			return GetParent(node) is ElementNode parentNode
-				&& parentNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out INamedTypeSymbol? parentTypeSymbol)
+				&& parentNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? parentTypeSymbol)
 				&& parentTypeSymbol is not null
 				&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
 				&& parentTypeSymbol.GetAllProperties(propertyName.LocalName, context).FirstOrDefault() is IPropertySymbol propertySymbol
