@@ -72,6 +72,44 @@ The agent supports three review modes. Analyze the user's request to determine w
 
 When testing is required, use the Sandbox app to validate PR changes:
 
+### Fetch PR Changes (Without Checking Out)
+
+**CRITICAL**: Stay on the current branch (pr-reviewer) to preserve all instruction files and context. Apply PR changes on top of the current branch instead of checking out the PR branch.
+
+```bash
+# Get the PR number from the user's request
+PR_NUMBER=XXXXX  # Replace with actual PR number
+
+# Fetch the PR into a local branch
+git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER-temp
+
+# Create a test branch from current branch (preserves instruction files)
+git checkout -b test-pr-$PR_NUMBER
+
+# Cherry-pick the PR commits onto current branch
+# Get the base commit where PR branched from
+BASE_COMMIT=$(git merge-base HEAD pr-$PR_NUMBER-temp)
+
+# Get list of commits in the PR
+git log --pretty=format:"%H" $BASE_COMMIT..pr-$PR_NUMBER-temp --reverse | while read commit; do
+    git cherry-pick $commit || {
+        echo "Cherry-pick failed. You may need to resolve conflicts or use merge instead."
+        echo "To merge instead: git merge pr-$PR_NUMBER-temp"
+        break
+    }
+done
+
+# Alternative if cherry-pick fails: use merge
+# git merge pr-$PR_NUMBER-temp -m "Test PR #$PR_NUMBER"
+```
+
+**Why this approach:**
+- ✅ Preserves all instruction files from pr-reviewer branch
+- ✅ Tests PR changes on top of latest guidelines
+- ✅ Allows custom agent to maintain proper context
+- ✅ Easy to clean up (just delete test branch)
+- ✅ Can compare before/after easily
+
 ### Setup Test Environment
 
 **iOS Testing**:
@@ -139,11 +177,40 @@ adb logcat | grep -E "(YourMarker|Frame|Console)"
 
 ### Test WITH and WITHOUT PR Changes
 
-1. **First**: Test WITHOUT PR changes (checkout main branch code for the changed file)
-2. **Capture baseline data**
-3. **Then**: Test WITH PR changes (apply the PR's changes)
-4. **Capture new data**
+1. **First**: Test WITHOUT PR changes
+   ```bash
+   # On test-pr-XXXXX branch, temporarily revert the PR commits
+   # Identify how many commits came from the PR
+   NUM_COMMITS=$(git log --oneline pr-reviewer..HEAD | wc -l)
+   
+   # Create a temporary branch at the commit before PR changes
+   git checkout -b baseline-test HEAD~$NUM_COMMITS
+   
+   # Build and test to capture baseline data
+   ```
+
+2. **Capture baseline data** (build, deploy, run with instrumentation)
+
+3. **Then**: Test WITH PR changes
+   ```bash
+   # Switch back to test branch with PR changes
+   git checkout test-pr-XXXXX
+   
+   # Build and test with PR changes
+   ```
+
+4. **Capture new data** (build, deploy, run with instrumentation)
+
 5. **Compare results** and include in review
+
+6. **Clean up test branches**
+   ```bash
+   # Return to pr-reviewer branch
+   git checkout pr-reviewer
+   
+   # Delete test branches
+   git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp
+   ```
 
 ### Include Test Results in Review
 
@@ -170,9 +237,20 @@ Format test data clearly:
 
 ### Cleanup
 
-After testing, revert all changes to Sandbox app:
+After testing, clean up all test artifacts:
+
 ```bash
+# Return to pr-reviewer branch
+git checkout pr-reviewer
+
+# Revert any changes to Sandbox app
 git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
+
+# Delete test branches
+git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp 2>/dev/null || true
+
+# Clean build artifacts if needed
+dotnet clean
 ```
 
 ## Core Responsibilities
