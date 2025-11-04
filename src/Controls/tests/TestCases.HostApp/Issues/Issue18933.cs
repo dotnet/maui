@@ -39,6 +39,13 @@ public class Issue18933 : ContentPage
 		};
 		clearBackgroundBtn.Clicked += Button_Clicked;
 
+		Button setBackgroundBtn = new Button
+		{
+			AutomationId = "setBgBtn",
+			Text = "Set ContentView Background"
+		};
+		setBackgroundBtn.Clicked += SetBackground_Clicked;
+
 		VerticalStackLayout mainLayout = new VerticalStackLayout
 		{
 			Spacing = 10,
@@ -48,15 +55,22 @@ public class Issue18933 : ContentPage
 				contentView,
 				contentViewWithBackground,
 				clearBackgroundBtn,
+				setBackgroundBtn,
 			}
 		};
 
 		Content = mainLayout;
 	}
 
-	private void Button_Clicked(object sender, EventArgs e)
+	void Button_Clicked(object sender, EventArgs e)
 	{
 		contentView.BackgroundColor = null;
 		contentViewWithBackground.Background = null;
+	}
+
+	void SetBackground_Clicked(object sender, EventArgs e)
+	{
+		contentView.BackgroundColor = Colors.Purple;
+		contentViewWithBackground.Background = Colors.Purple;
 	}
 }
