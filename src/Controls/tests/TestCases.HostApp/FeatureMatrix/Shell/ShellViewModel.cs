@@ -27,7 +27,6 @@ public class ShellViewModel : INotifyPropertyChanged
     private string _selectedFlyoutTemplate;
     private Brush _flyoutBackdrop = Brush.Default;
     private FlowDirection _flowDirection = FlowDirection.LeftToRight;
-    private bool _isEnabled = true;
     private DataTemplate _itemTemplate;
 
     public FlyoutDisplayOptions FlyoutDisplayOptions
