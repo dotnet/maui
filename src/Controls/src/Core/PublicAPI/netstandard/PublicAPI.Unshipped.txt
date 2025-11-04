@@ -2,7 +2,6 @@
 ~Microsoft.Maui.Controls.Element.transientNamescope -> Microsoft.Maui.Controls.Internals.INameScope
 Microsoft.Maui.Controls.FlexLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
-~override Microsoft.Maui.Controls.SearchBar.OnTextChanged(string oldValue, string newValue) -> void
 override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
 virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDeclarer, TPropertyType>.Invoke(TDeclarer bindable) -> TPropertyType
