@@ -10,228 +10,238 @@
                              Clicked="OnApplyClicked"
                              AutomationId="Apply"/>
         </ContentPage.ToolbarItems>
-
-        <VerticalStackLayout Padding="10,0,0,0">
-                <Label Text="Flyout Behavior"
-                       FontAttributes="Bold"
-                       TextColor="Black"
-                       FontSize="10"/>
-                <HorizontalStackLayout>
-                        <RadioButton GroupName="FlyoutBehavior"
-                                     Content="Disabled"
-                                     FontSize="10"
-                                     AutomationId="FlyoutBehaviorDisabled"
-                                     CheckedChanged="OnFlyoutBehaviorChanged"/>
-                        <RadioButton GroupName="FlyoutBehavior"
-                                     Content="Flyout"
-                                     FontSize="10"
-                                     IsChecked="True"
-                                     AutomationId="FlyoutBehaviorFlyout"
-                                     CheckedChanged="OnFlyoutBehaviorChanged"/>
-                        <RadioButton GroupName="FlyoutBehavior"
-                                     Content="Locked"
-                                     FontSize="10"
-                                     AutomationId="FlyoutBehaviorLocked"
-                                     CheckedChanged="OnFlyoutBehaviorChanged"/>
-                </HorizontalStackLayout>
-                <Label Text="Flyout Header Behavior"
-                       FontAttributes="Bold"
-                       TextColor="Black"
-                       FontSize="10"/>
-                <HorizontalStackLayout>
-                        <RadioButton GroupName="FlyoutHeaderBehavior"
-                                     Content="Default"
-                                     FontSize="10"
-                                     IsChecked="True"
-                                     AutomationId="FlyoutHeaderBehaviorDefault"
-                                     CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
-                        <RadioButton GroupName="FlyoutHeaderBehavior"
-                                     Content="Fixed"
-                                     FontSize="10"
-                                     AutomationId="FlyoutHeaderBehaviorFixed"
-                                     CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
-                        <RadioButton GroupName="FlyoutHeaderBehavior"
-                                     Content="Scroll"
-                                     FontSize="10"
-                                     AutomationId="FlyoutHeaderBehaviorScroll"
-                                     CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
-                        <RadioButton GroupName="FlyoutHeaderBehavior"
-                                     Content="CollapseOnScroll"
-                                     FontSize="10"
-                                     AutomationId="FlyoutHeaderBehaviorCollapseOnScroll"
-                                     CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
-                </HorizontalStackLayout>
-                <Grid ColumnDefinitions="*,*"
-                      ColumnSpacing="10">
+        <VerticalStackLayout>
+                <Grid ColumnDefinitions="2*,*"
+                                ColumnSpacing="9">
                         <VerticalStackLayout Grid.Column="0">
-                                <Label Text="Width:"
-                                       TextColor="Black"
+                                <Label Text="Flyout Behavior"
                                        FontAttributes="Bold"
-                                       FontSize="10"/>
-                                <Entry Placeholder="Enter width (-1 for default)"
-                                       Text="{Binding FlyoutWidth}"
-                                       AutomationId="FlyoutWidthEntry"
-                                       TextChanged="OnFlyoutWidthChanged"/>
+                                       TextColor="Black"
+                                       FontSize="9"/>
+                                <HorizontalStackLayout>
+                                        <RadioButton GroupName="FlyoutBehavior"
+                                                     Content="Flyout"
+                                                     FontSize="9"
+                                                     IsChecked="True"
+                                                     AutomationId="FlyoutBehaviorFlyout"
+                                                     CheckedChanged="OnFlyoutBehaviorChanged"/>
+                                        <RadioButton GroupName="FlyoutBehavior"
+                                                     Content="Disabled"
+                                                     FontSize="9"
+                                                     AutomationId="FlyoutBehaviorDisabled"
+                                                     CheckedChanged="OnFlyoutBehaviorChanged"/>
+                                        <RadioButton GroupName="FlyoutBehavior"
+                                                     Content="Locked"
+                                                     FontSize="9"
+                                                     AutomationId="FlyoutBehaviorLocked"
+                                                     CheckedChanged="OnFlyoutBehaviorChanged"/>
+                                </HorizontalStackLayout>
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="1">
-                                <Label Text="Height:"
-                                       TextColor="Black"
+                                <Label Text="Flow Direction"
                                        FontAttributes="Bold"
-                                       FontSize="10"/>
-                                <Entry Placeholder="Enter height (-1 for default)"
-                                       Text="{Binding FlyoutHeight}"
-                                       AutomationId="FlyoutHeightEntry"
-                                       TextChanged="OnFlyoutHeightChanged"/>
+                                       TextColor="Black"
+                                       FontSize="9"
+                                       AutomationId="FlowDirectionLabel"/>
+                                <HorizontalStackLayout>
+                                        <RadioButton x:Name="FlowDirectionLTR"
+                                                     AutomationId="FlowDirectionLTR"
+                                                     GroupName="FlowDirection"
+                                                     Content="LTR"
+                                                     IsChecked="True"
+                                                     FontSize="9"
+                                                     CheckedChanged="OnFlowDirectionChanged"/>
+                                        <RadioButton x:Name="FlowDirectionRTL"
+                                                     AutomationId="FlowDirectionRTL"
+                                                     GroupName="FlowDirection"
+                                                     Content="RTL"
+                                                     FontSize="9"
+                                                     CheckedChanged="OnFlowDirectionChanged"/>
+                                </HorizontalStackLayout>
                         </VerticalStackLayout>
                 </Grid>
-                <Label Text="Flyout Header:"
-                       FontAttributes="Bold"
-                       TextColor="Black"
-                       FontSize="10"/>
-                <HorizontalStackLayout>
-                        <RadioButton GroupName="FlyoutHeader"
-                                     Content="None"
-                                     FontSize="10"
-                                     IsChecked="True"
-                                     AutomationId="FlyoutHeaderNone"
-                                     CheckedChanged="OnFlyoutHeaderChanged"/>
-                        <RadioButton GroupName="FlyoutHeader"
-                                     Content="Header"
-                                     FontSize="10"
-                                     AutomationId="FlyoutHeader"
-                                     CheckedChanged="OnFlyoutHeaderChanged"/>
-                        <RadioButton GroupName="FlyoutHeader"
-                                     FontSize="10"
-                                     Content="HeaderTemplate"
-                                     AutomationId="FlyoutHeaderTemplate"
-                                     CheckedChanged="OnFlyoutHeaderChanged"/>
-                </HorizontalStackLayout>
-                <Label Text="Flyout Footer:"
-                       FontAttributes="Bold"
-                       TextColor="Black"
-                       FontSize="10"/>
-                <HorizontalStackLayout Spacing="10">
-                        <RadioButton GroupName="FlyoutFooter"
-                                     Content="None"
-                                     FontSize="10"
-                                     IsChecked="True"
-                                     AutomationId="FlyoutFooterNone"
-                                     CheckedChanged="OnFlyoutFooterChanged"/>
-                        <RadioButton GroupName="FlyoutFooter"
-                                     Content="Footer"
-                                     FontSize="10"
-                                     AutomationId="FlyoutFooter"
-                                     CheckedChanged="OnFlyoutFooterChanged"/>
-                        <RadioButton GroupName="FlyoutFooter"
-                                     Content="FooterTemplate"
-                                     FontSize="10"
-                                     AutomationId="FlyoutFooterTemplate"
-                                     CheckedChanged="OnFlyoutFooterChanged"/>
-                </HorizontalStackLayout>
+                <VerticalStackLayout>
+                        <Label Text="Flyout Header Behavior"
+                               FontAttributes="Bold"
+                               TextColor="Black"
+                               FontSize="9"/>
+                        <HorizontalStackLayout>
+                                <RadioButton GroupName="FlyoutHeaderBehavior"
+                                             Content="Default"
+                                             FontSize="9"
+                                             IsChecked="True"
+                                             AutomationId="FlyoutHeaderBehaviorDefault"
+                                             CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
+                                <RadioButton GroupName="FlyoutHeaderBehavior"
+                                             Content="Fixed"
+                                             FontSize="9"
+                                             AutomationId="FlyoutHeaderBehaviorFixed"
+                                             CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
+                                <RadioButton GroupName="FlyoutHeaderBehavior"
+                                             Content="Scroll"
+                                             FontSize="9"
+                                             AutomationId="FlyoutHeaderBehaviorScroll"
+                                             CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
+                                <RadioButton GroupName="FlyoutHeaderBehavior"
+                                             Content="CollapseOnScroll"
+                                             FontSize="9"
+                                             AutomationId="FlyoutHeaderBehaviorCollapseOnScroll"
+                                             CheckedChanged="OnFlyoutHeaderBehaviorChanged"/>
+                        </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                        <Label Text="Flyout Header:"
+                               FontAttributes="Bold"
+                               TextColor="Black"
+                               FontSize="9"/>
+                        <HorizontalStackLayout>
+                                <RadioButton GroupName="FlyoutHeader"
+                                             Content="None"
+                                             FontSize="9"
+                                             IsChecked="True"
+                                             AutomationId="FlyoutHeaderNone"
+                                             CheckedChanged="OnFlyoutHeaderChanged"/>
+                                <RadioButton GroupName="FlyoutHeader"
+                                             Content="Header"
+                                             FontSize="9"
+                                             AutomationId="FlyoutHeader"
+                                             CheckedChanged="OnFlyoutHeaderChanged"/>
+                                <RadioButton GroupName="FlyoutHeader"
+                                             FontSize="9"
+                                             Content="HeaderTemplate"
+                                             AutomationId="FlyoutHeaderTemplate"
+                                             CheckedChanged="OnFlyoutHeaderChanged"/>
+                        </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                        <Label Text="Flyout Footer:"
+                               FontAttributes="Bold"
+                               TextColor="Black"
+                               FontSize="9"/>
+                        <HorizontalStackLayout Spacing="9">
+                                <RadioButton GroupName="FlyoutFooter"
+                                             Content="None"
+                                             FontSize="9"
+                                             IsChecked="True"
+                                             AutomationId="FlyoutFooterNone"
+                                             CheckedChanged="OnFlyoutFooterChanged"/>
+                                <RadioButton GroupName="FlyoutFooter"
+                                             Content="Footer"
+                                             FontSize="9"
+                                             AutomationId="FlyoutFooter"
+                                             CheckedChanged="OnFlyoutFooterChanged"/>
+                                <RadioButton GroupName="FlyoutFooter"
+                                             Content="FooterTemplate"
+                                             FontSize="9"
+                                             AutomationId="FlyoutFooterTemplate"
+                                             CheckedChanged="OnFlyoutFooterChanged"/>
+                        </HorizontalStackLayout>
+                </VerticalStackLayout>
                 <Grid ColumnDefinitions="*,*"
                                 ColumnSpacing="60">
                         <VerticalStackLayout Grid.Column="0">
                                 <Label Text="Flyout Display Options:"
-                                       FontSize="10"
+                                       FontSize="9"
                                        TextColor="Black"
                                        FontAttributes="Bold"/>
                                 <HorizontalStackLayout Spacing="2">
                                         <RadioButton GroupName="DisplayOption"
                                                      Content="AsSingleItem"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      IsChecked="True"
                                                      AutomationId="FlyoutDisplayOptionsAsSingleItem"
                                                      CheckedChanged="OnDisplayOptionChanged"/>
                                         <RadioButton GroupName="DisplayOption"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      Content="AsMultipleItems"
                                                      AutomationId="FlyoutDisplayOptionsAsMultipleItems"
                                                      CheckedChanged="OnDisplayOptionChanged"/>
                                 </HorizontalStackLayout>
-
                         </VerticalStackLayout>
-
                         <VerticalStackLayout Grid.Column="1">
                                 <Label Text="FlyoutIcon"
                                        FontAttributes="Bold"
                                        TextColor="Black"
-                                       FontSize="10"/>
+                                       FontSize="9"/>
                                 <HorizontalStackLayout Spacing="2">
                                         <RadioButton GroupName="FlyoutIcon"
                                                      Content="None"
-                                                     FontSize="10"
+                                                     IsChecked="True"
+                                                     FontSize="9"
                                                      AutomationId="FlyoutIconNone"
                                                      CheckedChanged="OnFlyoutIconChanged"/>
                                         <RadioButton GroupName="FlyoutIcon"
                                                      Content="coffee"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      AutomationId="FlyoutIconCoffee"
                                                      CheckedChanged="OnFlyoutIconChanged"/>
                                 </HorizontalStackLayout>
-
                         </VerticalStackLayout>
                 </Grid>
-                <Label Text="FlyoutBackgroundImageAspect:"
-                       FontSize="10"
-                       TextColor="Black"
-                       FontAttributes="Bold"/>
-                <HorizontalStackLayout>
-                        <RadioButton GroupName="BackgroundAspect"
-                                     Content="AspectFill"
-                                     IsChecked="True"
-                                     FontSize="10"
-                                     AutomationId="FlyoutBackgroundImageAspectFill"
-                                     CheckedChanged="OnFlyoutBackgroundImageAspectChanged"/>
-                        <RadioButton GroupName="BackgroundAspect"
-                                     Content="AspectFit"
-                                     FontSize="10"
-                                     AutomationId="FlyoutBackgroundImageAspectFit"
-                                     CheckedChanged="OnFlyoutBackgroundImageAspectChanged"/>
-                        <RadioButton GroupName="BackgroundAspect"
-                                     Content="Fill"
-                                     FontSize="10"
-                                     AutomationId="FlyoutBackgroundImageFill"
-                                     CheckedChanged="OnFlyoutBackgroundImageAspectChanged"/>
-                </HorizontalStackLayout>
-                <Label Text="FlyoutVerticalScrollMode:"
-                       FontSize="10"
-                       TextColor="Black"
-                       FontAttributes="Bold"/>
-                <HorizontalStackLayout>
-                        <RadioButton GroupName="ScrollMode"
-                                     Content="Auto"
-                                     FontSize="10"
-                                     IsChecked="True"
-                                     AutomationId="FlyoutVerticalScrollModeAuto"
-                                     CheckedChanged="OnFlyoutScrollModeChanged"/>
-                        <RadioButton GroupName="ScrollMode"
-                                     Content="Enabled"
-                                     FontSize="10"
-                                     AutomationId="FlyoutVerticalScrollModeEnabled"
-                                     CheckedChanged="OnFlyoutScrollModeChanged"/>
-                        <RadioButton GroupName="ScrollMode"
-                                     Content="Disabled"
-                                     FontSize="10"
-                                     AutomationId="FlyoutVerticalScrollModeDisabled"
-                                     CheckedChanged="OnFlyoutScrollModeChanged"/>
-                </HorizontalStackLayout>
+                <VerticalStackLayout>
+                        <Label Text="FlyoutBackgroundImageAspect:"
+                               FontSize="9"
+                               TextColor="Black"
+                               FontAttributes="Bold"/>
+                        <HorizontalStackLayout>
+                                <RadioButton GroupName="BackgroundAspect"
+                                             Content="AspectFill"
+                                             IsChecked="True"
+                                             FontSize="9"
+                                             AutomationId="FlyoutBackgroundImageAspectFill"
+                                             CheckedChanged="OnFlyoutBackgroundImageAspectChanged"/>
+                                <RadioButton GroupName="BackgroundAspect"
+                                             Content="AspectFit"
+                                             FontSize="9"
+                                             AutomationId="FlyoutBackgroundImageAspectFit"
+                                             CheckedChanged="OnFlyoutBackgroundImageAspectChanged"/>
+                                <RadioButton GroupName="BackgroundAspect"
+                                             Content="Fill"
+                                             FontSize="9"
+                                             AutomationId="FlyoutBackgroundImageFill"
+                                             CheckedChanged="OnFlyoutBackgroundImageAspectChanged"/>
+                        </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                        <Label Text="FlyoutVerticalScrollMode:"
+                               FontSize="9"
+                               TextColor="Black"
+                               FontAttributes="Bold"/>
+                        <HorizontalStackLayout>
+                                <RadioButton GroupName="ScrollMode"
+                                             Content="Auto"
+                                             FontSize="9"
+                                             IsChecked="True"
+                                             AutomationId="FlyoutVerticalScrollModeAuto"
+                                             CheckedChanged="OnFlyoutScrollModeChanged"/>
+                                <RadioButton GroupName="ScrollMode"
+                                             Content="Enabled"
+                                             FontSize="9"
+                                             AutomationId="FlyoutVerticalScrollModeEnabled"
+                                             CheckedChanged="OnFlyoutScrollModeChanged"/>
+                                <RadioButton GroupName="ScrollMode"
+                                             Content="Disabled"
+                                             FontSize="9"
+                                             AutomationId="FlyoutVerticalScrollModeDisabled"
+                                             CheckedChanged="OnFlyoutScrollModeChanged"/>
+                        </HorizontalStackLayout>
+                </VerticalStackLayout>
                 <Grid ColumnDefinitions="*,*">
-
                         <VerticalStackLayout Grid.Column="0">
                                 <Label Text="Backdrop:"
                                        TextColor="Black"
                                        FontAttributes="Bold"
-                                       FontSize="10"/>
+                                       FontSize="9"/>
                                 <HorizontalStackLayout>
                                         <RadioButton GroupName="Backdrop"
                                                      Content="None"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      IsChecked="True"
                                                      AutomationId="FlyoutBackdropNone"
                                                      CheckedChanged="OnBackdropChanged"/>
                                         <RadioButton GroupName="Backdrop"
                                                      Content="Gradient"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      AutomationId="FlyoutBackdropGradient"
                                                      CheckedChanged="OnBackdropChanged"/>
                                 </HorizontalStackLayout>
@@ -241,17 +251,17 @@
                                        FontAttributes="Bold"
                                        TextColor="Black"
                                        HorizontalOptions="Center"
-                                       FontSize="10"/>
+                                       FontSize="9"/>
                                 <HorizontalStackLayout Spacing="2">
                                         <RadioButton GroupName="BackgroundImage"
                                                      Content="None"
                                                      IsChecked="True"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      AutomationId="FlyoutBackgroundNoneImage"
                                                      CheckedChanged="OnBackgroundImageChanged"/>
                                         <RadioButton GroupName="BackgroundImage"
                                                      Content="Image"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      AutomationId="FlyoutBackgroundDotnetImage"
                                                      CheckedChanged="OnBackgroundImageChanged"/>
                                 </HorizontalStackLayout>
@@ -259,77 +269,20 @@
                 </Grid>
                 <Grid ColumnDefinitions="2*,2*,2*">
                         <VerticalStackLayout Grid.Column="0">
-                                <Label Text="Flow Direction"
-                                       FontAttributes="Bold"
-                                       TextColor="Black"
-                                       FontSize="10"
-                                       AutomationId="FlowDirectionLabel"/>
-                                <HorizontalStackLayout>
-                                        <RadioButton x:Name="FlowDirectionLTR"
-                                                     AutomationId="FlowDirectionLTR"
-                                                     GroupName="FlowDirection"
-                                                     Content="LTR"
-                                                     IsChecked="True"
-                                                     FontSize="10"
-                                                     CheckedChanged="OnFlowDirectionChanged"/>
-                                        <RadioButton x:Name="FlowDirectionRTL"
-                                                     AutomationId="FlowDirectionRTL"
-                                                     GroupName="FlowDirection"
-                                                     Content="RTL"
-                                                     FontSize="10"
-                                                     CheckedChanged="OnFlowDirectionChanged"/>
-                                </HorizontalStackLayout>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="1">
-                                <Label Text="IsEnabled"
-                                       FontAttributes="Bold"
-                                       TextColor="Black"
-                                       FontSize="10"
-                                       AutomationId="IsEnabledLabel"/>
-                                <HorizontalStackLayout>
-                                        <RadioButton Content="True"
-                                                     IsChecked="True"
-                                                     GroupName="IsEnabledGroup"
-                                                     FontSize="10"
-                                                     CheckedChanged="IsEnabledRadio_CheckedChanged"
-                                                     AutomationId="IsEnabledTrue"/>
-                                        <RadioButton Content="False"
-                                                     GroupName="IsEnabledGroup"
-                                                     FontSize="10"
-                                                     CheckedChanged="IsEnabledRadio_CheckedChanged"
-                                                     AutomationId="IsEnabledFalse"/>
-                                </HorizontalStackLayout>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="2">
-                                <Label Text="BackgroundColor:"
-                                       TextColor="Black"
-                                       FontAttributes="Bold"
-                                       FontSize="10"/>
-                                <HorizontalStackLayout Spacing="5">
-                                        <RadioButton GroupName="BackgroundColor"
-                                                     Content="Blue"
-                                                     FontSize="10"
-                                                     AutomationId="FlyoutBackgroundColorBlue"
-                                                     CheckedChanged="OnBackgroundColorChanged"/>
-                                </HorizontalStackLayout>
-                        </VerticalStackLayout>
-                </Grid>
-                <Grid ColumnDefinitions="*,*">
-                        <VerticalStackLayout Grid.Column="0">
                                 <Label Text="Items Visible:"
                                        TextColor="Black"
                                        FontAttributes="Bold"
-                                       FontSize="10"/>
-                                <HorizontalStackLayout Spacing="10">
+                                       FontSize="9"/>
+                                <HorizontalStackLayout Spacing="9">
                                         <RadioButton GroupName="FlyoutItemVisible"
                                                      Content="True"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      IsChecked="True"
                                                      AutomationId="FlyoutItemVisibilityTrue"
                                                      CheckedChanged="OnFlyoutItemVisibilityChanged"/>
                                         <RadioButton GroupName="FlyoutItemVisible"
                                                      Content="False"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      AutomationId="FlyoutItemVisibilityFalse"
                                                      CheckedChanged="OnFlyoutItemVisibilityChanged"/>
                                 </HorizontalStackLayout>
@@ -338,39 +291,122 @@
                                 <Label Text="FlyoutIsPresented:"
                                        TextColor="Black"
                                        FontAttributes="Bold"
-                                       FontSize="10"/>
-                                <HorizontalStackLayout Spacing="10">
+                                       FontSize="9"/>
+                                <HorizontalStackLayout>
                                         <RadioButton Content="True"
                                                      GroupName="IsPresentedGroup"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      CheckedChanged="IsPresentedRadio_CheckedChanged"
                                                      AutomationId="IsPresentedTrue"/>
                                         <RadioButton Content="False"
                                                      IsChecked="True"
-                                                     FontSize="10"
+                                                     FontSize="9"
                                                      GroupName="IsPresentedGroup"
                                                      CheckedChanged="IsPresentedRadio_CheckedChanged"
                                                      AutomationId="IsPresentedFalse"/>
                                 </HorizontalStackLayout>
                         </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                                <Label Text="BackgroundColor:"
+                                       TextColor="Black"
+                                       FontAttributes="Bold"
+                                       FontSize="9"/>
+                                <HorizontalStackLayout Spacing="5">
+                                        <RadioButton GroupName="BackgroundColor"
+                                                     Content="Blue"
+                                                     FontSize="9"
+                                                     AutomationId="FlyoutBackgroundColorBlue"
+                                                     CheckedChanged="OnBackgroundColorChanged"/>
+                                </HorizontalStackLayout>
+                        </VerticalStackLayout>
                 </Grid>
-                <Label Text="Select Flyout Template"
-                       FontSize="10"
-                       TextColor="Black"
-                       FontAttributes="Bold"/>
-                <VerticalStackLayout Spacing="5">
-                        <HorizontalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*,*">
+                        <VerticalStackLayout Grid.Column="0">
+                                <Label Text="Width:"
+                                       TextColor="Black"
+                                       FontAttributes="Bold"
+                                       FontSize="9"/>
+                                <Entry Placeholder="Enter width (-1 for default)"
+                                       Text="{Binding FlyoutWidth}"
+                                       AutomationId="FlyoutWidthEntry"
+                                       TextChanged="OnFlyoutWidthChanged"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                                <Label Text="Height:"
+                                       TextColor="Black"
+                                       FontAttributes="Bold"
+                                       FontSize="9"/>
+                                <Entry Placeholder="Enter height (-1 for default)"
+                                       Text="{Binding FlyoutHeight}"
+                                       AutomationId="FlyoutHeightEntry"
+                                       TextChanged="OnFlyoutHeightChanged"/>
+                        </VerticalStackLayout>
+                </Grid>
+                <VerticalStackLayout>
+                        <Label Text="Select Flyout Template"
+                               FontSize="9"
+                               TextColor="Black"
+                               FontAttributes="Bold"/>
+                        <HorizontalStackLayout>
+                                <RadioButton GroupName="FlyoutTemplate"
+                                             Content="None"
+                                             FontSize="9"
+                                             IsChecked="True"
+                                             AutomationId="FlyoutTemplateNone"
+                                             CheckedChanged="OnFlyoutTemplateChanged"/>
                                 <RadioButton GroupName="FlyoutTemplate"
                                              Content="FlyoutContent"
-                                             FontSize="10"
+                                             FontSize="9"
                                              AutomationId="FlyoutTemplateFlyoutContent"
                                              CheckedChanged="OnFlyoutTemplateChanged"/>
                                 <RadioButton GroupName="FlyoutTemplate"
                                              Content="FlyoutContentTemplate"
-                                             FontSize="10"
+                                             FontSize="9"
                                              AutomationId="FlyoutTemplateFlyoutContentTemplate"
                                              CheckedChanged="OnFlyoutTemplateChanged"/>
                         </HorizontalStackLayout>
                 </VerticalStackLayout>
+                <Grid ColumnDefinitions="*,*">
+                        <VerticalStackLayout Grid.Column="0">
+                                <Label Text="MenuItemTemplate"
+                                       FontAttributes="Bold"
+                                       TextColor="Black"
+                                       FontSize="9"/>
+                                <HorizontalStackLayout>
+                                        <RadioButton x:Name="MenuItemTemplateNone"
+                                                     GroupName="MenuItemTemplate"
+                                                     Content="None"
+                                                     FontSize="9"
+                                                     AutomationId="MenuItemTemplateNone"
+                                                     CheckedChanged="OnMenuItemTemplateChanged"/>
+                                        <RadioButton x:Name="MenuItemTemplateBasic"
+                                                     GroupName="MenuItemTemplate"
+                                                     Content="Basic"
+                                                     FontSize="9"
+                                                     AutomationId="MenuItemTemplateBasic"
+                                                     CheckedChanged="OnMenuItemTemplateChanged"/>
+                                </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                                <Label Text="ItemTemplate"
+                                       FontAttributes="Bold"
+                                       TextColor="Black"
+                                       FontSize="9"/>
+                                <HorizontalStackLayout Spacing="9">
+                                        <RadioButton x:Name="ItemTemplateNone"
+                                                     GroupName="FlyoutItemTemplate"
+                                                     Content="None"
+                                                     FontSize="9"
+                                                     AutomationId="FlyoutItemTemplateNone"
+                                                     CheckedChanged="OnFlyoutItemTemplateChanged"/>
+                                        <RadioButton x:Name="ItemTemplateBasic"
+                                                     GroupName="FlyoutItemTemplate"
+                                                     Content="Basic"
+                                                     FontSize="9"
+                                                     AutomationId="ItemTemplateBasic"
+                                                     CheckedChanged="OnFlyoutItemTemplateChanged"/>
+                                </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                </Grid>
         </VerticalStackLayout>
 </ContentPage>

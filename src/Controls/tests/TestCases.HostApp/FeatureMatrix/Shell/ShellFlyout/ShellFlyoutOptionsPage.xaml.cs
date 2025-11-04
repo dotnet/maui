@@ -14,97 +14,58 @@ public partial class ShellFlyoutOptionsPage : ContentPage
         BindingContext = _viewModel;
     }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        // Reset flyout to default items when options page appears
-        ResetToDefaultItems();
-        // Clear any radio button selection since we removed "Default Items"
-        _viewModel.SelectedFlyoutTemplate = null;
-    }
-
-    private void ResetToDefaultItems()
-    {
-        if (Application.Current.MainPage is not Shell shell)
-            return;
-        // Reset to default flyout items behavior
-        shell.FlyoutContent = null;
-        shell.FlyoutContentTemplate = null;
-        // Ensure the FlyoutItems visibility is properly applied
-        foreach (var item in shell.Items.OfType<FlyoutItem>())
-        {
-            item.FlyoutItemIsVisible = _viewModel.FlyoutItemIsVisible;
-        }
-    }
     private async void OnApplyClicked(object sender, EventArgs e)
     {
-        if (Application.Current.MainPage is Shell shell)
-        {
-            // Force re-apply header/footer to Shell
-            shell.FlyoutHeader = _viewModel.FlyoutHeader;
-            shell.FlyoutHeaderTemplate = _viewModel.FlyoutHeaderTemplate;
-            shell.FlyoutFooter = _viewModel.FlyoutFooter;
-            shell.FlyoutFooterTemplate = _viewModel.FlyoutFooterTemplate;
-            shell.FlyoutBackgroundImage = _viewModel.FlyoutBackgroundImage;
-            shell.FlyoutBackgroundImageAspect = _viewModel.FlyoutBackgroundImageAspect;
-            shell.FlyoutBackgroundColor = _viewModel.FlyoutBackgroundColor;
-            shell.FlyoutHeaderBehavior = _viewModel.FlyoutHeaderBehavior;
-            shell.FlyoutIsPresented = _viewModel.FlyoutIsPresented;
-            shell.FlyoutBehavior = _viewModel.FlyoutBehavior;
-
-            foreach (var item in shell.Items.OfType<FlyoutItem>())
-            {
-                item.FlyoutDisplayOptions = _viewModel.FlyoutDisplayOptions;
-                item.FlyoutItemIsVisible = _viewModel.FlyoutItemIsVisible;
-            }
-        }
-
-        UpdateFlyoutTemplate();
         await Navigation.PopAsync();
     }
-
-    private void UpdateFlyoutTemplate()
+    private void OnFlyoutTemplateChanged(object sender, CheckedChangedEventArgs e)
     {
-        if (Application.Current.MainPage is not Shell shell)
+        if (sender is not RadioButton rb || !e.Value)
             return;
 
+        _viewModel.SelectedFlyoutTemplate = rb.Content?.ToString();
         switch (_viewModel.SelectedFlyoutTemplate)
         {
+            case "None":
+                _viewModel.FlyoutContent = null;
+                _viewModel.FlyoutContentTemplate = null;
+                break;
+
             case "FlyoutContent":
-                shell.FlyoutContent = new StackLayout
+                _viewModel.FlyoutContent = new StackLayout
                 {
                     Padding = 10,
                     Children =
-                {
-                    new Label
                     {
-                        Text = "FlyoutContent Applied",
-                        FontSize = 16,
-                        FontAttributes = FontAttributes.Bold
-                    },
-                    new Button
-                    {
-                        Text = "Close Flyout",
-                        AutomationId = "CloseFlyoutContentButton",
-                        Command = new Command(() =>
+                        new Label
                         {
-                            if (Shell.Current is { } currentShell)
-                                currentShell.FlyoutIsPresented = false;
-                        })
+                            Text = "FlyoutContent",
+                            AutomationId = "FlyoutContent",
+                            FontSize = 16,
+                            FontAttributes = FontAttributes.Bold
+                        },
+                        new Button
+                        {
+                            Text = "Close Flyout",
+                            AutomationId = "CloseFlyoutContentButton",
+                            Command = new Command(() =>
+                            {
+                                if (Shell.Current is { } currentShell)
+                                    currentShell.FlyoutIsPresented = false;
+                            })
+                        }
                     }
-                }
                 };
-
-                shell.FlyoutContentTemplate = null;
+                _viewModel.FlyoutContentTemplate = null;
                 break;
 
-
             case "FlyoutContentTemplate":
-                shell.FlyoutContentTemplate = new DataTemplate(() =>
+                _viewModel.FlyoutContentTemplate = new DataTemplate(() =>
                 {
                     var label = new Label
                     {
-                        Text = "FlyoutContentTemplate Applied",
+                        Text = "FlyoutContentTemplate",
+                        AutomationId = "FlyoutContentTemplate",
                         FontSize = 16,
                         FontAttributes = FontAttributes.Bold
                     };
@@ -126,8 +87,13 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                         Children = { label, button }
                     };
                 });
+                _viewModel.FlyoutContent = null;
+                break;
 
-                shell.FlyoutContent = null;
+            default:
+                // Reset to default when no template is selected
+                _viewModel.FlyoutContent = null;
+                _viewModel.FlyoutContentTemplate = null;
                 break;
         }
     }
@@ -197,7 +163,6 @@ public partial class ShellFlyoutOptionsPage : ContentPage
         }
     }
 
-
     private void OnBackgroundImageChanged(object sender, CheckedChangedEventArgs e)
     {
         if (_viewModel == null || !e.Value)
@@ -212,7 +177,6 @@ public partial class ShellFlyoutOptionsPage : ContentPage
             };
         }
     }
-
 
     private void OnFlyoutScrollModeChanged(object sender, CheckedChangedEventArgs e)
     {
@@ -246,17 +210,19 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                     _viewModel.FlyoutHeader = new VerticalStackLayout
                     {
                         Spacing = 5,
-                        Padding = 15,
+                        Padding = 20,
                         BackgroundColor = Colors.LightBlue,
                         Children =
                         {
                             new Label
                             {
                                 Text = "Header",
+                                AutomationId="Header",
                                 FontSize = 16,
                                 TextColor = Colors.Red,
                                 FontAttributes = FontAttributes.Bold,
                                 HorizontalOptions = LayoutOptions.Center,
+                                VerticalOptions = LayoutOptions.Center,
                             },
                         }
                     };
@@ -267,15 +233,17 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                     {
                         return new Grid
                         {
-                            Padding = 10,
-                            HeightRequest = 40,
+                            Padding = 15,
+                            HeightRequest = 60,
                             BackgroundColor = Colors.LightGrey,
                             Children =
                             {
                             new Label
                             {
                                 Text = "HeaderTemplate",
+                                AutomationId="HeaderTemplate",
                                 HorizontalOptions = LayoutOptions.Center,
+                                VerticalOptions = LayoutOptions.Center,
                                 FontAttributes = FontAttributes.Bold,
                             }
                             }
@@ -309,9 +277,11 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                             new Label
                             {
                                 Text = "Footer",
+                                AutomationId="Footer",
                                 FontSize = 16,
                                 TextColor = Colors.Red,
                                 HorizontalOptions = LayoutOptions.Center,
+                                VerticalOptions = LayoutOptions.Center,
                             },
                         }
                     };
@@ -330,6 +300,7 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                                 new Label
                                 {
                                     Text = "FooterTemplate",
+                                    AutomationId = "FooterTemplate",
                                     FontSize = 16,
                                     FontAttributes = FontAttributes.Bold,
                                     HorizontalOptions = LayoutOptions.Center,
@@ -359,8 +330,6 @@ public partial class ShellFlyoutOptionsPage : ContentPage
             };
         }
     }
-
-
     private void OnFlyoutIconChanged(object sender, CheckedChangedEventArgs e)
     {
         if (_viewModel == null || !e.Value)
@@ -403,7 +372,6 @@ public partial class ShellFlyoutOptionsPage : ContentPage
             }
         }
     }
-
     private void OnDisplayOptionChanged(object sender, CheckedChangedEventArgs e)
     {
         if (_viewModel == null || !e.Value)
@@ -418,7 +386,6 @@ public partial class ShellFlyoutOptionsPage : ContentPage
             };
         }
     }
-
     private void OnFlyoutItemVisibilityChanged(object sender, CheckedChangedEventArgs e)
     {
         if (!(sender is RadioButton rb) || !rb.IsChecked)
@@ -426,7 +393,6 @@ public partial class ShellFlyoutOptionsPage : ContentPage
 
         _viewModel.FlyoutItemIsVisible = rb.Content?.ToString() == "True";
     }
-
     private void IsPresentedRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
     {
         if (!(sender is RadioButton rb) || !rb.IsChecked)
@@ -434,24 +400,71 @@ public partial class ShellFlyoutOptionsPage : ContentPage
 
         _viewModel.FlyoutIsPresented = rb.Content?.ToString() == "True";
     }
-
-    private void OnFlyoutTemplateChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (sender is not RadioButton rb || !e.Value)
-            return;
-        // Update selected template in ViewModel
-        _viewModel.SelectedFlyoutTemplate = rb.Content?.ToString();
-    }
-
-    private void IsEnabledRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (!(sender is RadioButton rb) || !rb.IsChecked)
-            return;
-        _viewModel.IsEnabled = rb.Content?.ToString() == "True";
-    }
-
     private void OnFlowDirectionChanged(object sender, EventArgs e)
     {
-        _viewModel.FlowDirection = FlowDirectionLTR.IsChecked ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+        if (sender is RadioButton rb)
+        {
+            _viewModel.FlowDirection = rb.Content?.ToString() == "LTR" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+        }
+    }
+    private void OnFlyoutItemTemplateChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (_viewModel == null || !(sender is RadioButton rb) || !e.Value)
+            return;
+
+        switch (rb.Content?.ToString())
+        {
+            case "None":
+                _viewModel.ItemTemplate = null;
+                break;
+
+            case "Basic":
+                _viewModel.ItemTemplate = new DataTemplate(() =>
+                {
+                    var label = new Label
+                    {
+                        VerticalOptions = LayoutOptions.Center,
+                        HorizontalOptions = LayoutOptions.Start,
+                        FontAttributes = FontAttributes.Bold,
+                        TextColor = Colors.DarkBlue,
+                        FontSize = 16,
+                        Padding = new Thickness(15, 10),
+                        Margin = new Thickness(5, 2)
+                    };
+                    label.SetBinding(Label.TextProperty, "Title");
+                    return label;
+                });
+                break;
+        }
+    }
+    private void OnMenuItemTemplateChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (_viewModel == null || !(sender is RadioButton rb) || !e.Value)
+            return;
+
+        switch (rb.Content?.ToString())
+        {
+            case "None":
+                _viewModel.MenuItemTemplate = null;
+                break;
+
+            case "Basic":
+                _viewModel.MenuItemTemplate = new DataTemplate(() =>
+                {
+                    var label = new Label
+                    {
+                        VerticalOptions = LayoutOptions.Center,
+                        HorizontalOptions = LayoutOptions.Start,
+                        FontAttributes = FontAttributes.Bold,
+                        TextColor = Colors.DarkRed,
+                        FontSize = 16,
+                        Padding = new Thickness(15, 10),
+                        Margin = new Thickness(5, 2)
+                    };
+                    label.SetBinding(Label.TextProperty, "Text");
+                    return label;
+                });
+                break;
+        }
     }
 }
