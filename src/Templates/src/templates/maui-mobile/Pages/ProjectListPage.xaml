@@ -42,6 +42,8 @@
         </CollectionView>
 
         <controls:AddButton
-        Command="{Binding AddProjectCommand}" />
+        Command="{Binding AddProjectCommand}"
+        SemanticProperties.Description="Add project" 
+        ToolTipProperties.Text="Add project" />
     </Grid>
 </ContentPage>
