@@ -356,6 +356,14 @@ Review the code changes for:
 - Check naming conventions and formatting
 - Ensure no unnecessary comments or commented-out code
 
+**Security:**
+- **No hardcoded secrets**: Check for API keys, passwords, tokens, or connection strings
+- **No external endpoints in tests**: Tests should not make real network calls to external services
+- **Proper input validation**: Verify user input is validated and sanitized
+- **Secure data handling**: Check for proper encryption of sensitive data
+- **Dependency security**: Verify no known vulnerable dependencies are introduced
+- **Platform permissions**: Ensure platform-specific permissions are properly requested and documented
+
 ### 3. Test Coverage Review
 
 Verify appropriate test coverage based on change type. See `.github/instructions/uitests.instructions.md` for comprehensive UI testing requirements.
@@ -498,7 +506,12 @@ Before approving a PR, verify:
 - Break review into logical sections
 - Focus on architecture and design first
 - Request clarification on unclear aspects
-- Suggest splitting into smaller PRs if needed
+- Suggest splitting into smaller PRs if needed:
+  - **Separate refactoring from bug fixes**: Refactors should be in separate PRs to keep fixes reviewable and revertable
+  - **Split unrelated documentation updates**: Large documentation changes should be separate from code changes
+  - **Separate new features from fixes**: Don't combine new features with bug fixes in the same PR
+  - **Split multi-platform changes**: If changes affect multiple platforms independently, consider separate PRs per platform
+  - **Break up large API additions**: New APIs with extensive implementation should be split into manageable chunks
 - Engage other reviewers for specialized areas
 
 ### For Bot/Automated PRs
