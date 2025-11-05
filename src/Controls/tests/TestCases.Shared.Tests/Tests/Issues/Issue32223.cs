@@ -11,12 +11,30 @@ public class Issue32223 : _IssuesUITest
 	}
 	public override string Issue => "[Android] CollectionView items do not reorder correctly when using an item DataTemplateSelector";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
-	public void CanReorderWithItemDataTemplateSelector()
+	public void CanReorderWithItemDataTemplateSelector_1()
 	{
 		App.WaitForElement("ReorderableCollectionView");
 		App.DragAndDrop("David", "Charlie");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.CollectionView)]
+	public void CanReorderWithItemDataTemplateSelector_2()
+	{
+		App.WaitForElement("ReorderableCollectionView");
+		App.DragAndDrop("David", "Alice");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.CollectionView)]
+	public void CanReorderWithItemDataTemplateSelector_3()
+	{
+		App.WaitForElement("ReorderableCollectionView");
+		App.DragAndDrop("Charlie", "Alice");
 		VerifyScreenshot();
 	}
 }
