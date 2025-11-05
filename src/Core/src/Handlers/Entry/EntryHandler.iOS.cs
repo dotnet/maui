@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -136,11 +137,14 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingChanged += OnEditingChanged;
 				platformView.EditingDidEnd += OnEditingEnded;
 				platformView.TextPropertySet += OnTextPropertySet;
-#if IOS26_0_OR_GREATER
-				platformView.ShouldChangeCharactersInRanges += ShouldChangeCharactersInRanges;
-#else
-				platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
-#endif
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					platformView.ShouldChangeCharactersInRanges += ShouldChangeCharactersInRanges;
+				}
+				else
+				{
+					platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+				}
 			}
 
 			public void Disconnect(MauiTextField platformView)
@@ -152,11 +156,14 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingChanged -= OnEditingChanged;
 				platformView.EditingDidEnd -= OnEditingEnded;
 				platformView.TextPropertySet -= OnTextPropertySet;
-#if IOS26_0_OR_GREATER
-				platformView.ShouldChangeCharactersInRanges -= ShouldChangeCharactersInRanges;
-#else
-				platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
-#endif
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					platformView.ShouldChangeCharactersInRanges -= ShouldChangeCharactersInRanges;
+				}
+				else
+				{
+					platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
+				}
 
 				if (_set)
 					platformView.SelectionChanged -= OnSelectionChanged;
@@ -221,18 +228,35 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-#if IOS26_0_OR_GREATER
 			bool ShouldChangeCharactersInRanges(UITextField textField, NSValue[] ranges, string replacementString)
 			{
-				if (ranges is { Length: > 0 })
-					return VirtualView?.TextWithinMaxLength(textField.Text, ranges[0].RangeValue, replacementString) ?? false;
+				if (ranges == null || ranges.Length == 0)
+					return true;
 
-				return true;
+				var currentText = textField.Text ?? string.Empty;
+
+				// Apply all range replacements to calculate final text
+				// Process in reverse order to avoid index shifting issues
+				var sortedRanges = ranges.Select(r => r.RangeValue)
+										 .OrderByDescending(r => r.Location)
+										 .ToArray();
+
+				foreach (var range in sortedRanges)
+				{
+					// Validate range bounds
+					if (range.Location + range.Length > currentText.Length)
+						return false;
+
+					currentText = currentText.Remove((int)range.Location, (int)range.Length)
+											 .Insert((int)range.Location, replacementString);
+				}
+
+				// Check if final text is within MaxLength
+				return VirtualView?.MaxLength < 0 || currentText.Length <= VirtualView?.MaxLength;
 			}
-#else
+
 			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
 				VirtualView?.TextWithinMaxLength(textField.Text, range, replacementString) ?? false;
-#endif
 
 			void OnSelectionChanged(object? sender, EventArgs e)
 			{
