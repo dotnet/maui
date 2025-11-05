@@ -22,7 +22,7 @@ public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 		var workingDirectory = Environment.CurrentDirectory;
 		var xamlFile = new AdditionalXamlFile(Path.Combine(workingDirectory, path ?? "Test.xaml"), xaml, RelativePath: path ?? "Test.xaml", TargetFramework: targetFramework, NoWarn: noWarn, ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml", Lineinfo: lineinfo);
-		var result = RunGenerator<CodeBehindGenerator>(compilation, xamlFile);
+		var result = RunGenerator<XamlGenerator>(compilation, xamlFile);
 		var generated = result.Results.SingleOrDefault().GeneratedSources.SingleOrDefault(gs => gs.HintName.EndsWith(".xsg.cs")).SourceText?.ToString();
 
 		return (result, generated);

@@ -99,6 +99,7 @@ public static class SourceGeneratorDriver
 				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
 				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
 				MetadataReference.CreateFromFile(typeof(Thickness).Assembly.Location),					//Core
+				MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView).Assembly.Location), //Xaml.dll
 			};
 		}
 		return MauiReferences;

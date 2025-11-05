@@ -141,6 +141,6 @@ public partial class TestPage
 		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
 		Assert.False(result.Diagnostics.Any());
 
-		TestAssertions.AssertEqualIgnoringLineEndings(expected, generated);
+		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
 }
