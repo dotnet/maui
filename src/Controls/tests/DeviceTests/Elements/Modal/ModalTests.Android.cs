@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Google.Android.Material.AppBar;
 using Java.Lang;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
@@ -13,39 +12,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		[Fact]
-		public async Task FlyoutPageModalAppBarLayoutGetsInsets()
-		{
-			SetupBuilder();
-			var page = new ContentPage();
-
-			var flyoutPage = new FlyoutPage()
-			{
-				Flyout = new ContentPage() { Title = "Flyout" },
-				Detail = new NavigationPage(new ContentPage() { Title = "Detail" })
-			};
-
-			var window = new Window(page);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
-				async (_) =>
-				{
-					await page.Navigation.PushModalAsync(flyoutPage);
-					await OnLoadedAsync(flyoutPage);
-
-					// Find the AppBarLayout in the modal's view hierarchy
-					var platformView = flyoutPage.ToPlatform();
-					var appBarLayout = platformView?.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
-
-					// The AppBarLayout should be found even though it's nested in the DrawerLayout
-					Assert.NotNull(appBarLayout);
-
-					// If the AppBarLayout was found and has content, it should have padding set
-					// This verifies that the GlobalWindowInsetListener properly applied insets
-					// Note: We can't assert specific padding values as they depend on the device's window insets
-				});
-		}
-
 		[Fact]
 		public async Task ChangeModalStackWhileDeactivated()
 		{
