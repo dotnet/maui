@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			UpdateMoreCellsEnabled();
 		}
-		
+
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
@@ -459,11 +459,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
+				if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
+				{
+					TabBar.Alpha = 1.0f;
+					TabBar.Hidden = !ShellItemController.ShowTabs;
+				}
+
 				if (TabBarHidden == !ShellItemController.ShowTabs)
 				{
 					return;
 				}
-	   
+
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else
