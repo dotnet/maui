@@ -371,7 +371,8 @@ view.SizeChanged += async (s, e) =>
 ❌ **Don't**: Use arbitrary delays without SizeChanged
 ```csharp
 // Bad: Guessing when layout completes
-Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () => { /* Unreliable */ });
+await Task.Delay(500); // Unreliable: may not match actual layout timing
+// Measure here (may be inaccurate)
 ```
 
 **Why use SizeChanged:** It fires when the view changes, ensuring you measure at the right time. The `Task.Delay(1)` ensures the platform arrange completes.
