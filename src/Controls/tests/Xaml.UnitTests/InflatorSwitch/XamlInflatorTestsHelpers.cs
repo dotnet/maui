@@ -39,7 +39,7 @@ public class XamlInflatorTestsHelpers
 #endif
 		if ((inflator & XamlInflator.SourceGen) == XamlInflator.SourceGen)
 #if DEBUG
-			Assert.AreEqual(267, instructions.Length, "Method body should be 267 bytes long");
+			Assert.AreEqual(394, instructions.Length, "Method body should be 394 bytes long");
 #else
 			Assert.AreEqual(196, instructions.Length, "Method body should be 196 bytes long");
 #endif
@@ -71,7 +71,7 @@ public class XamlInflatorTestsHelpers
 				var sourcegen = type.GetMethod("InitializeComponentSourceGen", BindingFlags.Instance | BindingFlags.NonPublic);
 				Assert.IsNotNull(sourcegen, $"{type.Name} should have InitializeComponentSourceGen method");
 #if DEBUG
-				Assert.AreEqual(267, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 267 bytes long");
+				Assert.AreEqual(394, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 394 bytes long");
 #else
 				Assert.AreEqual(196, sourcegen.GetMethodBody().GetILAsByteArray().Length, "Method body should be 196 bytes long");
 #endif

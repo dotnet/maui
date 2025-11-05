@@ -46,7 +46,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		{
 			warningsToIgnore = new string[]
 			{
-				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
+				"NU1608", // https://github.com/CommunityToolkit/Maui/issues/2921
 			};
 		}
 

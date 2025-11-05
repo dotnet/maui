@@ -1,13 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.get -> Microsoft.Maui.Graphics.Color
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.get -> string
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.get -> string
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
-*REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
-*REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
-Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
-~Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(string dataType) -> void
-~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(object rootObject) -> void
