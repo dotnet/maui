@@ -56,7 +56,9 @@ static class NamingHelpers
 		lock (lastIdForContext)
 		{
 			if (!lastIdForContext.TryGetValue(baseName, out lastId))
+			{
 				lastId = 0;
+			}
 
 			lastIdForContext[baseName] = lastId + 1;
 		}
