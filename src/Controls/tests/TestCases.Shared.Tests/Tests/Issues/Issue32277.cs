@@ -27,7 +27,7 @@ public class Issue32277 : _IssuesUITest
 		// Verify the detail page is visible and properly positioned
 		// If the AppBarLayout insets are not applied correctly, the navigation bar
 		// would render behind system UI elements
-		App.WaitForElement("DetailLabel", "Detail page should be visible with proper insets");
+		VerifyScreenshot();
 	}
 }
 #endif
