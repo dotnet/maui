@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "Button Icon has Correct Position"), Category(TestCategory.Layout)]
+		[Theory(DisplayName = "Button Icon has Correct Position")]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Left)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Top)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Right)]

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
 
-[Category("Image")]
+[Category(TestCategory.Image)]
 public class ImageLoadingServiceTests
 {
 	[Fact]
