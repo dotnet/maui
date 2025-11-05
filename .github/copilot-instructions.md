@@ -308,6 +308,7 @@ dotnet format analyzers Microsoft.Maui.sln
 - [UI Testing Guide](../docs/UITesting-Guide.md)
 - [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
 - [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
+- [SafeArea Testing Guide](/.github/instructions/safearea-testing.instructions.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
 - [Instrumentation Guide](/.github/instructions/instrumentation.instructions.md) - Patterns for instrumenting MAUI code for debugging and testing
 - [Development Guide](/.github/DEVELOPMENT.md)
 - [Development Tips](/docs/DevelopmentTips.md)

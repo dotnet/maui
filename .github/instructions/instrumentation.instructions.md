@@ -463,6 +463,7 @@ view.SizeChanged += async (s, e) =>
 
 ## Related Documentation
 
+- `.github/instructions/safearea-testing.instructions.md` - **Specialized guide for SafeArea testing** (measure children, not parents)
 - `docs/DevelopmentTips.md` - General development tips including Sandbox usage
 - `docs/UITesting-Guide.md` - UI testing patterns
 - `.github/instructions/uitests.instructions.md` - UI test creation guidelines
