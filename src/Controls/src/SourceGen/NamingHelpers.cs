@@ -52,7 +52,12 @@ static class NamingHelpers
 	{
 		baseName = CamelCase(baseName, lowFirst);
 		var lastIdForContext = context.lastIdForName;
-		var lastId = lastIdForContext.AddOrUpdate(baseName, 0, (key, oldValue) => oldValue + 1);
+		// GetOrAdd initializes with 0, then AddOrUpdate increments atomically
+		var lastId = lastIdForContext.AddOrUpdate(
+			baseName,
+			addValueFactory: _ => 1,  // First time: store 1, but we return 0 below
+			updateValueFactory: (_, oldValue) => oldValue + 1  // Subsequent times: increment and return old value
+		) - 1;  // Subtract 1 to get the value before increment
 		return lastId == 0 && SyntaxFacts.GetKeywordKind(baseName) == SyntaxKind.None ? baseName : $"{baseName}{lastId}";
 	}
 
