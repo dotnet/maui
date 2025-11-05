@@ -131,14 +131,6 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
 
-- name: TestTargetFrameworks
-  type: object
-  default:
-  - name: default
-    tfm: default
-  - name: net9
-    tfm: net9.0
-
 resources:
   repositories:
   - repository: yaml-templates
