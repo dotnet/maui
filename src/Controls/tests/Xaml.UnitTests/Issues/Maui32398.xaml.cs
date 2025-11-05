@@ -31,10 +31,10 @@ public partial class Maui32398 : ContentPage
 
 		[Test]
 		public void NonStaticBP([Values] XamlInflator inflator)
-        {
+		{
 			var page = new Maui32398(inflator);
 			Assert.AreEqual("foo", page.NonStatic);
 			Assert.AreNotEqual("foo", page.GetValue(page.NonStaticProperty));
-        }
+		}
 	}
 }
