@@ -15,9 +15,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		internal bool IsDataTemplateSelector()
+		internal bool CanReorderBetweenItemsView(int viewholderViewType, int targetViewType)
 		{
-			return ItemsView.ItemTemplate is DataTemplateSelector;
+			// When a data template selector is used, collection view items should be reordered between items only.
+			if (_viewTypeDataTemplates.ContainsKey(viewholderViewType) && _viewTypeDataTemplates.ContainsKey(targetViewType))
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		public bool OnItemMove(int fromPosition, int toPosition)
