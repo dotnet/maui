@@ -52,10 +52,6 @@ variables:
 
 parameters:
 
-- name: BuildEverything
-  type: boolean
-  default: false
-
 - name: windowsPool
   type: object
   default:
