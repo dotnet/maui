@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override int ItemCount => ItemsSource.Count;
 
-		System.Collections.Generic.Dictionary<int, DataTemplate> _viewTypeDataTemplates = new();
+		internal System.Collections.Generic.Dictionary<int, DataTemplate> _viewTypeDataTemplates = new();
 
 		public override int GetItemViewType(int position)
 		{
