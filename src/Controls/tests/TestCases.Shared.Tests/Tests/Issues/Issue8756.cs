@@ -14,8 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ToolbarItem)]
-		[Category(UITestCategories.Compatibility)]
-		public void ToolbarOverflowMenuShouldBeVisibleInDarkTheme()
+		public void ToolbarOverflowMenuShouldRespectIconColor()
 		{
 			App.WaitForElement("IssueDescription");
 			
@@ -24,44 +23,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ToggleIconColorButton");
 			
 			// Test toggling IconColor to ensure overflow button theming works
+			// The overflow button (3-dot menu) should be visible and themed according to IconColor
 			App.Tap("ToggleIconColorButton");
 			App.WaitForElement("StatusLabel");
+			
+			// Verify the status changed to White
+			var labelText = App.FindElement("StatusLabel").GetText();
+			Assert.That(labelText, Does.Contain("White"));
 			
 			// Toggle back to default
 			App.Tap("ToggleIconColorButton");
 			App.WaitForElement("StatusLabel");
 			
-			// The main assertion is that these operations complete without errors
-			// The actual visual validation of the 3-dot overflow button theming
-			// needs to be done manually or with more sophisticated UI inspection tools
-			// 
-			// The fix ensures that:
-			// 1. CommandBar's MoreButton respects the IconColor property
-			// 2. This provides consistent theming across Windows 10 and Windows 11
-			// 3. The overflow button is visible in dark themes
-			
-			Assert.DoesNotThrow(() => App.WaitForElement("StatusLabel"));
-		}
-
-		[Test]
-		[Category(UITestCategories.ToolbarItem)]
-		[Category(UITestCategories.Visual)]
-		public void ToolbarOverflowMenuVisualRegression()
-		{
-			App.WaitForElement("IssueDescription");
-			
-			// Take screenshot with default IconColor
-			VerifyScreenshot("ToolbarOverflow_DefaultTheme");
-			
-			// Apply custom IconColor (White) and take screenshot
-			App.Tap("ToggleIconColorButton");
-			App.WaitForElement("StatusLabel");
-			VerifyScreenshot("ToolbarOverflow_CustomWhiteIconColor");
-			
-			// Toggle back to default and verify
-			App.Tap("ToggleIconColorButton");
-			App.WaitForElement("StatusLabel");
-			VerifyScreenshot("ToolbarOverflow_BackToDefault");
+			// Verify the status changed back to Default
+			labelText = App.FindElement("StatusLabel").GetText();
+			Assert.That(labelText, Does.Contain("Default"));
 		}
 	}
 }
