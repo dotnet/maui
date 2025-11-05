@@ -62,20 +62,6 @@ internal static class SafeAreaExtensions
             var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
             var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
-            if (isKeyboardShowing &&
-                context.GetActivity()?.Window is Window window &&
-                window?.Attributes is WindowManagerLayoutParams attr)
-            {
-                // If the window is panned from the keyboard being open
-                // and there isn't a bottom inset to apply then just don't touch anything
-                var softInputMode = attr.SoftInputMode;
-                if (softInputMode == SoftInput.AdjustPan
-                    && bottom == 0
-                )
-                {
-                    return WindowInsetsCompat.Consumed;
-                }
-            }
 
             var globalWindowInsetsListener = context.GetGlobalWindowInsetListener();
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
@@ -237,7 +223,7 @@ internal static class SafeAreaExtensions
         }
         else
         {
-            newWindowInsets = windowInsets;            
+            newWindowInsets = windowInsets;
         }
 
         // Fallback: return the base safe area for legacy views
@@ -248,27 +234,28 @@ internal static class SafeAreaExtensions
     {
         // Edge-to-edge content - no safe area padding
         if (safeAreaRegion == SafeAreaRegions.None)
-        {
             return 0;
+
+        // Handle SoftInput specifically for bottom edge when keyboard is showing
+        if (edge == 3 && SafeAreaEdges.IsSoftInput(safeAreaRegion))
+        {
+            return HandleSoftInputRegion(safeAreaRegion, originalSafeArea, isKeyboardShowing, keyBoardInsets);
         }
 
-        // Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
-        if (isKeyboardShowing && edge == 3)
-        {
-            if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-                return keyBoardInsets.Bottom;
-
-            // if they keyboard is showing then we will just return 0 for the bottom inset
-            // because that part of the view is covered by the keyboard so we don't want to pad the view
-            return 0;
-        }
-
-        // All other regions respect safe area in some form
-        // This includes:
-        // - Default: Platform default behavior
-        // - All: Obey all safe area insets  
-        // - Container: Content flows under keyboard but stays out of bars/notch
-        // - Any combination of the above flags
+        // All other regions respect safe area (Default, All, Container, etc.)
         return originalSafeArea;
+    }
+
+    static double HandleSoftInputRegion(SafeAreaRegions safeAreaRegion, double originalSafeArea, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
+    {
+        if (!isKeyboardShowing)
+        {
+            // When keyboard is hidden, only apply safe area for "All" regions
+            return safeAreaRegion == SafeAreaRegions.All ? originalSafeArea : 0;
+        }
+
+        // When keyboard is showing, use the larger of keyboard inset or original safe area
+        var keyboardInset = keyBoardInsets.Bottom;
+        return Math.Max(keyboardInset, originalSafeArea);
     }
 }
