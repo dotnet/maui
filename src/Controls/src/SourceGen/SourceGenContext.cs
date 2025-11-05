@@ -1,5 +1,6 @@
 using System;
 using System.CodeDom.Compiler;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.CodeAnalysis;
@@ -23,7 +24,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
-	
+
 	public IndentedTextWriter? RefStructWriter { get; set; }
 
 	public Compilation Compilation => compilation;
@@ -43,7 +44,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public ProjectItem ProjectItem { get; } = projectItem;
 
-	public Dictionary<string, int> lastIdForName = [];
+	internal ConcurrentDictionary<string, int> lastIdForName = new();
 
 	public void AddLocalMethod(string code)
 	{

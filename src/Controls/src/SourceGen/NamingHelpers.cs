@@ -20,7 +20,7 @@ static class NamingHelpers
 	{
 		while (context.ParentContext != null)
 			context = context.ParentContext;
-			
+
 		return CreateUniqueVariableNameImpl(context, baseName, lowFirst: false);
 	}
 
@@ -52,14 +52,7 @@ static class NamingHelpers
 	{
 		baseName = CamelCase(baseName, lowFirst);
 		var lastIdForContext = context.lastIdForName;
-		var lastId = 0;
-		lock (lastIdForContext)
-		{
-			if (!lastIdForContext.TryGetValue(baseName, out lastId))
-				lastId = 0;
-
-			lastIdForContext[baseName] = lastId + 1;
-		}
+		var lastId = lastIdForContext.AddOrUpdate(baseName, 0, (key, oldValue) => oldValue + 1);
 		return lastId == 0 && SyntaxFacts.GetKeywordKind(baseName) == SyntaxKind.None ? baseName : $"{baseName}{lastId}";
 	}
 
@@ -69,7 +62,7 @@ static class NamingHelpers
 		if (string.IsNullOrEmpty(name))
 			return name;
 		name = Regex.Replace(name, "([A-Z])([A-Z]+)($|[A-Z])", m => m.Groups[1].Value + m.Groups[2].Value.ToLowerInvariant() + m.Groups[3].Value);
-		
+
 		return lowFirst ? char.ToLowerInvariant(name[0]) + name.Substring(1) : name;
 	}
 }
