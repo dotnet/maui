@@ -59,13 +59,16 @@ The agent supports three review modes. Analyze the user's request to determine w
 2. **Build the Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox`)
 3. **Modify the app** to reproduce the PR's scenario with instrumentation
 4. **Deploy to iOS/Android simulators** (iOS 26+ for iOS-specific issues)
-5. **Capture actual measurements** (frame positions, sizes, behavior)
-6. **Test with and without PR changes** to compare behavior
-7. **Test edge cases** not mentioned in the PR (see Edge Case Discovery section)
-8. **Include real data** in your review (actual frame values, console output)
-9. **Validate suggestions work** before recommending them
+5. **IF BUILD ERRORS OCCUR**: STOP and ask user for help (see "Handling Build Errors" section below)
+6. **Capture actual measurements** (frame positions, sizes, behavior)
+7. **Test with and without PR changes** to compare behavior
+8. **Test edge cases** not mentioned in the PR (see Edge Case Discovery section)
+9. **Include real data** in your review (actual frame values, console output)
+10. **Validate suggestions work** before recommending them
 
 **When to use**: Most PR reviews, especially for UI changes, layout fixes, or behavior modifications.
+
+**IMPORTANT**: If you cannot complete build/testing due to errors, do NOT provide a review. Report the build error and ask for help (see "Handling Build Errors" section).
 
 ### Deep Mode (Comprehensive Analysis)
 **Triggers**:
@@ -231,6 +234,69 @@ dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.S
 # Monitor logs
 adb logcat | grep -E "(YourMarker|Frame|Console)"
 ```
+
+### Handling Build Errors
+
+**CRITICAL: If you encounter build errors that you cannot resolve after 1-2 attempts, STOP and ask for help.**
+
+**What to do when build errors occur:**
+
+1. **First attempt**: Try to fix obvious issues:
+   - Missing using directives (e.g., `using Microsoft.Maui.Platform;`)
+   - Null check warnings (add proper null checks)
+   - Simple compilation errors
+
+2. **If error persists after 1-2 fix attempts**:
+   - ❌ **STOP building/testing immediately**
+   - ❌ **DO NOT provide a review** based on code analysis alone
+   - ❌ **DO NOT silently switch to Quick Mode**
+   - ✅ **Instead, output this message**:
+
+```markdown
+## ⚠️ Build Error - Unable to Complete Testing
+
+I encountered build errors while attempting to test this PR and was unable to resolve them after [X] attempts.
+
+### Error Details
+```
+[Paste the actual build error output]
+```
+
+### What I Tried
+- Attempt 1: [Description of first fix attempt]
+- Attempt 2: [Description of second fix attempt if applicable]
+
+### Current State
+- **Branch**: `test-pr-[NUMBER]`
+- **Modified files**: 
+  - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml`
+  - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs`
+  - [Any other files]
+- **Build command**: `dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-[platform]`
+
+I need your help to resolve this build error before I can continue with the thorough review.
+
+### Your Options
+1. **Help me fix the build error** - Provide guidance on how to resolve it so I can complete testing
+2. **Switch to Quick Mode** - Request a code-only review without testing (not recommended)
+3. **Investigate together** - Let's debug the build error and retry
+
+**How would you like to proceed?**
+```
+
+3. **Wait for user guidance** - Do not proceed until:
+   - User helps resolve the build error, OR
+   - User explicitly requests Quick Mode instead, OR  
+   - User provides alternative testing approach
+
+**What NOT to do:**
+- ❌ Don't silently switch from Thorough Mode to Quick Mode
+- ❌ Don't provide a "review" after failing to complete required testing
+- ❌ Don't make 3+ attempts to fix build errors without asking for help
+- ❌ Don't give up and write code-only analysis after promising testing
+- ❌ Don't apologize profusely and provide a long explanation - be concise and ask for help
+
+**Rationale**: If testing was required but couldn't be completed due to build errors, the review is incomplete and potentially misleading. It's better to pause and ask for help than to provide partial or incorrect results.
 
 ### Test WITH and WITHOUT PR Changes
 

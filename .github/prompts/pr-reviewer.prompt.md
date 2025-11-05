@@ -44,8 +44,8 @@ Deep review of PR #12345 including memory profiling and edge cases
 
 The agent automatically detects the mode from your prompt keywords:
 
-**Quick Mode**: Default, or use "quick", "fast", "overview"
-**Thorough Mode**: Use "test", "verify", "validate", "run", "deploy", "simulator", "device"
+**Quick Mode**: Use "quick", "fast", "code only", "skip testing"
+**Thorough Mode**: Default for PR reviews, or use "test", "verify", "validate", "run", "deploy", "simulator", "device", "thorough"
 **Deep Mode**: Use "deep", "comprehensive", "performance", "profile", "memory"
 
 ## Platform-Specific Testing
