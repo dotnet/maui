@@ -18,7 +18,7 @@ using static GeneratorHelpers;
 using static LocationHelpers;
 
 [Generator(LanguageNames.CSharp)]
-public class CodeBehindGenerator : IIncrementalGenerator
+public class XamlGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
@@ -201,6 +201,8 @@ $"""
 		}
 
 		var prefix = Path.GetDirectoryName(relativePath).Replace(Path.DirectorySeparatorChar, '_').Replace(':', '_');
+		if (!string.IsNullOrEmpty(prefix))
+			prefix += "_";
 		var fileNameNoExtension = Path.GetFileNameWithoutExtension(relativePath);
 		var kind = projectItem.Kind.ToLowerInvariant() ?? "unknown-kind";
 		return $"{prefix}{fileNameNoExtension}.{kind}.{suffix}.cs";

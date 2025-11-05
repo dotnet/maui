@@ -26,7 +26,7 @@ h1 {color: purple;
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var cssFile = new AdditionalCssFile("Test.css", css);
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, cssFile);
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, cssFile);
 
 		Assert.False(result.Diagnostics.Any());
 
@@ -54,7 +54,7 @@ h1 {color: red;
 """;
 		var cssFile = new AdditionalCssFile("Test.css", css);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, cssFile);
+		var result = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, cssFile);
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
