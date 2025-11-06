@@ -53,6 +53,8 @@ When multiple instruction files exist, follow this priority order:
 1. 📖 Read the PR description and linked issues
 2. 👀 Analyze the code changes (Quick review)
 3. 🧪 **Build and test in Sandbox app** (Thorough testing - MOST IMPORTANT)
+   - **Use Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox/`) for validation
+   - **Never use TestCases.HostApp** unless explicitly asked to write/validate UI tests
 4. 🔍 Test edge cases not mentioned by PR author
 5. 📊 Compare behavior WITH and WITHOUT the PR changes
 6. 📝 Document findings with actual measurements and evidence
@@ -130,8 +132,10 @@ Once you select a mode at the start of your review:
 
 **What to do**:
 1. Everything from Quick Mode
-2. **Build the Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox`)
-3. **Modify the app** to reproduce the PR's scenario with instrumentation
+2. ✅ **Build the Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox/`)
+   - **ALWAYS use Sandbox** for PR validation testing
+   - **NEVER use TestCases.HostApp** (takes 20+ min to build, designed for automated tests)
+3. **Modify the Sandbox app** to reproduce the PR's scenario with instrumentation
 4. **Deploy to iOS/Android simulators** (iOS 26+ for iOS-specific issues)
 5. **IF BUILD ERRORS OCCUR**: STOP and ask user for help (see "Handling Build Errors" section below)
 6. **Capture actual measurements** (frame positions, sizes, behavior)
@@ -142,7 +146,9 @@ Once you select a mode at the start of your review:
 
 **When to use**: Most PR reviews, especially for UI changes, layout fixes, or behavior modifications.
 
-**IMPORTANT**: If you cannot complete build/testing due to errors, do NOT provide a review. Report the build error and ask for help (see "Handling Build Errors" section).
+**IMPORTANT**: 
+- If you cannot complete build/testing due to errors, do NOT provide a review. Report the build error and ask for help (see "Handling Build Errors" section).
+- Use Sandbox app for validation, NOT TestCases.HostApp (unless explicitly asked to write/validate UI tests)
 
 ### Deep Mode (Comprehensive Analysis)
 **Triggers**:
@@ -203,6 +209,75 @@ Once you select a mode at the start of your review:
 ## Testing Guidelines (Thorough/Deep Modes Only)
 
 **SKIP this section if in Quick Mode**
+
+### Which App to Use for Testing
+
+**CRITICAL DISTINCTION**: There are two testing apps in the repository, and choosing the wrong one wastes significant time (20+ minutes for unnecessary builds).
+
+**🟢 Sandbox App (`src/Controls/samples/Controls.Sample.Sandbox/`) - USE THIS FOR PR VALIDATION**
+
+**When to use**:
+- ✅ **DEFAULT**: Validating PR changes and testing scenarios
+- ✅ Reproducing the issue described in the PR
+- ✅ Testing edge cases not covered by the PR author
+- ✅ Comparing behavior WITH and WITHOUT PR changes
+- ✅ Instrumenting code to capture measurements
+- ✅ Any time you're validating if a fix actually works
+- ✅ Manual testing of the PR's scenario
+
+**Why**: 
+- Builds in ~2 minutes (fast iteration)
+- Simple, empty app you can modify freely
+- Easy to instrument and capture measurements
+- Designed for quick testing and validation
+
+**🔴 TestCases.HostApp (`src/Controls/tests/TestCases.HostApp/`) - DO NOT USE FOR PR VALIDATION**
+
+**When to use**:
+- ❌ **NEVER** for validating PR changes or testing scenarios
+- ✅ **ONLY** when explicitly asked to write UI tests
+- ✅ **ONLY** when explicitly asked to validate UI tests
+- ✅ **ONLY** when running automated Appium tests via `dotnet test`
+
+**Why NOT to use for PR validation**:
+- Takes 20+ minutes to build for iOS (extremely slow)
+- Contains 100+ test pages (complex, hard to modify)
+- Designed for automated UI tests, not manual validation
+- Running automated tests is not part of PR review (that's what CI does)
+
+**Decision Tree**:
+
+```
+User asks to review PR #XXXXX
+    │
+    ├─ User explicitly says "write UI tests" or "validate the UI tests"?
+    │   └─ YES → Use TestCases.HostApp (and TestCases.Shared.Tests)
+    │
+    └─ Otherwise (normal PR review with testing)?
+        └─ Use Sandbox app for validation
+```
+
+**Examples**:
+
+✅ **Use Sandbox app**:
+- "Review PR #32372" 
+- "Validate the RTL CollectionView fix"
+- "Test this SafeArea change on iOS"
+- "Review and test this PR"
+- "Does this fix actually work?"
+- "Compare before/after behavior"
+
+❌ **Use TestCases.HostApp** (only for these explicit requests):
+- "Write UI tests for this PR"
+- "Validate the UI tests in this PR work correctly"
+- "Run the automated UI tests"
+- "Create an Issue32372.xaml test page"
+
+**Rule of Thumb**: 
+- **Validating the PR's fix** = Sandbox app (99% of reviews)
+- **Writing/validating automated tests** = TestCases.HostApp (1% of reviews, only when explicitly asked)
+
+### Using the Sandbox App for PR Validation
 
 When testing is required, use the Sandbox app to validate PR changes:
 
