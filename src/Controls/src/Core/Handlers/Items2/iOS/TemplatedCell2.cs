@@ -70,6 +70,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal UIView PlatformView { get; set; }
 
+		CollectionViewHandler2 CollectionViewHandler
+		{
+			get
+			{
+				if (PlatformHandler?.VirtualView is View view &&
+					view.Parent is ItemsView itemsView &&
+					itemsView.Handler is CollectionViewHandler2 handler)
+				{
+					return handler;
+				}
+				return null;
+			}
+		}
+
 		internal void Unbind()
 		{
 			_bound = false;
@@ -93,33 +107,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					if (ShouldUseCachedFirstItemSize(out var itemsView))
+					// Check if we should use the cached first item size for MeasureFirstItem optimization
+					var cachedSize = GetCachedFirstItemSizeFromHandler();
+					if (cachedSize != CGSize.Empty)
 					{
-						// Always get the cached first item size from the CollectionView (with template check)
-						var cached = CollectionViewMeasurementCache.GetFirstItemMeasuredSizeWithTemplateCheck(itemsView);
-						if (!cached.IsZero)
-						{
-							_measuredSize = cached;
-							// Even when we have a cached measurement for the first item (due to ItemSizingStrategy.MeasureFirstItem),
-							// we still need to call Measure on the virtualView. This is because the iOS platform's layout system
-							// relies on each cell participating in the measure lifecycle to update its internal state and bookkeeping,
-							// such as invalidating layout caches or triggering layout events.
-							// especially when templated views have explicit HeightRequest which won't arrange correctly otherwise.
-							virtualView.Measure(constraints.Width, cached.Height);
-						}
-						else
-						{
-							_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
-							// Update the cache with the new measurement for this template
-							if (_measuredSize.Width > 0 && _measuredSize.Height > 0)
-							{
-								CollectionViewMeasurementCache.SetFirstItemMeasuredSizeWithTemplate(itemsView, _measuredSize);
-							}
-						}
+						_measuredSize = cachedSize.ToSize();
+						// Even when we have a cached measurement, we still need to call Measure
+						// to update the virtual view's internal state and bookkeeping
+						virtualView.Measure(constraints.Width, _measuredSize.Height);
 					}
 					else
 					{
 						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+						// If this is the first item being measured, cache it for MeasureFirstItem strategy
+						SetCachedFirstItemSizeToHandler(_measuredSize.ToCGSize());
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
@@ -150,23 +151,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		/// <summary>
-		/// Determines whether the cached first item size should be used for measurement optimization.
+		/// Gets the cached first item size from the handler for MeasureFirstItem optimization.
 		/// </summary>
-		/// <param name="itemsView">The CollectionView if optimization should be used, null otherwise.</param>
-		/// <returns>True if cached first item size should be used, false otherwise.</returns>
-		private bool ShouldUseCachedFirstItemSize(out CollectionView itemsView)
+		private CGSize GetCachedFirstItemSizeFromHandler()
 		{
-			itemsView = null;
+			return CollectionViewHandler?.GetCachedFirstItemSize() ?? CGSize.Empty;
+		}
 
-			if (PlatformHandler?.VirtualView is View view &&
-				view.Parent is CollectionView collectionView &&
-				collectionView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
-			{
-				itemsView = collectionView;
-				return true;
-			}
-
-			return false;
+		/// <summary>
+		/// Sets the cached first item size to the handler for MeasureFirstItem optimization.
+		/// </summary>
+		private void SetCachedFirstItemSizeToHandler(CGSize size)
+		{
+			CollectionViewHandler?.SetCachedFirstItemSize(size);
 		}
 
 		public override void LayoutSubviews()
@@ -203,13 +200,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
 			View virtualView = null;
-			bool templateChanged = CurrentTemplate != template;
-
-			if (templateChanged)
+			if (CurrentTemplate != template)
 			{
 				CurrentTemplate = template;
 				virtualView = template.CreateContent(bindingContext, itemsView) as View;
-				// Template cache invalidation is now handled automatically by the cache layer
 			}
 			else if (PlatformHandler?.VirtualView is View existingView)
 			{

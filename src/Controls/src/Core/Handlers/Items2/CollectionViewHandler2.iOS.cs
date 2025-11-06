@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2
 	{
+		// Cache for MeasureFirstItem optimization
+		CoreGraphics.CGSize _firstItemMeasuredSize = CoreGraphics.CGSize.Empty;
 
 		public CollectionViewHandler2() : base(Mapper)
 		{
@@ -43,6 +45,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
 		{
 
+		}
+
+		/// <summary>
+		/// Gets the cached first item measured size for MeasureFirstItem optimization.
+		/// Returns CGSize.Empty if not cached or not using MeasureFirstItem strategy.
+		/// </summary>
+		internal CoreGraphics.CGSize GetCachedFirstItemSize()
+		{
+			if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				return _firstItemMeasuredSize;
+			}
+			return CoreGraphics.CGSize.Empty;
+		}
+
+		/// <summary>
+		/// Sets the cached first item measured size for MeasureFirstItem optimization.
+		/// </summary>
+		internal void SetCachedFirstItemSize(CoreGraphics.CGSize size)
+		{
+			if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				_firstItemMeasuredSize = size;
+			}
 		}
 
 		public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
@@ -59,6 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
 		};
 	}
 
@@ -108,6 +135,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Selectable
 		public static void MapItemsSource(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 		{
+			// Clear cache when items source changes
+			handler._firstItemMeasuredSize = CoreGraphics.CGSize.Empty;
+
 			ItemsViewHandler2<ReorderableItemsView>.MapItemsSource(handler, itemsView);
 			MapSelectedItem(handler, itemsView);
 		}
@@ -198,9 +228,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemSizingStrategy(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
+			// Clear cache when sizing strategy changes
+			handler._firstItemMeasuredSize = CoreGraphics.CGSize.Empty;
+
 			handler.UpdateLayout();
 		}
 
+		internal static void MapItemTemplate(CollectionViewHandler2 handler, ItemsView itemsView)
+		{
+			// Clear the cached first item measured size when the item template changes.
+			// A new template may have different layout, content, or styling that results in different dimensions.
+			// so we must invalidate the cache to ensure the first item with the new template gets measured properly.
+			handler._firstItemMeasuredSize = CoreGraphics.CGSize.Empty;
+
+			// Call the base implementation to handle the template change
+			ItemsViewHandler2<ReorderableItemsView>.MapItemTemplate(handler, itemsView);
+		}
 		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
 		{
 			if (itemsLayout is not null)
