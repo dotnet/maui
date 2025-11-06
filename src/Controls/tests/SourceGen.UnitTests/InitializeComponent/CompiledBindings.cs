@@ -156,16 +156,15 @@ public partial class TestPage
 				new(static source => source, "Foo"),
 				new(static source => source.Foo, "Bar"),
 				new(static source => source.Foo.Bar, "Title"),
-			})
-		{
-			Mode = mode,
-			Converter = converter,
-			ConverterParameter = converterParameter,
-			StringFormat = stringFormat,
-			Source = source,
-			FallbackValue = fallbackValue,
-			TargetNullValue = targetNullValue
-		};
+			});
+		
+		if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
+		if (converter is not null) binding.Converter = converter;
+		if (converterParameter is not null) binding.ConverterParameter = converterParameter;
+		if (stringFormat is not null) binding.StringFormat = stringFormat;
+		if (source is not null) binding.Source = source;
+		if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
+		if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
 		
 		return binding;
 	}

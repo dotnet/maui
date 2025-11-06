@@ -177,19 +177,10 @@ public static class BindingCodeWriter
 			Append("handlers: ");
 
 			AppendHandlersArray(binding);
-			AppendLine(')');
+			AppendLine(");");
 			Unindent();
-			AppendLines($$"""
-				{
-					Mode = mode,
-					Converter = converter,
-					ConverterParameter = converterParameter,
-					StringFormat = stringFormat,
-					Source = source,
-					FallbackValue = fallbackValue,
-					TargetNullValue = targetNullValue
-				};
-				""");
+			
+			AppendBindingPropertyInitializers(binding);
 
 			AppendBlankLine();
 
@@ -385,6 +376,33 @@ public static class BindingCodeWriter
 					IndexAccess indexAccess => new ConditionalAccess(indexAccess),
 					_ => part,
 				};
+			}
+		}
+
+		private void AppendBindingPropertyInitializers(BindingInvocationDescription binding)
+		{
+			// Build list of properties that need to be set (non-default values)
+			// We generate conditional runtime checks for properties that might be non-default
+			var properties = new List<string>();
+			
+			// Always check Mode - only set if not Default
+			properties.Add("if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;");
+			
+			// For nullable reference types, only set if not null
+			properties.Add("if (converter is not null) binding.Converter = converter;");
+			properties.Add("if (converterParameter is not null) binding.ConverterParameter = converterParameter;");
+			properties.Add("if (stringFormat is not null) binding.StringFormat = stringFormat;");
+			properties.Add("if (source is not null) binding.Source = source;");
+			properties.Add("if (fallbackValue is not null) binding.FallbackValue = fallbackValue;");
+			properties.Add("if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;");
+
+			if (properties.Count > 0)
+			{
+				AppendBlankLine();
+				foreach (var property in properties)
+				{
+					AppendLine(property);
+				}
 			}
 		}
 
