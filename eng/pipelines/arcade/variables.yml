@@ -51,8 +51,9 @@ variables:
     value: >-
       /p:DotNetPublishUsingPipelines=true
   - name: _OfficialBuildIdArgs
-    value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER) /p:_SkipUpdateBuildNumber=true -runtimeSourceFeed https://ci.dot.net/internal -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
-  # needed for signing
+    value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER) /p:_SkipUpdateBuildNumber=true
+    # -runtimeSourceFeed https://ci.dot.net/internal -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
+    # needed for signing
   - name: _SignType
     value: real
   - name: _SignArgs
