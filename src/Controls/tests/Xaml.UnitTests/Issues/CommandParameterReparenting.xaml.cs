@@ -15,10 +15,10 @@ public partial class CommandParameterReparenting : ContentPage
 	[TestFixture]
 	class Tests
 	{
-		[SetUp] 
+		[SetUp]
 		public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		
-		[TearDown] 
+
+		[TearDown]
 		public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Test]
@@ -31,10 +31,10 @@ public partial class CommandParameterReparenting : ContentPage
 			bool wasCalledWithNull = false;
 			object lastParameter = null;
 			int callCount = 0;
-			
+
 			var command = new Command<object>(
 				execute: (param) => { },
-				canExecute: (param) => 
+				canExecute: (param) =>
 				{
 					callCount++;
 					lastParameter = param;
@@ -51,9 +51,9 @@ public partial class CommandParameterReparenting : ContentPage
 
 			// Get the button before reparenting
 			var button = (Button)footerControl.GetTemplateChild("TestButton");
-			
+
 			// Verify initial state - the button should have the CommandParameter set
-			Assert.AreEqual("TestValue", button.CommandParameter, 
+			Assert.AreEqual("TestValue", button.CommandParameter,
 				"CommandParameter should be 'TestValue' initially");
 
 			// Now trigger the reparenting operation that causes the issue
@@ -61,7 +61,7 @@ public partial class CommandParameterReparenting : ContentPage
 
 			// Track calls during reparenting
 			int callCountBeforeReparent = callCount;
-			
+
 			// This operation triggers the timing issue: clearing and re-adding children
 			// causes bindings to be re-applied, and the async nature of relative binding
 			// can cause Command to be evaluated before CommandParameter is set
@@ -74,12 +74,12 @@ public partial class CommandParameterReparenting : ContentPage
 			int callCountDuringReparent = callCount - callCountBeforeReparent;
 
 			// The test should fail if CommandParameter was null during CanExecute evaluation
-			Assert.IsFalse(wasCalledWithNull, 
+			Assert.IsFalse(wasCalledWithNull,
 				$"Command.CanExecute was called with null parameter during reparenting. " +
 				$"Last parameter value: {lastParameter}, Calls during reparent: {callCountDuringReparent}");
 
 			// Also verify the parameter is correctly set after reparenting
-			Assert.AreEqual("TestValue", button.CommandParameter, 
+			Assert.AreEqual("TestValue", button.CommandParameter,
 				"CommandParameter should be 'TestValue' after reparenting");
 		}
 	}

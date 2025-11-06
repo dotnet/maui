@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls
 					// If we can't get the dispatcher, fall through to immediate execution
 				}
 			}
-			
+
 			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
