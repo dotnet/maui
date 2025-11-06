@@ -560,10 +560,11 @@ internal class KnownMarkups
 
 		// Get the target property type for type conversion
 		ITypeSymbol? propertyType = null;
+		IFieldSymbol? bpFieldSymbol = null;
 		if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
 		{
 			var localName = propertyName.LocalName;
-			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
+			bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
 			var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 			propertyType = typeandconverter?.type ?? propertySymbol?.Type;
@@ -572,6 +573,32 @@ internal class KnownMarkups
 		// Default to object if we can't determine property type
 		if (propertyType is null)
 			propertyType = context.Compilation.ObjectType;
+
+		// Helper to get value from node - handles both ValueNode (direct conversion) and ElementNode (via getNodeValue)
+		string? GetNodeValueString(INode? targetNode)
+		{
+			if (targetNode is null)
+				return null;
+				
+			if (targetNode is ValueNode vn)
+			{
+				// For ValueNode, convert directly using the property type
+				if (bpFieldSymbol is not null)
+					return vn.ConvertTo(bpFieldSymbol, writer, context, context.Variables.TryGetValue(node.Parent, out var pv) ? pv : null);
+				else if (propertyType is not null)
+					return vn.ConvertTo(propertyType, writer, context, context.Variables.TryGetValue(node.Parent, out var pv) ? pv : null);
+				else
+					return NodeSGExtensions.ValueForLanguagePrimitive(vn.Value as string ?? string.Empty, context.Compilation.ObjectType, context, vn);
+			}
+			else if (targetNode is ElementNode)
+			{
+				// For ElementNode, use getNodeValue to get the variable reference
+				var local = getNodeValue(targetNode, propertyType);
+				return local.ValueAccessor;
+			}
+			
+			return null;
+		}
 
 		// Extract Light, Dark, and Default values from the markup extension
 		string? lightValue = null;
@@ -583,24 +610,21 @@ internal class KnownMarkups
 			|| node.Properties.TryGetValue(new XmlName(null, "Default"), out defaultNode)
 			|| (node.CollectionItems.Count == 1 && (defaultNode = node.CollectionItems[0]) != null))
 		{
-			var defaultLocal = getNodeValue(defaultNode, propertyType);
-			defaultValue = defaultLocal.ValueAccessor;
+			defaultValue = GetNodeValueString(defaultNode);
 		}
 
 		// Check for Light property
 		if (node.Properties.TryGetValue(new XmlName("", "Light"), out INode? lightNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Light"), out lightNode))
 		{
-			var lightLocal = getNodeValue(lightNode, propertyType);
-			lightValue = lightLocal.ValueAccessor;
+			lightValue = GetNodeValueString(lightNode);
 		}
 
 		// Check for Dark property
 		if (node.Properties.TryGetValue(new XmlName("", "Dark"), out INode? darkNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Dark"), out darkNode))
 		{
-			var darkLocal = getNodeValue(darkNode, propertyType);
-			darkValue = darkLocal.ValueAccessor;
+			darkValue = GetNodeValueString(darkNode);
 		}
 
 		// At least one value must be set
@@ -649,21 +673,12 @@ internal class KnownMarkups
 		}
 
 		var resource = GetResourceNode(eNode, context, (string)keyValueNode.Value);
-		if (resource != null && getNodeValue != null)
-		{
-			var lvalue = getNodeValue(resource, context.Compilation.ObjectType);
-			value = lvalue.ValueAccessor;
-			returnType = lvalue.Type;
-			return true;
-		}
-		
 		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
 		{
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
 		}
-
 
 		//if the resource is a string, try to convert it
 		if (resource.CollectionItems.Count == 1 && resource.CollectionItems[0] is ValueNode vn && vn.Value is string)
@@ -676,6 +691,14 @@ internal class KnownMarkups
 				var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
+				var converter = typeandconverter?.converter;
+				
+				// If no converter from BP, check the property's TypeConverter attribute
+				if (converter == null && propertySymbol != null)
+				{
+					List<AttributeData> attributes = [.. propertySymbol.GetAttributes(), .. propertyType!.GetAttributes()];
+					converter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+				}
 
 				if (propertyType!.Equals(context.Compilation.GetSpecialType(SpecialType.System_String), SymbolEqualityComparer.Default))
 				{
@@ -685,7 +708,7 @@ internal class KnownMarkups
 				}
 				try
 				{
-					value = vn.ConvertTo(propertyType!, typeandconverter?.converter, writer, context, parentVar);
+					value = vn.ConvertTo(propertyType!, converter, writer, context, parentVar);
 				}
 				catch (Exception)
 				{
@@ -697,6 +720,15 @@ internal class KnownMarkups
 				returnType = propertyType;
 				return true;
 			}
+		}
+		
+		// If we get here and getNodeValue is provided, use it as fallback
+		if (getNodeValue != null)
+		{
+			var lvalue = getNodeValue(resource, context.Compilation.ObjectType);
+			value = lvalue.ValueAccessor;
+			returnType = lvalue.Type;
+			return true;
 		}
 
 		//Fallback to runtime resolution of StaticResource
