@@ -84,7 +84,7 @@ internal struct CompiledBindingMarkup
 				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
 				{
 					return Create(
-						getter: {{GenerateGetterLambda(binding.Path)}},
+						getter: {{GenerateGetterLambda(binding, targetNullValueExpression: isTemplateBinding ? null : "extension.TargetNullValue")}},
 						extension.Mode,
 						extension.Converter,
 						extension.ConverterParameter,
@@ -278,17 +278,32 @@ internal struct CompiledBindingMarkup
 		return true;
 	}
 
-	string GenerateGetterLambda(EquatableArray<IPathPart> bindingPath)
+	string GenerateGetterLambda(BindingInvocationDescription binding, string? targetNullValueExpression)
 	{
 		string expression = "source";
 		bool forceConditionalAccessToNextPart = false;
+		bool hasConditionalAccess = false;
 
-		foreach (var part in bindingPath)
+		foreach (var part in binding.Path)
 		{
 			// Note: AccessExpressionBuilder will happily call unsafe accessors and it expects them to be available.
 			// By calling BindingCodeWriter.GenerateBindingMethod(...), we are ensuring that the unsafe accessors are available.
 			expression = AccessExpressionBuilder.ExtendExpression(expression, MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart));
 			forceConditionalAccessToNextPart = part is Cast;
+			hasConditionalAccess |= forceConditionalAccessToNextPart || part is ConditionalAccess;
+		}
+
+		if (hasConditionalAccess && binding.PropertyType is { IsValueType: true, IsNullable: false })
+		{
+			// for non-nullable value types with conditional access in the path, we need to unwrap the getter result
+			// with fallback to either the target null value or default
+			if (targetNullValueExpression is not null)
+			{
+				var nullablePropertyType = binding.PropertyType with { IsNullable = true };
+				expression = $"{expression} ?? {targetNullValueExpression} as {nullablePropertyType}";
+			}
+
+			expression = $"{expression} ?? default";
 		}
 
 		return $"static source => {expression}";
