@@ -492,6 +492,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			INode dataTypeNode = null;
 			ElementNode n = node;
+			ElementNode dataTypeOwner = null; // Track which element has the x:DataType
 
 			// Special handling for BindingContext={Binding ...}
 			// The order of checks is:
@@ -509,6 +510,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 				{
+					dataTypeOwner = n;
 					break;
 				}
 				if (DoesNotInheritDataType(n))
@@ -524,6 +526,24 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				n = GetParent(n);
 			}
 
+			// After finding the x:DataType, check if the element with x:DataType is inside a DataTemplate
+			// This handles the case: <DataTemplate x:DataType="Model"><Label x:DataType="ViewModel" Text="{Binding Property}" /></DataTemplate>
+			// where the Label's x:DataType should trigger a search up the tree at runtime
+			if (dataTypeNode != null && dataTypeOwner != null && !xDataTypeIsInOuterScope)
+			{
+				// Check if dataTypeOwner is inside a DataTemplate by walking up from it
+				ElementNode checkNode = GetParent(dataTypeOwner); // Start from the dataTypeOwner's parent
+				while (checkNode != null)
+				{
+					if (checkNode.XmlType.Name == nameof(DataTemplate) && (checkNode.XmlType.NamespaceUri == XamlParser.MauiUri || checkNode.XmlType.NamespaceUri == XamlParser.MauiGlobalUri))
+					{
+						xDataTypeIsInOuterScope = true;
+						break;
+					}
+					checkNode = GetParent(checkNode);
+				}
+			}
+
 			if (dataTypeNode is null)
 			{
 				context.LoggingHelper.LogWarningOrError(BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
@@ -533,7 +553,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (xDataTypeIsInOuterScope)
 			{
-				context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				// NOTE: We're now generating code to handle this case automatically,
+				// so we don't need to log a warning. The binding will work correctly at runtime.
+				// context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				// continue compilation
 			}
 
@@ -619,6 +641,38 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					yield return Create(Ldnull);
 				yield return Create(Newobj, module.ImportReference(ctorinforef));
 				yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, bindingExtensionType, propertyName: "TypedBinding"));
+				
+				// If x:DataType is in outer scope (crosses a DataTemplate boundary), set up RelativeBindingSource
+				// to automatically find the correct BindingContext at runtime
+				if (xDataTypeIsInOuterScope)
+				{
+					// Load the binding extension again
+					foreach (var instruction in bindingExt.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, bindingExtensionType), module))
+						yield return instruction;
+					
+					// Get RelativeBindingSource type and constructor
+					var relativeBindingSourceType = module.ImportReference(context.Cache,  
+						("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RelativeBindingSource"));
+					var relativeBindingSourceCtor = module.ImportReference(
+						relativeBindingSourceType.ResolveCached(context.Cache).GetConstructors()
+							.First(c => c.Parameters.Count == 3 
+								&& c.Parameters[0].ParameterType.Name == "RelativeBindingSourceMode"
+								&& c.Parameters[1].ParameterType.Name == "Type"
+								&& c.Parameters[2].ParameterType.Name == "Int32"));
+					
+					// Create: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(TSource), 1)
+					yield return Create(Ldc_I4, (int)4); // RelativeBindingSourceMode.FindAncestorBindingContext = 4
+					yield return Create(Ldtoken, module.ImportReference(tSourceRef));
+					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"),
+						methodName: "GetTypeFromHandle",
+						parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") },
+						isStatic: true));
+					yield return Create(Ldc_I4, 1); // ancestorLevel = 1
+					yield return Create(Newobj, module.ImportReference(relativeBindingSourceCtor));
+					
+					// Set: binding.Source = relativeBindingSource
+					yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, bindingExtensionType, propertyName: "Source"));
+				}
 			}
 
 			static ElementNode GetParent(ElementNode node)
