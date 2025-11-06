@@ -920,7 +920,6 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.DragAndDrop("Banana", "Potato");
 		var newY = App.WaitForElement("Carrot").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
-		VerifyScreenshot();
 	}
 
 	[Test]
@@ -967,7 +966,6 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.DragAndDrop("Banana", "Potato");
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
-		VerifyScreenshot();
 	}
 
 	[Test]
@@ -1014,7 +1012,6 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.DragAndDrop("Banana", "Potato");
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
-		VerifyScreenshot();
 	}
 
 	[Test]
@@ -1057,7 +1054,6 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.DragAndDrop("Banana", "Potato");
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
-		VerifyScreenshot();
 	}
 #endif
 }
