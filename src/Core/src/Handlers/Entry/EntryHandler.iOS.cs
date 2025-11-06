@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -235,24 +234,35 @@ namespace Microsoft.Maui.Handlers
 
 				var currentText = textField.Text ?? string.Empty;
 
-				// Apply all range replacements to calculate final text
-				// Process in reverse order to avoid index shifting issues
-				var sortedRanges = ranges.Select(r => r.RangeValue)
-										 .OrderByDescending(r => r.Location)
-										 .ToArray();
+				// Copy ranges to an array of NSRange
+				var count = ranges.Length;
+				var rangeArray = new NSRange[count];
+				for (int i = 0; i < count; i++)
+					rangeArray[i] = ranges[i].RangeValue;
 
-				foreach (var range in sortedRanges)
+				// Sort by Location descending to avoid index shifting when applying replacements
+				Array.Sort(rangeArray, (a, b) => (int)(b.Location - a.Location));
+
+				for (int i = 0; i < count; i++)
 				{
+					var range = rangeArray[i];
+					var start = (int)range.Location;
+					var length = (int)range.Length;
+
 					// Validate range bounds
-					if (range.Location + range.Length > currentText.Length)
+					if (start < 0 || length < 0 || start > currentText.Length || start + length > currentText.Length)
 						return false;
 
-					currentText = currentText.Remove((int)range.Location, (int)range.Length)
-											 .Insert((int)range.Location, replacementString);
+					// Apply replacement: remove [start, length], then insert replacementString at start
+					var before = start > 0 ? currentText.Substring(0, start) : string.Empty;
+					var afterIndex = start + length;
+					var after = afterIndex < currentText.Length ? currentText.Substring(afterIndex) : string.Empty;
+					currentText = before + replacementString + after;
 				}
 
-				// Check if final text is within MaxLength
-				return VirtualView?.MaxLength < 0 || currentText.Length <= VirtualView?.MaxLength;
+				// Check MaxLength without nullable comparisons
+				var maxLength = VirtualView?.MaxLength ?? -1;
+				return maxLength < 0 || currentText.Length <= maxLength;
 			}
 
 			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
