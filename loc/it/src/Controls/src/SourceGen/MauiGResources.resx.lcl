@@ -46,7 +46,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";DuplicateKeyInRD" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";DuplicateKeyInRD" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[duplicate key in resource dictionary]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -159,6 +159,24 @@
           <Val><![CDATA[Cannot convert "{0}" into Rect, expected format is "x, y, w, h"]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Non è possibile convertire "{0}" in Rect; il formato previsto è "x, y, w, h".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RequiredPropertyMessage" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} has the 'required' keyword. Support for this in XAML is limited at the moment, avoid using it. We're still doing a best effort to provide a value.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[{0} contiene la parola chiave 'required'. Al momento il supporto in XAML è limitato, quindi è meglio evitarne l'uso. Stiamo comunque facendo il possibile per specificare un valore.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RequiredPropertyTitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use of 'required']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uso di 'required']]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
