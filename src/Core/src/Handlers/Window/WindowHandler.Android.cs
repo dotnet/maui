@@ -18,34 +18,12 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Activity platformView)
 		{
 			base.ConnectHandler(platformView);
-			if (OperatingSystem.IsAndroidVersionAtLeast(36))
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				//Edge to Edge enabled for Android API 36+
-				ConfigureTranslucentSystemBars(PlatformView);
+				//Edge to Edge enabled for Android API 30+
+				PlatformView.Window.ConfigureTranslucentSystemBars(PlatformView);
 			}
 			UpdateVirtualViewFrame(platformView);
-		}
-
-		static void ConfigureTranslucentSystemBars(Activity activity)
-		{
-			var window = activity.Window;
-			if (window is null)
-			{
-				return;
-			}
-
-			// Set appropriate system bar appearance for readability
-			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
-			if (windowInsetsController is not null)
-			{
-				// Automatically adjust icon/text colors based on app theme
-				var configuration = activity.Resources?.Configuration;
-				var isLightTheme = configuration != null &&
-					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
-
-				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
-				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
-			}
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
