@@ -161,6 +161,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.AttachingToWindow();
 			// Refresh the current visible item to catch any ItemsSource changes that occurred on other pages
 			// This ensures that updates made on other pages are reflected when navigating back
+			// IMPORTANT: Must be called BEFORE Setup() to avoid querying stale IndexPathsForVisibleItems
+			// during the layout transition that Setup() triggers
 			if (_wasDetachedFromWindow)
 			{
 				RefreshVisibleItems();
@@ -178,15 +180,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 			// Get current visible item index paths to ensure proper refresh of carousel items
-			// Create a defensive copy to avoid issues if ItemsSource changes during execution
 			var indexPaths = CollectionView.IndexPathsForVisibleItems;
 			if (indexPaths?.Length > 0)
 			{
-				// Create a copy of the array to prevent concurrent modification issues
-				var indexPathsCopy = new NSIndexPath[indexPaths.Length];
-				Array.Copy(indexPaths, indexPathsCopy, indexPaths.Length);
-
-				CollectionView.ReloadItems(indexPathsCopy);
+				CollectionView.ReloadItems(indexPaths);
 			}
 		}
 
