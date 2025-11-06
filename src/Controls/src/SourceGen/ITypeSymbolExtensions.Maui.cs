@@ -24,7 +24,7 @@ static partial class ITypeSymbolExtensions
 		//if the property assignment is attached one, like Grid.Row, update the localname and the bpParentType
 		attached = GetNameAndTypeRef(ref bpParentType, ns, ref localName, context, iXmlLineInfo);
 		var name = $"{localName}Property";
-		return bpParentType.GetAllFields(name, context).FirstOrDefault();
+		return bpParentType.GetAllFields(name, context).FirstOrDefault(fi => fi.IsStatic && fi.Type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableProperty"), SymbolEqualityComparer.Default));
 	}
 
 	static bool GetNameAndTypeRef(ref ITypeSymbol elementType, string namespaceURI, ref string localname,
