@@ -474,7 +474,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				defaultDrawerArrowDrawable = true;
 			}
 
-			icon?.Progress = (CanNavigateBack) ? 1 : 0;
+			if (icon != null)
+				icon.Progress = (CanNavigateBack) ? 1 : 0;
 
 			if (command != null || CanNavigateBack)
 			{
