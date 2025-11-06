@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
 			Controller?.DisposeItemsSource();
-			
 			base.DisconnectHandler(platformView);
 		}
 
@@ -78,7 +77,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			MapItemsUpdatingScrollMode(handler, itemsView);
-
 			handler.Controller?.UpdateItemsSource();
 		}
 
