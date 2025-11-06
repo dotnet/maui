@@ -19,7 +19,7 @@ public class Issue32275 : _IssuesUITest
 	{
 		App.WaitForElement("Issue32275Label");
 		App.SetOrientationLandscape();
-		App.TapFlyoutPageIcon();
+		App.TapShellFlyoutIcon();
 		VerifyScreenshot();
 	}
 }
