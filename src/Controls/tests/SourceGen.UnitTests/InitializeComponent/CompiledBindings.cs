@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -19,7 +20,7 @@ public class CompiledBindings : SourceGenXamlInitializeComponentTestBase
 	xmlns:test="clr-namespace:Test"
 	x:Class="Test.TestPage"
 	x:DataType="test:TestPage"
-    Title="{Binding Foo.Bar.Title}"/>
+	Title="{Binding Foo.Bar.Title, Mode=TwoWay}"/>
 """;
 
 		var code =
@@ -97,7 +98,7 @@ public partial class TestPage
 		}
 
 		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 2);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
@@ -107,27 +108,26 @@ public partial class TestPage
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
 #line 8 "{{testXamlFilePath}}"
+		bindingExtension.Mode = global::Microsoft.Maui.Controls.BindingMode.TwoWay;
+#line default
+#line 8 "{{testXamlFilePath}}"
 		bindingExtension.Path = "Foo.Bar.Title";
 #line default
 		var bindingBase = CreateTypedBindingFrom_bindingExtension(bindingExtension);
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 2);
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 		{
-			global::System.Action<global::Test.TestPage, string>? setter = null;
-			if (ShouldUseSetter(extension.Mode))
+			global::System.Action<global::Test.TestPage, string>? setter = static (source, value) =>
 			{
-				setter = static (source, value) =>
+				if (source.Foo.Bar is {} p0)
 				{
-					if (source.Foo.Bar is {} p0)
-					{
-						p0.Title = value;
-					}
-				};
-			}
+					p0.Title = value;
+				}
+			};
 
-			var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
+			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
 				getter: source => (source.Foo.Bar.Title, true),
 				setter,
 				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
@@ -135,15 +135,10 @@ public partial class TestPage
 					new(static source => source, "Foo"),
 					new(static source => source.Foo, "Bar"),
 					new(static source => source.Foo.Bar, "Title"),
-				});
-
-			return binding;
-
-			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-			static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
-				=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
-					|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
-					|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
+				})
+				{
+					Mode = extension.Mode,
+				};
 		}
 
 		
@@ -154,6 +149,154 @@ public partial class TestPage
 
 		var (result, generated) = RunGenerator(xaml, code);
 		Assert.False(result.Diagnostics.Any());
-		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
+		CodeIsEqual(expected, generated ?? string.Empty);
+	}
+
+	[Fact]
+	public void CorrectlyDetectsNullableTypes()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage"
+	Title="{Binding Product.Size}"/>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Product? Product { get; set; } = null;
+
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class Product
+{
+	public int Size { get; set; }
+}
+""";
+		var testXamlFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
+		var expected = $$"""
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a .NET MAUI source generator.
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+#nullable enable
+
+namespace Test;
+
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
+public partial class TestPage
+{
+	private partial void InitializeComponent()
+	{
+		// Fallback to Runtime inflation if the page was updated by HotReload
+		static string? getPathForType(global::System.Type type)
+		{
+			var assembly = type.Assembly;
+			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
+			{
+				if (xria.Type == type)
+					return xria.Path;
+			}
+			return null;
+		}
+
+		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
+		{
+			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
+			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
+			Instance = this,
+		});
+
+		if (rlr?.ResourceContent != null)
+		{
+			this.InitializeComponentRuntime();
+			return;
+		}
+
+		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 2);
+		var __root = this;
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
+#endif
+#line 8 "{{testXamlFilePath}}"
+		bindingExtension.Path = "Product.Size";
+#line default
+		var bindingBase = CreateTypedBindingFrom_bindingExtension(bindingExtension);
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 2);
+		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
+		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
+		{
+			global::System.Action<global::Test.TestPage, int>? setter = static (source, value) =>
+			{
+				if (source.Product is {} p0)
+				{
+					p0.Size = value;
+				}
+			};
+			
+			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
+				getter: source => (source.Product?.Size ?? default, true),
+				setter,
+				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
+				{
+					new(static source => source, "Product"),
+					new(static source => source.Product, "Size"),
+				});
+		}
+	}
+}
+
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		Assert.False(result.Diagnostics.Any());
+		CodeIsEqual(expected, generated ?? string.Empty);
+	}
+
+	internal static void CodeIsEqual(string expectedCode, string actualCode)
+	{
+		var expectedLines = SplitCode(expectedCode);
+		var actualLines = SplitCode(actualCode);
+
+		foreach (var (expectedLine, actualLine) in expectedLines.Zip(actualLines))
+		{
+			Assert.Equal(expectedLine, actualLine);
+		}
+
+		Assert.Equal(expectedLines.Count(), actualLines.Count());
+
+		static IEnumerable<string> SplitCode(string code)
+			=> code.Split(Environment.NewLine)
+				.Select(static line => line.Trim())
+				.Where(static line => !string.IsNullOrWhiteSpace(line));
 	}
 }

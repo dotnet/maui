@@ -49,6 +49,9 @@ namespace Maui.Controls.Sample.Issues
 			});
 			_carousel = new CarouselView
 			{
+#if WINDOWS
+				Loop = false,
+#endif
 				ItemTemplate = new DataTemplate(() =>
 			{
 				var l = new Grid();

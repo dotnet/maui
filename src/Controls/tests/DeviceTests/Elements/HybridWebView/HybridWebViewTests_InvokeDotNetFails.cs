@@ -80,8 +80,11 @@ public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 			Assert.True(target.TestResult != "400" && target.TestResult != "403" && target.TestResult != "405",
 				$"Valid request was unexpectedly blocked with status: {target.TestResult}");
 		});
-
+#if ANDROID
+	[Fact(Skip = "Failing on Helix https://github.com/dotnet/maui/issues/32400")]
+#else
 	[Fact]
+#endif
 	public Task IframeRequestIsBlocked() =>
 		RunJavaScriptTest(async (hybridWebView, target) =>
 		{
