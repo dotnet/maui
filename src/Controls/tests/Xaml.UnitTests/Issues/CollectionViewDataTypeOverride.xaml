@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+		xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+		x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CollectionViewDataTypeOverride"
+		x:Name="page"
+		x:DataType="local:MockViewModel">
+    <CollectionView ItemsSource="{Binding Items}" x:Name="collectionView">
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="local:MockItemViewModel">
+                <VerticalStackLayout>
+                    <!-- This binding should use MockItemViewModel (from DataTemplate x:DataType) -->
+                    <Label Text="{Binding Title}" x:Name="labelFromModel" />
+                    
+                    <!-- This is what the user wants - just x:DataType without needing Source/RelativeSource
+                         The user expectation: x:DataType on the Label should override the DataTemplate's x:DataType
+                         Currently this doesn't work at runtime -->
+                    <Label x:DataType="local:MockViewModel" Text="{Binding I}" x:Name="labelFromViewModel" />
+                </VerticalStackLayout>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
