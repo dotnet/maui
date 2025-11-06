@@ -312,6 +312,46 @@ git add <conflicting-file>
 git commit --no-edit
 ```
 
+**⚠️ CRITICAL: If Merge Fails**
+
+If the merge fails for any reason (conflicts you can't resolve, errors during the merge process, or unexpected issues):
+
+1. ❌ **STOP immediately** - Do not attempt more than 1-2 simple fixes
+2. ❌ **DO NOT proceed with testing** - A failed merge means you don't have the correct PR state
+3. ❌ **DO NOT provide a review** based on partial or incorrect code
+4. ✅ **PAUSE and ask for help** using this template:
+
+```markdown
+## ⚠️ Merge Failed - Unable to Apply PR Changes
+
+I encountered issues while trying to merge PR #[NUMBER] into my test branch.
+
+### Error Details
+```
+[Paste the actual git error output]
+```
+
+### What I Tried
+- [Description of what you attempted]
+
+### Current State
+- **Current branch**: `[branch name from git branch --show-current]`
+- **PR branch attempted**: `pr-[NUMBER]-temp`
+- **Merge command**: `git merge pr-[NUMBER]-temp -m "Test PR #[NUMBER]" --no-edit`
+
+I need help resolving this merge issue before I can test the PR.
+
+**How would you like me to proceed?**
+```
+
+**Wait for user guidance** before continuing. Do not:
+- ❌ Make multiple attempts to resolve complex merge conflicts
+- ❌ Switch to code-only review mode silently
+- ❌ Try alternative merge strategies without asking
+- ❌ Proceed with testing using potentially incorrect code
+
+**Why this matters**: If you can't cleanly merge the PR, you can't accurately test it. Testing with incorrect code leads to misleading results. It's better to pause and get help than to provide an incomplete or incorrect review.
+
 **Why this approach:**
 - ✅ Preserves all instruction files from pr-reviewer branch
 - ✅ Tests PR changes on top of latest guidelines
