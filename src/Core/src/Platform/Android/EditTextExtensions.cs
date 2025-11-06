@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Platform
 		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
 		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
 		// bounds of the EditText.
-		static bool RectContainsMotionEvent(global::Android.Graphics.Rect rect, MotionEvent motionEvent)
+		static bool RectContainsMotionEvent(global::Android.Graphics.Rect  rect, MotionEvent motionEvent)
 		{
 			var x = motionEvent.GetX();
 
