@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -89,95 +90,98 @@ internal struct CompiledBindingMarkup
 			propertyFlags |= BindingPropertyFlags.TargetNullValue;
 
 		//Generate the complete inline binding creation method
-		var code = new StringBuilder();
-		code.AppendLine($"static global::Microsoft.Maui.Controls.BindingBase {methodName}({extensionTypeName} extension)");
-		code.AppendLine("{");
+		using var stringWriter = new StringWriter();
+		using var code = new IndentedTextWriter(stringWriter, "");
+		
+		code.WriteLine($"static global::Microsoft.Maui.Controls.BindingBase {methodName}({extensionTypeName} extension)");
+		code.WriteLine("{");
 		
 		// Setter initialization
-		code.AppendLine($"\tglobal::System.Action<{binding.SourceType}, {binding.PropertyType}>? setter = null;");
-		code.AppendLine("\tif (ShouldUseSetter(extension.Mode))");
-		code.AppendLine("\t{");
+		code.WriteLine($"global::System.Action<{binding.SourceType}, {binding.PropertyType}>? setter = null;");
+		code.WriteLine("if (ShouldUseSetter(extension.Mode))");
+		code.WriteLine("{");
 		
 		if (binding.SetterOptions.IsWritable)
 		{
-			code.Append("\t\tsetter = ");
+			code.Write("setter = ");
 			AppendSetterLambda(code, binding);
 		}
 		else
 		{
-			code.AppendLine("\t\tsetter = static (source, value) =>");
-			code.AppendLine("\t\t{");
-			code.AppendLine("\t\t\tthrow new global::System.InvalidOperationException(\"Cannot set value on the source object.\");");
-			code.AppendLine("\t\t};");
+			code.WriteLine("setter = static (source, value) =>");
+			code.WriteLine("{");
+			code.WriteLine("throw new global::System.InvalidOperationException(\"Cannot set value on the source object.\");");
+			code.WriteLine("};");
 		}
 		
-		code.AppendLine("\t}");
-		code.AppendLine();
+		code.WriteLine("}");
+		code.WriteLine();
 		
 		// TypedBinding creation
-		code.AppendLine($"\tvar binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
-		code.AppendLine($"\t\tgetter: source => ({GenerateGetterLambda(binding.Path)}(source), true),");
-		code.AppendLine("\t\tsetter,");
-		code.Append("\t\thandlers: ");
+		code.WriteLine($"var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
+		code.WriteLine($"getter: source => ({GenerateGetterLambda(binding.Path)}(source), true),");
+		code.WriteLine("setter,");
+		code.Write("handlers: ");
 		AppendHandlersArray(code, binding);
-		code.Append(")");
+		code.Write(")");
 		
 		// Object initializer if any properties are set
 		if (propertyFlags != BindingPropertyFlags.None)
 		{
-			code.AppendLine();
-			code.AppendLine("\t{");
+			code.WriteLine();
+			code.WriteLine("{");
 			
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
-				code.AppendLine("\t\tMode = extension.Mode,");
+				code.WriteLine("Mode = extension.Mode,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
-				code.AppendLine("\t\tConverter = extension.Converter,");
+				code.WriteLine("Converter = extension.Converter,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
-				code.AppendLine("\t\tConverterParameter = extension.ConverterParameter,");
+				code.WriteLine("ConverterParameter = extension.ConverterParameter,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
-				code.AppendLine("\t\tStringFormat = extension.StringFormat,");
+				code.WriteLine("StringFormat = extension.StringFormat,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
 			{
 				if (isTemplateBinding)
-					code.AppendLine("\t\tSource = global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent,");
+					code.WriteLine("Source = global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent,");
 				else
-					code.AppendLine("\t\tSource = extension.Source,");
+					code.WriteLine("Source = extension.Source,");
 			}
 			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
 			{
 				if (isTemplateBinding)
-					code.AppendLine("\t\tFallbackValue = null,");
+					code.WriteLine("FallbackValue = null,");
 				else
-					code.AppendLine("\t\tFallbackValue = extension.FallbackValue,");
+					code.WriteLine("FallbackValue = extension.FallbackValue,");
 			}
 			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
 			{
 				if (isTemplateBinding)
-					code.AppendLine("\t\tTargetNullValue = null,");
+					code.WriteLine("TargetNullValue = null,");
 				else
-					code.AppendLine("\t\tTargetNullValue = extension.TargetNullValue,");
+					code.WriteLine("TargetNullValue = extension.TargetNullValue,");
 			}
 			
-			code.AppendLine("\t};");
+			code.WriteLine("};");
 		}
 		else
 		{
-			code.AppendLine(";");
+			code.WriteLine(";");
 		}
 		
-		code.AppendLine();
-		code.AppendLine("\treturn binding;");
-		code.AppendLine();
+		code.WriteLine();
+		code.WriteLine("return binding;");
+		code.WriteLine();
 		
 		// ShouldUseSetter helper
-		code.AppendLine("\t[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
-		code.AppendLine("\tstatic bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)");
-		code.AppendLine("\t\t=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource");
-		code.AppendLine("\t\t\t|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay");
-		code.AppendLine("\t\t\t|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;");
-		code.AppendLine("}");
+		code.WriteLine("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
+		code.WriteLine("static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)");
+		code.WriteLine("=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource");
+		code.WriteLine("|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay");
+		code.WriteLine("|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;");
+		
+		code.WriteLine("}");
 
-		_context.AddLocalMethod(code.ToString());
+		_context.AddLocalMethod(stringWriter.ToString());
 		newBindingExpression = $"{methodName}({extVariable.ValueAccessor})";
 
 		return true;
@@ -376,44 +380,44 @@ internal struct CompiledBindingMarkup
 			};
 	}
 
-	void AppendSetterLambda(StringBuilder code, BindingInvocationDescription binding)
+	void AppendSetterLambda(IndentedTextWriter code, BindingInvocationDescription binding)
 	{
-		code.Append("static (source, value) =>");
-		code.AppendLine();
-		code.AppendLine("\t\t{");
+		code.Write("static (source, value) =>");
+		code.WriteLine();
+		code.WriteLine("{");
 		
 		var setter = Setter.From(binding.Path, "source", "value");
 		if (setter.PatternMatchingExpressions.Length > 0)
 		{
-			code.Append("\t\t\tif (");
+			code.Write("if (");
 			
 			for (int i = 0; i < setter.PatternMatchingExpressions.Length; i++)
 			{
 				if (i > 0)
 				{
-					code.AppendLine();
-					code.Append("\t\t\t\t&& ");
+					code.WriteLine();
+					code.Write("&& ");
 				}
-				code.Append(setter.PatternMatchingExpressions[i]);
+				code.Write(setter.PatternMatchingExpressions[i]);
 			}
 			
-			code.AppendLine(")");
-			code.AppendLine("\t\t\t{");
-			code.AppendLine($"\t\t\t\t{setter.AssignmentStatement}");
-			code.AppendLine("\t\t\t}");
+			code.WriteLine(")");
+			code.WriteLine("{");
+			code.WriteLine(setter.AssignmentStatement);
+			code.WriteLine("}");
 		}
 		else
 		{
-			code.AppendLine($"\t\t\t{setter.AssignmentStatement}");
+			code.WriteLine(setter.AssignmentStatement);
 		}
 		
-		code.AppendLine("\t\t};");
+		code.WriteLine("};");
 	}
 
-	void AppendHandlersArray(StringBuilder code, BindingInvocationDescription binding)
+	void AppendHandlersArray(IndentedTextWriter code, BindingInvocationDescription binding)
 	{
-		code.AppendLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
-		code.AppendLine("\t\t{");
+		code.WriteLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
+		code.WriteLine("{");
 
 		string nextExpression = "source";
 		bool forceConditionalAccessToNextPart = false;
@@ -426,21 +430,21 @@ internal struct CompiledBindingMarkup
 			// Make binding react for PropertyChanged events on indexer itself
 			if (part is IndexAccess indexAccess)
 			{
-				code.AppendLine($"\t\t\tnew(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+				code.WriteLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
 			}
 			else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
 			{
-				code.AppendLine($"\t\t\tnew(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+				code.WriteLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
 			}
 
 			// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
 			if (part.PropertyName is string propertyName)
 			{
-				code.AppendLine($"\t\t\tnew(static source => {previousExpression}, \"{propertyName}\"),");
+				code.WriteLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
 			}
 		}
 
-		code.Append("\t\t}");
+		code.Write("}");
 
 		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccess)
 		{
