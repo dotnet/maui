@@ -205,8 +205,6 @@ Task("uitests-apphost")
 
         var properties = new Dictionary<string, string>();
 
-        properties["RuntimeIdentifiers"] = "maccatalyst-x64;maccatalyst-arm64";
-
         if (USE_CORECLR)
         {
             Information("Building for CoreCLR");
