@@ -73,60 +73,62 @@ internal struct CompiledBindingMarkup
 
 		// Build the flags and parameter list in one pass
 		var propertyFlags = BindingPropertyFlags.None;
-		var createParams = new List<string> { $"getter: {GenerateGetterLambda(binding.Path)}" };
+		var createParams = new StringBuilder();
+		createParams.Append($"getter: {GenerateGetterLambda(binding.Path)}");
 		
 		if (_node.HasProperty("Mode"))
 		{
 			propertyFlags |= BindingPropertyFlags.Mode;
-			createParams.Add("extension.Mode");
+			createParams.Append(",\n\t\t\t\t\textension.Mode");
 		}
 		
 		if (_node.HasProperty("Converter"))
 		{
 			propertyFlags |= BindingPropertyFlags.Converter;
-			createParams.Add("extension.Converter");
+			createParams.Append(",\n\t\t\t\t\textension.Converter");
 		}
 		
 		if (_node.HasProperty("ConverterParameter"))
 		{
 			propertyFlags |= BindingPropertyFlags.ConverterParameter;
-			createParams.Add("extension.ConverterParameter");
+			createParams.Append(",\n\t\t\t\t\textension.ConverterParameter");
 		}
 		
 		if (_node.HasProperty("StringFormat"))
 		{
 			propertyFlags |= BindingPropertyFlags.StringFormat;
-			createParams.Add("extension.StringFormat");
+			createParams.Append(",\n\t\t\t\t\textension.StringFormat");
 		}
 		
 		if (_node.HasProperty("Source") || isTemplateBinding)
 		{
 			propertyFlags |= BindingPropertyFlags.Source;
-			createParams.Add(isTemplateBinding 
-				? "source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent" 
-				: "extension.Source");
+			createParams.Append(isTemplateBinding 
+				? ",\n\t\t\t\t\tsource: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent" 
+				: ",\n\t\t\t\t\textension.Source");
 		}
 		
 		if (_node.HasProperty("FallbackValue"))
 		{
 			propertyFlags |= BindingPropertyFlags.FallbackValue;
-			createParams.Add(isTemplateBinding ? "fallbackValue: null" : "extension.FallbackValue");
+			createParams.Append(isTemplateBinding 
+				? ",\n\t\t\t\t\tfallbackValue: null" 
+				: ",\n\t\t\t\t\textension.FallbackValue");
 		}
 		
 		if (_node.HasProperty("TargetNullValue"))
 		{
 			propertyFlags |= BindingPropertyFlags.TargetNullValue;
-			createParams.Add(isTemplateBinding ? "targetNullValue: null" : "extension.TargetNullValue");
+			createParams.Append(isTemplateBinding 
+				? ",\n\t\t\t\t\ttargetNullValue: null" 
+				: ",\n\t\t\t\t\textension.TargetNullValue");
 		}
-		
-		// Join parameters with comma and newline
-		var paramStr = string.Join(",\n\t\t\t\t\t", createParams);
 
 		var createBindingLocalMethod = $$"""
 				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
 				{
 					return Create(
-						{{paramStr}});
+						{{createParams}});
 
 				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1, propertyFlags: propertyFlags)}}
 

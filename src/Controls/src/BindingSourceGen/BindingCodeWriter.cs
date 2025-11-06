@@ -386,7 +386,7 @@ public static class BindingCodeWriter
 			// Early return if no properties need to be set
 			if (propertyFlags == BindingPropertyFlags.None)
 			{
-				AppendLine(";");
+				AppendLine(");");
 				AppendBlankLine();
 				return false;
 			}
