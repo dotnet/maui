@@ -177,7 +177,7 @@ public static class BindingCodeWriter
 			Append("handlers: ");
 
 			AppendHandlersArray(binding);
-			Append(')');
+			// The closing ) is handled by AppendBindingPropertySetters
 			Unindent();
 			
 			// Only generate property setters for the properties indicated by the flags
@@ -383,40 +383,37 @@ public static class BindingCodeWriter
 
 		private bool AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
 		{
-			// Only generate property setters for properties indicated by the flags
-			var properties = new List<string>();
-			
-			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
-				properties.Add("Mode = mode");
-			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
-				properties.Add("Converter = converter");
-			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
-				properties.Add("ConverterParameter = converterParameter");
-			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
-				properties.Add("StringFormat = stringFormat");
-			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
-				properties.Add("Source = source");
-			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
-				properties.Add("FallbackValue = fallbackValue");
-			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
-				properties.Add("TargetNullValue = targetNullValue");
-
-			if (properties.Count > 0)
-			{
-				AppendLine(";");
-				AppendBlankLine();
-				foreach (var property in properties)
-				{
-					AppendLine($"binding.{property};");
-				}
-				return true;
-			}
-			else
+			// Early return if no properties need to be set
+			if (propertyFlags == BindingPropertyFlags.None)
 			{
 				AppendLine(";");
 				AppendBlankLine();
 				return false;
 			}
+
+			// Use object initializer syntax for cleaner, shorter code
+			AppendLine(")");
+			AppendLine('{');
+			Indent();
+			
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
+				AppendLine("Mode = mode,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
+				AppendLine("Converter = converter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
+				AppendLine("ConverterParameter = converterParameter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
+				AppendLine("StringFormat = stringFormat,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
+				AppendLine("Source = source,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
+				AppendLine("FallbackValue = fallbackValue,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
+				AppendLine("TargetNullValue = targetNullValue,");
+			
+			Unindent();
+			AppendLine("};");
+			return true;
 		}
 
 		private void AppendUnsafeAccessors(BindingInvocationDescription binding)

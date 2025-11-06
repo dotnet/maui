@@ -71,71 +71,56 @@ internal struct CompiledBindingMarkup
 			? "global::Microsoft.Maui.Controls.Xaml.TemplateBindingExtension"
 			: "global::Microsoft.Maui.Controls.Xaml.BindingExtension";
 
-		// Check which properties were actually set in XAML
-		// Only generate code to pass properties that were explicitly set
-		var hasMode = _node.Properties.TryGetValue("Mode", out _);
-		var hasConverter = _node.Properties.TryGetValue("Converter", out _);
-		var hasConverterParameter = _node.Properties.TryGetValue("ConverterParameter", out _);
-		var hasStringFormat = _node.Properties.TryGetValue("StringFormat", out _);
-		var hasSource = _node.Properties.TryGetValue("Source", out _) || isTemplateBinding;
-		var hasFallbackValue = _node.Properties.TryGetValue("FallbackValue", out _);
-		var hasTargetNullValue = _node.Properties.TryGetValue("TargetNullValue", out _);
-
-		// Build the flags for which properties to set in the generated Create method
+		// Build the flags and parameter list in one pass
 		var propertyFlags = BindingPropertyFlags.None;
-		if (hasMode)
+		var createParams = new List<string> { $"getter: {GenerateGetterLambda(binding.Path)}" };
+		
+		if (_node.HasProperty("Mode"))
+		{
 			propertyFlags |= BindingPropertyFlags.Mode;
-		if (hasConverter)
+			createParams.Add("extension.Mode");
+		}
+		
+		if (_node.HasProperty("Converter"))
+		{
 			propertyFlags |= BindingPropertyFlags.Converter;
-		if (hasConverterParameter)
+			createParams.Add("extension.Converter");
+		}
+		
+		if (_node.HasProperty("ConverterParameter"))
+		{
 			propertyFlags |= BindingPropertyFlags.ConverterParameter;
-		if (hasStringFormat)
+			createParams.Add("extension.ConverterParameter");
+		}
+		
+		if (_node.HasProperty("StringFormat"))
+		{
 			propertyFlags |= BindingPropertyFlags.StringFormat;
-		if (hasSource)
+			createParams.Add("extension.StringFormat");
+		}
+		
+		if (_node.HasProperty("Source") || isTemplateBinding)
+		{
 			propertyFlags |= BindingPropertyFlags.Source;
-		if (hasFallbackValue)
+			createParams.Add(isTemplateBinding 
+				? "source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent" 
+				: "extension.Source");
+		}
+		
+		if (_node.HasProperty("FallbackValue"))
+		{
 			propertyFlags |= BindingPropertyFlags.FallbackValue;
-		if (hasTargetNullValue)
+			createParams.Add(isTemplateBinding ? "fallbackValue: null" : "extension.FallbackValue");
+		}
+		
+		if (_node.HasProperty("TargetNullValue"))
+		{
 			propertyFlags |= BindingPropertyFlags.TargetNullValue;
-
-		// Build the parameter list for the Create call
-		var createParams = new StringBuilder();
-		createParams.AppendLine($"getter: {GenerateGetterLambda(binding.Path)},");
-		
-		if (hasMode)
-			createParams.AppendLine("extension.Mode,");
-		if (hasConverter)
-			createParams.AppendLine("extension.Converter,");
-		if (hasConverterParameter)
-			createParams.AppendLine("extension.ConverterParameter,");
-		if (hasStringFormat)
-			createParams.AppendLine("extension.StringFormat,");
-		if (hasSource)
-		{
-			if (isTemplateBinding)
-				createParams.AppendLine("source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent,");
-			else
-				createParams.AppendLine("extension.Source,");
-		}
-		if (hasFallbackValue)
-		{
-			if (isTemplateBinding)
-				createParams.AppendLine("fallbackValue: null,");
-			else
-				createParams.AppendLine("extension.FallbackValue,");
-		}
-		if (hasTargetNullValue)
-		{
-			if (isTemplateBinding)
-				createParams.AppendLine("targetNullValue: null,");
-			else
-				createParams.AppendLine("extension.TargetNullValue,");
+			createParams.Add(isTemplateBinding ? "targetNullValue: null" : "extension.TargetNullValue");
 		}
 		
-		// Remove the trailing comma and newline from the last parameter
-		var paramStr = createParams.ToString().TrimEnd();
-		if (paramStr.EndsWith(","))
-			paramStr = paramStr.Substring(0, paramStr.Length - 1);
+		// Join parameters with comma and newline
+		var paramStr = string.Join(",\n\t\t\t\t\t", createParams);
 
 		var createBindingLocalMethod = $$"""
 				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
@@ -351,4 +336,10 @@ internal struct CompiledBindingMarkup
 				_ => part,
 			};
 	}
+}
+
+internal static class ElementNodeExtensions
+{
+	public static bool HasProperty(this ElementNode node, string propertyName)
+		=> node.Properties.TryGetValue(propertyName, out _);
 }
