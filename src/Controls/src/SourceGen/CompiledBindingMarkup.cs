@@ -88,7 +88,7 @@ internal struct CompiledBindingMarkup
 		if (_node.HasProperty("TargetNullValue"))
 			propertyFlags |= BindingPropertyFlags.TargetNullValue;
 
-		// Generate the complete inline binding creation method
+		//Generate the complete inline binding creation method
 		var code = new StringBuilder();
 		code.AppendLine($"static global::Microsoft.Maui.Controls.BindingBase {methodName}({extensionTypeName} extension)");
 		code.AppendLine("{");
