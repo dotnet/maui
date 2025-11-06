@@ -81,6 +81,23 @@ internal struct CompiledBindingMarkup
 		var hasFallbackValue = _node.Properties.TryGetValue("FallbackValue", out _);
 		var hasTargetNullValue = _node.Properties.TryGetValue("TargetNullValue", out _);
 
+		// Build the flags for which properties to set in the generated Create method
+		var propertyFlags = BindingPropertyFlags.None;
+		if (hasMode)
+			propertyFlags |= BindingPropertyFlags.Mode;
+		if (hasConverter)
+			propertyFlags |= BindingPropertyFlags.Converter;
+		if (hasConverterParameter)
+			propertyFlags |= BindingPropertyFlags.ConverterParameter;
+		if (hasStringFormat)
+			propertyFlags |= BindingPropertyFlags.StringFormat;
+		if (hasSource)
+			propertyFlags |= BindingPropertyFlags.Source;
+		if (hasFallbackValue)
+			propertyFlags |= BindingPropertyFlags.FallbackValue;
+		if (hasTargetNullValue)
+			propertyFlags |= BindingPropertyFlags.TargetNullValue;
+
 		// Build the parameter list for the Create call
 		var createParams = new StringBuilder();
 		createParams.AppendLine($"getter: {GenerateGetterLambda(binding.Path)},");
@@ -126,7 +143,7 @@ internal struct CompiledBindingMarkup
 					return Create(
 						{{paramStr}});
 
-				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1)}}
+				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1, propertyFlags: propertyFlags)}}
 
 					[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 					static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)

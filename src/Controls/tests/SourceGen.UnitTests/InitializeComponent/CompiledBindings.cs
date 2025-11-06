@@ -149,16 +149,7 @@ public partial class TestPage
 				new(static source => source, "Foo"),
 				new(static source => source.Foo, "Bar"),
 				new(static source => source.Foo.Bar, "Title"),
-			})
-		{
-			Mode = mode,
-			Converter = converter,
-			ConverterParameter = converterParameter,
-			StringFormat = stringFormat,
-			Source = source,
-			FallbackValue = fallbackValue,
-			TargetNullValue = targetNullValue
-		};
+			});
 		
 		return binding;
 	}

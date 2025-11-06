@@ -81,7 +81,7 @@ public static class BindingCodeWriter
 		}
 		""";
 
-	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2)
+	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 	{
 		if (!binding.NullableContextEnabled)
 		{
@@ -90,7 +90,7 @@ public static class BindingCodeWriter
 		}
 
 		using var builder = new BindingInterceptorCodeBuilder(indent);
-		builder.AppendBindingFactoryMethod(binding, methodName);
+		builder.AppendBindingFactoryMethod(binding, methodName, propertyFlags);
 		return builder.ToString();
 	}
 
@@ -111,7 +111,7 @@ public static class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendBindingFactoryMethod(BindingInvocationDescription binding, string methodName)
+		public void AppendBindingFactoryMethod(BindingInvocationDescription binding, string methodName, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 		{
 			AppendLine(GeneratedCodeAttribute);
 			if (binding.InterceptableLocation is not null)
@@ -177,21 +177,14 @@ public static class BindingCodeWriter
 			Append("handlers: ");
 
 			AppendHandlersArray(binding);
-			AppendLine(')');
+			Append(')');
 			Unindent();
-			AppendLines($$"""
-				{
-					Mode = mode,
-					Converter = converter,
-					ConverterParameter = converterParameter,
-					StringFormat = stringFormat,
-					Source = source,
-					FallbackValue = fallbackValue,
-					TargetNullValue = targetNullValue
-				};
-				""");
+			
+			// Only generate property setters for the properties indicated by the flags
+			var hasProperties = AppendBindingPropertySetters(propertyFlags);
 
-			AppendBlankLine();
+			if (hasProperties)
+				AppendBlankLine();
 
 			// Set binding
 			if (binding.MethodType == InterceptedMethodType.SetBinding)
@@ -385,6 +378,44 @@ public static class BindingCodeWriter
 					IndexAccess indexAccess => new ConditionalAccess(indexAccess),
 					_ => part,
 				};
+			}
+		}
+
+		private bool AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
+		{
+			// Only generate property setters for properties indicated by the flags
+			var properties = new List<string>();
+			
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
+				properties.Add("Mode = mode");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
+				properties.Add("Converter = converter");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
+				properties.Add("ConverterParameter = converterParameter");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
+				properties.Add("StringFormat = stringFormat");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
+				properties.Add("Source = source");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
+				properties.Add("FallbackValue = fallbackValue");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
+				properties.Add("TargetNullValue = targetNullValue");
+
+			if (properties.Count > 0)
+			{
+				AppendLine(";");
+				AppendBlankLine();
+				foreach (var property in properties)
+				{
+					AppendLine($"binding.{property};");
+				}
+				return true;
+			}
+			else
+			{
+				AppendLine(";");
+				AppendBlankLine();
+				return false;
 			}
 		}
 
