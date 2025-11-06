@@ -91,15 +91,17 @@ internal struct CompiledBindingMarkup
 
 		//Generate the complete inline binding creation method
 		using var stringWriter = new StringWriter();
-		using var code = new IndentedTextWriter(stringWriter, "");
+		using var code = new IndentedTextWriter(stringWriter, "\t");
 		
 		code.WriteLine($"static global::Microsoft.Maui.Controls.BindingBase {methodName}({extensionTypeName} extension)");
 		code.WriteLine("{");
+		code.Indent++;
 		
 		// Setter initialization
 		code.WriteLine($"global::System.Action<{binding.SourceType}, {binding.PropertyType}>? setter = null;");
 		code.WriteLine("if (ShouldUseSetter(extension.Mode))");
 		code.WriteLine("{");
+		code.Indent++;
 		
 		if (binding.SetterOptions.IsWritable)
 		{
@@ -110,26 +112,32 @@ internal struct CompiledBindingMarkup
 		{
 			code.WriteLine("setter = static (source, value) =>");
 			code.WriteLine("{");
+			code.Indent++;
 			code.WriteLine("throw new global::System.InvalidOperationException(\"Cannot set value on the source object.\");");
+			code.Indent--;
 			code.WriteLine("};");
 		}
 		
+		code.Indent--;
 		code.WriteLine("}");
 		code.WriteLine();
 		
 		// TypedBinding creation
 		code.WriteLine($"var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
-		code.WriteLine($"getter: source => ({GenerateGetterLambda(binding.Path)}(source), true),");
+		code.Indent++;
+		code.WriteLine($"getter: source => ({GenerateGetterExpression(binding.Path)}, true),");
 		code.WriteLine("setter,");
 		code.Write("handlers: ");
 		AppendHandlersArray(code, binding);
 		code.Write(")");
+		code.Indent--;
 		
 		// Object initializer if any properties are set
 		if (propertyFlags != BindingPropertyFlags.None)
 		{
 			code.WriteLine();
 			code.WriteLine("{");
+			code.Indent++;
 			
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
 				code.WriteLine("Mode = extension.Mode,");
@@ -161,6 +169,7 @@ internal struct CompiledBindingMarkup
 					code.WriteLine("TargetNullValue = extension.TargetNullValue,");
 			}
 			
+			code.Indent--;
 			code.WriteLine("};");
 		}
 		else
@@ -175,10 +184,14 @@ internal struct CompiledBindingMarkup
 		// ShouldUseSetter helper
 		code.WriteLine("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
 		code.WriteLine("static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)");
+		code.Indent++;
 		code.WriteLine("=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource");
+		code.Indent++;
 		code.WriteLine("|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay");
 		code.WriteLine("|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;");
+		code.Indent -= 2;
 		
+		code.Indent--;
 		code.WriteLine("}");
 
 		_context.AddLocalMethod(stringWriter.ToString());
@@ -358,6 +371,11 @@ internal struct CompiledBindingMarkup
 
 	string GenerateGetterLambda(EquatableArray<IPathPart> bindingPath)
 	{
+		return $"static source => {GenerateGetterExpression(bindingPath)}";
+	}
+
+	string GenerateGetterExpression(EquatableArray<IPathPart> bindingPath)
+	{
 		string expression = "source";
 		bool forceConditionalAccessToNextPart = false;
 
@@ -369,7 +387,7 @@ internal struct CompiledBindingMarkup
 			forceConditionalAccessToNextPart = part is Cast;
 		}
 
-		return $"static source => {expression}";
+		return expression;
 
 		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccessToNextPart)
 			=> (forceConditionalAccessToNextPart, part) switch
@@ -385,6 +403,7 @@ internal struct CompiledBindingMarkup
 		code.Write("static (source, value) =>");
 		code.WriteLine();
 		code.WriteLine("{");
+		code.Indent++;
 		
 		var setter = Setter.From(binding.Path, "source", "value");
 		if (setter.PatternMatchingExpressions.Length > 0)
@@ -403,7 +422,9 @@ internal struct CompiledBindingMarkup
 			
 			code.WriteLine(")");
 			code.WriteLine("{");
+			code.Indent++;
 			code.WriteLine(setter.AssignmentStatement);
+			code.Indent--;
 			code.WriteLine("}");
 		}
 		else
@@ -411,6 +432,7 @@ internal struct CompiledBindingMarkup
 			code.WriteLine(setter.AssignmentStatement);
 		}
 		
+		code.Indent--;
 		code.WriteLine("};");
 	}
 
@@ -418,6 +440,7 @@ internal struct CompiledBindingMarkup
 	{
 		code.WriteLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
 		code.WriteLine("{");
+		code.Indent++;
 
 		string nextExpression = "source";
 		bool forceConditionalAccessToNextPart = false;
@@ -444,6 +467,7 @@ internal struct CompiledBindingMarkup
 			}
 		}
 
+		code.Indent--;
 		code.Write("}");
 
 		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccess)

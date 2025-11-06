@@ -113,41 +113,39 @@ public partial class TestPage
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
-	static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
-	{
-		global::System.Action<global::Test.TestPage, string>? setter = null;
-		if (ShouldUseSetter(extension.Mode))
+		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 		{
-			setter = static (source, value) =>
+			global::System.Action<global::Test.TestPage, string>? setter = null;
+			if (ShouldUseSetter(extension.Mode))
 			{
-				if (source.Foo.Bar is {} p0)
+				setter = static (source, value) =>
 				{
-					p0.Title = value;
-				}
-			};
+					if (source.Foo.Bar is {} p0)
+					{
+						p0.Title = value;
+					}
+				};
+			}
+			
+			var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
+				getter: source => (source.Foo.Bar.Title, true),
+				setter,
+				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
+				{
+					new(static source => source, "Foo"),
+					new(static source => source.Foo, "Bar"),
+					new(static source => source.Foo.Bar, "Title"),
+				});
+			
+			return binding;
+
+			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+			static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
+				=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
+					|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
+					|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
 		}
 		
-		var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
-			getter: source => ((static source => source.Foo.Bar.Title)(source), true),
-			setter,
-			handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-			{
-				new(static source => source, "Foo"),
-				new(static source => source.Foo, "Bar"),
-				new(static source => source.Foo.Bar, "Title"),
-			});
-		
-		return binding;
-
-		[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-		static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
-			=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
-				|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
-				|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
-	}
-		
-	}
-}
 
 """;
 
