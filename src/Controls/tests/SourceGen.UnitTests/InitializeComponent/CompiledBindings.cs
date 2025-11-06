@@ -126,7 +126,7 @@ public partial class TestPage
 					}
 				};
 			}
-			
+
 			var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
 				getter: source => (source.Foo.Bar.Title, true),
 				setter,
@@ -136,7 +136,7 @@ public partial class TestPage
 					new(static source => source.Foo, "Bar"),
 					new(static source => source.Foo.Bar, "Title"),
 				});
-			
+
 			return binding;
 
 			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -145,7 +145,10 @@ public partial class TestPage
 					|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
 					|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
 		}
+
 		
+	}
+}
 
 """;
 
