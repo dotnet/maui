@@ -65,82 +65,119 @@ internal struct CompiledBindingMarkup
 		var methodName = $"CreateTypedBindingFrom_{_bindingExtension.ValueAccessor}";
 
 		// TODO emit #line info?
-		// TODO move ShouldUseSetter methods to shared code (public in MAUI?) + the same for the BindingSourceGen?
 
 		var extensionTypeName = isTemplateBinding
 			? "global::Microsoft.Maui.Controls.Xaml.TemplateBindingExtension"
 			: "global::Microsoft.Maui.Controls.Xaml.BindingExtension";
 
-		// Build the flags and parameter list in one pass
+		// Determine which properties were set in XAML
 		var propertyFlags = BindingPropertyFlags.None;
-		var createParams = new StringBuilder();
-		createParams.Append($"getter: {GenerateGetterLambda(binding.Path)}");
 		
 		if (_node.HasProperty("Mode"))
-		{
 			propertyFlags |= BindingPropertyFlags.Mode;
-			createParams.Append(",\n\t\t\t\t\textension.Mode");
-		}
-		
 		if (_node.HasProperty("Converter"))
-		{
 			propertyFlags |= BindingPropertyFlags.Converter;
-			createParams.Append(",\n\t\t\t\t\textension.Converter");
-		}
-		
 		if (_node.HasProperty("ConverterParameter"))
-		{
 			propertyFlags |= BindingPropertyFlags.ConverterParameter;
-			createParams.Append(",\n\t\t\t\t\textension.ConverterParameter");
-		}
-		
 		if (_node.HasProperty("StringFormat"))
-		{
 			propertyFlags |= BindingPropertyFlags.StringFormat;
-			createParams.Append(",\n\t\t\t\t\textension.StringFormat");
-		}
-		
 		if (_node.HasProperty("Source") || isTemplateBinding)
-		{
 			propertyFlags |= BindingPropertyFlags.Source;
-			createParams.Append(isTemplateBinding 
-				? ",\n\t\t\t\t\tsource: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent" 
-				: ",\n\t\t\t\t\textension.Source");
-		}
-		
 		if (_node.HasProperty("FallbackValue"))
-		{
 			propertyFlags |= BindingPropertyFlags.FallbackValue;
-			createParams.Append(isTemplateBinding 
-				? ",\n\t\t\t\t\tfallbackValue: null" 
-				: ",\n\t\t\t\t\textension.FallbackValue");
+		if (_node.HasProperty("TargetNullValue"))
+			propertyFlags |= BindingPropertyFlags.TargetNullValue;
+
+		// Generate the complete inline binding creation method
+		var code = new StringBuilder();
+		code.AppendLine($"static global::Microsoft.Maui.Controls.BindingBase {methodName}({extensionTypeName} extension)");
+		code.AppendLine("{");
+		
+		// Setter initialization
+		code.AppendLine($"\tglobal::System.Action<{binding.SourceType}, {binding.PropertyType}>? setter = null;");
+		code.AppendLine("\tif (ShouldUseSetter(extension.Mode))");
+		code.AppendLine("\t{");
+		
+		if (binding.SetterOptions.IsWritable)
+		{
+			code.Append("\t\tsetter = ");
+			AppendSetterLambda(code, binding);
+		}
+		else
+		{
+			code.AppendLine("\t\tsetter = static (source, value) =>");
+			code.AppendLine("\t\t{");
+			code.AppendLine("\t\t\tthrow new global::System.InvalidOperationException(\"Cannot set value on the source object.\");");
+			code.AppendLine("\t\t};");
 		}
 		
-		if (_node.HasProperty("TargetNullValue"))
+		code.AppendLine("\t}");
+		code.AppendLine();
+		
+		// TypedBinding creation
+		code.AppendLine($"\tvar binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
+		code.AppendLine($"\t\tgetter: source => ({GenerateGetterLambda(binding.Path)}(source), true),");
+		code.AppendLine("\t\tsetter,");
+		code.Append("\t\thandlers: ");
+		AppendHandlersArray(code, binding);
+		code.Append(")");
+		
+		// Object initializer if any properties are set
+		if (propertyFlags != BindingPropertyFlags.None)
 		{
-			propertyFlags |= BindingPropertyFlags.TargetNullValue;
-			createParams.Append(isTemplateBinding 
-				? ",\n\t\t\t\t\ttargetNullValue: null" 
-				: ",\n\t\t\t\t\textension.TargetNullValue");
+			code.AppendLine();
+			code.AppendLine("\t{");
+			
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
+				code.AppendLine("\t\tMode = extension.Mode,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
+				code.AppendLine("\t\tConverter = extension.Converter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
+				code.AppendLine("\t\tConverterParameter = extension.ConverterParameter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
+				code.AppendLine("\t\tStringFormat = extension.StringFormat,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
+			{
+				if (isTemplateBinding)
+					code.AppendLine("\t\tSource = global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent,");
+				else
+					code.AppendLine("\t\tSource = extension.Source,");
+			}
+			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
+			{
+				if (isTemplateBinding)
+					code.AppendLine("\t\tFallbackValue = null,");
+				else
+					code.AppendLine("\t\tFallbackValue = extension.FallbackValue,");
+			}
+			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
+			{
+				if (isTemplateBinding)
+					code.AppendLine("\t\tTargetNullValue = null,");
+				else
+					code.AppendLine("\t\tTargetNullValue = extension.TargetNullValue,");
+			}
+			
+			code.AppendLine("\t};");
 		}
+		else
+		{
+			code.AppendLine(";");
+		}
+		
+		code.AppendLine();
+		code.AppendLine("\treturn binding;");
+		code.AppendLine();
+		
+		// ShouldUseSetter helper
+		code.AppendLine("\t[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
+		code.AppendLine("\tstatic bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)");
+		code.AppendLine("\t\t=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource");
+		code.AppendLine("\t\t\t|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay");
+		code.AppendLine("\t\t\t|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;");
+		code.AppendLine("}");
 
-		var createBindingLocalMethod = $$"""
-				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
-				{
-					return Create(
-						{{createParams}});
-
-				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1, propertyFlags: propertyFlags)}}
-
-					[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-					static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
-						=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
-							|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
-							|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
-				}
-				""";
-
-		_context.AddLocalMethod(createBindingLocalMethod);
+		_context.AddLocalMethod(code.ToString());
 		newBindingExpression = $"{methodName}({extVariable.ValueAccessor})";
 
 		return true;
@@ -337,6 +374,88 @@ internal struct CompiledBindingMarkup
 				(true, IndexAccess indexAccess) => new ConditionalAccess(indexAccess),
 				_ => part,
 			};
+	}
+
+	void AppendSetterLambda(StringBuilder code, BindingInvocationDescription binding)
+	{
+		code.Append("static (source, value) =>");
+		code.AppendLine();
+		code.AppendLine("\t\t{");
+		
+		var setter = Setter.From(binding.Path, "source", "value");
+		if (setter.PatternMatchingExpressions.Length > 0)
+		{
+			code.Append("\t\t\tif (");
+			
+			for (int i = 0; i < setter.PatternMatchingExpressions.Length; i++)
+			{
+				if (i > 0)
+				{
+					code.AppendLine();
+					code.Append("\t\t\t\t&& ");
+				}
+				code.Append(setter.PatternMatchingExpressions[i]);
+			}
+			
+			code.AppendLine(")");
+			code.AppendLine("\t\t\t{");
+			code.AppendLine($"\t\t\t\t{setter.AssignmentStatement}");
+			code.AppendLine("\t\t\t}");
+		}
+		else
+		{
+			code.AppendLine($"\t\t\t{setter.AssignmentStatement}");
+		}
+		
+		code.AppendLine("\t\t};");
+	}
+
+	void AppendHandlersArray(StringBuilder code, BindingInvocationDescription binding)
+	{
+		code.AppendLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
+		code.AppendLine("\t\t{");
+
+		string nextExpression = "source";
+		bool forceConditionalAccessToNextPart = false;
+		foreach (var part in binding.Path)
+		{
+			var previousExpression = nextExpression;
+			nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart));
+			forceConditionalAccessToNextPart = part is Cast;
+
+			// Make binding react for PropertyChanged events on indexer itself
+			if (part is IndexAccess indexAccess)
+			{
+				code.AppendLine($"\t\t\tnew(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+			}
+			else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
+			{
+				code.AppendLine($"\t\t\tnew(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+			}
+
+			// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
+			if (part.PropertyName is string propertyName)
+			{
+				code.AppendLine($"\t\t\tnew(static source => {previousExpression}, \"{propertyName}\"),");
+			}
+		}
+
+		code.Append("\t\t}");
+
+		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccess)
+		{
+			if (!forceConditionalAccess)
+			{
+				return part;
+			}
+
+			return part switch
+			{
+				MemberAccess memberAccess => new ConditionalAccess(memberAccess),
+				IndexAccess indexAccess => new ConditionalAccess(indexAccess),
+				_ => part,
+			};
+		}
 	}
 }
 
