@@ -87,11 +87,10 @@ stages:
           - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)
             displayName: 🛠️ Build BuildTasks
 
-
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /p:TestRunNamePrefix="UnitTests_"
+              HelixProjectArguments: /p:TestRunNamePrefix=UnitTests_
               HelixConfiguration: ${{ BuildConfiguration }}
               IncludeDotNetCli: true
               DisplayNamePrefix: UnitTests
