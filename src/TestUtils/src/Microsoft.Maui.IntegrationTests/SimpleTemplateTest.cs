@@ -40,16 +40,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
-		string[]? warningsToIgnore = null;
-
-		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
-		{
-			warningsToIgnore = new string[]
-			{
-				"NU1608", // https://github.com/CommunityToolkit/Maui/issues/2921
-			};
-		}
-
 		// We only have these packs for Android
 		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
 		{
@@ -64,7 +54,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
