@@ -132,24 +132,16 @@ public class BindingCodeWriterTests
                                 new(static source => source.A, "B"),
                                 new(static source => source.A?.B, "C"),
                             })
-
                             {
-
                             	Mode = mode,
-
                             	Converter = converter,
-
                             	ConverterParameter = converterParameter,
-
                             	StringFormat = stringFormat,
-
                             	Source = source,
-
                             	FallbackValue = fallbackValue,
-
                             	TargetNullValue = targetNullValue,
-
                             };
+
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -214,23 +206,14 @@ public class BindingCodeWriterTests
                         new(static source => source.A, "B"),
                         new(static source => source.A?.B, "C"),
                     })
-
                     {
-
                     	Mode = mode,
-
                     	Converter = converter,
-
                     	ConverterParameter = converterParameter,
-
                     	StringFormat = stringFormat,
-
                     	Source = source,
-
                     	FallbackValue = fallbackValue,
-
                     	TargetNullValue = targetNullValue,
-
                     };
 
                 bindableObject.SetBinding(bindableProperty, binding);
@@ -291,23 +274,14 @@ public class BindingCodeWriterTests
                         new(static source => source.A, "B"),
                         new(static source => source.A.B, "C"),
                     })
-
                     {
-
                     	Mode = mode,
-
                     	Converter = converter,
-
                     	ConverterParameter = converterParameter,
-
                     	StringFormat = stringFormat,
-
                     	Source = source,
-
                     	FallbackValue = fallbackValue,
-
                     	TargetNullValue = targetNullValue,
-
                     };
 
                 bindableObject.SetBinding(bindableProperty, binding);
@@ -368,23 +342,14 @@ public class BindingCodeWriterTests
                         new(static source => source.A, "B"),
                         new(static source => source.A.B, "C"),
                     })
-
                     {
-
                     	Mode = mode,
-
                     	Converter = converter,
-
                     	ConverterParameter = converterParameter,
-
                     	StringFormat = stringFormat,
-
                     	Source = source,
-
                     	FallbackValue = fallbackValue,
-
                     	TargetNullValue = targetNullValue,
-
                     };
 
                 bindableObject.SetBinding(bindableProperty, binding);
@@ -456,23 +421,14 @@ public class BindingCodeWriterTests
                         new(static source => source[12]?["Abc"], "Item"),
                         new(static source => source[12]?["Abc"], "Item[0]"),
                     })
-
                     {
-
                     	Mode = mode,
-
                     	Converter = converter,
-
                     	ConverterParameter = converterParameter,
-
                     	StringFormat = stringFormat,
-
                     	Source = source,
-
                     	FallbackValue = fallbackValue,
-
                     	TargetNullValue = targetNullValue,
-
                     };
 
                 bindableObject.SetBinding(bindableProperty, binding);
@@ -544,23 +500,14 @@ public class BindingCodeWriterTests
                         new(static source => ((source.A as X)?.B as Y), "C"),
                         new(static source => (((source.A as X)?.B as Y)?.C as Z?), "D"),
                     })
-
                     {
-
                     	Mode = mode,
-
                     	Converter = converter,
-
                     	ConverterParameter = converterParameter,
-
                     	StringFormat = stringFormat,
-
                     	Source = source,
-
                     	FallbackValue = fallbackValue,
-
                     	TargetNullValue = targetNullValue,
-
                     };
 
                 bindableObject.SetBinding(bindableProperty, binding);
