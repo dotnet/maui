@@ -183,6 +183,105 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(String)");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyEmptyViewStringDisplaysCorrectly_WithLeftToRightFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("FlowDirectionLeftToRight");
+			App.Tap("FlowDirectionLeftToRight");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyEmptyViewStringDisplaysCorrectly_WithRightToLeftFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("FlowDirectionRightToLeft");
+			App.Tap("FlowDirectionRightToLeft");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			VerifyScreenshot();
+		}
+#endif
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCustomEmptyViewDisplaysCorrectly_WithLeftToRightFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("FlowDirectionLeftToRight");
+			App.Tap("FlowDirectionLeftToRight");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCustomEmptyViewDisplaysCorrectly_WithRightToLeftFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("FlowDirectionRightToLeft");
+			App.Tap("FlowDirectionRightToLeft");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCustomSizedEmptyViewDisplaysCorrectly_WithLeftToRightFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewCustomSize");
+			App.Tap("EmptyViewCustomSize");
+			App.WaitForElement("FlowDirectionLeftToRight");
+			App.Tap("FlowDirectionLeftToRight");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Custom Empty View (Sized)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCustomSizedEmptyViewDisplaysCorrectly_WithRightToLeftFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewCustomSize");
+			App.Tap("EmptyViewCustomSize");
+			App.WaitForElement("FlowDirectionRightToLeft");
+			App.Tap("FlowDirectionRightToLeft");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Custom Empty View (Sized)");
+			VerifyScreenshot();
+		}
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewDisplayed_AndEmptyObservableCollectionSetFirst()
@@ -605,6 +704,70 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		public void VerifyEmptyViewTemplateDisplaysCorrectly_WithLeftToRightFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("FlowDirectionLeftToRight");
+			App.Tap("FlowDirectionLeftToRight");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyEmptyViewTemplateDisplaysCorrectly_WithRightToLeftFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("FlowDirectionRightToLeft");
+			App.Tap("FlowDirectionRightToLeft");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCustomSizedEmptyViewTemplateDisplaysCorrectly_WithLeftToRightFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateCustomSize");
+			App.Tap("EmptyViewTemplateCustomSize");
+			App.WaitForElement("FlowDirectionLeftToRight");
+			App.Tap("FlowDirectionLeftToRight");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCustomSizedEmptyViewTemplateDisplaysCorrectly_WithRightToLeftFlowDirection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateCustomSize");
+			App.Tap("EmptyViewTemplateCustomSize");
+			App.WaitForElement("FlowDirectionRightToLeft");
+			App.Tap("FlowDirectionRightToLeft");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_EmptyObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
@@ -1003,7 +1166,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			int expectedHeight = 525;
 #elif MACCATALYST
 			int expectedWidth = 235;
-			int expectedHeight = 150; 
+			int expectedHeight = 150;
 #else
 			int expectedWidth = 300;
 			int expectedHeight = 200;
@@ -1041,9 +1204,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if TEST_FAILS_ON_ANDROID
-// CollectionView Footer Becomes Scrollable When EmptyView is Active on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
-// HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
-// Header and footer are not displayed when emptyview selected first Issue Link: https://github.com/dotnet/maui/issues/28351		
+		// CollectionView Footer Becomes Scrollable When EmptyView is Active on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
+		// HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
+		// Header and footer are not displayed when emptyview selected first Issue Link: https://github.com/dotnet/maui/issues/28351		
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndHeaderString()

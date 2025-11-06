@@ -242,6 +242,26 @@
                                      AutomationId="ItemsSourceEmptyObservableCollection"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
+
+                <!-- FlowDirection -->
+                <Label Text="FlowDirection:"
+                       FontSize="12"
+                       FontAttributes="Bold"/>
+                <StackLayout Orientation="Horizontal">
+                    <RadioButton x:Name="FlowDirectionLeftToRight"
+                                 Content="LeftToRight"
+                                 GroupName="FlowDirectionOptions"
+                                 IsChecked="True"
+                                 CheckedChanged="OnFlowDirectionChanged"
+                                 FontSize="11"
+                                 AutomationId="FlowDirectionLeftToRight"/>
+                    <RadioButton x:Name="FlowDirectionRightToLeft"
+                                 Content="RightToLeft"
+                                 GroupName="FlowDirectionOptions"
+                                 CheckedChanged="OnFlowDirectionChanged"
+                                 FontSize="11"
+                                 AutomationId="FlowDirectionRightToLeft"/>
+                </StackLayout>
             </StackLayout>
         </Grid>
     </ScrollView>
