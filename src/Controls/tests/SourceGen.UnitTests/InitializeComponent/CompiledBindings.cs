@@ -116,14 +116,7 @@ public partial class TestPage
 		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 {
 	return Create(
-		getter: static source => source.Foo.Bar.Title,
-		extension.Mode,
-		extension.Converter,
-		extension.ConverterParameter,
-		extension.StringFormat,
-		extension.Source,
-		extension.FallbackValue,
-		extension.TargetNullValue);
+		getter: static source => source.Foo.Bar.Title);
 
 	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.BindingSourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
 	static global::Microsoft.Maui.Controls.BindingBase Create(
@@ -156,15 +149,16 @@ public partial class TestPage
 				new(static source => source, "Foo"),
 				new(static source => source.Foo, "Bar"),
 				new(static source => source.Foo.Bar, "Title"),
-			});
-		
-		if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-		if (converter is not null) binding.Converter = converter;
-		if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-		if (stringFormat is not null) binding.StringFormat = stringFormat;
-		if (source is not null) binding.Source = source;
-		if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-		if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+			})
+		{
+			Mode = mode,
+			Converter = converter,
+			ConverterParameter = converterParameter,
+			StringFormat = stringFormat,
+			Source = source,
+			FallbackValue = fallbackValue,
+			TargetNullValue = targetNullValue
+		};
 		
 		return binding;
 	}

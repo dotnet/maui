@@ -70,28 +70,61 @@ internal struct CompiledBindingMarkup
 		var extensionTypeName = isTemplateBinding
 			? "global::Microsoft.Maui.Controls.Xaml.TemplateBindingExtension"
 			: "global::Microsoft.Maui.Controls.Xaml.BindingExtension";
-		var source = isTemplateBinding
-			? "source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent"
-			: "extension.Source";
-		var fallbackValue = isTemplateBinding
-			? "fallbackValue: null"
-			: "extension.FallbackValue";
-		var targetNullValue = isTemplateBinding
-			? "targetNullValue: null"
-			: "extension.TargetNullValue";
+
+		// Check which properties were actually set in XAML
+		// Only generate code to pass properties that were explicitly set
+		var hasMode = _node.Properties.TryGetValue("Mode", out _);
+		var hasConverter = _node.Properties.TryGetValue("Converter", out _);
+		var hasConverterParameter = _node.Properties.TryGetValue("ConverterParameter", out _);
+		var hasStringFormat = _node.Properties.TryGetValue("StringFormat", out _);
+		var hasSource = _node.Properties.TryGetValue("Source", out _) || isTemplateBinding;
+		var hasFallbackValue = _node.Properties.TryGetValue("FallbackValue", out _);
+		var hasTargetNullValue = _node.Properties.TryGetValue("TargetNullValue", out _);
+
+		// Build the parameter list for the Create call
+		var createParams = new StringBuilder();
+		createParams.AppendLine($"getter: {GenerateGetterLambda(binding.Path)},");
+		
+		if (hasMode)
+			createParams.AppendLine("extension.Mode,");
+		if (hasConverter)
+			createParams.AppendLine("extension.Converter,");
+		if (hasConverterParameter)
+			createParams.AppendLine("extension.ConverterParameter,");
+		if (hasStringFormat)
+			createParams.AppendLine("extension.StringFormat,");
+		if (hasSource)
+		{
+			if (isTemplateBinding)
+				createParams.AppendLine("source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent,");
+			else
+				createParams.AppendLine("extension.Source,");
+		}
+		if (hasFallbackValue)
+		{
+			if (isTemplateBinding)
+				createParams.AppendLine("fallbackValue: null,");
+			else
+				createParams.AppendLine("extension.FallbackValue,");
+		}
+		if (hasTargetNullValue)
+		{
+			if (isTemplateBinding)
+				createParams.AppendLine("targetNullValue: null,");
+			else
+				createParams.AppendLine("extension.TargetNullValue,");
+		}
+		
+		// Remove the trailing comma and newline from the last parameter
+		var paramStr = createParams.ToString().TrimEnd();
+		if (paramStr.EndsWith(","))
+			paramStr = paramStr.Substring(0, paramStr.Length - 1);
 
 		var createBindingLocalMethod = $$"""
 				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
 				{
 					return Create(
-						getter: {{GenerateGetterLambda(binding.Path)}},
-						extension.Mode,
-						extension.Converter,
-						extension.ConverterParameter,
-						extension.StringFormat,
-						{{source}},
-						{{fallbackValue}},
-						{{targetNullValue}});
+						{{paramStr}});
 
 				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1)}}
 

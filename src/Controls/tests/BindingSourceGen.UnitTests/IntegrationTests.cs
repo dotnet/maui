@@ -87,22 +87,16 @@ public class IntegrationTests
                             handlers: new global::System.Tuple<global::System.Func<string, object?>, string>[]
                             {
                                 new(static source => source, "Length"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -186,22 +180,16 @@ public class IntegrationTests
                             handlers: new global::System.Tuple<global::System.Func<string, object?>, string>[]
                             {
                                 new(static source => source, "Length"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
                         return binding;
                     }
                 }
@@ -367,22 +355,16 @@ public class IntegrationTests
                             {
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -492,22 +474,16 @@ public class IntegrationTests
                                 new(static source => source?.B, "Item"),
                                 new(static source => source?.B, "Item[0]"),
                                 new(static source => source?.B?[0], "C"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -717,22 +693,16 @@ public class IntegrationTests
                             {
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -854,22 +824,16 @@ public class IntegrationTests
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
                                 new(static source => source?.B.C, "D"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -997,22 +961,16 @@ public class IntegrationTests
                                 new(static source => (source.A as global::MyNamespace.X), "B"),
                                 new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
                                 new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1135,22 +1093,16 @@ public class IntegrationTests
                                 new(static source => (source.A as global::MyNamespace.X), "B"),
                                 new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
                                 new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1259,22 +1211,16 @@ public class IntegrationTests
                                 new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped, "Y"),
                                 new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped.Y, "Value"),
                                 new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped.Y.Value, "Length"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1397,22 +1343,16 @@ public class IntegrationTests
                                 new(static source => source[12], "Indexer[Abc]"),
                                 new(static source => source[12]?["Abc"], "Item"),
                                 new(static source => source[12]?["Abc"], "Item[0]"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1516,22 +1456,16 @@ public class IntegrationTests
                             {
                                 new(static source => source, "_button"),
                                 new(static source => GetUnsafeField__button(source), "Text"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1639,22 +1573,16 @@ public class IntegrationTests
                             {
                                 new(static source => source, "Button"),
                                 new(static source => GetUnsafeProperty_Button(source), "Text"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1760,22 +1688,16 @@ public class IntegrationTests
                             handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Text"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1882,22 +1804,16 @@ public class IntegrationTests
                             {
                                 new(static source => source, "Text"),
                             	new(static source => GetUnsafeProperty_Text(source), "Length"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -2000,22 +1916,16 @@ public class IntegrationTests
                             handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MyClass, object?>, string>[]
                             {
                                 new(static source => source, "Text"),
-                            });
-
-
-                            if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-                            if (converter is not null) binding.Converter = converter;
-
-                            if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-                            if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-                            if (source is not null) binding.Source = source;
-
-                            if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-                            if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+                            })
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -2113,22 +2023,16 @@ public class IntegrationTests
 							handlers: new global::System.Tuple<global::System.Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
 							{
 								new(static source => source, "Value"),
-							});
-
-
-							if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-							if (converter is not null) binding.Converter = converter;
-
-							if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-							if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-							if (source is not null) binding.Source = source;
-
-							if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-							if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+							})
+						{
+							Mode = mode,
+							Converter = converter,
+							ConverterParameter = converterParameter,
+							StringFormat = stringFormat,
+							Source = source,
+							FallbackValue = fallbackValue,
+							TargetNullValue = targetNullValue
+						};
 						return binding;
 					}
 				}
@@ -2229,22 +2133,16 @@ public class IntegrationTests
 							handlers: new global::System.Tuple<global::System.Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
 							{
 								new(static source => source, "Value"),
-							});
-
-
-							if (mode != global::Microsoft.Maui.Controls.BindingMode.Default) binding.Mode = mode;
-
-							if (converter is not null) binding.Converter = converter;
-
-							if (converterParameter is not null) binding.ConverterParameter = converterParameter;
-
-							if (stringFormat is not null) binding.StringFormat = stringFormat;
-
-							if (source is not null) binding.Source = source;
-
-							if (fallbackValue is not null) binding.FallbackValue = fallbackValue;
-
-							if (targetNullValue is not null) binding.TargetNullValue = targetNullValue;
+							})
+						{
+							Mode = mode,
+							Converter = converter,
+							ConverterParameter = converterParameter,
+							StringFormat = stringFormat,
+							Source = source,
+							FallbackValue = fallbackValue,
+							TargetNullValue = targetNullValue
+						};
 						bindableObject.SetBinding(bindableProperty, binding);
 					}
 				}
