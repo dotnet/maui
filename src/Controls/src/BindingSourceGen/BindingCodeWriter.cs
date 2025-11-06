@@ -177,14 +177,13 @@ public static class BindingCodeWriter
 			Append("handlers: ");
 
 			AppendHandlersArray(binding);
-			// The closing ) is handled by AppendBindingPropertySetters
+			Append(")");
 			Unindent();
 			
 			// Only generate property setters for the properties indicated by the flags
-			var hasProperties = AppendBindingPropertySetters(propertyFlags);
-
-			if (hasProperties)
-				AppendBlankLine();
+			AppendBindingPropertySetters(propertyFlags);
+			AppendLine(";");
+			AppendBlankLine();
 
 			// Set binding
 			if (binding.MethodType == InterceptedMethodType.SetBinding)
@@ -381,18 +380,16 @@ public static class BindingCodeWriter
 			}
 		}
 
-		private bool AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
+		private void AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
 		{
-			// Early return if no properties need to be set
+			// Skip initializer block entirely if no properties need to be set
 			if (propertyFlags == BindingPropertyFlags.None)
 			{
-				AppendLine(");");
-				AppendBlankLine();
-				return false;
+				return;
 			}
 
 			// Use object initializer syntax for cleaner, shorter code
-			AppendLine(")");
+			AppendBlankLine();
 			AppendLine('{');
 			Indent();
 			
@@ -412,8 +409,7 @@ public static class BindingCodeWriter
 				AppendLine("TargetNullValue = targetNullValue,");
 			
 			Unindent();
-			AppendLine("};");
-			return true;
+			Append('}');
 		}
 
 		private void AppendUnsafeAccessors(BindingInvocationDescription binding)
