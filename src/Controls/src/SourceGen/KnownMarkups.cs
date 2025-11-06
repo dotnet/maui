@@ -71,49 +71,47 @@ internal class KnownMarkups
 		return false;
 	}
 
-	public static ITypeSymbol? GetTypeFromTypeExtension(ElementNode xTypeNode, SourceGenContext context)
+	public static bool ProvideValueForTypeExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		if (!xTypeNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
-			&& !xTypeNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
-			&& xTypeNode.CollectionItems.Count == 1)
-			typeNameNode = xTypeNode.CollectionItems[0];
+		returnType = context.Compilation.GetTypeByMetadataName("System.Type")!;
+
+		if (!node.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+			&& !node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+			&& node.CollectionItems.Count == 1)
+			typeNameNode = node.CollectionItems[0];
 
 		if (typeNameNode is not ValueNode vn)
 		{
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid x:Type"));
-			return null;
+			value = "default";
+			return false;
 		}
 
 		var typeName = vn.Value as string;
 		if (IsNullOrEmpty(typeName))
 		{
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid x:Type"));
-			return null;
-		}
-
-		var typeSymbol = typeName!.GetTypeSymbol(context, xTypeNode);
-		if (typeSymbol == null)
-		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typeSymbol}"));
-			return null;
-		}
-
-		return typeSymbol;
-	}
-
-	public static bool ProvideValueForTypeExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
-	{
-		returnType = context.Compilation.GetTypeByMetadataName("System.Type")!;
-		var typeSymbol = GetTypeFromTypeExtension(node, context);
-		if (typeSymbol == null)
-		{
-			value = "null";
+			value = "default";
 			return false;
 		}
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName, node.NamespaceResolver, node as IXmlLineInfo);
+		if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+		{
+			context.Types[node] = typeSymbol!;
+			value = $"typeof({typeSymbol!.ToFQDisplayString()})";
+			return true;
+		}
 
-		context.Types[node] = typeSymbol;
-		value = $"typeof({typeSymbol.ToFQDisplayString()})";
-		return true;
+		//fallback to guessing, if it's a clr-namespace
+		if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
+		{
+			value = $"typeof(global::{ns}.{xmlType.Name})";
+			return true;
+		}
+
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, null, $"{typeName}"));
+		value = "default";
+		return false;
 	}
 
 	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)

@@ -52,10 +52,6 @@ variables:
 
 parameters:
 
-- name: BuildEverything
-  type: boolean
-  default: false
-
 - name: windowsPool
   type: object
   default:
@@ -65,8 +61,8 @@ parameters:
 - name: macOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15
+    name: MAUI
+    vmImage: MAUI
 
 - name: targetFrameworkVersions
   type: object

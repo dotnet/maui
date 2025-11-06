@@ -18,7 +18,7 @@ using static GeneratorHelpers;
 using static LocationHelpers;
 
 [Generator(LanguageNames.CSharp)]
-public class CodeBehindGenerator : IIncrementalGenerator
+public class XamlGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
@@ -201,6 +201,8 @@ $"""
 		}
 
 		var prefix = Path.GetDirectoryName(relativePath).Replace(Path.DirectorySeparatorChar, '_').Replace(':', '_');
+		if (!string.IsNullOrEmpty(prefix))
+			prefix += "_";
 		var fileNameNoExtension = Path.GetFileNameWithoutExtension(relativePath);
 		var kind = projectItem.Kind.ToLowerInvariant() ?? "unknown-kind";
 		return $"{prefix}{fileNameNoExtension}.{kind}.{suffix}.cs";
@@ -284,24 +286,6 @@ $"""
 		if (xamlItem.Root == null)
 			return false;
 		return true;
-	}
-
-
-	static string? GetClrNamespace(string namespaceuri)
-	{
-		if (namespaceuri == XamlParser.X2009Uri)
-		{
-			return "System";
-		}
-
-		if (namespaceuri != XamlParser.X2006Uri &&
-			!namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) &&
-			!namespaceuri.StartsWith("using:", StringComparison.InvariantCulture))
-		{
-			return null;
-		}
-
-		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 	}
 
 	static void GenerateCssCodeBehind(ProjectItem projItem, SourceProductionContext sourceProductionContext)
