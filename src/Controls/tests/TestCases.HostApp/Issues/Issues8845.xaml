@@ -6,8 +6,8 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
 
   <VerticalStackLayout>
-    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}"/>
-    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName}"/>
+    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}" x:DataType="local:Issue8845Item"/>
+    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName}" x:DataType="local:Issue8845Item"/>
     <Button AutomationId="UpdateButton" Text="Update" Clicked="Button_Clicked"/>
   </VerticalStackLayout>
 

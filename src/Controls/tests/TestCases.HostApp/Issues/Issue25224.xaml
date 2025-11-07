@@ -4,7 +4,8 @@
              x:Class="Maui.Controls.Sample.Issues.Issue25224"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page">
+             Title="Main Page"
+             x:DataType="local:Issue25224+Issue25224ViewModel">
 
   <ContentPage.Resources>
     <DataTemplate x:Key="AdvancedTemplate">
@@ -42,15 +43,15 @@
              x:Name="searchBar"
              AutomationId="SearchBar"
              SearchCommand="{Binding FilterCommand}"
-             SearchCommandParameter="{Binding Source={x:Reference searchBar}, Path=Text}"
+             SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}, x:DataType=SearchBar}"
              Placeholder="Filter" />
     <CollectionView Grid.Row="2"
                   x:Name="collectionView"
                   AutomationId="Success"
                   ItemsSource="{Binding Monkeys}"
-                  EmptyView="{Binding Source={x:Reference searchBar}, Path=Text}">
+                  EmptyView="{Binding Text, Source={x:Reference searchBar}, x:DataType=SearchBar}">
       <CollectionView.ItemTemplate>
-        <DataTemplate x:DataType="local:Issue25224Monkey">
+        <DataTemplate x:DataType="local:Monkey">
           <Grid Padding="10">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
