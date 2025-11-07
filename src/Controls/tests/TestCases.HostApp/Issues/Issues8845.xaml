@@ -3,11 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="Issue 8845"
              x:Class="Maui.Controls.Sample.Issues.Issue8845"
-             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:DataType="local:Issue8845Item">
 
   <VerticalStackLayout>
-    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}" x:DataType="local:Issue8845Item"/>
-    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName}" x:DataType="local:Issue8845Item"/>
+    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}"/>
+    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName}"/>
     <Button AutomationId="UpdateButton" Text="Update" Clicked="Button_Clicked"/>
   </VerticalStackLayout>
 

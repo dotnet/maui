@@ -18,8 +18,7 @@
                 <CollectionView.Header>
                     <Grid ColumnDefinitions="2*,*"
                           HorizontalOptions="CenterAndExpand"
-                          x:DataType="{x:Null}"
-                          IsVisible="{Binding Source={x:Reference collectionView}, Path=ItemsSource.Count, FallbackValue=False}">
+                          IsVisible="{Binding Items.Count, FallbackValue=False}">
                         <Label Grid.Column="0"
                                Text="Items Count:"
                                VerticalTextAlignment="Center"
@@ -27,8 +26,7 @@
                         <Label Grid.Column="1"
                                Text="{Binding Items.Count}"
                                VerticalTextAlignment="Center"
-                               HorizontalOptions="StartAndExpand"
-                               x:DataType="local:Issue23868"/>
+                               HorizontalOptions="StartAndExpand"/>
                     </Grid>
                 </CollectionView.Header>
                 <CollectionView.ItemTemplate>
