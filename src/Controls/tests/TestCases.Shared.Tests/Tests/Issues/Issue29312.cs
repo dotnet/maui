@@ -14,7 +14,34 @@ public class Issue29312 : _IssuesUITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
-		Thread.Sleep(300);
+		WaitForLabelText("PositionLabel", "1/5");
+	}
+
+	private void WaitForLabelText(string automationId, string expectedText, int timeoutMs = 3000)
+	{
+		var startTime = DateTime.UtcNow;
+		while ((DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
+		{
+			try
+			{
+				var element = App.FindElement(automationId);
+				if (element?.GetText() == expectedText)
+					return;
+			}
+			catch
+			{
+				// Element not found yet, continue waiting
+			}
+			Thread.Sleep(100);
+		}
+
+		// One final check before failing
+		var finalElement = App.FindElement(automationId);
+		var actualText = finalElement?.GetText() ?? "null";
+		if (actualText != expectedText)
+		{
+			throw new TimeoutException($"Timeout waiting for {automationId} to show '{expectedText}'. Actual: '{actualText}'");
+		}
 	}
 
 	[Test]
@@ -50,13 +77,13 @@ public class Issue29312 : _IssuesUITest
 		Assert.That(initialPosition.GetText(), Is.EqualTo("1/5"));
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "2/5");
 
 		var updatedPosition = App.FindElement("PositionLabel");
 		Assert.That(updatedPosition.GetText(), Is.EqualTo("2/5"));
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "3/5");
 
 		var thirdPosition = App.FindElement("PositionLabel");
 		Assert.That(thirdPosition.GetText(), Is.EqualTo("3/5"));
@@ -74,21 +101,21 @@ public class Issue29312 : _IssuesUITest
 		ResetCarouselViewToInitialState();
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "2/5");
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "3/5");
 
 		var positionAfterForward = App.FindElement("PositionLabel");
 		Assert.That(positionAfterForward.GetText(), Is.EqualTo("3/5"));
 
 		App.Tap("PreviousButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "2/5");
 
 		var positionAfterBackward = App.FindElement("PositionLabel");
 		Assert.That(positionAfterBackward.GetText(), Is.EqualTo("2/5"));
 
 		App.Tap("PreviousButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "1/5");
 
 		var backToStart = App.FindElement("PositionLabel");
 		Assert.That(backToStart.GetText(), Is.EqualTo("1/5"));
@@ -109,10 +136,10 @@ public class Issue29312 : _IssuesUITest
 		Assert.That(indicatorViewInitial, Is.Not.Null);
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "2/5");
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "3/5");
 
 		var indicatorViewAfterNavigation = App.FindElement("TestIndicatorView");
 		Assert.That(indicatorViewAfterNavigation, Is.Not.Null);
@@ -133,7 +160,7 @@ public class Issue29312 : _IssuesUITest
 		Assert.That(initialDebugInfo.GetText(), Does.Contain("CurrentItem=Item 1"));
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "2/5");
 
 		var updatedDebugInfo = App.FindElement("DebugLabel");
 		Assert.That(updatedDebugInfo.GetText(), Does.Contain("Position=1"));
@@ -154,7 +181,7 @@ public class Issue29312 : _IssuesUITest
 		Assert.That(initialPosition.GetText(), Is.EqualTo("1/5"));
 
 		App.Tap("SetCurrentItemButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "3/5");
 
 		var updatedPosition = App.FindElement("PositionLabel");
 		Assert.That(updatedPosition.GetText(), Is.EqualTo("3/5"));
@@ -175,15 +202,15 @@ public class Issue29312 : _IssuesUITest
 		ResetCarouselViewToInitialState();
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "2/5");
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "3/5");
 
 		var positionBeforeReset = App.FindElement("PositionLabel");
 		Assert.That(positionBeforeReset.GetText(), Is.EqualTo("3/5"));
 
 		App.Tap("ResetButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "1/5");
 
 		var positionAfterReset = App.FindElement("PositionLabel");
 		Assert.That(positionAfterReset.GetText(), Is.EqualTo("1/5"));
@@ -206,22 +233,28 @@ public class Issue29312 : _IssuesUITest
 		Assert.That(initialPosition.GetText(), Is.EqualTo("1/5"));
 
 		App.Tap("PreviousButton");
-		Thread.Sleep(500);
+		// Position should remain at 1/5 when going back from the first item
+		Thread.Sleep(300); // Brief delay to allow any potential change to occur
 
 		var positionAfterPreviousAtStart = App.FindElement("PositionLabel");
 		Assert.That(positionAfterPreviousAtStart.GetText(), Is.EqualTo("1/5"));
 
-		for (int i = 0; i < 4; i++)
-		{
-			App.Tap("NextButton");
-			Thread.Sleep(300);
-		}
+		// Navigate to the end
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "2/5");
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "3/5");
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "4/5");
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "5/5");
 
 		var positionAtEnd = App.FindElement("PositionLabel");
 		Assert.That(positionAtEnd.GetText(), Is.EqualTo("5/5"));
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		// Position should remain at 5/5 when going forward from the last item
+		Thread.Sleep(300); // Brief delay to allow any potential change to occur
 
 		var positionAfterNextAtEnd = App.FindElement("PositionLabel");
 		Assert.That(positionAfterNextAtEnd.GetText(), Is.EqualTo("5/5"));
@@ -236,11 +269,13 @@ public class Issue29312 : _IssuesUITest
 
 		ResetCarouselViewToInitialState();
 
-		for (int i = 0; i < 3; i++)
-		{
-			App.Tap("NextButton");
-			Thread.Sleep(200);
-		}
+		// Rapid navigation forward
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "2/5");
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "3/5");
+		App.Tap("NextButton");
+		WaitForLabelText("PositionLabel", "4/5");
 
 		var positionAfterRapidNext = App.FindElement("PositionLabel");
 		Assert.That(positionAfterRapidNext.GetText(), Is.EqualTo("4/5"));
@@ -248,11 +283,11 @@ public class Issue29312 : _IssuesUITest
 		var debugInfoAfterRapid = App.FindElement("DebugLabel");
 		Assert.That(debugInfoAfterRapid.GetText(), Does.Contain("Position=3"));
 
-		for (int i = 0; i < 2; i++)
-		{
-			App.Tap("PreviousButton");
-			Thread.Sleep(200);
-		}
+		// Rapid navigation backward
+		App.Tap("PreviousButton");
+		WaitForLabelText("PositionLabel", "3/5");
+		App.Tap("PreviousButton");
+		WaitForLabelText("PositionLabel", "2/5");
 
 		var positionAfterRapidPrevious = App.FindElement("PositionLabel");
 		Assert.That(positionAfterRapidPrevious.GetText(), Is.EqualTo("2/5"));
@@ -268,7 +303,7 @@ public class Issue29312 : _IssuesUITest
 		ResetCarouselViewToInitialState();
 
 		App.Tap("SetCurrentItemButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "3/5");
 
 		var positionLabel = App.FindElement("PositionLabel");
 		var debugLabel = App.FindElement("DebugLabel");
@@ -278,7 +313,7 @@ public class Issue29312 : _IssuesUITest
 		Assert.That(debugLabel.GetText(), Does.Contain("CurrentItem=Item 3"));
 
 		App.Tap("NextButton");
-		Thread.Sleep(500);
+		WaitForLabelText("PositionLabel", "4/5");
 
 		var updatedPositionLabel = App.FindElement("PositionLabel");
 		var updatedDebugLabel = App.FindElement("DebugLabel");
