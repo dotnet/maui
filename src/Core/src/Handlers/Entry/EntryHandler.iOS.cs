@@ -232,37 +232,49 @@ namespace Microsoft.Maui.Handlers
 				if (ranges == null || ranges.Length == 0)
 					return true;
 
+				var maxLength = VirtualView?.MaxLength ?? -1;
+				if (maxLength < 0)
+					return true;
+
+				// Handle null replacement string defensively
+				replacementString ??= string.Empty;
+
 				var currentText = textField.Text ?? string.Empty;
 
-				// Copy ranges to an array of NSRange
+				// Copy and sort ranges (existing code is correct)
 				var count = ranges.Length;
 				var rangeArray = new NSRange[count];
 				for (int i = 0; i < count; i++)
 					rangeArray[i] = ranges[i].RangeValue;
 
-				// Sort by Location descending to avoid index shifting when applying replacements
 				Array.Sort(rangeArray, (a, b) => (int)(b.Location - a.Location));
 
+				// Simulate all range replacements (existing code is correct)
 				for (int i = 0; i < count; i++)
 				{
 					var range = rangeArray[i];
 					var start = (int)range.Location;
 					var length = (int)range.Length;
 
-					// Validate range bounds
 					if (start < 0 || length < 0 || start > currentText.Length || start + length > currentText.Length)
 						return false;
 
-					// Apply replacement: remove [start, length], then insert replacementString at start
 					var before = start > 0 ? currentText.Substring(0, start) : string.Empty;
 					var afterIndex = start + length;
 					var after = afterIndex < currentText.Length ? currentText.Substring(afterIndex) : string.Empty;
 					currentText = before + replacementString + after;
 				}
 
-				// Check MaxLength without nullable comparisons
-				var maxLength = VirtualView?.MaxLength ?? -1;
-				return maxLength < 0 || currentText.Length <= maxLength;
+				var shouldChange = currentText.Length <= maxLength;
+
+				// Paste truncation feature (matches pre-iOS 26 behavior)
+				if (VirtualView is not null && !shouldChange && !string.IsNullOrWhiteSpace(replacementString) &&
+					replacementString.Length >= maxLength)
+				{
+					VirtualView.Text = replacementString.Substring(0, maxLength);
+				}
+
+				return shouldChange;
 			}
 
 			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
