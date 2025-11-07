@@ -9,9 +9,17 @@ partial class AutomationProperties : ContentPage
 	public AutomationProperties() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor/IAsyncLifetime for Setup() => Application.Current = new MockApplication();
+		public Tests()
+		{
+			Application.Current = new MockApplication();
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+		}
 
 		[Theory]
 		[Values]

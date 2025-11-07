@@ -12,16 +12,18 @@ public partial class GlobalXmlns
 {
 	public GlobalXmlns() => InitializeComponent();
 
-
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		}
+		}	
+		public void Dispose()
+        {
+           	Application.SetCurrentApplication(null);	
+			AppInfo.SetCurrent(null);
+        }
 
 		[Theory]
 		[Values]

@@ -12,9 +12,15 @@ public partial class BuiltInConversions : ContentPage
 	public class Tests : IDisposable
 	{
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => Application.Current = new MockApplication();
-
+		public Tests()
+		{
+			Application.Current = new MockApplication();
+		}
+		public void Dispose()
+        {
+			Application.Current = null;
+        }
+		
 		[Theory]
 		[Values]
 		public void Datetime(XamlInflator inflator)

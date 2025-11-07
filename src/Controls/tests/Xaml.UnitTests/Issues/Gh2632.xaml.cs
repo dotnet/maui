@@ -26,9 +26,15 @@ public partial class Gh2632 : Gh2632Base
 
 	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose()
+        {
+            DispatcherProvider.SetCurrent(null);
+        }
 
 		[Theory]
 		[Values]

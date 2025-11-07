@@ -15,9 +15,11 @@ public partial class Bz54717 : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-
-		public void Dispose() { }
+		public void Dispose()
+        {
+            Application.Current = null;
+        }
+		
 		[Theory]
 		[Values]
 		public void FooBz54717(XamlInflator inflator)

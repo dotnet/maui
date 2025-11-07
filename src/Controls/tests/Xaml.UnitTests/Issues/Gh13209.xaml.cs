@@ -11,12 +11,13 @@ public partial class Gh13209 : ContentPage
 {
 	public Gh13209() => InitializeComponent();
 
-
 	public class Tests : IDisposable
 	{
+		public void Dispose()
+        {
+            ResourceDictionary.ClearCache();
+        }
 
-
-		public void Dispose() { }
 		[Theory]
 		[Values]
 		public void RdWithSource(XamlInflator inflator)

@@ -13,9 +13,11 @@ public partial class Bz56852
 
 	public class Tests : IDisposable
 	{
+		public void Dispose()
+        {
+            Application.Current = null;
+        }
 
-
-		public void Dispose() { }
 		[Theory]
 		[Values]
 		public void DynamicResourceApplyingOrder(XamlInflator inflator)

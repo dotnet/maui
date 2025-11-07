@@ -12,9 +12,17 @@ public partial class Bz55343 : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		MockDeviceInfo mockDeviceInfo;
+
+		public Tests()
+		{
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		}
+		
+		public void Dispose()
+		{
+			DeviceInfo.SetCurrent(null);
+		}
 
 		[Theory]
 		[Values]

@@ -16,13 +16,19 @@ public partial class Bz53381 : ContentView
 
 	public class Tests : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
 		public void Dispose()
 		{
 			Application.Current = null;
 			DispatcherProvider.SetCurrent(null);
 		}
 
+		[Theory]
+		[Values]
 		public void ControlTemplateAsImplicitAppLevelStyles(XamlInflator inflator)
 		{
 			Application.Current = new Bz53381App();

@@ -12,15 +12,21 @@ public partial class Bz58922 : ContentPage
 		InitializeComponent();
 	}
 
-
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		MockDeviceInfo mockDeviceInfo;
 
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		public Tests()
+		{
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		}
 
+		public void Dispose()
+		{
+			DeviceInfo.SetCurrent(null);
+		
+		}
+		
 		[Theory]
 		[Values]
 		public void OnIdiomXDouble(XamlInflator inflator)
