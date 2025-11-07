@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
-    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
     <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
     <HelixTargetQueues>Windows.10.Amd64.Open;osx.15.arm64.maui.open</HelixTargetQueues>
     <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>

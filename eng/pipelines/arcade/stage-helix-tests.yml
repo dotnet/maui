@@ -74,7 +74,7 @@ stages:
           clean: all
         jobs:
         - job: test_helix_unit_tests_windows_${{ BuildConfiguration }}
-          displayName: Windows Helix Unit Tests (${{ BuildConfiguration }})
+          displayName: Helix Unit Tests (${{ BuildConfiguration }})
           timeoutInMinutes: 240
           variables:
           - name: _BuildConfig
@@ -90,7 +90,7 @@ stages:
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TestRunNamePrefix=UnitTests_
+              HelixProjectArguments: /p:TestRunNamePrefix=UnitTests_ /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors)
               HelixConfiguration: ${{ BuildConfiguration }}
               IncludeDotNetCli: true
               DisplayNamePrefix: UnitTests
