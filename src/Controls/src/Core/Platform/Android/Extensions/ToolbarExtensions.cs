@@ -385,11 +385,13 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				if (_menuItemToolbarItemMap.TryGetValue(menuItem.ItemId, out var weakRef) && 
-				    weakRef.TryGetTarget(out var currentToolbarItem) && 
-				    !ReferenceEquals(currentToolbarItem, toolBarItem))
+				if (_menuItemToolbarItemMap.TryGetValue(menuItem.ItemId, out var weakRef))
 				{
-					return;
+					// If the target was garbage collected or is a different ToolbarItem, abort
+					if (!weakRef.TryGetTarget(out var currentToolbarItem) || !ReferenceEquals(currentToolbarItem, toolBarItem))
+					{
+						return;
+					}
 				}
 
 				if (baseDrawable != null)
