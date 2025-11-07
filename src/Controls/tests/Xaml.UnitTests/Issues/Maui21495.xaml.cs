@@ -23,7 +23,8 @@ public partial class Maui21495
 		}
 
 		[Theory]
-public async Task AppThemeLeak() // TODO: Fix parameter: was (XamlInflator inflator)
+		[Values]
+		public async Task AppThemeLeak(XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.HotPink);
 			var page = new Maui21495(inflator);
@@ -33,7 +34,7 @@ public async Task AppThemeLeak() // TODO: Fix parameter: was (XamlInflator infla
 			Application.Current.MainPage = page = null;
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.Null(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target);
 		}
 	}
 }

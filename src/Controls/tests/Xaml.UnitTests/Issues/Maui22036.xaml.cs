@@ -21,7 +21,8 @@ public partial class Maui22036
 		}
 
 		[Theory]
-public async Task StyleWithTriggerLeak() // TODO: Fix parameter: was (XamlInflator inflator)
+		[Values]
+		public async Task StyleWithTriggerLeak(XamlInflator inflator)
 		{
 			var style = new Style(typeof(ContentPage));
 			var trigger = new EventTrigger { Event = nameof(Appearing) };

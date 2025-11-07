@@ -21,7 +21,8 @@ public partial class Maui21839
 		}
 
 		[Theory]
-public async Task VSMLeak() // TODO: Fix parameter: was (XamlInflator inflator)
+		[Values]
+		public async Task VSMLeak(XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("buttonStyle",
 				new Style(typeof(Button))

@@ -458,7 +458,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.NotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
+			Assert.NotEqual(expectedXamlC, actualXamlC);
 		}
 
 		[Fact]

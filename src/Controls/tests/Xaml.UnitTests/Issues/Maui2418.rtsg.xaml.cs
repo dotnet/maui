@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using System;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,32 +9,31 @@ public partial class Maui2418 : ContentPage
 	public Maui2418() => InitializeComponent();
 
 #if DEBUG
-	[TestFixture]
-	class Tests
+	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
 
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 		}
 
-		[Test]
-		public void SourceInfoIsRelative([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		public void SourceInfoIsRelative(XamlInflator inflator)
 		{
 			var page = new Maui2418(inflator);
-			Assert.That(page, Is.Not.Null);
+			Assert.NotNull(page);
 			var label0 = page.label0;
 			var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
-			Assert.That(sourceInfo.SourceUri.OriginalString, Is.EqualTo($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.rtsg.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"));
+			Assert.Equal($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.rtsg.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", sourceInfo.SourceUri.OriginalString);
 		}
 	}
 #endif

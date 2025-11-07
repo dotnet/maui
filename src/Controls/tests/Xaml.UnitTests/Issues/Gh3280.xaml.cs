@@ -14,11 +14,12 @@ public partial class Gh3280 : ContentPage
 	{
 		[Theory]
 		[Values]
-		public void SizeHasConverter()
+		public void SizeHasConverter(XamlInflator inflator)
 		{
 			Gh3280 layout = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout = new Gh3280(inflator));
-			Assert.Equal(new Size(15, 25, layout.Foo));
+			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed
+			layout = new Gh3280(inflator);
+			Assert.Equal(new Size(15, 25), layout.Foo);
 		}
 	}
 }

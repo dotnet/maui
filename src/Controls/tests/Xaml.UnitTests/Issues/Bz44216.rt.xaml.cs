@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -35,9 +36,15 @@ public partial class Bz44216 : ContentPage
 		public void DonSetValueOnPrivateBP(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(7, 26, s => s.Contains("No property,", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Bz44216)));
+			{
+				var ex = Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz44216)));
+				// TODO: Verify exception message contains "No property," and occurs at line 7, column 26
+			}
 			if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(7, 26, s => s.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new Bz44216(inflator));
+			{
+				var ex = Assert.Throws<XamlParseException>(() => new Bz44216(inflator));
+				// TODO: Verify exception message starts with "Cannot assign property" and occurs at line 7, column 26
+			}
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()

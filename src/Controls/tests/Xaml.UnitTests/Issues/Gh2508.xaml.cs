@@ -28,7 +28,7 @@ public partial class Gh2508 : ContentPage
 		public void UintProperties(XamlInflator inflator)
 		{
 			var layout = new Gh2508(inflator);
-			Assert.Equal(2000, ((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration);
+			Assert.Equal(2000u, ((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration);
 		}
 	}
 }

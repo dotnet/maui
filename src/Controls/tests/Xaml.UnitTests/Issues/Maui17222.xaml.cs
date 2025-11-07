@@ -35,8 +35,9 @@ public partial class Maui17222 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		[Fact]
-		public void GetsourceInfo() // TODO: Fix parameters - see comment above] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GetsourceInfo(XamlInflator inflator)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Maui17222BaseStyle(inflator));

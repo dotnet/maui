@@ -18,7 +18,7 @@ public partial class Gh11551 : ContentPage
 		{
 			var layout = new Gh11551(inflator);
 			var bounds = AbsoluteLayout.GetLayoutBounds(layout.label);
-			Assert.Equal(new Rect(1, .5, -1, 22, bounds));
+			Assert.Equal(new Rect(1, .5, -1, 22), bounds);
 		}
 	}
 }

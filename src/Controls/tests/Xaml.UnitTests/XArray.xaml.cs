@@ -47,7 +47,7 @@ public partial class XArray : MockBindableForArray
 	public XArray() => InitializeComponent();
 }
 """).RunMauiSourceGenerator(typeof(XArray));
-				Assert.Empty(result.Diagnostics, "No diagnostics expected for XArray");
+				Assert.Empty(result.Diagnostics);
 				return;
 			}
 			var layout = new XArray(inflator);

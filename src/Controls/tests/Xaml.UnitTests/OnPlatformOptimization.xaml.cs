@@ -1,7 +1,7 @@
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -10,20 +10,23 @@ public partial class OnPlatformOptimization : ContentPage
 {
 	public OnPlatformOptimization() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	public class Tests
 	{
-		[Test]
-		public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework, [Values(XamlInflator.XamlC, XamlInflator.SourceGen)] XamlInflator inflator)
+		[Theory]
+		[InlineData("net7.0-ios", XamlInflator.XamlC)]
+		[InlineData("net7.0-android", XamlInflator.XamlC)]
+		[InlineData("net7.0-ios", XamlInflator.SourceGen)]
+		[InlineData("net7.0-android", XamlInflator.SourceGen)]
+		public void OnPlatformExtensionsAreSimplified(string targetFramework, XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
-				Assert.That(!hasLoggedErrors);
-				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
+				Assert.False(hasLoggedErrors);
+				Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
 
 				var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
-				Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
+				Assert.True(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
 			}
 			else if (inflator == XamlInflator.SourceGen)
 			{
@@ -33,7 +36,7 @@ public partial class OnPlatformOptimization : ContentPage
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -44,32 +47,37 @@ public partial class OnPlatformOptimization : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(OnPlatformOptimization), targetFramework: targetFramework);
-				Assert.That(result.Diagnostics, Is.Empty);
+				Assert.Empty(result.Diagnostics);
 
 				var generated = result.GeneratedInitializeComponent();
-				Assert.That(generated, Does.Not.Contain("OnPlatformExtension"));
+				Assert.DoesNotContain("OnPlatformExtension", generated);
 				var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
-				Assert.That(generated, Does.Contain($"SetValue(global::Microsoft.Maui.Controls.Label.TextProperty, \"{expected}\");"));
+				Assert.Contains($"SetValue(global::Microsoft.Maui.Controls.Label.TextProperty, \"{expected}\");", generated);
 			}
 		}
 
-		[Test]
-		public void ValuesAreSet([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ValuesAreSet(XamlInflator inflator)
 		{
 			var p = new OnPlatformOptimization(inflator);
-			Assert.AreEqual("ringo", p.label0.Text);
-			Assert.AreEqual("foo", p.label1.Text);
+			Assert.Equal("ringo", p.label0.Text);
+			Assert.Equal("foo", p.label1.Text);
 		}
 
-		[Test]
-		[Ignore("capability disabled for now")]
-		public void OnPlatformAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
+		[Fact(Skip = "capability disabled for now")]
+		public void OnPlatformAreSimplified()
 		{
+			// TODO: This test needs refactoring to support xUnit Theory pattern with multiple target frameworks
+			// Original test: [Test][Ignore("capability disabled for now")]
+			// public void OnPlatformAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
+			var targetFramework = "net6.0-ios"; // Placeholder - needs proper parameterization
+			
 			MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out bool hasLoggedErrors, targetFramework);
-			Assert.That(!hasLoggedErrors);
-			Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformCtor(methodDef, instr)), "This Xaml still generates a new OnPlatform()");
-			Assert.That(methodDef.Body.Instructions.Any(instr => InstructionIsLdstr(methodDef.Module, instr, "Mobile, eventually ?")), $"This Xaml doesn't generate content for {targetFramework}");
-			Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsLdstr(methodDef.Module, instr, "Desktop, maybe ?")), $"This Xaml generates content not required for {targetFramework}");
+			Assert.False(hasLoggedErrors);
+			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformCtor(methodDef, instr)), "This Xaml still generates a new OnPlatform()");
+			Assert.True(methodDef.Body.Instructions.Any(instr => InstructionIsLdstr(methodDef.Module, instr, "Mobile, eventually ?")), $"This Xaml doesn't generate content for {targetFramework}");
+			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsLdstr(methodDef.Module, instr, "Desktop, maybe ?")), $"This Xaml generates content not required for {targetFramework}");
 		}
 
 		bool InstructionIsOnPlatformCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)

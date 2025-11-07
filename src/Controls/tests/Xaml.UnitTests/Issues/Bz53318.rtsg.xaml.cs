@@ -14,12 +14,14 @@ public partial class Bz53318 : ContentPage
 
 	public class Tests
 	{
-		[Fact]
-		public void DoesCompilesArgsInsideDataTemplate() // TODO: Fix parameters - see comment above] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void DoesCompilesArgsInsideDataTemplate(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
-				// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => MockCompiler.Compile(typeof(Bz53318)));
+				// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed
+				MockCompiler.Compile(typeof(Bz53318));
 			}
 		}
 	}

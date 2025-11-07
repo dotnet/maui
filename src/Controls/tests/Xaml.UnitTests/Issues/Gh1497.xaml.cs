@@ -25,7 +25,7 @@ public partial class Gh1497 : ContentPage
 		public void GenericsIssue(XamlInflator inflator)
 		{
 			var layout = new Gh1497(inflator);
-			Assert.TypeOf(layout.entry.Behaviors[0](typeof(Gh1497EntryValidationBehavior<Entry>)));
+			Assert.IsType<Gh1497EntryValidationBehavior<Entry>>(layout.entry.Behaviors[0]);
 		}
 	}
 }
