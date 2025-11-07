@@ -105,16 +105,6 @@ namespace Microsoft.Maui.Controls.Internals
 			_propertyChangeHandler = new LegacyPropertyChangeHandler(this, handlers);
 		}
 
-		private TypedBinding(
-			Func<TSource, (TProperty value, bool success)> getter,
-			Action<TSource, TProperty> setter,
-			IPropertyChangeHandler propertyChangeHandler)
-		{
-			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
-			_setter = setter;
-			_propertyChangeHandler = propertyChangeHandler;
-		}
-
 		readonly WeakReference<object> _weakSource = new WeakReference<object>(null);
 		readonly WeakReference<BindableObject> _weakTarget = new WeakReference<BindableObject>(null);
 		SetterSpecificity _specificity;
@@ -192,18 +182,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal override BindingBase Clone()
 		{
-			return new TypedBinding<TSource, TProperty>(
-				_getter,
-				_setter,
-				_propertyChangeHandler.Clone())
-			{
-				Mode = Mode,
-				Converter = Converter,
-				ConverterParameter = ConverterParameter,
-				StringFormat = StringFormat,
-				Source = Source,
-				UpdateSourceEventName = UpdateSourceEventName,
-			};
+			return _propertyChangeHandler.CloneBinding();
 		}
 
 		internal override void ApplyToResolvedSource(object source, BindableObject target, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
@@ -504,20 +483,20 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			void Subscribe(object sourceObject);
 			void Unsubscribe();
-			IPropertyChangeHandler Clone();
+			TypedBinding<TSource, TProperty> CloneBinding();
 		}
 
-		private struct LegacyPropertyChangeHandler : IPropertyChangeHandler
+		private class LegacyPropertyChangeHandler : IPropertyChangeHandler
 		{
-			private readonly TypedBindingBase _binding;
+			private readonly TypedBinding<TSource, TProperty> _binding;
 			private readonly PropertyChangedProxy[]? _handlers;
 
 			public LegacyPropertyChangeHandler(
-				TypedBindingBase binding,
+				TypedBinding<TSource, TProperty> binding,
 				Tuple<Func<TSource, object>, string>[]? handlers)
 			{
 				_binding = binding;
-				
+
 				if (handlers == null)
 					return;
 
@@ -562,7 +541,7 @@ namespace Microsoft.Maui.Controls.Internals
 				}
 			}
 
-			public IPropertyChangeHandler Clone()
+			public TypedBinding<TSource, TProperty> CloneBinding()
 			{
 				Tuple<Func<TSource, object>, string>[]? handlers = null;
 				if (_handlers != null)
@@ -575,23 +554,28 @@ namespace Microsoft.Maui.Controls.Internals
 						handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
 					}
 				}
-				
-				return new LegacyPropertyChangeHandler(_binding, handlers);
+
+				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, handlers)
+				{
+					Mode = _binding.Mode,
+					Converter = _binding.Converter,
+					ConverterParameter = _binding.ConverterParameter,
+					StringFormat = _binding.StringFormat,
+					Source = _binding.Source,
+					UpdateSourceEventName = _binding.UpdateSourceEventName,
+				};
 			}
 		}
 
-		private struct PropertyChangeHandler(
-			TypedBindingBase binding,
+		private class PropertyChangeHandler(
+			TypedBinding<TSource, TProperty> binding,
 			int handlersCount,
 			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers) : IPropertyChangeHandler
 		{
-			private readonly TypedBindingBase _binding = binding;
+			private readonly TypedBinding<TSource, TProperty> _binding = binding;
 			private readonly BindingExpression.WeakPropertyChangedProxy?[] _listeners = new BindingExpression.WeakPropertyChangedProxy?[handlersCount];
 			private readonly string?[] _propertyNames = new string?[handlersCount];
 			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers = handlers;
-
-			public IPropertyChangeHandler Clone()
-				=> new PropertyChangeHandler(_binding, _listeners.Length, _handlers);
 
 			public void Subscribe(object sourceObject)
 			{
@@ -672,6 +656,19 @@ namespace Microsoft.Maui.Controls.Internals
 					_listeners[i]?.Unsubscribe();
 					_listeners[i] = null;
 				}
+			}
+
+			public TypedBinding<TSource, TProperty> CloneBinding()
+			{
+				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, _listeners.Length, _handlers)
+				{
+					Mode = _binding.Mode,
+					Converter = _binding.Converter,
+					ConverterParameter = _binding.ConverterParameter,
+					StringFormat = _binding.StringFormat,
+					Source = _binding.Source,
+					UpdateSourceEventName = _binding.UpdateSourceEventName,
+				};
 			}
 		}
 #nullable disable
