@@ -20,7 +20,11 @@ public class Issue32275 : _IssuesUITest
 		App.WaitForElement("Issue32275Label");
 		App.SetOrientationLandscape();
 		App.TapShellFlyoutIcon();
+#if ANDROID
+		VerifyScreenshot(cropLeft: 125);
+#else
 		VerifyScreenshot();
+#endif
 	}
 }
 #endif
