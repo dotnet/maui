@@ -41,7 +41,7 @@ parameters:
   default: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
 - name: helixProject
   type: string
-  default: '$(Build.SourcesDirectory)/eng/helix.proj'
+  default: 'eng\helix.proj'
 - name: buildConfigurations
   type: object
   default:
