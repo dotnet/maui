@@ -12,7 +12,7 @@ public partial class Maui25608_2
 {
 	public Maui25608_2() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
 

@@ -14,12 +14,17 @@ public partial class Maui23989
 {
 	public Maui23989() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+		public void Dispose()
+		{
+			Application.SetCurrentApplication(null);
+			DispatcherProvider.SetCurrent(null);
 		}
 
 		[Theory]

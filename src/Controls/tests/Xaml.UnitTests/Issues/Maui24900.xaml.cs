@@ -17,7 +17,7 @@ public partial class Maui24900 : ContentPage
 
 	}
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 

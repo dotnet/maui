@@ -17,7 +17,7 @@ public partial class Maui17222 : ContentPage
 	public Maui17222() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 #if DEBUG
 		bool enableDiagnosticsInitialState;

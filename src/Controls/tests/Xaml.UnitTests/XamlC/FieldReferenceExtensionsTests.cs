@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
 
-	public class FieldReferenceExtensionsTests
+	public class FieldReferenceExtensionsTests : IDisposable
 	{
 		public class NonGenericClass
 		{

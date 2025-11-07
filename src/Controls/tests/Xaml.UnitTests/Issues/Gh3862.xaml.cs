@@ -13,11 +13,16 @@ public partial class Gh3862 : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		MockDeviceInfo mockDeviceInfo;
 
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		public Tests()
+        {
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+        }
+		public void Dispose()
+        {
+             DeviceInfo.SetCurrent(null);
+        }
 
 		[Theory]
 		[Values]

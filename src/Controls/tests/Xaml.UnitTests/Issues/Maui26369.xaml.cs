@@ -25,7 +25,7 @@ public partial class Maui26369 : ContentPage
 
 	public Maui26369() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{

@@ -11,7 +11,7 @@ public partial class Maui25172 : CoreContentPage<VM25172>
 {
 	public Maui25172() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{

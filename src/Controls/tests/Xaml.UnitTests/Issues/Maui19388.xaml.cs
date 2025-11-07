@@ -14,7 +14,7 @@ public partial class Maui19388 : ContentPage
 {
 	public Maui19388() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 

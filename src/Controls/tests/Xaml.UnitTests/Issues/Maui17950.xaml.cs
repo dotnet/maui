@@ -29,10 +29,17 @@ public partial class Maui17950 : ContentPage
 		throw new InvalidOperationException("wrong method invoked");
 	}
 
-	public class Test
+	public class Test : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		public Test()
+		{
+			 AppInfo.SetCurrent(new MockAppInfo());
+		}
 
+		public void Dispose()
+		{
+			 AppInfo.SetCurrent(null);
+		}
 		[Theory]
 		[Values]
 		public void AmbiguousMatch(XamlInflator inflator)

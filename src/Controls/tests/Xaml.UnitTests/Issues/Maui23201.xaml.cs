@@ -12,7 +12,7 @@ public partial class Maui23201
 {
 	public Maui23201() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -20,6 +20,12 @@ public partial class Maui23201
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
+		public void Dispose()
+		{
+			Application.SetCurrentApplication(null);
+			DispatcherProvider.SetCurrent(null);
+		}
+		
 		[Theory]
 		[Values]
 		public void ToolBarItemAppThemeBinding(XamlInflator inflator)

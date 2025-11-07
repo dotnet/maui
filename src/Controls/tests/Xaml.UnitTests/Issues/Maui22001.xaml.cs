@@ -12,7 +12,7 @@ public partial class Maui22001
 {
 	public Maui22001() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;

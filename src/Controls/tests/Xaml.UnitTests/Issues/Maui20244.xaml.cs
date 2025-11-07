@@ -14,12 +14,18 @@ public partial class Maui20244 : ContentPage
 {
 	public Maui20244() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			Application.SetCurrentApplication(null);
+			DispatcherProvider.SetCurrent(null);
 		}
 
 		[Theory]

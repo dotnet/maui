@@ -54,10 +54,9 @@ public partial class Bz48554 : ContentPage
 	{
 		[Theory]
 		[Values]
-		public void XStaticWithXamlC()
+		public void XStaticWithXamlC(XamlInflator inflator)
 		{
-			Bz48554 page = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => page = new Bz48554(inflator));
+			Bz48554 page = new Bz48554(inflator);
 			Assert.NotNull(page.SliderGrades);
 			Assert.Equal(5, page.SliderGrades.Values.Count);
 		}

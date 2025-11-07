@@ -13,7 +13,7 @@ public partial class Maui18697 : ContentPage
 {
 	public Maui18697() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 

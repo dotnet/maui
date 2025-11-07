@@ -22,7 +22,7 @@ public partial class Maui25141 : ContentPage
 	}
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{

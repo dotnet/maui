@@ -16,7 +16,7 @@ public partial class Maui25608
 	}
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
 

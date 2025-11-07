@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
 
-	public class MethodDefinitionExtensionsTests
+	public class MethodDefinitionExtensionsTests : IDisposable
 	{
 		public class NonGenericClass
 		{

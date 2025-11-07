@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		public class Tests
+		public class Tests : IDisposable
 		{
 			public Tests()
 			{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Bz34037Converter1.Invoked = 0;
 			}
 
-		public void Dispose()
+			public void Dispose()
 			{
 				Application.Current = null;
 			}

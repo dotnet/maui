@@ -15,7 +15,7 @@ public partial class Maui26206 : ContentPage
 	}
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{

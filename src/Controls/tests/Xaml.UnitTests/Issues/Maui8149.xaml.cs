@@ -10,9 +10,17 @@ public partial class Maui8149 : ContentView
 {
 	public Maui8149() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		public Test()
+		{
+			 AppInfo.SetCurrent(new MockAppInfo());
+		}
+
+		public void Dispose()
+		{
+			 AppInfo.SetCurrent(null);
+		}
 
 		[Theory]
 		[Values]

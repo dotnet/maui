@@ -13,7 +13,7 @@ public partial class Maui25819 : ContentPage
 {
 	public Maui25819() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{

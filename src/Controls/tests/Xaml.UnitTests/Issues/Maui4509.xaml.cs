@@ -11,7 +11,7 @@ public partial class Maui4509 : ContentPage
 	public Maui4509() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 
