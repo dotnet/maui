@@ -14,7 +14,7 @@ public partial class BindingDiagnosticsTests : ContentPage
 
 #if !DEBUG
 	[Fact(Skip = "This test runs only in debug")]
-#else
+#endif
 	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
