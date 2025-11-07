@@ -1186,7 +1186,7 @@ namespace Microsoft.Maui.DeviceTests
 				shellContent2.Route = sameRoute;
 			});
 
-			Assert.Equal($"Duplicated Route: \"{sameRoute}\" ", exception.Message);
+			Assert.Equal($"Duplicated Route: \"{sameRoute}\" is already registered to another element of type ShellContent. Routes must be unique across the Shell hierarchy to avoid navigation conflicts. (Parameter 'route')", exception.Message);
 		}
 	}
 }
