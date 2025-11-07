@@ -11,9 +11,15 @@ public partial class ButtonCornerRadius : ContentPage
 
 	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			 Application.Current = new MockApplication();
+		}
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => Application.Current = new MockApplication();
+		public void Dispose()
+        {
+          	Application.Current = null;
+        }
 
 		[Theory]
 		[Values]
