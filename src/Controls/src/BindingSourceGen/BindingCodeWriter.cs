@@ -81,6 +81,10 @@ public static class BindingCodeWriter
 		}
 		""";
 
+	// Overload for binary compatibility with code compiled against the old 3-parameter signature
+	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent)
+		=> GenerateBindingMethod(binding, methodName, indent, BindingPropertyFlags.All);
+
 	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 	{
 		if (!binding.NullableContextEnabled)
@@ -179,7 +183,7 @@ public static class BindingCodeWriter
 			AppendHandlersArray(binding);
 			Append(")");
 			Unindent();
-			
+
 			// Only generate property setters for the properties indicated by the flags
 			AppendBindingPropertySetters(propertyFlags);
 			AppendLine(";");
@@ -392,7 +396,7 @@ public static class BindingCodeWriter
 			AppendBlankLine();
 			AppendLine('{');
 			Indent();
-			
+
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
 				AppendLine("Mode = mode,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
@@ -407,7 +411,7 @@ public static class BindingCodeWriter
 				AppendLine("FallbackValue = fallbackValue,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
 				AppendLine("TargetNullValue = targetNullValue,");
-			
+
 			Unindent();
 			Append('}');
 		}
