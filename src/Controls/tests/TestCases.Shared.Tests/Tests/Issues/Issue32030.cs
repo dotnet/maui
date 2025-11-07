@@ -13,6 +13,8 @@ public class Issue32030 : _IssuesUITest
     public void VerifyWebViewStaysWithinGridCell()
     {
         App.WaitForElement("TopLabel");
+        // Wait for the WebView to render properly
+        Thread.Sleep(TimeSpan.FromSeconds(2));
         VerifyScreenshot();
     }
 }
