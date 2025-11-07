@@ -27,15 +27,17 @@ namespace Maui.Controls.Sample.Issues
 			SetLtrButton.Clicked += OnSetLtrClicked;
 		}
 
-		private void OnSetRtlClicked(object? sender, EventArgs e)
+		private void OnSetRtlClicked(object sender, EventArgs e)
 		{
-			this.FlowDirection = FlowDirection.RightToLeft;
+
+			TestCollectionView.FlowDirection = FlowDirection.RightToLeft;
 			StatusLabel.Text = "Current: RTL";
 		}
 
-		private void OnSetLtrClicked(object? sender, EventArgs e)
+		private void OnSetLtrClicked(object sender, EventArgs e)
 		{
-			this.FlowDirection = FlowDirection.LeftToRight;
+
+			TestCollectionView.FlowDirection = FlowDirection.LeftToRight;
 			StatusLabel.Text = "Current: LTR";
 		}
 	}
