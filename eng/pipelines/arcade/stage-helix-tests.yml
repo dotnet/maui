@@ -90,9 +90,10 @@ stages:
           - template: /eng/common/templates-official/steps/send-to-helix.yml
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TestRunNamePrefix=UnitTests_ /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors)
+              HelixProjectArguments: /p:TestRunNamePrefix=UnitTests_ /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) -warnAsError 0 
               HelixConfiguration: ${{ BuildConfiguration }}
               IncludeDotNetCli: true
+              DotNetCliPackageType: sdk
               DisplayNamePrefix: UnitTests
 
           # - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
