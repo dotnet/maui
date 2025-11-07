@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, RouteFactory> s_routes = new(StringComparer.Ordinal);
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
-		readonly static ConcurrentDictionary<string, byte> routeSet = new ConcurrentDictionary<string, byte>();
+		readonly static ConcurrentDictionary<string, string> routeSet = new ConcurrentDictionary<string, string>();
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
@@ -260,9 +260,17 @@ namespace Microsoft.Maui.Controls
 
 			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
 			{
-				if (!routeSet.TryAdd(route, 0))
+				if (!routeSet.TryAdd(route, element.GetType().Name))
 				{
-					throw new ArgumentException($"Duplicated Route: \"{route}\" ");
+					// Get the existing element type information directly from routeSet
+					var existingElementType = routeSet.TryGetValue(route, out var existingTypeName)
+						? existingTypeName ?? "unknown element"
+						: "unknown element";
+
+					throw new ArgumentException(
+						$"Duplicated Route: \"{route}\" is already registered to another element of type {existingElementType}. " +
+						$"Routes must be unique across the Shell hierarchy to avoid navigation conflicts.",
+						nameof(route));
 				}
 			}
 		}
