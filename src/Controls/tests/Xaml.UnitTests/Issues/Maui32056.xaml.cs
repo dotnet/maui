@@ -21,7 +21,7 @@ public partial class Maui32056 : ContentPage
 	}
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -40,6 +40,12 @@ public partial class Maui32056 : ContentPage
 			}
 			var page = new Maui32056(inflator);
 			Assert.Equal(Maui32056Enum.A.ToString(), page.label0.Text);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

@@ -21,7 +21,12 @@ public partial class Maui25309 : ContentPage
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		public void Dispose() => AppInfo.SetCurrent(null);
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
+		}
 
 		[Theory]
 		[Values]

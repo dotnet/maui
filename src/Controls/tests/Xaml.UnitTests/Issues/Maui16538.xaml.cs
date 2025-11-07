@@ -12,7 +12,7 @@ public partial class Maui16538
 {
 	public Maui16538() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -34,6 +34,12 @@ public partial class Maui16538
 			Assert.Equal(Colors.White, button.BackgroundColor);
 			Application.Current.UserAppTheme = AppTheme.Light;
 			Assert.Equal(Color.FromHex("512BD4"), button.BackgroundColor);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

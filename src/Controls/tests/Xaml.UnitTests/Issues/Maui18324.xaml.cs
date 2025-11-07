@@ -11,7 +11,7 @@ public partial class Maui18324 : ContentPage
 {
 	public Maui18324() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -24,6 +24,12 @@ public partial class Maui18324 : ContentPage
 		public void xTypeShoudntCrash(XamlInflator inflator)
 		{
 			var page = new Maui18324(inflator);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

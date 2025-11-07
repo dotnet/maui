@@ -14,7 +14,7 @@ public partial class Maui18980 : ContentPage
 	public Maui18980() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -32,6 +32,12 @@ public partial class Maui18980 : ContentPage
 
 			var page = new Maui18980(inflator);
 			Assert.Equal(Colors.Red, page.button.BackgroundColor);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

@@ -12,7 +12,7 @@ public partial class Unreported010
 {
 	public Unreported010() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -28,6 +28,12 @@ public partial class Unreported010
 			Assert.Equal(Colors.Blue, page.button0.BackgroundColor);
 			page.Resources["Foo"] = Colors.Red;
 			Assert.Equal(Colors.Red, page.button0.BackgroundColor);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 

@@ -14,7 +14,7 @@ public partial class Maui21038
 {
 	public Maui21038() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -50,6 +50,12 @@ public partial class Maui21038
 				Assert.NotEmpty(result.Diagnostics);
 
 			}
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

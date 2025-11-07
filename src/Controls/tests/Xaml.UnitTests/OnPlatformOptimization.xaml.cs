@@ -72,7 +72,7 @@ public partial class OnPlatformOptimization : ContentPage
 			// Original test: [Test][Ignore("capability disabled for now")]
 			// public void OnPlatformAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
 			var targetFramework = "net6.0-ios"; // Placeholder - needs proper parameterization
-			
+
 			MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out bool hasLoggedErrors, targetFramework);
 			Assert.False(hasLoggedErrors);
 			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformCtor(methodDef, instr)), "This Xaml still generates a new OnPlatform()");

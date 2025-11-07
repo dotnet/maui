@@ -11,7 +11,7 @@ public partial class Maui20768
 {
 	public Maui20768() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -26,6 +26,12 @@ public partial class Maui20768
 			var page = new Maui20768(inflator);
 			page.TitleLabel.BindingContext = new ViewModel20768();
 			Assert.Null(page.TitleLabel.Text);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

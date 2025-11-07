@@ -14,7 +14,7 @@ public partial class Maui21495
 {
 	public Maui21495() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -35,6 +35,12 @@ public partial class Maui21495
 			await Task.Delay(10);
 			GC.Collect();
 			Assert.Null(pagewr.Target);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

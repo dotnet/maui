@@ -12,7 +12,7 @@ public partial class Maui22536
 {
 	public Maui22536() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -26,6 +26,12 @@ public partial class Maui22536
 		{
 			var page = new Maui22536(inflator);
 			Assert.Equal(page.Button.BackgroundColor, Color.FromArgb("#010203"));
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

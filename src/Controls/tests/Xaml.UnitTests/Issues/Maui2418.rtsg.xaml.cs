@@ -1,5 +1,5 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
 using System;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;

@@ -12,7 +12,7 @@ public partial class Maui21757_2
 {
 	public Maui21757_2() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -39,6 +39,12 @@ public partial class Maui21757_2
 				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
 			}
 
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

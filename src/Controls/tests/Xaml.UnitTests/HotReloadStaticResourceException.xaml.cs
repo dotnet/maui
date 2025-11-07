@@ -28,6 +28,8 @@ public partial class HotReloadStaticResourceException : ContentPage
 			AppInfo.SetCurrent(null);
 			Controls.Internals.ResourceLoader.ResourceProvider2 = null;
 			Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 
 #if DEBUG

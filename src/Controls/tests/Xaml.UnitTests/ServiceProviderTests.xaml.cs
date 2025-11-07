@@ -51,17 +51,21 @@ public partial class ServiceProviderTests : ContentPage
 {
 	public ServiceProviderTests() => InitializeComponent();
 
-
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-
-		[Fact]
-		public void TestServiceProviders() // TODO: Fix parameters - see comment above] XamlInflator inflator)
+		public Tests()
 		{
-var inflator = XamlInflator.Runtime; // TODO: Convert to Theory with [Values]
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+		public void Dispose()
+        {
+			DispatcherProvider.SetCurrent(null);
+		}
+
+		[Theory]
+		[Values]
+		public void TestServiceProviders(XamlInflator inflator)
+		{
 			var page = new ServiceProviderTests(inflator);
 			MockCompiler.Compile(typeof(ServiceProviderTests));
 

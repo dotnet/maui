@@ -12,7 +12,7 @@ public partial class Maui22105
 	public Maui22105() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -26,6 +26,12 @@ public partial class Maui22105
 		{
 			var page = new Maui22105(inflator);
 			Assert.Equal(100, page.label.FontSize);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

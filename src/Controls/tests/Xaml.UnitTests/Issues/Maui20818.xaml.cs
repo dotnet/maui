@@ -11,7 +11,7 @@ public partial class Maui20818
 {
 	public Maui20818() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -34,6 +34,12 @@ public partial class Maui20818
 			Assert.Equal(typeof(Label), page.TriggerF.TargetType);
 			Assert.Equal(typeof(Label), page.TriggerG.TargetType);
 			Assert.Equal(typeof(Label), page.TriggerH.TargetType);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

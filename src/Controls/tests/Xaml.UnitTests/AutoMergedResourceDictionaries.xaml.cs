@@ -18,12 +18,12 @@ public partial class AutoMergedResourceDictionaries : ContentPage
 		{
 			Application.Current = new MockApplication();
 		}
-		
+
 		public void Dispose()
-        {
+		{
 			Application.Current = null;
-        }
-		
+		}
+
 		[Theory]
 		[Values]
 		public void AutoMergedRd(XamlInflator inflator)

@@ -30,7 +30,7 @@ public partial class DataTemplateExtension : ContentPage
 
 		[Theory]
 		[Values]
-		public void ExtensionsAreReplaced(XamlInflator inflator)
+		public void ExtensionsAreReplaced()
 		{
 			var result = CreateMauiCompilation()
 				.WithAdditionalSource(

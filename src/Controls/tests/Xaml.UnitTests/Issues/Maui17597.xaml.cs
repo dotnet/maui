@@ -11,7 +11,7 @@ public partial class Maui17597 : ContentPage
 {
 	public Maui17597() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -35,6 +35,12 @@ public partial class Maui17597 : ContentPage
 			page.Test_Entry.SetValueFromRenderer(Entry.TextProperty, "foo");
 			Assert.NotEmpty(page.Test_Entry.Text);
 			Assert.True(page.button.IsEnabled);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

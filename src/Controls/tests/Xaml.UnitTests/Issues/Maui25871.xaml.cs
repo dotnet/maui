@@ -11,7 +11,7 @@ public partial class Maui25871 : ContentPage
 {
 	public Maui25871() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -23,6 +23,12 @@ public partial class Maui25871 : ContentPage
 		public void CompilationDoesNotFail()
 		{
 			MockCompiler.Compile(typeof(Maui25871));
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

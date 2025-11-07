@@ -14,13 +14,13 @@ public partial class Gh4319 : ContentPage
 	{
 		MockDeviceInfo mockDeviceInfo;
 		public Tests()
-        {
-             DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-        }
+		{
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		}
 		public void Dispose()
-        {
-             DeviceInfo.SetCurrent(null);
-        }
+		{
+			DeviceInfo.SetCurrent(null);
+		}
 
 		[Theory]
 		[Values]

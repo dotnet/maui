@@ -13,7 +13,7 @@ public partial class Maui21757
 {
 	public Maui21757() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -42,6 +42,12 @@ public partial class Maui21757
 			Assert.Equal(typeof(BoxView), styleB.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleB.Setters[0].Property);
 			Assert.Equal(Color.FromArgb("#C8C8C8"), styleB.Setters[0].Value);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

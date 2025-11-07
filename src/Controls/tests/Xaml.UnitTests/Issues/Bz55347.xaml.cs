@@ -14,10 +14,10 @@ public partial class Bz55347 : ContentPage
 	public class Tests : IDisposable
 	{
 		public void Dispose()
-        {
-            Application.Current = null;
-        }
-		
+		{
+			Application.Current = null;
+		}
+
 		[Theory]
 		[Values]
 		public void PaddingThicknessResource(XamlInflator inflator)

@@ -16,13 +16,13 @@ public partial class Gh3862 : ContentPage
 		MockDeviceInfo mockDeviceInfo;
 
 		public Tests()
-        {
+		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-        }
+		}
 		public void Dispose()
-        {
-             DeviceInfo.SetCurrent(null);
-        }
+		{
+			DeviceInfo.SetCurrent(null);
+		}
 
 		[Theory]
 		[Values]

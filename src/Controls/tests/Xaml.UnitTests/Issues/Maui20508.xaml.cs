@@ -11,7 +11,7 @@ public partial class Maui20508
 {
 	public Maui20508() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -25,6 +25,12 @@ public partial class Maui20508
 		{
 			var page = new Maui20508(inflator) { BindingContext = new { Icon = "boundIcon.png" } };
 			Assert.Equal("boundIcon.png", ((FileImageSource)page.ToolbarItems[0].IconImageSource).File);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

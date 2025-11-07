@@ -32,9 +32,9 @@ public partial class Gh2632 : Gh2632Base
 		}
 
 		public void Dispose()
-        {
-            DispatcherProvider.SetCurrent(null);
-        }
+		{
+			DispatcherProvider.SetCurrent(null);
+		}
 
 		[Theory]
 		[Values]

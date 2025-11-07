@@ -24,9 +24,9 @@ public partial class Bz58922 : ContentPage
 		public void Dispose()
 		{
 			DeviceInfo.SetCurrent(null);
-		
+
 		}
-		
+
 		[Theory]
 		[Values]
 		public void OnIdiomXDouble(XamlInflator inflator)

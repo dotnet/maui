@@ -19,7 +19,7 @@ public partial class Maui29334 : ContentPage
 	}
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -32,6 +32,12 @@ public partial class Maui29334 : ContentPage
 		{
 			var page = new Maui29334(true); // TODO: This test needs useCompiledXaml parameter
 
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

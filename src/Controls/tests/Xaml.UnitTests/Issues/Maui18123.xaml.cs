@@ -34,6 +34,7 @@ public partial class Maui18123 : ContentPage
 		{
 			Application.SetCurrentApplication(null);
 			DispatcherProvider.SetCurrent(null);
+			Application.Current = null;
 		}
 
 		[Theory]

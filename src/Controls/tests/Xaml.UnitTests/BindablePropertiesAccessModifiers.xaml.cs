@@ -49,9 +49,9 @@ public partial class BindablePropertiesAccessModifiers : ContentPage
 		}
 
 		public void Dispose()
-        {
+		{
 			Application.Current = null;
-        }
+		}
 
 		[Theory]
 		[Values]

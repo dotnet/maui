@@ -26,6 +26,7 @@ public partial class Maui20244 : ContentPage
 		{
 			Application.SetCurrentApplication(null);
 			DispatcherProvider.SetCurrent(null);
+			Application.Current = null;
 		}
 
 		[Theory]

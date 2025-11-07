@@ -33,12 +33,12 @@ public partial class Maui17950 : ContentPage
 	{
 		public Test()
 		{
-			 AppInfo.SetCurrent(new MockAppInfo());
+			AppInfo.SetCurrent(new MockAppInfo());
 		}
 
 		public void Dispose()
 		{
-			 AppInfo.SetCurrent(null);
+			AppInfo.SetCurrent(null);
 		}
 		[Theory]
 		[Values]

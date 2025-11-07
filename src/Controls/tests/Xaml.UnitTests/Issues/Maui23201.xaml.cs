@@ -24,8 +24,9 @@ public partial class Maui23201
 		{
 			Application.SetCurrentApplication(null);
 			DispatcherProvider.SetCurrent(null);
+			Application.Current = null;
 		}
-		
+
 		[Theory]
 		[Values]
 		public void ToolBarItemAppThemeBinding(XamlInflator inflator)

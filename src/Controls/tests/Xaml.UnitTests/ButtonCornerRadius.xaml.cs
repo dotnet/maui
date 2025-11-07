@@ -13,13 +13,13 @@ public partial class ButtonCornerRadius : ContentPage
 	{
 		public Tests()
 		{
-			 Application.Current = new MockApplication();
+			Application.Current = new MockApplication();
 		}
 
 		public void Dispose()
-        {
-          	Application.Current = null;
-        }
+		{
+			Application.Current = null;
+		}
 
 		[Theory]
 		[Values]

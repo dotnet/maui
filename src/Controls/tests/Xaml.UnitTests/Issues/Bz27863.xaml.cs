@@ -19,11 +19,11 @@ public partial class Bz27863 : ContentPage
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
-		
+
 		public void Dispose()
-        {
+		{
 			DispatcherProvider.SetCurrent(null);
-        }
+		}
 
 		[Theory]
 		[Values]

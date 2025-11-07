@@ -27,6 +27,8 @@ public partial class Maui22877 : ContentPage
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 
 		[Theory]

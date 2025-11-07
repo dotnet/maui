@@ -30,6 +30,9 @@ public partial class Maui16208
 		{
 			AppInfo.SetCurrent(null);
 			mockDeviceInfo = null;
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
+			DeviceInfo.SetCurrent(null);
 		}
 
 		[Theory]

@@ -91,7 +91,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		IXamlTypeResolver typeResolver;
 
 		public MarkupExtensionTests()
-		{			var nsManager = new XmlNamespaceManager(new NameTable());
+		{
+			var nsManager = new XmlNamespaceManager(new NameTable());
 			nsManager.AddNamespace("local", "clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests");
 			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");
 

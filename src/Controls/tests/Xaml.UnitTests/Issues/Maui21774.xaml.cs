@@ -13,7 +13,7 @@ public partial class Maui21774
 {
 	public Maui21774() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -46,6 +46,12 @@ public partial class Maui21774
 			//labels should change
 			Assert.Equal(Colors.HotPink, page.label0.TextColor);
 			Assert.Equal(Colors.HotPink, page.label1.TextColor);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

@@ -22,6 +22,7 @@ public partial class Maui22714
 		{
 			Application.SetCurrentApplication(null);
 			DispatcherProvider.SetCurrent(null);
+			Application.Current = null;
 		}
 
 		[Theory]

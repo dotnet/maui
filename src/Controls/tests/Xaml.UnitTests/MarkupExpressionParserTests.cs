@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static readonly string Foo = "Foo";
 
 		public MarkupExpressionParserTests()
-		{			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		{
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			var nsManager = new XmlNamespaceManager(new NameTable());
 			nsManager.AddNamespace("local", "clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests");
 			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");

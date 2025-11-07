@@ -12,7 +12,7 @@ public partial class Maui25935
 {
 	public Maui25935() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -29,6 +29,12 @@ public partial class Maui25935
 			Assert.Contains("1", items);
 			Assert.Contains("2", items);
 			Assert.Contains("3", items);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

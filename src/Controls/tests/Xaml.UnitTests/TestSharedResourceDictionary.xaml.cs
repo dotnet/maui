@@ -12,7 +12,10 @@ public partial class TestSharedResourceDictionary : ContentPage
 	public class Tests : IDisposable
 	{
 
-		public void Dispose() { }
+		public void Dispose()
+		{
+			Application.Current = null;
+		}
 		public Tests()
 		{
 			Application.Current = new MockApplication

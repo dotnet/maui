@@ -269,7 +269,7 @@ public partial class PlatformViewsAndBindings : ContentPage
 		{
 			var inflator = XamlInflator.Runtime; // Placeholder
 			var platform = "iOS"; // Placeholder
-			
+
 			var realPlatform = SetUpPlatform(platform);
 
 			var layout = new PlatformViewsAndBindings(inflator);

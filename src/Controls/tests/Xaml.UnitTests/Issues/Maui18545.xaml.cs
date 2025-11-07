@@ -14,7 +14,7 @@ public partial class Maui18545 : ContentPage
 	public Maui18545() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -48,6 +48,12 @@ public partial class Maui18545 : ContentPage
 			Application.Current.Resources.MergedDictionaries.Add(darktheme);
 			page.Resources["GradientColorStart"] = Colors.Green;
 			Assert.Equal(Colors.Green, brush.GradientStops[0].Color);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

@@ -14,9 +14,9 @@ public partial class Bz56852
 	public class Tests : IDisposable
 	{
 		public void Dispose()
-        {
-            Application.Current = null;
-        }
+		{
+			Application.Current = null;
+		}
 
 		[Theory]
 		[Values]

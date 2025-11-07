@@ -12,7 +12,7 @@ public partial class Maui16960
 {
 	public Maui16960() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -43,6 +43,12 @@ public partial class Maui16960
 			VisualStateManager.GoToState(button, "PointerOver");
 			Assert.Equal(Colors.Red, button.BackgroundColor);
 
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

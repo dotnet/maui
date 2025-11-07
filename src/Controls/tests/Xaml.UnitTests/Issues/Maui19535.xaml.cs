@@ -27,6 +27,7 @@ public partial class Maui19535 : Maui19535CustomThemeDictionary
 		{
 			Application.SetCurrentApplication(null);
 			DispatcherProvider.SetCurrent(null);
+			Application.Current = null;
 		}
 
 		[Theory]

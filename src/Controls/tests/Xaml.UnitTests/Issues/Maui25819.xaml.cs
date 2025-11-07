@@ -24,6 +24,8 @@ public partial class Maui25819 : ContentPage
 		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 
 		[Theory]

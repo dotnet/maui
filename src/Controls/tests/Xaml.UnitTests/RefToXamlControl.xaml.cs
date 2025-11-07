@@ -14,7 +14,7 @@ public partial class RefToXamlControl : ContentPage
 	public RefToXamlControl() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -32,5 +32,11 @@ public partial class RefToXamlControl : ContentPage
 		}
 		static string GetThisFilePath([System.Runtime.CompilerServices.CallerFilePath] string path = null) => path ?? string.Empty;
 
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
+		}
 	}
 }

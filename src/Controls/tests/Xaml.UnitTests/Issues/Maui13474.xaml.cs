@@ -13,7 +13,7 @@ public partial class Maui13474
 {
 	public Maui13474() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -29,6 +29,12 @@ public partial class Maui13474
 			var fontImageSource = page.imageButton.Source as FontImageSource;
 			Assert.Equal(fontImageSource.Color, Colors.Red);
 			Assert.Equal("FontAwesome", fontImageSource.FontFamily);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

@@ -30,8 +30,9 @@ public partial class Maui25608_2
 		{
 			BindingDiagnostics.BindingFailed -= BindingFailed;
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
-
 			AppInfo.SetCurrent(null);
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 
 		bool bindingFailureReported = false;

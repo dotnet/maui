@@ -31,6 +31,8 @@ public partial class Maui25608
 			if (_bindingFailureHandler is not null)
 			{
 				BindingDiagnostics.BindingFailed -= _bindingFailureHandler;
+				Application.Current = null;
+				DispatcherProvider.SetCurrent(null);
 			}
 
 			AppInfo.SetCurrent(null);

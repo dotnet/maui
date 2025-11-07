@@ -14,12 +14,12 @@ public partial class Maui8149 : ContentView
 	{
 		public Test()
 		{
-			 AppInfo.SetCurrent(new MockAppInfo());
+			AppInfo.SetCurrent(new MockAppInfo());
 		}
 
 		public void Dispose()
 		{
-			 AppInfo.SetCurrent(null);
+			AppInfo.SetCurrent(null);
 		}
 
 		[Theory]

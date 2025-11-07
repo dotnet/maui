@@ -26,6 +26,7 @@ public partial class Maui16327 : ContentPage
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = null);
 			AppInfo.SetCurrent(null);
+			DeviceInfo.SetCurrent(null);
 		}
 
 		[Theory]

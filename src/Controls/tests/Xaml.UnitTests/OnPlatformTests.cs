@@ -138,6 +138,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			image = new Image().LoadFromXaml(xaml);
 			Assert.Equal("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
+
 	}
 
 

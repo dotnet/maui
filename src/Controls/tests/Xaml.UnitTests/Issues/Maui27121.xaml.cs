@@ -12,7 +12,7 @@ public partial class Maui27121
 	public Maui27121() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -26,6 +26,12 @@ public partial class Maui27121
 		{
 			var page = new Maui27121(inflator);
 			Assert.NotNull(page.label0);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

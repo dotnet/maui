@@ -19,7 +19,7 @@ public partial class Maui31308
 	public Maui31308() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -33,6 +33,12 @@ public partial class Maui31308
 		{
 			var exception = Assert.Throws<XamlParseException>(() => new Maui31308(inflator));
 			Assert.Equal("Position 6:38. StaticResource not found for key ThisKeyDoesNotExistInAnyResourceDictionary", exception.Message);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

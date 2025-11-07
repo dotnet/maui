@@ -18,7 +18,7 @@ public partial class Bz55343 : ContentPage
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
-		
+
 		public void Dispose()
 		{
 			DeviceInfo.SetCurrent(null);

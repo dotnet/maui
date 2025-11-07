@@ -17,10 +17,10 @@ public partial class BuiltInConversions : ContentPage
 			Application.Current = new MockApplication();
 		}
 		public void Dispose()
-        {
+		{
 			Application.Current = null;
-        }
-		
+		}
+
 		[Theory]
 		[Values]
 		public void Datetime(XamlInflator inflator)

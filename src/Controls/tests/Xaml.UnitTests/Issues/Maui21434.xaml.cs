@@ -12,7 +12,7 @@ public partial class Maui21434
 {
 	public Maui21434() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -27,6 +27,12 @@ public partial class Maui21434
 			var page = new Maui21434(inflator);
 			Assert.Equal("ParentText", page.ParentTextLabel?.Text);
 			Assert.Equal("ChildText", page.ChildTextLabel?.Text);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

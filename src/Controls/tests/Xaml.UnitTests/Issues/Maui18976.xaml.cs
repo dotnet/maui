@@ -11,7 +11,7 @@ public partial class Maui18976 : ContentPage
 {
 	public Maui18976() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -34,6 +34,12 @@ public partial class Maui18976 : ContentPage
 			page.checkbox.IsChecked = false;
 			Assert.False(page.checkbox.IsChecked);
 			Assert.True(page.button.IsEnabled);
+		}
+
+		public void Dispose()
+		{
+			Application.Current = null;
+			DispatcherProvider.SetCurrent(null);
 		}
 	}
 }

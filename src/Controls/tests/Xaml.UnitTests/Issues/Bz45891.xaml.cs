@@ -29,12 +29,12 @@ public partial class Bz45891 : ContentPage
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
-		
+
 		public void Dispose()
-        {
+		{
 			DeviceInfo.SetCurrent(null);
 		}
-		
+
 		[Theory]
 		[Values]
 		public void LookForInheritanceOnOpImplicit(XamlInflator inflator)
