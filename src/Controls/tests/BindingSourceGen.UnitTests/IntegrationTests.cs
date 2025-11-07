@@ -88,15 +88,24 @@ public class IntegrationTests
                             {
                                 new(static source => source, "Length"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -181,15 +190,24 @@ public class IntegrationTests
                             {
                                 new(static source => source, "Length"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
                         return binding;
                     }
                 }
@@ -356,15 +374,24 @@ public class IntegrationTests
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -475,15 +502,24 @@ public class IntegrationTests
                                 new(static source => source?.B, "Item[0]"),
                                 new(static source => source?.B?[0], "C"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -694,15 +730,24 @@ public class IntegrationTests
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -825,15 +870,24 @@ public class IntegrationTests
                                 new(static source => source?.B, "C"),
                                 new(static source => source?.B.C, "D"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -962,15 +1016,24 @@ public class IntegrationTests
                                 new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
                                 new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1094,15 +1157,24 @@ public class IntegrationTests
                                 new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
                                 new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1212,15 +1284,24 @@ public class IntegrationTests
                                 new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped.Y, "Value"),
                                 new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped.Y.Value, "Length"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1344,15 +1425,24 @@ public class IntegrationTests
                                 new(static source => source[12]?["Abc"], "Item"),
                                 new(static source => source[12]?["Abc"], "Item[0]"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1457,15 +1547,24 @@ public class IntegrationTests
                                 new(static source => source, "_button"),
                                 new(static source => GetUnsafeField__button(source), "Text"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1574,15 +1673,24 @@ public class IntegrationTests
                                 new(static source => source, "Button"),
                                 new(static source => GetUnsafeProperty_Button(source), "Text"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1689,15 +1797,24 @@ public class IntegrationTests
                             {
                                 new(static source => source, "Text"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1805,15 +1922,24 @@ public class IntegrationTests
                                 new(static source => source, "Text"),
                             	new(static source => GetUnsafeProperty_Text(source), "Length"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1917,15 +2043,24 @@ public class IntegrationTests
                             {
                                 new(static source => source, "Text"),
                             })
-                        {
-                            Mode = mode,
-                            Converter = converter,
-                            ConverterParameter = converterParameter,
-                            StringFormat = stringFormat,
-                            Source = source,
-                            FallbackValue = fallbackValue,
-                            TargetNullValue = targetNullValue
-                        };
+
+                            {
+
+                            	Mode = mode,
+
+                            	Converter = converter,
+
+                            	ConverterParameter = converterParameter,
+
+                            	StringFormat = stringFormat,
+
+                            	Source = source,
+
+                            	FallbackValue = fallbackValue,
+
+                            	TargetNullValue = targetNullValue,
+
+                            };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -2024,15 +2159,24 @@ public class IntegrationTests
 							{
 								new(static source => source, "Value"),
 							})
-						{
-							Mode = mode,
-							Converter = converter,
-							ConverterParameter = converterParameter,
-							StringFormat = stringFormat,
-							Source = source,
-							FallbackValue = fallbackValue,
-							TargetNullValue = targetNullValue
-						};
+
+							{
+
+								Mode = mode,
+
+								Converter = converter,
+
+								ConverterParameter = converterParameter,
+
+								StringFormat = stringFormat,
+
+								Source = source,
+
+								FallbackValue = fallbackValue,
+
+								TargetNullValue = targetNullValue,
+
+							};
 						return binding;
 					}
 				}
@@ -2134,15 +2278,24 @@ public class IntegrationTests
 							{
 								new(static source => source, "Value"),
 							})
-						{
-							Mode = mode,
-							Converter = converter,
-							ConverterParameter = converterParameter,
-							StringFormat = stringFormat,
-							Source = source,
-							FallbackValue = fallbackValue,
-							TargetNullValue = targetNullValue
-						};
+
+							{
+
+								Mode = mode,
+
+								Converter = converter,
+
+								ConverterParameter = converterParameter,
+
+								StringFormat = stringFormat,
+
+								Source = source,
+
+								FallbackValue = fallbackValue,
+
+								TargetNullValue = targetNullValue,
+
+							};
 						bindableObject.SetBinding(bindableProperty, binding);
 					}
 				}
