@@ -8,12 +8,12 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using AndroidX.Core.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -206,7 +206,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
-			GlobalWindowInsetListener? _modalInsetListener;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
 
@@ -320,15 +319,6 @@ namespace Microsoft.Maui.Controls.Platform
 				var rootView = _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
 
-				var context = rootView.Context ?? inflater.Context;
-				if (context is not null)
-				{
-					// Modal pages get their own separate GlobalWindowInsetListener instance
-					// This prevents cross-contamination with the main window's inset tracking
-					_modalInsetListener = new GlobalWindowInsetListener();
-					ViewCompat.SetOnApplyWindowInsetsListener(rootView, _modalInsetListener);
-				}
-
 				if (IsAnimated)
 				{
 					_ = new GenericGlobalLayoutListener((listener, view) =>
@@ -381,20 +371,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_modal.Toolbar?.Handler is not null)
 				{
 					_modal.Toolbar.Handler = null;
-				}
-
-				// Clean up the modal's separate GlobalWindowInsetListener
-				if (_modalInsetListener is not null)
-				{
-					_modalInsetListener.ResetAllViews();
-					_modalInsetListener.Dispose();
-					_modalInsetListener = null;
-				}
-
-				var rootView = _navigationRootManager?.RootView;
-				if (rootView is not null)
-				{
-					ViewCompat.SetOnApplyWindowInsetsListener(rootView, null);
 				}
 
 				_modal.Handler = null;
