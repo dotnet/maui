@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Platform
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
 
+		FragmentTransaction? _pendingTransaction;
+
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
 		internal event EventHandler? RootViewChanged;
@@ -176,13 +178,17 @@ namespace Microsoft.Maui.Platform
 									_mauiContext,
 									OnWindowContentPlatformViewCreated);
 
-							fm
+							_pendingTransaction = fm
 								.BeginTransactionEx()
 								.ReplaceEx(Resource.Id.navigationlayout_content, _viewFragment)
-								.SetReorderingAllowed(true)
-								.Commit();
+								.SetReorderingAllowed(true);
 						});
 			}
+		}
+
+		internal void PerformPendingFragmentTransaction()
+		{
+			_pendingTransaction?.CommitNow();
 		}
 
 		class ElementBasedFragment : ScopedFragment
