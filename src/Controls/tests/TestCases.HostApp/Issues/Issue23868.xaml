@@ -19,7 +19,7 @@
                     <Grid ColumnDefinitions="2*,*"
                           HorizontalOptions="CenterAndExpand"
                           x:DataType="{x:Null}"
-                          IsVisible="{Binding ItemsSource.Count, Source={x:Reference collectionView}, FallbackValue=False}">
+                          IsVisible="{Binding Source={x:Reference collectionView}, Path=ItemsSource.Count, FallbackValue=False}">
                         <Label Grid.Column="0"
                                Text="Items Count:"
                                VerticalTextAlignment="Center"
