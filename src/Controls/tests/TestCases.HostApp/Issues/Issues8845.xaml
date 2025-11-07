@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="Issue 8845"
-             x:Class="Maui.Controls.Sample.Issues.Issue8845">
+             x:Class="Maui.Controls.Sample.Issues.Issue8845"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
 
   <VerticalStackLayout>
     <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}"/>

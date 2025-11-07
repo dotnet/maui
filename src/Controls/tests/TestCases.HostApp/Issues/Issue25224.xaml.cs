@@ -36,13 +36,13 @@ namespace Maui.Controls.Sample.Issues
 
 		internal class Issue25224ViewModel
 		{
-			public ObservableCollection<Monkey> Monkeys { get; } = new();
+			public ObservableCollection<Issue25224Monkey> Monkeys { get; } = new();
 			public ICommand FilterCommand => new Command<string>(FilterItems);
 
 			public Issue25224ViewModel()
 			{
 				// Directly populate the ObservableCollection
-				Monkeys.Add(new Monkey
+				Monkeys.Add(new Issue25224Monkey
 				{
 					Name = "Baboon",
 					Location = "Africa & Asia",
@@ -60,5 +60,12 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 		}
+	}
+
+	public class Issue25224Monkey
+	{
+		public string? Name { get; set; }
+		public string? Location { get; set; }
+		public string? Details { get; set; }
 	}
 }
