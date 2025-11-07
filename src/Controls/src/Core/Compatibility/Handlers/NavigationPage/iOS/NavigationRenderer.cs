@@ -577,10 +577,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 			{
 				bool isStatusBarHiddenExplicitlySet = NavPage.IsSet(PrefersStatusBarHiddenProperty);
-				if(!isStatusBarHiddenExplicitlySet)
-                {
-                    shouldHide = true;
-                }
+				if (!isStatusBarHiddenExplicitlySet)
+				{
+					shouldHide = true;
+				}
 			}
 
 			// Just setting the ShadowImage is good for iOS11
@@ -642,6 +642,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 			{
+				// iOS 26 introduced Liquid Glass design with translucent nav bars by default.
+				// Only force opaque appearance if background color is explicitly set.
 				bool isNavigationBarTranslucentExplicitlySet = NavPage.IsSet(IsNavigationBarTranslucentProperty);
 				if (isNavigationBarTranslucentExplicitlySet)
 				{
