@@ -8,26 +8,32 @@ public partial class TypeLoader : ContentPage
 {
 	public TypeLoader() => InitializeComponent();
 
-	public class Tests
+	public class Tests : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void SetUp() => Application.Current = new MockApplication();
+		public Tests()
+		{
+			Application.Current = new MockApplication();
+		}
 
+		public void Dispose()
+		{
+			Application.Current = null;
+		}
+		
 		[Theory]
 		[Values]
-		public void LoadTypeFromXmlns()
+		public void LoadTypeFromXmlns(XamlInflator inflator)
 		{
-			TypeLoader layout = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout = new TypeLoader(inflator));
+			TypeLoader layout = new TypeLoader(inflator);
 			Assert.NotNull(layout.customview0);
 			Assert.IsType<CustomView>(layout.customview0);
 		}
 
 		[Theory]
 		[Values]
-		public void LoadTypeFromXmlnsWithoutAssembly()
+		public void LoadTypeFromXmlnsWithoutAssembly(XamlInflator inflator)
 		{
-			TypeLoader layout = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout = new TypeLoader(inflator));
+			TypeLoader layout = new TypeLoader(inflator);
 			Assert.NotNull(layout.customview1);
 			Assert.IsType<CustomView>(layout.customview1);
 		}

@@ -13,9 +13,9 @@ public partial class FieldModifier : ContentPage
 	{
 		[Theory]
 		[Values]
-		public void TestFieldModifier()
+		public void TestFieldModifier(XamlInflator inflator)
 		{
-			var layout = new FieldModifier();
+			var layout = new FieldModifier(inflator);
 			Assert.NotNull(layout.privateLabel);
 			Assert.NotNull(layout.internalLabel);
 			Assert.NotNull(layout.publicLabel);

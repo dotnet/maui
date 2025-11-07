@@ -574,8 +574,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
 					<Label x:Name=""contentview""/>
 				</local:CustomView>";
-			CustomView customView = null;
-			// TODO: xUnit does not have DoesNotThrow - verify this test manually`r`n() => customView = new CustomView().LoadFromXaml(xaml);
+			var customView = new CustomView().LoadFromXaml(xaml);
 			Assert.NotNull(customView.Content);
 			Assert.Same(customView.Content, ((Maui.Controls.Internals.INameScope)customView).FindByName("contentview"));
 		}
