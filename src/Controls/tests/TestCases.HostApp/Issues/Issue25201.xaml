@@ -15,6 +15,7 @@
                  Padding="20"
                  Source="dotnet_bot"
                  IsVisible="{Binding Source={x:Reference Switch1}, Path=IsToggled}"
+                 x:DataType="Switch"
                  />
 
     <!-- https://github.com/dotnet/maui/issues/16713 -->
@@ -36,6 +37,7 @@
             AbsoluteLayout.LayoutBounds="0,0,1.0,1.0"
             BackgroundColor="#80FFFFFF"
             IsVisible="{Binding Source={x:Reference Switch2}, Path=IsToggled}"
+            x:DataType="Switch"
             />
     </AbsoluteLayout>
   </VerticalStackLayout>

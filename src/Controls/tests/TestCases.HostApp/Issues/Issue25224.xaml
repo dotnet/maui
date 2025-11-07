@@ -50,7 +50,7 @@
                   ItemsSource="{Binding Monkeys}"
                   EmptyView="{Binding Source={x:Reference searchBar}, Path=Text}">
       <CollectionView.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="local:Issue25224Monkey">
           <Grid Padding="10">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />

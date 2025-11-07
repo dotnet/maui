@@ -25,11 +25,12 @@
                         <Label Grid.Column="1"
                                Text="{Binding Items.Count}"
                                VerticalTextAlignment="Center"
-                               HorizontalOptions="StartAndExpand"/>
+                               HorizontalOptions="StartAndExpand"
+                               x:DataType="local:Issue23868"/>
                     </Grid>
                 </CollectionView.Header>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="x:String">
                         <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
