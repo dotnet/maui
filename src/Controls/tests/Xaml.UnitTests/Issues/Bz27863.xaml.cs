@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,14 +12,16 @@ public partial class Bz27863 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
-	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void DataTemplateInResourceDictionaries([Values] XamlInflator inflator)
+	public class Tests : IDisposable
+	{
+
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+		[Theory]
+		[Values]
+		public void DataTemplateInResourceDictionaries(XamlInflator inflator)
 		{
 			var layout = new Bz27863(inflator);
 			var listview = layout.Resources["listview"] as ListView;
@@ -26,7 +29,7 @@ public partial class Bz27863 : ContentPage
 			var template = listview.ItemTemplate;
 			var cell = template.CreateContent() as ViewCell;
 			cell.BindingContext = "Foo";
-			Assert.AreEqual("ooF", ((Label)((Compatibility.StackLayout)cell.View).Children[0]).Text);
+			Assert.Equal("ooF", ((Label)((Compatibility.StackLayout)cell.View).Children[0]).Text);
 		}
 	}
 }

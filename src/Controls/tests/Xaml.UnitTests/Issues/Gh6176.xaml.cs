@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,11 +17,12 @@ public partial class Gh6176
 {
 	public Gh6176() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void XamlCDoesntFail([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XamlCDoesntFail(XamlInflator inflator)
 		{
 			var layout = new Gh6176(inflator);
 		}

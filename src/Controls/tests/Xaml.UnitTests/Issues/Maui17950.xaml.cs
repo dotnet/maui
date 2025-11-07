@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,32 +12,35 @@ public partial class Maui17950 : ContentPage
 	void TestBtn(object sender, EventArgs e)
 	{
 		Console.WriteLine("event called");
-		Assert.Pass();
+		// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
 	}
 
 	void TestBtn(object sender, string e)
 	{
 		Console.WriteLine("wrong event called");
-		Assert.Fail("wrong method invoked");
+		// TODO: XUnit doesn't have Assert.Fail, use Assert.True(false, ...) or throw
+		throw new InvalidOperationException("wrong method invoked");
 	}
 
 	void TestBtn()
 	{
 		Console.WriteLine("normal method called");
-		Assert.Fail("wrong method invoked");
+		// TODO: XUnit doesn't have Assert.Fail, use Assert.True(false, ...) or throw
+		throw new InvalidOperationException("wrong method invoked");
 	}
 
-	class Test
+	public class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 
-		[Test]
-		public void AmbiguousMatch([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void AmbiguousMatch(XamlInflator inflator)
 		{
 			Maui17950 page = new Maui17950(inflator);
 			page.button.SendClicked();
-			Assert.Fail("no method invoked");
+			// TODO: XUnit doesn't have Assert.Fail, use Assert.True(false, ...) or throw
+			throw new InvalidOperationException("no method invoked");
 		}
 	}
 }

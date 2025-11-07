@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,18 +6,19 @@ public partial class Issue1438 : ContentPage
 {
 	public Issue1438() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void XNameForwardDeclaration([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XNameForwardDeclaration(XamlInflator inflator)
 		{
 			var page = new Issue1438(inflator);
 
 			var slider = page.FindByName<Slider>("slider");
 			var label = page.FindByName<Label>("label");
-			Assert.AreSame(slider, label.BindingContext);
-			Assert.That(slider.Parent, Is.TypeOf<StackLayout>());
+			Assert.Same(slider, label.BindingContext);
+			Assert.IsType<StackLayout>(slider.Parent);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,13 +20,17 @@ public partial class Gh4130 : ContentPage
 		var c = new Gh4130Control();
 	}
 
-	void OnTextChanged(object sender, EventArgs e) => Assert.Pass();
-
-	[TestFixture]
-	class Tests
+	void OnTextChanged(object sender, EventArgs e)
 	{
-		[Test]
-		public void NonGenericEventHanlders([Values] XamlInflator inflator)
+		// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
+	}
+
+
+	public class Tests
+	{
+		[Theory]
+		[Values]
+		public void NonGenericEventHanlders(XamlInflator inflator)
 		{
 			var layout = new Gh4130(inflator);
 			var control = layout.Content as Gh4130Control;

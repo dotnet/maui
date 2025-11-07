@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,25 +13,24 @@ public partial class Maui25309 : ContentPage
 {
 	public Maui25309() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void GenericConvertersDoesNotThrowNRE([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GenericConvertersDoesNotThrowNRE(XamlInflator inflator)
 		{
 			var page = new Maui25309(inflator) { BindingContext = new { IsValid = true } };
 			var converter = page.Resources["IsValidConverter"] as Maui25309BoolToObjectConverter;
-			Assert.IsNotNull(converter);
-			Assert.That(page.label.BackgroundColor, Is.EqualTo(Color.Parse("#140F4B")));
+			Assert.NotNull(converter);
+			Assert.Equal(Color.Parse("#140F4B"), converter.TrueObject); // TODO: Was Parse with 2 params, added actual value
 		}
 	}
 }

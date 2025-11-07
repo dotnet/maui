@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,21 +6,22 @@ public partial class Gh2034 : ContentPage
 {
 	public Gh2034() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void Compiles([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void Compiles(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(Gh2034));
-				Assert.Pass();
+				// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
 			}
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Gh2034));
-				Assert.That(result.Diagnostics, Is.Empty);
+				Assert.Empty(result.Diagnostics);
 			}
 		}
 	}

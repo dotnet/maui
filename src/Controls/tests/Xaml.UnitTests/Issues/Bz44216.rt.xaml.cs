@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -27,11 +27,12 @@ public partial class Bz44216 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void DonSetValueOnPrivateBP([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void DonSetValueOnPrivateBP(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws(new BuildExceptionConstraint(7, 26, s => s.Contains("No property,", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Bz44216)));
@@ -67,7 +68,7 @@ public partial class Bz44216 : ContentPage
 					.RunMauiSourceGenerator(typeof(Bz44216));
 				//sourcegen succeeds
 				var diagnostics = result.Diagnostics;
-				Assert.That(diagnostics.Any(d => d.Id == "MAUIX2002"));
+				Assert.True(diagnostics.Any(d => d.Id == "MAUIX2002"));
 
 			}
 		}

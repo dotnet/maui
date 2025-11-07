@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,14 +10,13 @@ public partial class Gh10803 : ContentPage
 {
 	public Gh10803() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
 		int failures = 0;
 
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			VisualDiagnostics.VisualTreeChanged += VTChanged;
@@ -24,8 +24,7 @@ public partial class Gh10803 : ContentPage
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			DispatcherProvider.SetCurrent(null);
@@ -33,14 +32,15 @@ public partial class Gh10803 : ContentPage
 			failures = 0;
 		}
 
-		[Test]
-		public void SourceInfoForElementsInDT([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SourceInfoForElementsInDT(XamlInflator inflator)
 		{
 			var layout = new Gh10803(inflator);
 			var listview = layout.listview;
 			var cell = listview.TemplatedItems.GetOrCreateContent(0, null);
 			if (inflator == XamlInflator.Runtime || inflator == XamlInflator.SourceGen)
-				Assert.That(failures, Is.EqualTo(0), "one or more element without source info, or with invalid ChildIndex");
+				Assert.Equal(0, failures);
 		}
 
 		void VTChanged(object sender, VisualTreeChangeEventArgs e)

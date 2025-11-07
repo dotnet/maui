@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
@@ -163,49 +163,55 @@ public partial class SetValue : ContentPage
 		fired = true;
 	}
 
-	[TestFixture]
-	class Tests
-	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void SetValueToBP([Values] XamlInflator inflator)
+	public class Tests : IDisposable
+	{
+
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+		[Theory]
+		[Values]
+		public void SetValueToBP(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual("Foo", page.label0.Text);
+			Assert.Equal("Foo", page.label0.Text);
 		}
 
-		[Test]
-		public void SetBindingToBP([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetBindingToBP(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(Label.TextProperty.DefaultValue, page.label1.Text);
+			Assert.Equal(Label.TextProperty.DefaultValue, page.label1.Text);
 
 			page.label1.BindingContext = new { labeltext = "Foo" };
-			Assert.AreEqual("Foo", page.label1.Text);
+			Assert.Equal("Foo", page.label1.Text);
 		}
 
-		[Test]
-		public void SetBindingWithImplicitPath([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetBindingWithImplicitPath(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(Label.TextProperty.DefaultValue, page.label11.Text);
+			Assert.Equal(Label.TextProperty.DefaultValue, page.label11.Text);
 
 			page.label11.BindingContext = new { labeltext = "Foo" };
-			Assert.AreEqual("Foo", page.label11.Text);
+			Assert.Equal("Foo", page.label11.Text);
 		}
 
-		[Test]
-		public void SetBindingWithConverter([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetBindingWithConverter(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			page.label15.BindingContext = new { labeltext = "Foo" };
-			Assert.AreEqual("ooF", page.label15.Text);
+			Assert.Equal("ooF", page.label15.Text);
 		}
 
-		[Test]
-		public void SetEvent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetEvent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			Assert.False(page.fired);
@@ -213,8 +219,9 @@ public partial class SetValue : ContentPage
 			Assert.True(page.fired);
 		}
 
-		[Test]
-		public void SetBoolValue([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetBoolValue(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			Assert.True(page.image0.IsOpaque);
@@ -222,81 +229,92 @@ public partial class SetValue : ContentPage
 
 		//TODO test all value conversions
 
-		[Test]
-		public void SetAttachedBP([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetAttachedBP(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(1, Grid.GetColumn(page.label2));
-			Assert.AreEqual(2, Grid.GetRow(page.label2));
+			Assert.Equal(1, Grid.GetColumn(page.label2));
+			Assert.Equal(2, Grid.GetRow(page.label2));
 		}
 
-		[Test]
-		public void SetContent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetContent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreSame(page.label3, page.contentview0.Content);
+			Assert.Same(page.label3, page.contentview0.Content);
 		}
 
-		[Test]
-		public void SetImplicitContent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetImplicitContent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreSame(page.label4, page.contentview1.Content);
+			Assert.Same(page.label4, page.contentview1.Content);
 		}
 
-		[Test]
-		public void SetCollectionContent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetCollectionContent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			Assert.True(page.stack0.Children.Contains(page.label5));
 			Assert.True(page.stack0.Children.Contains(page.label6));
 		}
 
-		[Test]
-		public void SetImplicitCollectionContent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetImplicitCollectionContent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			Assert.True(page.stack1.Children.Contains(page.label7));
 			Assert.True(page.stack1.Children.Contains(page.label8));
 		}
 
-		[Test]
-		public void SetSingleCollectionContent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetSingleCollectionContent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			Assert.True(page.stack2.Children.Contains(page.label9));
 		}
 
-		[Test]
-		public void SetImplicitSingleCollectionContent([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetImplicitSingleCollectionContent(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
 			Assert.True(page.stack3.Children.Contains(page.label10));
 		}
 
-		[Test]
-		public void SetPropertyDefinedOnGenericType([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetPropertyDefinedOnGenericType(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(2, page.listView.ItemsSource.Cast<object>().Count());
+			Assert.Equal(2, page.listView.ItemsSource.Cast<object>().Count());
 		}
 
-		[Test]
-		public void SetConvertibleProperties([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetConvertibleProperties(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(Colors.Red, page.label12.TextColor);
+			Assert.Equal(Colors.Red, page.label12.TextColor);
 		}
 
-		[Test]
-		public void SetValueTypeProperties([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetValueTypeProperties(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(Colors.Pink, page.label13.TextColor);
+			Assert.Equal(Colors.Pink, page.label13.TextColor);
 		}
 
-		[Test]
-		public void CreateValueTypes([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void CreateValueTypes(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -310,7 +328,7 @@ using System.Linq;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -475,100 +493,112 @@ public partial class SetValue : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(SetValue));
-				Assert.That(result.Diagnostics, Is.Empty);
+				Assert.Empty(result.Diagnostics);
 			}
 			var page = new SetValue(inflator);
-			Assert.AreEqual(Colors.Purple, page.Resources["purple"]);
+			Assert.Equal(Colors.Purple, page.Resources["purple"]);
 		}
 
-		[Test]
-		public void DefCollections([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void DefCollections(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(2, page.grid0.RowDefinitions.Count);
-			Assert.AreEqual(1, page.grid0.ColumnDefinitions.Count);
+			Assert.Equal(2, page.grid0.RowDefinitions.Count);
+			Assert.Single(page.grid0.ColumnDefinitions);
 		}
 
-		[Test]
-		public void FlagsAreApplied([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void FlagsAreApplied(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14));
+			Assert.Equal(AbsoluteLayoutFlags.PositionProportional | AbsoluteLayoutFlags.WidthProportional, AbsoluteLayout.GetLayoutFlags(page.label14));
 		}
 
-		[Test]
-		public void ConversionsAreAppliedOnSet([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ConversionsAreAppliedOnSet(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.That(page.content0.Content, Is.TypeOf<Button>());
+			Assert.IsType<Button>(page.content0.Content);
 		}
 
-		[Test]
-		public void ConversionsAreAppliedOnAdd([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ConversionsAreAppliedOnAdd(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.That(page.stack4.Children[0], Is.TypeOf<Button>());
+			Assert.IsType<Button>(page.stack4.Children[0]);
 		}
 
-		[Test]
-		public void ListsAreSimplified([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ListsAreSimplified(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.That(page.contentview2.Content, Is.TypeOf<Label>());
+			Assert.IsType<Label>(page.contentview2.Content);
 		}
 
-		[Test]
-		public void MorePrimitiveTypes([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void MorePrimitiveTypes(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual('!', page.mockView0.AChar);
-			Assert.AreEqual((byte)2, page.mockView0.AByte);
-			Assert.AreEqual((sbyte)-12, page.mockView0.ASByte);
-			Assert.AreEqual((short)-22, page.mockView0.AShort);
-			Assert.AreEqual((ushort)32, page.mockView0.UShort);
-			Assert.AreEqual((decimal)42, page.mockView0.ADecimal);
+			Assert.Equal('!', page.mockView0.AChar);
+			Assert.Equal((byte)2, page.mockView0.AByte);
+			Assert.Equal((sbyte)-12, page.mockView0.ASByte);
+			Assert.Equal((short)-22, page.mockView0.AShort);
+			Assert.Equal((ushort)32, page.mockView0.UShort);
+			Assert.Equal((decimal)42, page.mockView0.ADecimal);
 		}
 
-		[Test]
-		public void NonIntEnums([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void NonIntEnums(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual(IntEnum.Foo, page.enums.IntEnum);
-			Assert.AreEqual(ByteEnum.Bar, page.enums.ByteEnum);
+			Assert.Equal(IntEnum.Foo, page.enums.IntEnum);
+			Assert.Equal(ByteEnum.Bar, page.enums.ByteEnum);
 		}
 
-		public void SetValueWithImplicitOperatorOnSource([Values] XamlInflator inflator)
+		[Xunit.Fact]
+		public void SetValueWithImplicitOperatorOnSource(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty));
+			Assert.Equal("Bar", page.implicit0.GetValue(MockViewWithValues.BPBarProperty));
 		}
 
-		[Test]
-		public void SetValueWithImplicitOperatorOnTarget([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetValueWithImplicitOperatorOnTarget(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual("Foo", ((SV_Foo)page.implicit1.GetValue(MockViewWithValues.BPFooProperty)).Value);
+			Assert.Equal("Foo", ((SV_Foo)page.implicit1.GetValue(MockViewWithValues.BPFooProperty)).Value);
 		}
 
-		[Test]
-		public void SetWithImplicitOperatorOnSource([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetWithImplicitOperatorOnSource(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual("Bar", page.implicit2.Bar);
+			Assert.Equal("Bar", page.implicit2.Bar);
 		}
 
-		[Test]
-		public void SetWithImplicitOperatorOnTarget([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SetWithImplicitOperatorOnTarget(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual("Foo", page.implicit3.Foo.Value);
+			Assert.Equal("Foo", page.implicit3.Foo.Value);
 		}
 
-		[Test]
-		public void StringValueWithUnicode([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void StringValueWithUnicode(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);
-			Assert.AreEqual("Welcome to \n .NET Multi-platform App UI", page.label16.Text);
+			Assert.Equal("Welcome to \n .NET Multi-platform App UI", page.label16.Text);
 		}
 
 	}

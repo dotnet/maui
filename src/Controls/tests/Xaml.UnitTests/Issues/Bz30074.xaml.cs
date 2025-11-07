@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,17 +12,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
+
+		public class Tests
 		{
-			[Test]
-			public void DataTriggerInTemplates([Values] XamlInflator inflator)
+			[Theory]
+			[Values]
+			public void DataTriggerInTemplates(XamlInflator inflator)
 			{
 				var layout = new Bz30074(inflator);
 				Assert.Null(layout.image.Source);
 
 				layout.BindingContext = new { IsSelected = true };
-				Assert.AreEqual("Add.png", ((FileImageSource)layout.image.Source).File);
+				Assert.Equal("Add.png", ((FileImageSource)layout.image.Source).File);
 
 				layout.BindingContext = new { IsSelected = false };
 				Assert.Null(layout.image.Source);

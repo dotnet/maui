@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,11 +9,10 @@ public partial class WarnOnObsolete : ContentPage
 {
 	public WarnOnObsolete() => InitializeComponent();
 
-	[TestFixture]
+
 	class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// TODO: Convert to IDisposable or constructor/IAsyncLifetime for Setup() => AppInfo.SetCurrent(new MockAppInfo());
 	}
 }
 

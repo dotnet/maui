@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,23 +11,21 @@ public partial class Maui27121
 {
 	public Maui27121() => InitializeComponent();
 
-	[TestFixture]
-	class Test
+
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void XNameAreTrimmed([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XNameAreTrimmed(XamlInflator inflator)
 		{
 			var page = new Maui27121(inflator);
-			Assert.That(page.label0, Is.Not.Null);
+			Assert.NotNull(page.label0);
 		}
 	}
 }

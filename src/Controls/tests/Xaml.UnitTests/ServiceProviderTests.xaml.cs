@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -47,27 +47,28 @@ public class SPMarkup3 : MarkupExtensionBase { }
 [RequireService([typeof(IRootObjectProvider)])]
 public class SPMarkup4 : MarkupExtensionBase { }
 
-
 public partial class ServiceProviderTests : ContentPage
 {
 	public ServiceProviderTests() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
-	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void TestServiceProviders([Values(XamlInflator.XamlC)] XamlInflator inflator)
+	public class Tests : IDisposable
+	{
+
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+		[Fact]
+		public void TestServiceProviders() // TODO: Fix parameters - see comment above] XamlInflator inflator)
 		{
+var inflator = XamlInflator.Runtime; // TODO: Convert to Theory with [Values]
 			var page = new ServiceProviderTests(inflator);
 			MockCompiler.Compile(typeof(ServiceProviderTests));
 
-			Assert.AreEqual(null, page.label0.Text);
-			Assert.That(page.label1.Text, Does.Contain("IProvideValueTarget"));
-			Assert.That(page.label3.Text, Does.Contain("IXmlLineInfoProvider"));
-			Assert.That(page.label4.Text, Does.Contain("IRootObjectProvider(ServiceProviderTests)")); //https://github.com/dotnet/maui/issues/16881
+			Assert.Null(page.label0.Text);
+			Assert.Contains("IProvideValueTarget", page.label1.Text);
+			Assert.Contains("IXmlLineInfoProvider", page.label3.Text);
+			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
 }

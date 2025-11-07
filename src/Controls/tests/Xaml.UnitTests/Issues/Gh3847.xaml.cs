@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,19 +6,21 @@ public partial class Gh3847 : ContentPage
 {
 	public Gh3847() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void RelativeSourceSelfBinding([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RelativeSourceSelfBinding(XamlInflator inflator)
 		{
 			var view = new Gh3847(inflator);
 			var label = view.FindByName<Label>("SelfBindingLabel");
-			Assert.AreEqual(label.Text, label.StyleId);
+			Assert.Equal(label.Text, label.StyleId);
 		}
 
-		[Test]
-		public void RelativeSourceAncestorLevelBinding([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RelativeSourceAncestorLevelBinding(XamlInflator inflator)
 		{
 			var view = new Gh3847(inflator);
 			var stack0 = view.FindByName<StackLayout>("Stack0");
@@ -28,19 +30,20 @@ public partial class Gh3847 : ContentPage
 			var level3Label = view.FindByName<Label>("AncestorLevel3Label");
 			var ancestorBindingContextLabel = view.FindByName<Label>("AncestorBindingContextLabel");
 
-			Assert.AreEqual(level1Label.Text, stack1.StyleId);
-			Assert.AreEqual(level2Label.Text, stack0.StyleId);
-			Assert.AreEqual(ancestorBindingContextLabel.Text, "Foo");
-			Assert.IsNull(level3Label.Text);
+			Assert.Equal(level1Label.Text, stack1.StyleId);
+			Assert.Equal(level2Label.Text, stack0.StyleId);
+			Assert.Equal("Foo", ancestorBindingContextLabel.Text);
+			Assert.Null(level3Label.Text);
 		}
 
-		[Test]
-		public void RelativeSourceTemplatedParentBinding([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RelativeSourceTemplatedParentBinding(XamlInflator inflator)
 		{
 			var view = new Gh3847(inflator);
 			var cv = view.FindByName<ContentView>("contentView");
 			var label = (cv as IVisualTreeElement).GetVisualChildren()[0] as Label;
-			Assert.AreEqual(label.Text, cv.StyleId);
+			Assert.Equal(label.Text, cv.StyleId);
 		}
 	}
 }

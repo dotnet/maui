@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,14 +22,15 @@ public partial class Gh5651 : ContentPage
 {
 	public Gh5651() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void GenericBaseInterfaceResolution([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GenericBaseInterfaceResolution(XamlInflator inflator)
 		{
 			var layout = new Gh5651(inflator) { BindingContext = new Gh5651VM() };
-			Assert.That(layout.label.Text, Is.EqualTo("test"));
+			Assert.Equal("test", layout.label.Text);
 		}
 	}
 }

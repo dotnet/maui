@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -16,20 +16,18 @@ public partial class Gh11335 : ContentPage
 		stack.Children.Insert(index + 1, newLabel);
 	}
 
-	[TestFixture]
-	class Tests
+
+	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
 
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
@@ -37,14 +35,14 @@ public partial class Gh11335 : ContentPage
 
 		void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
 		{
-			Assert.That(e.ChangeType, Is.EqualTo(VisualTreeChangeType.Add));
-			Assert.That(e.ChildIndex, Is.EqualTo(1));
-			Assert.Pass();
+			Assert.Equal(VisualTreeChangeType.Add, e.ChangeType);
+			Assert.Equal(1, e.ChildIndex);
+			// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
 		}
 
-
-		[Test]
-		public void ChildIndexOnAdd([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ChildIndexOnAdd(XamlInflator inflator)
 		{
 			var layout = new Gh11335(inflator);
 			VisualDiagnostics.VisualTreeChanged += OnVTChanged;

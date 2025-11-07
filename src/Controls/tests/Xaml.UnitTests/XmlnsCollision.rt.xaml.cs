@@ -1,9 +1,10 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -34,14 +35,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		public XmlnsCollision() => InitializeComponent();
 
-		[TestFixture]
-		class Test
-		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-			[Test]
-			public void ConflictInXmlns([Values] XamlInflator inflator)
+		public class Test
+		{
+			// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+
+			[Theory]
+			[Values]
+			public void ConflictInXmlns(XamlInflator inflator)
 			{
 				switch (inflator)
 				{
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						Assert.Throws<BuildException>(() =>
 						{
 							MockCompiler.Compile(typeof(XmlnsCollision), out var hasLoggedErrors);
-							Assert.IsTrue(hasLoggedErrors);
+							Assert.True(hasLoggedErrors);
 						});
 						break;
 					case XamlInflator.SourceGen:
@@ -61,7 +62,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 }
 """)
 							.RunMauiSourceGenerator(typeof(XmlnsCollision));
-						Assert.That(result.Diagnostics.Any());
+						Assert.True(result.Diagnostics.Any());
 						return;
 					case XamlInflator.Runtime:
 						Assert.Throws<XamlParseException>(() =>

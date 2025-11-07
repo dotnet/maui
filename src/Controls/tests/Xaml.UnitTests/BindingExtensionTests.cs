@@ -1,11 +1,10 @@
-﻿using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[TestFixture]
 public class BindingExtensionTests
 {
-	[Test]
+	[Fact]
 	public void ProvideValue_Null()
 	{
 		BindingExtension binding = new BindingExtension { Path = "Foo" };

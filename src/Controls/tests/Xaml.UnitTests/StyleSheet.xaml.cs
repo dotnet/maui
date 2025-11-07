@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,21 +7,23 @@ public partial class StyleSheet : ContentPage
 {
 	public StyleSheet() => InitializeComponent();
 
-	class Tests
+	public class Tests
 	{
-		[Test]
-		public void EmbeddedStyleSheetsAreLoaded([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void EmbeddedStyleSheetsAreLoaded(XamlInflator inflator)
 		{
 			var layout = new StyleSheet(inflator);
-			Assert.That(layout.Resources.StyleSheets[0].Styles.Count, Is.GreaterThanOrEqualTo(1));
+			Assert.True(layout.Resources.StyleSheets[0].Styles.Count >= 1);
 		}
 
-		[Test]
-		public void StyleSheetsAreApplied([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void StyleSheetsAreApplied(XamlInflator inflator)
 		{
 			var layout = new StyleSheet(inflator);
-			Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Azure));
-			Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Colors.AliceBlue));
+			Assert.Equal(Colors.Azure, layout.label0.TextColor);
+			Assert.Equal(Colors.AliceBlue, layout.label0.BackgroundColor);
 		}
 	}
 }

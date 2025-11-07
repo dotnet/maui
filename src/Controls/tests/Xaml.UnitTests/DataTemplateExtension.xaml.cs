@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -10,11 +10,12 @@ public partial class DataTemplateExtension : ContentPage
 {
 	public DataTemplateExtension() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void DataTemplateExtension([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void DataTemplateExtension(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -24,15 +25,16 @@ public partial class DataTemplateExtension : ContentPage
 			var content = layout.Resources["content"] as ShellContent;
 			var template = content.ContentTemplate;
 			var obj = template.CreateContent();
-			Assert.That(obj, Is.TypeOf<DataTemplateExtension>());
+			Assert.IsType<DataTemplateExtension>(obj);
 		}
 
-				public void ExtensionsAreReplaced([Values(XamlInflator.SourceGen)] XamlInflator inflator)
+		[Xunit.Fact]
+		public void ExtensionsAreReplaced() // TODO: Fix parameters - see comment above] XamlInflator inflator)
 		{
 			var result = CreateMauiCompilation()
 				.WithAdditionalSource(
 """
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -44,10 +46,10 @@ public partial class DataTemplateExtension : ContentPage
 		}
 """)
 				.RunMauiSourceGenerator(typeof(DataTemplateExtension));
-			Assert.IsFalse(result.Diagnostics.Any());
+			Assert.False(result.Diagnostics.Any());
 			var initComp = result.GeneratedInitializeComponent();
-			Assert.That(initComp.Contains("typeof(global::Microsoft.Maui.Controls.Xaml.UnitTests.DataTemplateExtension)", StringComparison.InvariantCulture));
-			Assert.That(initComp, Does.Not.Contains("ProvideValue"));
+			Assert.True(initComp.Contains("typeof(global::Microsoft.Maui.Controls.Xaml.UnitTests.DataTemplateExtension)", StringComparison.InvariantCulture));
+			Assert.DoesNotContain("ProvideValue", initComp);
 		}
 	}
 }

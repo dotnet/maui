@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Mono.Cecil;
-using NUnit.Framework;
+using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
-	public class CecilExtensionsTests : IAssemblyResolver
+
+	public class CecilExtensionsTests : IAssemblyResolver, IDisposable
 	{
 		const string testNamespace = "Microsoft.Maui.Controls.Xaml.UnitTests";
 		AssemblyDefinition assembly;
@@ -21,11 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				AssemblyResolver = this,
 			};
-		}
 
-		[SetUp]
-		public void SetUp()
-		{
 			assembly = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, readerParameters);
 			assemblies.Add(assembly);
 		}
@@ -46,7 +42,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return assembly;
 		}
 
-		[TearDown]
 		public void Dispose()
 		{
 			foreach (var assembly in assemblies)
@@ -75,13 +70,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			"Validation.MissingXClass.rtxc",
 		};
 
-		[Test, TestCaseSource(nameof(IsXamlTrueSource))]
+		public static TheoryData<string> IsXamlTrueTheoryData
+		{
+			get
+			{
+				var data = new TheoryData<string>();
+				foreach (var item in IsXamlTrueSource)
+					data.Add(item);
+				return data;
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(IsXamlTrueTheoryData))]
 		public void IsXamlTrue(string name)
 		{
 			var resource = GetResource(name);
-			Assert.IsTrue(resource.IsXaml(new XamlCache(), assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
+			Assert.True(resource.IsXaml(new XamlCache(), assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
 			if (!className.StartsWith("__XamlGeneratedCode__"))
-				Assert.AreEqual(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name
+				Assert.Equal(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name
 		}
 
 		static string[] IsXamlFalseSource = new[]
@@ -89,11 +96,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			"Validation.NotXaml",
 		};
 
-		[Test, TestCaseSource(nameof(IsXamlFalseSource))]
+		public static TheoryData<string> IsXamlFalseTheoryData
+		{
+			get
+			{
+				var data = new TheoryData<string>();
+				foreach (var item in IsXamlFalseSource)
+					data.Add(item);
+				return data;
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(IsXamlFalseTheoryData))]
 		public void IsXamlFalse(string name)
 		{
 			var resource = GetResource(name);
-			Assert.IsFalse(resource.IsXaml(new XamlCache(), assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
+			Assert.False(resource.IsXaml(new XamlCache(), assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
 		}
 	}
 }

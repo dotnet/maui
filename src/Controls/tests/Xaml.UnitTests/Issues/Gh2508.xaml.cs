@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,15 +19,16 @@ public partial class Gh2508 : ContentPage
 {
 	public Gh2508() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
 
-		[Test]
-		public void UintProperties([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void UintProperties(XamlInflator inflator)
 		{
 			var layout = new Gh2508(inflator);
-			Assert.That(((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration, Is.EqualTo(2000));
+			Assert.Equal(2000, ((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration);
 		}
 	}
 }

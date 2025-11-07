@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,19 +6,20 @@ public partial class LabelHtml : ContentPage
 {
 	public LabelHtml() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void HtmlInCDATA([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void HtmlInCDATA(XamlInflator inflator)
 		{
 			var html = "<h1>Hello World!</h1><br/>SecondLine";
 			var layout = new LabelHtml(inflator);
-			Assert.That(layout.label0.Text, Is.EqualTo(html));
-			Assert.That(layout.label1.Text, Is.EqualTo(html));
-			Assert.That(layout.label2.Text, Is.EqualTo(html));
-			Assert.That(layout.label3.Text, Is.EqualTo(html));
-			Assert.That(layout.label4.Text, Is.EqualTo(html));
+			Assert.Equal(html, layout.label0.Text);
+			Assert.Equal(html, layout.label1.Text);
+			Assert.Equal(html, layout.label2.Text);
+			Assert.Equal(html, layout.label3.Text);
+			Assert.Equal(html, layout.label4.Text);
 		}
 	}
 }

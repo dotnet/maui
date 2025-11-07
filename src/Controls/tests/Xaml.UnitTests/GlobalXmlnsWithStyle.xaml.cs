@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,11 +11,12 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void GlobalXmlnsWithStyleTest([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GlobalXmlnsWithStyleTest(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -28,8 +29,8 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 			}
 
 			var page = new GlobalXmlnsWithStyle(inflator);
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));
+			Assert.Equal(Colors.Red, page.label0.TextColor);
+			Assert.Equal(Colors.Blue, page.label0.BackgroundColor);
 		}
 	}
 }

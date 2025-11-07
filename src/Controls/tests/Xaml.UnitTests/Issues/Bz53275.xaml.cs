@@ -1,6 +1,6 @@
 using System;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -23,16 +23,17 @@ public partial class Bz53275 : ContentPage
 
 	public string ANonBindableProperty { get; set; }
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void TargetPropertyIsSetOnMarkups([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TargetPropertyIsSetOnMarkups(XamlInflator inflator)
 		{
 			var page = new Bz53275(inflator);
-			Assert.AreEqual("ANonBindableProperty", page.ANonBindableProperty);
+			Assert.Equal("ANonBindableProperty", page.ANonBindableProperty);
 			var l0 = page.label;
-			Assert.AreEqual("Text", l0.Text);
+			Assert.Equal("Text", l0.Text);
 		}
 	}
 }

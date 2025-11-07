@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,17 +10,18 @@ public partial class Gh2678 : ContentPage
 {
 	public Gh2678() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void StyleClassCanBeChanged([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void StyleClassCanBeChanged(XamlInflator inflator)
 		{
 			var layout = new Gh2678(inflator);
 			var label = layout.label0;
-			Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, label.BackgroundColor);
 			label.StyleClass = new List<string> { "two" };
-			Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, label.BackgroundColor);
 		}
 	}
 }

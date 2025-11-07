@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -24,14 +24,15 @@ public partial class Gh4760 : ContentPage
 {
 	public Gh4760() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void GenericBaseClassForMarkups([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GenericBaseClassForMarkups(XamlInflator inflator)
 		{
 			var layout = new Gh4760(inflator);
-			Assert.That(layout.label.Scale, Is.EqualTo(6));
+			Assert.Equal(6, layout.label.Scale);
 		}
 	}
 }

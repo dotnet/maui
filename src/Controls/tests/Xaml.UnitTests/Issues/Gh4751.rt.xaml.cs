@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -15,11 +15,12 @@ public partial class Gh4751 : ContentPage
 {
 	public Gh4751() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void ErrorOnMissingDefaultCtor([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ErrorOnMissingDefaultCtor(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh4751)));
@@ -46,7 +47,7 @@ public partial class Gh4751 : ContentPage
 """)
 					.RunMauiSourceGenerator(typeof(Gh4751));
 				//FIXME check the diagnostic code
-				Assert.That(result.Diagnostics.Length, Is.EqualTo(1));
+				Assert.Single(result.Diagnostics);
 			}
 		}
 	}

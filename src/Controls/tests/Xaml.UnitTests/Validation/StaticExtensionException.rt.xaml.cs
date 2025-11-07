@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,16 +9,17 @@ public partial class StaticExtensionException : ContentPage
 {
 	public StaticExtensionException() => InitializeComponent();
 
-	[TestFixture]
-	class Issue2115
+
+	public class Issue2115
 	{
-		[Test]
-		public void xStaticThrowsMeaningfullException([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void xStaticThrowsMeaningfullException(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(inflator));
+				XamlParseExceptionHelper.AssertThrows(() => new StaticExtensionException(inflator), 6, 34);
 			else if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(6, 34), () => MockCompiler.Compile(typeof(StaticExtensionException)));
+				BuildExceptionHelper.AssertThrows(() => MockCompiler.Compile(typeof(StaticExtensionException)), 6, 34);
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
@@ -33,10 +34,14 @@ public partial class StaticExtensionException : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(StaticExtensionException));
-				Assert.That(result.Diagnostics.Any());
+				Assert.True(result.Diagnostics.Any());
 			}
 			else
-				Assert.Ignore("Unknown inflator");
+			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
+			{
+				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+			}
+
 		}
 	}
 }

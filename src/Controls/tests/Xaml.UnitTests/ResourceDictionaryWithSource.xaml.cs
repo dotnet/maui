@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,33 +8,36 @@ public partial class ResourceDictionaryWithSource : ContentPage
 {
 	public ResourceDictionaryWithSource() => InitializeComponent();
 
-	class Tests
+	public class Tests
 	{
-		[Test]
-		public void RDWithSourceAreFound([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RDWithSourceAreFound(XamlInflator inflator)
 		{
 			var layout = new ResourceDictionaryWithSource(inflator);
-			Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
+			Assert.Equal(Colors.Pink, layout.label.TextColor);
 		}
 
-		[Test]
-		public void RelativeAndAbsoluteURI([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RelativeAndAbsoluteURI(XamlInflator inflator)
 		{
 			var layout = new ResourceDictionaryWithSource(inflator);
-			Assert.That(((ResourceDictionary)layout.Resources["relURI"]).Source, Is.EqualTo(new Uri("./SharedResourceDictionary.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative)));
-			Assert.That(((ResourceDictionary)layout.Resources["relURI"])["sharedfoo"], Is.TypeOf<Style>());
-			Assert.That(((ResourceDictionary)layout.Resources["absURI"]).Source, Is.EqualTo(new Uri("/SharedResourceDictionary.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative)));
-			Assert.That(((ResourceDictionary)layout.Resources["absURI"])["sharedfoo"], Is.TypeOf<Style>());
-			Assert.That(((ResourceDictionary)layout.Resources["shortURI"]).Source, Is.EqualTo(new Uri("SharedResourceDictionary.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative)));
-			Assert.That(((ResourceDictionary)layout.Resources["shortURI"])["sharedfoo"], Is.TypeOf<Style>());
-			Assert.That(((ResourceDictionary)layout.Resources["Colors"])["MediumGrayTextColor"], Is.TypeOf<Color>());
-			Assert.That(((ResourceDictionary)layout.Resources["CompiledColors"])["MediumGrayTextColor"], Is.TypeOf<Color>());
+			Assert.Equal(new Uri("./SharedResourceDictionary.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["relURI"]).Source);
+			Assert.IsType<Style>(((ResourceDictionary)layout.Resources["relURI"])["sharedfoo"]);
+			Assert.Equal(new Uri("/SharedResourceDictionary.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["absURI"]).Source);
+			Assert.IsType<Style>(((ResourceDictionary)layout.Resources["absURI"])["sharedfoo"]);
+			Assert.Equal(new Uri("SharedResourceDictionary.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["shortURI"]).Source);
+			Assert.IsType<Style>(((ResourceDictionary)layout.Resources["shortURI"])["sharedfoo"]);
+			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["Colors"])["MediumGrayTextColor"]);
+			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["CompiledColors"])["MediumGrayTextColor"]);
 		}
 
-		[Test]
-		public void CanLoadInflatedResources([Values] XamlInflator from, [Values] XamlInflator rd)
+		[Theory]
+		[Values]
+		public void CanLoadInflatedResources(XamlInflator rd)
 		{
-			var layout = new ResourceDictionaryWithSource(from);
+			var layout = new ResourceDictionaryWithSource(rd);
 			var key = "Colors";
 			switch (rd)
 			{
@@ -49,13 +52,14 @@ public partial class ResourceDictionaryWithSource : ContentPage
 					break;
 			}
 			var rdLoaded = layout.Resources[key] as ResourceDictionary;
-			Assert.That(rdLoaded, Is.Not.Null);
-			Assert.That(rdLoaded["MediumGrayTextColor"], Is.TypeOf<Color>());
-			Assert.That(rdLoaded["MediumGrayTextColor"] as Color, Is.EqualTo(Color.Parse("#ff4d4d4d")));			
+			Assert.NotNull(rdLoaded);
+			Assert.IsType<Color>(rdLoaded["MediumGrayTextColor"]);
+			Assert.Equal(Color.Parse("#ff4d4d4d"), rdLoaded["MediumGrayTextColor"] as Color);
 		}
 
-		[Test]
-		public void XRIDIsGeneratedForRDWithoutCodeBehind([Values] XamlInflator rd)
+		[Theory]
+		[Values]
+		public void XRIDIsGeneratedForRDWithoutCodeBehind(XamlInflator rd)
 		{
 			var path = "AppResources/Colors.xaml";
 			switch (rd)
@@ -73,32 +77,33 @@ public partial class ResourceDictionaryWithSource : ContentPage
 
 			var asm = typeof(ResourceDictionaryWithSource).Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, path);
-			Assert.That(resourceId, Is.Not.Null);
+			Assert.NotNull(resourceId);
 			var type = XamlResourceIdAttribute.GetTypeForResourceId(asm, resourceId);
-			Assert.That(type?.Name, Does.StartWith("__Type"), "We add a type for all RD without Class, this should have a type associated with it");
+			Assert.StartsWith("__Type", type?.Name);
 
 		}
 
-		[Test]
+		[Fact]
 		public void CodeBehindIsGeneratedForRDWithXamlComp()
 		{
 			var asm = typeof(ResourceDictionaryWithSource).Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, "AppResources/CompiledColors.rtxc.xaml");
-			Assert.That(resourceId, Is.Not.Null);
+			Assert.NotNull(resourceId);
 			var type = XamlResourceIdAttribute.GetTypeForResourceId(asm, resourceId);
-			Assert.That(type, Is.Not.Null);
+			Assert.NotNull(type);
 			var rd = Activator.CreateInstance(type);
-			Assert.That(rd as ResourceDictionary, Is.Not.Null);
+			Assert.NotNull(rd as ResourceDictionary);
 		}
 
-		[Test]
-		public void LoadResourcesWithAssembly([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void LoadResourcesWithAssembly(XamlInflator inflator)
 		{
 			var layout = new ResourceDictionaryWithSource(inflator);
-			Assert.That(((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source, Is.EqualTo(new Uri("/AppResources/Colors.rtxc.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative)));
-			Assert.That(((ResourceDictionary)layout.Resources["inCurrentAssembly"])["MediumGrayTextColor"], Is.TypeOf<Color>());
-			Assert.That(((ResourceDictionary)layout.Resources["inOtherAssembly"]).Source, Is.EqualTo(new Uri("/AppResources.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly", UriKind.Relative)));
-			Assert.That(((ResourceDictionary)layout.Resources["inOtherAssembly"])["notBlue"], Is.TypeOf<Color>());
+			Assert.Equal(new Uri("/AppResources/Colors.rtxc.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source);
+			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["inCurrentAssembly"])["MediumGrayTextColor"]);
+			Assert.Equal(new Uri("/AppResources.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly", UriKind.Relative), ((ResourceDictionary)layout.Resources["inOtherAssembly"]).Source);
+			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["inOtherAssembly"])["notBlue"]);
 		}
 
 	}

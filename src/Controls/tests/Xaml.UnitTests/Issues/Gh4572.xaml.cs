@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,14 +6,15 @@ public partial class Gh4572 : ContentPage
 {
 	public Gh4572() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void BindingAsElement([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void BindingAsElement(XamlInflator inflator)
 		{
 			var layout = new Gh4572(inflator) { BindingContext = new { labeltext = "Foo" } };
-			Assert.That(layout.label.Text, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", layout.label.Text);
 		}
 	}
 }

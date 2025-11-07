@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,19 +12,16 @@ public partial class Maui21839
 {
 	public Maui21839() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public async Task VSMLeak([Values] XamlInflator inflator)
+		[Theory]
+public async Task VSMLeak() // TODO: Fix parameter: was (XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("buttonStyle",
 				new Style(typeof(Button))
@@ -45,7 +42,7 @@ public partial class Maui21839
 			var pagewr = new WeakReference(new Maui21839(inflator));
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target);
 		}
 	}
 }

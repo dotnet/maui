@@ -1,8 +1,7 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
 
 public class Icons
 {
@@ -35,8 +34,8 @@ public partial class XStatic : ContentPage
 {
 	public XStatic() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
 		//{x:Static Member=prefix:typeName.staticMemberName}
 		//{x:Static prefix:typeName.staticMemberName}
@@ -48,77 +47,87 @@ public partial class XStatic : ContentPage
 		// - An enumeration value
 		// All other cases should throw
 
-		[Test]
-		public void StaticProperty([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void StaticProperty(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("Property", layout.staticproperty.Text);
+			Assert.Equal("Property", layout.staticproperty.Text);
 		}
 
-		[Test]
-		public void MemberOptional([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void MemberOptional(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("Property", layout.memberisoptional.Text);
+			Assert.Equal("Property", layout.memberisoptional.Text);
 		}
 
-		[Test]
-		public void FieldColor([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void FieldColor(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual(Colors.Fuchsia, layout.color.TextColor);
+			Assert.Equal(Colors.Fuchsia, layout.color.TextColor);
 		}
 
-		[Test]
-		public void Constant([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void Constant(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("Constant", layout.constant.Text);
+			Assert.Equal("Constant", layout.constant.Text);
 		}
 
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
-		[Test]
-		public void ConstantInARemoteAssembly([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ConstantInARemoteAssembly(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("CompatibilityGalleryControls", layout.remoteConstant.Text);
+			Assert.Equal("CompatibilityGalleryControls", layout.remoteConstant.Text);
 		}
 
-		[Test]
-		public void Field([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void Field(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("Field", layout.field.Text);
+			Assert.Equal("Field", layout.field.Text);
 		}
 
-		[Test]
-		public void Enum([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void Enum(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual(ScrollOrientation.Both, layout.enuM.Orientation);
+			Assert.Equal(ScrollOrientation.Both, layout.enuM.Orientation);
 		}
 
-		[Test]
-		public void FieldRef([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void FieldRef(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("ic_close.png", layout.field2.Text);
+			Assert.Equal("ic_close.png", layout.field2.Text);
 		}
 
 		// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
-		[Test]
-		public void xStaticAndImplicitOperators([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void xStaticAndImplicitOperators(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
+			Assert.Equal("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
 		}
 
 		// https://bugzilla.xamarin.com/show_bug.cgi?id=55096
-		[Test]
-		public void xStaticAndNestedClasses([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void xStaticAndNestedClasses(XamlInflator inflator)
 		{
 			var layout = new XStatic(inflator);
-			Assert.AreEqual(MockxStatic.Nested.Foo, layout.nestedField.Text);
+			Assert.Equal(MockxStatic.Nested.Foo, layout.nestedField.Text);
 		}
 	}
 }

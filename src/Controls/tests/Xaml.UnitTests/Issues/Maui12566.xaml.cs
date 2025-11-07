@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,13 +20,15 @@ public partial class Maui12566 : ContentPage
 	{
 	}
 
-	class Tests
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void AccessInternalEvent([Values] XamlInflator inflator)
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+
+		[Theory]
+		[Values]
+		public void AccessInternalEvent(XamlInflator inflator)
 		{
 			//shouldn't throw
 			new Maui12566(inflator);

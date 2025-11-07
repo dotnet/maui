@@ -1,6 +1,6 @@
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -10,11 +10,12 @@ public partial class Gh4099 : ContentPage
 {
 	public Gh4099() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void BetterExceptionReport([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void BetterExceptionReport(XamlInflator inflator)
 		{
 			switch (inflator)
 			{
@@ -25,8 +26,8 @@ public partial class Gh4099 : ContentPage
 					}
 					catch (BuildException xpe)
 					{
-						Assert.That(xpe.XmlInfo.LineNumber, Is.EqualTo(5));
-						Assert.Pass();
+						Assert.Equal(5, xpe.XmlInfo.LineNumber);
+						// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
 					}
 					Assert.Fail();
 					break;
@@ -43,10 +44,10 @@ public partial class Gh4099 : ContentPage
 }
 """)
 						.RunMauiSourceGenerator(typeof(Gh4099));
-					Assert.That(result.Diagnostics.Any());
+					Assert.True(result.Diagnostics.Any());
 					return;
 				default:
-					Assert.Ignore();
+					return; // TODO: Convert to Skip attribute or conditional test
 					break;
 			}
 		}

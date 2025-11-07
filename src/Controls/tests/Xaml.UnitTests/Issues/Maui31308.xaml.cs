@@ -10,7 +10,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -18,23 +18,21 @@ public partial class Maui31308
 {
 	public Maui31308() => InitializeComponent();
 
-	[TestFixture]
-	class Test
+
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void MissingResourceDictionaryValueIsReported([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void MissingResourceDictionaryValueIsReported(XamlInflator inflator)
 		{
-			var exception = Assert.Catch<XamlParseException>(() => new Maui31308(inflator));
-			Assert.AreEqual("Position 6:38. StaticResource not found for key ThisKeyDoesNotExistInAnyResourceDictionary", exception.Message);
+			var exception = Assert.Throws<XamlParseException>(() => new Maui31308(inflator));
+			Assert.Equal("Position 6:38. StaticResource not found for key ThisKeyDoesNotExistInAnyResourceDictionary", exception.Message);
 		}
 	}
 }

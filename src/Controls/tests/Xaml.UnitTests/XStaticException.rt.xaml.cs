@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,8 +9,8 @@ public partial class XStaticException : ContentPage
 {
 	public XStaticException() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
 		//{x:Static Member=prefix:typeName.staticMemberName}
 		//{x:Static prefix:typeName.staticMemberName}
@@ -22,13 +22,14 @@ public partial class XStaticException : ContentPage
 		// - An enumeration value
 		// All other cases should throw
 
-		[Test]
-		public void ThrowOnInstanceProperty([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ThrowOnInstanceProperty(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(7, 6), () => MockCompiler.Compile(typeof(XStaticException)));
+				BuildExceptionHelper.AssertThrows(() => MockCompiler.Compile(typeof(XStaticException)), 7, 6);
 			else if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(7, 6), () => new XStaticException(inflator));
+				XamlParseExceptionHelper.AssertThrows(() => new XStaticException(inflator), 7, 6);
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
@@ -43,10 +44,14 @@ public partial class XStaticException : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(XStaticException));
-				Assert.That(result.Diagnostics.Any());
+				Assert.True(result.Diagnostics.Any());
 			}
 			else
-				Assert.Ignore("Unknown inflator");
+			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
+			{
+				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+			}
+
 		}
 	}
 }

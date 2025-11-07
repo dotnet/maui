@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
+  <PropertyGroup><TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618</NoWarn>
+    <NoWarn>$(NoWarn);0672;0219;0414;CS0029;CS0103;CS0117;CS0436;CS0618;CS0649;CS0169;CS1501;CS1503;CS1662;CS1955;CA1307;xUnit1001;xUnit1003;xUnit1006;xUnit1013</NoWarn>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045;MAUID1000</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
@@ -21,7 +21,7 @@
     <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' "><TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <DebugType>full</DebugType>
@@ -30,8 +30,8 @@
 
   <ItemGroup>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="Microsoft.Build.Framework" />

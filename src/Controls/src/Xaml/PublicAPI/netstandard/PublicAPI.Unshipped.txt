@@ -11,3 +11,8 @@
 Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(string dataType) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(object rootObject) -> void
+
+Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.Runtime = 1 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.SourceGen = 4 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.XamlC = 2 -> Microsoft.Maui.Controls.Xaml.XamlInflator

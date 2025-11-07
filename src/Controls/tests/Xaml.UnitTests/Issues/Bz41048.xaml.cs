@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,23 +15,22 @@ public partial class Bz41048 : ContentPage
 	}
 
 
-	[TestFixture]
-	class Tests
+	public class Tests : IDisposable
 	{
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			Application.Current = null;
 		}
 
-		[Test]
-		public void StyleDoesNotOverrideValues([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void StyleDoesNotOverrideValues(XamlInflator inflator)
 		{
 			var layout = new Bz41048(inflator);
 			var label = layout.label0;
-			Assert.That(label.TextColor, Is.EqualTo(Colors.Red));
-			Assert.That(label.FontAttributes, Is.EqualTo(FontAttributes.Bold));
-			Assert.That(label.LineBreakMode, Is.EqualTo(LineBreakMode.WordWrap));
+			Assert.Equal(Colors.Red, label.TextColor);
+			Assert.Equal(FontAttributes.Bold, label.FontAttributes);
+			Assert.Equal(LineBreakMode.WordWrap, label.LineBreakMode);
 		}
 	}
 }

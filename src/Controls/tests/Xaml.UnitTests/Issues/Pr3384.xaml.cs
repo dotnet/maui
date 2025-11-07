@@ -1,9 +1,10 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,28 +12,27 @@ public partial class Pr3384 : ContentPage
 {
 	public Pr3384() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			DispatcherProvider.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void RecyclingStrategyIsHandled([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RecyclingStrategyIsHandled(XamlInflator inflator)
 		{
 			var p = new Pr3384(inflator);
-			Assert.AreEqual(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
+			Assert.Equal(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
 		}
 	}
 }

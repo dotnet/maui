@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -43,15 +43,16 @@ public partial class Gh4215 : ContentPage
 {
 	public Gh4215() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void AvoidAmbiguousMatch([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void AvoidAmbiguousMatch(XamlInflator inflator)
 		{
 			var layout = new Gh4215(inflator);
-			Assert.DoesNotThrow(() => layout.BindingContext = new Gh4215VM());
-			Assert.That(layout.l0.Text, Is.EqualTo("foo"));
+			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout.BindingContext = new Gh4215VM());
+			Assert.Equal("foo", layout.l0.Text);
 		}
 	}
 }

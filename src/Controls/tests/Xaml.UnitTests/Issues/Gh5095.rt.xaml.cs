@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,11 +9,12 @@ public partial class Gh5095 : ContentPage
 {
 	public Gh5095() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void ThrowsOnInvalidXaml([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ThrowsOnInvalidXaml(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5095)));
@@ -35,7 +36,7 @@ public partial class Gh5095 : ContentPage
 					.RunMauiSourceGenerator(typeof(Gh5095));
 
 				//FIXME check the diagnostic code
-				Assert.That(result.Diagnostics.Length, Is.EqualTo(1));
+				Assert.Single(result.Diagnostics);
 			}
 		}
 	}

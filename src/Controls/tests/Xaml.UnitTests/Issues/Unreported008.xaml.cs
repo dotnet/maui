@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -18,18 +18,19 @@ public partial class Unreported008 : ContentPage
 {
 	public Unreported008() => InitializeComponent();
 
-	class Tests
+	public class Tests
 	{
-		[Test]
-		public void PickerDateTimesAndXamlC([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void PickerDateTimesAndXamlC(XamlInflator inflator)
 		{
 			var page = new Unreported008(inflator);
 			var picker = page.picker0;
-			Assert.AreEqual(DateTime.Today, picker.Date);
-			Assert.AreEqual(new DateTime(2000, 1, 1), picker.MinimumDate);
-			Assert.AreEqual(new DateTime(2050, 12, 31), picker.MaximumDate);
+			Assert.Equal(DateTime.Today, picker.Date);
+			Assert.Equal(new DateTime(2000, 1, 1), picker.MinimumDate);
+			Assert.Equal(new DateTime(2050, 12, 31), picker.MaximumDate);
 
-			Assert.AreEqual(DateTime.Today, page.view0.Date.Value.Date);
+			Assert.Equal(DateTime.Today, page.view0.Date.Value.Date);
 		}
 	}
 }

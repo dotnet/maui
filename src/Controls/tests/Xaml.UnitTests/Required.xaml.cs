@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -11,10 +11,11 @@ public partial class Required : ContentPage
 	public RequiredPerson Person { get; set; }
 	public Required() => InitializeComponent();
 
-	class Tests
+	public class Tests
 	{
-		[Test]
-		public void RequiredFieldsAndPropertiesAreSet([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void RequiredFieldsAndPropertiesAreSet(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -22,7 +23,7 @@ public partial class Required : ContentPage
 					.WithAdditionalSource(
 	"""
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -52,15 +53,15 @@ public class RequiredPerson
 """)
 					.RunMauiSourceGenerator(typeof(Required));
 
-				Assert.That(result.Diagnostics, Is.Empty, "No diagnostics expected");
+				Assert.Empty(result.Diagnostics);
 			}
 
 			var layout = new Required(inflator);
-			Assert.IsNotNull(layout.Selector);
-			Assert.IsNotNull(layout.Selector.Template1);
-			Assert.IsNotNull(layout.Selector.Template2);
-			Assert.IsNotNull(layout.Person);
-			Assert.IsNotNull(layout.Person.Name);
+			Assert.NotNull(layout.Selector);
+			Assert.NotNull(layout.Selector.Template1);
+			Assert.NotNull(layout.Selector.Template2);
+			Assert.NotNull(layout.Person);
+			Assert.NotNull(layout.Person.Name);
 		}
 	}
 }
@@ -76,7 +77,6 @@ public class RequiredRandomSelector : DataTemplateSelector
 public class RequiredPerson
 {
 	public required string Name { get; set; }
-
 
 	public override string ToString()
 		=> Name;

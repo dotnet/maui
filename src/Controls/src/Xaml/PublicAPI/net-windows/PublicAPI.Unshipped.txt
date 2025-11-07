@@ -69,6 +69,10 @@ Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile = 2 -> Microsoft.Mau
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip = 1 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
 Microsoft.Maui.Controls.Xaml.XamlFilePathAttribute
 Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
+Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.Runtime = 1 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.SourceGen = 4 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.XamlC = 2 -> Microsoft.Maui.Controls.Xaml.XamlInflator
 ~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Dark.get -> object
 ~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Dark.set -> void
 ~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Default.get -> object

@@ -1,5 +1,5 @@
 using System.Windows.Input;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,15 +20,18 @@ public partial class Gh5256 : ContentPage
 {
 	public Gh5256() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void EventOverriding([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void EventOverriding(XamlInflator inflator)
 		{
-			var layout = new Gh5256(inflator) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };
+			bool commandExecuted = false;
+			var layout = new Gh5256(inflator) { BindingContext = new { CompletedCommand = new Command(() => commandExecuted = true) } };
 			layout.entry.SendCompleted();
-			Assert.Fail();
+			// TODO: Test expects command to be executed - verify with assertion
+			Assert.True(commandExecuted);
 		}
 	}
 

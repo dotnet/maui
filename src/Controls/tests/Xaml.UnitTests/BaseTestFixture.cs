@@ -12,12 +12,13 @@ using Microsoft.Maui.UnitTests;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class BaseTestFixture
+	// XUnit doesn't have SetUp/TearDown attributes. Use constructor/IDisposable pattern instead.
+	public class BaseTestFixture : IDisposable
 	{
 		CultureInfo _defaultCulture;
 		CultureInfo _defaultUICulture;
 
-		public virtual void Setup()
+		public BaseTestFixture()
 		{
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -28,8 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			AppInfo.SetCurrent(null);
 		}
 
-
-		public virtual void TearDown()
+		public virtual void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceDisplay.SetCurrent(null);

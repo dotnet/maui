@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -21,18 +21,19 @@ public partial class Gh5290 : ContentPage
 
 	public Gh5290() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void TwoWayBindingToNullable([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TwoWayBindingToNullable(XamlInflator inflator)
 		{
 			var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
 			var layout = new Gh5290(inflator) { BindingContext = vm };
-			Assert.That(layout.NullableTime, Is.EqualTo(TimeSpan.FromMinutes(42)));
+			Assert.Equal(TimeSpan.FromMinutes(42), layout.NullableTime);
 
 			layout.SetValueFromRenderer(NullableTimeProperty, null);
-			Assert.That(vm.Time, Is.Null);
+			Assert.Null(vm.Time);
 		}
 	}
 }

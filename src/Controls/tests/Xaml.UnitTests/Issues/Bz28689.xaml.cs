@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,19 +12,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
+
+		public class Tests
 		{
-			[Test]
-			public void XArrayInResources([Values] XamlInflator inflator)
+			[Theory]
+			[Values]
+			public void XArrayInResources(XamlInflator inflator)
 			{
 				var layout = new Bz28689(inflator);
 				var array = layout.Resources["stringArray"];
-				Assert.That(array, Is.TypeOf<string[]>());
+				Assert.IsType<string[]>(array);
 				var stringarray = (string[])array;
-				Assert.AreEqual(2, stringarray.Length);
-				Assert.AreEqual("Test1", stringarray[0]);
-				Assert.AreEqual("Test2", stringarray[1]);
+				Assert.Equal(2, stringarray.Length);
+				Assert.Equal("Test1", stringarray[0]);
+				Assert.Equal("Test2", stringarray[1]);
 			}
 		}
 	}

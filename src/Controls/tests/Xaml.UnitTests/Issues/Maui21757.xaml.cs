@@ -1,10 +1,11 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,19 +13,17 @@ public partial class Maui21757
 {
 	public Maui21757() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TypeLiteralAndXTypeCanBeUsedInterchangeably(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -34,15 +33,15 @@ public partial class Maui21757
 
 			var styleA = resourceDictionary["A"] as Style;
 			Assert.NotNull(styleA);
-			Assert.That(styleA.TargetType, Is.EqualTo(typeof(BoxView)));
-			Assert.That(styleA.Setters[0].Property, Is.EqualTo(BoxView.ColorProperty));
-			Assert.That(styleA.Setters[0].Value, Is.EqualTo(Color.FromArgb("#C8C8C8")));
+			Assert.Equal(typeof(BoxView), styleA.TargetType);
+			Assert.Equal(BoxView.ColorProperty, styleA.Setters[0].Property);
+			Assert.Equal(Color.FromArgb("#C8C8C8"), styleA.Setters[0].Value);
 
 			var styleB = resourceDictionary["B"] as Style;
 			Assert.NotNull(styleB);
-			Assert.That(styleB.TargetType, Is.EqualTo(typeof(BoxView)));
-			Assert.That(styleB.Setters[0].Property, Is.EqualTo(BoxView.ColorProperty));
-			Assert.That(styleB.Setters[0].Value, Is.EqualTo(Color.FromArgb("#C8C8C8")));
+			Assert.Equal(typeof(BoxView), styleB.TargetType);
+			Assert.Equal(BoxView.ColorProperty, styleB.Setters[0].Property);
+			Assert.Equal(Color.FromArgb("#C8C8C8"), styleB.Setters[0].Value);
 		}
 	}
 }

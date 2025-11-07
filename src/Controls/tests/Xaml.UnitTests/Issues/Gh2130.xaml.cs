@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -23,11 +23,12 @@ public partial class Gh2130 : ContentPage
 {
 	public Gh2130() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void AttachedBPWithEventName([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void AttachedBPWithEventName(XamlInflator inflator)
 		{
 			new Gh2130(inflator);
 		}

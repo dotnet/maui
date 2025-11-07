@@ -1,7 +1,8 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,29 +10,32 @@ public partial class Maui11204 : ContentPage
 {
 	public Maui11204() => InitializeComponent();
 
-	class Tests
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void VSMSetterOverrideManualValues([Values] XamlInflator inflator)
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+
+		[Theory]
+		[Values]
+		public void VSMSetterOverrideManualValues(XamlInflator inflator)
 		{
 			var page = new Maui11204(inflator);
-			Assert.AreEqual(Colors.FloralWhite, page.border.BackgroundColor);
+			Assert.Equal(Colors.FloralWhite, page.border.BackgroundColor);
 			VisualStateManager.GoToState(page.border, "State1");
-			Assert.AreEqual(2, page.border.StrokeThickness);
-			Assert.AreEqual(Colors.Blue, page.border.BackgroundColor);
+			Assert.Equal(2, page.border.StrokeThickness);
+			Assert.Equal(Colors.Blue, page.border.BackgroundColor);
 		}
 
-		[Test]
-		public void StyleVSMSetterOverrideManualValues([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void StyleVSMSetterOverrideManualValues(XamlInflator inflator)
 		{
 			var page = new Maui11204(inflator);
-			Assert.AreEqual(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);
+			Assert.Equal(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);
 			VisualStateManager.GoToState(page.borderWithStyleClass, "State1");
-			Assert.AreEqual(2, page.borderWithStyleClass.StrokeThickness);
-			Assert.AreEqual(Colors.Blue, page.borderWithStyleClass.BackgroundColor);
+			Assert.Equal(2, page.borderWithStyleClass.StrokeThickness);
+			Assert.Equal(Colors.Blue, page.borderWithStyleClass.BackgroundColor);
 		}
 	}
 }

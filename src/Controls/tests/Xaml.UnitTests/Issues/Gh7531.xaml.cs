@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System.IO;
 using Microsoft.CodeAnalysis.CSharp;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,11 +10,12 @@ public partial class Gh7531 : ContentPage
 {
 	public Gh7531() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void XamlOnlyResourceResolvesLocalAssembly([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XamlOnlyResourceResolvesLocalAssembly(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -51,9 +52,10 @@ namespace __XamlGeneratedCode__
 			}
 
 			Gh7531 layout = null;
-			Assert.DoesNotThrow(() => layout = new Gh7531(inflator));
+			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed
+			layout = new Gh7531(inflator);
 			var style = ((ResourceDictionary)layout.Resources["Colors"])["style"] as Style;
-			Assert.That(style.TargetType, Is.EqualTo(typeof(Gh7531)));
+			Assert.Equal(typeof(Gh7531), style.TargetType);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -8,11 +8,12 @@ public partial class Gh2007 : ContentPage
 {
 	public Gh2007() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void UsefullxResourceErrorMessages([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void UsefullxResourceErrorMessages(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.Runtime || inflator == XamlInflator.XamlC)
 				Assert.Throws<XamlParseException>(() => new Gh2007(inflator));
@@ -30,10 +31,14 @@ public partial class Gh2007 : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(Gh2007));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 			else
-				Assert.Ignore("ignoring test for {inflator} as it is not supported in this context");
+			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
+			{
+				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+			}
+
 		}
 	}
 }

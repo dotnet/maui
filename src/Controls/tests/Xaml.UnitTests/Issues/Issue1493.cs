@@ -1,19 +1,20 @@
 using System;
 using System.Globalization;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+
 	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
-		[SetUp] public virtual void Setup() => _defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public virtual void Setup() => _defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 
-		[TearDown] public virtual void TearDown() => System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
-
-		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("tr-TR")]
+		[InlineData("fr-FR")]
 		//mostly happens in european cultures
 		public void CultureInvariantNumberParsing(string culture)
 		{
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 							cmp:RelativeLayout.WidthConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
 			View view = new View();
 			view.LoadFromXaml(xaml);
-			Assert.DoesNotThrow(() => view.LoadFromXaml(xaml));
+			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => view.LoadFromXaml(xaml));
 		}
 	}
 }

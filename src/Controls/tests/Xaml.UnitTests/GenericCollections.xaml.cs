@@ -1,6 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -26,14 +26,15 @@ public partial class GenericCollections : ContentPage
 {
 	public GenericCollections() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void SupportsCrookedGenericScenarios([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SupportsCrookedGenericScenarios(XamlInflator inflator)
 		{
 			var p = new GenericCollections(inflator);
-			Assert.AreEqual("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
+			Assert.Equal("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
 		}
 	}
 }

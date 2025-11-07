@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,22 +11,24 @@ public partial class TemplateBindingsCompiler : ContentPage
 {
 	public TemplateBindingsCompiler() => InitializeComponent();
 
-	class Tests
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void Test([Values] XamlInflator inflator)
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+		[Theory]
+		[Values]
+		public void Test(XamlInflator inflator)
 		{
 			var page = new TemplateBindingsCompiler(inflator);
 			var label = (Label)page.ContentView.GetTemplateChild("CardTitleLabel");
-			Assert.AreEqual("The title", label?.Text);
+			Assert.Equal("The title", label?.Text);
 
 			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
 			{
 				var binding = label.GetContext(Label.TextProperty).Bindings.GetValue();
-				Assert.That(binding, Is.TypeOf<TypedBinding<TemplateBindingCompilerTestCardView, string>>());
+				Assert.IsType<TypedBinding<TemplateBindingCompilerTestCardView, string>>(binding);
 			}
 		}
 	}

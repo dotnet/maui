@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,14 +22,15 @@ public partial class Gh4438 : ContentPage
 {
 	public Gh4438() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void GenericBaseClassResolution([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GenericBaseClassResolution(XamlInflator inflator)
 		{
 			var layout = new Gh4438(inflator) { BindingContext = new Gh4438VM() };
-			Assert.That(layout.label.Text, Is.EqualTo("test"));
+			Assert.Equal("test", layout.label.Text);
 		}
 	}
 }

@@ -5,7 +5,7 @@ using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -155,14 +155,15 @@ public partial class Bz45299 : ContentPage
 {
 	public Bz45299() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void XamlCCustomTypeConverter([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XamlCCustomTypeConverter(XamlInflator inflator)
 		{
 			var p = new Bz45299(inflator);
-			Assert.AreEqual(0d, p.ctrl.PortraitLayout.Spacing.Value);
+			Assert.Equal(0d, p.ctrl.PortraitLayout.Spacing.Value);
 		}
 	}
 }

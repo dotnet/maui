@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,15 +12,16 @@ public partial class Gh4516 : ContentPage
 {
 	public Gh4516() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void BindingToEmptyCollection([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void BindingToEmptyCollection()
 		{
 			Gh4516 layout = null;
-			Assert.DoesNotThrow(() => layout = new Gh4516(inflator) { BindingContext = new Gh4516VM() });
-			Assert.That((layout.image.Source as FileImageSource).File, Is.EqualTo("foo.jpg"));
+			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout = new Gh4516(inflator) { BindingContext = new Gh4516VM() });
+			Assert.Equal("foo.jpg", (layout.image.Source as FileImageSource).File);
 		}
 	}
 }

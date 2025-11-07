@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -19,17 +19,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test]
-			public void BaseClassIdentifiersAreValidForResources([Values] XamlInflator inflator)
+		public class Tests
+		{
+			// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+			[Theory]
+			[Values]
+			public void BaseClassIdentifiersAreValidForResources(XamlInflator inflator)
 			{
 				var layout = new Bz27968(inflator);
-				Assert.That(layout.Resources["listView"], Is.TypeOf<ListView>());
+				Assert.IsType<ListView>(layout.Resources["listView"]);
 			}
 		}
 	}

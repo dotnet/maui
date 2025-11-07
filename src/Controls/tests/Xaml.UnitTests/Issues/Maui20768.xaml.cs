@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,19 +11,17 @@ public partial class Maui20768
 {
 	public Maui20768() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void BindingsDoNotResolveStaticProperties([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void BindingsDoNotResolveStaticProperties(XamlInflator inflator)
 		{
 			var page = new Maui20768(inflator);
 			page.TitleLabel.BindingContext = new ViewModel20768();

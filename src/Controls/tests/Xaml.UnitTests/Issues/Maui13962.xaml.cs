@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,13 +21,13 @@ public partial class Maui13962 : ContentView
 {
 	public Maui13962() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 
-		[Test]
-		public void ResolutionOfOverridenBP([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ResolutionOfOverridenBP(XamlInflator inflator)
 		{
 			//shouln't throw
 			var page = new Maui13962(inflator);

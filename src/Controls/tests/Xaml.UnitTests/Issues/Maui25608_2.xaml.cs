@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,12 +12,11 @@ public partial class Maui25608_2
 {
 	public Maui25608_2() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
 		bool enableDiagnosticsInitialState;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -27,8 +26,7 @@ public partial class Maui25608_2
 			bindingFailureReported = false;
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			BindingDiagnostics.BindingFailed -= BindingFailed;
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
@@ -41,24 +39,25 @@ public partial class Maui25608_2
 		void BindingFailed(object sender, BindingBaseErrorEventArgs args)
 		{
 			bindingFailureReported = true;
-			Assert.AreEqual("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
+			Assert.Equal("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
 		}
 
-		[Test]
-		public void TestInvalidBindingWithRelativeSource([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestInvalidBindingWithRelativeSource(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui25608_2));
 
-				Assert.Ignore("not testing for sourcegen, it crashes the test runner");
-			}
+				// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
 
+			}
 
 			var page = new Maui25608_2(inflator);
 
-			Assert.AreNotEqual(25, page.Image.HeightRequest);
-			Assert.IsTrue(bindingFailureReported);
+			Assert.NotEqual(25, page.Image.HeightRequest);
+			Assert.True(bindingFailureReported);
 		}
 	}
 }

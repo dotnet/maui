@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,11 +6,12 @@ public partial class Issue18948 : Shell
 {
 	public Issue18948() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void NavBarIsVisiblePropertyPropagates([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void NavBarIsVisiblePropertyPropagates(XamlInflator inflator)
 		{
 			var shell = new Issue18948(inflator);
 			var navBarIsVisible = Shell.GetNavBarIsVisible(shell.CurrentContent);

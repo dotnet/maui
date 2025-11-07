@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,39 +11,39 @@ public partial class BindingDiagnosticsTests : ContentPage
 {
 	public BindingDiagnosticsTests() => InitializeComponent();
 
-	[TestFixture]
+
 #if !DEBUG
-	[Ignore("This test runs only in debug")]
+	[Fact(Skip = "This test runs only in debug")]
 #endif
-	class Tests
+	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
 
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 		}
 
-		[Test]
-		public void Test([Values(XamlInflator.Runtime)] XamlInflator inflator)
+		[Fact]
+		public void Test() // TODO: Fix parameters - was (XamlInflator inflator), needs to be parameterized or use fixed value
 		{
+			// TODO: This test needs to be converted to use a specific inflator or made into a Theory test
+			var inflator = XamlInflator.Runtime; // Using Runtime as default
 			List<BindingBaseErrorEventArgs> failures = new List<BindingBaseErrorEventArgs>();
 			BindingDiagnostics.BindingFailed += (o, e) => failures.Add(e);
 			var layout = new BindingDiagnosticsTests(inflator) { BindingContext = new { foo = "bar" } };
-			Assert.That(failures.Count, Is.GreaterThan(0));
+			Assert.True(failures.Count > 0);
 			var failure = failures[0] as BindingErrorEventArgs;
-			Assert.That(((Binding)failure.Binding).Path, Is.EqualTo("foobar"));
-			Assert.That(failure.XamlSourceInfo.LineNumber, Is.EqualTo(7));
-			Assert.That(failure.Target, Is.TypeOf<Label>());
-			Assert.That(failure.TargetProperty, Is.EqualTo(Label.TextProperty));
+			Assert.Equal("foobar", ((Binding)failure.Binding).Path);
+			Assert.Equal(7, failure.XamlSourceInfo.LineNumber);
+			Assert.IsType<Label>(failure.Target);
+			Assert.Equal(Label.TextProperty, failure.TargetProperty);
 		}
 	}
 }

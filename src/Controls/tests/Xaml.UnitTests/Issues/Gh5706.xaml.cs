@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,21 +18,23 @@ public partial class Gh5706 : Shell
 
 	public Gh5706() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
-	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void ReportSyntaxError([Values] XamlInflator inflator)
+	public class Tests : IDisposable
+	{
+
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+		[Theory]
+		[Values]
+		public void ReportSyntaxError(XamlInflator inflator)
 		{
 			var layout = new Gh5706(inflator);
 			layout.searchHandler.BindingContext = new VM();
 
-			Assert.That(layout.searchHandler.CommandParameter, Is.Null);
+			Assert.Null(layout.searchHandler.CommandParameter);
 			layout.searchHandler.Query = "Foo";
-			Assert.That(layout.searchHandler.CommandParameter, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", layout.searchHandler.CommandParameter);
 		}
 	}
 

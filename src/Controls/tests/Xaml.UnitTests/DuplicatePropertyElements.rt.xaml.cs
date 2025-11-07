@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,16 +9,17 @@ public partial class DuplicatePropertyElements : BindableObject
 {
 	public DuplicatePropertyElements() => InitializeComponent();
 
-	[TestFixture]
-	static class Tests
+
+	public static class Tests
 	{
-		[Test]
-		public static void ThrowXamlParseException([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public static void ThrowXamlParseException(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(DuplicatePropertyElements), out var md, out var hasLoggedErrors);
-				Assert.That(hasLoggedErrors);
+				Assert.True(hasLoggedErrors);
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new DuplicatePropertyElements(inflator));
@@ -37,7 +38,7 @@ public partial class DuplicatePropertyElements : BindableObject
 """)
 					.RunMauiSourceGenerator(typeof(DuplicatePropertyElements));
 
-				Assert.That(result.Diagnostics.Any());
+				Assert.True(result.Diagnostics.Any());
 			}
 		}
 	}

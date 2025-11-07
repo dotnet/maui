@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,11 +9,12 @@ public partial class Gh2064 : ContentPage
 {
 	public Gh2064() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void ReportMissingTargetTypeOnStyle([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ReportMissingTargetTypeOnStyle(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
@@ -33,7 +34,7 @@ public partial class Gh2064 : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(Gh2064));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 		}
 	}

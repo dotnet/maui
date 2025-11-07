@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,11 +19,12 @@ public partial class Bz47950 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void BehaviorAndStaticResource([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void BehaviorAndStaticResource(XamlInflator inflator)
 		{
 			var page = new Bz47950(inflator);
 		}

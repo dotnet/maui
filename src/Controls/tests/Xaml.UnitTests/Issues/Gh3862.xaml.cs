@@ -1,7 +1,8 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,27 +10,28 @@ public partial class Gh3862 : ContentPage
 {
 	public Gh3862() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests : IDisposable
 	{
+
+		public void Dispose() { }
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp] public void Setup() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 
-		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
-
-		[Test]
-		public void OnPlatformMarkupInStyle([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void OnPlatformMarkupInStyle(XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var layout = new Gh3862(inflator);
-			Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
-			Assert.That(layout.label.IsVisible, Is.False);
+			Assert.Equal(Colors.Pink, layout.label.TextColor);
+			Assert.False(layout.label.IsVisible);
 
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 
 			layout = new Gh3862(inflator);
-			Assert.That(layout.label.IsVisible, Is.True);
+			Assert.True(layout.label.IsVisible);
 		}
 	}
 }

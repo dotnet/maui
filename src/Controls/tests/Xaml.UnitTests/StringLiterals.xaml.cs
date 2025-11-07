@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,17 +9,18 @@ public partial class StringLiterals : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void EscapedStringsAreTreatedAsLiterals([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void EscapedStringsAreTreatedAsLiterals(XamlInflator inflator)
 		{
 			var layout = new StringLiterals(inflator);
-			Assert.AreEqual("Foo", layout.label0.Text);
-			Assert.AreEqual("{Foo}", layout.label1.Text);
-			Assert.AreEqual("Foo", layout.label2.Text);
-			Assert.AreEqual("Foo", layout.label3.Text);
+			Assert.Equal("Foo", layout.label0.Text);
+			Assert.Equal("{Foo}", layout.label1.Text);
+			Assert.Equal("Foo", layout.label2.Text);
+			Assert.Equal("Foo", layout.label3.Text);
 		}
 	}
 }

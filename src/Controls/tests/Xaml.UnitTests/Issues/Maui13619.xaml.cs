@@ -1,7 +1,8 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,20 +10,22 @@ public partial class Maui13619 : ContentPage
 {
 	public Maui13619() => InitializeComponent();
 
-	class Tests
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void AppThemeBindingAndDynamicResource([Values] XamlInflator inflator)
+		public void Dispose() { }
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+
+		[Theory]
+		[Values]
+		public void AppThemeBindingAndDynamicResource(XamlInflator inflator)
 		{
 			var page = new Maui13619(inflator);
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.HotPink));
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.DarkGray));
+			Assert.Equal(Colors.HotPink, page.label0.TextColor);
+			Assert.Equal(Colors.DarkGray, page.label0.BackgroundColor);
 
 			page.Resources["Primary"] = Colors.SlateGray;
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.SlateGray));
+			Assert.Equal(Colors.SlateGray, page.label0.BackgroundColor);
 
 		}
 	}

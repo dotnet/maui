@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -6,7 +7,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,33 +18,31 @@ public partial class Maui23711 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Test
+
+	public class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled(XamlInflator inflator)
 		{
 			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: inflator == XamlInflator.XamlC);
-			Assert.That(!hasLoggedErrors);
-			Assert.AreEqual(inflator == XamlInflator.XamlC, ContainsTypedBindingInstantiation(methodDefinition));
+			Assert.True(!hasLoggedErrors);
+			Assert.Equal(inflator == XamlInflator.XamlC, ContainsTypedBindingInstantiation(methodDefinition));
 		}
 
 		static bool ContainsTypedBindingInstantiation(MethodDefinition methodDef)

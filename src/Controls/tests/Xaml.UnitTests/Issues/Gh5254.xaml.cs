@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,11 +13,12 @@ public partial class Gh5254 : ContentPage
 {
 	public Gh5254() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void BindToIntIndexer([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void BindToIntIndexer(XamlInflator inflator)
 		{
 			var layout = new Gh5254(inflator)
 			{
@@ -29,7 +30,7 @@ public partial class Gh5254 : ContentPage
 					}
 				}
 			};
-			Assert.That(layout.label.Text, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", layout.label.Text);
 		}
 	}
 }

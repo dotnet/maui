@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,17 +7,18 @@ public partial class Bz60203 : ContentPage
 {
 	public Bz60203() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void CanCompileMultiTriggersWithDifferentConditions([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void CanCompileMultiTriggersWithDifferentConditions(XamlInflator inflator)
 		{
 			var layout = new Bz60203(inflator);
-			Assert.That(layout.label.BackgroundColor, Is.EqualTo(BackgroundColorProperty.DefaultValue));
+			Assert.Equal(BackgroundColorProperty.DefaultValue, layout.label.BackgroundColor);
 			layout.BindingContext = new { Text = "Foo" };
 			layout.label.TextColor = Colors.Blue;
-			Assert.That(layout.label.BackgroundColor, Is.EqualTo(Colors.Pink));
+			Assert.Equal(Colors.Pink, layout.label.BackgroundColor);
 		}
 	}
 }

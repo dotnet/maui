@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,18 +6,20 @@ public partial class XReference : ContentPage
 {
 	public XReference() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void SupportsXReference([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void SupportsXReference(XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
-			Assert.AreSame(layout.image, layout.imageView.Content);
+			Assert.Same(layout.image, layout.imageView.Content);
 		}
 
-		[Test]
-		public void XReferenceAsCommandParameterToSelf([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XReferenceAsCommandParameterToSelf(XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 
@@ -27,29 +29,33 @@ public partial class XReference : ContentPage
 				ButtonClickCommand = new Command(o =>
 				{
 					if (o == button)
-						Assert.Pass();
+					{
+						// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
+					}
 				})
 			};
 			((IButtonController)button).SendClicked();
 			Assert.Fail();
 		}
 
-		[Test]
-		public void XReferenceAsBindingSource([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void XReferenceAsBindingSource(XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 
-			Assert.AreEqual("foo", layout.entry.Text);
-			Assert.AreEqual("bar", layout.entry.Placeholder);
+			Assert.Equal("foo", layout.entry.Text);
+			Assert.Equal("bar", layout.entry.Placeholder);
 		}
 
-		[Test]
-		public void CrossXReference([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void CrossXReference(XamlInflator inflator)
 		{
 			var layout = new XReference(inflator);
 
-			Assert.AreSame(layout.label0, layout.label1.BindingContext);
-			Assert.AreSame(layout.label1, layout.label0.BindingContext);
+			Assert.Same(layout.label0, layout.label1.BindingContext);
+			Assert.Same(layout.label1, layout.label0.BindingContext);
 		}
 	}
 }

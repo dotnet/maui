@@ -1,10 +1,11 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,20 +13,18 @@ public partial class Maui18545 : ContentPage
 {
 	public Maui18545() => InitializeComponent();
 
-	[TestFixture]
-	class Test
+
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void DynamicResourcesOnGradient([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void DynamicResourcesOnGradient(XamlInflator inflator)
 		{
 			var lighttheme = new ResourceDictionary
 			{
@@ -41,14 +40,14 @@ public partial class Maui18545 : ContentPage
 			var page = new Maui18545(inflator);
 			Application.Current.MainPage = page;
 
-			Assert.That(page.label.Background, Is.TypeOf<LinearGradientBrush>());
+			Assert.IsType<LinearGradientBrush>(page.label.Background);
 			var brush = (LinearGradientBrush)page.label.Background;
-			Assert.That(brush.GradientStops[0].Color, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, brush.GradientStops[0].Color);
 
 			Application.Current.Resources.MergedDictionaries.Remove(lighttheme);
 			Application.Current.Resources.MergedDictionaries.Add(darktheme);
 			page.Resources["GradientColorStart"] = Colors.Green;
-			Assert.That(brush.GradientStops[0].Color, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, brush.GradientStops[0].Color);
 		}
 	}
 }

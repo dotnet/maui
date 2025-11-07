@@ -2,15 +2,15 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	[TestFixture]
+
 	public class AssemblyInfoTests
 	{
-		static readonly string[] references = new[]
+		public static readonly string[] references = new[]
 		{
 			"Microsoft.Maui",
 			"Microsoft.Maui.Controls",
@@ -25,23 +25,36 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		const string s_versionPropsFile = "eng/Versions.props";
 
-		[Test, TestCaseSource(nameof(references))]
+		public static TheoryData<string> ReferencesTheoryData
+		{
+			get
+			{
+				var data = new TheoryData<string>();
+				foreach (var reference in references)
+					data.Add(reference);
+				return data;
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(ReferencesTheoryData))]
 		public void AssemblyTitle(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-			Assert.AreEqual(assemblyName, testAssembly.GetName().Name);
+			Assert.Equal(assemblyName, testAssembly.GetName().Name);
 		}
 
-		[Test, TestCaseSource(nameof(references))]
+		[Theory]
+		[MemberData(nameof(ReferencesTheoryData))]
 		public void AssemblyVersion(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
 			// Currently we keep the assembly verison at 10.0.0.0
-			Assert.AreEqual(10, actual.Major, actual.ToString());
-			Assert.AreEqual(0, actual.Minor, actual.ToString());
-			Assert.AreEqual(0, actual.Build, actual.ToString());
-			Assert.AreEqual(0, actual.Revision, actual.ToString());
+			Assert.Equal(10, actual.Major);
+			Assert.Equal(0, actual.Minor);
+			Assert.Equal(0, actual.Build);
+			Assert.Equal(0, actual.Revision);
 		}
 
 		// [Test, TestCaseSource(nameof(references))]
@@ -56,28 +69,31 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
 		// 	var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
 		// 	Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
-		// 	Assert.AreEqual(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
-		// 	Assert.AreEqual(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
+		// 	Assert.Equal(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
+		// 	Assert.Equal(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
 		// 	// Fails locally
-		// 	//Assert.AreEqual(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
+		// 	//Assert.Equal(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
 		// 	//We need to enable this
-		// 	//	Assert.AreEqual(ThisAssembly.Git.Commits, version.FilePrivatePart);
-		// 	Assert.AreEqual(s_productName, actual.ProductName);
-		// 	Assert.AreEqual(s_company, actual.CompanyName);
+		// 	//	Assert.Equal(ThisAssembly.Git.Commits, version.FilePrivatePart);
+		// 	Assert.Equal(s_productName, actual.ProductName);
+		// 	Assert.Equal(s_company, actual.CompanyName);
 		// }
 
-		[Test, TestCaseSource(nameof(references))]
+		[Theory]
+		[MemberData(nameof(ReferencesTheoryData))]
 		public void ProductAndCompany(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-			Assert.AreEqual(s_productName, actual.ProductName);
-			Assert.AreEqual(s_company, actual.CompanyName);
+			Assert.Equal(s_productName, actual.ProductName);
+			Assert.Equal(s_company, actual.CompanyName);
 		}
 
 		internal static string GetFilePathFromRoot(string file)
 		{
-			var fileFromRoot = IOPath.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..", file);
+			var assemblyLocation = typeof(AssemblyInfoTests).Assembly.Location;
+			var testDirectory = IOPath.GetDirectoryName(assemblyLocation);
+			var fileFromRoot = IOPath.Combine(testDirectory, "..", "..", "..", "..", "..", file);
 			if (!File.Exists(fileFromRoot))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
@@ -88,14 +104,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					fileFromRoot = IOPath.Combine(sourcesDirectory, file);
 					if (!File.Exists(fileFromRoot))
 					{
-						Assert.Fail($"Unable to find {file} at path: {fileFromRoot}");
-						return null;
+						throw new InvalidOperationException($"Unable to find {file} at path: {fileFromRoot}");
 					}
 				}
 				else
 				{
-					Assert.Fail($"Unable to find {file} at path: {fileFromRoot}");
-					return null;
+					// TODO: XUnit doesn't have Assert.Fail, use Assert.True(false, ...) or throw
+					throw new InvalidOperationException($"Unable to find {file} at path: {fileFromRoot}");
 				}
 			}
 			return fileFromRoot;
@@ -106,8 +121,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var fileFromRootpath = GetFilePathFromRoot(file);
 			if (string.IsNullOrEmpty(fileFromRootpath))
 			{
-				Assert.Fail($"Unable to find {file} at path: {fileFromRootpath}");
-				return null;
+				// TODO: XUnit doesn't have Assert.Fail, use Assert.True(false, ...) or throw
+				throw new InvalidOperationException($"Unable to find {file} at path: {fileFromRootpath}");
 			}
 			return File.ReadAllText(fileFromRootpath);
 		}

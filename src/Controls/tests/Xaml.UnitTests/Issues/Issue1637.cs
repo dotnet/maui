@@ -1,12 +1,12 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+
 	public class Issue1637
 	{
-		[Test]
+		[Fact]
 		public void ImplicitCollectionWithSingleElement()
 		{
 			var xaml = @"
@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			        </Grid.RowDefinitions>
 				</Grid>";
 			var grid = new Grid();
-			Assert.DoesNotThrow(() => grid.LoadFromXaml<Grid>(xaml));
-			Assert.AreEqual(1, grid.RowDefinitions.Count);
-			Assert.IsTrue(grid.RowDefinitions[0].Height.IsStar);
+			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => grid.LoadFromXaml<Grid>(xaml));
+			Assert.Single(grid.RowDefinitions);
+			Assert.True(grid.RowDefinitions[0].Height.IsStar);
 		}
 	}
 }

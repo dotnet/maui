@@ -1,6 +1,6 @@
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -10,11 +10,12 @@ public partial class Bz43450 : ContentPage
 {
 	public Bz43450() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void DoesNotAllowGridRowDefinition([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void DoesNotAllowGridRowDefinition(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz43450)));
@@ -34,11 +35,15 @@ public partial class Bz43450 : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(Bz43450));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 
 			}
 			else
-				Assert.Ignore("Unknown inflator");
+			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
+			{
+				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+			}
+
 		}
 	}
 }

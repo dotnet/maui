@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,14 +12,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
+
+		public class Tests
 		{
-			[Test]
-			public void AllowWhiteSpacesInMarkups([Values] XamlInflator inflator)
+			[Theory]
+			[Values]
+			public void AllowWhiteSpacesInMarkups(XamlInflator inflator)
 			{
 				var layout = new Bz31529(inflator);
-				Assert.AreEqual("Foo", layout.button.CommandParameter);
+				Assert.Equal("Foo", layout.button.CommandParameter);
 			}
 		}
 	}

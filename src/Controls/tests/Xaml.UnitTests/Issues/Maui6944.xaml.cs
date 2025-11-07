@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,18 +9,18 @@ public partial class Maui6944 : ContentPage
 {
 	public Maui6944() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 
-		[Test]
-		public void ContentPropertyAttributeOnLayoutSubclass([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void ContentPropertyAttributeOnLayoutSubclass(XamlInflator inflator)
 		{
 			var page = new Maui6944(inflator);
-			Assert.That(page.layout, Is.Not.Null);
-			Assert.That(page.layout, Is.TypeOf<Maui6944Layout>());
-			Assert.That(page.layout.ChildContent, Is.EqualTo(page.label));
+			Assert.NotNull(page.layout);
+			Assert.IsType<Maui6944Layout>(page.layout);
+			Assert.Equal(page.label, page.layout.ChildContent);
 		}
 	}
 }

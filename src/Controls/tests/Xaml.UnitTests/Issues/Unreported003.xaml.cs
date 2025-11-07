@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,10 +6,11 @@ public partial class Unreported003 : ContentPage
 {
 	public Unreported003() => InitializeComponent();
 
-	class Tests
+	public class Tests
 	{
-		[Test]
-		public void AllowCtorArgsForValueTypes([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void AllowCtorArgsForValueTypes(XamlInflator inflator)
 		{
 			var page = new Unreported003(inflator);
 		}

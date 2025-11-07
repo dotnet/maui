@@ -1,21 +1,49 @@
 using System;
-using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class XamlParseExceptionConstraint : ExceptionTypeConstraint
+	// Helper class for asserting XamlParseException in XUnit
+	// Usage: XamlParseExceptionHelper.AssertThrows(() => code, lineNumber, linePosition);
+	public static class XamlParseExceptionHelper
+	{
+		public static void AssertThrows(Action action, int? lineNumber = null, int? linePosition = null, Func<string, bool> messagePredicate = null)
+		{
+			var exception = Xunit.Assert.Throws<XamlParseException>(action);
+
+			if (lineNumber.HasValue || linePosition.HasValue)
+			{
+				var xmlInfo = exception.XmlInfo;
+				Xunit.Assert.NotNull(xmlInfo);
+				Xunit.Assert.True(xmlInfo.HasLineInfo(), $"Expected line info but XmlInfo.HasLineInfo() returned false");
+
+				if (lineNumber.HasValue)
+					Xunit.Assert.Equal(lineNumber.Value, xmlInfo.LineNumber);
+
+				if (linePosition.HasValue)
+					Xunit.Assert.Equal(linePosition.Value, xmlInfo.LinePosition);
+			}
+
+			if (messagePredicate != null)
+			{
+				Xunit.Assert.True(messagePredicate(exception.UnformattedMessage),
+					$"Message predicate failed for message: {exception.UnformattedMessage}");
+			}
+		}
+	}
+
+	// Kept for backward compatibility - marked as obsolete
+	[Obsolete("Use XamlParseExceptionHelper.AssertThrows instead")]
+	public class XamlParseExceptionConstraint
 	{
 		bool haslineinfo;
 		int linenumber;
 		int lineposition;
 		Func<string, bool> messagePredicate;
 
-		XamlParseExceptionConstraint(bool haslineinfo) : base(typeof(XamlParseException))
+		XamlParseExceptionConstraint(bool haslineinfo)
 		{
 			this.haslineinfo = haslineinfo;
 		}
-
-		public override string DisplayName => "xamlparse";
 
 		public XamlParseExceptionConstraint() : this(false)
 		{
@@ -26,33 +54,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			this.linenumber = linenumber;
 			this.lineposition = lineposition;
 			this.messagePredicate = messagePredicate;
-		}
-
-		protected override bool Matches(object actual)
-		{
-			if (!base.Matches(actual))
-				return false;
-			var xmlInfo = ((XamlParseException)actual).XmlInfo;
-			if (!haslineinfo)
-				return true;
-			if (xmlInfo == null || !xmlInfo.HasLineInfo())
-				return false;
-			if (messagePredicate != null)
-				if (!messagePredicate(((XamlParseException)actual).UnformattedMessage))
-					return false;
-			return xmlInfo.LineNumber == linenumber && xmlInfo.LinePosition == lineposition;
-		}
-
-		public override string Description
-		{
-			get
-			{
-				if (haslineinfo)
-				{
-					return string.Format($"{base.Description} line {linenumber}, position {lineposition}");
-				}
-				return base.Description;
-			}
 		}
 	}
 }

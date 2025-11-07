@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,14 +17,15 @@ public partial class Gh1497 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void GenericsIssue([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void GenericsIssue(XamlInflator inflator)
 		{
 			var layout = new Gh1497(inflator);
-			Assert.That(layout.entry.Behaviors[0], Is.TypeOf(typeof(Gh1497EntryValidationBehavior<Entry>)));
+			Assert.TypeOf(layout.entry.Behaviors[0](typeof(Gh1497EntryValidationBehavior<Entry>)));
 		}
 	}
 }

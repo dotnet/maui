@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,15 +22,16 @@ public partial class Gh4227 : ContentPage
 {
 	public Gh4227() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void FindMemberOnInterfaces([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void FindMemberOnInterfaces(XamlInflator inflator)
 		{
 			var layout = new Gh4227(inflator) { BindingContext = new Gh4227VM() };
-			Assert.That(layout.label0.Text, Is.EqualTo("level0"));
-			Assert.That(layout.label1.Text, Is.EqualTo("level1"));
+			Assert.Equal("level0", layout.label0.Text);
+			Assert.Equal("level1", layout.label1.Text);
 		}
 	}
 }

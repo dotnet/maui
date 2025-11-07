@@ -6,7 +6,7 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -14,19 +14,16 @@ public partial class Maui21495
 {
 	public Maui21495() => InitializeComponent();
 
-	class Test
+	public class Test
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public async Task AppThemeLeak([Values] XamlInflator inflator)
+		[Theory]
+public async Task AppThemeLeak() // TODO: Fix parameter: was (XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.HotPink);
 			var page = new Maui21495(inflator);
@@ -36,7 +33,7 @@ public partial class Maui21495
 			Application.Current.MainPage = page = null;
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target, "Page leaked");
 		}
 	}
 }

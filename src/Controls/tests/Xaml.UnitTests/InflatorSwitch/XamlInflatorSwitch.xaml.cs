@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,17 +6,17 @@ public partial class XamlInflatorSwitch : ContentPage
 {
 	public XamlInflatorSwitch() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
+		[Fact]
 		public void TestRuntimeInflator() => XamlInflatorTestsHelpers.TestInflator(typeof(XamlInflatorSwitch), XamlInflator.Runtime, true);
 
-		[Test]
+		[Fact]
 		public void TestInflation()
 		{
 			var page = new XamlInflatorSwitch();
-			Assert.That(page.label.Text, Is.EqualTo("Welcome to .NET MAUI!"), "Label text should be 'Welcome to .NET MAUI!'");
+			Assert.Equal("Welcome to .NET MAUI!", page.label.Text);
 		}
 	}
 }

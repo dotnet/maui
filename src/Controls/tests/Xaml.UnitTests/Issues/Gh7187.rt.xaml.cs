@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,11 +9,12 @@ public partial class Gh7187 : ContentPage
 {
 	public Gh7187() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void InvalidMarkupAssignmentThrowsXPE([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void InvalidMarkupAssignmentThrowsXPE(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh7187)));
@@ -34,10 +35,13 @@ public partial class Gh7187 : ContentPage
 """)
 					.RunMauiSourceGenerator(typeof(Gh7187));
 				//FIXME check diagnostic code
-				Assert.That(result.Diagnostics.Length, Is.EqualTo(1));
+				Assert.Single(result.Diagnostics);
 			}
 			else
-				Assert.Ignore($"XamlInflator {inflator} not tested");
+			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
+			{
+				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+			}
 
 		}
 	}

@@ -1,19 +1,50 @@
 using System;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class BuildExceptionConstraint : ExceptionTypeConstraint
+	// Helper class for asserting BuildException in XUnit
+	// Usage: BuildExceptionHelper.AssertThrows(() => code, lineNumber, linePosition);
+	public static class BuildExceptionHelper
+	{
+		public static void AssertThrows(Action action, int? lineNumber = null, int? linePosition = null, Func<string, bool> messagePredicate = null)
+		{
+			var exception = Xunit.Assert.Throws<BuildException>(action);
+
+			if (lineNumber.HasValue || linePosition.HasValue)
+			{
+				var xmlInfo = exception.XmlInfo;
+				Xunit.Assert.NotNull(xmlInfo);
+				Xunit.Assert.True(xmlInfo.HasLineInfo(), $"Expected line info but XmlInfo.HasLineInfo() returned false");
+
+				if (lineNumber.HasValue)
+					Xunit.Assert.Equal(lineNumber.Value, xmlInfo.LineNumber);
+
+				if (linePosition.HasValue)
+					Xunit.Assert.Equal(linePosition.Value, xmlInfo.LinePosition);
+			}
+
+			if (messagePredicate != null)
+			{
+				Xunit.Assert.True(messagePredicate(exception.Message),
+					$"Message predicate failed for message: {exception.Message}");
+			}
+		}
+	}
+
+	// Kept for backward compatibility - marked as obsolete
+	[Obsolete("Use BuildExceptionHelper.AssertThrows instead")]
+	public class BuildExceptionConstraint
 	{
 		readonly bool _haslineinfo;
 		readonly int _linenumber;
 		readonly int _lineposition;
 		readonly Func<string, bool> _messagePredicate;
 
-		BuildExceptionConstraint(bool haslineinfo) : base(typeof(BuildException)) => _haslineinfo = haslineinfo;
-
-		public override string DisplayName => "xamlparse";
+		BuildExceptionConstraint(bool haslineinfo)
+		{
+			_haslineinfo = haslineinfo;
+		}
 
 		public BuildExceptionConstraint() : this(false)
 		{
@@ -24,31 +55,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			_linenumber = linenumber;
 			_lineposition = lineposition;
 			_messagePredicate = messagePredicate;
-		}
-
-		protected override bool Matches(object actual)
-		{
-			if (!base.Matches(actual))
-				return false;
-			var xmlInfo = ((BuildException)actual).XmlInfo;
-			if (!_haslineinfo)
-				return true;
-			if (xmlInfo == null || !xmlInfo.HasLineInfo())
-				return false;
-			if (_messagePredicate != null && !_messagePredicate(((BuildException)actual).Message))
-				return false;
-			return xmlInfo.LineNumber == _linenumber && xmlInfo.LinePosition == _lineposition;
-		}
-
-		public override string Description
-		{
-			get
-			{
-				if (_haslineinfo)
-					return string.Format($"{base.Description} line {_linenumber}, position {_lineposition}");
-
-				return base.Description;
-			}
 		}
 	}
 }

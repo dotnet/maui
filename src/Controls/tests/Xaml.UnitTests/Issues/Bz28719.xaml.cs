@@ -1,7 +1,8 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,14 +13,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[Test]
-			public void DataTriggerInTemplates([Values] XamlInflator inflator)
+		public class Tests
+		{
+			// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+			[Theory]
+			[Values]
+			public void DataTriggerInTemplates(XamlInflator inflator)
 			{
 				var layout = new Bz28719(inflator);
 				var template = layout.listView.ItemTemplate;
@@ -30,10 +31,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(image0);
 
 				cell0.BindingContext = new { IsSelected = true };
-				Assert.AreEqual("Remove.png", (image0.Source as FileImageSource)?.File);
+				Assert.Equal("Remove.png", (image0.Source as FileImageSource)?.File);
 
 				cell0.BindingContext = new { IsSelected = false };
-				Assert.AreEqual("Add.png", (image0.Source as FileImageSource)?.File);
+				Assert.Equal("Add.png", (image0.Source as FileImageSource)?.File);
 
 				var cell1 = template.CreateContent() as ViewCell;
 				Assert.NotNull(cell1);
@@ -41,10 +42,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(image1);
 
 				cell1.BindingContext = new { IsSelected = true };
-				Assert.AreEqual("Remove.png", (image1.Source as FileImageSource)?.File);
+				Assert.Equal("Remove.png", (image1.Source as FileImageSource)?.File);
 
 				cell1.BindingContext = new { IsSelected = false };
-				Assert.AreEqual("Add.png", (image1.Source as FileImageSource)?.File);
+				Assert.Equal("Add.png", (image1.Source as FileImageSource)?.File);
 			}
 		}
 	}

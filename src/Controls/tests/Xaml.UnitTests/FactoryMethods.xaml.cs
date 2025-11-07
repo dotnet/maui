@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -40,73 +40,82 @@ public partial class FactoryMethods : ContentPage
 {
 	public FactoryMethods() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
-		[Test]
-		public void TestDefaultCtor([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestDefaultCtor(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("default ctor", layout.v0.Content.Content);
+			Assert.Equal("default ctor", layout.v0.Content.Content);
 		}
 
-		[Test]
-		public void TestStringCtor([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestStringCtor(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("alternate ctor foobar", layout.v1.Content.Content);
+			Assert.Equal("alternate ctor foobar", layout.v1.Content.Content);
 		}
 
-		[Test]
-		public void TestIntCtor([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestIntCtor(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("int ctor 42", layout.v2.Content.Content);
+			Assert.Equal("int ctor 42", layout.v2.Content.Content);
 		}
 
-		[Test]
-		public void TestArgumentlessFactoryMethod([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestArgumentlessFactoryMethod(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 				MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(FactoryMethods));
 
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("parameterless factory", layout.v3.Content.Content);
+			Assert.Equal("parameterless factory", layout.v3.Content.Content);
 		}
 
-		[Test]
-		public void TestFactoryMethod([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestFactoryMethod(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("factory foo42", layout.v4.Content.Content);
+			Assert.Equal("factory foo42", layout.v4.Content.Content);
 		}
 
-		[Test]
-		public void TestFactoryMethodParametersOrder([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestFactoryMethodParametersOrder(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("factory 42foo", layout.v5.Content.Content);
+			Assert.Equal("factory 42foo", layout.v5.Content.Content);
 		}
 
-		[Test]
-		public void TestCtorWithxStatic([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestCtorWithxStatic(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("alternate ctor Property", layout.v6.Content.Content);
+			Assert.Equal("alternate ctor Property", layout.v6.Content.Content);
 		}
 
-		[Test]
-		public void TestCtorWithxStaticAttribute([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestCtorWithxStaticAttribute(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("alternate ctor Property", layout.v7.Content.Content);
+			Assert.Equal("alternate ctor Property", layout.v7.Content.Content);
 		}
 
-		[Test]
-		public void TestCtorWithArrayParameter([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void TestCtorWithArrayParameter(XamlInflator inflator)
 		{
 			var layout = new FactoryMethods(inflator);
-			Assert.AreEqual("Foo Bar", layout.v8.Content.Content);
+			Assert.Equal("Foo Bar", layout.v8.Content.Content);
 		}
 	}
 }

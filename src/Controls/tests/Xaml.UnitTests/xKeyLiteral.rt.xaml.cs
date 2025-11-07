@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -12,12 +12,13 @@ public partial class xKeyLiteral : ContentPage
 {
 	public xKeyLiteral() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+
+	public class Tests
 	{
 		//this requirement might change, see https://github.com/xamarin/Xamarin.Forms/issues/12425
-		[Test]
-		public void xKeyRequireStringLiteral([Values] XamlInflator inflator)
+		[Theory]
+		[Values]
+		public void xKeyRequireStringLiteral(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(xKeyLiteral)));
@@ -37,10 +38,14 @@ public partial class xKeyLiteral : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(xKeyLiteral));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 			else
-				Assert.Ignore("Untested inflator");
+			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
+			{
+				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+			}
+
 		}
 	}
 }
