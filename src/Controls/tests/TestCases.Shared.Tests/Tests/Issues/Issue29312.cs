@@ -28,7 +28,7 @@ public class Issue29312 : _IssuesUITest
 				if (element?.GetText() == expectedText)
 					return;
 			}
-			catch
+			catch (Exception ex) when (ex is InvalidOperationException || ex is System.ArgumentException)
 			{
 				// Element not found yet, continue waiting
 			}
@@ -36,11 +36,18 @@ public class Issue29312 : _IssuesUITest
 		}
 
 		// One final check before failing
-		var finalElement = App.FindElement(automationId);
-		var actualText = finalElement?.GetText() ?? "null";
-		if (actualText != expectedText)
+		try
 		{
-			throw new TimeoutException($"Timeout waiting for {automationId} to show '{expectedText}'. Actual: '{actualText}'");
+			var finalElement = App.FindElement(automationId);
+			var actualText = finalElement?.GetText() ?? "null";
+			if (actualText != expectedText)
+			{
+				throw new TimeoutException($"Timeout waiting for {automationId} to show '{expectedText}'. Actual: '{actualText}'");
+			}
+		}
+		catch (Exception ex) when (!(ex is TimeoutException))
+		{
+			throw new TimeoutException($"Timeout waiting for {automationId} to show '{expectedText}'. Element not found.", ex);
 		}
 	}
 
