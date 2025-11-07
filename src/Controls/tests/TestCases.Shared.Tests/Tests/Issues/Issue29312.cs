@@ -6,6 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue29312 : _IssuesUITest
 {
+	private const int BoundaryTestDelayMs = 300; // Delay for boundary tests where no change is expected
+
 	public Issue29312(TestDevice testDevice) : base(testDevice) { }
 
 	public override string Issue => "CarouselView2 position label and IndicatorView do not update when navigating";
@@ -28,7 +30,7 @@ public class Issue29312 : _IssuesUITest
 				if (element?.GetText() == expectedText)
 					return;
 			}
-			catch (Exception ex) when (ex is InvalidOperationException || ex is System.ArgumentException)
+			catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException)
 			{
 				// Element not found yet, continue waiting
 			}
@@ -241,7 +243,7 @@ public class Issue29312 : _IssuesUITest
 
 		App.Tap("PreviousButton");
 		// Position should remain at 1/5 when going back from the first item
-		Thread.Sleep(300); // Brief delay to allow any potential change to occur
+		Thread.Sleep(BoundaryTestDelayMs); // Brief delay to allow any potential change to occur
 
 		var positionAfterPreviousAtStart = App.FindElement("PositionLabel");
 		Assert.That(positionAfterPreviousAtStart.GetText(), Is.EqualTo("1/5"));
@@ -261,7 +263,7 @@ public class Issue29312 : _IssuesUITest
 
 		App.Tap("NextButton");
 		// Position should remain at 5/5 when going forward from the last item
-		Thread.Sleep(300); // Brief delay to allow any potential change to occur
+		Thread.Sleep(BoundaryTestDelayMs); // Brief delay to allow any potential change to occur
 
 		var positionAfterNextAtEnd = App.FindElement("PositionLabel");
 		Assert.That(positionAfterNextAtEnd.GetText(), Is.EqualTo("5/5"));
