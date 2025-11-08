@@ -1,11 +1,11 @@
-﻿namespace Maui.Controls.Sample.Issues
+namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 31117,
+	[Issue(IssueTracker.Github, 31167,
 		"DatePicker initially shows year in 4 digits, but after changing the year it displays only 2 digits in net 10.0",
 		PlatformAffected.iOS)]
-	public partial class Issue31117 : ContentPage
+	public partial class Issue31167 : ContentPage
 	{
-		public Issue31117()
+		public Issue31167()
 		{
 			InitializeComponent();
 			MyDatePicker.Date = new DateTime(2024, 12, 23);
