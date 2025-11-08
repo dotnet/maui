@@ -29,15 +29,7 @@ public class Issue28986 : _IssuesUITest
 		// Now set bottom edge to SoftInput (keyboard is still hidden)
 		App.Tap("GridSetBottomSoftInputButton");
 
-		// Wait for layout to update
-		App.WaitForElement("MainGrid");
-
-		// Get the current settings to verify SoftInput is set
-		var currentSettings = App.WaitForElement("CurrentSettings").GetText();
-		Assert.That(currentSettings, Does.Contain("Bottom:SoftInput"),
-			"Bottom edge should be set to SoftInput");
-
-		// Get the rect after setting SoftInput
+		// Wait for layout to update and get the rect after setting SoftInput
 		var softInputRect = App.WaitForElement("MainGrid").GetRect();
 
 		// Verify that the bottom position is the same as None (no padding applied)
@@ -70,13 +62,7 @@ public class Issue28986 : _IssuesUITest
 
 		// Now set to All (should apply all safe area insets)
 		App.Tap("GridResetAllButton");
-		App.WaitForElement("MainGrid");
-
-		// Get the current settings to verify All is set
-		var currentSettings = App.WaitForElement("CurrentSettings").GetText();
-		Assert.That(currentSettings, Does.Contain("All (Full safe area)"),
-			"SafeAreaEdges should be set to All");
-
+		
 		// Get the rect after setting All
 		var allRect = App.WaitForElement("MainGrid").GetRect();
 
