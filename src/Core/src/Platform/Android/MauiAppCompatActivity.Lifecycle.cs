@@ -27,18 +27,7 @@ namespace Microsoft.Maui
 		public override void OnBackPressed()
 #pragma warning restore 809
 		{
-			var preventBackPropagation = false;
-			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
-			{
-				preventBackPropagation = del(this) || preventBackPropagation;
-			});
-
-			if (!preventBackPropagation)
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1422 // Validate platform compatibility
-				base.OnBackPressed();
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
+			HandleBackNavigation();
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)
@@ -144,6 +133,22 @@ namespace Microsoft.Maui
 			});
 
 			return handled || base.OnKeyUp(keyCode, e);
+		}
+
+		/// <summary>
+		/// Central handler used by both legacy <see cref="OnBackPressed"/> and the Android 13+ predictive back gesture callback.
+		/// Implements lifecycle event invocation and default back stack propagation unless explicitly prevented.
+		/// </summary>
+		void HandleBackNavigation()
+		{
+			var preventBackPropagation = false;
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
+			{
+				preventBackPropagation = del(this) || preventBackPropagation;
+			});
+
+			if (!preventBackPropagation)
+				base.OnBackPressed();
 		}
 	}
 }
