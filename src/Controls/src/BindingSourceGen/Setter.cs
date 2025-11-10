@@ -63,7 +63,8 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
 		lastPart switch
 		{
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{CreateUnsafePropertyAccessorSetMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
+			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && inaccessibleMemberAccess.IsSetterInaccessible => $"{CreateUnsafePropertyAccessorSetMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
+			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{accessAccumulator}.{inaccessibleMemberAccess.MemberName} = {assignedValueExpression};",
 			_ => $"{accessAccumulator} = {assignedValueExpression};",
 		};
 }

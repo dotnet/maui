@@ -2303,6 +2303,203 @@ public class IntegrationTests
 			""",
 			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-14-11.g.cs"]);
 	}
+
+	[Fact]
+	public void GenerateBindingWithPublicPropertyPrivateSetter()
+	{
+		var source = """
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    public string Text { get; private set; } = "Hello";
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                    }
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		
+		// DEBUG: Check if binding was generated
+		if (result.Binding == null)
+		{
+			var allDiags = result.SourceCompilationDiagnostics
+				.Concat(result.SourceGeneratorDiagnostics)
+				.Concat(result.GeneratedCodeCompilationDiagnostics);
+			Assert.Fail($"Binding was not generated! Diagnostics: {string.Join("\n", allDiags.Select(d => d.GetMessage()))}");
+		}
+		
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify that UnsafeAccessor is generated for the setter
+		var generatedCode = result.GeneratedFiles.Values.First();
+		
+		// DEBUG: Print generated code if assertions would fail
+		if (!generatedCode.Contains("SetUnsafeProperty_Text", StringComparison.Ordinal))
+		{
+			Assert.Fail($"Generated code does not contain SetUnsafeProperty_Text.\n\nGenerated code:\n{generatedCode}");
+		}
+		
+		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPublicPropertyProtectedSetter()
+	{
+		var source = """
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    public string Text { get; protected set; } = "Hello";
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                    }
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify that UnsafeAccessor is generated for the setter
+		var generatedCode = result.GeneratedFiles.Values.First();
+		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPublicPropertyInternalSetter()
+	{
+		var source = """
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    public string Text { get; internal set; } = "Hello";
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                    }
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify that UnsafeAccessor is generated for the setter
+		var generatedCode = result.GeneratedFiles.Values.First();
+		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPublicPropertyPrivateProtectedSetter()
+	{
+		var source = """
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    public string Text { get; private protected set; } = "Hello";
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                    }
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify that UnsafeAccessor is generated for the setter
+		var generatedCode = result.GeneratedFiles.Values.First();
+		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPublicPropertyProtectedInternalSetter()
+	{
+		var source = """
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    public string Text { get; protected internal set; } = "Hello";
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                    }
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// protected internal should be accessible, so should NOT use UnsafeAccessor
+		var generatedCode = result.GeneratedFiles.Values.First();
+		Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
+	}
 }
 
 

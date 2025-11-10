@@ -54,9 +54,17 @@ internal class PathParser
 		var memberType = typeInfo.CreateTypeDescription(_enabledNullable);
 		var containgType = symbol.ContainingType.CreateTypeDescription(_enabledNullable);
 
-		IPathPart part = symbol.IsAccessible()
+		// For properties, we need to check both getter and setter accessibility
+		// because the same path is used for both reading and writing.
+		// If either the getter OR setter is inaccessible, we need to use InaccessibleMemberAccess
+		// so that UnsafeAccessors can be generated for the inaccessible accessor(s).
+		bool isGetterAccessible = symbol.IsGetterAccessible();
+		bool isSetterAccessible = symbol.IsSetterAccessible();
+		bool isBothAccessible = isGetterAccessible && isSetterAccessible;
+
+		IPathPart part = isBothAccessible
 			? new MemberAccess(member, !isReferenceType)
-			: new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType);
+			: new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType, !isGetterAccessible, !isSetterAccessible);
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);

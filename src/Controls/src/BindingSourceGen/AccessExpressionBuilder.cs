@@ -14,7 +14,8 @@ public static class AccessExpressionBuilder
 			IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
 			MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",
 			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Field => $"{CreateUnsafeFieldAccessorMethodName(inaccessibleMemberAccess.MemberName)}({previousExpression})",
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && !shouldUseUnsafePropertySetter => $"{CreateUnsafePropertyAccessorGetMethodName(inaccessibleMemberAccess.MemberName)}({previousExpression})",
+			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && !shouldUseUnsafePropertySetter && inaccessibleMemberAccess.IsGetterInaccessible => $"{CreateUnsafePropertyAccessorGetMethodName(inaccessibleMemberAccess.MemberName)}({previousExpression})",
+			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && !shouldUseUnsafePropertySetter && !inaccessibleMemberAccess.IsGetterInaccessible => $"{previousExpression}.{inaccessibleMemberAccess.MemberName}",
 			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => previousExpression, // This case is handled by the caller
 			_ => throw new NotSupportedException($"Unsupported path part type: {nextPart.GetType()}"),
 		};

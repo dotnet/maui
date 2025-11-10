@@ -5,7 +5,7 @@ public interface IPathPart : IEquatable<IPathPart>
 	public string? PropertyName { get; }
 }
 
-public sealed record InaccessibleMemberAccess(TypeDescription ContainingType, TypeDescription memberType, AccessorKind Kind, string MemberName, bool IsValueType = false) : IPathPart
+public sealed record InaccessibleMemberAccess(TypeDescription ContainingType, TypeDescription memberType, AccessorKind Kind, string MemberName, bool IsValueType = false, bool IsGetterInaccessible = true, bool IsSetterInaccessible = true) : IPathPart
 {
 	public string PropertyName => MemberName;
 
@@ -15,7 +15,9 @@ public sealed record InaccessibleMemberAccess(TypeDescription ContainingType, Ty
 			&& ContainingType == memberAccess.ContainingType
 			&& Kind == memberAccess.Kind
 			&& MemberName == memberAccess.MemberName
-			&& IsValueType == memberAccess.IsValueType;
+			&& IsValueType == memberAccess.IsValueType
+			&& IsGetterInaccessible == memberAccess.IsGetterInaccessible
+			&& IsSetterInaccessible == memberAccess.IsSetterInaccessible;
 	}
 }
 
