@@ -2336,7 +2336,6 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		
 		// Find the interceptor file (not the common helper file)

@@ -421,9 +421,16 @@ public static class BindingCodeWriter
 			{
 				AppendBlankLine();
 
+				// Members with inaccessible accessors must have MemberType and ContainingType populated
+				// by PathParser during source analysis
+				if (member.MemberType == null || member.ContainingType == null)
+				{
+					throw new InvalidOperationException($"Member '{member.MemberName}' with inaccessible accessor must have MemberType and ContainingType populated.");
+				}
+
 				if (member.Kind == AccessorKind.Field)
 				{
-					AppendUnsafeFieldAccessor(member.MemberName, member.MemberType!.GlobalName, member.ContainingType!.GlobalName);
+					AppendUnsafeFieldAccessor(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 				}
 				else if (member.Kind == AccessorKind.Property)
 				{
@@ -434,13 +441,13 @@ public static class BindingCodeWriter
 					{
 						// we don't need the unsafe getter if the item is the very last part of the path
 						// because we don't need to access its value while constructing the handlers array
-						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType!.GlobalName, member.ContainingType!.GlobalName);
+						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 
 					if (member.IsSetterInaccessible && isLastPart && binding.SetterOptions.IsWritable)
 					{
 						// We only need the unsafe setter if the item is the very last part of the path
-						AppendUnsafePropertySetAccessors(member.MemberName, member.MemberType!.GlobalName, member.ContainingType!.GlobalName);
+						AppendUnsafePropertySetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 				}
 				else
