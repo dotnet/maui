@@ -1,3 +1,5 @@
+using Android.Views;
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 28986, "Test SafeArea ContentPage for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 2)]
@@ -7,6 +9,12 @@ public partial class Issue28986_ContentPage : ContentPage
 	{
 		InitializeComponent();
 		UpdateCurrentSettingsLabel();
+
+#if ANDROID
+		// Set SoftInput.AdjustNothing - we have full control over insets (iOS-like behavior)
+		var window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window;
+		window?.SetSoftInputMode(SoftInput.AdjustNothing | SoftInput.StateUnspecified);
+#endif
 	}
 
 	private void OnGridSetNoneClicked(object sender, EventArgs e)
