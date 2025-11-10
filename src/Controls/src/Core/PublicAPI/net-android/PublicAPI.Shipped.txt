@@ -1,12 +1,10 @@
 #nullable enable
 ~abstract Microsoft.Maui.Controls.DataTemplateSelector.OnSelectTemplate(object item, Microsoft.Maui.Controls.BindableObject container) -> Microsoft.Maui.Controls.DataTemplate
-~abstract Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.GetCellForPosition(int position) -> Microsoft.Maui.Controls.Cell
 ~abstract Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetItemsLayout() -> Microsoft.Maui.Controls.IItemsLayout
 ~abstract Microsoft.Maui.Controls.Internals.GIFImageParser.AddBitmap(Microsoft.Maui.Controls.Internals.GIFHeader header, Microsoft.Maui.Controls.Internals.GIFBitmap bitmap, bool ignoreImageData) -> void
 ~abstract Microsoft.Maui.Controls.Internals.TableModel.GetItem(int section, int row) -> object
 ~abstract Microsoft.Maui.Controls.Layout.CreateLayoutManager() -> Microsoft.Maui.Layouts.ILayoutManager
 ~abstract Microsoft.Maui.Controls.MultiPage<T>.CreateDefault(object item) -> T
-~abstract Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.GetNavigationTarget() -> Android.Views.ViewGroup
 ~abstract Microsoft.Maui.Controls.RouteFactory.GetOrCreate() -> Microsoft.Maui.Controls.Element
 ~abstract Microsoft.Maui.Controls.RouteFactory.GetOrCreate(System.IServiceProvider services) -> Microsoft.Maui.Controls.Element
 ~abstract Microsoft.Maui.Controls.Shapes.Geometry.AppendPath(Microsoft.Maui.Graphics.PathF path) -> void
@@ -38,7 +36,6 @@
 ~const Microsoft.Maui.Controls.Page.AlertSignalName = "Microsoft.Maui.Controls.SendAlert" -> string
 ~const Microsoft.Maui.Controls.Page.BusySetSignalName = "Microsoft.Maui.Controls.BusySet" -> string
 ~const Microsoft.Maui.Controls.Page.PromptSignalName = "Microsoft.Maui.Controls.SendPrompt" -> string
-~const Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.DoNotUpdateMarker = "__DO_NOT_UPDATE__" -> string
 ~const Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ButtonStyle.Bottom = "bottom" -> string
 ~const Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ButtonStyle.Circle = "circle" -> string
 ~const Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ButtonStyle.Default = "default" -> string
@@ -262,7 +259,6 @@
 ~Microsoft.Maui.Controls.Compatibility.Grid.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.Compatibility.Grid>
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.get -> Microsoft.Maui.Controls.RowDefinitionCollection
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.set -> void
-~Microsoft.Maui.Controls.Compatibility.INativeElementView.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Compatibility.Layout.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.Compatibility.Layout.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.Compatibility.Layout.OnChildMeasureInvalidated(object sender, System.EventArgs e) -> void
@@ -479,55 +475,6 @@
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.HandlerChangingEventArgs(Microsoft.Maui.IElementHandler oldHandler, Microsoft.Maui.IElementHandler newHandler) -> void
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.NewHandler.get -> Microsoft.Maui.IElementHandler
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.OldHandler.get -> Microsoft.Maui.IElementHandler
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.AccessoryView.get -> Android.Views.View
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.BaseCellView(Android.Content.Context context, Microsoft.Maui.Controls.Cell cell) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.DetailText.get -> string
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.DetailText.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.MainText.get -> string
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.MainText.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetAccessoryView(Android.Views.View view) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetDefaultMainTextColor(Microsoft.Maui.Graphics.Color defaultColor) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetDetailTextColor(Microsoft.Maui.Graphics.Color color) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetImageSource(Microsoft.Maui.Controls.ImageSource source) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetMainTextColor(Microsoft.Maui.Graphics.Color color) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.CellAdapter(Android.Content.Context context) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.OnActionItemClicked(Android.Views.ActionMode mode, Android.Views.IMenuItem item) -> bool
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.OnCreateActionMode(Android.Views.ActionMode mode, Android.Views.IMenu menu) -> bool
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.OnDestroyActionMode(Android.Views.ActionMode mode) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.OnItemClick(Android.Widget.AdapterView parent, Android.Views.View view, int position, long id) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.OnItemLongClick(Android.Widget.AdapterView parent, Android.Views.View view, int position, long id) -> bool
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.OnPrepareActionMode(Android.Views.ActionMode mode, Android.Views.IMenu menu) -> bool
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.SetSelectedBackground(Android.Views.View view, bool isContextTarget = false) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.UnsetSelectedBackground(Android.Views.View view) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Cell.get -> Microsoft.Maui.Controls.Cell
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Cell.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.GetCell(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.ParentView.get -> Microsoft.Maui.Controls.View
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.ParentView.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.WireUpForceUpdateSizeRequested(Microsoft.Maui.Controls.Cell cell, Android.Views.View platformCell) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellEditText.EntryCellEditText(Android.Content.Context context) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.EditingCompleted.get -> System.Action
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.EditingCompleted.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.EditText.get -> Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellEditText
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.Element.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.EntryCellView(Android.Content.Context context, Microsoft.Maui.Controls.Cell cell) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.FocusChanged.get -> System.Action<bool>
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.FocusChanged.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.LabelText.get -> string
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.LabelText.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.SetLabelTextColor(Microsoft.Maui.Graphics.Color color, int defaultColorResourceId) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.TextChanged.get -> System.Action<string>
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.TextChanged.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ListViewRenderer(Android.Content.Context context) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.AndroidContext.get -> Android.Content.Context
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Element.get -> Microsoft.Maui.Controls.Shell
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ShellRenderer(Android.Content.Context context) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellView.Cell.get -> Microsoft.Maui.Controls.SwitchCell
-~Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellView.Cell.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellView.OnCheckedChanged(Android.Widget.CompoundButton buttonView, bool isChecked) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellView.SwitchCellView(Android.Content.Context context, Microsoft.Maui.Controls.Cell cell) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.TableViewModelRenderer(Android.Content.Context context, Android.Widget.ListView listView, Microsoft.Maui.Controls.TableView view) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.TableViewRenderer(Android.Content.Context context) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CarouselViewAdapter<TItemsView, TItemsViewSource>
 ~Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CarouselViewHandler(Microsoft.Maui.PropertyMapper mapper = null) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.CollectionViewHandler(Microsoft.Maui.PropertyMapper mapper = null) -> void
@@ -1254,102 +1201,6 @@
 ~Microsoft.Maui.Controls.Picker.TitleColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Picker.TitleColor.set -> void
 ~Microsoft.Maui.Controls.Platform.ColorChangeRevealDrawable.ColorChangeRevealDrawable(Android.Graphics.Color startColor, Android.Graphics.Color endColor, Android.Graphics.Point center) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.ContainerView(Android.Content.Context context, Microsoft.Maui.Controls.View view, Microsoft.Maui.IMauiContext mauiContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.View.get -> Microsoft.Maui.Controls.View
-~Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.View.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(Android.Content.Context context, Android.Util.IAttributeSet attrs, int defStyleAttr, int defStyleRes) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(Android.Content.Context context, Android.Util.IAttributeSet attrs, int defStyleAttr) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(Android.Content.Context context, Android.Util.IAttributeSet attrs) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(Android.Content.Context context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker.ResetAppearance(Google.Android.Material.BottomNavigation.BottomNavigationView bottomView) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker.SetAppearance(Google.Android.Material.BottomNavigation.BottomNavigationView bottomView, Microsoft.Maui.Controls.IShellAppearanceElement appearance) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.AndroidContext.get -> Android.Content.Context
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateBottomNavViewAppearanceTracker(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateFragmentForPage(Microsoft.Maui.Controls.Page page) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateTabLayoutAppearanceTracker(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateToolbarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateTrackerForToolbar(AndroidX.AppCompat.Widget.Toolbar toolbar) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CurrentDrawerLayout.get -> AndroidX.DrawerLayout.Widget.DrawerLayout
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.Shell.get -> Microsoft.Maui.Controls.Shell
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer.AndroidView.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer.AndroidView.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer.AttachFlyout(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, Android.Views.View content) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.Fragment.get -> AndroidX.Fragment.App.Fragment
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.ShellItem.get -> Microsoft.Maui.Controls.ShellItem
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.ShellItem.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment.Fragment.get -> AndroidX.Fragment.App.Fragment
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView.SearchHandler.get -> Microsoft.Maui.Controls.SearchHandler
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView.SearchHandler.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView.View.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker.ResetAppearance(Google.Android.Material.Tabs.TabLayout tabLayout) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker.SetAppearance(Google.Android.Material.Tabs.TabLayout tabLayout, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker.ResetAppearance(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker.SetAppearance(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.Page.get -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.Page.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.SetToolbar(Microsoft.Maui.IToolbar toolbar) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.TintColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.TintColor.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.SearchHandlerAppearanceTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView searchView, Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker.ShellBottomNavViewAppearanceTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext, Microsoft.Maui.Controls.ShellItem shellItem) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.Fragment.get -> AndroidX.Fragment.App.Fragment
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.ShellContentFragment(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext, Microsoft.Maui.Controls.Page page) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.ShellContentFragment(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext, Microsoft.Maui.Controls.ShellContent shellContent) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem.AdapterListItem(Microsoft.Maui.Controls.Element element, bool drawTopLine = false) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem.Element.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem.Element.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder.Bar.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder.Element.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder.Element.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder.ElementViewHolder(Microsoft.Maui.Controls.View view, Android.Views.View itemView, Android.Views.View bar, System.Action<Microsoft.Maui.Controls.Element> selectedCallback, Microsoft.Maui.Controls.Shell shell) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder.View.get -> Microsoft.Maui.Controls.View
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.Shell.get -> Microsoft.Maui.Controls.Shell
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ShellFlyoutRecyclerAdapter(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext, System.Action<Microsoft.Maui.Controls.Element> selectedCallback) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ShellFlyoutRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext, Android.Content.Context context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.AndroidView.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.FooterView.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.HeaderContainer(Android.Content.Context context, Microsoft.Maui.Controls.View view, Microsoft.Maui.IMauiContext mauiContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.MauiContext.get -> Microsoft.Maui.IMauiContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnElementSelected(Microsoft.Maui.Controls.Element element) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnOffsetChanged(Google.Android.Material.AppBar.AppBarLayout appBarLayout, int verticalOffset) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.ShellContext.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.ShellFlyoutTemplatedContentRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.View.get -> Android.Views.View
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ShellItemController.get -> Microsoft.Maui.Controls.IShellItemController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ShellItemRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.DisplayedPage.get -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.DisplayedPage.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.ShellContext.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.ShellItem.get -> Microsoft.Maui.Controls.ShellItem
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.ShellItemRendererBase(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.SearchHandler.get -> Microsoft.Maui.Controls.SearchHandler
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.SearchHandler.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.ShellSearchView(Android.Content.Context context, Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.Filter.get -> Android.Widget.Filter
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.MauiContext.get -> Microsoft.Maui.IMauiContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.ShellSearchViewAdapter(Microsoft.Maui.Controls.SearchHandler searchHandler, Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellContext.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSectionRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker.ShellTabLayoutAppearanceTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.ShellToolbarAppearanceTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.MauiContext.get -> Microsoft.Maui.IMauiContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.Page.get -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.Page.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.SearchHandler.get -> Microsoft.Maui.Controls.SearchHandler
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.SearchHandler.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.ShellContext.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.ShellToolbarTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext, AndroidX.AppCompat.Widget.Toolbar toolbar, AndroidX.DrawerLayout.Widget.DrawerLayout drawerLayout) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.TintColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.TintColor.set -> void
 ~Microsoft.Maui.Controls.Platform.GenericAnimatorListener.OnCancel.get -> System.Action<Android.Animation.Animator>
 ~Microsoft.Maui.Controls.Platform.GenericAnimatorListener.OnCancel.set -> void
 ~Microsoft.Maui.Controls.Platform.GenericAnimatorListener.OnEnd.get -> System.Action<Android.Animation.Animator>
@@ -2030,28 +1881,6 @@
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
-~override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.CreatePlatformElement() -> Android.Views.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.DisconnectHandler(Android.Views.View platformView) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellEditText.OnKeyPreIme(Android.Views.Keycode keyCode, Android.Views.KeyEvent e) -> bool
-~override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.GetCellCore(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.OnCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer.GetCellCore(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer.OnCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.CreateNativeControl() -> Android.Widget.ListView
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.ListView> e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer.GetCellCore(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer.OnCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetCellForPosition(int position) -> Microsoft.Maui.Controls.Cell
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetView(int position, Android.Views.View convertView, Android.Views.ViewGroup parent) -> Android.Views.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.HandleItemClick(Android.Widget.AdapterView parent, Android.Views.View nview, int position, long id) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.this[int position].get -> object
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.CreateNativeControl() -> Android.Widget.ListView
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.TableView> e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.GetCellCore(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.OnCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.DisconnectHandler(Android.Views.View platformView) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.GetCellCore(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewAdapter<TItemsView, TItemsViewSource>.OnBindViewHolder(AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder holder, int position) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CreateAdapter() -> Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource>
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CreatePlatformView() -> AndroidX.RecyclerView.Widget.RecyclerView
@@ -2127,22 +1956,6 @@
 ~override Microsoft.Maui.Controls.MultiPage<T>.OnChildAdded(Microsoft.Maui.Controls.Element child) -> void
 ~override Microsoft.Maui.Controls.MultiPage<T>.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Platform.ColorChangeRevealDrawable.Draw(Android.Graphics.Canvas canvas) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.OnApplyWindowInsets(Android.Views.WindowInsets insets) -> Android.Views.WindowInsets
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.OnCreateAnimation(int transit, bool enter, int nextAnim) -> Android.Views.Animations.Animation
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.OnCreateView(Android.Views.LayoutInflater inflater, Android.Views.ViewGroup container, Android.OS.Bundle savedInstanceState) -> Android.Views.View
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.OnBindViewHolder(AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder holder, int position) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.OnCreateViewHolder(Android.Views.ViewGroup parent, int viewType) -> AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.OnViewRecycled(Java.Lang.Object holder) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.DrawChild(Android.Graphics.Canvas canvas, Android.Views.View child, long drawingTime) -> bool
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.OnInterceptTouchEvent(Android.Views.MotionEvent ev) -> bool
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.GetNavigationTarget() -> Android.Views.ViewGroup
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnCreateView(Android.Views.LayoutInflater inflater, Android.Views.ViewGroup container, Android.OS.Bundle savedInstanceState) -> Android.Views.View
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnDisplayedPageChanged(Microsoft.Maui.Controls.Page newPage, Microsoft.Maui.Controls.Page oldPage) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnShellItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.GetItem(int position) -> Java.Lang.Object
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.GetView(int position, Android.Views.View convertView, Android.Views.ViewGroup parent) -> Android.Views.View
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnCreateView(Android.Views.LayoutInflater inflater, Android.Views.ViewGroup container, Android.OS.Bundle savedInstanceState) -> Android.Views.View
 ~override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.OnAnimationCancel(Android.Animation.Animator animation) -> void
 ~override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.OnAnimationEnd(Android.Animation.Animator animation) -> void
 ~override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.OnAnimationRepeat(Android.Animation.Animator animation) -> void
@@ -2264,7 +2077,6 @@
 ~override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
 ~override Microsoft.Maui.Foldable.FoldEventArgs.ToString() -> string
-~readonly Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Context -> Android.Content.Context
 ~readonly Microsoft.Maui.Controls.Handlers.Items.EmptyViewAdapter.ItemsView -> Microsoft.Maui.Controls.ItemsView
 ~readonly Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<TItemsView, TItemsViewSource>.ItemsView -> TItemsView
 ~static Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Graphics.Rect
@@ -2503,8 +2315,6 @@
 ~static Microsoft.Maui.Controls.Compatibility.Grid.SetRow(Microsoft.Maui.Controls.BindableObject bindable, int value) -> void
 ~static Microsoft.Maui.Controls.Compatibility.Grid.SetRowSpan(Microsoft.Maui.Controls.BindableObject bindable, int value) -> void
 ~static Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(Microsoft.Maui.Controls.VisualElement child, Microsoft.Maui.Graphics.Rect region) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.Android.CanvasExtensions.ClipShape(this Android.Graphics.Canvas canvas, Android.Content.Context context, Microsoft.Maui.Controls.VisualElement element) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.Android.GeometryExtensions.ToAPath(this Microsoft.Maui.Controls.Shapes.Geometry geometry, Android.Content.Context context) -> Android.Graphics.Path
 ~static Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetBoundsConstraint(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.BoundsConstraint
 ~static Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetHeightConstraint(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Compatibility.Constraint
 ~static Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Compatibility.Constraint
@@ -2582,16 +2392,6 @@
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int column = 0, int row = 0) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int left, int right, int top, int bottom) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
-~static Microsoft.Maui.Controls.Handlers.Compatibility.CellFactory.GetCell(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context, Microsoft.Maui.Controls.View view) -> Android.Views.View
-~static Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Cell, Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.Cell, Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ListView, Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ListView, Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultBackgroundColor.get -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.TableView, Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.TableView, Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer>
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapIsSwipeEnabled(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
@@ -3612,9 +3412,6 @@
 ~static readonly Microsoft.Maui.Controls.GroupableItemsView.GroupFooterTemplateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.GroupableItemsView.GroupHeaderTemplateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.GroupableItemsView.IsGroupedProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
-~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
-~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Controls.HtmlWebViewSource.BaseUrlProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.HtmlWebViewSource.HtmlProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Image.AspectProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -4275,24 +4072,6 @@
 ~virtual Microsoft.Maui.Controls.Element.OnChildRemoved(Microsoft.Maui.Controls.Element child, int oldLogicalIndex) -> void
 ~virtual Microsoft.Maui.Controls.Element.OnHandlerChanging(Microsoft.Maui.Controls.HandlerChangingEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Element.OnParentChanging(Microsoft.Maui.Controls.ParentChangingEventArgs args) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter.HandleItemClick(Android.Widget.AdapterView parent, Android.Views.View view, int position, long id) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.GetCellCore(Microsoft.Maui.Controls.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context) -> Android.Views.View
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.OnCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.GetDigitsKeyListener(Android.Text.InputTypes inputTypes) -> Android.Text.Method.NumberKeyListener
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.CreateNativePullToRefresh(Android.Content.Context context) -> AndroidX.SwipeRefreshLayout.Widget.SwipeRefreshLayout
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateBottomNavViewAppearanceTracker(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateFragmentForPage(Microsoft.Maui.Controls.Page page) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellFlyoutRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateTabLayoutAppearanceTracker(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateToolbarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateTrackerForToolbar(AndroidX.AppCompat.Widget.Toolbar toolbar) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.OnElementSet(Microsoft.Maui.Controls.Shell shell) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.SwitchFragment(AndroidX.Fragment.App.FragmentManager manager, Android.Views.View targetView, Microsoft.Maui.Controls.ShellItem newItem, bool animate = true) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.GetModelRenderer(Android.Widget.ListView listView, Microsoft.Maui.Controls.TableView view) -> Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer
 ~virtual Microsoft.Maui.Controls.Handlers.Items.GroupableItemsViewHandler<TItemsView>.CreateAdapter() -> Microsoft.Maui.Controls.Handlers.Items.GroupableItemsViewAdapter<TItemsView, Microsoft.Maui.Controls.Handlers.Items.IGroupableItemsViewSource>
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<TItemsView, TItemsViewSource>.BindTemplatedItemViewHolder(Microsoft.Maui.Controls.Handlers.Items.TemplatedItemViewHolder templatedItemViewHolder, object context) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<TItemsView, TItemsViewSource>.GetPositionForItem(object item) -> int
@@ -4361,82 +4140,6 @@
 ~virtual Microsoft.Maui.Controls.Page.OnNavigatedTo(Microsoft.Maui.Controls.NavigatedToEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Page.OnNavigatingFrom(Microsoft.Maui.Controls.NavigatingFromEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Picker.UpdateFormsText(string source, Microsoft.Maui.TextTransform textTransform) -> string
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.OnViewSet(Microsoft.Maui.Controls.View view) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.GetDigitsKeyListener(Android.Text.InputTypes inputTypes) -> Android.Text.Method.NumberKeyListener
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.SearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker.ResetAppearance(Google.Android.Material.BottomNavigation.BottomNavigationView bottomView) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker.SetAppearance(Google.Android.Material.BottomNavigation.BottomNavigationView bottomView, Microsoft.Maui.Controls.IShellAppearanceElement appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker.SetBackgroundColor(Google.Android.Material.BottomNavigation.BottomNavigationView bottomView, Microsoft.Maui.Graphics.Color color) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.SetAppearance(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.DefaultItemTemplate.get -> Microsoft.Maui.Controls.DataTemplate
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.DefaultMenuItemTemplate.get -> Microsoft.Maui.Controls.DataTemplate
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.GenerateItemList() -> System.Collections.Generic.List<Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem>
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.OnFlyoutItemsChanged(object sender, System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.AttachFlyout(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, Android.Views.View content) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.UpdateFlyoutSize(Android.Views.View flyoutView) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.LoadView(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ChangeSection(Microsoft.Maui.Controls.ShellSection shellSection) -> bool
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.CreateItemBackgroundDrawable() -> Android.Graphics.Drawables.Drawable
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.CreateMoreBottomSheet(System.Action<int, Google.Android.Material.BottomSheet.BottomSheetDialog> selectCallback) -> Google.Android.Material.BottomSheet.BottomSheetDialog
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.CreateMoreBottomSheet(System.Action<Microsoft.Maui.Controls.ShellSection, Google.Android.Material.BottomSheet.BottomSheetDialog> selectCallback) -> Google.Android.Material.BottomSheet.BottomSheetDialog
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnItemSelected(Android.Views.IMenuItem item) -> bool
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnMoreItemSelected(Microsoft.Maui.Controls.ShellSection shellSection, Google.Android.Material.BottomSheet.BottomSheetDialog dialog) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnMoreSheetDismissed(object sender, System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnTabReselected(Microsoft.Maui.Controls.ShellSection shellSection) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.SetAppearance(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.SetupMenu(Android.Views.IMenu menu, int maxBottomItems, Microsoft.Maui.Controls.ShellItem shellItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionEnabled(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionIcon(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionTitle(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.CreateFragmentForPage(Microsoft.Maui.Controls.Page page) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.GetOrCreateFragmentForTab(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.HandleFragmentUpdate(Microsoft.Maui.Controls.ShellNavigationSource navSource, Microsoft.Maui.Controls.ShellSection shellSection, Microsoft.Maui.Controls.Page page, bool animated) -> System.Threading.Tasks.Task<bool>
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.HookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.HookEvents(Microsoft.Maui.Controls.ShellItem shellItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnDisplayedPageChanged(Microsoft.Maui.Controls.Page newPage, Microsoft.Maui.Controls.Page oldPage) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnNavigationRequested(object sender, Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnShellItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.SetupAnimation(Microsoft.Maui.Controls.ShellNavigationSource navSource, AndroidX.Fragment.App.FragmentTransaction t, Microsoft.Maui.Controls.Page page) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.UnhookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.UnhookEvents(Microsoft.Maui.Controls.ShellItem shellItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.CreateSearchHandlerAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.LoadView(Microsoft.Maui.Controls.SearchHandler searchHandler) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnClearButtonClicked(object sender, System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnClearPlaceholderButtonClicked(object sender, System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnSearchButtonClicked(object sender, System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnSearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.OnSearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnAnimationFinished(System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.SetAppearance(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker.ResetAppearance(Google.Android.Material.Tabs.TabLayout tabLayout) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker.SetAppearance(Google.Android.Material.Tabs.TabLayout tabLayout, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker.SetColors(Google.Android.Material.Tabs.TabLayout tabLayout, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Graphics.Color background, Microsoft.Maui.Graphics.Color title, Microsoft.Maui.Graphics.Color unselected) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.ResetAppearance(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetAppearance(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetColors(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Graphics.Color background, Microsoft.Maui.Graphics.Color title) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.GetSearchView(Android.Content.Context context) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnPageChanged(Microsoft.Maui.Controls.Page oldPage, Microsoft.Maui.Controls.Page newPage) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnPageToolbarItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnSearchConfirmed(object sender, System.EventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnSearchHandlerChanged(Microsoft.Maui.Controls.SearchHandler oldValue, Microsoft.Maui.Controls.SearchHandler newValue) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnSearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateDrawerArrow(Android.Content.Context context, AndroidX.AppCompat.Widget.Toolbar toolbar, AndroidX.DrawerLayout.Widget.DrawerLayout drawerLayout) -> System.Threading.Tasks.Task
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateDrawerArrowFromBackButtonBehavior(Android.Content.Context context, AndroidX.AppCompat.Widget.Toolbar toolbar, AndroidX.DrawerLayout.Widget.DrawerLayout drawerLayout, Microsoft.Maui.Controls.BackButtonBehavior backButtonHandler) -> System.Threading.Tasks.Task
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateDrawerArrowFromFlyoutIcon(Android.Content.Context context, AndroidX.AppCompat.App.ActionBarDrawerToggle actionBarDrawerToggle) -> System.Threading.Tasks.Task
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateLeftBarButtonItem(Android.Content.Context context, AndroidX.AppCompat.Widget.Toolbar toolbar, AndroidX.DrawerLayout.Widget.DrawerLayout drawerLayout, Microsoft.Maui.Controls.Page page) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateMenuItemIcon(Android.Content.Context context, Android.Views.IMenuItem menuItem, Microsoft.Maui.Controls.ToolbarItem toolBarItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateNavBarVisible(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Page page) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdatePageTitle(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Page page) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateTitleView(Android.Content.Context context, AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.View titleView) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateToolbarIconAccessibilityText(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Shell shell) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.UpdateToolbarItems(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Page page) -> void
 ~virtual Microsoft.Maui.Controls.PlatformEffect<TContainer, TControl>.OnElementPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventArgs.PropertyName.get -> string
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
@@ -4484,9 +4187,6 @@ const Microsoft.Maui.Controls.BrushTypeConverter.RadialGradient = "radial-gradie
 const Microsoft.Maui.Controls.BrushTypeConverter.Rgb = "rgb" -> string!
 const Microsoft.Maui.Controls.BrushTypeConverter.Rgba = "rgba" -> string!
 const Microsoft.Maui.Controls.Cell.DefaultCellHeight = 40 -> int
-const Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.DefaultMinHeight = 44 -> double
-const Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.DefaultMinHeight = 55 -> double
-const Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.MoreTabId = 99 -> int
 const Microsoft.Maui.Controls.TitleBar.ContentHiddenState = "ContentCollapsed" -> string!
 const Microsoft.Maui.Controls.TitleBar.ContentVisibleState = "ContentVisible" -> string!
 const Microsoft.Maui.Controls.TitleBar.IconHiddenState = "IconCollapsed" -> string!
@@ -4829,7 +4529,6 @@ Microsoft.Maui.Controls.Compatibility.Grid.Grid() -> void
 Microsoft.Maui.Controls.Compatibility.Grid.InvalidateMeasureInernalNonVirtual(Microsoft.Maui.Controls.Internals.InvalidationTrigger trigger) -> void
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.get -> double
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.set -> void
-Microsoft.Maui.Controls.Compatibility.INativeElementView
 Microsoft.Maui.Controls.Compatibility.Layout
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.set -> void
@@ -4844,8 +4543,6 @@ Microsoft.Maui.Controls.Compatibility.Layout.Padding.get -> Microsoft.Maui.Thick
 Microsoft.Maui.Controls.Compatibility.Layout.Padding.set -> void
 Microsoft.Maui.Controls.Compatibility.Layout.UpdateChildrenLayout() -> void
 Microsoft.Maui.Controls.Compatibility.Layout<T>.Layout() -> void
-Microsoft.Maui.Controls.Compatibility.Platform.Android.CanvasExtensions
-Microsoft.Maui.Controls.Compatibility.Platform.Android.GeometryExtensions
 Microsoft.Maui.Controls.Compatibility.RelativeLayout
 Microsoft.Maui.Controls.Compatibility.RelativeLayout.RelativeLayout() -> void
 Microsoft.Maui.Controls.Compatibility.StackLayout
@@ -5200,60 +4897,6 @@ Microsoft.Maui.Controls.HandlerChangingEventArgs
 Microsoft.Maui.Controls.HandlerProperties
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView
-Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetImageVisible(bool visible) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetIsEnabled(bool isEnable) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.BaseCellView.SetRenderHeight(double height) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellAdapter
-Microsoft.Maui.Controls.Handlers.Compatibility.CellFactory
-Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.CellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellEditText
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellView.SetRenderHeight(double height) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Control.get -> AndroidX.CardView.Widget.CardView!
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Element.get -> Microsoft.Maui.Controls.Frame?
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Element.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.ElementPropertyChanged -> System.EventHandler<System.ComponentModel.PropertyChangedEventArgs!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper! commandMapper) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer.ImageCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ShellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer.SwitchCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellView
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.TextCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.ViewCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer.ViewRenderer(Android.Content.Context! context) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.Control.get -> TPlatformView?
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.SetNativeControl(TPlatformView! control) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Android.Content.Context! context) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.AutoPackage.get -> bool
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.AutoPackage.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.Element.get -> TElement?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement!>!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ElementPropertyChanged -> System.EventHandler<System.ComponentModel.PropertyChangedEventArgs!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MauiContext.get -> Microsoft.Maui.IMauiContext!
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetElement(Microsoft.Maui.IView! view) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateLayout() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Android.Content.Context! context) -> void
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CarouselViewHandler() -> void
 Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler
@@ -6229,61 +5872,6 @@ Microsoft.Maui.Controls.Platform.BottomNavigationViewUtils
 Microsoft.Maui.Controls.Platform.BrushExtensions
 Microsoft.Maui.Controls.Platform.ButtonExtensions
 Microsoft.Maui.Controls.Platform.ColorChangeRevealDrawable
-Microsoft.Maui.Controls.Platform.Compatibility.ContainerView
-Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchHeight.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchHeight.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchWidth.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchWidth.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout
-Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.Destroyed -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment
-Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment.AnimationFinished -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView.LoadView() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchView.SearchConfirmed -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker
-Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.CanNavigateBack.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.CanNavigateBack.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment
-Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.AnimationFinished -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem.DrawTopLine.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem.DrawTopLine.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem.Index.get -> int
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.SlideOffset.get -> float
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase
-Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.Destroyed -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.SearchConfirmed -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.AnimationFinished -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.CanNavigateBack.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.CanNavigateBack.set -> void
 Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate
 Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.ControlsAccessibilityDelegate(AndroidX.Core.View.AccessibilityDelegateCompat? originalDelegate, Microsoft.Maui.IViewHandler! viewHandler) -> void
 Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.Handler.get -> Microsoft.Maui.IViewHandler!
@@ -7904,31 +7492,6 @@ override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Draw(Android.Graphics.Canvas? canvas) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnSizeChanged(int w, int h, int oldw, int oldh) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.MinimumSize() -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnAttachedToWindow() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnDetachedFromWindow() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.AreAllItemsEnabled() -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Count.get -> int
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemId(int position) -> long
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.IsEnabled(int position) -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.ViewTypeCount.get -> int
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.MinimumSize() -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnAttachedToWindow() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewAdapter<TItemsView, TItemsViewSource>.GetItemViewType(int position) -> int
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewAdapter<TItemsView, TItemsViewSource>.ItemCount.get -> int
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
@@ -8004,34 +7567,6 @@ override Microsoft.Maui.Controls.Page.OnParentSet() -> void
 override Microsoft.Maui.Controls.Page.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.Picker.OnHandlerChanged() -> void
 override Microsoft.Maui.Controls.Platform.ColorChangeRevealDrawable.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.OnDestroy() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.OnResume() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ElementViewHolder.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.GetItemViewType(int position) -> int
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.ItemCount.get -> int
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnDestroy() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnShellSectionChanged() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnDestroy() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnAttachedToWindow() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.Count.get -> int
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.GetItemId(int position) -> long
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnDestroy() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
 override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.JavaFinalize() -> void
 override Microsoft.Maui.Controls.RadialGradientBrush.IsEmpty.get -> bool
@@ -8171,15 +7706,6 @@ static Microsoft.Maui.Controls.FontExtensions.ToFont(this Microsoft.Maui.Control
 static Microsoft.Maui.Controls.FontExtensions.WithAttributes(this Microsoft.Maui.Font font, Microsoft.Maui.Controls.FontAttributes attributes) -> Microsoft.Maui.Font
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Frame!, Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Frame!, Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapAutomationId(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapAutomationPropertiesIsInAccessibleTree(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapBackground(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapBackgroundColor(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapIsEnabled(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRendererCommandMapper -> Microsoft.Maui.CommandMapper<TElement!, Microsoft.Maui.IPlatformViewHandler!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRendererMapper -> Microsoft.Maui.IPropertyMapper<TElement!, Microsoft.Maui.IPlatformViewHandler!>!
 static Microsoft.Maui.Controls.Handlers.TabbedPageManager.IsDarkTheme.get -> bool
 static Microsoft.Maui.Controls.ImageButton.MapRippleColor(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.Controls.ImageButton! imageButton) -> void
 static Microsoft.Maui.Controls.Internals.Profile.Enable() -> void
@@ -8373,19 +7899,6 @@ virtual Microsoft.Maui.Controls.Element.OnParentChanged() -> void
 virtual Microsoft.Maui.Controls.Element.OnParentSet() -> void
 virtual Microsoft.Maui.Controls.FlyoutPage.ShouldShowToolbarButton() -> bool
 virtual Microsoft.Maui.Controls.HandlerAttribute.ShouldRegister() -> bool
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.Frame!>! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.CreateNativeControl() -> TPlatformView!
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.DisconnectHandler(TPlatformView! oldPlatformView) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MinimumSize() -> Microsoft.Maui.Graphics.Size
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement!>! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnElementPropertyChanged(object! sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetAutomationId(string! id) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetImportantForAccessibility() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetIsEnabled() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateBackground() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateBackgroundColor() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<TItemsView, TItemsViewSource>.CreateItemsSource() -> TItemsViewSource
 virtual Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.IsHorizontal.get -> bool
 virtual Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.ReconcileFlowDirectionAndLayout() -> void
@@ -8418,24 +7931,6 @@ virtual Microsoft.Maui.Controls.Page.LayoutChildren(double x, double y, double w
 virtual Microsoft.Maui.Controls.Page.OnAppearing() -> void
 virtual Microsoft.Maui.Controls.Page.OnBackButtonPressed() -> bool
 virtual Microsoft.Maui.Controls.Page.OnDisappearing() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellBottomNavViewAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellContentFragment.ResetAppearance() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.UpdateDrawerLockMode(Microsoft.Maui.FlyoutBehavior behavior) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateFlyoutBackground() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateFlyoutContent() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateFlyoutFooter() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateFlyoutHeader() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateFlyoutHeaderBehavior() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ResetAppearance() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateTabBarVisibility() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnShellSectionChanged() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnPageSelected(int position) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ResetAppearance() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.SetViewPager2UserInputEnabled(bool value) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTabLayoutAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.OnNavigateBack() -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachedFrom(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

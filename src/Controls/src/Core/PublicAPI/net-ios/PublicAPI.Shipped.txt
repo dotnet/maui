@@ -263,7 +263,6 @@
 ~Microsoft.Maui.Controls.Compatibility.Grid.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.Compatibility.Grid>
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.get -> Microsoft.Maui.Controls.RowDefinitionCollection
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.set -> void
-~Microsoft.Maui.Controls.Compatibility.INativeElementView.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Compatibility.Layout.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.Compatibility.Layout.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.Compatibility.Layout.OnChildMeasureInvalidated(object sender, System.EventArgs e) -> void
@@ -480,44 +479,6 @@
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.HandlerChangingEventArgs(Microsoft.Maui.IElementHandler oldHandler, Microsoft.Maui.IElementHandler newHandler) -> void
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.NewHandler.get -> Microsoft.Maui.IElementHandler
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.OldHandler.get -> Microsoft.Maui.IElementHandler
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.Cell.get -> Microsoft.Maui.Controls.Cell
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.Cell.set -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.CellTableViewCell(UIKit.UITableViewCellStyle style, string key) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.Element.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.HandlePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.PropertyChanged -> System.Action<object, System.ComponentModel.PropertyChangedEventArgs>
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.EntryCellTableViewCell(string cellName) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.TextField.get -> UIKit.UITextField
-~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.Element.get -> Microsoft.Maui.Controls.VisualElement
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.NativeView.get -> UIKit.UIView
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.PopToRootAsync(Microsoft.Maui.Controls.Page page, bool animated = true) -> System.Threading.Tasks.Task<bool>
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.PopViewAsync(Microsoft.Maui.Controls.Page page, bool animated = true) -> System.Threading.Tasks.Task<bool>
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.PushPageAsync(Microsoft.Maui.Controls.Page page, bool animated = true) -> System.Threading.Tasks.Task<bool>
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.SetElement(Microsoft.Maui.Controls.VisualElement element) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.Element.get -> Microsoft.Maui.Controls.VisualElement
-~Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.NativeView.get -> UIKit.UIView
-~Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.SetElement(Microsoft.Maui.Controls.VisualElement element) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Element.get -> Microsoft.Maui.Controls.VisualElement
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.NativeView.get -> UIKit.UIView
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.SetCurrentShellItemController(Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer value) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.SetCurrentShellItemControllerAsync(Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer value) -> System.Threading.Tasks.Task
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.SetElement(Microsoft.Maui.Controls.VisualElement element) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Shell.get -> Microsoft.Maui.Controls.Shell
-~Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Element.get -> Microsoft.Maui.Controls.VisualElement
-~Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.NativeView.get -> UIKit.UIView
-~Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.SetElement(Microsoft.Maui.Controls.VisualElement element) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Tabbed.get -> Microsoft.Maui.Controls.TabbedPage
-~Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.LongPress(UIKit.UILongPressGestureRecognizer gesture) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Table -> UIKit.UITableView
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.TableViewModelRenderer(Microsoft.Maui.Controls.TableView model) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.View -> Microsoft.Maui.Controls.TableView
-~Microsoft.Maui.Controls.Handlers.Compatibility.UnEvenTableViewModelRenderer.UnEvenTableViewModelRenderer(Microsoft.Maui.Controls.TableView model) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.CarouselViewController(Microsoft.Maui.Controls.CarouselView itemsView, Microsoft.Maui.Controls.Handlers.Items.ItemsViewLayout layout) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CarouselViewDelegator.CarouselViewDelegator(Microsoft.Maui.Controls.Handlers.Items.ItemsViewLayout itemsViewLayout, Microsoft.Maui.Controls.Handlers.Items.CarouselViewController itemsViewController) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CarouselViewHandler(Microsoft.Maui.PropertyMapper mapper = null) -> void
@@ -1275,92 +1236,6 @@
 ~Microsoft.Maui.Controls.Picker.Title.set -> void
 ~Microsoft.Maui.Controls.Picker.TitleColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Picker.TitleColor.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateNavBarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreatePageRendererTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateShellSearchResultsRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CreateTabBarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.CurrentShellItemRenderer.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.Shell.get -> Microsoft.Maui.Controls.Shell
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer.AttachFlyout(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, UIKit.UIViewController content) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer.View.get -> UIKit.UIView
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutTransition.LayoutViews(CoreGraphics.CGRect bounds, System.Runtime.InteropServices.NFloat openPercent, UIKit.UIView flyout, UIKit.UIView shell, Microsoft.Maui.FlyoutBehavior behavior) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.ShellItem.get -> Microsoft.Maui.Controls.ShellItem
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.ShellItem.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellItemTransition.Transition(Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer oldRenderer, Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer newRenderer) -> System.Threading.Tasks.Task
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker.ResetAppearance(UIKit.UINavigationController controller) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker.SetAppearance(UIKit.UINavigationController controller, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker.SetHasShadow(UIKit.UINavigationController controller, bool hasShadow) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker.UpdateLayout(UIKit.UINavigationController controller) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker.Page.get -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker.Page.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker.ViewController.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer.SearchHandler.get -> Microsoft.Maui.Controls.SearchHandler
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer.SearchHandler.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootHeader.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootHeader.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootHeader.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker.ResetAppearance(UIKit.UITabBarController controller) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker.SetAppearance(UIKit.UITabBarController controller, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker.UpdateLayout(UIKit.UITabBarController controller) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.SearchHandlerAppearanceTracker(UIKit.UISearchBar searchBar, Microsoft.Maui.Controls.SearchHandler searchHandler, Microsoft.Maui.IFontManager fontManager) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ShellFlyoutContentRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.FlyoutTransition.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutTransition
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.FlyoutTransition.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.NativeView.get -> UIKit.UIView
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ShellItem.get -> Microsoft.Maui.Controls.ShellItem
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ShellItem.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ShellItemController.get -> Microsoft.Maui.Controls.IShellItemController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ShellItemRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellItemTransition.Transition(Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer oldRenderer, Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer newRenderer) -> System.Threading.Tasks.Task
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.ResetAppearance(UIKit.UINavigationController controller) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.SetAppearance(UIKit.UINavigationController controller, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.UpdateLayout(UIKit.UINavigationController controller) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.Page.get -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.Page.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.ShellPageRendererTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.TitleViewContainer(Microsoft.Maui.Controls.View view) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.ViewController.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ShellSearchResultsRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSectionRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, System.Type navigationBarType, System.Type toolbarType) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSectionRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShouldPopItem(UIKit.UINavigationBar _, UIKit.UINavigationItem __) -> bool
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSection.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.Label.get -> UIKit.UILabel
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.SelectedColor.get -> UIKit.UIColor
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.SelectedColor.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.UnSelectedColor.get -> UIKit.UIColor
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.UnSelectedColor.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionRootHeader(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ShellSectionRootRenderer(Microsoft.Maui.Controls.ShellSection shellSection, Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.CreateShellTableViewSource() -> Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.ShellTableViewController(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView headerView, System.Action<Microsoft.Maui.Controls.Element> onElementSelected) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.ShellTableViewController(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, System.Action<Microsoft.Maui.Controls.Element> onElementSelected) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.Groups.get -> System.Collections.Generic.List<System.Collections.Generic.List<Microsoft.Maui.Controls.Element>>
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.ShellTableViewSource(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, System.Action<Microsoft.Maui.Controls.Element> onElementSelected) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.BindingContext.get -> object
-~Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.BindingContext.set -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.UIContainerCell(string cellId, Microsoft.Maui.Controls.View view) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.View.get -> Microsoft.Maui.Controls.View
-~Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.UIContainerView(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.PlatformConfigurationRegistry<TElement>
 ~Microsoft.Maui.Controls.PlatformConfigurationRegistry<TElement>.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, TElement>
 ~Microsoft.Maui.Controls.PlatformConfigurationRegistry<TElement>.PlatformConfigurationRegistry(TElement element) -> void
@@ -2025,48 +1900,6 @@
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
-~override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.GetCell(Microsoft.Maui.Controls.Cell item, UIKit.UITableViewCell reusableCell, UIKit.UITableView tv) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.AddSubview(UIKit.UIView view) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.Frame> e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer.GetCell(Microsoft.Maui.Controls.Cell item, UIKit.UITableViewCell reusableCell, UIKit.UITableView tv) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer.HandleCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.ListView> e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.SetBackground(Microsoft.Maui.Controls.Brush brush) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ViewController.get -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ChildViewControllerForHomeIndicatorAutoHidden.get -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ChildViewControllerForStatusBarHidden() -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.PopToRootViewController(bool animated) -> UIKit.UIViewController[]
-~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.PopViewController(bool animated) -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ChildViewControllerForHomeIndicatorAutoHidden.get -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ChildViewControllerForStatusBarHidden() -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer.GetCell(Microsoft.Maui.Controls.Cell item, UIKit.UITableViewCell reusableCell, UIKit.UITableView tv) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ChildViewControllerForHomeIndicatorAutoHidden.get -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ChildViewControllerForStatusBarHidden() -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.SelectedViewController.get -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.SelectedViewController.set -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetCell(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetHeightForHeader(UIKit.UITableView tableView, nint section) -> System.Runtime.InteropServices.NFloat
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetViewForHeader(UIKit.UITableView tableView, nint section) -> UIKit.UIView
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.NumberOfSections(UIKit.UITableView tableView) -> nint
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.RowSelected(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.RowsInSection(UIKit.UITableView tableview, nint section) -> nint
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.SectionIndexTitles(UIKit.UITableView tableView) -> string[]
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.TitleForHeader(UIKit.UITableView tableView, nint section) -> string
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.WillDisplayHeaderView(UIKit.UITableView tableView, UIKit.UIView headerView, nint section) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.CreateNativeControl() -> UIKit.UITableView
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.TableView> e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.GetCell(Microsoft.Maui.Controls.Cell item, UIKit.UITableViewCell reusableCell, UIKit.UITableView tv) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Handlers.Compatibility.UnEvenTableViewModelRenderer.GetHeightForRow(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> System.Runtime.InteropServices.NFloat
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.GetCell(Microsoft.Maui.Controls.Cell item, UIKit.UITableViewCell reusableCell, UIKit.UITableView tv) -> UIKit.UITableViewCell
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell.AttributesConsistentWithConstrainedDimension(UIKit.UICollectionViewLayoutAttributes attributes) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.CacheCellAttributes(Foundation.NSIndexPath indexPath, CoreGraphics.CGSize size) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
@@ -2213,40 +2046,6 @@
 ~override Microsoft.Maui.Controls.ListView.ValidateItemTemplate(Microsoft.Maui.Controls.DataTemplate template) -> bool
 ~override Microsoft.Maui.Controls.MultiPage<T>.OnChildAdded(Microsoft.Maui.Controls.Element child) -> void
 ~override Microsoft.Maui.Controls.MultiPage<T>.OnPropertyChanged(string propertyName = null) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.SelectedViewController.get -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.SelectedViewController.set -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.WillMoveToSuperview(UIKit.UIView newSuper) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.GetCell(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.NumberOfSections(UIKit.UITableView tableView) -> nint
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.RowSelected(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.RowsInSection(UIKit.UITableView tableView, nint section) -> nint
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.PopToRootViewController(bool animated) -> UIKit.UIViewController[]
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.PopToViewController(UIKit.UIViewController viewController, bool animated) -> UIKit.UIViewController[]
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.PopViewController(bool animated) -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.PushViewController(UIKit.UIViewController viewController, bool animated) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewControllers.get -> UIKit.UIViewController[]
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewControllers.set -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.CanMoveItem(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> bool
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.GetCell(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionViewCell
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.GetItemsCount(UIKit.UICollectionView collectionView, nint section) -> nint
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ItemDeselected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ItemSelected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.NumberOfSections(UIKit.UICollectionView collectionView) -> nint
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShouldSelectItem(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> bool
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.GetCell(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> UIKit.UITableViewCell
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.GetHeightForFooter(UIKit.UITableView tableView, nint section) -> System.Runtime.InteropServices.NFloat
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.GetHeightForRow(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> System.Runtime.InteropServices.NFloat
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.GetViewForFooter(UIKit.UITableView tableView, nint section) -> UIKit.UIView
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.NumberOfSections(UIKit.UITableView tableView) -> nint
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.RowSelected(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.RowsInSection(UIKit.UITableView tableview, nint section) -> nint
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.Scrolled(UIKit.UIScrollView scrollView) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.WillDisplay(UIKit.UITableView tableView, UIKit.UITableViewCell cell, Foundation.NSIndexPath indexPath) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.AddSubview(UIKit.UIView view) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillRemoveSubview(UIKit.UIView uiview) -> void
 ~override Microsoft.Maui.Controls.ReferenceTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
 ~override Microsoft.Maui.Controls.ReferenceTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
 ~override Microsoft.Maui.Controls.ReferenceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
@@ -2597,21 +2396,6 @@
 ~static Microsoft.Maui.Controls.Compatibility.Grid.SetRow(Microsoft.Maui.Controls.BindableObject bindable, int value) -> void
 ~static Microsoft.Maui.Controls.Compatibility.Grid.SetRowSpan(Microsoft.Maui.Controls.BindableObject bindable, int value) -> void
 ~static Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(Microsoft.Maui.Controls.VisualElement child, Microsoft.Maui.Graphics.Rect region) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityElementsHidden(this UIKit.UIView Control, Microsoft.Maui.Controls.Element Element, bool? _defaultAccessibilityElementsHidden = null) -> bool?
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityHint(this UIKit.UIBarItem Control, Microsoft.Maui.Controls.Element Element, string _defaultAccessibilityHint = null) -> string
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityHint(this UIKit.UIView Control, Microsoft.Maui.Controls.Element Element, string _defaultAccessibilityHint = null) -> string
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityLabel(this UIKit.UIBarItem Control, Microsoft.Maui.Controls.Element Element, string _defaultAccessibilityLabel = null) -> string
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityLabel(this UIKit.UIView Control, Microsoft.Maui.Controls.Element Element, string _defaultAccessibilityLabel = null) -> string
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityProperties(this UIKit.UIView nativeViewElement, Microsoft.Maui.Controls.Element element) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetIsAccessibilityElement(this UIKit.UIView Control, Microsoft.Maui.Controls.Element Element, bool? _defaultIsAccessibilityElement = null) -> bool?
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName = false, bool forcePrimary = false) -> UIKit.UIBarButtonItem
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName) -> UIKit.UIBarButtonItem
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.Descendants(this UIKit.UIView self) -> System.Collections.Generic.IEnumerable<UIKit.UIView>
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.GetSizeRequest(this UIKit.UIView self, double widthConstraint, double heightConstraint, double minimumWidth = -1, double minimumHeight = -1) -> Microsoft.Maui.SizeRequest
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.SetBinding(this UIKit.UIView self, Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Controls.BindingBase binding) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.SetBinding(this UIKit.UIView view, string propertyName, Microsoft.Maui.Controls.BindingBase bindingBase, string updateSourceEventName = null) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.SetBindingContext(this UIKit.UIView target, object bindingContext, System.Func<UIKit.UIView, System.Collections.Generic.IEnumerable<UIKit.UIView>> getChildren = null) -> void
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.SetValue(this UIKit.UIView target, Microsoft.Maui.Controls.BindableProperty targetProperty, object value) -> void
 ~static Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetBoundsConstraint(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.BoundsConstraint
 ~static Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetHeightConstraint(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Compatibility.Constraint
 ~static Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetWidthConstraint(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Compatibility.Constraint
@@ -2695,18 +2479,6 @@
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int column = 0, int row = 0) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int left, int right, int top, int bottom) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
-~static Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Frame, Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Frame, Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ListView, Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ListView, Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.NavigationPage, Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.NavigationPage, Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.FlyoutPage, Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.FlyoutPage, Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.TabbedPage, Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.TabbedPage, Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer>
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell.ReuseId -> Foundation.NSString
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
@@ -4433,28 +4205,6 @@
 ~virtual Microsoft.Maui.Controls.Element.OnChildRemoved(Microsoft.Maui.Controls.Element child, int oldLogicalIndex) -> void
 ~virtual Microsoft.Maui.Controls.Element.OnHandlerChanging(Microsoft.Maui.Controls.HandlerChangingEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Element.OnParentChanging(Microsoft.Maui.Controls.ParentChangingEventArgs args) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.OnPopToRoot(Microsoft.Maui.Controls.Page page, bool animated) -> System.Threading.Tasks.Task<bool>
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.OnPopViewAsync(Microsoft.Maui.Controls.Page page, bool animated) -> System.Threading.Tasks.Task<bool>
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.OnPushAsync(Microsoft.Maui.Controls.Page page, bool animated) -> System.Threading.Tasks.Task<bool>
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateFlyoutRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateNavBarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreatePageRendererTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem item) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellItemTransition() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemTransition
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellSearchResultsRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.CreateTabBarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.OnCurrentItemChangedAsync() -> System.Threading.Tasks.Task
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.OnElementSet(Microsoft.Maui.Controls.Shell element) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.GetIcon(Microsoft.Maui.Controls.Page page) -> System.Threading.Tasks.Task<System.Tuple<UIKit.UIImage, UIKit.UIImage>>
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.HandleCellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) -> void
-~virtual Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.HandlePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.CacheCellAttributes(Foundation.NSIndexPath indexPath, CoreGraphics.CGSize size) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
@@ -4510,51 +4260,6 @@
 ~virtual Microsoft.Maui.Controls.Page.OnNavigatedTo(Microsoft.Maui.Controls.NavigatedToEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Page.OnNavigatingFrom(Microsoft.Maui.Controls.NavigatingFromEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.Picker.UpdateFormsText(string source, Microsoft.Maui.TextTransform textTransform) -> string
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker.ResetAppearance(UIKit.UITabBarController controller) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker.SetAppearance(UIKit.UITabBarController controller, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker.UpdateLayout(UIKit.UITabBarController controller) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.CreateShellTableViewController() -> Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.HandleShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.DidShowViewController(UIKit.UINavigationController navigationController, UIKit.UIViewController viewController, bool animated) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnShellItemSet(Microsoft.Maui.Controls.ShellItem shellItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellAppearance(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.SetHasShadow(UIKit.UINavigationController controller, bool hasShadow) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.HandleShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnBackButtonBehaviorPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnPageSet(Microsoft.Maui.Controls.Page oldPage, Microsoft.Maui.Controls.Page newPage) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnSearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.RemoveSearchController(UIKit.UINavigationItem navigationItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchIsEnabled(UIKit.UISearchController searchController) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController searchController) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.CreateShellSectionRootRenderer(Microsoft.Maui.Controls.ShellSection shellSection, Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootRenderer
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.GetSecondaryToolbarMenuButtonImage() -> UIKit.UIImage
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.HandlePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.HandleShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnDisplayedPageChanged(Microsoft.Maui.Controls.Page page) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnInsertRequested(Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnNavigationRequested(object sender, Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnPopRequested(Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnPopToRootRequested(Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnPushRequested(Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnRemoveRequested(Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.GetCellType() -> System.Type
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.SetAppearance(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.CreateShellSectionRootHeader(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootHeader
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.HandleShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.FooterView.get -> UIKit.UIView
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.FooterView.set -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.HeaderView.get -> Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.HeaderView.set -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.DefaultItemTemplate.get -> Microsoft.Maui.Controls.DataTemplate
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.DefaultMenuItemTemplate.get -> Microsoft.Maui.Controls.DataTemplate
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.SlideFlyoutTransition.LayoutViews(CoreGraphics.CGRect bounds, System.Runtime.InteropServices.NFloat openPercent, UIKit.UIView flyout, UIKit.UIView shell, Microsoft.Maui.FlyoutBehavior behavior) -> void
 ~virtual Microsoft.Maui.Controls.PlatformEffect<TContainer, TControl>.OnElementPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args) -> void
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventArgs.PropertyName.get -> string
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
@@ -4957,7 +4662,6 @@ Microsoft.Maui.Controls.Compatibility.Grid.Grid() -> void
 Microsoft.Maui.Controls.Compatibility.Grid.InvalidateMeasureInernalNonVirtual(Microsoft.Maui.Controls.Internals.InvalidationTrigger trigger) -> void
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.get -> double
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.set -> void
-Microsoft.Maui.Controls.Compatibility.INativeElementView
 Microsoft.Maui.Controls.Compatibility.Layout
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.set -> void
@@ -4972,9 +4676,6 @@ Microsoft.Maui.Controls.Compatibility.Layout.Padding.get -> Microsoft.Maui.Thick
 Microsoft.Maui.Controls.Compatibility.Layout.Padding.set -> void
 Microsoft.Maui.Controls.Compatibility.Layout.UpdateChildrenLayout() -> void
 Microsoft.Maui.Controls.Compatibility.Layout<T>.Layout() -> void
-Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions
-Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions
-Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions
 Microsoft.Maui.Controls.Compatibility.RelativeLayout
 Microsoft.Maui.Controls.Compatibility.RelativeLayout.RelativeLayout() -> void
 Microsoft.Maui.Controls.Compatibility.StackLayout
@@ -5329,81 +5030,6 @@ Microsoft.Maui.Controls.HandlerChangingEventArgs
 Microsoft.Maui.Controls.HandlerProperties
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.CellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateBackground(UIKit.UITableViewCell! tableViewCell, Microsoft.Maui.Controls.Cell! cell) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.WireUpForceUpdateSizeRequested(Microsoft.Maui.Controls.ICellController! cell, UIKit.UITableViewCell! platformCell, UIKit.UITableView! tableView) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.KeyboardDoneButtonPressed -> System.EventHandler
-Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.TextFieldTextChanged -> System.EventHandler
-Microsoft.Maui.Controls.Handlers.Compatibility.FormsRefreshControl
-Microsoft.Maui.Controls.Handlers.Compatibility.FormsRefreshControl.FormsRefreshControl(bool usingLargeTitles) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ImageCellRenderer.ImageCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.DeleteRowsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.DeleteRowsAnimation.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.InsertRowsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.InsertRowsAnimation.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ListViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ReloadRowsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ReloadRowsAnimation.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ReloadSectionsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ReloadSectionsAnimation.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs>
-Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.NavigationRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs>
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.FlyoutOverlapsDetailsInPopoverMode.get -> bool
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.FlyoutOverlapsDetailsInPopoverMode.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.PhoneFlyoutPageRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.SetElementSize(Microsoft.Maui.Graphics.Size size) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs>
-Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ShellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.SwitchCellRenderer.SwitchCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs>
-Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.TabbedRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.AutomaticallyDeselect.get -> bool
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.AutomaticallyDeselect.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.HasBoundGestures -> bool
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.GetTableViewStyle(Microsoft.Maui.Controls.TableIntent intent) -> UIKit.UITableViewStyle
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.TableViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer.TextCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.UnEvenTableViewModelRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.ViewCellRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer.ViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.Control.get -> TPlatformView?
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.SetNativeControl(TPlatformView! control) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.AutoPackage.get -> bool
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.AutoPackage.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.Element.get -> TElement?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement!>!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ElementPropertyChanged -> System.EventHandler<System.ComponentModel.PropertyChangedEventArgs!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MauiContext.get -> Microsoft.Maui.IMauiContext!
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetElement(Microsoft.Maui.IView! view) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell
 Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell.CarouselTemplatedCell(CoreGraphics.CGRect frame) -> void
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewController
@@ -6389,90 +6015,6 @@ Microsoft.Maui.Controls.PinchGestureUpdatedEventArgs.ScaleOrigin.get -> Microsof
 Microsoft.Maui.Controls.PinchGestureUpdatedEventArgs.Status.get -> Microsoft.Maui.GestureStatus
 Microsoft.Maui.Controls.Platform.BrushExtensions
 Microsoft.Maui.Controls.Platform.ButtonExtensions
-Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
-Microsoft.Maui.Controls.Platform.Compatibility.IShellContext.AllowFlyoutGesture.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer.WillAppear -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer.WillDisappear -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutTransition
-Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellItemTransition
-Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker
-Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker.IsRootPage.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker.IsRootPage.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer.ItemSelected -> System.EventHandler<object>
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.IsInMoreTab.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer.IsInMoreTab.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootHeader
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootRenderer.ShowNavBar.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.SafeShellNavBarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.SafeShellNavBarAppearanceTracker.SafeShellNavBarAppearanceTracker() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker.SafeShellTabBarAppearanceTracker() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.UpdateSearchBarColors() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.WillAppear -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.WillDisappear -> System.EventHandler
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.AnimationCurve.get -> UIKit.UIViewAnimationCurve
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.AnimationCurve.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.AnimationDuration.get -> int
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.AnimationDuration.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ShellFlyoutRenderer() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellItemTransition
-Microsoft.Maui.Controls.Platform.Compatibility.ShellItemTransition.ShellItemTransition() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.ShellNavBarAppearanceTracker() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.Dispose() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.IsRootPage.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.IsRootPage.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnFlyoutBehaviorChanged(Microsoft.Maui.FlyoutBehavior behavior) -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.DeleteRowsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.DeleteRowsAnimation.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.InsertRowsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.InsertRowsAnimation.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ItemSelected -> System.EventHandler<object>
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ReloadRowsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ReloadRowsAnimation.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ReloadSectionsAnimation.get -> UIKit.UITableViewRowAnimation
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ReloadSectionsAnimation.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.IsInMoreTab.get -> bool
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.IsInMoreTab.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.LayoutBar() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.SelectedIndex.get -> double
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.SelectedIndex.set -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.ShellSectionHeaderCell() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.ShellSectionHeaderCell(CoreGraphics.CGRect frame) -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionRootHeader() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTabBarAppearanceTracker
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTabBarAppearanceTracker.ShellTabBarAppearanceTracker() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LayoutParallax() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.ClearCache() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.ScrolledEvent -> System.EventHandler<UIKit.UIScrollView>
-Microsoft.Maui.Controls.Platform.Compatibility.SlideFlyoutTransition
-Microsoft.Maui.Controls.Platform.Compatibility.SlideFlyoutTransition.SlideFlyoutTransition() -> void
-Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell
-Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView
 Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement>
 Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement>.ElementChangedEventArgs(TElement? oldElement, TElement? newElement) -> void
 Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement>.NewElement.get -> TElement?
@@ -8060,52 +7602,6 @@ override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.CreatePlatformElement() -> UIKit.UITableViewCell!
-override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FormsRefreshControl.BeginRefreshing() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FormsRefreshControl.Hidden.get -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.FormsRefreshControl.Hidden.set -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Draw(CoreGraphics.CGRect rect) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.DidRotate(UIKit.UIInterfaceOrientation fromInterfaceOrientation) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ViewDidAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ViewDidDisappear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ViewWillAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ViewWillLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidDisappear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
-override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersStatusBarHidden() -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.DidRotate(UIKit.UIInterfaceOrientation fromInterfaceOrientation) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ViewDidAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ViewDidDisappear(bool animated) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.MinimumSize() -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.UpdateNativeWidget() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-override Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-override Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.SizeToFit() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell.ConstrainTo(CoreGraphics.CGSize constraint) -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell.ConstrainTo(System.Runtime.InteropServices.NFloat constant) -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselTemplatedCell.Measure() -> CoreGraphics.CGSize
@@ -8222,54 +7718,6 @@ override Microsoft.Maui.Controls.Page.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Page.OnParentSet() -> void
 override Microsoft.Maui.Controls.Page.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.Picker.OnHandlerChanged() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ViewWillAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ViewWillDisappear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.ViewWillLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersStatusBarHidden() -> bool
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewWillLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.Frame.get -> CoreGraphics.CGRect
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.Frame.set -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.IntrinsicContentSize.get -> CoreGraphics.CGSize
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.WillMoveToSuperview(UIKit.UIView? newSuper) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidDisappear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.Selected.get -> bool
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.Selected.set -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShellSectionHeaderCell.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ViewDidLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ViewSafeAreaInsetsDidChange() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ViewWillAppear(bool animated) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.ViewDidLoad() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.ViewSafeAreaInsetsDidChange() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerCell.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.LayoutSubviews() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Controls.RadialGradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.RadioButton.ChangeVisualState() -> void
 override Microsoft.Maui.Controls.RadioButton.OnApplyTemplate() -> void
@@ -8405,15 +7853,6 @@ static Microsoft.Maui.Controls.FontExtensions.ToFont(this Microsoft.Maui.Control
 static Microsoft.Maui.Controls.FontExtensions.WithAttributes(this Microsoft.Maui.Font font, Microsoft.Maui.Controls.FontAttributes attributes) -> Microsoft.Maui.Font
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Cell!, Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.Cell!, Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapAutomationId(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapAutomationPropertiesIsInAccessibleTree(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapBackground(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapBackgroundColor(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapIsEnabled(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRendererCommandMapper -> Microsoft.Maui.CommandMapper<TElement!, Microsoft.Maui.IPlatformViewHandler!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRendererMapper -> Microsoft.Maui.IPropertyMapper<TElement!, Microsoft.Maui.IPlatformViewHandler!>!
 static Microsoft.Maui.Controls.Handlers.Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(this Microsoft.Maui.Controls.ScrollToPosition scrollToPosition, UIKit.UICollectionViewScrollDirection scrollDirection = UIKit.UICollectionViewScrollDirection.Vertical, bool isLtr = false) -> UIKit.UICollectionViewScrollPosition
 static Microsoft.Maui.Controls.Handlers.Items.ScrollToPositionExtensions.ToHorizontalCollectionViewScrollPosition(this Microsoft.Maui.Controls.ScrollToPosition scrollToPosition, bool isLtr) -> UIKit.UICollectionViewScrollPosition
 static Microsoft.Maui.Controls.Handlers.Items.ScrollToPositionExtensions.ToVerticalCollectionViewScrollPosition(this Microsoft.Maui.Controls.ScrollToPosition scrollToPosition) -> UIKit.UICollectionViewScrollPosition
@@ -8579,26 +8018,6 @@ virtual Microsoft.Maui.Controls.Element.OnParentChanged() -> void
 virtual Microsoft.Maui.Controls.Element.OnParentSet() -> void
 virtual Microsoft.Maui.Controls.FlyoutPage.ShouldShowToolbarButton() -> bool
 virtual Microsoft.Maui.Controls.HandlerAttribute.ShouldRegister() -> bool
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.GetCell(Microsoft.Maui.Controls.Cell! item, UIKit.UITableViewCell! reusableCell, UIKit.UITableView! tv) -> UIKit.UITableViewCell!
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.SetAccessibility(UIKit.UITableViewCell! tableViewCell, Microsoft.Maui.Controls.Cell! cell) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.SetBackgroundColor(UIKit.UITableViewCell! tableViewCell, Microsoft.Maui.Controls.Cell! cell, UIKit.UIColor! color) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetupLayer() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.OnCurrentItemChanged() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.SetElementSize(Microsoft.Maui.Graphics.Size size) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.UpdateBackgroundColor() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.CreateNativeControl() -> TPlatformView!
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.DisconnectHandler(TPlatformView! oldNativeView) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MinimumSize() -> Microsoft.Maui.Graphics.Size
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement!>! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnElementPropertyChanged(object! sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetAutomationId(string! id) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetBackground(Microsoft.Maui.Controls.Brush! brush) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetBackgroundColor(Microsoft.Maui.Graphics.Color? color) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetImportantForAccessibility() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetIsEnabled() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateNativeWidget() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ViewController.get -> UIKit.UIViewController?
 virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.DetermineEmptyViewFrame() -> CoreGraphics.CGRect
 virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.RegisterViewTypes() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.UpdateFlowDirection() -> void
@@ -8623,29 +8042,6 @@ virtual Microsoft.Maui.Controls.Page.LayoutChildren(double x, double y, double w
 virtual Microsoft.Maui.Controls.Page.OnAppearing() -> void
 virtual Microsoft.Maui.Controls.Page.OnBackButtonPressed() -> bool
 virtual Microsoft.Maui.Controls.Page.OnDisappearing() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.SafeShellTabBarAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.SearchHandlerAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.UpdateBackground() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnRendererSet() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.RemoveSearchController(UIKit.UINavigationItem! navigationItem) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchIsEnabled(UIKit.UISearchController! searchController) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController! searchController) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateTabBarVisible() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateTitle() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateTitleView() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateToolbarItems() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.LoadPages() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnShellSectionSet() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.UpdateTabBarItem() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ResetAppearance() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.UpdateSelectedIndex(bool animated = false) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.LayoutRenderers() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.LoadRenderers() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.UpdateHeaderVisibility() -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.SlideFlyoutTransition.UpdateFlyoutSize(double height, double width) -> bool
-virtual Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.Margin.get -> Microsoft.Maui.Thickness
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachedFrom(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
