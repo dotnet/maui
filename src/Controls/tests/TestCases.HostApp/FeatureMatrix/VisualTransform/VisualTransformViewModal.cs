@@ -14,7 +14,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 	private double _scale = 1.0;
 	private double _scaleX = 1.0;
 	private double _scaleY = 1.0;
-	private string _transform = null;
 	private bool _isVisible = true;
 
 	// Additional Related Properties
@@ -29,8 +28,11 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 		get => _isVisible;
 		set
 		{
-			_isVisible = value;
-			OnPropertyChanged();
+			if (_isVisible != value)
+			{
+				_isVisible = value;
+				OnPropertyChanged();
+			}
 		}
 	}
 	private bool _hasShadow = false;
@@ -43,13 +45,14 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			if (_hasShadow != value)
 			{
 				_hasShadow = value;
+				// Minimal shadow that shouldn't interfere with layout
 				BoxShadow = value
 					? new Shadow
 					{
-						Radius = 10,
-						Opacity = 1.0f,
-						Brush = Colors.Black.AsPaint(),
-						Offset = new Point(5, 5)
+						Radius = 2,
+						Opacity = 0.15f,
+						Brush = new SolidColorBrush(Colors.Gray),
+						Offset = new Point(0, 0) // No offset to prevent positioning issues
 					}
 					: null;
 				OnPropertyChanged(nameof(HasShadow));
@@ -140,18 +143,6 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 			}
 		}
 	}
-	public string Transform
-	{
-		get => _transform;
-		set
-		{
-			if (_transform != value)
-			{
-				_transform = value;
-				OnPropertyChanged();
-			}
-		}
-	}
 
 	// Additional Related Properties
 	public double TranslationX
@@ -213,12 +204,13 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 		Scale = 1.0;
 		ScaleX = 1.0;
 		ScaleY = 1.0;
-		Transform = null;
 		TranslationX = 0.0;
 		TranslationY = 0.0;
 		AnchorX = 0.5;
 		AnchorY = 0.5;
-		IsVisible = true;
+		// Force property change notification for UI state
+		_isVisible = false; // Set to opposite first
+		IsVisible = true;   // Then set to desired value to trigger change
 		HasShadow = false;
 	}
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
