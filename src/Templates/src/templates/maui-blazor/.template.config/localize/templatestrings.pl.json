@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Aplikacja hybrydowa platformy .NET MAUI Blazor Hybrid",
-  "description": "Projekt służący do tworzenia aplikacji .NET MAUI dla systemów iOS, Android, Mac Catalyst i WinUI przy użyciu platformy Blazor Hybrid",
+  "description": "Projekt służący do tworzenia aplikacji .NET MAUI dla systemów iOS, Android, Mac Hybrid i WinUI przy użyciu platformy Blazor Hybrid",
   "postActions/openInEditor/description": "Otwiera plik Components/Pages/Home.razor w edytorze.",
   "symbols/applicationId/description": "Zastępuje $(ApplicationId) w projekcie",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",

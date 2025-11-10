@@ -1,18 +1,14 @@
 using System;
 using System.CodeDom.Compiler;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Xml;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
+
 class CreateValuesVisitor : IXamlNodeVisitor
 {
 	public CreateValuesVisitor(SourceGenContext context) => Context = context;
@@ -37,13 +33,13 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//At this point, all MarkupNodes are expanded to ElementNodes
 	}
 
-	public void Visit(ElementNode node, INode parentNode)
+	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
 	{
-		if (!node.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, out var type) || type is null)
+		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
 
 		//x:Array
-		if (type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
+		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{
 			//we might want to move this to a separate method
 			var visitor = new SetPropertiesVisitor(Context);
@@ -63,7 +59,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			if (!Context.Types.TryGetValue(typeNode, out var arrayType))
 				throw new Exception("ArrayExtension Type not found");
 
-			var variableName = NamingHelpers.CreateUniqueVariableName(Context, Context.Compilation.CreateArrayTypeSymbol(arrayType));
+			var variableName = NamingHelpers.CreateUniqueVariableName(Context, compilation.CreateArrayTypeSymbol(arrayType));
 
 			//Provide value for Providers
 			foreach (var cn in node.CollectionItems)
@@ -71,20 +67,20 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				if (cn is not ElementNode en)
 					continue;
 
-				en.TryProvideValue(Context);
+				en.TryProvideValue(writer, Context);
 			}
 
-			Context.Variables[node] = new LocalVariable(Context.Compilation.CreateArrayTypeSymbol(arrayType), variableName);
-			Writer.WriteLine($"var {variableName} = new {arrayType.ToFQDisplayString()}[]");
-			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+			variables[node] = new LocalVariable(compilation.CreateArrayTypeSymbol(arrayType), variableName);
+			writer.WriteLine($"var {variableName} = new {arrayType.ToFQDisplayString()}[]");
+			using (PrePost.NewBlock(writer, begin: "{", end: "};"))
 			{
 				foreach (var cn in node.CollectionItems)
 				{
 					if (cn is not ElementNode en)
 						continue;
 
-					var enVariable = Context.Variables[en];
-					Writer.WriteLine($"({arrayType.ToFQDisplayString()}){enVariable.Name},");
+					var enVariable = variables[en];
+					writer.WriteLine($"({arrayType.ToFQDisplayString()}){enVariable.ValueAccessor},");
 				}
 			}
 
@@ -100,19 +96,19 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (IsXaml2009LanguagePrimitive(node))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			Writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
-			Context.Variables[node] = new LocalVariable(type, variableName);
-			node.RegisterSourceInfo(Context, Writer);
+			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
+			variables[node] = new LocalVariable(type, variableName);
+			node.RegisterSourceInfo(Context, writer);
 			return;
 		}
 
 		if (NodeSGExtensions.GetKnownEarlyMarkupExtensions(Context).TryGetValue(type, out var provideValue)
-			&& provideValue(node, Context, out var returnType, out var value))
+			&& provideValue(node, writer, Context, null, out var returnType, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			Writer.WriteLine($"var {variableName} = {value};");
-			Context.Variables[node] = new LocalVariable(returnType!, variableName);
-			node.RegisterSourceInfo(Context, Writer);
+			writer.WriteLine($"var {variableName} = {value};");
+			variables[node] = new LocalVariable(returnType!, variableName);
+			node.RegisterSourceInfo(Context, writer);
 
 			//skip the node as it has been fully exhausted
 			foreach (var prop in node.Properties)
@@ -129,7 +125,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
 		{
 			ctor = type.InstanceConstructors.FirstOrDefault(c
-				=> c.MatchXArguments(node, Context, out parameters));
+				=> c.MatchXArguments(node, Context, getNodeValue, out parameters));
 			if (ctor is null)
 #pragma warning disable RS0030 // Do not use banned APIs
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), type.ToDisplayString()));
@@ -143,7 +139,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 			factoryMethod = type.GetAllMethods(factoryMehodName!, Context).FirstOrDefault(m =>
 					   m.IsStatic
-					&& m.MatchXArguments(node, Context, out parameters));
+					&& m.MatchXArguments(node, Context, getNodeValue, out parameters));
 			if (factoryMethod is null)
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.ProjectItem.RelativePath!, node, factoryMehodName!), factoryMehodName));
 		}
@@ -155,7 +151,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				=> c.Parameters.Length > 0
 				&& c.Parameters.All(p =>
 				{
-					var parameterattribute = p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default));
+					var parameterattribute = p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default));
 					if (parameterattribute is null)
 						return false;
 					var parametername = parameterattribute.ConstructorArguments[0].Value as string;
@@ -167,8 +163,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 				var paramsTuple = ctor.Parameters
 					.Select(p => (p.Type,
-									p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as string,
-									p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol
+									p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as string,
+									p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol
 									))
 					.Select(p => (p.Type, new XmlName("", p.Item2), node.Properties[new XmlName("", p.Item2)], p.Item3)).ToList();
 
@@ -186,7 +182,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//is there an implicit operator from a string ? (XamlC only supports from string, but this could be extended)
 		var implicitOperator = type.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion && m.Parameters.Length == 1 && m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
 
-		bool isColor = type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color"), SymbolEqualityComparer.Default);
+		bool isColor = type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color"), SymbolEqualityComparer.Default);
 
 		//are there any `required` properties ?
 		var requiredPropAndFields = type.GetMembers()
@@ -198,7 +194,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			var contentPropertyName = type.GetContentPropertyName(Context);
 			foreach (var req in requiredPropAndFields)
 			{
-				XmlName propXmlName ;
+				XmlName propXmlName;
 				INode propNode;
 				if (req.Name == contentPropertyName && node.CollectionItems.Count == 1)
 				{
@@ -210,7 +206,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 				string propValue = "null";
 				var pType = req is IPropertySymbol prop ? prop.Type : ((IFieldSymbol)req).Type;
-				var pConverter = req.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol;
+				var pConverter = req.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol;
 
 				var visitor = new SetPropertiesVisitor(Context);
 				var children = node.Properties.Values.ToList();
@@ -225,13 +221,14 @@ class CreateValuesVisitor : IXamlNodeVisitor
 						n.Accept(visitor, cn);
 				}
 				if (propNode is ValueNode vn)
-					propValue = vn.ConvertTo(pType, pConverter, Context);
+					propValue = vn.ConvertTo(pType, pConverter, writer, Context);
 				else if (propNode is ElementNode en)
 				{
-					en.TryProvideValue(Context);
-					propValue = Context.Variables[en].Name;
+					Context.ReportDiagnostic(Diagnostic.Create(Descriptors.RequiredProperty, LocationCreate(Context.ProjectItem.RelativePath!, node, type.Name), $"'{type.ToFQDisplayString()}.{propXmlName.LocalName}'"));
+					en.TryProvideValue(writer, Context);
+					propValue = variables[en].ValueAccessor;
 				}
-				
+
 				requiredPropertiesAndFields.Add((req.Name, req, pType, propValue));
 				if (!node.SkipProperties.Contains(new XmlName("", req.Name)))
 					node.SkipProperties.Add(new XmlName("", req.Name));
@@ -243,11 +240,11 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				&& (isColor || type.IsValueType))
 		{ //<Color>HotPink</Color>
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			var valueString = valueNode.ConvertTo(type, Context);
+			var valueString = valueNode.ConvertTo(type, writer, Context);
 
-			Writer.WriteLine($"var {variableName} = {valueString};");
-			Context.Variables[node] = new LocalVariable(type, variableName);
-			node.RegisterSourceInfo(Context, Writer);
+			writer.WriteLine($"var {variableName} = {valueString};");
+			variables[node] = new LocalVariable(type, variableName);
+			node.RegisterSourceInfo(Context, writer);
 			return;
 		}
 		//TODO we could also check if there's a TypeConverter, but we have no test (so no need?) for it
@@ -257,17 +254,17 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		{ //<FileImageSource>path.png</FileImageSource>
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 			var valueString = valueNode1.Value as string;
-			Writer.WriteLine($"var {variableName} = ({type.ToFQDisplayString()})\"{valueString}\";");
-			Context.Variables[node] = new LocalVariable(type, variableName);
-			node.RegisterSourceInfo(Context, Writer);
+			writer.WriteLine($"var {variableName} = ({type.ToFQDisplayString()})\"{valueString}\";");
+			variables[node] = new LocalVariable(type, variableName);
+			node.RegisterSourceInfo(Context, writer);
 			return;
 		}
 		else if (factoryMethod != null)
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			Writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
-			Context.Variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
-			node.RegisterSourceInfo(Context, Writer);
+			writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
+			variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
+			node.RegisterSourceInfo(Context, writer);
 			return;
 		}
 		else if (ctor != null)
@@ -276,19 +273,24 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 			if (requiredPropAndFields.Any())
 			{
-				Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])})");
-				using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])})");
+				using (PrePost.NewBlock(writer, begin: "{", end: "};"))
 				{
 					foreach (var (name, propOrField, propType, propValue) in requiredPropertiesAndFields)
-						Writer.WriteLine($"{name} = ({propType.ToFQDisplayString()}){propValue},");
+						writer.WriteLine($"{name} = ({propType.ToFQDisplayString()}){propValue},");
 				}
-			}			
+			}
 			else
-				Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
-			Context.Variables[node] = new LocalVariable(type, variableName);
-			node.RegisterSourceInfo(Context, Writer);
+				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
+			variables[node] = new LocalVariable(type, variableName);
+			node.RegisterSourceInfo(Context, writer);
 			return;
 		}
+	}
+
+	public void Visit(ElementNode node, INode parentNode)
+	{
+		CreateValue(node, Writer, Context.Variables, Context.Compilation, Context.XmlnsCache, Context);
 	}
 
 	public void Visit(ListNode node, INode parentNode)
@@ -307,7 +309,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		node.RegisterSourceInfo(Context, Writer);
 	}
 
-	static bool IsXaml2009LanguagePrimitive(ElementNode node)
+	internal static bool IsXaml2009LanguagePrimitive(ElementNode node)
 	{
 		// if (node.NamespaceURI == XamlParser.X2009Uri)
 		// {
@@ -336,20 +338,13 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		return false;
 	}
 
-	// TODO duplicate code with NodeSGExtensions.cs, should we share somehow?
 	static string ValueForLanguagePrimitive(ITypeSymbol type, ElementNode node, SourceGenContext context)
 	{
 		if (!(node.CollectionItems.Count == 1
-			&& node.CollectionItems[0] is ValueNode
-			&& ((ValueNode)node.CollectionItems[0]).Value is string valueString))
+			&& node.CollectionItems[0] is ValueNode node1
+			&& node1.Value is string valueString))
 			valueString = string.Empty;
 
 		return NodeSGExtensions.ValueForLanguagePrimitive(valueString, toType: type, context, node);
 	}
-}
-
-class LocalVariable(ITypeSymbol type, string name)
-{
-	public ITypeSymbol Type => type;
-	public string Name => name;
 }

@@ -1,20 +1,39 @@
+---
+description: "Guidance for GitHub Copilot when working on the .NET MAUI repository."
+---
+
 # GitHub Copilot Development Environment Instructions
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
+
+**🔄 IMPORTANT: Synchronization with AGENTS.md**
+
+When updating this file, you MUST also update `AGENTS.md` (in repository root) to ensure both instruction files remain synchronized. AGENTS.md provides universal guidance for all AI coding assistants, while this file is specifically for GitHub Copilot.
 
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ### Key Technologies
-- **.NET SDK** - Version depends on the branch:
-  - **main branch**: Use the latest stable version of .NET to build
+
+- **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
+  - **main branch**: Use the latest stable version of .NET to build (currently .NET 10)
   - **net10.0 branch**: Use the latest .NET 10 SDK
   - **etc.**: Each feature branch correlates to its respective .NET version
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
-- **xUnit** for testing
+- **xUnit + NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
+- **Appium WebDriver** for UI test automation
+
+**🚨 CRITICAL**: Before any build operation, verify .NET SDK version:
+```bash
+# Check required version
+cat global.json | grep -A 1 '"dotnet"'
+
+# Verify installed version matches
+dotnet --version
+```
 
 ## Development Environment Setup
 
@@ -31,6 +50,8 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 
 ### Initial Repository Setup
 
+**🚀 Mandatory Setup Sequence** - Run these in exact order:
+
 1. **Clone and navigate to repository:**
    ```bash
    git clone https://github.com/dotnet/maui.git
@@ -42,6 +63,15 @@ For .NET installation on Linux, follow the official Microsoft documentation:
    dotnet tool restore
    dotnet build ./Microsoft.Maui.BuildTasks.slnf
    ```
+
+**⚠️ FAILURE RECOVERY**: If restore or build fails:
+```bash
+# Clean and retry
+dotnet clean
+rm -rf bin/ obj/
+dotnet tool restore --force
+dotnet build ./Microsoft.Maui.BuildTasks.slnf --verbosity normal
+```
 
 ## Project Structure
 
@@ -68,14 +98,14 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 
 ### Sample Projects
 ```
-├── Controls 
+├── Controls
 │   ├── samples
 │   │   ├── Maui.Controls.Sample
 │   │   ├── Maui.Controls.Sample.Sandbox
-├── Essentials 
+├── Essentials
 │   ├── samples
 │   │   ├── Essentials.Sample
-├── BlazorWebView 
+├── BlazorWebView
 │   ├── samples
 │   │   ├── BlazorWinFormsApp
 │   │   ├── BlazorWpfApp
@@ -110,52 +140,9 @@ dotnet cake --target=dotnet-pack
   - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
   - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
-#### UI Testing Guidelines
+#### UI Testing
 
-When adding UI tests to validate visual behavior and user interactions, follow this two-part pattern:
-
-**CRITICAL: UITests require code in TWO separate projects that must BOTH be implemented:**
-
-1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
-   - Create the actual UI page that demonstrates the feature or reproduces the issue
-   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
-   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
-   - Ensure the UI provides clear visual feedback for the behavior being tested
-
-2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
-   - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
-   - Use the `AutomationId` values to locate and interact with UI elements
-   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp file)
-   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes
-   - Test should validate expected behavior through UI interactions and assertions
-
-**UI Test Pattern Example:**
-```csharp
-// In TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
-public class IssueXXXXX : _IssuesUITest
-{
-    public override string Issue => "Description of the issue being tested";
-    
-    public IssueXXXXX(TestDevice device) : base(device) { }
-    
-    [Test]
-    [Category(UITestCategories.Layout)] // or appropriate category
-    public void TestMethodName()
-    {
-        App.WaitForElement("AutomationId");
-        App.Tap("AutomationId");
-        // Add assertions to verify expected behavior
-    }
-}
-```
-
-**Before committing UI tests:**
-- Compile both the HostApp project and TestCases.Shared.Tests project to ensure no build errors
-- Verify AutomationId references match between XAML and test code
-- Ensure tests follow the established naming and inheritance patterns
-- There should be only one `[Category]` attribute per test, pick the most appropriate one
-
-IMPORTANT NOTE: When a new UI test category is added to `UITestCategories.cs`, we need to also update the `ui-tests.yml` to include this new category. Make sure to detect this in your reviews.
+UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesting-Guide.md) for comprehensive documentation.
 
 ### Code Formatting
 
@@ -266,14 +253,65 @@ All PRs are required to have this at the top of the description:
 
 Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
 
+## Troubleshooting
+
+### Common Build Issues
+
+**Issue: "Build tasks not found"**
+```bash
+# Solution: Rebuild build tasks
+dotnet clean ./Microsoft.Maui.BuildTasks.slnf
+dotnet build ./Microsoft.Maui.BuildTasks.slnf
+```
+
+**Issue: "Dependency version conflicts"**
+```bash
+# Solution: Full clean and restore
+dotnet clean Microsoft.Maui.sln
+rm -rf bin/ obj/
+dotnet restore Microsoft.Maui.sln --force
+```
+
+**Issue: "Android SDK not found"**
+```bash
+# Solution: Check and install Android components
+android # Opens Android SDK Manager
+# Or set environment variable: export ANDROID_HOME=/path/to/android-sdk
+```
+
+**Issue: "PublicAPI analyzer failures"**
+```bash
+# Solution: Use format analyzers first
+dotnet format analyzers Microsoft.Maui.sln
+# If still failing, check build output for required API entries
+```
+
+### Platform-Specific Troubleshooting
+
+**iOS/Mac Build Issues:**
+- Verify Xcode command line tools: `xcode-select --install`
+- Check Xcode version compatibility with .NET MAUI version
+- Ensure provisioning profiles are current (for device testing)
+
+**Android Build Issues:**
+- Verify OpenJDK 17 installation: `java -version`
+- Check ANDROID_HOME environment variable
+- Update Android SDK components via Android SDK Manager
+
+**Windows Build Issues:**
+- Ensure Windows SDK is installed
+- Verify Visual Studio workloads include .NET MAUI development
+- Check for missing NuGet packages: `dotnet restore --force`
+
 ## Additional Resources
 
-- [Development Guide](.github/DEVELOPMENT.md)
-- [Development Tips](docs/DevelopmentTips.md)
-- [Contributing Guidelines](.github/CONTRIBUTING.md)
+- [UI Testing Guide](../docs/UITesting-Guide.md)
+- [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
+- [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
+- [SafeArea Testing Guide](/.github/instructions/safearea-testing.instructions.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
+- [Instrumentation Guide](/.github/instructions/instrumentation.instructions.md) - Patterns for instrumenting MAUI code for debugging and testing
+- [Development Guide](/.github/DEVELOPMENT.md)
+- [Development Tips](/docs/DevelopmentTips.md)
+- [Contributing Guidelines](/.github/CONTRIBUTING.md)
 - [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
 - [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)
-
----
-
-**Note for Future Updates:** This document should be expanded as new development patterns, tools, or workflows are discovered. Add sections for specific scenarios, debugging techniques, or tooling as they become relevant to the development process.

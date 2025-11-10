@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -6,11 +7,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class FlowDirectionConverter : ISGTypeConverter
+class FlowDirectionConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "FlowDirection", "Microsoft.Maui.FlowDirection" };
+	public IEnumerable<string> SupportedTypes => ["FlowDirection", "Microsoft.Maui.FlowDirection"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrWhiteSpace(value))
@@ -36,7 +37,7 @@ internal class FlowDirectionConverter : ISGTypeConverter
 
 			// Fallback to enum conversion
 			var enumConverter = new EnumConverter();
-			return enumConverter.Convert(value, node, toType, context);
+			return enumConverter.Convert(value, node, toType, writer, context);
 		}
 
 		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.FlowDirectionConversionFailed);

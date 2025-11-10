@@ -409,6 +409,8 @@ namespace Microsoft.Maui.Controls.Xaml
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
+
+#if !__SOURCEGEN__
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, bool expandToExtension,
 			out XamlParseException exception)
 		{
@@ -505,5 +507,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static bool IsVisibleInternal(this Assembly from, Assembly to) =>
 			from.GetCustomAttributes<InternalsVisibleToAttribute>().Any(ca =>
 				ca.AssemblyName.StartsWith(to.GetName().Name, StringComparison.InvariantCulture));
+#endif
 	}
 }

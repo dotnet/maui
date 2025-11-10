@@ -11,9 +11,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
-	// TODO: Re-enable tests once the Community Toolkit supports .NET 10. More details: https://github.com/dotnet/maui/issues/32151
-	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
-	//[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	//Debug not ready yet
 	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
 	//[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
@@ -41,16 +40,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
-		string[]? warningsToIgnore = null;
-
-		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
-		{
-			warningsToIgnore = new string[]
-			{
-				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
-			};
-		}
-
 		// We only have these packs for Android
 		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
 		{
@@ -65,7 +54,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 

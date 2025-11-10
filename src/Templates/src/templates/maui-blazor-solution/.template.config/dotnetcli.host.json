@@ -27,7 +27,7 @@
       "isHidden": true
     },
     "Empty": {
-      "longName": "empty"
+      "isHidden": true
     },
     "IncludeSampleContent": {
       "isHidden": true

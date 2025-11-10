@@ -243,7 +243,8 @@ namespace Microsoft.Maui.TestCases.Tests
 							environmentName = "android-notch-36";
 						}
 
-						if (!((deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420) || (deviceApiLevel == 36 && deviceScreenSize == "1080x2424" && deviceScreenDensity == 420)))
+						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}

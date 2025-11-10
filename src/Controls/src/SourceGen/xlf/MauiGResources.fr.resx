@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
-    <value>Une erreur s’est produite lors de l’analyse XAML : {0}.</value>
+    <value>Une erreur s’est produite lors de l’analyse de Xaml : {0}.</value>
     <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>L'analyse XAML a échoué</value>
+    <value>Échec de l’analyse XAML</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
     <value>L'expression doit se terminer par '}'.</value>
@@ -189,12 +189,18 @@
   </data>
   <data name="DuplicateKeyInRD" xml:space="preserve">
     <value>clé en double dans le dictionnaire de ressources</value>
-    <comment>
-</comment>
   </data>
   <data name="ConversionFailedTitle" xml:space="preserve">
     <value>Échec de la conversion</value>
     <comment>
 </comment>
+  </data>
+  <data name="RequiredPropertyTitle" xml:space="preserve">
+    <value>Utilisation de « requis »</value>
+    <comment>/</comment>
+  </data>
+  <data name="RequiredPropertyMessage" xml:space="preserve">
+    <value>{0} contient le mot-clé « obligatoire ». La prise en charge de ce mot-clé dans XAML est actuellement limitée, évitez de l’utiliser. Nous faisons toujours de notre mieux pour fournir une valeur.</value>
+    <comment>0 is a property identifier</comment>
   </data>
 </root>

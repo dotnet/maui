@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -7,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class RectConverter : ISGTypeConverter
+class RectConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "Rect", "Microsoft.Maui.Graphics.Rect" };
+	public IEnumerable<string> SupportedTypes => ["Rect", "Microsoft.Maui.Graphics.Rect"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -29,7 +30,7 @@ internal class RectConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.RectConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.RectConversionFailed);
 		return "default";
 	}
 }

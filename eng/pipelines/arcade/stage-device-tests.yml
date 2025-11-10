@@ -17,6 +17,12 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
 - name: runAsPublic
   type: boolean
   default: true
@@ -31,7 +37,7 @@ parameters:
   default: 'Release'
 - name: TargetFrameworkVersion
   type: string
-  default: 'net9.0'
+  default: 'net10.0'
 - name: appArtifactName
   type: string
   default: 'device_tests_app'
@@ -48,16 +54,16 @@ stages:
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
-      enableMicrobuild: true
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
@@ -100,14 +106,14 @@ stages:
       pool: ${{ parameters.pool }}
       enableMicrobuild: false
       enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
+      enablePublishTestResults: true
       workspace:
         clean: all
       jobs:

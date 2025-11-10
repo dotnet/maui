@@ -96,6 +96,11 @@ parameters:
     name: Azure Pipelines
     vmImage: macOS-15
 
+- name: macOSHelixPool
+  type: object
+  default:
+    name: MAUI
+    vmImage: MAUI
 
 - name: targetFrameworkVersions
   type: object
@@ -111,8 +116,9 @@ stages:
     # Use Helix for iOS / Android and MacCatalyst Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.macOSPool }}
+        pool: ${{ parameters.macOSHelixPool }}
         runAsPublic: true
+        TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
           parameters:
@@ -124,7 +130,8 @@ stages:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
+            skipSimulatorSetup: false
 
     # Just use the old way for Windows Device Tests
     - template: common/device-tests.yml
