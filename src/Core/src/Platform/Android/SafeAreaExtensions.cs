@@ -8,6 +8,16 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
+	// Edge indices for safe area calculations
+	private const int EdgeLeft = 0;
+	private const int EdgeTop = 1;
+	private const int EdgeRight = 2;
+	private const int EdgeBottom = 3;
+
+	// SoftInput adjust mask constant (0xf0) to extract the adjust mode from SoftInput flags
+	// This allows us to distinguish between AdjustResize (0x10), AdjustPan (0x20), and AdjustNothing (0x30)
+	private const SoftInput AdjustMask = (SoftInput)0xf0;
+
 	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
 		layout switch
 		{
@@ -50,17 +60,39 @@ internal static class SafeAreaExtensions
 		var keyboardInsets = windowInsets.GetKeyboardInsetsPx(context);
 		var isKeyboardShowing = !keyboardInsets.IsEmpty;
 
+		// Get the window's SoftInputMode to check if AdjustResize is set
+		var window = context.GetActivity()?.Window;
+		var softInputMode = window?.Attributes?.SoftInputMode ?? SoftInput.StateUnspecified;
+		
+		// When AdjustPan is set with keyboard showing, consume all insets to prevent any view from applying padding
+		// Android handles window panning automatically - we don't want additional inset padding
+		bool isAdjustPan = isKeyboardShowing && 
+			(softInputMode & AdjustMask) == SoftInput.AdjustPan;
+		
+		if (isAdjustPan)
+		{
+			// With AdjustPan, consume ALL insets - don't apply any safe area padding
+			// Android will handle the window panning behavior
+			return WindowInsetsCompat.Consumed;
+		}
+
 		var layout = crossPlatformLayout;
 		var safeAreaView2 = GetSafeAreaView2(layout);
 		var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
+		
+		// When AdjustResize is set, we need to pad the container even if there's no SafeAreaView2
+		// This ensures drawer layouts, coordinator layouts, and other containers are properly adjusted
+		// Note: We must check specifically for AdjustResize, not AdjustPan or AdjustNothing
+		bool shouldApplyAdjustResize = isKeyboardShowing && 
+			(softInputMode & AdjustMask) == SoftInput.AdjustResize;
 
-		if (safeAreaView2 is not null)
+		if (safeAreaView2 is not null || shouldApplyAdjustResize)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
-			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-			var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(EdgeLeft, layout), baseSafeArea.Left, EdgeLeft, isKeyboardShowing, keyboardInsets, softInputMode);
+			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(EdgeTop, layout), baseSafeArea.Top, EdgeTop, isKeyboardShowing, keyboardInsets, softInputMode);
+			var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(EdgeRight, layout), baseSafeArea.Right, EdgeRight, isKeyboardShowing, keyboardInsets, softInputMode);
+			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(EdgeBottom, layout), baseSafeArea.Bottom, EdgeBottom, isKeyboardShowing, keyboardInsets, softInputMode);
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
@@ -83,13 +115,15 @@ internal static class SafeAreaExtensions
 
 
 			if (isKeyboardShowing &&
-				context.GetActivity()?.Window is Window window &&
-				window?.Attributes is WindowManagerLayoutParams attr)
+				window is not null &&
+				window.Attributes is WindowManagerLayoutParams attr)
 			{
-				// If the window is panned from the keyboard being open
-				// and there isn't a bottom inset to apply then just don't touch anything
-				var softInputMode = attr.SoftInputMode;
-				if (softInputMode == SoftInput.AdjustPan
+				// Note: This code block should never be reached when AdjustPan is set with keyboard showing,
+				// as we return early at the top of the function. This is here for safety in case the early
+				// return is removed or if keyboard state changes mid-processing.
+				// If the window is panned from the keyboard being open and there isn't a bottom inset
+				// to apply then just don't touch anything
+				if ((softInputMode & AdjustMask) == SoftInput.AdjustPan
 					&& bottom == 0
 				)
 				{
@@ -261,22 +295,20 @@ internal static class SafeAreaExtensions
 		return newWindowInsets;
 	}
 
-	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
+	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets, SoftInput softInputMode = SoftInput.StateUnspecified)
 	{
-		// Edge-to-edge content - no safe area padding
-		if (safeAreaRegion == SafeAreaRegions.None)
+		// Handle SoftInput/keyboard specifically for bottom edge when keyboard is showing
+		if (isKeyboardShowing && edge == EdgeBottom)
 		{
-			return 0;
-		}
-
-		// Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
-		if (edge == 3)
-        {
-            if (SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
-            {
-                // SoftInput only applies padding when keyboard is showing
-                return isKeyboardShowing ? keyBoardInsets.Bottom : 0;
-            }
+			// Apply keyboard insets if:
+			// 1. SafeAreaRegion explicitly includes SoftInput flag, OR
+			// 2. Window SoftInputMode is set to AdjustResize (to restore pre-regression behavior and handle containers without SafeAreaView2)
+			// Note: Must use AdjustMask to specifically check for AdjustResize, excluding AdjustPan/AdjustNothing
+			if (SafeAreaEdges.IsSoftInput(safeAreaRegion) ||
+				(softInputMode & AdjustMask) == SoftInput.AdjustResize)
+			{
+				return keyBoardInsets.Bottom;
+			}
 
             if (isKeyboardShowing)
             {
@@ -289,6 +321,12 @@ internal static class SafeAreaExtensions
                 return 0;
             }
         }
+
+		// Edge-to-edge content - no safe area padding
+		if (safeAreaRegion == SafeAreaRegions.None)
+		{
+			return 0;
+		}
 
 		// All other regions respect safe area in some form
 		// This includes:
