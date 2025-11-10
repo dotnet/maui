@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Platform;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -49,9 +50,18 @@ namespace Microsoft.Maui.Handlers
 				// so that it can walk up the hierarchy
 				platformView.InvalidateAncestorsMeasures();
 			}
-		}
-
-		public static partial void MapContent(IContentViewHandler handler, IContentView page)
+			else
+			{
+				// When content is removed, we need to invalidate measures so the ContentView can resize to 0x0
+				// We need to invalidate both the ContentView itself and its ancestors
+				if (handler.PlatformView is IPlatformMeasureInvalidationController controller)
+				{
+					controller.InvalidateMeasure(false);
+				}
+				handler.PlatformView.InvalidateAncestorsMeasures();
+			}
+		}		
+	public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}
