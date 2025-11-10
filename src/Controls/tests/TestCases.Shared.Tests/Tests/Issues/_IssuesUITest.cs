@@ -21,7 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void TryToResetTestState()
 		{
+#if !MACCATALYST
 			NavigateToIssue(Issue);
+#endif
 		}
 
 		public override IConfig GetTestConfig()
