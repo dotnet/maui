@@ -19,7 +19,7 @@ static class SetPropertyHelpers
 		tryGetNodeValue ??= (node, toType, out localVariable) => context.Variables.TryGetValue(node, out localVariable);
 
 		if (propertyName.Equals(XmlName._CreateContent))
-			return; //already handled
+            propertyName = new XmlName("", "LoadTemplate"); //this way it'll be handled by CanSet()/Set() below			
 			
 		//TODO I believe ContentProperty should be resolved here
 		var localName = propertyName.LocalName;

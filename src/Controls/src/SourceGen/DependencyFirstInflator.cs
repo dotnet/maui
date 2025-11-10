@@ -7,8 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Maui.Controls.Xaml;
 
 using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
@@ -57,11 +55,11 @@ class DependencyFirstInflator
 	}
 
 	static void SetValuesForNode(ElementNode node, ImmutableArray<Scope> scopes, SourceGenContext context)
-    {
+	{
 		Debug.Assert(scopes.Last() is StaticMethodScope);
 		var declareScope = scopes.RemoveRange(scopes.Length - 2, 2);
 		SetValuesForNode(node, (declareScope, scopes), context);
-    }
+	}
 
 	static void SetValuesForNode(ElementNode node, (ImmutableArray<Scope> declarationScope, ImmutableArray<Scope> methodScope) scopes, SourceGenContext context)
 	{
@@ -71,7 +69,8 @@ class DependencyFirstInflator
 		var properties = new List<KeyValuePair<XmlName, INode>>();
 		properties.AddRange(node.Properties.Where(p => !Skips.Contains(p.Key) && !node.SkipProperties.Contains(p.Key)));
 
-		var localVar =  GetNodeValue(node, scopes.methodScope, context, context.Compilation.ObjectType);;
+		var localVar = GetNodeValue(node, scopes.methodScope, context, context.Compilation.ObjectType);
+
 		if (localVar is ScopedVariable lv)
 			localVar = lv.AccessedFrom(scopes.methodScope);
 
@@ -130,16 +129,16 @@ class DependencyFirstInflator
 		var declareScope = scopes.RemoveRange(scopes.Length - 2, 2);
 		SetPropertyValue(node, prop, (declareScope, scopes), context, asCollectionItem);
 	}
-	
+
 	static void SetPropertyValue(INode node, KeyValuePair<XmlName, INode> prop, (ImmutableArray<Scope> declarationScope, ImmutableArray<Scope> methodScope) scopes, SourceGenContext context, bool asCollectionItem = false)
 	{
 		Debug.Assert(scopes.declarationScope.Last() is InflatorScope);
 		Debug.Assert(scopes.methodScope.Last() is InitializeComponentScope || scopes.methodScope.Last() is StaticMethodScope);
 
-		var declarationWriter = scopes.declarationScope.Last().Writer;	//inflator writer in which we can declare new properties
-		var methodWriter = scopes.methodScope.Last().Writer;			//current method writer in which we set values. Could be InitComp for top level, or a static method of rinflator properties
+		var declarationWriter = scopes.declarationScope.Last().Writer;  //inflator writer in which we can declare new properties
+		var methodWriter = scopes.methodScope.Last().Writer;            //current method writer in which we set values. Could be InitComp for top level, or a static method of rinflator properties
 
-		if (!CanBeSetDirectly(prop.Value, declarationWriter, context)) 
+		if (!CanBeSetDirectly(prop.Value, declarationWriter, context))
 		{
 			if (prop.Value is ListNode listNode)
 			{
@@ -161,51 +160,32 @@ class DependencyFirstInflator
 			if (elementNode.XmlType.GetTypeSymbol(context) is not INamedTypeSymbol type)
 				throw new NotImplementedException();
 
-			// if (prop.Key == XmlName._CreateContent)
-			// {
-			// 	var template = LoadTemplate(prop.Value, type, writers, scopes, context);
-			// 	//create a nested ref struc
-			// 	// call ValueCreator on the elementNode
-			// 	// this.LoadTemplate => new innerinflaotr().label;
-			// }
+			if (prop.Key == XmlName._CreateContent)
+				DataTemplateCreator(elementNode, type, scopes.methodScope, context);
 			//xArray need a special syntax
-			/*else*/ if (type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
+			else if (type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 				ArrayCreator(elementNode, scopes.methodScope, context);
 			else if (elementNode.IsValueProvider(context, out _, out _))
 				ValueProvider(elementNode, scopes.methodScope, context);
 			else
 				ValueCreator(elementNode, type, scopes.declarationScope, context);
 		}
-		bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue? localVar) {
+
+		bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue? localVar)
+		{
 			localVar = GetNodeValue(node, scopes.methodScope, context, toType!);
 			if (localVar is ScopedVariable sv)
 				localVar = sv.AccessedFrom(scopes.methodScope);
 			return true;
-		};
+		}
 
-		var icScopes = scopes.methodScope.Last() is InitializeComponentScope  ? scopes.methodScope : scopes.declarationScope.Last() is InflatorScope inf ? inf.InitializeComponentScope.scopes : throw new InvalidOperationException();
-		var icScope = icScopes.Last() as InitializeComponentScope ?? throw new InvalidOperationException();
+		var icScopes = scopes.methodScope.Last() is InitializeComponentScope ? scopes.methodScope : (scopes.declarationScope.Last() is InflatorScope inf && inf.InitializeComponentScope.scopes != null)? inf.InitializeComponentScope.scopes : [];
+		var icScope = icScopes.LastOrDefault() as InitializeComponentScope;
 		var targetVar = GetNodeValue(node, scopes.methodScope, context, context.Compilation.ObjectType).Descope();
-		var inflatorVar = GetNodeValue(node, scopes.declarationScope, context, context.Compilation.ObjectType).AccessedFrom(icScopes);
+		var inflatorVar = icScope == null ? null : GetNodeValue(node, scopes.declarationScope, context, context.Compilation.ObjectType).AccessedFrom(icScopes);
 
-		SetPropertyHelpers.SetPropertyValue(methodWriter, targetVar, prop.Key, prop.Value, context, tryGetNodeValue: tryGetNodeValue, treeOrder: true, icWriter: icScope.Writer, inflatorVar: inflatorVar, asCollectionItem: asCollectionItem, scopes.methodScope);
+		SetPropertyHelpers.SetPropertyValue(methodWriter, targetVar, prop.Key, prop.Value, context, tryGetNodeValue: tryGetNodeValue, treeOrder: true, icWriter: icScope?.Writer, inflatorVar: inflatorVar, asCollectionItem: asCollectionItem, scopes.methodScope);
 	}
-
-	// static ILocalValue LoadTemplate(INode node, INamedTypeSymbol type, (IndentedTextWriter localMethodWriter, IndentedTextWriter declarationWriter, IndentedTextWriter? ICWriter) writers, ImmutableArray<ScopeInfo> scopes, SourceGenContext context)
-	// {
-	// 	ILocalValue templateContent;
-	// 	var writer = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = writers.declarationWriter.Indent };
-	// 	var inflatorName = NamingHelpers.CreateUniqueTypeName(context, "TemplateInflator");
-	// 	var scopeInfo = new ScopeInfo(inflatorName, null, "this", "inflator", null);
-	// 	using (PrePost.NewBlock(writer, $"ref struct {inflatorName} {{", "}"))
-	// 	{
-	// 		writer.WriteLine($"public required {context.RootType.ToFQDisplayString()} __root {{ get; init; }}");
-	// 		writer.WriteLine($"public {inflatorName}() {{ }}");
-	// 		templateContent = ValueCreator(type, (ElementNode)node, (writer, null /*template shouldn't register anything at class level*/), scopes.Add(scopeInfo), context).Descoped();
-	// 	}
-	// 	writers.declarationWriter.Append(writer, noTabs: true);
-	// 	return context.Variables[node] = templateContent.AsInflatorScoped(scopeInfo);
-	// }
 
 	static Dictionary<SourceGenContext, Dictionary<Scope, Dictionary<INode, ScopedVariable>>> scopedVariables = [];
 	static Dictionary<SourceGenContext, Dictionary<INode, DirectValue>> directValues = [];
@@ -233,17 +213,22 @@ class DependencyFirstInflator
 		if (directValues.TryGetValue(context, out var dict) && dict.TryGetValue(node, out var directVar))
 			return directVar;
 
-		if (scopedVariables.TryGetValue(context, out var scopedVar))
+		var ctx = context;
+		while (ctx != null)
 		{
-			//check if the node as a variable in the current scope or in a parent
-			foreach (var searchscope in scopes.Reverse())
-				if (scopedVar.TryGetValue(searchscope, out var dict2) && dict2.TryGetValue(node, out var scopedVariable))
-					return scopedVariable;
+			if (scopedVariables.TryGetValue(ctx, out var scopedVar))
+			{
+				//check if the node as a variable in the current scope or in a parent
+				foreach (var searchscope in scopes.Reverse())
+					if (scopedVar.TryGetValue(searchscope, out var dict2) && dict2.TryGetValue(node, out var scopedVariable))
+						return scopedVariable;
 
-			//check if the node has a variable in any linked scope
-			var searchScope = scopes.Last() is StaticMethodScope sme ? sme.InflatorScope.scope : scopes.Last() is InitializeComponentScope ic ? ic.InflatorScope.scope : null;
-			if (searchScope != null && scopedVar.TryGetValue(searchScope, out var dict3) && dict3.TryGetValue(node, out var scopedVariable3))
-				return scopedVariable3;
+				//check if the node has a variable in any linked scope
+				var searchScope = scopes.Last() is StaticMethodScope sme ? sme.InflatorScope.scope : scopes.Last() is InitializeComponentScope ic ? ic.InflatorScope.scope : null;
+				if (searchScope != null && scopedVar.TryGetValue(searchScope, out var dict3) && dict3.TryGetValue(node, out var scopedVariable3))
+					return scopedVariable3;
+			}
+			ctx = ctx.ParentContext;
 		}
 
 		if (context.Variables.TryGetValue(node, out var localVar))
@@ -284,7 +269,7 @@ class DependencyFirstInflator
 		var inflatorScope = scope is InitializeComponentScope ic ? ic.InflatorScope.scope! : (InflatorScope)scopes.First();
 		var declarationWriter = inflatorScope.Writer;
 		var methodWriter = scope.Writer;
-		
+
 		var type = elementNode.XmlType.GetTypeSymbol(context)!;
 		var hasXName = elementNode.HasXName(out _); //if there's a x:Name, we need to create a var for future references
 		bool hasPropertiesRequiringParentObject = elementNode.HasPropertiesRequiringParentObject(context, out _);
@@ -348,11 +333,12 @@ class DependencyFirstInflator
 		// 		}
 		// 	}
 		//
-		scopes = scopes.Slice(0, 1);	//only keep the Inflator scope
+		scopes = scopes.Slice(0, 1);    //only keep the Inflator scope
 		var property = new ScopedVariable(returnType, NamingHelpers.CreateUniqueVariableName(context, returnType), inflatorScope);
 		PreserveNodeValue(elementNode, property, context);
 
-		var writer = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = declarationWriter.Indent };			writer.WriteLineNoTabs();
+		var writer = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = declarationWriter.Indent };
+		writer.WriteLineNoTabs();
 
 		writer.WriteLine("[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]");
 		using (PrePost.NewBlock(writer, $"public {returnType.ToFQDisplayString()} {property.Name}  {{", "}"))
@@ -402,12 +388,12 @@ class DependencyFirstInflator
 		// 				return local;
 		// 			}
 		//
-		if (   arrayNode.Properties[new XmlName("", "Type")] is not ElementNode typeNode
+		if (arrayNode.Properties[new XmlName("", "Type")] is not ElementNode typeNode
 			|| KnownMarkups.GetTypeFromTypeExtension(typeNode, context) is not ITypeSymbol typeSymbol)
 			throw new Exception("ArrayExtension Type not found");
 
 		var arrayType = context.Compilation.CreateArrayTypeSymbol(typeSymbol);
-		var inflatorScope = scopes.LastOrDefault(s => s is InflatorScope) as InflatorScope?? throw new InvalidOperationException();
+		var inflatorScope = scopes.LastOrDefault(s => s is InflatorScope) as InflatorScope ?? throw new InvalidOperationException();
 		var declarationWriter = inflatorScope.Writer;
 		var property = new ScopedVariable(arrayType, NamingHelpers.CreateUniqueVariableName(context, arrayType), inflatorScope);
 		PreserveNodeValue(arrayNode, property, context);
@@ -416,7 +402,7 @@ class DependencyFirstInflator
 		var writer = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = inflatorScope.Writer.Indent };
 		writer.WriteLineNoTabs();
 
-		scopes = scopes.Slice(0, 1);	//only keep the Inflator scope
+		scopes = scopes.Slice(0, 1);    //only keep the Inflator scope
 		writer.WriteLine("[field: global::System.Diagnostics.CodeAnalysis.MaybeNull, global::System.Diagnostics.CodeAnalysis.AllowNull]");
 		var propertyScope = scopes.Add(new PropertyScope(writer, arrayType, property.Name));
 		using (PrePost.NewBlock(writer, $"public {arrayType.ToFQDisplayString()} {property.Name}  {{", "}"))
@@ -434,6 +420,31 @@ class DependencyFirstInflator
 			}
 		}
 		declarationWriter.Append(writer, noTabs: true);
+		return property;
+	}
+
+	static ScopedVariable DataTemplateCreator(ElementNode elementNode, INamedTypeSymbol elementType, ImmutableArray<Scope> scopes, SourceGenContext context)
+	{
+		//FIXME this could be an array of inflatorscopes (nested DataTemplates)
+		var inflatorScope = scopes.LastOrDefault(s => s is InflatorScope) as InflatorScope ?? throw new InvalidOperationException();
+		var dtInflatorName = NamingHelpers.CreateUniqueTypeName(context, "DataTemplateInflator");
+		var dtScope = new InflatorScope(new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = inflatorScope.Writer.Indent }, dtInflatorName){Parent = ("__parent", [inflatorScope]) };
+		var funcType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(context.Compilation.ObjectType);
+		var templateContext = new SourceGenContext(dtScope.Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem) { ParentContext = context };
+		var property = new ScopedVariable(funcType, NamingHelpers.CreateUniqueVariableName(templateContext, funcType), inflatorScope);
+
+		using (PrePost.NewBlock(dtScope.Writer, $"ref struct {dtInflatorName}() {{", "}"))
+		{
+			dtScope.Writer.WriteLine($"public required {inflatorScope.Type} __parent {{ get; init; }}");
+
+			var dtRoot = ValueCreator(elementNode, elementType, [inflatorScope, dtScope], templateContext);
+			inflatorScope.Writer.WriteLineNoTabs();
+			inflatorScope.Writer.WriteLine($"public {funcType.ToFQDisplayString()} {property.Name} => () => new {dtInflatorName}() {{ __parent = this }}.{dtRoot.Name};");
+			inflatorScope.Writer.WriteLineNoTabs();
+		}
+		inflatorScope.Writer.Append(dtScope.Writer, noTabs: true);
+		PreserveNodeValue(elementNode, property, context);
+
 		return property;
 	}
 
@@ -461,9 +472,11 @@ class DependencyFirstInflator
 		//		}
 		// }
 
-		var inflatorScope = scopes.LastOrDefault(s => s is InflatorScope) as InflatorScope?? throw new InvalidOperationException();
+		var inflatorScope = scopes.LastOrDefault(s => s is InflatorScope) as InflatorScope ?? throw new InvalidOperationException();
+		var inflatorindex = scopes.IndexOf(inflatorScope);
+
 		var declarationWriter = inflatorScope.Writer;
-		scopes = scopes.Slice(0, 1);	//only keep the Inflator scope
+		scopes = scopes.Slice(0, inflatorindex + 1);    //only keep the Inflator scope
 
 		var property = new ScopedVariable(type, NamingHelpers.CreateUniqueVariableName(context, type), inflatorScope);
 		PreserveNodeValue(elementNode, property, context);
@@ -488,10 +501,12 @@ class DependencyFirstInflator
 			var createValueScope = propertyScope.Add(new StaticMethodScope(writer, ("inflator", inflatorScope)));
 			using (PrePost.NewBlock(writer, $"static {type.ToFQDisplayString()} Create(ref {inflatorScope.Type} inflator) {{", "}"))
 			{
-				bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue? localVar) {
+				bool tryGetNodeValue(INode node, ITypeSymbol toType, out ILocalValue? localVar)
+				{
 					localVar = GetNodeValue(node, createValueScope, context, toType!);
 					return true;
-				};
+				}
+				;
 				CreateValuesVisitor.CreateValue(elementNode, writer, context.Variables, context.Compilation, context.XmlnsCache, context, tryGetNodeValue, createValueScope);
 				var (namescope, namesInNamescope) = SetNamescope(elementNode, createValueScope, context);
 				writer.WriteLine($"return {context.Variables[elementNode].ValueAccessor};");
@@ -515,8 +530,8 @@ class DependencyFirstInflator
 			// 	using (PrePost.NewBlock(writer, $"field.LoadTemplate = () => new {v!.Scope?.type}() {{", $"}}.{v!.Descoped().ValueAccessor};"))
 			// 	{
 			// 		writer.WriteLine($"__root = __root,");
-			//         // writer.WriteLine("//copy over the var from upper scope");
-			//     }
+			// 		// writer.WriteLine("//copy over the var from upper scope");
+			// 	}
 			// 	writer.WriteLineNoTabs();
 			// }
 
@@ -532,7 +547,7 @@ class DependencyFirstInflator
 		var declareScope = scopes.RemoveRange(scopes.Length - 2, 2);
 		return SetNamescope(elementNode, (declareScope, scopes), context);
 	}
-	
+
 	static (ILocalValue, IDictionary<string, ILocalValue>) SetNamescope(ElementNode elementNode, (ImmutableArray<Scope> declareScope, ImmutableArray<Scope> setNSScope) scopes, SourceGenContext context, bool topLevel = false)
 	{
 		ILocalValue namescope;
@@ -547,11 +562,11 @@ class DependencyFirstInflator
 			//FIXME the public/private shouldn't be based on toplevel, but on scope visibility
 			//FIXME for toplevel, we should call GetNameScope on the root, if there's a namescope set on it
 			namescope = SetNamescopesAndRegisterNamesVisitor.CreateNamescope(scopes.declareScope[scopes.declareScope.Length - 1].Writer, context, accessor: topLevel ? "public" : null);
-			if (namescope is LocalVariable lv)	//workaround til SNARNV retunrs a ScopedVariable
+			if (namescope is LocalVariable lv)  //workaround til SNARNV retunrs a ScopedVariable
 				namescope = new ScopedVariable(lv.Type, lv.Name, scopes.declareScope[scopes.declareScope.Length - 1]);
 			if (namescope is ScopedVariable sv)
 				namescope = sv.AccessedFrom(scopes.setNSScope);
-			
+
 			namesInNamescope = new Dictionary<string, ILocalValue>();
 			setNameScope = true;
 		}
@@ -612,7 +627,7 @@ class DependencyFirstInflator
 
 		//elementnode with a single value, and has a typeconverter, like <Color>Red</Color>
 		if (   propValue is ElementNode elementNode2
-			&& !propValue.HasXName(out _)				//x:Name would mean we need a variable
+			&& !propValue.HasXName(out _)               //x:Name would mean we need a variable
 			&& elementNode2.CollectionItems.Count == 1
 			&& elementNode2.CollectionItems[0] is ValueNode valueNode2
 			&& valueNode2.Value is string strValue2
@@ -627,7 +642,7 @@ class DependencyFirstInflator
 
 		return false;
 	}
-	
+
 	static bool ShouldSetFieldsInICForXName(ElementNode node, SourceGenContext context)
 	{
 		if (node.Parent is null)
@@ -639,7 +654,7 @@ class DependencyFirstInflator
 		if (node.Parent is ListNode listNode)
 			return ShouldSetFieldsInICForXName(listNode.Parent as ElementNode ?? throw new InvalidOperationException(), context);
 		if (node.Parent is ElementNode parent)
-			return ShouldSetFieldsInICForXName(parent, context);	
+			return ShouldSetFieldsInICForXName(parent, context);
 		throw new NotImplementedException();
 	}
 }

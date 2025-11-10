@@ -740,22 +740,15 @@ internal class KnownMarkups
 			return false;
 		}
 
-		var resource = GetResourceNode(eNode, context, (string)keyValueNode.Value);
-		if (resource != null && tryGetNodeValue != null)
-		{
-			tryGetNodeValue(resource, context.Compilation.ObjectType, out var lvalue);
-			value = lvalue!.ValueAccessor;
-			returnType = lvalue.Type;
-			return true;
-		}
-		
-		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
+		tryGetNodeValue ??= (n, t, out l) => context.Variables.TryGetValue(n, out l);
+
+		var resource = GetResourceNode(eNode, context, tryGetNodeValue, (string)keyValueNode.Value);
+		if (resource is null)
 		{
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
 		}
-
 
 		//if the resource is a string, try to convert it
 		if (resource.CollectionItems.Count == 1 && resource.CollectionItems[0] is ValueNode vn && vn.Value is string)
@@ -769,7 +762,13 @@ internal class KnownMarkups
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 
-				if (propertyType!.Equals(context.Compilation.GetSpecialType(SpecialType.System_String), SymbolEqualityComparer.Default))
+				if (propertyType!.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default) && tryGetNodeValue(resource, context.Compilation.ObjectType, out var lvalue2))
+				{
+					value = lvalue2!.ValueAccessor;
+					returnType = lvalue2.Type;
+					return true;
+				}                
+				else if (propertyType!.Equals(context.Compilation.GetSpecialType(SpecialType.System_String), SymbolEqualityComparer.Default))
 				{
 					value = $"\"{vn.Value}\"";
 					returnType = context.Compilation.GetSpecialType(SpecialType.System_String);
@@ -791,6 +790,13 @@ internal class KnownMarkups
 			}
 		}
 
+		if(tryGetNodeValue(resource, context.Compilation.ObjectType, out var lvalue))
+		{
+			value = lvalue!.ValueAccessor;
+			returnType = lvalue.Type;
+			return true;
+		}
+
 		//Fallback to runtime resolution of StaticResource
 		returnType = context.Compilation.ObjectType;
 		value = string.Empty;
@@ -798,7 +804,7 @@ internal class KnownMarkups
 	}
 
 	//FIXME this could be smarter and look into merged RDs
-	static ElementNode? GetResourceNode(ElementNode en, SourceGenContext context, string key)
+	static ElementNode? GetResourceNode(ElementNode en, SourceGenContext context, NodeSGExtensions.TryGetNodeValueDelegate tryGetNodeValue, string key)
 	{
 		var n = en;
 		while (n != null)
@@ -817,7 +823,7 @@ internal class KnownMarkups
 			//single resource in <Resources>
 			if (resourcesNode is ElementNode irn
 				&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-				&& context.Variables.ContainsKey(irn)
+				&& tryGetNodeValue(irn, context.Compilation.ObjectType, out var _)
 				&& xKeyNode is ValueNode xKeyValueNode
 				&& xKeyValueNode.Value as string == key)
 			{
@@ -830,7 +836,7 @@ internal class KnownMarkups
 				{
 					if (rn is ElementNode irn2
 						&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-						&& context.Variables.ContainsKey(irn2)
+						&& tryGetNodeValue(irn2, context.Compilation.ObjectType, out var _)
 						&& xKeyNode2 is ValueNode xKeyValueNode2
 						&& xKeyValueNode2.Value as string == key)
 					{
@@ -847,7 +853,7 @@ internal class KnownMarkups
 					if (rn is ElementNode irn3
 						&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 						&& irn3.XmlType.Name != "OnPlatform"
-						&& context.Variables.ContainsKey(irn3)
+						&& tryGetNodeValue(irn3, context.Compilation.ObjectType, out var _)
 						&& xKeyNode3 is ValueNode xKeyValueNode3
 						&& xKeyValueNode3.Value as string == key)
 					{

@@ -10,4 +10,7 @@ public class GeneratorBenchmark
 
 	[Benchmark]
 	public void SourceGen() => new UnitTests.Benchmark().MockSourceGen();
+
+	[Benchmark]
+	public void SourceGenLazy() => new UnitTests.Benchmark().MockSourceGenLazy();
 }

@@ -7,16 +7,16 @@ using System.Collections.Immutable;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 abstract record Scope(IndentedTextWriter Writer);
+
 record TypeScope(IndentedTextWriter Writer, INamedTypeSymbol Type) : Scope(Writer);
 record InitializeComponentScope(IndentedTextWriter Writer, (string accessor, InflatorScope scope) InflatorScope) : Scope(Writer);
 record InflatorScope(IndentedTextWriter Writer, string Type) : Scope(Writer)
 {
-	public InflatorScope(IndentedTextWriter Writer, string Type, (string, ImmutableArray<Scope>) InitializeComponentScope) : this(Writer, Type)
-    {
-		this.InitializeComponentScope = InitializeComponentScope;
-	}
+	public InflatorScope(IndentedTextWriter Writer, string Type, (string, ImmutableArray<Scope>) InitializeComponentScope) : this(Writer, Type) 
+		=> this.InitializeComponentScope = InitializeComponentScope;
 
 	public (string accessor, ImmutableArray<Scope> scopes) InitializeComponentScope { get; set; }
+	public (string accessor, ImmutableArray<Scope> scopes)? Parent { get; set; }
 }
 
 record PropertyScope(IndentedTextWriter Writer, ITypeSymbol PropertyType, string PropertyName) : Scope(Writer);

@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -89,6 +90,12 @@ static class ILocalValueExtensions
 			return true;
 		}
 
+		if (scope is StaticMethodScope sms2 && sms2.InflatorScope.scope.Parent?.scopes.Last() == value.Scope)
+        {
+            accessed = new DirectValue(value.Type, $"{sms2.InflatorScope.accessor}.{sms2.InflatorScope!.scope.Parent.Value.accessor}.{value.Name}");
+			return true;
+        }
+    
 		if (scope is InitializeComponentScope || scope is PropertyScope)
 			return value.TryAccessFrom(scopes.RemoveAt(scopes.Length - 1), out accessed);
 

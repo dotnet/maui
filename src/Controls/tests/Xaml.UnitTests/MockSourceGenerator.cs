@@ -32,9 +32,9 @@ public static class MockSourceGenerator
 	public static Compilation WithAdditionalSource(this Compilation compilation, string sourceCode, string hintName = "File.Xaml.cs") =>
 		compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(sourceCode, path: hintName));
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
-	public record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
-		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, bool LazyOrder);
+	public record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, bool LazyOrder = false)
+		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, LazyOrder: LazyOrder);
 
 	public static AdditionalText ToAdditionalText(string path, string text) => CustomAdditionalText.From(path, text);
 
@@ -189,6 +189,8 @@ public static class MockSourceGenerator
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
 					"build_metadata.additionalfiles.Inflator" => "SourceGen",
 					"build_property.targetFramework" => _additionalFile.TargetFramework,
+					"build_metadata.additionalfiles.TreeOrder" => _additionalFile.LazyOrder.ToString(),
+
 					_ => null
 				};
 
