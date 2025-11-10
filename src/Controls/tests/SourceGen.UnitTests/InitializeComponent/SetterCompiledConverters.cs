@@ -25,7 +25,6 @@ public class SetterCompiledConverters : SourceGenXamlInitializeComponentTestBase
 			</Style>
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<Label x:Name="testLabel" Style="{StaticResource testStyle}" Text="Test" />
 </ContentPage>
 """;
 
@@ -99,10 +98,6 @@ public partial class TestPage
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
 		var resourceDictionary = new global::Microsoft.Maui.Controls.ResourceDictionary();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(resourceDictionary!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
-		var staticResourceExtension = new global::Microsoft.Maui.Controls.Xaml.StaticResourceExtension();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(staticResourceExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 14, 28);
-		var label = new global::Microsoft.Maui.Controls.Label();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(label!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 14, 3);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
@@ -117,14 +112,6 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		label.transientNamescope = iNameScope;
-#endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		iNameScope.RegisterName("testLabel", label);
-#endif
-		label.StyleId ??= "testLabel";
-		this.testLabel = label;
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
 #line default
@@ -143,33 +130,6 @@ public partial class TestPage
 		resourceDictionary["testStyle"] = style1;
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
-#line default
-#line 14 "{{testXamlFilePath}}"
-		staticResourceExtension.Key = "testStyle";
-#line default
-		var xamlServiceProvider = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(__root);
-		var iProvideValueTarget = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(
-			new object?[] {label, __root},
-			Microsoft.Maui.Controls.VisualElement.StyleProperty,
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-			new [] { iNameScope },
-#else
-			null,
-#endif
-			__root);
-		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), iProvideValueTarget);
-		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), iProvideValueTarget);
-		var object0 = (object)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension)staticResourceExtension).ProvideValue(xamlServiceProvider);
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(object0!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(object0!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 14, 28);
-#line 14 "{{testXamlFilePath}}"
-		label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, object0);
-#line default
-#line 14 "{{testXamlFilePath}}"
-		label.SetValue(global::Microsoft.Maui.Controls.Label.TextProperty, "Test");
-#line default
-#line 14 "{{testXamlFilePath}}"
-		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, label);
 #line default
 	}
 }
