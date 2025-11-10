@@ -296,7 +296,10 @@ namespace Microsoft.Maui.Controls
 			if (presenter == null || _currentPage == null)
 				return;
 
-			presenter.Content = _currentPage.ToPlatform(MauiContext);
+			if (presenter.Content is null)
+			{
+				presenter.Content = _currentPage.ToPlatform(MauiContext);
+			}
 		}
 
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
