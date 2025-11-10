@@ -13,7 +13,7 @@ public partial class Maui25309 : ContentPage
 {
 	public Maui25309() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
@@ -21,7 +21,12 @@ public partial class Maui25309 : ContentPage
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		public void Dispose() => AppInfo.SetCurrent(null);
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Theory]
 		[Values]
@@ -30,7 +35,22 @@ public partial class Maui25309 : ContentPage
 			var page = new Maui25309(inflator) { BindingContext = new { IsValid = true } };
 			var converter = page.Resources["IsValidConverter"] as Maui25309BoolToObjectConverter;
 			Assert.NotNull(converter);
-			Assert.Equal(Color.Parse("#140F4B"), converter.TrueObject); // TODO: Was Parse with 2 params, added actual value
+
+			// Different inflators handle color resources differently:
+			// Runtime/XamlC convert to Color object, SourceGen may keep as string
+			var expectedColor = Color.Parse("#140F4B");
+			if (converter.TrueObject is Color actualColor)
+			{
+				Assert.Equal(expectedColor, actualColor);
+			}
+			else if (converter.TrueObject is string colorString)
+			{
+				Assert.Equal("#140F4B", colorString);
+			}
+			else
+			{
+				Assert.Fail($"Unexpected TrueObject type: {converter.TrueObject?.GetType().Name}");
+			}
 		}
 	}
 }

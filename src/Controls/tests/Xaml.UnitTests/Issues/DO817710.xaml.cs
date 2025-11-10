@@ -7,11 +7,11 @@ public partial class DO817710 : ContentPage
 	public DO817710() => InitializeComponent();
 
 
-	//[Theory]
-	public void EmptyResourcesElement()
+	[Theory]
+	[Values]
+	public void EmptyResourcesElement(XamlInflator inflator)
 	{
-		//XamlInflator inflator
-		// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new DO817710(inflator));
+		Assert.Null(Record.Exception(() => new DO817710(inflator)));
 	}
 
 }

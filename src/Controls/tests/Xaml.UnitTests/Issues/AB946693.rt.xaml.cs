@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
@@ -18,9 +19,19 @@ public partial class AB946693 : ContentPage
 
 	public class Tests : IDisposable
 	{
+		public Tests()
+	{
+		Application.SetCurrentApplication(new MockApplication());
+		DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+	}
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose()
+	{
+		AppInfo.SetCurrent(null);
+		DispatcherProvider.SetCurrent(null);
+		Application.SetCurrentApplication(null);
+	}
+
 
 		[Theory]
 		[Values]

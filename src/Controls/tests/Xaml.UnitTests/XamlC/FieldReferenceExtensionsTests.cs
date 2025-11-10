@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			var type = module.ImportReference(typeof(NonGenericClass));
 			TypeReference declaringTypeReference;
 			FieldDefinition field = type.GetField(new XamlCache(), fd => fd.Name == "Field", out declaringTypeReference);
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => field.ResolveGenericParameters(declaringTypeReference));
+			Assert.Null(Record.Exception(() => field.ResolveGenericParameters(declaringTypeReference)));
 		}
 
 		[Fact]

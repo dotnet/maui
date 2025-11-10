@@ -1,18 +1,22 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui17950 : ContentPage
 {
+	public bool CorrectMethodCalled { get; private set; } = false;
+
 	public Maui17950() => InitializeComponent();
 
 	void TestBtn(object sender, EventArgs e)
 	{
 		Console.WriteLine("event called");
-		// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
+		CorrectMethodCalled = true;
 	}
 
 	void TestBtn(object sender, string e)
@@ -29,9 +33,21 @@ public partial class Maui17950 : ContentPage
 		throw new InvalidOperationException("wrong method invoked");
 	}
 
-	public class Test
+	public class Test : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		public Test()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			AppInfo.SetCurrent(new MockAppInfo());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Theory]
 		[Values]
@@ -39,8 +55,7 @@ public partial class Maui17950 : ContentPage
 		{
 			Maui17950 page = new Maui17950(inflator);
 			page.button.SendClicked();
-			// TODO: XUnit doesn't have Assert.Fail, use Assert.True(false, ...) or throw
-			throw new InvalidOperationException("no method invoked");
+			Assert.True(page.CorrectMethodCalled, "Expected correct TestBtn(object sender, EventArgs e) to be called");
 		}
 	}
 }

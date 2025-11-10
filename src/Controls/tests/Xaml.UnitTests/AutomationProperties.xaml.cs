@@ -1,5 +1,8 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -9,9 +12,20 @@ partial class AutomationProperties : ContentPage
 	public AutomationProperties() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor/IAsyncLifetime for Setup() => Application.Current = new MockApplication();
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Theory]
 		[Values]

@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -30,8 +33,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public IServiceProvider ServiceProvider { get; set; }
 
 
-		public class Tests
+		public class Tests : IDisposable
 		{
+			public Tests()
+			{
+				Application.SetCurrentApplication(new MockApplication());
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			}
+
+			public void Dispose()
+			{
+				AppInfo.SetCurrent(null);
+				DispatcherProvider.SetCurrent(null);
+				Application.SetCurrentApplication(null);
+			}
+
 			[Theory]
 			[Values]
 			public void ServiceProviderIsNullOnAttributedExtensions(XamlInflator inflator)

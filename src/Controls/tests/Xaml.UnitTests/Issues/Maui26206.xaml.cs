@@ -15,9 +15,9 @@ public partial class Maui26206 : ContentPage
 	}
 
 
-	public class Test
+	public class Tests : IDisposable
 	{
-		public Test()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -26,6 +26,8 @@ public partial class Maui26206 : ContentPage
 		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]

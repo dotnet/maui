@@ -12,7 +12,6 @@ public partial class WarnOnObsolete : ContentPage
 
 	class Test
 	{
-		// TODO: Convert to IDisposable or constructor/IAsyncLifetime for Setup() => AppInfo.SetCurrent(new MockAppInfo());
 	}
 }
 

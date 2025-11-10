@@ -1,4 +1,9 @@
+using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -10,8 +15,20 @@ public partial class XStaticException : ContentPage
 	public XStaticException() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		//{x:Static Member=prefix:typeName.staticMemberName}
 		//{x:Static prefix:typeName.staticMemberName}
 
@@ -47,9 +64,8 @@ public partial class XStaticException : ContentPage
 				Assert.True(result.Diagnostics.Any());
 			}
 			else
-			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute
 			{
-				// TODO: This branch was using NUnit Assert.Skip, needs proper handling
+				Assert.Fail($"Unknown inflator type: {inflator}");
 			}
 
 		}

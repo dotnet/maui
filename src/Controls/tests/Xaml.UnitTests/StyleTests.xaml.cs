@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -12,9 +15,20 @@ public partial class StyleTests : ContentPage
 {
 	public StyleTests() => InitializeComponent();
 
-	public class Tests
+	public class Tests : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void SetUp() => Application.Current = new MockApplication();
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Theory]
 		[Values]
@@ -71,7 +85,8 @@ public partial class StyleTests : ContentPage
 			Assert.Equal(Colors.Red, s1.Value);
 		}
 
-		[Fact]
+		[Theory]
+		[Values]
 		//issue #2406
 		public void StylesDerivedFromDynamicStylesThroughStaticResource(XamlInflator inflator)
 		{
@@ -84,7 +99,8 @@ public partial class StyleTests : ContentPage
 			Assert.Equal(Colors.Red, label.TextColor);
 		}
 
-		[Fact]
+		[Theory]
+		[Values]
 		//issue #2406
 		public void StylesDerivedFromDynamicStylesThroughDynamicResource(XamlInflator inflator)
 		{

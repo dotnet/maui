@@ -17,7 +17,7 @@ public partial class Maui24900 : ContentPage
 
 	}
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -26,20 +26,23 @@ public partial class Maui24900 : ContentPage
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			AppInfo.SetCurrent(new MockAppInfo());
 		}
 
 		public void Dispose()
 		{
-			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]
 		[Values]
-		public void OnPlatformDoesNotThrow()
+		public void OnPlatformDoesNotThrow(XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new Maui24900(inflator));
+			Assert.Null(Record.Exception(() => new Maui24900(inflator)));
 		}
 	}
 }

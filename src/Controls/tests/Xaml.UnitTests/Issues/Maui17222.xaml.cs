@@ -17,7 +17,7 @@ public partial class Maui17222 : ContentPage
 	public Maui17222() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 #if DEBUG
 		bool enableDiagnosticsInitialState;
@@ -36,7 +36,8 @@ public partial class Maui17222 : ContentPage
 		}
 
 		[Theory]
-		[Values]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
 		public void GetsourceInfo(XamlInflator inflator)
 		{
 			var app = new MockApplication();

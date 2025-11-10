@@ -1,5 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
@@ -55,13 +57,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	}
 
 
-	public class Issue1549
+	public class Issue1549 : IDisposable
 	{
 		public Issue1549()
 		{
 			SeverityColorConverter.count = 0;
 			InvertBoolenConverter.count = 0;
+			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Fact]

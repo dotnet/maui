@@ -1,4 +1,8 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -11,8 +15,21 @@ public partial class Required : ContentPage
 	public RequiredPerson Person { get; set; }
 	public Required() => InitializeComponent();
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
+
 		[Theory]
 		[Values]
 		public void RequiredFieldsAndPropertiesAreSet(XamlInflator inflator)

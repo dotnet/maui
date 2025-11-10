@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Xunit;
@@ -12,11 +13,19 @@ public partial class Bz55343 : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		MockDeviceInfo mockDeviceInfo;
 
-		[Theory]
+		public Tests()
+		{
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		}
+
+		public void Dispose()
+		{
+			DeviceInfo.SetCurrent(null);
+		}
+
+		[Theory(Skip = "[Bug] Types that require conversion don't work in OnPlatform: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13830")]
 		[Values]
 		public void OnPlatformFontConversion(XamlInflator inflator)
 		{

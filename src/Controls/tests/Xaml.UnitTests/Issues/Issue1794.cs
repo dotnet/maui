@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
@@ -6,9 +7,19 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 
-	public class Issue1794
+	public class Issue1794 : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Issue1794()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Fact]
 		public void FindNameInDT()
@@ -56,7 +67,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var list = layout.FindByName<ListView>("listView");
 			var item0 = list.TemplatedItems.GetOrCreateContent(0, null);
 			var item1 = list.TemplatedItems.GetOrCreateContent(1, null);
-			// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
 		}
 	}
 }

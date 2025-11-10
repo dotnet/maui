@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -227,19 +230,24 @@ public partial class PlatformViewsAndBindings : ContentPage
 {
 	public PlatformViewsAndBindings() => InitializeComponent();
 
-	// TODO: These tests are marked with [Ignore] in the original NUnit version and need investigation
-	// They test platform-specific view binding behavior for iOS and Android
+	// NOTE: These tests were marked with [Ignore("fails for now")] in the original NUnit version
+	// Only Runtime inflator is supported, XamlC and SourceGen require additional XamlProcessing setup
 	public class Tests : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
 		public Tests()
 		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		public void Dispose()
 		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
@@ -262,13 +270,11 @@ public partial class PlatformViewsAndBindings : ContentPage
 			return p;
 		}
 
-		// TODO: Convert this to proper xUnit Theory with InlineData when re-enabling
-		// Original: [Test][TestCase(true)] with [Values] XamlInflator inflator, [Values("iOS", "Android")] string platform
-		[Fact(Skip = "fails for now - needs proper Theory conversion")]
-		public void PlatformInContentView()
+		[Theory]
+		[InlineData(XamlInflator.Runtime, "iOS")]
+		[InlineData(XamlInflator.Runtime, "Android")]
+		public void PlatformInContentView(XamlInflator inflator, string platform)
 		{
-			var inflator = XamlInflator.Runtime; // Placeholder
-			var platform = "iOS"; // Placeholder
 			
 			var realPlatform = SetUpPlatform(platform);
 

@@ -14,12 +14,19 @@ public partial class Maui20244 : ContentPage
 {
 	public Maui20244() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]
@@ -30,12 +37,12 @@ public partial class Maui20244 : ContentPage
 			var grid = page.grid;
 
 			Assert.Equal(6, grid.RowDefinitions.Count);
-			// TODO: Fix - needs actual value Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[?].Height);
-			// TODO: Fix - needs actual value Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[?].Height);
-			// TODO: Fix - needs actual value Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[?].Height);
-			// TODO: Fix - needs actual value Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[?].Height);
-			// TODO: Fix - needs actual value Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[?].Height);
-			// TODO: Fix - needs actual value Assert.Equal(new GridLength(1, GridUnitType.Auto), grid.RowDefinitions[?].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[0].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[1].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[2].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[3].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[4].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), grid.RowDefinitions[5].Height);
 
 			Assert.Equal(3, grid.ColumnDefinitions.Count);
 

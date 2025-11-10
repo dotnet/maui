@@ -14,12 +14,19 @@ public partial class Maui18545 : ContentPage
 	public Maui18545() => InitializeComponent();
 
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]
@@ -36,16 +43,17 @@ public partial class Maui18545 : ContentPage
 				["GradientColorStart"] = Colors.Green,
 				["GradientColorEnd"] = Colors.Yellow
 			};
-			Application.Current.Resources.MergedDictionaries.Add(lighttheme);
+			var app = Application.Current;
+			app.Resources.MergedDictionaries.Add(lighttheme);
 			var page = new Maui18545(inflator);
-			Application.Current.MainPage = page;
+			app.MainPage = page;
 
 			Assert.IsType<LinearGradientBrush>(page.label.Background);
 			var brush = (LinearGradientBrush)page.label.Background;
 			Assert.Equal(Colors.Red, brush.GradientStops[0].Color);
 
-			Application.Current.Resources.MergedDictionaries.Remove(lighttheme);
-			Application.Current.Resources.MergedDictionaries.Add(darktheme);
+			app.Resources.MergedDictionaries.Remove(lighttheme);
+			app.Resources.MergedDictionaries.Add(darktheme);
 			page.Resources["GradientColorStart"] = Colors.Green;
 			Assert.Equal(Colors.Green, brush.GradientStops[0].Color);
 		}

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
@@ -54,14 +56,23 @@ public partial class ServiceProviderTests : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-
-		[Fact]
-		public void TestServiceProviders() // TODO: Fix parameters - see comment above] XamlInflator inflator)
+		public Tests()
 		{
-var inflator = XamlInflator.Runtime; // TODO: Convert to Theory with [Values]
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
+
+		[Theory]
+		[Values(XamlInflator.XamlC)]
+		public void TestServiceProviders(XamlInflator inflator)
+		{
 			var page = new ServiceProviderTests(inflator);
 			MockCompiler.Compile(typeof(ServiceProviderTests));
 

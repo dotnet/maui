@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -20,9 +21,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		public class Tests
+		public class Tests : IDisposable
 		{
-			// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests()
+	{
+		Application.SetCurrentApplication(new MockApplication());
+		DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+	}
+
+		public void Dispose()
+	{
+		AppInfo.SetCurrent(null);
+		DispatcherProvider.SetCurrent(null);
+		Application.SetCurrentApplication(null);
+	}
+
 
 			[Theory]
 			[Values]

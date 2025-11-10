@@ -1,6 +1,8 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -9,9 +11,21 @@ public partial class Maui17484 : ContentPage
 {
 	public Maui17484() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		public Test()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			AppInfo.SetCurrent(new MockAppInfo());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Theory]
 		[Values]
@@ -19,7 +33,7 @@ public partial class Maui17484 : ContentPage
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
-				// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => MockCompiler.Compile(typeof(Maui17484)));
+				Assert.Null(Record.Exception(() => MockCompiler.Compile(typeof(Maui17484))));
 			}
 			else if (inflator == XamlInflator.SourceGen)
 			{
@@ -28,7 +42,7 @@ public partial class Maui17484 : ContentPage
 			}
 			else if (inflator == XamlInflator.Runtime)
 			{
-				// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new Maui17484(inflator));
+				Assert.Null(Record.Exception(() => new Maui17484(inflator)));
 			}
 			else
 			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute

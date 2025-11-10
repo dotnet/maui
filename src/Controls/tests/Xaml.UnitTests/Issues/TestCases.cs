@@ -16,19 +16,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	}
 
 
-	public class TestCases
+	public class TestCases : IDisposable
 	{
 		CultureInfo _defaultCulture;
 
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor
-		[Xunit.Fact]
-		public virtual void Setup()
+		public TestCases()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
-		[Xunit.Fact]
-		public virtual void TearDown()
+
+		public void Dispose()
 		{
 			DispatcherProvider.SetCurrent(null);
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
@@ -41,7 +40,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return (View)bindable.GetValue(InnerViewProperty);
 		}
 
-		[Xunit.Fact]
 		public static void SetInnerView(BindableObject bindable, View value)
 		{
 			bindable.SetValue(InnerViewProperty, value);
@@ -149,7 +147,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var listview = page.FindByName<ListView>("listview");
 			Cell cell = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => { cell = listview.TemplatedItems[0]; });
+			Assert.Null(Record.Exception(() => { cell = listview.TemplatedItems[0]; }));
 			Assert.NotNull(cell);
 			Assert.IsType<ViewCell>(cell);
 			Assert.Same(model[0], cell.BindingContext);
@@ -182,7 +180,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</ContentPage>";
 
 			var page = new ContentPage();
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => page.LoadFromXaml(xaml));
+			Assert.Null(Record.Exception(() => page.LoadFromXaml(xaml)));
 		}
 
 		[Fact]
@@ -221,7 +219,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 							cmp:RelativeLayout.WidthConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
 			View view = new View();
 			view.LoadFromXaml(xaml);
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => view.LoadFromXaml(xaml));
+			Assert.Null(Record.Exception(() => view.LoadFromXaml(xaml)));
 		}
 	}
 }

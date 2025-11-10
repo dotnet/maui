@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[InlineData("Bold", Controls.FontAttributes.Bold)]
 		[InlineData("Italic", Controls.FontAttributes.Italic)]
 		[InlineData("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
-		public void FontAttributes(FontAttributes result)
+		public void FontAttributes(string attributeString, FontAttributes result)
 		{
 			var xaml = @"
-			<Label 
+			<Label
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" FontAttributes=""" + result + @""" />";
+				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" FontAttributes=""" + attributeString + @""" />";
 
 			var label = new Label().LoadFromXaml(xaml);
 

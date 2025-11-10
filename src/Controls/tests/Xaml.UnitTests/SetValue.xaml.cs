@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
@@ -167,8 +169,18 @@ public partial class SetValue : ContentPage
 	public class Tests : IDisposable
 	{
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 
 		[Theory]
 		[Values]
@@ -562,7 +574,6 @@ public partial class SetValue : ContentPage
 			Assert.Equal(ByteEnum.Bar, page.enums.ByteEnum);
 		}
 
-		[Xunit.Fact]
 		public void SetValueWithImplicitOperatorOnSource(XamlInflator inflator)
 		{
 			var page = new SetValue(inflator);

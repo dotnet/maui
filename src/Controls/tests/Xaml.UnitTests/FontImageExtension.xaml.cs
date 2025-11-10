@@ -1,4 +1,9 @@
+using System;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -13,8 +18,20 @@ public partial class FontImageExtension : TabBar
 	public static double Size = 50d;
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		[Theory]
 		[Values]
 		public void FontImageExtension_Positive(XamlInflator inflator)
@@ -58,7 +75,7 @@ public partial class FontImageExtension : TabBar
 				if (myTab == null)
 					continue;
 
-				Assert.IsNotAssignableFrom<ImageSource>(myTab.Icon);
+				Assert.IsNotType<ImageSource>(myTab.Icon);
 			}
 		}
 	}

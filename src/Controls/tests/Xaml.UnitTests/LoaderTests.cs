@@ -393,8 +393,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Fact]
 		public void StaticResourceLookForApplicationResources()
 		{
-			Application.Current = null;
-			Application.Current = new MyApp();
+			Application.SetCurrentApplication(new MyApp());
 			var xaml = @"
 				<ContentView
 				  xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -418,6 +417,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			//local resources have precedence
 			Assert.Equal("BAZ", label1.Text);
+
+			Application.SetCurrentApplication(null);
 		}
 
 		[Fact]
@@ -575,7 +576,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label x:Name=""contentview""/>
 				</local:CustomView>";
 			CustomView customView = null;
-			// TODO: xUnit does not have DoesNotThrow - verify this test manually`r`n() => customView = new CustomView().LoadFromXaml(xaml);
+			Assert.Null(Record.Exception(() => customView = new CustomView().LoadFromXaml(xaml)));
 			Assert.NotNull(customView.Content);
 			Assert.Same(customView.Content, ((Maui.Controls.Internals.INameScope)customView).FindByName("contentview"));
 		}
@@ -654,7 +655,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					</local:ViewWithChildrenContent.Children>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			// TODO: xUnit does not have DoesNotThrow - verify this test manually`r`n() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml);
+			Assert.Null(Record.Exception(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)));
 			Assert.NotNull(layout);
 			Assert.NotSame(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
@@ -673,7 +674,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label x:Name=""child1""/>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			// TODO: xUnit does not have DoesNotThrow - verify this test manually`r`n() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml);
+			Assert.Null(Record.Exception(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)));
 			Assert.NotNull(layout);
 			Assert.Same(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
@@ -694,7 +695,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					</local:ViewWithChildrenContent.Children>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			// TODO: xUnit does not have DoesNotThrow - verify this test manually`r`n() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml);
+			Assert.Null(Record.Exception(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)));
 			Assert.NotNull(layout);
 			Assert.Same(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
@@ -713,7 +714,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label x:Name=""child0""/>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
-			// TODO: xUnit does not have DoesNotThrow - verify this test manually`r`n() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml);
+			Assert.Null(Record.Exception(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml)));
 			Assert.NotNull(layout);
 			Assert.Same(layout.DefaultChildren, layout.Children);
 			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);

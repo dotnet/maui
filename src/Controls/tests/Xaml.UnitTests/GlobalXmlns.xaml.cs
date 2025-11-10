@@ -15,12 +15,17 @@ public partial class GlobalXmlns
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]

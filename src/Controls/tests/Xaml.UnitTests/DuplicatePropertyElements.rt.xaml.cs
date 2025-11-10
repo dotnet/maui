@@ -1,4 +1,9 @@
+using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -10,11 +15,24 @@ public partial class DuplicatePropertyElements : BindableObject
 	public DuplicatePropertyElements() => InitializeComponent();
 
 
-	public static class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
+
 		[Theory]
 		[Values]
-		public static void ThrowXamlParseException(XamlInflator inflator)
+		public void ThrowXamlParseException(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{

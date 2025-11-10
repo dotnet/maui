@@ -11,9 +11,9 @@ public partial class Gh11541 : ContentPage
 	{
 		[Theory]
 		[Values]
-		public void RectangleGeometryDoesntThrow()
+		public void RectangleGeometryDoesntThrow(XamlInflator inflator)
 		{
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new Gh11541(inflator));
+			Assert.Null(Record.Exception(() => new Gh11541(inflator)));
 		}
 	}
 }

@@ -51,7 +51,7 @@ public partial class Gh4215 : ContentPage
 		public void AvoidAmbiguousMatch(XamlInflator inflator)
 		{
 			var layout = new Gh4215(inflator);
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout.BindingContext = new Gh4215VM());
+			Assert.Null(Record.Exception(() => layout.BindingContext = new Gh4215VM()));
 			Assert.Equal("foo", layout.l0.Text);
 		}
 	}

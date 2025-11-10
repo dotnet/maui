@@ -14,7 +14,7 @@ public partial class Maui16208
 {
 	public Maui16208() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -22,21 +22,23 @@ public partial class Maui16208
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-
+			AppInfo.SetCurrent(new MockAppInfo());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		public void Dispose()
 		{
+			DeviceInfo.SetCurrent(null);
 			AppInfo.SetCurrent(null);
-			mockDeviceInfo = null;
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]
 		[Values]
 		public void SetterAndTargetName(XamlInflator inflator)
 		{
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new Maui16208(inflator));
+			Assert.Null(Record.Exception(() => new Maui16208(inflator)));
 			var page = new Maui16208(inflator);
 			Assert.Equal(Colors.Green, page!.ItemLabel.BackgroundColor);
 		}

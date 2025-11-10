@@ -28,14 +28,16 @@ public partial class HotReloadStaticResourceException : ContentPage
 			AppInfo.SetCurrent(null);
 			Controls.Internals.ResourceLoader.ResourceProvider2 = null;
 			Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 #if DEBUG
-		[Fact(Skip = "TODO: Needs inflator parameter, convert to [Theory] [Values]")]
-		public void MissingResourceExceptionAreHandled() // TODO: was (XamlInflator inflator), needs to be Theory with [Values]
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		public void MissingResourceExceptionAreHandled(XamlInflator inflator)
 		{
-			// TODO: This test needs the XamlInflator parameter restored
-			var inflator = XamlInflator.Runtime;
 			Controls.Internals.ResourceLoader.ExceptionHandler2 = (ex) =>
 			{
 				var (exception, filepath) = ex;

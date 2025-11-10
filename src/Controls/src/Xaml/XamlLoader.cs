@@ -65,10 +65,17 @@ namespace Microsoft.Maui.Controls.Xaml
 				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes(rootAssembly);
 			if (!XamlParser.s_allowImplicitXmlns.TryGetValue(rootAssembly, out var allowImplicitXmlns))
 			{
-				allowImplicitXmlns = rootAssembly.CustomAttributes.Any(a =>
-				   		a.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute"
-					&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
-				XamlParser.s_allowImplicitXmlns.Add(rootAssembly, allowImplicitXmlns);
+				lock (XamlParser.s_allowImplicitXmlns)
+				{
+					// Double-check pattern - check again inside the lock
+					if (!XamlParser.s_allowImplicitXmlns.TryGetValue(rootAssembly, out allowImplicitXmlns))
+					{
+						allowImplicitXmlns = rootAssembly.CustomAttributes.Any(a =>
+								a.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute"
+							&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+						XamlParser.s_allowImplicitXmlns.Add(rootAssembly, allowImplicitXmlns);
+					}
+				}
 			}
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());

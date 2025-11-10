@@ -12,12 +12,19 @@ public partial class Maui21757_2
 {
 	public Maui21757_2() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]
@@ -31,7 +38,7 @@ public partial class Maui21757_2
 			}
 			else if (inflator == XamlInflator.XamlC)
 			{
-				// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => MockCompiler.Compile(typeof(Maui21757_2)));
+				Assert.Null(Record.Exception(() => MockCompiler.Compile(typeof(Maui21757_2))));
 			}
 			else
 			// TODO: Convert to [Theory(Skip="reason")] or use conditional Skip attribute

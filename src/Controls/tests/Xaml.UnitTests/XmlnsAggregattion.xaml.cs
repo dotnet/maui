@@ -15,9 +15,9 @@ public partial class XmlnsAggregattion : ContentPage
 
 	public class Tests : IDisposable
 	{
+		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
 		[Theory]
 		[Values]

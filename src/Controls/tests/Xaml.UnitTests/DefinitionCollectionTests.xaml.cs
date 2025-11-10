@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
@@ -16,8 +19,21 @@ public partial class DefinitionCollectionTests : ContentPage
 	public DefinitionCollectionTests() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
+
 		[Theory]
 		[Values]
 		public void DefinitionCollectionsParsedFromMarkup(XamlInflator inflator)
@@ -29,16 +45,16 @@ public partial class DefinitionCollectionTests : ContentPage
 			Assert.Equal(5, coldef.Count);
 
 			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[0].Width);
-			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[1].Width);
+			Assert.Equal(new GridLength(2, GridUnitType.Star), coldef[1].Width);
 			Assert.Equal(new GridLength(1, GridUnitType.Auto), coldef[2].Width);
 			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[3].Width);
 			Assert.Equal(new GridLength(300, GridUnitType.Absolute), coldef[4].Width);
 
 			Assert.Equal(5, rowdef.Count);
 			Assert.Equal(new GridLength(1, GridUnitType.Star), rowdef[0].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Star), rowdef[1].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), rowdef[1].Height);
 			Assert.Equal(new GridLength(25, GridUnitType.Absolute), rowdef[2].Height);
-			Assert.Equal(new GridLength(1, GridUnitType.Auto), rowdef[3].Height);
+			Assert.Equal(new GridLength(14, GridUnitType.Absolute), rowdef[3].Height);
 			Assert.Equal(new GridLength(20, GridUnitType.Absolute), rowdef[4].Height);
 
 		}

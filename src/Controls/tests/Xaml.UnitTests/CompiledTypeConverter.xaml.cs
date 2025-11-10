@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
@@ -74,8 +78,21 @@ public partial class CompiledTypeConverter : ContentPage
 	public CompiledTypeConverter() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
+
 		[Theory]
 		[Values]
 		public void CompiledTypeConverterAreInvoked(XamlInflator xamlInflator)
@@ -90,8 +107,8 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal("https://picsum.photos/200/300", ((UriImageSource)p.ImageByUrl).Uri.AbsoluteUri);
 			Assert.Equal("foo.png", ((FileImageSource)p.ImageByName).File);
 			Assert.Equal(Colors.Pink, p.BackgroundColor);
-			// TODO: Use Assert.IsType or Assert.IsAssignableFrom - Assert.IsType<Ellipse>(p.EllipseShape);
-			// TODO: Use Assert.IsType or Assert.IsAssignableFrom - Assert.IsType<Line>(p.LineShape);
+			Assert.IsType<Ellipse>(p.EllipseShape);
+			Assert.IsType<Line>(p.LineShape);
 			Assert.Equal(1, ((Line)p.LineShapeTwo).X1);
 			Assert.Equal(2, ((Line)p.LineShapeTwo).Y1);
 			Assert.Equal(1, ((Line)p.LineShapeFour).X1);
@@ -100,7 +117,7 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal(4, ((Line)p.LineShapeFour).Y2);
 			Assert.Equal(3, ((Shapes.Polygon)p.PolygonShape).Points.Count);
 			Assert.Equal(10, ((Shapes.Polyline)p.PolylineShape).Points.Count);
-			// TODO: Use Assert.IsType or Assert.IsAssignableFrom - Assert.IsType<Rectangle>(p.RectangleShape);
+			Assert.IsType<Rectangle>(p.RectangleShape);
 			Assert.Equal(new CornerRadius(1, 2, 3, 4), ((RoundRectangle)p.RoundRectangleShape).CornerRadius);
 			Assert.Equal(3, ((PathGeometry)((Path)p.PathShape).Data).Figures.Count);
 			Assert.Equal(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
@@ -113,13 +130,25 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal(Label.TextProperty, p.BindableProp);
 		}
 
-		[Fact(Skip = "TODO: Convert TestCaseSource to Theory with MemberData")]
-		public void ConvertersAreReplaced()
+		[Theory]
+		[InlineData(XamlInflator.XamlC, typeof(BrushTypeConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(ImageSourceConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(StrokeShapeTypeConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(Graphics.Converters.PointTypeConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(Graphics.Converters.RectTypeConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(TypeTypeConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(BindablePropertyConverter))]
+		[InlineData(XamlInflator.XamlC, typeof(ListStringTypeConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(BrushTypeConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(ImageSourceConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(StrokeShapeTypeConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(Graphics.Converters.PointTypeConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(Graphics.Converters.RectTypeConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(TypeTypeConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(BindablePropertyConverter))]
+		[InlineData(XamlInflator.SourceGen, typeof(ListStringTypeConverter))]
+		public void ConvertersAreReplaced(XamlInflator inflator, Type converterType)
 		{
-			// TODO: This test needs to be parameterized with converter types
-			// typeof(ImageSourceConverter), typeof(StrokeShapeTypeConverter), etc.
-			Type converterType = typeof(ImageSourceConverter); // Placeholder
-			var inflator = XamlInflator.XamlC; // Placeholder
 
 			if (inflator == XamlInflator.XamlC)
 			{

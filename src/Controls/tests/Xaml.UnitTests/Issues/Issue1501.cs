@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</BoxView>";
 
 			BoxView1501 layout = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => { layout = new BoxView1501().LoadFromXaml(xaml); });
+			Assert.Null(Record.Exception(() => { layout = new BoxView1501().LoadFromXaml(xaml); }));
 
 			Assert.False(layout.Fired);
 			var tgr = layout.GestureRecognizers[0] as TapGestureRecognizer;

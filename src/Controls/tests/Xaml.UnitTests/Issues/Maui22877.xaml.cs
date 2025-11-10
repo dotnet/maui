@@ -12,7 +12,7 @@ public partial class Maui22877 : ContentPage
 {
 	public Maui22877() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -27,6 +27,8 @@ public partial class Maui22877 : ContentPage
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]

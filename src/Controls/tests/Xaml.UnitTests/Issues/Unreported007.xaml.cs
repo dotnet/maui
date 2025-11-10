@@ -13,9 +13,8 @@ public partial class Unreported007 : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
+		public Tests() => DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
+		public void Dispose() => DeviceInfo.SetCurrent(null);
 
 		[Theory]
 		[Values]

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -65,18 +67,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		public class Tests
+		public class Tests : IDisposable
 		{
+			public void Dispose()
+			{
+				DispatcherProvider.SetCurrent(null);
+				Application.SetCurrentApplication(null);
+			}
 			public Tests()
 			{
+				Application.SetCurrentApplication(new MockApplication());
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				Bz34037Converter0.Invoked = 0;
 				Bz34037Converter1.Invoked = 0;
 			}
 
-		public void Dispose()
-			{
-				Application.Current = null;
-			}
 
 			[Theory]
 			[Values]

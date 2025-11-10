@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			        </Grid.RowDefinitions>
 				</Grid>";
 			var grid = new Grid();
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => grid.LoadFromXaml<Grid>(xaml));
+			Assert.Null(Record.Exception(() => grid.LoadFromXaml<Grid>(xaml)));
 			Assert.Single(grid.RowDefinitions);
 			Assert.True(grid.RowDefinitions[0].Height.IsStar);
 		}

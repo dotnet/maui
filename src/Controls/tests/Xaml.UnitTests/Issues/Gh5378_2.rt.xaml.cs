@@ -1,4 +1,9 @@
+using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Build.Tasks;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -10,8 +15,20 @@ public partial class Gh5378_2 : ContentPage
 	public Gh5378_2() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		[Theory]
 		[Values]
 		public void ReportSyntaxError(XamlInflator inflator)

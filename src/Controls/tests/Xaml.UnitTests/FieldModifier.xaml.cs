@@ -1,5 +1,10 @@
+using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -9,13 +14,25 @@ public partial class FieldModifier : ContentPage
 	public FieldModifier() => InitializeComponent();
 
 
-	public class FindByNameTests
+	public class FindByNameTests : IDisposable
 	{
+		public FindByNameTests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		[Theory]
 		[Values]
-		public void TestFieldModifier()
+		public void TestFieldModifier(XamlInflator inflator)
 		{
-			var layout = new FieldModifier();
+			var layout = new FieldModifier(inflator);
 			Assert.NotNull(layout.privateLabel);
 			Assert.NotNull(layout.internalLabel);
 			Assert.NotNull(layout.publicLabel);

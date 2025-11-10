@@ -25,7 +25,7 @@ public partial class Gh12025 : ContentPage
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
-				// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => MockCompiler.Compile(typeof(Gh12025)));
+				Assert.Null(Record.Exception(() => MockCompiler.Compile(typeof(Gh12025))));
 			}
 			else if (inflator == XamlInflator.SourceGen)
 			{

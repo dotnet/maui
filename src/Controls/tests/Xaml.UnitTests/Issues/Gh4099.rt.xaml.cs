@@ -27,9 +27,9 @@ public partial class Gh4099 : ContentPage
 					catch (BuildException xpe)
 					{
 						Assert.Equal(5, xpe.XmlInfo.LineNumber);
-						// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
+						return;
 					}
-					Assert.Fail();
+					Assert.Fail("Expected BuildException was not thrown");
 					break;
 				case XamlInflator.SourceGen:
 					var result = CreateMauiCompilation()
@@ -47,8 +47,7 @@ public partial class Gh4099 : ContentPage
 					Assert.True(result.Diagnostics.Any());
 					return;
 				default:
-					return; // TODO: Convert to Skip attribute or conditional test
-					break;
+					return;
 			}
 		}
 	}

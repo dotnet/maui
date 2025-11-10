@@ -1,4 +1,9 @@
+using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
@@ -12,8 +17,20 @@ public partial class FontSize : ContentPage
 	public FontSize() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		[Theory]
 		[Values]
 		public void FontSizeExtensionsAreReplaced(XamlInflator inflator)

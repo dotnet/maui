@@ -4,6 +4,8 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -36,9 +38,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public XmlnsCollision() => InitializeComponent();
 
 
-		public class Test
+		public class Test : IDisposable
 		{
-			// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
+			public Test()
+			{
+				Application.SetCurrentApplication(new MockApplication());
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+				AppInfo.SetCurrent(new MockAppInfo());
+			}
+
+			public void Dispose()
+			{
+				AppInfo.SetCurrent(null);
+				DispatcherProvider.SetCurrent(null);
+				Application.SetCurrentApplication(null);
+			}
 
 			[Theory]
 			[Values]

@@ -12,7 +12,7 @@ public partial class Maui25608_2
 {
 	public Maui25608_2() => InitializeComponent();
 
-	public class Test
+	public class Test : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
 
@@ -30,8 +30,9 @@ public partial class Maui25608_2
 		{
 			BindingDiagnostics.BindingFailed -= BindingFailed;
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
-
 			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		bool bindingFailureReported = false;

@@ -17,10 +17,10 @@ public partial class Gh4516 : ContentPage
 	{
 		[Theory]
 		[Values]
-		public void BindingToEmptyCollection()
+		public void BindingToEmptyCollection(XamlInflator inflator)
 		{
 			Gh4516 layout = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout = new Gh4516(inflator) { BindingContext = new Gh4516VM() });
+			Assert.Null(Record.Exception(() => layout = new Gh4516(inflator) { BindingContext = new Gh4516VM() }));
 			Assert.Equal("foo.jpg", (layout.image.Source as FileImageSource).File);
 		}
 	}

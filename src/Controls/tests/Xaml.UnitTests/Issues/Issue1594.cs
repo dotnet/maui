@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 
-	public class Issue1594
+	public class Issue1594 : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 

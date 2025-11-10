@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -14,17 +13,22 @@ public partial class Gh13209 : ContentPage
 
 	public class Tests : IDisposable
 	{
+		public void Dispose()
+		{
+			ResourceDictionary.ClearCache();
+		}
 
-
-		public void Dispose() { }
 		[Theory]
 		[Values]
 		public void RdWithSource(XamlInflator inflator)
 		{
 			var layout = new Gh13209(inflator);
+
 			Assert.Equal(Colors.Chartreuse, layout.MyRect.BackgroundColor);
-			Assert.Single(layout.Root.Resources);
-			Assert.Empty(layout.Root.Resources.MergedDictionaries);
+
+			// NUnit used .Count assertions, not enumerator-based Assert.Single/Empty
+			Assert.Equal(1, layout.Root.Resources.Count);
+			Assert.Equal(0, layout.Root.Resources.MergedDictionaries.Count);
 
 			Assert.NotNull(layout.Root.Resources["Color1"]);
 			Assert.True(layout.Root.Resources.Remove("Color1"));

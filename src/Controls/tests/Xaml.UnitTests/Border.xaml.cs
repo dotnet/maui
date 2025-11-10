@@ -1,5 +1,8 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
@@ -12,8 +15,20 @@ public partial class Border : ContentPage
 	public Border() => InitializeComponent();
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		[Theory]
 		[Values]
 		public void InitializeStrokeShape(XamlInflator inflator)
@@ -28,7 +43,6 @@ public partial class Border : ContentPage
 		[Values]
 		public void BindingToStrokeShapeWorks(XamlInflator inflator)
 		{
-			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			var layout = new Border(inflator);
 
 			BorderViewModel viewModel = new();

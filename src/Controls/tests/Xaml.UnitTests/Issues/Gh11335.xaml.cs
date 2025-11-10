@@ -20,6 +20,7 @@ public partial class Gh11335 : ContentPage
 	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
+		bool eventFired;
 
 		public Tests()
 		{
@@ -37,17 +38,18 @@ public partial class Gh11335 : ContentPage
 		{
 			Assert.Equal(VisualTreeChangeType.Add, e.ChangeType);
 			Assert.Equal(1, e.ChildIndex);
-			// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
+			eventFired = true;
 		}
 
 		[Theory]
 		[Values]
 		public void ChildIndexOnAdd(XamlInflator inflator)
 		{
+			eventFired = false;
 			var layout = new Gh11335(inflator);
 			VisualDiagnostics.VisualTreeChanged += OnVTChanged;
 			layout.Add(null, EventArgs.Empty);
-			Assert.Fail();
+			Assert.True(eventFired, "VisualTreeChanged event should have been fired");
 		}
 	}
 }

@@ -13,9 +13,12 @@ public partial class Gh7097 : Gh7097Base
 
 	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
 		[Theory]
 		[Values]
@@ -35,7 +38,8 @@ public partial class Gh7097 : Gh7097Base
 			Assert.IsType<MockCommand>(btn1.Command);
 		}
 
-		[Fact]
+		[Theory]
+		[Values]
 		//this was later reported as https://github.com/xamarin/Microsoft.Maui.Controls/issues/7286
 		public void RegisteringXNameOnSubPages(XamlInflator inflator)
 		{

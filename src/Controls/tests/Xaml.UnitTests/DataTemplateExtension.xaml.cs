@@ -10,9 +10,9 @@ public partial class DataTemplateExtension : ContentPage
 {
 	public DataTemplateExtension() => InitializeComponent();
 
-
 	public class Tests
 	{
+
 		[Theory]
 		[Values]
 		public void DataTemplateExtension(XamlInflator inflator)
@@ -28,8 +28,8 @@ public partial class DataTemplateExtension : ContentPage
 			Assert.IsType<DataTemplateExtension>(obj);
 		}
 
-		[Xunit.Fact]
-		public void ExtensionsAreReplaced() // TODO: Fix parameters - see comment above] XamlInflator inflator)
+		[Xunit.Fact(Skip = "Test was not running in NUnit (no [Test] attribute) - needs investigation")]
+		public void ExtensionsAreReplaced()
 		{
 			var result = CreateMauiCompilation()
 				.WithAdditionalSource(

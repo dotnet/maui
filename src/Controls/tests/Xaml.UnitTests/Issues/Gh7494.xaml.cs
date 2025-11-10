@@ -1,4 +1,6 @@
 // Copyright (c) Microsoft Corporation.
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
 // Licensed under the MIT License.
 using System;
 using Microsoft.Maui.Dispatching;
@@ -14,9 +16,19 @@ public partial class Gh7494 : ContentPage
 
 	public class Tests : IDisposable
 	{
+		public Tests()
+	{
+		Application.SetCurrentApplication(new MockApplication());
+		DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+	}
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose()
+	{
+		AppInfo.SetCurrent(null);
+		DispatcherProvider.SetCurrent(null);
+		Application.SetCurrentApplication(null);
+	}
+
 
 		[Theory]
 		[Values]

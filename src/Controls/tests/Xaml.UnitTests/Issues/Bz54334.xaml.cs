@@ -59,7 +59,8 @@ public partial class Bz54334 : ContentPage
 			Application.Current = null;
 		}
 
-		[Fact]
+		[Theory]
+		[Values]
 		//		[InlineData(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
 		public void FooBz54334(XamlInflator inflator)
 		{

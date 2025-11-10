@@ -1,6 +1,9 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -11,17 +14,24 @@ public partial class TestSharedResourceDictionary : ContentPage
 
 	public class Tests : IDisposable
 	{
-
-		public void Dispose() { }
 		public Tests()
 		{
-			Application.Current = new MockApplication
+			var app = new MockApplication
 			{
 				Resources = new ResourceDictionary
 				{
 					new MyRD()
 				}
 			};
+			Application.SetCurrentApplication(app);
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
 		}
 
 		[Theory]

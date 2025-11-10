@@ -1,4 +1,8 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -14,6 +18,8 @@ public class Gh4130Control : ContentView
 
 public partial class Gh4130 : ContentPage
 {
+	public bool EventFired { get; set; }
+
 	public Gh4130()
 	{
 		InitializeComponent();
@@ -22,12 +28,24 @@ public partial class Gh4130 : ContentPage
 
 	void OnTextChanged(object sender, EventArgs e)
 	{
-		// TODO: XUnit has no // TODO: XUnit has no Assert.Pass() - test passes if no exception is thrown - test passes if no exception is thrown
+		EventFired = true;
 	}
 
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
 		[Theory]
 		[Values]
 		public void NonGenericEventHanlders(XamlInflator inflator)
@@ -35,7 +53,7 @@ public partial class Gh4130 : ContentPage
 			var layout = new Gh4130(inflator);
 			var control = layout.Content as Gh4130Control;
 			control.FireEvent();
-			Assert.Fail();
+			Assert.True(layout.EventFired, "Event handler should have been called");
 		}
 	}
 }

@@ -1,4 +1,9 @@
+using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
@@ -10,8 +15,21 @@ public partial class OnPlatformOptimization : ContentPage
 {
 	public OnPlatformOptimization() => InitializeComponent();
 
-	public class Tests
+	public class Tests : IDisposable
 	{
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			DispatcherProvider.SetCurrent(null);
+			Application.SetCurrentApplication(null);
+		}
+
 		[Theory]
 		[InlineData("net7.0-ios", XamlInflator.XamlC)]
 		[InlineData("net7.0-android", XamlInflator.XamlC)]

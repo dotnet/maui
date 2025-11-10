@@ -15,9 +15,9 @@ public partial class Issue2152 : ContentPage
 
 	public class Tests : IDisposable
 	{
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-		public void Dispose() { }
-		// TODO: Convert to IDisposable or constructor - [MemberData(nameof(InitializeTest))] // TODO: Convert to IDisposable or constructor public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
 		[Theory]
 		[Values]
@@ -28,9 +28,9 @@ public partial class Issue2152 : ContentPage
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Issue2152));
 			}
 			Issue2152 layout = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => layout = new Issue2152(inflator));
+			Assert.Null(Record.Exception(() => layout = new Issue2152(inflator)));
 			Cell cell = null;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
+			Assert.Null(Record.Exception(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null)));
 			var button = cell.FindByName<Button>("btn") as IButtonController;
 			Assert.Equal(0, layout.clickcount);
 			button.SendClicked();
