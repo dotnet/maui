@@ -178,7 +178,15 @@ When testing is required, use the Sandbox app to validate PR changes:
 
 ### Fetch PR Changes (Without Checking Out)
 
-**CRITICAL**: Stay on the current branch (pr-reviewer) to preserve all instruction files and context. Apply PR changes on top of the current branch instead of checking out the PR branch.
+**CRITICAL**: Stay on your current branch (wherever you are when starting the review) to preserve context. Apply PR changes on top of the current branch instead of checking out the PR branch.
+
+**FIRST STEP - Record Your Starting Branch:**
+```bash
+# Record what branch you're currently on - you'll need this for cleanup
+ORIGINAL_BRANCH=$(git branch --show-current)
+echo "Starting review from branch: $ORIGINAL_BRANCH"
+# Remember this value for cleanup at the end!
+```
 
 ```bash
 # Get the PR number from the user's request
@@ -248,10 +256,10 @@ I need help resolving this merge issue before I can test the PR.
 **Why this matters**: If you can't cleanly merge the PR, you can't accurately test it. Testing with incorrect code leads to misleading results. It's better to pause and get help than to provide an incomplete or incorrect review.
 
 **Why this approach:**
-- ✅ Preserves all instruction files from pr-reviewer branch
-- ✅ Tests PR changes on top of latest guidelines
-- ✅ Simple and reliable (standard git merge)
-- ✅ Easy to clean up (just delete test branch)
+- ✅ Preserves your current working context and branch state
+- ✅ Tests PR changes on top of wherever you currently are
+- ✅ Allows agent to maintain proper context across review
+- ✅ Easy to clean up (just delete test branch and return to original branch)
 - ✅ Can compare before/after easily
 - ✅ Handles most conflicts gracefully
 
@@ -614,12 +622,14 @@ See `.github/instructions/safearea-testing.instructions.md` for comprehensive gu
 
 6. **Clean up test branches**
    ```bash
-   # Return to pr-reviewer branch
-   git checkout pr-reviewer
+   # Return to original branch (whatever branch you started on)
+   git checkout $ORIGINAL_BRANCH
    
    # Delete test branches
    git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp
    ```
+   
+   **Note**: Uses `$ORIGINAL_BRANCH` variable you set at the beginning. If you didn't save it, replace with whatever branch you were on when you started the review (e.g., `main`, `pr-reviewer`, etc.)
 
 ### Include Test Results in Review
 
@@ -682,8 +692,8 @@ For each edge case tested, document:
 After testing, clean up all test artifacts:
 
 ```bash
-# Return to pr-reviewer branch
-git checkout pr-reviewer
+# Return to your original branch (use the variable from the beginning)
+git checkout $ORIGINAL_BRANCH  # Or manually specify: main, pr-reviewer, etc.
 
 # Revert any changes to Sandbox app
 git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
@@ -694,6 +704,8 @@ git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp 2>/dev/null || true
 # Clean build artifacts if needed
 dotnet clean
 ```
+
+**Important**: If you didn't save `$ORIGINAL_BRANCH` at the start, replace it with whatever branch you were on when you began the review. This ensures you return to your starting state.
 
 ## Core Responsibilities
 
