@@ -22,12 +22,5 @@ public class SelfBindingTests
         
         // Should have generated a binding
         Assert.NotNull(result.Binding);
-        
-        // Check all generated files
-        foreach (var file in result.GeneratedFiles)
-        {
-            Console.WriteLine($"\n=== File: {file.Key} ===");
-            Console.WriteLine(file.Value);
-        }
     }
 }
