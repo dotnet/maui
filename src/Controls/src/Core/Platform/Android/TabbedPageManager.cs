@@ -599,6 +599,10 @@ public class TabbedPageManager
 				_bottomNavigationView.Elevation = 0;
 			}
 		}
+		else if (_currentBarBackground is SolidColorBrush && _bottomNavigationView is not null && _bottomNavigationView.Elevation == 0)
+		{
+			_bottomNavigationView.Elevation = _bottomNavigationView.Context.Resources.GetDimension(Resource.Dimension.design_bottom_navigation_elevation);
+		}
 
 		RefreshBarBackground();
 	}
