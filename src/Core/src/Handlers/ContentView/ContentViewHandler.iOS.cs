@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Maui.Platform;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -52,13 +51,18 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				// When content is removed, we need to invalidate measures so the ContentView can resize to 0x0
-				// We need to invalidate both the ContentView itself and its ancestors
-				if (handler.PlatformView is IPlatformMeasureInvalidationController controller)
+				if (handler.VirtualView.PresentedContent is null)
 				{
-					controller.InvalidateMeasure(false);
+					// When content is removed, we need to invalidate measures so the ContentView can resize to 0x0
+					// Only invalidate if the ContentView previously had content (optimization to avoid unnecessary invalidation)
+					// Invalidate both the ContentView itself and its ancestors
+					if (handler.PlatformView is IPlatformMeasureInvalidationController controller)
+					{
+						controller.InvalidateMeasure(false);
+					}
+					handler.PlatformView.InvalidateAncestorsMeasures();
 				}
-				handler.PlatformView.InvalidateAncestorsMeasures();
+			
 			}
 		}		
 	public static partial void MapContent(IContentViewHandler handler, IContentView page)
