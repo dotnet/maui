@@ -179,5 +179,9 @@ public partial class TestPage
 		var (result, generated) = RunGenerator(xaml, code);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
+		
+		// Explicitly verify that XamlTypeResolver is not used anywhere in the generated code
+		// This is critical because XamlTypeResolver is not AOT-compatible
+		Assert.DoesNotContain("XamlTypeResolver", generated, StringComparison.Ordinal);
 	}
 }
