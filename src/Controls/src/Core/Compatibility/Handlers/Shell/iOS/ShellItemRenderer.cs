@@ -457,20 +457,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellItemController == null)
 				return;
 
-			if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
-			{
-				TabBar.Alpha = 1.0f;
-				TabBar.Hidden = !ShellItemController.ShowTabs;
-			}
-
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(18) && TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
+				{
+					TabBar.Alpha = 1.0f;
+					TabBar.Hidden = !ShellItemController.ShowTabs;
+				}
+
 				if (TabBarHidden == !ShellItemController.ShowTabs)
 				{
 					return;
 				}
 
 				TabBarHidden = !ShellItemController.ShowTabs;
+			}
+			else
+			{
+				TabBar.Hidden = !ShellItemController.ShowTabs;
 			}
 		}
 	}
