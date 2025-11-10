@@ -2319,7 +2319,7 @@ public class IntegrationTests
 
 		class Bar
 		{
-			public string? StringProperty { get; set; }
+			public string StringProperty { get; set; } = "";
 		}
 		""";
 
@@ -2384,6 +2384,10 @@ public class IntegrationTests
 			            {
 			                setter = static (source, value) =>
 			                {
+			                    if (value is null)
+			                    {
+			                        return;
+			                    }
 			                    if (source.NullableObject is {} p0)
 			                    {
 			                        p0.StringProperty = value;
@@ -2399,23 +2403,14 @@ public class IntegrationTests
 			                    new(static source => source, "NullableObject"),
 			                    new(static source => source.NullableObject, "StringProperty"),
 			                })
-
 			                {
-
 			                	Mode = mode,
-
 			                	Converter = converter,
-
 			                	ConverterParameter = converterParameter,
-
 			                	StringFormat = stringFormat,
-
 			                	Source = source,
-
 			                	FallbackValue = fallbackValue,
-
 			                	TargetNullValue = targetNullValue,
-
 			                };
 			            bindableObject.SetBinding(bindableProperty, binding);
 			        }
@@ -2439,7 +2434,7 @@ public class IntegrationTests
 
 		class Bar
 		{
-			public string? StringProperty { get; set; }
+			public string StringProperty { get; set; } = "";
 		}
 		""";
 
