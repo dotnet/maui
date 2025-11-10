@@ -270,11 +270,41 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		else if (ctor != null)
 		{
 			// Check if this type is a known value provider that will be inlined later.
-			// If so, we still create the object but mark SIMPLE VALUE properties to be skipped.
-			// The object creation will be dead code, but TryProvideValue will replace it.
-			// We need to create the object because child elements might reference it in service providers.
-			// We only skip simple value properties - markup extensions and element content still need processing.
 			var willBeInlined = NodeSGExtensions.GetKnownValueProviders(Context).ContainsKey(type);
+			
+			if (willBeInlined)
+			{
+				// Check if this node has any properties with ElementNode/MarkupNode/ListNode values
+				// or collection items with ElementNodes that need to be set via assignment (not inlined)
+				bool hasComplexPropertyValues = node.Properties.Values.Any(v => v is ElementNode or MarkupNode or ListNode);
+				bool hasElementCollectionItems = node.CollectionItems.Any(v => v is ElementNode or MarkupNode);
+				
+				if (!hasComplexPropertyValues && !hasElementCollectionItems)
+				{
+					// All properties are simple values - skip creating the actual object instantiation.
+					// We still need to register the node in variables for TryProvideValue to work,
+					// but we use a placeholder variable that will be replaced by TryProvideValue.
+					// Mark all properties to be skipped since they'll be handled by TryProvideValue
+					foreach (var prop in node.Properties)
+						if (!node.SkipProperties.Contains(prop.Key))
+							node.SkipProperties.Add(prop.Key);
+					
+					// Create a placeholder variable entry for TryProvideValue to find and replace
+					var placeholderName = NamingHelpers.CreateUniqueVariableName(Context, type);
+					variables[node] = new LocalVariable(type, placeholderName);
+					
+					// Don't write any code or register source info - TryProvideValue will do it
+					return;
+				}
+				
+				// Has complex property values or collection items - need to create the variable and
+				// set them via assignment, but skip setting simple value properties (they'll be inlined)
+				foreach (var prop in node.Properties)
+				{
+					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
+						node.SkipProperties.Add(prop.Key);
+				}
+			}
 
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 
@@ -291,17 +321,6 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
-			
-			// If this will be inlined by TryProvideValue, skip setting SIMPLE VALUE properties
-			// Complex properties (with markup extensions or element content) still need to be processed
-			if (willBeInlined)
-			{
-				foreach (var prop in node.Properties)
-				{
-					if (prop.Value is ValueNode vn && !node.SkipProperties.Contains(prop.Key))
-						node.SkipProperties.Add(prop.Key);
-				}
-			}
 			
 			return;
 		}
