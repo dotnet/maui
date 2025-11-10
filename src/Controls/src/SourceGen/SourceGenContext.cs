@@ -58,7 +58,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	}
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
-	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGValueProviders;
+	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProvidersV2;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGEarlyMarkupExtensions;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGLateMarkupExtensions;
 }

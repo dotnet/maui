@@ -269,13 +269,14 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		}
 		else if (ctor != null)
 		{
-			// Check if this type is a known value provider that will be inlined later.
-			var willBeInlined = NodeSGExtensions.GetKnownValueProviders(Context).ContainsKey(type);
-			
-			if (willBeInlined)
+			// Check if this type is a known value provider that can be inlined.
+			// Use CanProvideValue to verify that ALL properties can be inlined (no markup extensions).
+			if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var valueProvider) &&
+				valueProvider.CanProvideValue(node, Context))
 			{
-				// For known value providers (like Setter), skip setting simple value properties
-				// since they'll be handled by inline initialization in TryProvideValue.
+				// This element can be fully inlined without property assignments.
+				// Skip setting all simple value properties since they'll be handled
+				// by inline initialization in TryProvideValue.
 				// 
 				// This eliminates the dead code that creates service providers (XamlServiceProvider,
 				// SimpleValueTargetProvider, XmlNamespaceResolver, XamlTypeResolver) for property
