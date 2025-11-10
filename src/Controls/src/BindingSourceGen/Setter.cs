@@ -24,6 +24,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 		{
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
+			bool isLastPart = part == path.Last();
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -42,17 +43,20 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
 			}
-			else if (part is MemberAccess { IsValueType: true } && part != path.Last())
+			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
 			{
 				// It is necessary to create a variable for value types in order to set their properties.
 				// We can simply reuse the pattern matching mechanism to declare the variable.
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, shouldUseUnsafePropertySetter: false);
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
 				AddPatternMatchingExpression("{}");
 			}
-			else
+			else if (!isLastPart)
 			{
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, part == path.Last());
+				// For non-last parts, extend the expression using the getter path
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
 			}
+			// For the last part, we don't extend the expression here
+			// The assignment is handled by BuildAssignmentStatement
 		}
 
 		return new Setter(
@@ -63,8 +67,16 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
 		lastPart switch
 		{
+			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Field => $"{CreateUnsafeFieldAccessorMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}) = {assignedValueExpression};",
 			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && inaccessibleMemberAccess.IsSetterInaccessible => $"{CreateUnsafePropertyAccessorSetMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
 			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{accessAccumulator}.{inaccessibleMemberAccess.MemberName} = {assignedValueExpression};",
+			MemberAccess memberAccess => $"{accessAccumulator}.{memberAccess.MemberName} = {assignedValueExpression};",
+			IndexAccess indexAccess => indexAccess.Index switch
+			{
+				int numericIndex => $"{accessAccumulator}[{numericIndex}] = {assignedValueExpression};",
+				string stringIndex => $"{accessAccumulator}[\"{stringIndex}\"] = {assignedValueExpression};",
+				_ => throw new NotSupportedException($"Unsupported index type: {indexAccess.Index.GetType()}"),
+			},
 			_ => $"{accessAccumulator} = {assignedValueExpression};",
 		};
 }

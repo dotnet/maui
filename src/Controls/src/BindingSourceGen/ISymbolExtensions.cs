@@ -30,9 +30,10 @@ internal static class ISymbolExtensions
 	}
 
 	/// <summary>
-	/// Determines if a property's setter is accessible.
+	/// Determines if a property's setter is accessible for binding purposes.
 	/// For properties, checks the SetMethod accessibility.
-	/// Returns true if there's no setter (read-only property) or if the setter is accessible.
+	/// Returns true if there's no setter (read-only properties don't need setter access).
+	/// Returns true if the setter exists and is accessible.
 	/// Returns false only if a setter exists but is inaccessible.
 	/// For other symbols, uses the default IsAccessible check.
 	/// </summary>
@@ -40,11 +41,12 @@ internal static class ISymbolExtensions
 	{
 		if (symbol is IPropertySymbol propertySymbol)
 		{
-			// If there's no setter, treat it as accessible (read-only is OK)
-			// We only care about cases where a setter exists but is not accessible
+			// Read-only properties (no setter) are OK - we don't need to write to them
+			// so we return true to avoid marking them as inaccessible
 			if (propertySymbol.SetMethod == null)
 				return true;
 			
+			// Check if the setter method itself is accessible
 			return propertySymbol.SetMethod.IsAccessible();
 		}
 		

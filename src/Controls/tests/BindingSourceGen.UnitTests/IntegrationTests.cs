@@ -2304,10 +2304,15 @@ public class IntegrationTests
 			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-14-11.g.cs"]);
 	}
 
-	[Fact]
-	public void GenerateBindingWithPublicPropertyPrivateSetter()
+	[Theory]
+	[InlineData("private", true)]
+	[InlineData("protected", true)]
+	[InlineData("internal", false)]
+	[InlineData("private protected", true)]
+	[InlineData("protected internal", false)]
+	public void GenerateBindingWithPublicPropertyAndNonPublicSetter(string setterVisibility, bool shouldUseUnsafeAccessor)
 	{
-		var source = """
+		var source = $$"""
 
             using Microsoft.Maui.Controls;
             using MyNamespace;
@@ -2319,7 +2324,7 @@ public class IntegrationTests
             {
                 public class MySourceClass
                 {
-                    public string Text { get; private set; } = "Hello";
+                    public string Text { get; {{setterVisibility}} set; } = "Hello";
 
                     public void SetBinding()
                     {
@@ -2334,160 +2339,21 @@ public class IntegrationTests
 		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		
-		// Verify that UnsafeAccessor is generated for the setter
 		// Find the interceptor file (not the common helper file)
 		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
 		
-		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
-	}
-
-	[Fact]
-	public void GenerateBindingWithPublicPropertyProtectedSetter()
-	{
-		var source = """
-
-            using Microsoft.Maui.Controls;
-            using MyNamespace;
-
-            var mySourceClass = new MySourceClass();
-            mySourceClass.SetBinding();
-
-            namespace MyNamespace
-            {
-                public class MySourceClass
-                {
-                    public string Text { get; protected set; } = "Hello";
-
-                    public void SetBinding()
-                    {
-                        var entry = new Entry();
-                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
-                    }
-                }
-            }
-        """;
-
-		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
-		AssertExtensions.AssertNoDiagnostics(result);
-		
-		// Verify that UnsafeAccessor is generated for the setter
-		// Find the interceptor file (not the common helper file)
-		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
-		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
-	}
-
-	[Fact]
-	public void GenerateBindingWithPublicPropertyInternalSetter()
-	{
-		var source = """
-
-            using Microsoft.Maui.Controls;
-            using MyNamespace;
-
-            var mySourceClass = new MySourceClass();
-            mySourceClass.SetBinding();
-
-            namespace MyNamespace
-            {
-                public class MySourceClass
-                {
-                    public string Text { get; internal set; } = "Hello";
-
-                    public void SetBinding()
-                    {
-                        var entry = new Entry();
-                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
-                    }
-                }
-            }
-        """;
-
-		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
-		AssertExtensions.AssertNoDiagnostics(result);
-		
-		// internal setter should be accessible within the same assembly, so should NOT use UnsafeAccessor
-		// Find the interceptor file (not the common helper file)
-		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
-		Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
-	}
-
-	[Fact]
-	public void GenerateBindingWithPublicPropertyPrivateProtectedSetter()
-	{
-		var source = """
-
-            using Microsoft.Maui.Controls;
-            using MyNamespace;
-
-            var mySourceClass = new MySourceClass();
-            mySourceClass.SetBinding();
-
-            namespace MyNamespace
-            {
-                public class MySourceClass
-                {
-                    public string Text { get; private protected set; } = "Hello";
-
-                    public void SetBinding()
-                    {
-                        var entry = new Entry();
-                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
-                    }
-                }
-            }
-        """;
-
-		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
-		AssertExtensions.AssertNoDiagnostics(result);
-		
-		// Verify that UnsafeAccessor is generated for the setter
-		// Find the interceptor file (not the common helper file)
-		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
-		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
-	}
-
-	[Fact]
-	public void GenerateBindingWithPublicPropertyProtectedInternalSetter()
-	{
-		var source = """
-
-            using Microsoft.Maui.Controls;
-            using MyNamespace;
-
-            var mySourceClass = new MySourceClass();
-            mySourceClass.SetBinding();
-
-            namespace MyNamespace
-            {
-                public class MySourceClass
-                {
-                    public string Text { get; protected internal set; } = "Hello";
-
-                    public void SetBinding()
-                    {
-                        var entry = new Entry();
-                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
-                    }
-                }
-            }
-        """;
-
-		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
-		AssertExtensions.AssertNoDiagnostics(result);
-		
-		// protected internal should be accessible, so should NOT use UnsafeAccessor
-		// Find the interceptor file (not the common helper file)
-		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
-		Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
+		if (shouldUseUnsafeAccessor)
+		{
+			// Verify that UnsafeAccessor is generated for the setter and is called correctly
+			Assert.Contains("SetUnsafeProperty_Text(source, value);", generatedCode, StringComparison.Ordinal);
+			Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+		}
+		else
+		{
+			// Setter should be accessible, so should NOT use UnsafeAccessor
+			Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+			Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
+		}
 	}
 }
 
