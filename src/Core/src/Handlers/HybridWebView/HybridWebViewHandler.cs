@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Handlers
 								{
 									var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
 									var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
-									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
+									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScriptAsync threw an exception: {jsException.Message}", jsException);
 									taskManager.SetTaskFailed(taskId, ex);
 								}
 							}
@@ -358,6 +358,15 @@ namespace Microsoft.Maui.Handlers
 			public string? StackTrace { get; set; }
 		}
 
+		private sealed class JSInvokeResult
+		{
+			public string? Result { get; set; }
+			public bool IsError { get; set; }
+			public string? Name { get; set; }
+			public string? Message { get; set; }
+			public string? StackTrace { get; set; }
+		}
+
 		private sealed class DotNetInvokeResult
 		{
 			public object? Result { get; set; }
@@ -371,12 +380,11 @@ namespace Microsoft.Maui.Handlers
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
 		[JsonSerializable(typeof(JSInvokeError))]
+		[JsonSerializable(typeof(JSInvokeResult))]
 		[JsonSerializable(typeof(DotNetInvokeResult))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}
-
-
 
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
@@ -393,43 +401,85 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var script = request.Script;
-			// Make all the platforms mimic Android's implementation, which is by far the most complete.
-			if (!OperatingSystem.IsAndroid())
-			{
-				script = WebViewHelper.EscapeJsString(script);
+			// Escape and wrap script with try-catch and error handling for all platforms
+			var escapedScript = WebViewHelper.EscapeJsString(request.Script);
+			var script = 
+				$$"""
+				(function() {
+					try {
+						console.warn('{{escapedScript}}');
 
-				if (!OperatingSystem.IsWindows())
-				{
-					// Use JSON.stringify() method to converts a JavaScript value to a JSON string
-					script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
-				}
-				else
-				{
-					script = "try{eval('" + script + "')}catch(e){'null'};";
-				}
-			}
-
+						let result = eval('{{escapedScript}}');
+						let resultObj = {
+							IsError: false,
+							Result: JSON.stringify(result)
+						};
+						return JSON.stringify(resultObj);
+					} catch (error) {
+						console.error(error);
+						let errorObj;
+						if (!error) {
+							errorObj = {
+								IsError: true,
+								Message: 'Unknown error',
+								StackTrace: Error().stack
+							};
+						} else if (error instanceof Error) {
+							errorObj = {
+								IsError: true,
+								Name: error.name,
+								Message: error.message,
+								StackTrace: error.stack
+							};
+						} else if (typeof error === 'string') {
+							errorObj = {
+								IsError: true,
+								Message: error,
+								StackTrace: Error().stack
+							};
+						} else {
+							errorObj = {
+								IsError: true,
+								Message: JSON.stringify(error),
+								StackTrace: Error().stack
+							};
+						}
+						return JSON.stringify(errorObj);
+					}
+				})()
+				""";
+			
 			// Use the handler command to evaluate the JS
 			var innerRequest = new EvaluateJavaScriptAsyncRequest(script);
 			EvaluateJavaScript(handler, hybridWebView, innerRequest);
 
 			var result = await innerRequest.Task;
 
-			//if the js function errored or returned null/undefined treat it as null
-			if (result == "null")
+			var jsResult = JsonSerializer.Deserialize<JSInvokeResult>(result, HybridWebViewHandlerJsonContext.Default.JSInvokeResult);
+			if (jsResult?.IsError == true)
 			{
-				result = null;
+				var jsException = new HybridWebViewInvokeJavaScriptException(jsResult?.Message, jsResult?.Name, jsResult?.StackTrace);
+				var ex = new HybridWebViewInvokeJavaScriptException($"EvaluateJavaScriptAsync threw an exception: {jsException.Message}", jsException);
+				request.SetException(ex);
 			}
-			//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
-			//note that if the js function returns the string "null" we will get here and not above
-			else if (result != null)
+			else
 			{
-				result = result.Trim('"');
+				var returnValue = jsResult?.Result;
+
+				//if the js function errored or returned null/undefined treat it as null
+				if (returnValue == "null" || returnValue == "undefined")
+				{
+					returnValue = null;
+				}
+				//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
+				//note that if the js function returns the string "null" we will get here and not above
+				else if (returnValue != null)
+				{
+					returnValue = returnValue.Trim('"');
+				}
+
+				request.SetResult(returnValue!);
 			}
-
-			request.SetResult(result!);
-
 		}
 #endif
 
@@ -467,10 +517,22 @@ namespace Microsoft.Maui.Handlers
 				? string.Empty
 				: string.Join(
 					", ",
-					invokeJavaScriptRequest.ParamValues.Select((v, i) => (v == null ? "null" : JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!))));
+					invokeJavaScriptRequest.ParamValues.Select((v, i) =>
+					{
+						if (v == null)
+							return "null";
 
-			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync),
-				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.__InvokeJavaScript({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
+						var serialized = JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!);
+
+						// Escape the JSON string for JavaScript so it can be passed as a string literal
+						var escaped = WebViewHelper.EscapeJsString(serialized);
+
+						return $"'{escaped}'";
+					}));
+
+			var js = $"window.HybridWebView.__InvokeJavaScript({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])";
+
+			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync), new EvaluateJavaScriptAsyncRequest(js));
 
 			var stringResult = await callback.Task;
 
