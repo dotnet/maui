@@ -330,7 +330,7 @@ internal class KnownMarkups
 
 		static string GetBindingPath(ElementNode node)
 		{
-			if (node.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
+			if (node.Properties.TryGetValue(new XmlName(null, "Path"), out var pathNode)
 				&& pathNode is ValueNode { Value: string pathValue })
 			{
 				return pathValue;
