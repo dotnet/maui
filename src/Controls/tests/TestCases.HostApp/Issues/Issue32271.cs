@@ -8,7 +8,6 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue32271 : ContentPage
 {
 	ScrollViewViewModel _viewModel;
-	Label _offsetLabel;
 
 	public Issue32271()
 	{
@@ -41,22 +40,7 @@ public class Issue32271 : ContentPage
 
 		grid.Add(scrollView);
 		Grid.SetRow(scrollView, 0);
-
-		_offsetLabel = new Label
-		{
-			HorizontalOptions = LayoutOptions.Center,
-			AutomationId = "OffsetLabel",
-			Margin = new Thickness(0, 10)
-		};
-
-		scrollView.Scrolled += (s, e) =>
-		{
-			_offsetLabel.Text = e.ScrollX.ToString();
-		};
-
-		grid.Add(_offsetLabel);
-		Grid.SetRow(_offsetLabel, 1);
-
+		
 		var toggleButton = new Button
 		{
 			Text = "Toggle Orientation",
@@ -66,13 +50,13 @@ public class Issue32271 : ContentPage
 
 		var scrollToEndButton = new Button
 		{
-			Text = "Scroll to End",
+			Text = "Scroll",
 			AutomationId = "ScrollToEndButton"
 		};
 		scrollToEndButton.Clicked += async (s, e) =>
 		{
 			if (_viewModel.Content != null)
-				await scrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.Start, true);
+				await scrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.Center, true);
 		};
 
 		var buttonLayout = new HorizontalStackLayout
@@ -83,7 +67,7 @@ public class Issue32271 : ContentPage
 		};
 
 		grid.Add(buttonLayout);
-		Grid.SetRow(buttonLayout, 2);
+		Grid.SetRow(buttonLayout, 1);
 
 		Content = grid;
 	}
