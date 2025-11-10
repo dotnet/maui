@@ -299,4 +299,124 @@ public partial class TestPage
 				.Select(static line => line.Trim())
 				.Where(static line => !string.IsNullOrWhiteSpace(line));
 	}
+
+	[Fact]
+	public void CorrectlyDetectsNullableReferenceTypes()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Entry Text="{Binding Product.Name}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Product? Product { get; set; } = null;
+
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class Product
+{
+	public string? Name { get; set; }
+}
+""";
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Check that no CS8603 errors are present
+		var cs8603Errors = result.Diagnostics.Where(d => d.Id == "CS8603");
+		if (cs8603Errors.Any())
+		{
+			System.Console.WriteLine("=== CS8603 ERRORS FOUND ===");
+			foreach (var error in cs8603Errors)
+			{
+				System.Console.WriteLine($"{error.Id}: {error.GetMessage()} at {error.Location}");
+			}
+			System.Console.WriteLine("=== GENERATED CODE ===");
+			System.Console.WriteLine(generated);
+		}
+		
+		Assert.False(result.Diagnostics.Any(d => d.Id == "CS8603" || d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+	}
+
+	[Fact]
+	public void CorrectlyDetectsNullableReferenceTypesWithNonNullableTarget()
+	{
+		// This test reproduces the CS8603 error scenario
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Entry Text="{Binding Product.Name}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Product? Product { get; set; } = null;
+
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class Product
+{
+	public string Name { get; set; } = "";  // Non-nullable string
+}
+""";
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Check that no CS8603 errors are present - even with non-nullable target property,
+		// the generated getter should handle the nullable path correctly
+		var cs8603Errors = result.Diagnostics.Where(d => d.Id == "CS8603");
+		if (cs8603Errors.Any())
+		{
+			System.Console.WriteLine("=== CS8603 ERRORS FOUND ===");
+			foreach (var error in cs8603Errors)
+			{
+				System.Console.WriteLine($"{error.Id}: {error.GetMessage()} at {error.Location}");
+			}
+			System.Console.WriteLine("=== GENERATED CODE ===");
+			System.Console.WriteLine(generated);
+		}
+		
+		Assert.False(result.Diagnostics.Any(d => d.Id == "CS8603" || d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+	}
 }
