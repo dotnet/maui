@@ -80,16 +80,33 @@ public class Issue32223 : ContentPage
 			AdultTemplate = adultTemplate
 		};
 
+		Label label = new Label
+		{
+			Text = "",
+			AutomationId = "ReorderedLabel"
+		};
+
+
+		collectionView.ReorderCompleted += (s, e) =>
+		{
+			label.Text = "Success";
+		};
+
 		// --- CollectionView Setup ---
 		collectionView.SetBinding(ItemsView.ItemsSourceProperty, "People");
 
 		collectionView.ItemTemplate = selector;
 
-		Content = new Grid
-		{
-			Children = { collectionView }
-		};
+		Grid grid = new Grid();
+		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+		grid.Children.Add(label);
+		grid.Children.Add(collectionView);
 
+		grid.SetRow(label, 0);
+		grid.SetRow(collectionView, 1);
+
+		Content = grid;
 	}
 }
 
