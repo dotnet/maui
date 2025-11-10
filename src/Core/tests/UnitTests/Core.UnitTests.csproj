@@ -34,21 +34,6 @@
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
 
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.resx" Link="Resources\StringResources.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.cs.resx" Link="Resources\StringResources.cs.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.de.resx" Link="Resources\StringResources.de.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.es.resx" Link="Resources\StringResources.es.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.fr.resx" Link="Resources\StringResources.fr.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.it.resx" Link="Resources\StringResources.it.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.ja.resx" Link="Resources\StringResources.ja.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.ko.resx" Link="Resources\StringResources.ko.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.pl.resx" Link="Resources\StringResources.pl.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.pt-BR.resx" Link="Resources\StringResources.pt-BR.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.ru.resx" Link="Resources\StringResources.ru.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.tr.resx" Link="Resources\StringResources.tr.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.zh-Hans.resx" Link="Resources\StringResources.zh-Hans.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.zh-Hant.resx" Link="Resources\StringResources.zh-Hant.resx" />
-
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\ErrorMessages.resx" Link="Resources\ErrorMessages.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.cs.resx" Link="Resources\ErrorMessages.cs.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.de.resx" Link="Resources\ErrorMessages.de.resx" />

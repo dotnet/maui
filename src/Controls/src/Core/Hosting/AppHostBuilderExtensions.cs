@@ -11,19 +11,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 
-#if ANDROID
-using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-#elif WINDOWS
-using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-#elif IOS || MACCATALYST
-using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
 using Microsoft.Maui.Controls.Handlers.Items2;
-#elif TIZEN
-using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting;
@@ -121,46 +110,8 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 #pragma warning restore CA1416
 
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#if !TIZEN
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
-
 #if WINDOWS || MACCATALYST
 		handlersCollection.AddHandler(typeof(MenuFlyout), typeof(MenuFlyoutHandler));
-#endif
-
-#if IOS || MACCATALYST
-		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
-		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
-		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
 #if ANDROID || IOS || MACCATALYST || TIZEN
@@ -180,7 +131,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
 
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || TIZEN || IOS || MACCATALYST
 		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 		handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 		handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
@@ -192,15 +143,6 @@ public static partial class AppHostBuilderExtensions
 
 	static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 	{
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
-		// initialize compatibility DependencyService
-		DependencyService.SetToInitialized();
-
-#pragma warning disable CS0612, CA1416 // Type or member is obsolete, 'ResourcesProvider' is unsupported on: 'iOS' 14.0 and later
-		DependencyService.Register<ResourcesProvider>();
-		DependencyService.Register<FontNamedSizeService>();
-#pragma warning restore CS0612, CA1416 // Type or member is obsolete
-#endif
 		builder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
 
 		builder.ConfigureImageSourceHandlers();
