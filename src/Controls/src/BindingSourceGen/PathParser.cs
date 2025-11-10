@@ -56,15 +56,18 @@ internal class PathParser
 
 		// For properties, we need to check both getter and setter accessibility
 		// because the same path is used for both reading and writing.
-		// If either the getter OR setter is inaccessible, we need to use InaccessibleMemberAccess
-		// so that UnsafeAccessors can be generated for the inaccessible accessor(s).
+		// Track which accessors are inaccessible so UnsafeAccessors can be generated as needed.
 		bool isGetterAccessible = symbol.IsGetterAccessible();
 		bool isSetterAccessible = symbol.IsSetterAccessible();
-		bool isBothAccessible = isGetterAccessible && isSetterAccessible;
 
-		IPathPart part = isBothAccessible
-			? new MemberAccess(member, !isReferenceType)
-			: new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType, !isGetterAccessible, !isSetterAccessible);
+		IPathPart part = new MemberAccess(
+			MemberName: member,
+			IsValueType: !isReferenceType,
+			ContainingType: containgType,
+			MemberType: memberType,
+			Kind: accessorKind,
+			IsGetterInaccessible: !isGetterAccessible,
+			IsSetterInaccessible: !isSetterAccessible);
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);

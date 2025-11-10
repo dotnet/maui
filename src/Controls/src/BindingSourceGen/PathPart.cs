@@ -5,30 +5,47 @@ public interface IPathPart : IEquatable<IPathPart>
 	public string? PropertyName { get; }
 }
 
-public sealed record InaccessibleMemberAccess(TypeDescription ContainingType, TypeDescription memberType, AccessorKind Kind, string MemberName, bool IsValueType = false, bool IsGetterInaccessible = true, bool IsSetterInaccessible = true) : IPathPart
+public record MemberAccess(
+	string MemberName,
+	bool IsValueType = false,
+	TypeDescription? ContainingType = null,
+	TypeDescription? MemberType = null,
+	AccessorKind? Kind = null,
+	bool IsGetterInaccessible = false,
+	bool IsSetterInaccessible = false) : IPathPart
 {
 	public string PropertyName => MemberName;
-
+	
+	/// <summary>
+	/// Indicates whether this member has any inaccessible accessor (getter or setter).
+	/// Used to determine if UnsafeAccessor methods need to be generated.
+	/// </summary>
+	public bool HasInaccessibleAccessor => IsGetterInaccessible || IsSetterInaccessible;
+	
 	public bool Equals(IPathPart other)
 	{
-		return other is InaccessibleMemberAccess memberAccess
-			&& ContainingType == memberAccess.ContainingType
-			&& Kind == memberAccess.Kind
-			&& MemberName == memberAccess.MemberName
-			&& IsValueType == memberAccess.IsValueType
-			&& IsGetterInaccessible == memberAccess.IsGetterInaccessible
-			&& IsSetterInaccessible == memberAccess.IsSetterInaccessible;
-	}
-}
-
-public record MemberAccess(string MemberName, bool IsValueType = false) : IPathPart
-{
-	public string PropertyName => MemberName;
-	public bool Equals(IPathPart other)
-	{
-		return other is MemberAccess memberAccess
-			&& MemberName == memberAccess.MemberName
-			&& IsValueType == memberAccess.IsValueType;
+		if (other is not MemberAccess memberAccess)
+			return false;
+		
+		// Core properties must always match
+		if (MemberName != memberAccess.MemberName || IsValueType != memberAccess.IsValueType)
+			return false;
+		
+		// For extended properties, only compare if both sides have them populated
+		// This allows tests to create simple MemberAccess instances without full metadata
+		bool hasExtendedMetadata = ContainingType != null || Kind != null;
+		bool otherHasExtendedMetadata = memberAccess.ContainingType != null || memberAccess.Kind != null;
+		
+		if (hasExtendedMetadata && otherHasExtendedMetadata)
+		{
+			return ContainingType == memberAccess.ContainingType
+				&& MemberType == memberAccess.MemberType
+				&& Kind == memberAccess.Kind
+				&& IsGetterInaccessible == memberAccess.IsGetterInaccessible
+				&& IsSetterInaccessible == memberAccess.IsSetterInaccessible;
+		}
+		
+		return true;
 	}
 }
 

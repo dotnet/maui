@@ -67,9 +67,8 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
 		lastPart switch
 		{
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Field => $"{CreateUnsafeFieldAccessorMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}) = {assignedValueExpression};",
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && inaccessibleMemberAccess.IsSetterInaccessible => $"{CreateUnsafePropertyAccessorSetMethodName(inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{accessAccumulator}.{inaccessibleMemberAccess.MemberName} = {assignedValueExpression};",
+			MemberAccess { Kind: AccessorKind.Field, IsSetterInaccessible: true } memberAccess => $"{CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({accessAccumulator}) = {assignedValueExpression};",
+			MemberAccess { Kind: AccessorKind.Property, IsSetterInaccessible: true } memberAccess => $"{CreateUnsafePropertyAccessorSetMethodName(memberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
 			MemberAccess memberAccess => $"{accessAccumulator}.{memberAccess.MemberName} = {assignedValueExpression};",
 			IndexAccess indexAccess => indexAccess.Index switch
 			{
