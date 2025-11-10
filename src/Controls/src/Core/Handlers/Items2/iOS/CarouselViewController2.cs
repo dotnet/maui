@@ -159,15 +159,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		private protected override async void AttachingToWindow()
 		{
 			base.AttachingToWindow();
-			// Refresh the current visible item to catch any ItemsSource changes that occurred on other pages
+			Setup(ItemsView);
+			// Refresh the current visible items after setup to catch any ItemsSource changes that occurred on other pages
 			// This ensures that updates made on other pages are reflected when navigating back
-			// IMPORTANT: Must be called BEFORE Setup() to avoid querying stale IndexPathsForVisibleItems
-			// during the layout transition that Setup() triggers
 			if (_wasDetachedFromWindow)
 			{
 				RefreshVisibleItems();
 			}
-			Setup(ItemsView);
 			_wasDetachedFromWindow = false;
 			// if we navigate back on NavigationController LayoutSubviews might not fire.
 			await UpdateInitialPosition();
@@ -179,6 +177,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return;
 			}
+
 			// Get current visible item index paths to ensure proper refresh of carousel items
 			var indexPaths = CollectionView.IndexPathsForVisibleItems;
 			if (indexPaths?.Length > 0)
