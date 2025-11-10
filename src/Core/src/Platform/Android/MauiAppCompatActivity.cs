@@ -41,8 +41,12 @@ namespace Microsoft.Maui
 			if (OperatingSystem.IsAndroidVersionAtLeast(33))
 			{
 				var dispatcher = OnBackInvokedDispatcher;
-				_predictiveBackCallback ??= new PredictiveBackCallback(this);
-				dispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
+				if (_predictiveBackCallback is null)
+				{
+					_predictiveBackCallback = new PredictiveBackCallback(this);
+					// Priority 0 = PRIORITY_DEFAULT: callback invoked only when no higher-priority callback handles the event
+					dispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
+				}
 			}
 		}
 
@@ -51,6 +55,7 @@ namespace Microsoft.Maui
 			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is not null)
 			{
 				OnBackInvokedDispatcher?.UnregisterOnBackInvokedCallback(_predictiveBackCallback);
+				_predictiveBackCallback.Dispose();
 				_predictiveBackCallback = null;
 			}
 			base.OnDestroy();
@@ -72,7 +77,7 @@ namespace Microsoft.Maui
 			return handled || implHandled;
 		}
 
-		IOnBackInvokedCallback? _predictiveBackCallback;
+		PredictiveBackCallback? _predictiveBackCallback;
 
 		sealed class PredictiveBackCallback : Java.Lang.Object, IOnBackInvokedCallback
 		{
