@@ -63,10 +63,11 @@ namespace Microsoft.Maui.Handlers
 					}
 					handler.PlatformView.InvalidateAncestorsMeasures();
 				}
-			
+
 			}
-		}		
-	public static partial void MapContent(IContentViewHandler handler, IContentView page)
+		}
+
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}
