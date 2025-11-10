@@ -1,0 +1,99 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>HybridWebView Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: system-ui, sans-serif;
+        }
+
+        .wrap {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            padding: 1rem 1.25rem;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
+
+        .small {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+    <!-- ✅ Load the HybridWebView bridge early so it's available globally -->
+    <!-- HybridWebView.js is no longer provided??? 
+        https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/hybridwebview -->
+    <script src="_framework/hybridwebview.js"></script>
+    <!-- Load the HybridWebView bridge as a module -->
+    <script>
+        // === NEW: automatically notify C# when DOM is ready ===
+        window.addEventListener("DOMContentLoaded", function () {
+            if (window.HybridWebView && window.HybridWebView.SendRawMessage) {
+                message = "DOM loaded and JS ready!";
+                window.HybridWebView.SendRawMessage(JSON.stringify(message));
+            } else {
+                console.warn("HybridWebView not available yet.");
+            }
+        });
+    </script>
+    <!-- Main test logic -->
+    <script>
+        // Utility: try to base64-decode; fall back to original string
+        function tryDecodeBase64(maybeB64) {
+            try {
+                const decoded = atob(maybeB64);
+                if (decoded && /[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]/.test(decoded)) {
+                    return decoded;
+                }
+            } catch (_) { /* not base64 */ }
+            return maybeB64;
+        }
+
+        // Expose the function that MAUI will invoke from C#
+        window.testFunctionName = function (contextArgString) {
+            try {
+                console.log("[testFunctionName] raw arg:", contextArgString);
+
+                const decoded = tryDecodeBase64(contextArgString);
+                let parsed = null;
+                try {
+                    parsed = JSON.parse(decoded);
+                } catch {
+                    // not JSON, fine
+                }
+
+                console.log("[testFunctionName] decoded:", decoded);
+                console.log("[testFunctionName] parsed:", parsed);
+
+                const result = JSON.stringify("ok");
+                console.log("[testFunctionName] returning:", result);
+                return result;
+            } catch (err) {
+                console.error("[testFunctionName] error:", err);
+                return JSON.stringify("error");
+            }
+        };
+
+        console.log("Test page loaded with HybridWebView.js module. Waiting for native call…");
+    </script>
+</head>
+<body>
+    <div class="wrap">
+        <div class="card">
+            <div><strong>HybridWebView test page</strong></div>
+            <div class="small">Waiting for native call… check console logs.</div>
+        </div>
+    </div>
+    
+    
+</body>
+</html>
