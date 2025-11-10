@@ -38,15 +38,11 @@ namespace Microsoft.Maui
 			// Guidance: route custom back handling through AndroidX OnBackPressedDispatcher so
 			// predictive back works correctly:
 			// https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture#update-custom
-			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is null)
 			{
-				var dispatcher = OnBackInvokedDispatcher;
-				if (_predictiveBackCallback is null)
-				{
-					_predictiveBackCallback = new PredictiveBackCallback(this);
-					// Priority 0 = PRIORITY_DEFAULT: callback invoked only when no higher-priority callback handles the event
-					dispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
-				}
+				_predictiveBackCallback = new PredictiveBackCallback(this);
+				// Priority 0 = PRIORITY_DEFAULT: callback invoked only when no higher-priority callback handles the event
+				OnBackInvokedDispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
 			}
 		}
 
