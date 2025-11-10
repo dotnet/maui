@@ -51,10 +51,11 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				if (handler.VirtualView.PresentedContent is null)
+				var bounds = handler.PlatformView.Bounds;
+				if (handler.VirtualView.PresentedContent is null && (bounds.Width > 0 || bounds.Height > 0))
 				{
 					// When content is removed, we need to invalidate measures so the ContentView can resize to 0x0
-					// Only invalidate if the ContentView previously had content (optimization to avoid unnecessary invalidation)
+					// Only invalidate if the ContentView actually had a non-zero size (optimization to avoid unnecessary invalidation)
 					// Invalidate both the ContentView itself and its ancestors
 					if (handler.PlatformView is IPlatformMeasureInvalidationController controller)
 					{
