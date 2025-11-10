@@ -78,13 +78,19 @@ namespace Microsoft.Maui
 			return (region & SafeAreaRegions.SoftInput) == SafeAreaRegions.SoftInput;
 		}
 
+		internal static bool IsOnlySoftInput(SafeAreaRegions region)
+		{
+			// Check if the region is ONLY SoftInput, not combined with other flags or All
+			return region == SafeAreaRegions.SoftInput;
+		}
+
 		internal static bool IsContainer(SafeAreaRegions region)
 		{
 			if (region == SafeAreaRegions.Default)
 				return false;
 			if (region == SafeAreaRegions.All)
 				return true;
-			return (region & SafeAreaRegions.Container) == SafeAreaRegions.Container;	
+			return (region & SafeAreaRegions.Container) == SafeAreaRegions.Container;
 		}
 
 		/// <summary>

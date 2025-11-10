@@ -98,7 +98,6 @@ public class Issue28986_ContentPage : _IssuesUITest
 	}
 
 
-	#if TEST_FAILS_ON_ANDROID
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaPerEdgeValidation()
@@ -129,6 +128,5 @@ public class Issue28986_ContentPage : _IssuesUITest
 			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		});
 	}
-	#endif
 }
 #endif
