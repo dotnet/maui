@@ -4,21 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ToolbarFeatureTests : UITest
+public class ToolbarFeatureTests : _GalleryUITest
 {
 	public const string ToolbarFeatureMatrix = "Toolbar Feature Matrix";
+	public override string GalleryPageName => ToolbarFeatureMatrix;
 
 	public ToolbarFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ToolbarFeatureMatrix);
-	}
-
 
 	[Test, Order(1)]
 	[Category(UITestCategories.ToolbarItem)]
