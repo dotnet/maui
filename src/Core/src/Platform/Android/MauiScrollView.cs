@@ -211,11 +211,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateFlowDirection(IView view)
 		{
-			var flowDirection = view.FlowDirection;
-			var layoutDirection = flowDirection == Microsoft.Maui.FlowDirection.RightToLeft
-					? Android.Views.LayoutDirection.Rtl
-					: Android.Views.LayoutDirection.Ltr;
-			if (_hScrollView != null)
+			var layoutDirection = ViewExtensions.GetLayoutDirection(view);
+
+			// Handle FlowDirection specifically for horizontal scroll view
+			if (_hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
 			{
 				if (_prevLayoutDirection != layoutDirection)
 				{
@@ -226,7 +225,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				ViewExtensions.UpdateFlowDirection(this, view);
+				// Fallback to default mechanism for other cases (vertical scroll or no horizontal scroll)
+				// Use the common ViewExtensions logic for standard FlowDirection handling
+				this.LayoutDirection = layoutDirection;
 			}
 		}
 
