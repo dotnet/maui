@@ -269,6 +269,13 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		}
 		else if (ctor != null)
 		{
+			// Check if this type is a known value provider that will be inlined later.
+			// If so, we still create the object but mark SIMPLE VALUE properties to be skipped.
+			// The object creation will be dead code, but TryProvideValue will replace it.
+			// We need to create the object because child elements might reference it in service providers.
+			// We only skip simple value properties - markup extensions and element content still need processing.
+			var willBeInlined = NodeSGExtensions.GetKnownValueProviders(Context).ContainsKey(type);
+
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 
 			if (requiredPropAndFields.Any())
@@ -284,6 +291,18 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
+			
+			// If this will be inlined by TryProvideValue, skip setting SIMPLE VALUE properties
+			// Complex properties (with markup extensions or element content) still need to be processed
+			if (willBeInlined)
+			{
+				foreach (var prop in node.Properties)
+				{
+					if (prop.Value is ValueNode vn && !node.SkipProperties.Contains(prop.Key))
+						node.SkipProperties.Add(prop.Key);
+				}
+			}
+			
 			return;
 		}
 	}

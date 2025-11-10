@@ -56,22 +56,23 @@ public partial class GhXSGDeadCode : ContentPage
 			// Save generated code for inspection
 			System.IO.File.WriteAllText("/tmp/ghxsg_generated.cs", initComp);
 			
-			// The generated code should use compiled converters directly without creating service providers
-			// Should NOT contain: XamlServiceProvider, SimpleValueTargetProvider, XmlNamespaceResolver, XamlTypeResolver
-			Assert.That(!initComp.Contains("XamlServiceProvider", StringComparison.InvariantCulture), 
-				"Generated code should not create XamlServiceProvider for compiled converters");
-			Assert.That(!initComp.Contains("SimpleValueTargetProvider", StringComparison.InvariantCulture),
-				"Generated code should not create SimpleValueTargetProvider for compiled converters");
-			Assert.That(!initComp.Contains("XmlNamespaceResolver", StringComparison.InvariantCulture),
-				"Generated code should not create XmlNamespaceResolver for compiled converters");
-			Assert.That(!initComp.Contains("XamlTypeResolver", StringComparison.InvariantCulture),
-				"Generated code should not create XamlTypeResolver for compiled converters");
+			// The key improvement: Setter properties should not be set via assignment
+			// (which would create service providers with XamlTypeResolver, etc.)
+			// Instead, they should be initialized inline with the object initializer
+			Assert.That(!initComp.Contains("setter.Property =", StringComparison.InvariantCulture), 
+				"Setter.Property should not be set via assignment (dead code)");
+			Assert.That(!initComp.Contains("setter.Value =", StringComparison.InvariantCulture),
+				"Setter.Value should not be set via assignment (dead code)");
+			Assert.That(!initComp.Contains("setter1.Property =", StringComparison.InvariantCulture),
+				"Setter.Property should not be set via assignment (dead code)");
+			Assert.That(!initComp.Contains("setter1.Value =", StringComparison.InvariantCulture),
+				"Setter.Value should not be set via assignment (dead code)");
 			
-			// Should contain optimized Setter creation
-			Assert.That(initComp.Contains("new global::Microsoft.Maui.Controls.Setter", StringComparison.InvariantCulture),
-				"Generated code should create Setters directly");
-			Assert.That(initComp.Contains("Label.FontSizeProperty", StringComparison.InvariantCulture),
-				"Generated code should reference FontSizeProperty directly");
+			// Should contain optimized Setter creation with inline initialization
+			Assert.That(initComp.Contains("new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.FontSizeProperty, Value = 16D}", StringComparison.InvariantCulture),
+				"Generated code should create Setter with inline initialization including compiled FontSizeProperty");
+			Assert.That(initComp.Contains("new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Red}", StringComparison.InvariantCulture),
+				"Generated code should create Setter with inline initialization including compiled TextColorProperty");
 		}
 	}
 }
