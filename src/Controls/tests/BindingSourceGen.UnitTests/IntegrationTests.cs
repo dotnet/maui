@@ -2331,27 +2331,12 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		
-		// DEBUG: Check if binding was generated
-		if (result.Binding == null)
-		{
-			var allDiags = result.SourceCompilationDiagnostics
-				.Concat(result.SourceGeneratorDiagnostics)
-				.Concat(result.GeneratedCodeCompilationDiagnostics);
-			Assert.Fail($"Binding was not generated! Diagnostics: {string.Join("\n", allDiags.Select(d => d.GetMessage()))}");
-		}
-		
 		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		
 		// Verify that UnsafeAccessor is generated for the setter
-		var generatedCode = result.GeneratedFiles.Values.First();
-		
-		// DEBUG: Print generated code if assertions would fail
-		if (!generatedCode.Contains("SetUnsafeProperty_Text", StringComparison.Ordinal))
-		{
-			Assert.Fail($"Generated code does not contain SetUnsafeProperty_Text.\n\nGenerated code:\n{generatedCode}");
-		}
+		// Find the interceptor file (not the common helper file)
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
 		
 		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
@@ -2388,7 +2373,8 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		
 		// Verify that UnsafeAccessor is generated for the setter
-		var generatedCode = result.GeneratedFiles.Values.First();
+		// Find the interceptor file (not the common helper file)
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
 		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
 	}
@@ -2423,10 +2409,11 @@ public class IntegrationTests
 		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		
-		// Verify that UnsafeAccessor is generated for the setter
-		var generatedCode = result.GeneratedFiles.Values.First();
-		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+		// internal setter should be accessible within the same assembly, so should NOT use UnsafeAccessor
+		// Find the interceptor file (not the common helper file)
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
+		Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2460,7 +2447,8 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		
 		// Verify that UnsafeAccessor is generated for the setter
-		var generatedCode = result.GeneratedFiles.Values.First();
+		// Find the interceptor file (not the common helper file)
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
 		Assert.Contains("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
 	}
@@ -2496,7 +2484,8 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		
 		// protected internal should be accessible, so should NOT use UnsafeAccessor
-		var generatedCode = result.GeneratedFiles.Values.First();
+		// Find the interceptor file (not the common helper file)
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
 		Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
 	}
