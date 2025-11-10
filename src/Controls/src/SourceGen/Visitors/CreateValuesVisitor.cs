@@ -274,31 +274,15 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			
 			if (willBeInlined)
 			{
-				// Check if this node has any properties with ElementNode/MarkupNode/ListNode values
-				// or collection items with ElementNodes that need to be set via assignment (not inlined)
-				bool hasComplexPropertyValues = node.Properties.Values.Any(v => v is ElementNode or MarkupNode or ListNode);
-				bool hasElementCollectionItems = node.CollectionItems.Any(v => v is ElementNode or MarkupNode);
-				
-				if (!hasComplexPropertyValues && !hasElementCollectionItems)
-				{
-					// All properties are simple values - skip creating the actual object instantiation.
-					// We still need to register the node in variables for TryProvideValue to work,
-					// but we use a placeholder variable that will be replaced by TryProvideValue.
-					// Mark all properties to be skipped since they'll be handled by TryProvideValue
-					foreach (var prop in node.Properties)
-						if (!node.SkipProperties.Contains(prop.Key))
-							node.SkipProperties.Add(prop.Key);
-					
-					// Create a placeholder variable entry for TryProvideValue to find and replace
-					var placeholderName = NamingHelpers.CreateUniqueVariableName(Context, type);
-					variables[node] = new LocalVariable(type, placeholderName);
-					
-					// Don't write any code or register source info - TryProvideValue will do it
-					return;
-				}
-				
-				// Has complex property values or collection items - need to create the variable and
-				// set them via assignment, but skip setting simple value properties (they'll be inlined)
+				// For known value providers (like Setter), skip setting simple value properties
+				// since they'll be handled by inline initialization in TryProvideValue.
+				// 
+				// This eliminates the dead code that creates service providers (XamlServiceProvider,
+				// SimpleValueTargetProvider, XmlNamespaceResolver, XamlTypeResolver) for property
+				// assignments, which are not AOT-compatible.
+				//
+				// We still create the variable itself to ensure edge cases work correctly
+				// (e.g., markup extensions that need service provider context).
 				foreach (var prop in node.Properties)
 				{
 					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
