@@ -15,6 +15,6 @@ public class Issue32271 : _IssuesUITest
 		App.WaitForElement("ToggleOrientationButton");
 		App.Tap("ToggleOrientationButton");
 		App.Tap("ScrollToEndButton");
-		Assert.That(App.FindElement("OffsetLabel").GetText(), Is.EqualTo("0"));
+		VerifyScreenshot();
 	}
 }
