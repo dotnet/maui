@@ -81,7 +81,7 @@ static class NodeSGExtensions
 		};
 
 	public static Dictionary<ITypeSymbol, IKnownMarkupValueProvider> GetKnownValueProviders(SourceGenContext context)
-		=> context.knownSGValueProvidersV2 ??= new(SymbolEqualityComparer.Default)
+		=> context.knownSGValueProviders ??= new(SymbolEqualityComparer.Default)
 	{
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
 	};
