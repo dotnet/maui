@@ -345,16 +345,32 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				var page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
-
-				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
+				// Calculate page based on orientation
+				double page;
+				if (isHorizontal)
 				{
+					page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
+				}
+				else
+				{
+					page = (offset.Y + sectionMargin) / (env.Container.ContentSize.Height - sectionMargin * 2);
+				}
+
+				System.Diagnostics.Debug.WriteLine($"Scroll - isHorizontal: {isHorizontal}, offset: {(isHorizontal ? offset.X : offset.Y)}, contentSize: {(isHorizontal ? env.Container.ContentSize.Width : env.Container.ContentSize.Height)}, sectionMargin: {sectionMargin}, page: {page}");
+
+				// For horizontal, orthogonal scrolling behavior handles paging, so we only update on exact pages
+				// For vertical, there's no orthogonal scrolling, so we need to round to nearest page
+				double pageThreshold = isHorizontal ? (double.Epsilon * 100) : 0.05; // 5% threshold for vertical
+
+				if (Math.Abs(page % 1) > pageThreshold || cv2Controller.ItemsSource.ItemCount <= 0)
+				{
+					System.Diagnostics.Debug.WriteLine("Returning from CreateCarouselLayout - fractional page or no items");
 					return;
 				}
 
-				var pageIndex = (int)page;
+				// Round to nearest integer for the page index
+				var pageIndex = (int)Math.Round(page);
 				var carouselPosition = pageIndex;
-
 				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
 				{
 					var maxIndex = loopSource.LoopCount - 1;
@@ -398,7 +414,9 @@ internal static class LayoutFactory2
 				}
 
 				//Update the CarouselView position
+				System.Diagnostics.Debug.WriteLine($" Before CreateCarouselLayout: {carouselPosition}");
 				cv2Controller?.SetPosition(carouselPosition);
+				System.Diagnostics.Debug.WriteLine($"After CreateCarouselLayout: {carouselPosition}");
 			};
 
 			return section;
