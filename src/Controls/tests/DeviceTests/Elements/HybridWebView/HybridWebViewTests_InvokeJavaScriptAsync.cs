@@ -1,6 +1,8 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
@@ -356,6 +358,158 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 			Assert.Contains("undefined", ex.InnerException?.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.Equal("TypeError", ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithJsonStringArgument() =>
+		RunTest(async (hybridWebView) =>
+		{
+			// Create a dictionary that will be serialized to JSON
+			var contextArg = new Dictionary<string, object>
+			{
+				{ "userId", "userIdValue" },
+				{ "sessionId", "session123" },
+				{ "timestamp", "2025-11-11T01:30:00Z" }
+			};
+
+			// Serialize to JSON string (without base64 encoding)
+			string contextArgString = JsonSerializer.Serialize(contextArg);
+
+			// This should not timeout - the JSON string should be handled correctly
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"EchoJsonParameter",
+				InvokeJsonContext.Default.String,
+				[contextArgString],
+				[InvokeJsonContext.Default.String]);
+
+			// Verify the result matches the input
+			Assert.Equal(contextArgString, result);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithComplexJsonString() =>
+		RunTest(async (hybridWebView) =>
+		{
+			// Create a more complex JSON with special characters that might cause escaping issues
+			var complexObject = new Dictionary<string, object>
+			{
+				{ "string", "value with \"quotes\" and 'apostrophes'" },
+				{ "number", 123.456 },
+				{ "boolean", true },
+				{ "nested", new Dictionary<string, object>
+					{
+						{ "key1", "value1" },
+						{ "key2", "value2" }
+					}
+				}
+			};
+
+			string jsonString = JsonSerializer.Serialize(complexObject);
+
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"ParseAndStringifyJson",
+				InvokeJsonContext.Default.String,
+				[jsonString],
+				[InvokeJsonContext.Default.String]);
+
+			// The JavaScript function should parse and re-stringify the JSON
+			// The result should be equivalent (though formatting might differ)
+			Assert.NotNull(result);
+			Assert.Contains("quotes", result, StringComparison.Ordinal);
+			Assert.Contains("apostrophes", result, StringComparison.Ordinal);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithMultipleJsonStringArguments() =>
+		RunTest(async (hybridWebView) =>
+		{
+			var firstJson = JsonSerializer.Serialize(new { type = "user", id = 1 });
+			var secondJson = JsonSerializer.Serialize(new { type = "session", id = 2 });
+
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"ConcatenateJsonStrings",
+				InvokeJsonContext.Default.String,
+				[firstJson, secondJson],
+				[InvokeJsonContext.Default.String, InvokeJsonContext.Default.String]);
+
+			Assert.NotNull(result);
+			Assert.Contains("user", result, StringComparison.Ordinal);
+			Assert.Contains("session", result, StringComparison.Ordinal);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithJsonStringDoesNotTimeout() =>
+		RunTest(async (hybridWebView) =>
+		{
+			var contextArg = new Dictionary<string, object>
+			{
+				{ "userId", "userIdValue" }
+			};
+
+			string contextArgString = JsonSerializer.Serialize(contextArg);
+
+			// This should complete within the timeout
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"EchoJsonParameter",
+				InvokeJsonContext.Default.String,
+				[contextArgString],
+				[InvokeJsonContext.Default.String]);
+
+			Assert.Equal(contextArgString, result);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithBase64EncodedJsonString() =>
+		RunTest(async (hybridWebView) =>
+		{
+			var contextArg = new Dictionary<string, object>
+			{
+				{ "userId", "userIdValue" }
+			};
+
+			string contextArgString = JsonSerializer.Serialize(contextArg);
+			
+			// Base64 encode (the workaround from the issue)
+			string base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(contextArgString));
+
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"DecodeBase64AndEcho",
+				InvokeJsonContext.Default.String,
+				[base64String],
+				[InvokeJsonContext.Default.String]);
+
+			// The JavaScript function should decode and return the original JSON
+			Assert.Equal(contextArgString, result);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithJsonArrayArgument() =>
+		RunTest(async (hybridWebView) =>
+		{
+			var jsonArray = JsonSerializer.Serialize(new[] { "item1", "item2", "item3" });
+
+			var result = await hybridWebView.InvokeJavaScriptAsync<int>(
+				"CountJsonArrayItems",
+				InvokeJsonContext.Default.Int32,
+				[jsonArray],
+				[InvokeJsonContext.Default.String]);
+
+			Assert.Equal(3, result);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptWithEmptyJsonObject() =>
+		RunTest(async (hybridWebView) =>
+		{
+			var emptyJson = JsonSerializer.Serialize(new Dictionary<string, object>());
+
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"EchoJsonParameter",
+				InvokeJsonContext.Default.String,
+				[emptyJson],
+				[InvokeJsonContext.Default.String]);
+
+			Assert.Equal("{}", result);
 		});
 
 	Task RunExceptionTest(string method, int errorType, Action<Exception> test) =>
