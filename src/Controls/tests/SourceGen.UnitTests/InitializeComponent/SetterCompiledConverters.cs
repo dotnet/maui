@@ -111,17 +111,17 @@ public partial class TestPage
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
 #line default
-		var setter2 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.FontSizeProperty, Value = 16D};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter2!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter2!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 6);
+		var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.FontSizeProperty, Value = 16D};
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 6);
 #line 9 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter2);
+		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
-		var setter3 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Red};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter3!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter3!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 10, 6);
+		var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Red};
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 10, 6);
 #line 10 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter3);
+		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
 #line default
 		resourceDictionary["testStyle"] = style1;
 #line 7 "{{testXamlFilePath}}"
