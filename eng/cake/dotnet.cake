@@ -2,8 +2,48 @@
 
 // Contains .NET - related Cake targets
 
+// Helper function to find global dotnet
+string FindGlobalDotNet()
+{
+    if (IsRunningOnWindows())
+    {
+        // On Windows, try common locations or use PATH
+        var dotnetExe = "dotnet.exe";
+        var pathDirs = EnvironmentVariable("PATH")?.Split(';') ?? new string[0];
+        foreach (var dir in pathDirs)
+        {
+            var fullPath = System.IO.Path.Combine(dir, dotnetExe);
+            if (System.IO.File.Exists(fullPath))
+                return fullPath;
+        }
+        return dotnetExe; // Fallback to just the name
+    }
+    else
+    {
+        // On Unix-like systems, use 'which' command
+        try
+        {
+            var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "which",
+                Arguments = "dotnet",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+            var output = process.StandardOutput.ReadToEnd().Trim();
+            process.WaitForExit();
+            if (!string.IsNullOrEmpty(output) && System.IO.File.Exists(output))
+                return output;
+        }
+        catch { }
+        return "dotnet"; // Fallback to just the name
+    }
+}
+
 var ext = IsRunningOnWindows() ? ".exe" : "";
-var dotnetPath = $"./.dotnet/dotnet{ext}";
+var localDotnetPath = $"./.dotnet/dotnet{ext}";
+var dotnetPath = System.IO.File.Exists(localDotnetPath) ? localDotnetPath : FindGlobalDotNet();
 string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
@@ -692,18 +732,25 @@ bool RunPackTarget()
 Dictionary<string, string> GetDotNetEnvironmentVariables()
 {
     Dictionary<string, string> envVariables = new Dictionary<string, string>();
-    var dotnet = MakeAbsolute(Directory("./.dotnet/")).ToString();
+    var localDotnetDir = MakeAbsolute(Directory("./.dotnet/"));
+    var dotnetHostPath = IsRunningOnWindows() ? $"{localDotnetDir}/dotnet.exe" : $"{localDotnetDir}/dotnet";
+    
+    // Only set dotnet-specific environment variables if the local dotnet installation exists
+    if (System.IO.File.Exists(dotnetHostPath))
+    {
+        var dotnet = localDotnetDir.ToString();
+        
+        envVariables.Add("DOTNET_INSTALL_DIR", dotnet);
+        envVariables.Add("DOTNET_ROOT", dotnet);
+        envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
+        envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+        envVariables.Add("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
+        envVariables.Add("MSBuildEnableWorkloadResolver", "true");
 
-    envVariables.Add("DOTNET_INSTALL_DIR", dotnet);
-    envVariables.Add("DOTNET_ROOT", dotnet);
-    envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
-    envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
-    envVariables.Add("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
-    envVariables.Add("MSBuildEnableWorkloadResolver", "true");
-
-    var existingPath = EnvironmentVariable("PATH");
-    Information(dotnet + ":" + existingPath);
-    envVariables.Add("PATH", dotnet + ":" + existingPath);
+        var existingPath = EnvironmentVariable("PATH");
+        Information(dotnet + ":" + existingPath);
+        envVariables.Add("PATH", dotnet + ":" + existingPath);
+    }
 
     // Get "full" .binlog in Project System Tools
     if (HasArgument("debug"))
@@ -717,19 +764,23 @@ void SetDotNetEnvironmentVariables(string dotnetDir = null)
     var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
     var dotnetHostPath = IsRunningOnWindows() ? $"{dotnet}/dotnet.exe" : $"{dotnet}/dotnet";
   
-    SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
-    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
-    if (IsRunningOnWindows())
-    { 
-        //workaround for dev18 
-        SetEnvironmentVariable("DOTNET_HOST_PATH", dotnetHostPath);
+    // Only set dotnet-specific environment variables if the local dotnet installation exists
+    if (System.IO.File.Exists(dotnetHostPath))
+    {
+        SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
+        SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
+        SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+        if (IsRunningOnWindows())
+        { 
+            //workaround for dev18 
+            SetEnvironmentVariable("DOTNET_HOST_PATH", dotnetHostPath);
+        }
+        SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
+        SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+        SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
+        SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
+        SetEnvironmentVariable("PATH", dotnet, prepend: true);
     }
-    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
-    SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
-    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
     if (HasArgument("dbg"))
@@ -886,8 +937,8 @@ void RunMSBuildWithDotNet(
         return args;
     };
 
-    if (localDotnet)
-        dotnetBuildSettings.ToolPath = dotnetPath;
+    // Always set ToolPath - it will be either the local .dotnet/dotnet (if it exists) or global dotnet
+    dotnetBuildSettings.ToolPath = dotnetPath;
 
     DotNetBuild(sln, dotnetBuildSettings);
 }

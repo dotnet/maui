@@ -252,7 +252,11 @@
   <PropertyGroup>
     <DotNetTempDirectory>$(RepoRoot)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(RepoRoot).dotnet/</DotNetDirectory>
-    <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
+    <!-- Use local .dotnet if it exists, otherwise use global dotnet -->
+    <_LocalDotNetPath>$(DotNetDirectory)dotnet</_LocalDotNetPath>
+    <_LocalDotNetPath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(DotNetDirectory)dotnet.exe</_LocalDotNetPath>
+    <DotNetToolPath Condition="$([System.IO.File]::Exists('$(_LocalDotNetPath)'))">$(_LocalDotNetPath)</DotNetToolPath>
+    <DotNetToolPath Condition="!$([System.IO.File]::Exists('$(_LocalDotNetPath)'))">dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
     <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>
     <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/</DotNetSdkManifestsDirectory>
