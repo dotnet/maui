@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				this.View.UpdateFlowDirection(_shellContext.Shell);
 
 				// Set the shell's flow direction value to the tracker page
-				if (_tracker?.Page != null && _shellContext?.Shell != null)
+				if (_tracker?.Page is not null && _shellContext?.Shell is not null)
 				{
 					_tracker.Page.FlowDirection = _shellContext.Shell.FlowDirection;
 				}
