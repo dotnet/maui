@@ -176,6 +176,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			cell.SetAccessibilityProperties(context);
 			// Apply shell flow direction to the newly created or reused cell
 			var platformView = cell.View?.Handler?.PlatformView as UIKit.UIView;
+
 			if (cell.View?.Handler?.VirtualView is View virtualView && virtualView is not null)
 			{
 				virtualView.FlowDirection = _context.Shell.FlowDirection;
