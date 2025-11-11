@@ -158,6 +158,57 @@
         // test evaluate arbitrary javascript
         window.TestKey = 'test_value';
 
+        // Test functions for JSON string arguments (issue 32438)
+        
+        // Echo back the JSON parameter as-is
+        function EchoJsonParameter(jsonString) {
+            return jsonString;
+        }
+
+        // Parse JSON string and stringify it back
+        function ParseAndStringifyJson(jsonString) {
+            try {
+                const parsed = JSON.parse(jsonString);
+                return JSON.stringify(parsed);
+            } catch (e) {
+                throw new Error(`Failed to parse JSON: ${e.message}`);
+            }
+        }
+
+        // Concatenate two JSON strings into an array
+        function ConcatenateJsonStrings(json1, json2) {
+            try {
+                const obj1 = JSON.parse(json1);
+                const obj2 = JSON.parse(json2);
+                return JSON.stringify([obj1, obj2]);
+            } catch (e) {
+                throw new Error(`Failed to concatenate JSON strings: ${e.message}`);
+            }
+        }
+
+        // Decode base64 string and echo back the decoded JSON
+        function DecodeBase64AndEcho(base64String) {
+            try {
+                const decoded = atob(base64String);
+                return decoded;
+            } catch (e) {
+                throw new Error(`Failed to decode base64: ${e.message}`);
+            }
+        }
+
+        // Count items in a JSON array
+        function CountJsonArrayItems(jsonArrayString) {
+            try {
+                const array = JSON.parse(jsonArrayString);
+                if (!Array.isArray(array)) {
+                    throw new Error('Argument is not a JSON array');
+                }
+                return array.length;
+            } catch (e) {
+                throw new Error(`Failed to count array items: ${e.message}`);
+            }
+        }
+
     </script>
 </head>
 <body>
