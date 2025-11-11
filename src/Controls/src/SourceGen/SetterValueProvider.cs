@@ -16,14 +16,14 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		// Get the value node (shared logic with TryProvideValue)
 		var valueNode = GetValueNode(node);
 
-		// Value must be a simple ValueNode (not a markup extension or element)
-		if (valueNode is not ValueNode)
+		// Value must be a simple ValueNode (not a MarkupNode or ElementNode)
+		if (valueNode is MarkupNode or ElementNode)
 			return false;
 
-		// All properties must be simple values (no ElementNode or MarkupNode)
+		// All properties must be simple ValueNodes (no ElementNode or MarkupNode)
 		foreach (var prop in node.Properties.Values)
 		{
-			if (prop is not ValueNode)
+			if (prop is MarkupNode or ElementNode)
 				return false;
 		}
 
