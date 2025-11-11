@@ -7,6 +7,9 @@ public partial class IssueSafeAreaAndroidNavBar : ContentPage
 	{
 		InitializeComponent();
 		UpdateSafeAreaLabel();
+		
+		// Log initial state for debugging
+		System.Diagnostics.Debug.WriteLine($"Initial SafeAreaEdges: {this.SafeAreaEdges}");
 	}
 
 	private void OnSetSafeAreaNoneClicked(object sender, EventArgs e)
@@ -14,6 +17,7 @@ public partial class IssueSafeAreaAndroidNavBar : ContentPage
 		this.SafeAreaEdges = SafeAreaEdges.None;
 		UpdateSafeAreaLabel();
 		TestStatusLabel.Text = "Test Status: SafeAreaEdges set to None - content should flow behind nav bar";
+		System.Diagnostics.Debug.WriteLine($"SafeAreaEdges changed to: {this.SafeAreaEdges}");
 	}
 
 	private void OnSetSafeAreaAllClicked(object sender, EventArgs e)
@@ -21,6 +25,7 @@ public partial class IssueSafeAreaAndroidNavBar : ContentPage
 		this.SafeAreaEdges = SafeAreaEdges.All;
 		UpdateSafeAreaLabel();
 		TestStatusLabel.Text = "Test Status: SafeAreaEdges set to All - content should respect safe area";
+		System.Diagnostics.Debug.WriteLine($"SafeAreaEdges changed to: {this.SafeAreaEdges}");
 	}
 
 	private void OnSetTopNoneBottomAllClicked(object sender, EventArgs e)
@@ -33,6 +38,7 @@ public partial class IssueSafeAreaAndroidNavBar : ContentPage
 		);
 		UpdateSafeAreaLabel();
 		TestStatusLabel.Text = "Test Status: Top=None, Bottom=All - content flows behind top nav bar only";
+		System.Diagnostics.Debug.WriteLine($"SafeAreaEdges changed to: {this.SafeAreaEdges}");
 	}
 
 	private void UpdateSafeAreaLabel()
