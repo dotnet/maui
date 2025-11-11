@@ -52,9 +52,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 				shell.Frame = bounds;
 
+			var shellWidth = shell.Frame.Width;
+
 			if (shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
 			{
-				flyout.Frame = new CGRect(shell.Frame.Width, 0, flyoutWidth, flyoutHeight);
+				var positionX = shellWidth - openPixels;
+				if (behavior == FlyoutBehavior.Locked)
+				{
+					positionX = shellWidth;
+				}
+
+				flyout.Frame = new CGRect(positionX, 0, flyoutWidth, flyoutHeight);
 			}
 			else
 			{
