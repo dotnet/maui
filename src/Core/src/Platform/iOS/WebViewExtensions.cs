@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Platform
 					return jsonString?.ToString() ?? "null";
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Fall back to ToString if JSON serialization fails
 				// Note: Exception is caught but not logged to avoid performance overhead in the hot path
