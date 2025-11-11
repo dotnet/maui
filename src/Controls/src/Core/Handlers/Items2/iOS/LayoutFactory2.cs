@@ -445,6 +445,7 @@ internal static class LayoutFactory2
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+		CGSize _currentSize;
 
 		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
 		{
@@ -494,6 +495,20 @@ internal static class LayoutFactory2
 				}
 			}
 		}
+
+		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
+        {
+            // If the size hasn't changed, use the base implementation
+            if (newBounds.Size.Width == _currentSize.Width && newBounds.Size.Height == _currentSize.Height)
+            {
+                return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+            }
+ 
+            // Size has changed (e.g., rotation), so we need to invalidate the layout
+            // to ensure cells are properly measured and displayed
+            _currentSize = newBounds.Size;
+            return true;
+        }
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
