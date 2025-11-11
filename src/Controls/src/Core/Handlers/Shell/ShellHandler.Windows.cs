@@ -43,14 +43,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			UpdateValue(nameof(Shell.FlyoutIcon));
 			UpdateValue(nameof(Shell.FlyoutBackground));
 			UpdateValue(nameof(Shell.FlyoutBackgroundImage));
+			UpdateValue(nameof(Shell.FlyoutVerticalScrollMode));
 
-			// When FlyoutBehavior is Locked, the MenuItemsScrollViewer may not be fully 
-			// initialized when OnPaneOpening fires. OnLoaded ensures the scroll mode is 
-			// applied after all template parts are created and the visual tree is complete.
-			if (VirtualView is Shell shell && shell.GetEffectiveFlyoutBehavior() == FlyoutBehavior.Locked)
-			{
-				UpdateValue(nameof(Shell.FlyoutVerticalScrollMode));
-			}
 		}
 
 		protected override void DisconnectHandler(ShellView platformView)
