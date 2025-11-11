@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			UpdateValue(nameof(Shell.FlyoutBackground));
 			UpdateValue(nameof(Shell.FlyoutBackgroundImage));
 			UpdateValue(nameof(Shell.FlyoutVerticalScrollMode));
-
 		}
 
 		protected override void DisconnectHandler(ShellView platformView)
