@@ -16,8 +16,6 @@ public class Issue32416 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutVerticalScrollModeDisabled()
 	{
-		App.WaitForElement("Issue32416_Label");
-		App.ShowFlyout();
 		App.WaitForElement("Item 1");
 		App.ScrollDown("Item 1", ScrollStrategy.Gesture, swipePercentage: 0.95, swipeSpeed: 100);
 		VerifyScreenshot();
