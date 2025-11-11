@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.IssueSafeAreaAndroidNavBar"
+             Title="SafeArea Android NavBar Test"
+             SafeAreaEdges="None">
+    
+    <!-- Red background to make it visible when content flows behind nav bar -->
+    <Grid BackgroundColor="Red">
+        <ScrollView>
+            <VerticalStackLayout Spacing="20" Padding="20">
+                
+                <!-- Header at the very top - should flow behind status bar/nav bar when SafeAreaEdges=None -->
+                <Label x:Name="HeaderLabel"
+                       Text="This content should flow behind the navigation bar when SafeAreaEdges=None"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       BackgroundColor="LightBlue"
+                       Padding="10"
+                       HorizontalOptions="Fill"
+                       AutomationId="HeaderLabel"/>
+                
+                <Label Text="SafeArea Android Navigation Bar Flow Test"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+                
+                <Label x:Name="CurrentSafeAreaLabel"
+                       Text="Current SafeAreaEdges: None"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       AutomationId="CurrentSafeArea"/>
+                
+                <!-- Control panel -->
+                <Border BackgroundColor="LightGray"
+                        Stroke="Gray"
+                        StrokeThickness="2"
+                        Padding="15">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Toggle SafeAreaEdges:"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+                        
+                        <Button Text="Set SafeAreaEdges.None"
+                                Clicked="OnSetSafeAreaNoneClicked"
+                                AutomationId="SetSafeAreaNoneButton"/>
+                        
+                        <Button Text="Set SafeAreaEdges.All"
+                                Clicked="OnSetSafeAreaAllClicked"
+                                AutomationId="SetSafeAreaAllButton"/>
+                        
+                        <Button Text="Set Top=None, Bottom=All"
+                                Clicked="OnSetTopNoneBottomAllClicked"
+                                AutomationId="SetTopNoneBottomAllButton"/>
+                        
+                        <Label x:Name="TestStatusLabel"
+                               Text="Test Status: Ready"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               AutomationId="TestStatus"/>
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Filler content to demonstrate scrolling -->
+                <StackLayout Spacing="10">
+                    <Label Text="Sample Content" FontSize="18" FontAttributes="Bold"/>
+                    <BoxView Color="Blue" HeightRequest="100" AutomationId="BlueBox1"/>
+                    <Label Text="Content Line 1"/>
+                    <BoxView Color="Green" HeightRequest="100" AutomationId="GreenBox1"/>
+                    <Label Text="Content Line 2"/>
+                    <BoxView Color="Orange" HeightRequest="100" AutomationId="OrangeBox1"/>
+                    <Label Text="Content Line 3"/>
+                    <BoxView Color="Purple" HeightRequest="100" AutomationId="PurpleBox1"/>
+                    <Label Text="Content Line 4"/>
+                    <BoxView Color="Cyan" HeightRequest="100" AutomationId="CyanBox1"/>
+                    <Label Text="Content Line 5"/>
+                    <BoxView Color="Magenta" HeightRequest="100" AutomationId="MagentaBox1"/>
+                    <Label Text="End of Test Content"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           AutomationId="EndLabel"/>
+                </StackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
