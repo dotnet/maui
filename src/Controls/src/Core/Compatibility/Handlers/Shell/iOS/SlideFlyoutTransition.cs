@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
 			{
 				var positionX = shellWidth - openPixels;
+
 				if (behavior == FlyoutBehavior.Locked)
 				{
 					positionX = shellWidth;
