@@ -6,6 +6,7 @@ public class Issue32416 : TestShell
 	protected override void Init()
 	{
 		FlyoutVerticalScrollMode = ScrollMode.Disabled;
+		FlyoutBehavior = FlyoutBehavior.Locked;
 		var flyoutItem = new FlyoutItem
 		{
 			Title = "Menu"
