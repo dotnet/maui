@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31167">
+  <VerticalStackLayout
+    Spacing="20"
+    Padding="20">
+
+    <Label 
+      Text="DatePicker Format Test"
+      FontSize="18"
+      FontAttributes="Bold"
+      HorizontalOptions="Center" />
+
+    <Label 
+      Text="This sample tests the 4-digit year format consistency on iOS DatePicker controls."
+      HorizontalOptions="Center" />
+
+    <DatePicker 
+      x:Name="MyDatePicker"
+      AutomationId="MyDatePicker"
+      HorizontalOptions="Center"
+      Format="d" />
+
+    <Entry 
+      x:Name="DateEntry"
+      AutomationId="DateEntry"
+      Placeholder="Enter date (e.g., 12/24/2024)"
+      HorizontalOptions="FillAndExpand" />
+
+    <Button 
+      Text="Set Date"
+      AutomationId="SetDateButton"
+      Clicked="OnSetDateClicked"
+      HorizontalOptions="Center" />
+
+    <Label 
+      x:Name="DisplayLabel"
+      AutomationId="DisplayLabel"
+      Text=""
+      HorizontalOptions="Center"
+      FontAttributes="Bold" />
+
+  </VerticalStackLayout>
+</ContentPage>
