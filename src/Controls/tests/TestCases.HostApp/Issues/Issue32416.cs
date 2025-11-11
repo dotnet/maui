@@ -43,7 +43,6 @@ public class Issue32416_ContentPage : ContentPage
 			{
 				new Label
 				{
-					AutomationId = "Issue32416_Label",
 					Text = "This is the Sample page."
 				}
 			}
