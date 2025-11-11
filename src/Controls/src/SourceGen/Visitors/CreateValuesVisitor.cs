@@ -274,21 +274,29 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var valueProvider) &&
 				valueProvider.CanProvideValue(node, Context))
 			{
-				// This element can be fully inlined without property assignments.
+				// This element can be fully inlined without property assignments or variable creation.
 				// Skip setting all simple value properties since they'll be handled
 				// by inline initialization in TryProvideValue.
 				// 
-				// This eliminates the dead code that creates service providers (XamlServiceProvider,
-				// SimpleValueTargetProvider, XmlNamespaceResolver, XamlTypeResolver) for property
-				// assignments, which are not AOT-compatible.
+				// This eliminates the dead code that creates:
+				// 1. Empty variable instantiation (var setter = new Setter();)
+				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider, 
+				//    XmlNamespaceResolver, XamlTypeResolver) for property assignments
+				// 
+				// These are not AOT-compatible and were completely dead code.
 				//
-				// We still create the variable itself to ensure edge cases work correctly
-				// (e.g., markup extensions that need service provider context).
+				// Register a placeholder variable entry so TryProvideValue can replace it
+				// with the actual inline instantiation later.
 				foreach (var prop in node.Properties)
 				{
 					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
 						node.SkipProperties.Add(prop.Key);
 				}
+				
+				// Register placeholder - TryProvideValue will create the actual variable
+				// Use empty string as placeholder name since it will be replaced
+				variables[node] = new LocalVariable(type, string.Empty);
+				return;
 			}
 
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);

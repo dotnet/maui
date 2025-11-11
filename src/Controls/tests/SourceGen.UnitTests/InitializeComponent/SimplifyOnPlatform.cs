@@ -88,10 +88,6 @@ public partial class TestPage
 			return;
 		}
 
-		var setter = new global::Microsoft.Maui.Controls.Setter();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
-		var setter1 = new global::Microsoft.Maui.Controls.Setter();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 		var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 10);
 		var __root = this;
