@@ -44,8 +44,6 @@ internal static partial class HybridWebViewHelper
 			$$"""
 			(function() {
 				try {
-					console.warn('{{escapedScript}}');
-
 					let result = eval('{{escapedScript}}');
 					let resultObj = {
 						IsError: false,
@@ -111,11 +109,18 @@ internal static partial class HybridWebViewHelper
 		{
 			returnValue = null;
 		}
-		//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
+		//JSON.stringify wraps the result - we need to unwrap it properly
 		//note that if the js function returns the string "null" we will get here and not above
 		else if (returnValue != null)
 		{
-			returnValue = returnValue.Trim('"');
+			// Check if the result is a JSON string (starts and ends with quotes)
+			if (returnValue.Length >= 2 && returnValue[0] == '"' && returnValue[^1] == '"')
+			{
+				// Properly deserialize the JSON string to handle escaped characters
+				returnValue = JsonSerializer.Deserialize<string>(returnValue);
+			}
+			// Otherwise it's a primitive value (number, boolean, etc.) that's already in string form
+			// No need to deserialize - just return as-is
 		}
 
 		return returnValue;
@@ -136,20 +141,7 @@ internal static partial class HybridWebViewHelper
 			? string.Empty
 			: string.Join(
 				", ",
-				request.ParamValues.Select((v, i) =>
-				{
-					if (v == null)
-					{
-						return "null";
-					}
-
-					var serialized = JsonSerializer.Serialize(v, request.ParamJsonTypeInfos![i]!);
-
-					// Escape the JSON string for JavaScript so it can be passed as a string literal
-					var escaped = WebViewHelper.EscapeJsString(serialized);
-
-					return $"'{escaped}'";
-				}));
+				request.ParamValues.Select((v, i) => v is null ? "null" : JsonSerializer.Serialize(v, request.ParamJsonTypeInfos![i]!)));
 
 		var js = $"window.HybridWebView.__InvokeJavaScript({task.TaskId}, {request.MethodName}, [{paramsValuesStringArray}])";
 
@@ -157,7 +149,9 @@ internal static partial class HybridWebViewHelper
 
 		handler.PlatformView.EvaluateJavaScript(innerRequest);
 
-		await innerRequest.Task;
+		// Don't await innerRequest.Task because __InvokeJavaScript is async and returns a Promise,
+		// which iOS can't convert to a string. Instead, we wait for the callback message from JavaScript.
+		// The JavaScript function will call invokeJavaScriptCallbackInDotNet() when done.
 
 		var stringResult = await task.TaskCompletionSource.Task;
 
