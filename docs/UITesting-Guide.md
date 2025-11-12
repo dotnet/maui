@@ -325,11 +325,8 @@ For rapid development and debugging, you can run specific tests directly:
 
 1. **Find iPhone Xs with highest API level:**
    ```bash
-   # View all iPhone Xs devices with their iOS versions
-   xcrun simctl list devices available | awk '/^--.*iOS/ {version=$0} /iPhone Xs/ {print version " -> " $0}'
-
-   # Extract UDID of iPhone Xs with highest iOS version (last in list)
-   UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+   # Extract UDID of iPhone Xs with highest iOS version
+   UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
    # Verify UDID was found
    if [ -z "$UDID" ]; then
@@ -620,6 +617,7 @@ If migrating from Xamarin.UITest:
 ## Additional Resources
 
 - [UITesting-Architecture.md](design/UITesting-Architecture.md) - CI/CD integration, advanced patterns, and architecture decisions
+- [Appium Control Scripts](../.github/instructions/appium-control.instructions.md) - Create standalone scripts for manual Appium-based debugging and exploration
 - [Appium Documentation](http://appium.io/docs/en/about-appium/intro/)
 - [NUnit Documentation](https://docs.nunit.org/)
 - [.NET MAUI Testing Wiki](https://github.com/dotnet/maui/wiki/UITests)
