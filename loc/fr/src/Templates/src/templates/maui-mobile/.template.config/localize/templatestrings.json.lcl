@@ -65,7 +65,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run 'dotnet restore']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Exécuter 'dotnet restore']]></Val>
+            <Val><![CDATA[Exécutez « dotnet restore »]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Infrastructure cible du projet.]]></Val>
+            <Val><![CDATA[Framework cible du projet.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
