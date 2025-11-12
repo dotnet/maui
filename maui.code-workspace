@@ -5,6 +5,6 @@
 		}
 	],
 	"settings": {
-		"dotnet.defaultSolution": "Microsoft.Maui-vscode.slnx"
+		"dotnet.defaultSolution": "Microsoft.Maui-vscode.slnf"
 	}
 }
