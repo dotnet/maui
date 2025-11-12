@@ -55,4 +55,18 @@ public enum InterceptedMethodType
 	Create
 }
 
+[Flags]
+public enum BindingPropertyFlags
+{
+	None = 0,
+	Mode = 1 << 0,
+	Converter = 1 << 1,
+	ConverterParameter = 1 << 2,
+	StringFormat = 1 << 3,
+	Source = 1 << 4,
+	FallbackValue = 1 << 5,
+	TargetNullValue = 1 << 6,
+	All = Mode | Converter | ConverterParameter | StringFormat | Source | FallbackValue | TargetNullValue
+}
+
 public sealed record SetterOptions(bool IsWritable, bool AcceptsNullValue = false);

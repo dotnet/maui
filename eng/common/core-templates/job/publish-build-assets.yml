@@ -136,7 +136,7 @@ jobs:
         scriptPath: $(System.DefaultWorkingDirectory)/eng/common/sdk-task.ps1
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
           -runtimeSourceFeed https://ci.dot.net/internal 
-          -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
+          -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
           /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
           /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
@@ -207,7 +207,7 @@ jobs:
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
             -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
             -runtimeSourceFeed https://ci.dot.net/internal
-            -runtimeSourceFeedKey $(dotnetbuilds-internal-container-read-token-base64)
+            -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
 
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/core-templates/steps/publish-logs.yml

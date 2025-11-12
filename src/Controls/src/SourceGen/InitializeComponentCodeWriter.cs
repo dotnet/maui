@@ -128,7 +128,7 @@ $$"""
 
 					foreach (var localMethod in sgcontext.LocalMethods)
 					{
-						codeWriter.WriteLine(localMethod);
+						WriteMultiLineString(codeWriter, localMethod);
 						codeWriter.WriteLine();
 					}
 				}
@@ -136,6 +136,22 @@ $$"""
 		exit:
 			codeWriter.Flush();
 			return codeWriter.InnerWriter.ToString();
+		}
+	}
+
+	static void WriteMultiLineString(IndentedTextWriter writer, string text)
+	{
+		var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+		foreach (var line in lines)
+		{
+			if (string.IsNullOrWhiteSpace(line))
+			{
+				writer.InnerWriter.WriteLine();  // Blank line without indentation
+			}
+			else
+			{
+				writer.WriteLine(line);
+			}
 		}
 	}
 
