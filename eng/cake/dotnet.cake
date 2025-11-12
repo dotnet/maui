@@ -43,9 +43,10 @@ string FindGlobalDotNet()
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var localDotnetPath = $"./.dotnet/dotnet{ext}";
-var dotnetPath = System.IO.File.Exists(localDotnetPath) ? localDotnetPath : FindGlobalDotNet();
-string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
+// If --workloads=global is specified, always use global dotnet. Otherwise, use local if it exists, or fall back to global.
+var dotnetPath = !localDotnet ? FindGlobalDotNet() : (System.IO.File.Exists(localDotnetPath) ? localDotnetPath : FindGlobalDotNet());
+string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
@@ -113,7 +114,8 @@ Task("dotnet")
         {
             MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
-                .SetConfiguration(configuration),
+                .SetConfiguration(configuration)
+                .WithProperty("DotNetToolPath", dotnetPath),
         });
 
         DotNetTool("tool", new DotNetToolSettings
