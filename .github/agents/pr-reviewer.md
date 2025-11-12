@@ -267,8 +267,8 @@ I need help resolving this merge issue before I can test the PR.
 
 **iOS Testing**:
 ```bash
-# Find iOS 26 simulator (or specify version based on issue)
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-26-0"] | first | .udid')
+# Find iPhone Xs with highest iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
 # Boot simulator
 xcrun simctl boot $UDID 2>/dev/null || true

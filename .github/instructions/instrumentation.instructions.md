@@ -287,8 +287,8 @@ private async void LogLayoutInfo(object? sender, EventArgs e)
 # Build
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
-# Find simulator
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-26-0"] | first | .udid')
+# Find iPhone Xs with highest iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
 # Boot and install
 xcrun simctl boot $UDID

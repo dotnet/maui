@@ -205,6 +205,9 @@ public void SoftInputBehaviorTest()
 When developing and debugging a specific test:
 
 **Android:**
+
+**IMPORTANT**: Like iOS, Android tests also require the `DEVICE_UDID` environment variable to be set to target the correct device/emulator.
+
 1. Deploy the TestCases.HostApp:
    ```bash
    # Use local dotnet if available, otherwise use global dotnet
@@ -218,6 +221,9 @@ When developing and debugging a specific test:
    # Set DEVICE_UDID environment variable so Appium tests know which device to use
    # Get the device ID from: adb devices
    export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+   
+   # Verify device is set
+   echo "Using Android device: $DEVICE_UDID"
    
    # Run the test
    dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue12345"
@@ -348,6 +354,9 @@ export IOS_VERSION="18.0"
 ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
 # OR:
 dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+
+# If the app crashes on launch, rebuild with --no-incremental:
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
 ```
 
 **Step 3: Boot simulator and install app**
@@ -375,6 +384,20 @@ export DEVICE_UDID=$UDID
 # Run the test
 dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
 ```
+
+**Important Note on Device Targeting:**
+
+The UI test infrastructure automatically reads the `DEVICE_UDID` environment variable to target the correct iOS simulator. You must set this before running tests:
+
+```bash
+# Set the device UDID (from Step 1)
+export DEVICE_UDID=$UDID
+
+# Run the test
+dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
+
+Without `DEVICE_UDID` set, Appium will randomly select a device, which may not have your app installed.
 
 **MacCatalyst:**
 
@@ -409,6 +432,25 @@ dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csp
 1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
 2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
 3. Check emulator: `adb devices`
+
+**iOS App Crashes on Launch or Won't Start with Appium:**
+
+If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`, the issue is often related to incremental builds:
+
+**Solution:** Clean and rebuild with `--no-incremental`:
+```bash
+# Clean first
+dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+
+# Rebuild with no-incremental
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
+
+# Reinstall to simulator
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+```
+
+**Why this happens:** Incremental builds can sometimes leave the app bundle in an inconsistent state, especially after making changes to XAML files or project structure. The `--no-incremental` flag forces a complete rebuild.
 
 ## Before Committing
 
