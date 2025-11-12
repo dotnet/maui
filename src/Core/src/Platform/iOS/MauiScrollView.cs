@@ -80,8 +80,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
 
-		/// <summary>
-		/// The previous scroll orientation.
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 
