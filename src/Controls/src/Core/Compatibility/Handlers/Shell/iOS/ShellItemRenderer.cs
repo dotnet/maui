@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			UpdateMoreCellsEnabled();
 		}
-        
+		
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
@@ -473,7 +473,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					return;
 				}
-        
+	   
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else
