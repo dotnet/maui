@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Networking
 	{
 		static NWPathMonitor sharedMonitor;
 		static readonly object monitorLock = new object();
+		static volatile bool pathInitialized = false;
 
 		static NWPathMonitor SharedMonitor
 		{
@@ -30,8 +31,26 @@ namespace Microsoft.Maui.Networking
 					if (sharedMonitor == null)
 					{
 						sharedMonitor = new NWPathMonitor();
+						
+						// Set up a handler to track when path becomes available
+						Action<NWPath> initHandler = null;
+						initHandler = (path) =>
+						{
+							pathInitialized = true;
+							// Remove the handler after first call to avoid keeping reference
+							sharedMonitor.SnapshotHandler = null;
+						};
+						sharedMonitor.SnapshotHandler = initHandler;
+						
 						sharedMonitor.SetQueue(DispatchQueue.DefaultGlobalQueue);
 						sharedMonitor.Start();
+						
+						// Wait synchronously for the first path update (up to 5 seconds)
+						var timeout = DateTime.UtcNow.AddSeconds(5);
+						while (!pathInitialized && DateTime.UtcNow < timeout)
+						{
+							System.Threading.Thread.Sleep(10);
+						}
 					}
 					return sharedMonitor;
 				}
@@ -41,17 +60,7 @@ namespace Microsoft.Maui.Networking
 		static NWPath GetCurrentPath()
 		{
 			var monitor = SharedMonitor;
-			var path = monitor?.CurrentPath;
-			
-			// If path is null, the monitor might not have received its first update yet
-			// Force initialization by accessing the monitor
-			if (path == null && monitor != null)
-			{
-				// Monitor is started but path not yet available - this is expected on first call
-				// The monitor will update CurrentPath asynchronously
-			}
-			
-			return path;
+			return monitor?.CurrentPath;
 		}
 
 		internal static NetworkStatus RemoteHostStatus()
