@@ -387,6 +387,32 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
+	public Task InvokeJavaScript_WithDictionaryArgument() =>
+		RunTest(async (hybridWebView) =>
+		{
+			// Create a dictionary that will be serialized to JSON
+			var contextArg = new Dictionary<string, string>
+			{
+				{ "userId", "userIdValue" },
+				{ "sessionId", "session123" },
+				{ "timestamp", "2025-11-11T01:30:00Z" }
+			};
+
+			// This should not timeout - the JSON string should be handled correctly
+			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+				"EchoJsonStringifyParameter",
+				InvokeJsonContext.Default.String,
+				[contextArg],
+				[InvokeJsonContext.Default.DictionaryStringString]);
+
+			// Serialize to JSON string (without base64 encoding)
+			string contextArgString = JsonSerializer.Serialize(contextArg);
+
+			// Verify the result matches the input
+			Assert.Equal(contextArgString, result);
+		});
+
+	[Fact]
 	public Task InvokeJavaScript_WithComplexJsonString() =>
 		RunTest(async (hybridWebView) =>
 		{
