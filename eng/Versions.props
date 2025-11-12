@@ -40,7 +40,8 @@
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsConfigurationVersion>10.0.0</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsAIVersion>10.0.0</MicrosoftExtensionsAIVersion>
+    <MicrosoftExtensionsAIAbstractionsVersion>10.0.0</MicrosoftExtensionsAIAbstractionsVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>10.0.0</MicrosoftExtensionsConfigurationJsonVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>10.0.0</MicrosoftExtensionsDependencyInjectionVersion>
