@@ -75,7 +75,7 @@ dotnet cake --target=VS --android --ios
 Before committing any changes:
 
 ```bash
-dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+dotnet format Microsoft.Maui.slnx --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
 ### PublicAPI Management
@@ -486,15 +486,15 @@ dotnet build ./Microsoft.Maui.BuildTasks.slnf
 **Issue: "Dependency version conflicts"**
 ```bash
 # Solution: Full clean and restore
-dotnet clean Microsoft.Maui.sln
+dotnet clean Microsoft.Maui.slnx
 rm -rf bin/ obj/
-dotnet restore Microsoft.Maui.sln --force
+dotnet restore Microsoft.Maui.slnx --force
 ```
 
 **Issue: "PublicAPI analyzer failures"**
 ```bash
 # Solution: Use format analyzers first
-dotnet format analyzers Microsoft.Maui.sln
+dotnet format analyzers Microsoft.Maui.slnx
 # If still failing, check build output for required API entries
 ```
 
