@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 #nullable disable
@@ -77,57 +78,84 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 		}
 
 		//`<OnPlatform>` elements
-		//if (node.XmlType.Name == "OnPlatform" && node.XmlType.NamespaceUri == XamlParser.MauiUri)
-		//{
-		//	var onNode = GetOnNode(node, Target) ?? GetDefault(node);
+		if (node.XmlType.Name == "OnPlatform" && node.XmlType.NamespaceUri == XamlParser.MauiUri)
+		{
+			var onNode = GetOnNode(node, Target) ?? GetDefault(node);
 
-		//	//Property node
-		//	if (node.TryGetPropertyName(parentNode, out XmlName name)
-		//		&& parentNode is IElementNode parentEnode)
-		//	{
-		//		if (onNode != null)
-		//			parentEnode.Properties[name] = onNode;
-		//		else
-		//			parentEnode.Properties.Remove(name);
-		//		return;
-		//	}
+			// Check if this OnPlatform has an x:Key (e.g., in ResourceDictionaries)
+			INode keyNode = null;
+			bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out keyNode);
 
-		//	//Collection item
-		//	if (onNode != null && parentNode is IElementNode parentEnode2)
-		//		parentEnode2.CollectionItems[parentEnode2.CollectionItems.IndexOf(node)] = onNode;
+			// If OnPlatform has x:Key but the replacement node is a ValueNode, we cannot transfer the key
+			// directly because ValueNodes don't support properties. In this case, skip simplification.
+			if (hasKey && onNode is ValueNode)
+				return;
 
-		//}
+			//Property node
+			if (node.TryGetPropertyName(parentNode, out XmlName name)
+				&& parentNode is ElementNode parentEnode)
+			{
+				if (onNode != null)
+				{
+					// Transfer x:Key to the replacement node if it exists
+					if (hasKey && onNode is ElementNode onElementNode && !onElementNode.Properties.ContainsKey(XmlName.xKey))
+						onElementNode.Properties[XmlName.xKey] = keyNode;
+					parentEnode.Properties[name] = onNode;
+				}
+				else
+					parentEnode.Properties.Remove(name);
+				return;
+			}
 
-		//INode GetOnNode(ElementNode onPlatform, string target)
-		//{
-		//	foreach (var onNode in onPlatform.CollectionItems)
-		//	{
-		//		if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Platform"), out var platform))
-		//		{
-		//			var splits = ((platform as ValueNode).Value as string).Split(',');
-		//			foreach (var split in splits)
-		//			{
-		//				if (string.IsNullOrWhiteSpace(split))
-		//					continue;
-		//				if (split.Trim() == target)
-		//				{
-		//					if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Value"), out var node))
-		//						return node;
+			//Collection item (e.g., when OnPlatform is the content property or in ResourceDictionary)
+			if (parentNode is ElementNode parentEnode2)
+			{
+				int index = parentEnode2.CollectionItems.IndexOf(node);
+				if (index >= 0)
+				{
+					if (onNode != null)
+					{
+						// Transfer x:Key to the replacement node if it exists
+						if (hasKey && onNode is ElementNode onElementNode && !onElementNode.Properties.ContainsKey(XmlName.xKey))
+							onElementNode.Properties[XmlName.xKey] = keyNode;
+						parentEnode2.CollectionItems[index] = onNode;
+					}
+					else
+						parentEnode2.CollectionItems.RemoveAt(index);
+				}
+			}
+		}
 
-		//					return (onNode as ElementNode).CollectionItems.FirstOrDefault();
-		//				}
-		//			}
-		//		}
-		//	}
-		//	return null;
-		//}
+		INode GetOnNode(ElementNode onPlatform, string target)
+		{
+			foreach (var onNode in onPlatform.CollectionItems)
+			{
+				if (onNode is ElementNode elementNode && elementNode.Properties.TryGetValue(new XmlName("", "Platform"), out var platform))
+				{
+					var splits = ((platform as ValueNode).Value as string).Split(',');
+					foreach (var split in splits)
+					{
+						if (string.IsNullOrWhiteSpace(split))
+							continue;
+						if (split.Trim() == target)
+						{
+							if (elementNode.Properties.TryGetValue(new XmlName("", "Value"), out var valueNode))
+								return valueNode;
 
-		//INode GetDefault(ElementNode onPlatform)
-		//{
-		//	if (node.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
-		//		return defaultNode;
-		//	return null;
-		//}
+							return elementNode.CollectionItems.FirstOrDefault();
+						}
+					}
+				}
+			}
+			return null;
+		}
+
+		INode GetDefault(ElementNode onPlatform)
+		{
+			if (onPlatform.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
+				return defaultNode;
+			return null;
+		}
 
 	}
 

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 public class SimplifyOnPlatform : SourceGenXamlInitializeComponentTestBase
 {
 	[Fact]
-	public void Test()
+	public void SimplifyOnPlatformMarkupExtension()
 	{
 		var xaml =
 """
@@ -142,5 +142,163 @@ public partial class TestPage
 		Assert.False(result.Diagnostics.Any());
 
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
+	}
+
+	[Fact]
+	public void SimplifyOnPlatformElement()
+	{
+		// Issue #32521: OnPlatform elements should be simplified at compile time based on target framework
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<OnPlatform x:TypeArguments="View">
+		<On Platform="Android">
+			<Label x:Name="AndroidLabel" Text="Android Content" />
+		</On>
+		<On Platform="iOS">
+			<Label x:Name="iOSLabel" Text="iOS Content" />
+		</On>
+	</OnPlatform>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+		Assert.False(result.Diagnostics.Any());
+
+		// Should contain only Android label, not iOS label
+		Assert.Contains("AndroidLabel", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("iOSLabel", generated, StringComparison.Ordinal);
+		Assert.Contains("Android Content", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("iOS Content", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SimplifyOnPlatformWithXKeyAndValueNode()
+	{
+		// Issue #17461: OnPlatform with x:Key should not be simplified if the target value is a ValueNode
+		// because ValueNodes cannot have x:Key attributes transferred to them
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<OnPlatform x:Key="TestColor" x:TypeArguments="Color">
+			<On Platform="Android" Value="Red" />
+			<On Platform="iOS" Value="Blue" />
+		</OnPlatform>
+	</ContentPage.Resources>
+	<Label Text="Test" TextColor="{StaticResource TestColor}" />
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+		Assert.False(result.Diagnostics.Any());
+
+		// OnPlatform should NOT be simplified because the target value is a simple ValueNode
+		// and we cannot transfer x:Key to a ValueNode
+		Assert.Contains("OnPlatform", generated, StringComparison.Ordinal);
+		Assert.Contains("TestColor", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SimplifyOnPlatformWithXKeyAndElementNode()
+	{
+		// OnPlatform with x:Key should be simplified if the target value is an ElementNode
+		// and the x:Key should be transferred to the replacement element
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<OnPlatform x:Key="TestStyle" x:TypeArguments="Style">
+			<On Platform="Android">
+				<Style TargetType="Label">
+					<Setter Property="TextColor" Value="Red" />
+				</Style>
+			</On>
+			<On Platform="iOS">
+				<Style TargetType="Label">
+					<Setter Property="TextColor" Value="Blue" />
+				</Style>
+			</On>
+		</OnPlatform>
+	</ContentPage.Resources>
+	<Label Text="Test" Style="{StaticResource TestStyle}" />
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+		Assert.False(result.Diagnostics.Any());
+
+		// OnPlatform should be simplified and the x:Key transferred to the Style element
+		Assert.DoesNotContain("OnPlatform", generated, StringComparison.Ordinal);
+		Assert.Contains("TestStyle", generated, StringComparison.Ordinal);
+		// Should contain Android style (Red), not iOS style (Blue)
+		Assert.Contains("Red", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("Blue", generated, StringComparison.Ordinal);
 	}
 }
