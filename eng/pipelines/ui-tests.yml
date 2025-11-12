@@ -70,7 +70,8 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - Agent.OS -equals Darwin
+        - macOS.Name -equals Sequoia
+        - macOS.Architecture -equals x64
   
   - name: androidPoolLinux
     type: object
@@ -86,7 +87,8 @@ parameters:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - Agent.OS -equals Darwin
+        - macOS.Name -equals Sequoia
+        - macOS.Architecture -equals x64
   
   - name: windowsBuildPool
     type: object
