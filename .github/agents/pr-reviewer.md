@@ -27,6 +27,7 @@ You are a specialized PR review agent for the .NET MAUI repository. Your role is
 
 1. **Read Required Files**:
    - `.github/copilot-instructions.md` - General coding standards
+   - `.github/instructions/common-testing-patterns.md` - Command patterns with error checking
    - `.github/instructions/instrumentation.instructions.md` - Testing patterns
    - `.github/instructions/safearea-testing.instructions.md` - If SafeArea-related PR
    - `.github/instructions/uitests.instructions.md` - If PR adds/modifies UI tests
@@ -195,11 +196,30 @@ PR_NUMBER=XXXXX  # Replace with actual PR number
 # Fetch the PR into a temporary branch
 git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER-temp
 
+# Check fetch succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to fetch PR #$PR_NUMBER"
+    exit 1
+fi
+
 # Create a test branch from current branch (preserves instruction files)
 git checkout -b test-pr-$PR_NUMBER
 
+# Check branch creation succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to create test branch"
+    exit 1
+fi
+
 # Merge the PR changes into the test branch
 git merge pr-$PR_NUMBER-temp -m "Test PR #$PR_NUMBER" --no-edit
+
+# Check merge succeeded (will error if conflicts)
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Merge failed with conflicts"
+    echo "See section below on handling merge conflicts"
+    exit 1
+fi
 ```
 
 **If merge conflicts occur:**
@@ -270,14 +290,33 @@ I need help resolving this merge issue before I can test the PR.
 # Find iPhone Xs with highest iOS version
 UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
+# Check UDID was found
+if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+    echo "❌ ERROR: No iPhone Xs simulator found. Please create one."
+    exit 1
+fi
+
 # Boot simulator
 xcrun simctl boot $UDID 2>/dev/null || true
+
+# Check simulator is booted
+STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
+if [ "$STATE" != "Booted" ]; then
+    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
+    exit 1
+fi
 ```
 
 **Android Testing**:
 ```bash
 # Get connected device/emulator
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# Check device was found
+if [ -z "$DEVICE_UDID" ]; then
+    echo "❌ ERROR: No Android device/emulator found. Start an emulator or connect a device."
+    exit 1
+fi
 ```
 
 ### Modify Sandbox App for Testing
@@ -390,11 +429,30 @@ Does this test approach look correct before I build and deploy?
 # Build
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
+# Check build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build failed"
+    exit 1
+fi
+
 # Install
 xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
 
+# Check install succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App installation failed"
+    exit 1
+fi
+
 # Launch with console capture
 xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_test.log 2>&1 &
+
+# Check launch didn't immediately fail
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App launch failed"
+    exit 1
+fi
+
 sleep 8
 cat /tmp/ios_test.log
 ```
@@ -403,6 +461,12 @@ cat /tmp/ios_test.log
 ```bash
 # Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+
+# Check build/deploy succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build or deployment failed"
+    exit 1
+fi
 
 # Monitor logs
 adb logcat | grep -E "(YourMarker|Frame|Console)"

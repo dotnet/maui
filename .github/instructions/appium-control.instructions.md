@@ -6,6 +6,8 @@ description: "Quick reference for creating standalone Appium control scripts for
 
 Create standalone C# scripts for manual Appium-based debugging and exploration of .NET MAUI apps. Use these when you need direct control outside of automated tests.
 
+**Common Command Patterns**: For UDID extraction, device boot, and build patterns, see [Common Testing Patterns](common-testing-patterns.md).
+
 ## When to Use
 
 - **Manual debugging** - Interactive exploration of app behavior
@@ -21,10 +23,10 @@ Create standalone C# scripts for manual Appium-based debugging and exploration o
 The fastest way to experiment with Appium is using the Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox`):
 
 1. **Modify `MainPage.xaml`** to add controls with `AutomationId` attributes
-2. **Build and deploy** with `--no-incremental` (recommended to avoid crashes):
+2. **Build and deploy**:
    ```bash
    # Build
-   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios --no-incremental
+   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
    
    # Get device UDID
    UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')

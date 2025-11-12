@@ -19,7 +19,7 @@ When updating this file, you MUST also update `AGENTS.md` (in repository root) t
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
   - **main branch**: Use the latest stable version of .NET to build (currently .NET 10)
   - **net10.0 branch**: Use the latest .NET 10 SDK
-  - **etc.**: Each feature branch correlates to its respective .NET version
+  - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
@@ -91,10 +91,18 @@ dotnet build ./Microsoft.Maui.BuildTasks.slnf --verbosity normal
 - **Windows** specific code is inside folders named `Windows`
 
 ### Platform-Specific File Extensions
-- Files with `.windows.cs` will only compile for the Windows TFM
-- Files with `.android.cs` will only compile for the Android TFM
-- Files with `.ios.cs` will only compile for the iOS and MacCatalyst TFM
-- Files with `MacCatalyst.cs` will only compile for the MacCatalyst TFM
+
+Platform-specific files use naming conventions to control compilation:
+
+**File extension patterns**:
+- `.windows.cs` - Windows TFM only
+- `.android.cs` - Android TFM only
+- `.ios.cs` - iOS and MacCatalyst TFMs (both)
+- `.maccatalyst.cs` - MacCatalyst TFM only (does NOT compile for iOS)
+
+**Important**: Both `.ios.cs` and `.maccatalyst.cs` files compile for MacCatalyst. There is no precedence mechanism that excludes one when the other exists.
+
+**Example**: If you have both `CollectionView.ios.cs` and `CollectionView.maccatalyst.cs`, both will compile for MacCatalyst builds. The `.maccatalyst.cs` file won't compile for iOS, but the `.ios.cs` file will compile for both iOS and MacCatalyst.
 
 ### Sample Projects
 ```
@@ -133,12 +141,12 @@ dotnet cake --target=dotnet-pack
 
 #### Testing Guidelines
 - Add tests for new functionality
-- Ensure existing tests pass:
-  - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
-  - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
-  - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
-  - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
-  - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
+- Ensure existing tests pass for modified areas (major test projects):
+  - **Core tests**: `src/Core/tests/UnitTests/Core.UnitTests.csproj`
+  - **Essentials tests**: `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
+  - **Controls tests**: `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
+  - **XAML tests**: `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
+  - **To find other test projects**: `find . -name "*.UnitTests.csproj"` or check the solution file
 
 #### UI Testing
 
@@ -305,6 +313,7 @@ dotnet format analyzers Microsoft.Maui.slnx
 
 ## Additional Resources
 
+- [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
 - [UI Testing Guide](../docs/UITesting-Guide.md)
 - [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
 - [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
