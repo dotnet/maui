@@ -211,8 +211,49 @@ namespace Microsoft.Maui.Platform
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
 		{
-			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+			// Get system bars insets with API level fallback
+			// WindowInsetsCompat.Type.SystemBars() was added in API 30
+			// For API 28-29, we need to use the deprecated SystemWindowInsets property
+			Insets? systemBars;
+			Insets? displayCutout;
+			
+			if (global::Android.OS.Build.VERSION.SdkInt >= global::Android.OS.BuildVersionCodes.R) // API 30+
+			{
+				systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+			}
+			else // API 28-29
+			{
+				// Use legacy SystemWindowInsets for older APIs
+				// These values represent the area occupied by system bars
+#pragma warning disable CS0618 // Type or member is obsolete
+				var legacyInsets = insets.SystemWindowInsets;
+#pragma warning restore CS0618
+				
+				systemBars = Insets.Of(
+					legacyInsets?.Left ?? 0,
+					legacyInsets?.Top ?? 0,
+					legacyInsets?.Right ?? 0,
+					legacyInsets?.Bottom ?? 0
+				);
+				
+				// DisplayCutout API was added in API 28, but getInsets(Type.DisplayCutout) is API 30+
+				// For API 28-29, use DisplayCutout if available
+				var cutout = insets.DisplayCutout;
+				if (cutout != null)
+				{
+					displayCutout = Insets.Of(
+						cutout.SafeInsetLeft,
+						cutout.SafeInsetTop,
+						cutout.SafeInsetRight,
+						cutout.SafeInsetBottom
+					);
+				}
+				else
+				{
+					displayCutout = Insets.None;
+				}
+			}
 
 			// Handle MaterialToolbar special case early
 			if (v is MaterialToolbar)
