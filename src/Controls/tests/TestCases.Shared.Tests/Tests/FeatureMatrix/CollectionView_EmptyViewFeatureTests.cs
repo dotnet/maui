@@ -183,7 +183,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("No Items Available(String)");
 		}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/32404
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
