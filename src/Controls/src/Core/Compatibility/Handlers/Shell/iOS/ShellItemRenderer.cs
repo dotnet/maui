@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			UpdateMoreCellsEnabled();
 		}
-
+        
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
@@ -459,17 +459,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
-				if (OperatingSystem.IsMacCatalystVersionAtLeast(18) && TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
+#if MACCATALYST
+				if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
 				{
+					// On Mac Catalyst 18 and later, the native system code internally sets Hidden = true and Alpha = 0 by default.
+					// Explicitly set Alpha and Hidden to override this incorrect system behavior.
 					TabBar.Alpha = 1.0f;
 					TabBar.Hidden = !ShellItemController.ShowTabs;
 				}
+#endif
 
 				if (TabBarHidden == !ShellItemController.ShowTabs)
 				{
 					return;
 				}
-
+        
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else

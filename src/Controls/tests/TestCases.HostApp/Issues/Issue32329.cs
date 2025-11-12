@@ -11,7 +11,6 @@ public class Issue32329 : Shell
     static TabBar CreateTabBar()
     {
         var tabBar = new TabBar();
-
         var homeTab = new Tab
         {
             Title = "Home",
@@ -32,7 +31,6 @@ public class Issue32329 : Shell
             Route = "AboutPage"
         });
 
-
         var settingsTab = new Tab
         {
             Title = "Settings",
@@ -46,7 +44,6 @@ public class Issue32329 : Shell
         tabBar.Items.Add(homeTab);
         tabBar.Items.Add(aboutTab);
         tabBar.Items.Add(settingsTab);
-
         return tabBar;
     }
 
