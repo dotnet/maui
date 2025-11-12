@@ -248,10 +248,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
 			{
-				// Before rotation
-				if (IsOpen)
+				if (IsOpen && TapoffView != null)
 				{
-					TapoffView.Frame = new CGRect(View.Frame.X, View.Frame.Y, View.Frame.Width, View.Frame.Height);
+					TapoffView.Frame = View.Bounds;
 				}
 			}, null);
 		}
