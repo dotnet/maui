@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Platform
 			Insets? systemBars;
 			Insets? displayCutout;
 			
-			if (global::Android.OS.Build.VERSION.SdkInt >= global::Android.OS.BuildVersionCodes.R) // API 30+
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 				displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
