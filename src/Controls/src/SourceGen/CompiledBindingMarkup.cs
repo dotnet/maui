@@ -407,9 +407,15 @@ internal struct CompiledBindingMarkup
 			}
 		}
 
-		// Handle self-binding case (path is "." or empty after splitting)
-		if (bindingPathParts.Count == 0)
+		// After the loop, update propertyType to the type of the last property in the path
+		// For self-bindings (empty path), propertyType remains as sourceType
+		if (bindingPathParts.Count > 0)
 		{
+			propertyType = previousPartType;
+		}
+		else
+		{
+			// Handle self-binding case (path is "." or empty after splitting)
 			// For self-bindings, the property type is the source type itself
 			// and there's no property to set, so we mark it as not writable
 			setterOptions = new SetterOptions(
