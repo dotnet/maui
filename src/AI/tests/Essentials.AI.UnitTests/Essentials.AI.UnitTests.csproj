@@ -22,6 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Models\**" Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\StreamingJsonDeserializer.cs" Link="Services\StreamingJsonDeserializer.cs" />
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\BufferedChatClient.cs" Link="Services\BufferedChatClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="TestData\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

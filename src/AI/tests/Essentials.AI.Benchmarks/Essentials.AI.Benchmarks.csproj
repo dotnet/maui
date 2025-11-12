@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Configuration>Release</Configuration>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Essentials.AI.Benchmarks</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Essentials.AI.Benchmarks</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\StreamingJsonDeserializer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Essentials.AI.UnitTests\TestData\DataStreams\maui-itinerary-1.txt" Link="maui-itinerary-1.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

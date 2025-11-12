@@ -1,18 +1,79 @@
-﻿namespace Maui.Controls.Sample;
+﻿using System.ClientModel;
+using System.Reflection;
+using Maui.Controls.Sample.Pages;
+using Maui.Controls.Sample.Services;
+using Maui.Controls.Sample.ViewModels;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
+using OpenAI;
+using OpenAI.Chat;
+
+namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
+	public static bool UseCloudAI = true;
+
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
-		builder
-			.UseMauiApp<App>()
-			.ConfigureFonts(fonts =>
-			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			});
+
+		builder.Configuration
+			.AddJsonStream(GetUserSecretsStream() ?? throw new InvalidOperationException("User secrets file not found as embedded resource."));
+
+		builder.UseMauiApp<App>();
+
+#if IOS || ANDROID || MACCATALYST
+		builder.UseMauiMaps();
+#endif
+
+		builder.ConfigureFonts(fonts =>
+		{
+			fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+		});
+
+		// Register AI
+		if (UseCloudAI)
+		{
+			var aiSection = builder.Configuration.GetSection("AI");
+			var client = new ChatClient(
+				credential: new ApiKeyCredential(aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.")),
+				model: aiSection["DeploymentName"] ?? throw new InvalidOperationException("Deployment Name not found in user secrets."),
+				options: new OpenAIClientOptions()
+				{
+					Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
+				});
+			var ichatClient = client.AsIChatClient();
+			var realClient = new FunctionInvokingChatClient(ichatClient);
+			builder.Services.AddSingleton<IChatClient>(realClient);
+		}
+		else
+		{
+			// TODO: Add platform AI chat client registration
+		}
+
+		// Register Pages
+		builder.Services.AddTransient<LandmarksPage>();
+		builder.Services.AddTransient<TripPlanningPage>();
+
+		// Register ViewModels
+		builder.Services.AddTransient<LandmarksViewModel>();
+		builder.Services.AddTransient<TripPlanningViewModel>();
+
+		// Register Services
+		builder.Services.AddSingleton<LandmarkDataService>(sp => LandmarkDataService.Instance);
+		builder.Services.AddTransient<ItineraryService>();
+		builder.Services.AddTransient<TaggingService>();
+		builder.Services.AddHttpClient<WeatherService>();
 
 		return builder.Build();
+	}
+
+	private static Stream? GetUserSecretsStream()
+	{
+		var assembly = Assembly.GetExecutingAssembly();
+		var stream = assembly.GetManifestResourceStream("Maui.Essentials.AI.Sample.secrets.json");
+		return stream;
 	}
 }

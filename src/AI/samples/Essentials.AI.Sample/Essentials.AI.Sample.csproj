@@ -11,9 +11,12 @@
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+    <MauiXamlInflator>SourceGen</MauiXamlInflator>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <UserSecretsId>2727d4aa-a3a5-484b-9447-91604761972b</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,7 +36,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="OpenAI" Version="2.6.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -42,6 +50,7 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +62,20 @@
     <MauiFont Include="Resources\Fonts\*" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <Target Name="AddUserSecrets" BeforeTargets="PrepareForBuild" Condition=" '$(UserSecretsId)' != '' ">
+    <PropertyGroup>
+      <UserSecretsFilePath Condition=" '$(OS)' == 'Windows_NT' ">
+        $([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))\AppData\Roaming\Microsoft\UserSecrets\$(UserSecretsId)\secrets.json
+      </UserSecretsFilePath>
+      <UserSecretsFilePath Condition=" '$(OS)' == 'Unix' ">
+        $([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))/.microsoft/usersecrets/$(UserSecretsId)/secrets.json
+      </UserSecretsFilePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="$(UserSecretsFilePath)" Condition="Exists($(UserSecretsFilePath))" />
+    </ItemGroup>
+  </Target>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 

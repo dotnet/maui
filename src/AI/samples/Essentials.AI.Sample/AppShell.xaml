@@ -3,12 +3,12 @@
     x:Class="Maui.Controls.Sample.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Maui.Controls.Sample"
-    Title="Maui.Controls.Sample">
+    xmlns:pages="clr-namespace:Maui.Controls.Sample.Pages"
+    Shell.NavBarIsVisible="False"
+    Title=".NET MAUI Trip Planner">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        ContentTemplate="{DataTemplate pages:LandmarksPage}"
+        Route="LandmarksPage" />
 
 </Shell>
