@@ -92,8 +92,9 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.UpdateIsEnabled(scrollView);
 			
-			// Notify MauiScrollView of orientation change to handle RTL layout
-			if (platformView is MauiScrollView mauiScrollView)
+			// Notify MauiScrollView of runtime orientation change to handle RTL layout,
+			// as RTL with horizontal scroll works fine on initial loading but not during runtime orientation changes.
+			if (platformView is MauiScrollView mauiScrollView && platformView.IsLoaded())
 			{
 				mauiScrollView.OnOrientationChanged();
 			}
