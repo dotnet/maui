@@ -7,11 +7,11 @@ namespace Maui.Controls.Sample.Issues;
 
 public class Issue32271 : ContentPage
 {
-	ScrollViewViewModel _viewModel;
+	Issue32271ScrollViewViewModel _viewModel;
 
 	public Issue32271()
 	{
-		_viewModel = new ScrollViewViewModel();
+		_viewModel = new Issue32271ScrollViewViewModel();
 		BindingContext = _viewModel;
 
 		var grid = new Grid
@@ -28,7 +28,7 @@ public class Issue32271 : ContentPage
 		{
 			AutomationId = "ScrollViewContent"
 		};
-		scrollViewContent.SetBinding(ContentView.ContentProperty, static (ScrollViewViewModel vm) => vm.Content);
+		scrollViewContent.SetBinding(ContentView.ContentProperty, static (Issue32271ScrollViewViewModel vm) => vm.Content);
 
 		var scrollView = new ScrollView
 		{
@@ -36,7 +36,7 @@ public class Issue32271 : ContentPage
 			FlowDirection = FlowDirection.RightToLeft,
 			Orientation = ScrollOrientation.Horizontal
 		};
-		scrollView.SetBinding(ScrollView.OrientationProperty, static (ScrollViewViewModel vm) => vm.Orientation);
+		scrollView.SetBinding(ScrollView.OrientationProperty, static (Issue32271ScrollViewViewModel vm) => vm.Orientation);
 
 		grid.Add(scrollView);
 		Grid.SetRow(scrollView, 0);
@@ -82,7 +82,7 @@ public class Issue32271 : ContentPage
 }
 
 
-public class ScrollViewViewModel : INotifyPropertyChanged
+public class Issue32271ScrollViewViewModel : INotifyPropertyChanged
 {
 	string _contentText;
 	ScrollOrientation _orientation = ScrollOrientation.Vertical;
@@ -101,7 +101,7 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 		}
 	}
 
-	public ScrollViewViewModel()
+	public Issue32271ScrollViewViewModel()
 	{
 		_contentText = string.Empty;
 		Content = new Label
