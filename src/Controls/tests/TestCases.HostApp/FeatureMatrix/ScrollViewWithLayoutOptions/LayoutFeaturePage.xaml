@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.LayoutFeatureMainPage"
+             Title="LayoutFeatureMainPage">
+    <VerticalStackLayout Padding="20"
+            Spacing="10"
+            VerticalOptions="Center">
+        <Button Text="ScrollView With LayoutOptions"
+                Clicked="OnScrollViewWithLayoutOptionsButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ScrollViewWithLayoutOptionsButton"
+                WidthRequest="400"/>
+        <Button Text="ScrollView With DynamicStackLayout"
+                Clicked="OnDynamicStackLayoutButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="DynamicStackLayoutButton"
+                WidthRequest="400"/> 
+        <Button Text="ScrollView With DynamicGridLayout"
+                Clicked="OnDynamicGridLayoutButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="DynamicGridLayoutButton"
+                WidthRequest="400"/> 
+        <Button Text="ScrollView With DynamicFlexLayout"
+                Clicked="OnDynamicFlexLayoutButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="DynamicFlexLayoutButton"
+                WidthRequest="400"/>
+    </VerticalStackLayout>
+</ContentPage>
