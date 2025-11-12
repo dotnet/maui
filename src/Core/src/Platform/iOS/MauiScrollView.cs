@@ -82,10 +82,6 @@ namespace Microsoft.Maui.Platform
 
 		/// <summary>
 		/// The previous scroll orientation.
-		/// Used to detect when the scroll orientation changes and trigger appropriate RTL repositioning.
-		/// </summary>
-		ScrollOrientation? _previousScrollOrientation;
-
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 
@@ -111,28 +107,17 @@ namespace Microsoft.Maui.Platform
 		internal ICrossPlatformLayout? CrossPlatformLayout => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
 
 		/// <summary>
-		/// Gets the current scroll orientation from the cross-platform view.
-		/// </summary>
-		/// <returns>The current scroll orientation, or null if not available.</returns>
-		ScrollOrientation? GetCurrentScrollOrientation()
-		{
-			// Access the scroll orientation from the view if it's a ScrollView
-			if (View is IScrollView scrollView)
-			{
-				return scrollView.Orientation;
-			}
-			return null;
-		}
-
-		/// <summary>
 		/// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
 		/// </summary>
 		internal void OnOrientationChanged()
 		{
-			// Reset the previous orientation to force re-evaluation of RTL layout
-			_previousScrollOrientation = null;
-			SetNeedsLayout();
-			LayoutIfNeeded();
+			// Reset the previous layout direction to force re-evaluation of RTL layout
+			if (_previousEffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				_previousEffectiveUserInterfaceLayoutDirection = null;
+				SetNeedsLayout();
+				LayoutIfNeeded();
+			}
 		}
 
 		/// <summary>
@@ -497,17 +482,10 @@ namespace Microsoft.Maui.Platform
 
 			contentSize = new Size(width, height);
 
-			// Check if the orientation has changed
-			var currentScrollOrientation = GetCurrentScrollOrientation();
-			bool orientationChanged = _previousScrollOrientation != currentScrollOrientation;
-
 			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 			// to ensure the content is correctly aligned and scrolled. This involves a second layout
 			// arrangement with an adjusted starting point and recalculating the content offset.
-			// We also need to handle this when the orientation changes from vertical to horizontal
-			// while staying in RTL mode.
-			if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection || 
-			    (orientationChanged && EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft))
+			if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
 			{
 				// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
 				// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
@@ -548,7 +526,6 @@ namespace Microsoft.Maui.Platform
 			// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
 			// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
-			_previousScrollOrientation = currentScrollOrientation;
 
 			return contentSize;
 		}
