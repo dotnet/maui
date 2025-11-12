@@ -330,10 +330,17 @@ internal class KnownMarkups
 
 		static string GetBindingPath(ElementNode node)
 		{
+			// Try to find Path property - check both null and empty string namespaces
+			// as the namespace can vary depending on context (e.g., when x:DataType is present)
 			if (node.Properties.TryGetValue(new XmlName(null, "Path"), out var pathNode)
 				&& pathNode is ValueNode { Value: string pathValue })
 			{
 				return pathValue;
+			}
+			else if (node.Properties.TryGetValue(new XmlName("", "Path"), out pathNode)
+				&& pathNode is ValueNode { Value: string pathValue2 })
+			{
+				return pathValue2;
 			}
 			else if (node.CollectionItems.Count == 1
 				&& node.CollectionItems[0] is ValueNode { Value: string singleCollectionItemValue })
