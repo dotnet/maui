@@ -69,6 +69,8 @@ parameters:
     default:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
+      demands:
+        - Agent.OS -equals Darwin
   
   - name: androidPoolLinux
     type: object
@@ -83,6 +85,8 @@ parameters:
     default:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+      demands:
+        - Agent.OS -equals Darwin
   
   - name: windowsBuildPool
     type: object
