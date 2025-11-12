@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class AttachedCollection<T> : ObservableCollection<T>, ICollection<T>, IAttachedObject where T : BindableObject, IAttachedObject
+	internal class AttachedCollection<T> : ObservableCollection<T>, ICollection<T>, IAttachedObject where T : IAttachedObject
 	{
 		readonly WeakList<BindableObject> _associatedObjects = new();
 

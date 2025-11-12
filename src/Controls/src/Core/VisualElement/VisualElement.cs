@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls
 		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly(nameof(Behaviors), typeof(IList<IBehavior>), typeof(VisualElement), default(IList<IBehavior>),
 			defaultValueCreator: bindable =>
 			{
-				var collection = new AttachedCollection<Behavior>();
+				var collection = new AttachedCollection<IBehavior>();
 				collection.AttachTo(bindable);
 				return collection;
 			});
