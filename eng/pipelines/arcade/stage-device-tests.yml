@@ -6,7 +6,9 @@ parameters:
 - name: postSteps
   type: stepList
   default: []
-- name: pool
+- name: buildPool
+  type: object
+- name: testPool
   type: object
 - name: enableSourceBuild
   type: boolean
@@ -53,7 +55,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
+      buildPool: ${{ parameters.buildPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -103,7 +105,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: false
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
