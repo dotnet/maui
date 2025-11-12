@@ -16,7 +16,6 @@ record InflatorScope(IndentedTextWriter Writer, string Type) : Scope(Writer)
 		=> this.InitializeComponentScope = InitializeComponentScope;
 
 	public (string accessor, ImmutableArray<Scope> scopes) InitializeComponentScope { get; set; }
-	public (string accessor, ImmutableArray<Scope> scopes)? Parent { get; set; }
 }
 
 record PropertyScope(IndentedTextWriter Writer, ITypeSymbol PropertyType, string PropertyName) : Scope(Writer);

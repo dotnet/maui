@@ -42,7 +42,8 @@ class DependencyFirstInflator
 		PreserveNodeValue(root, new ThisValue(context.RootType, rootScope), context);
 		PreserveNodeValue(root, new ScopedVariable(context.RootType, "__root", inflatorScope), context);
 
-		icScope.Writer.WriteLine($"var inflator = new {context.RootType.Name}Inflator() {{ __root = this }};");
+		var name = NamingHelpers.CreateUniqueTypeName(context, $"{context.RootType.Name}Inflator");
+		icScope.Writer.WriteLine($"var inflator = new {name}() {{ __root = this }};");
 
 		using (PrePost.NewBlock(inflatorScope.Writer, $"file ref struct {context.RootType.Name}Inflator() {{", "}"))
 		{
@@ -214,8 +215,8 @@ class DependencyFirstInflator
 			return directVar;
 
 		var ctx = context;
-		while (ctx != null)
-		{
+		// while (ctx != null)
+		// {
 			if (scopedVariables.TryGetValue(ctx, out var scopedVar))
 			{
 				//check if the node as a variable in the current scope or in a parent
@@ -229,7 +230,7 @@ class DependencyFirstInflator
 					return scopedVariable3;
 			}
 			ctx = ctx.ParentContext;
-		}
+		// }
 
 		if (context.Variables.TryGetValue(node, out var localVar))
 			throw new Exception("Variable found but not in scope");
@@ -428,18 +429,16 @@ class DependencyFirstInflator
 		//FIXME this could be an array of inflatorscopes (nested DataTemplates)
 		var inflatorScope = scopes.LastOrDefault(s => s is InflatorScope) as InflatorScope ?? throw new InvalidOperationException();
 		var dtInflatorName = NamingHelpers.CreateUniqueTypeName(context, "DataTemplateInflator");
-		var dtScope = new InflatorScope(new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = inflatorScope.Writer.Indent }, dtInflatorName){Parent = ("__parent", [inflatorScope]) };
+		var dtScope = new InflatorScope(new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = inflatorScope.Writer.Indent }, dtInflatorName);
 		var funcType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(context.Compilation.ObjectType);
 		var templateContext = new SourceGenContext(dtScope.Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem) { ParentContext = context };
 		var property = new ScopedVariable(funcType, NamingHelpers.CreateUniqueVariableName(templateContext, funcType), inflatorScope);
 
-		using (PrePost.NewBlock(dtScope.Writer, $"ref struct {dtInflatorName}() {{", "}"))
+		using (PrePost.NewBlock(dtScope.Writer, $"ref struct {dtInflatorName} {{", "}"))
 		{
-			dtScope.Writer.WriteLine($"public required {inflatorScope.Type} __parent {{ get; init; }}");
-
 			var dtRoot = ValueCreator(elementNode, elementType, [inflatorScope, dtScope], templateContext);
 			inflatorScope.Writer.WriteLineNoTabs();
-			inflatorScope.Writer.WriteLine($"public {funcType.ToFQDisplayString()} {property.Name} => () => new {dtInflatorName}() {{ __parent = this }}.{dtRoot.Name};");
+			inflatorScope.Writer.WriteLine($"public {funcType.ToFQDisplayString()} {property.Name} => () => new {dtInflatorName}().{dtRoot.Name};");
 			inflatorScope.Writer.WriteLineNoTabs();
 		}
 		inflatorScope.Writer.Append(dtScope.Writer, noTabs: true);
