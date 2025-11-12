@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class ScrollView_DynamicFlexWithChildrenFeatureTests : UITest
 {
 
-	public const string ScrollView_DynamicFlexWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
+	public const string ScrollViewDynamicFlexWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
 	public ScrollView_DynamicFlexWithChildrenFeatureTests(TestDevice device)
 		: base(device)
 	{
@@ -19,7 +19,7 @@ public class ScrollView_DynamicFlexWithChildrenFeatureTests : UITest
 	protected override void FixtureSetup()
 	{
 		base.FixtureSetup();
-		App.NavigateToGallery(ScrollView_DynamicFlexWithChildrenFeatureTests);
+		App.NavigateToGallery(ScrollViewDynamicFlexWithChildrenFeatureTests);
 	}
 
 	[Test, Order(1)]
