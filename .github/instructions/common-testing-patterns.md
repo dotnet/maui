@@ -110,7 +110,7 @@ echo "Simulator is booted and ready"
 
 ### Sandbox App Build (iOS)
 
-**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`
+**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`, `appium-control.instructions.md`
 
 **Pattern**:
 ```bash
@@ -127,6 +127,40 @@ echo "Build successful"
 ```
 
 **When to use**: Building Sandbox app for iOS testing
+
+**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
+
+### Sandbox App Build and Deploy (Android)
+
+**Used in**: `appium-control.instructions.md`
+
+**Pattern**:
+```bash
+# Requires: $DEVICE_UDID already set
+# Build, install, and launch (the -t:Run target does all three)
+dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+
+# Check build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build/deploy failed"
+    exit 1
+fi
+
+echo "Build and deploy successful"
+
+# Verify app is running
+sleep 3
+if adb -s $DEVICE_UDID shell pidof com.microsoft.maui.sandbox > /dev/null; then
+    echo "✅ App is running"
+else
+    echo "❌ App failed to start"
+    exit 1
+fi
+```
+
+**When to use**: Building and deploying Sandbox app for Android testing
+
+**Why `-t:Run`**: On Android, use the `Run` target which builds, installs, and launches the app in one command
 
 **Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
 

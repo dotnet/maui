@@ -23,24 +23,92 @@ Create standalone C# scripts for manual Appium-based debugging and exploration o
 The fastest way to experiment with Appium is using the Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox`):
 
 1. **Modify `MainPage.xaml`** to add controls with `AutomationId` attributes
+
 2. **Build and deploy**:
+
+   **iOS:**
    ```bash
    # Build
    dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-   
+
    # Get device UDID
    UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-   
+
+   # Verify UDID was found
+   if [ -z "$UDID" ]; then
+       echo "❌ ERROR: No iPhone Xs simulator found"
+       exit 1
+   fi
+   echo "Using iPhone Xs with UDID: $UDID"
+
    # Boot and install
    xcrun simctl boot $UDID 2>/dev/null || true
    xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-   
+
    # Set environment variable
    export DEVICE_UDID=$UDID
    ```
 
-3. **Start Appium** and run your control script
-4. **Clean up** when done: `git checkout -- src/Controls/samples/Controls.Sample.Sandbox/`
+   **Android:**
+   ```bash
+   # Get device UDID
+   UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+   # Verify UDID was found
+   if [ -z "$UDID" ]; then
+       echo "❌ ERROR: No Android device/emulator found"
+       exit 1
+   fi
+   echo "Using Android device: $UDID"
+
+   # Set environment variable
+   export DEVICE_UDID=$UDID
+
+   # Build and deploy (this handles install + launch)
+   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+
+   # Verify app is running
+   sleep 3
+   if adb -s $UDID shell pidof com.microsoft.maui.sandbox > /dev/null; then
+       echo "✅ App is running"
+   else
+       echo "❌ App failed to start"
+       exit 1
+   fi
+   ```
+
+3. **Start Appium and run your control script**:
+   ```bash
+   # Start Appium in background
+   appium --log-level error &
+
+   # Wait for Appium to be ready
+   sleep 3
+
+   # Or verify it's ready (optional):
+   # curl http://localhost:4723/status
+
+   # Run your script (from SandboxAppium/ directory)
+   cd SandboxAppium
+   dotnet run yourscript.cs
+   ```
+
+**Note**: The Sandbox app and SandboxAppium folder are set up for iterative development. You can modify your script and re-run it multiple times without cleaning up. Only clean up when you're completely done with your debugging session.
+
+## Cleanup (Optional)
+
+When you're finished with your debugging session and ready to clean up:
+
+```bash
+# Revert Sandbox changes
+git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
+
+# Remove SandboxAppium folder (it's gitignored)
+rm -rf SandboxAppium
+
+# Kill Appium server
+lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9
+```
 
 ## Prerequisites
 
@@ -86,7 +154,9 @@ iOSOptions.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
 var androidOptions = new AppiumOptions();
 androidOptions.PlatformName = "Android";
 androidOptions.AutomationName = "UIAutomator2";
-androidOptions.AddAdditionalAppiumOption("appium:bundleId", "com.microsoft.maui.uitests");
+androidOptions.AddAdditionalAppiumOption("appium:appPackage", "com.microsoft.maui.sandbox");
+androidOptions.AddAdditionalAppiumOption("appium:appActivity", "com.microsoft.maui.sandbox.MainActivity");
+androidOptions.AddAdditionalAppiumOption("appium:noReset", true);
 androidOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);  // CRITICAL: Target specific device
 androidOptions.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
 */
@@ -94,24 +164,49 @@ androidOptions.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
 // Connect to Appium server
 var serverUri = new Uri("http://localhost:4723");
 
-// For iOS:
-using var driver = new IOSDriver(serverUri, iOSOptions);
+Console.WriteLine("Connecting to Appium server...");
 
-// For Android (alternative):
-// using var driver = new AndroidDriver(serverUri, androidOptions);
+try
+{
+    // For iOS:
+    using var driver = new IOSDriver(serverUri, iOSOptions);
 
-Console.WriteLine("Connected to app! Starting interaction...");
+    // For Android (alternative):
+    // using var driver = new AndroidDriver(serverUri, androidOptions);
 
-// Your interactive code here
-// Example: Find and tap a button
-var button = driver.FindElement(MobileBy.AccessibilityId("ClickButton"));
-button.Click();
+    Console.WriteLine("✅ Connected to app! Starting interaction...");
 
-Console.WriteLine("Button clicked!");
+    // CRITICAL PLATFORM DIFFERENCE: Element locators differ between iOS and Android
+    // iOS: AutomationId maps to accessibility identifier → use MobileBy.AccessibilityId()
+    // Android: AutomationId maps to resource-id → use MobileBy.Id()
 
-// Keep session alive for manual exploration
-Console.WriteLine("Press Enter to quit...");
-Console.ReadLine();
+    // Wait for app to fully load
+    Thread.Sleep(3000);
+
+    // Your interactive code here
+    // Example for iOS: Find and tap a button
+    var button = driver.FindElement(MobileBy.AccessibilityId("ClickButton"));
+    // Example for Android: Find and tap a button
+    // var button = driver.FindElement(MobileBy.Id("ClickButton"));
+
+    button.Click();
+    Console.WriteLine("Button clicked!");
+
+    // Keep session alive for manual exploration
+    Console.WriteLine("Press Enter to quit...");
+    Console.ReadLine();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ ERROR: Failed to connect to Appium or launch app");
+    Console.WriteLine($"Error: {ex.Message}");
+    Console.WriteLine("\nTroubleshooting steps:");
+    Console.WriteLine("1. Verify Appium is running: curl http://localhost:4723/status");
+    Console.WriteLine("2. Check device UDID is correct: echo $DEVICE_UDID");
+    Console.WriteLine("3. Verify app is installed on device");
+    Console.WriteLine("4. Check Appium logs for detailed error information");
+    Environment.Exit(1);
+}
 ```
 
 ## Key Differences Between Platforms
@@ -121,12 +216,17 @@ Console.ReadLine();
 - **Automation**: `AutomationName = "XCUITest"`
 - **App Path**: `.app` bundle in `iossimulator-arm64/` folder
 - **Device Name**: Find with `xcrun simctl list devices`
+- **Element Locator**: `MobileBy.AccessibilityId("AutomationId")` - AutomationIds map to accessibility identifiers
+- **App Options**: Use `appium:bundleId` to specify the app
 
 ### Android
 - **Driver**: `AndroidDriver`
 - **Automation**: `AutomationName = "UIAutomator2"`
 - **App Path**: `.apk` file with `-Signed` suffix
 - **Device Name**: Get from `adb devices` command
+- **Element Locator**: `MobileBy.Id("AutomationId")` - AutomationIds map to `resource-id` attributes
+- **App Options**: Use `appium:appPackage` and `appium:appActivity` (format: `{packageId}.MainActivity`)
+- **Deployment**: Use `dotnet build -t:Run` to build, install, and launch the app in one command
 
 ## Running the Script
 
@@ -142,7 +242,10 @@ mkdir -p SandboxAppium && cd SandboxAppium
 export DEVICE_UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
 # 4. Start Appium (separate terminal or background)
-appium &
+appium --log-level error &
+
+# Wait for Appium to be ready
+sleep 3
 
 # 5. Run your script
 dotnet run yourscript.cs
@@ -156,9 +259,17 @@ dotnet run yourscript.cs
 
 ### Finding and Interacting with Elements
 
+**CRITICAL**: Element locators differ by platform!
+
 ```csharp
-// Find elements
+// Find elements by AutomationId
+// iOS: Use MobileBy.AccessibilityId()
 var element = driver.FindElement(MobileBy.AccessibilityId("AutomationId"));
+
+// Android: Use MobileBy.Id()
+// var element = driver.FindElement(MobileBy.Id("AutomationId"));
+
+// Find by visible text (works on both platforms)
 var byText = driver.FindElement(MobileBy.Name("Button Text"));
 
 // Interact
