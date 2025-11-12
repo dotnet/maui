@@ -23,14 +23,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <!-- <PackageReference Include="Xamarin.Google.MLKit.GenAI.Prompt" /> -->
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
-    <XcodeProject Include="..\..\AppleNative\EssentialsAI.xcodeproj">
-      <SchemeName>EssentialsAI</SchemeName>
-    </XcodeProject>
-  </ItemGroup>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 </Project>
