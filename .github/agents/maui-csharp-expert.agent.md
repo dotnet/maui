@@ -850,3 +850,14 @@ await MainThread.InvokeOnMainThreadAsync(() => { /* UI update */ });
 dotnet tool restore
 dotnet build ./Microsoft.Maui.BuildTasks.slnf
 ```
+
+## See Also
+
+For specialized topics, refer to these path-specific instruction files:
+
+- **[UI Testing Guidelines](../instructions/uitests.instructions.md)** - Comprehensive UI test patterns and conventions
+- **[Instrumentation Guide](../instructions/instrumentation.instructions.md)** - Debugging and validation instrumentation patterns
+- **[SafeArea Testing Guide](../instructions/safearea-testing.instructions.md)** - Specialized patterns for testing SafeArea changes
+- **[Template Development Guide](../instructions/templates.instructions.md)** - Working with MAUI project templates
+- **[Copilot Instructions](../copilot-instructions.md)** - Repository-wide GitHub Copilot guidance
+- **[AGENTS.md](../../AGENTS.md)** - Universal AI assistant guidance
