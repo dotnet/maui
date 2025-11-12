@@ -165,6 +165,12 @@
             return jsonString;
         }
 
+        // Echo back the parameter as a JSON string
+        function EchoJsonStringifyParameter(jsonString) {
+            return JSON.stringify(parsed);
+        }
+
+
         // Parse JSON string and stringify it back
         function ParseAndStringifyJson(jsonString) {
             try {
