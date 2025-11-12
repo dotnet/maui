@@ -45,15 +45,11 @@
                            FontAttributes="Bold"
                            FontSize="18"
                            TextColor="DarkBlue"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"
                            AutomationId="HomePageTitle"/>
                     <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                            FontSize="14"
                            TextColor="Gray"
-                           HorizontalOptions="Center"
                            AutomationId="HomeCurrentItemLabel"/>
-
                 </VerticalStackLayout>
             </ContentPage>
         </ShellContent>
@@ -66,13 +62,10 @@
                            FontAttributes="Bold"
                            FontSize="18"
                            TextColor="DarkGreen"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"
                            AutomationId="ReportsPageTitle"/>
                     <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                            FontSize="14"
                            TextColor="Gray"
-                           HorizontalOptions="Center"
                            AutomationId="ReportsCurrentItemLabel"/>
                 </VerticalStackLayout>
             </ContentPage>

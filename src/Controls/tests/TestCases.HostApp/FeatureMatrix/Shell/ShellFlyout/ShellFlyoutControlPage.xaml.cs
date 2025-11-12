@@ -23,7 +23,7 @@ public partial class ShellFlyoutControlPage : Shell
     }
     private void GenerateMenuItems()
     {
-        for (int i = 1; i <= 20; i++)
+        for (int i = 1; i <= 40; i++)
         {
             var menuItem = new MenuItem
             {
