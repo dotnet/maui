@@ -345,7 +345,6 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				// Calculate page based on orientation
 				double page;
 				if (isHorizontal)
 				{
@@ -355,20 +354,15 @@ internal static class LayoutFactory2
 				{
 					page = (offset.Y + sectionMargin) / (env.Container.ContentSize.Height - sectionMargin * 2);
 				}
-
-				System.Diagnostics.Debug.WriteLine($"Scroll - isHorizontal: {isHorizontal}, offset: {(isHorizontal ? offset.X : offset.Y)}, contentSize: {(isHorizontal ? env.Container.ContentSize.Width : env.Container.ContentSize.Height)}, sectionMargin: {sectionMargin}, page: {page}");
-
-				// For horizontal, orthogonal scrolling behavior handles paging, so we only update on exact pages
-				// For vertical, there's no orthogonal scrolling, so we need to round to nearest page
-				double pageThreshold = isHorizontal ? (double.Epsilon * 100) : 0.05; // 5% threshold for vertical
-
+				
+				// Vertical: Scroll stops wherever touch is released (no auto-centering), so use 0.1 (10%) threshold
+				//           to accept positions near page boundaries where scroll naturally settles
+				double pageThreshold = isHorizontal ? (double.Epsilon * 100) : 0.1;
 				if (Math.Abs(page % 1) > pageThreshold || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
-					System.Diagnostics.Debug.WriteLine("Returning from CreateCarouselLayout - fractional page or no items");
 					return;
 				}
 
-				// Round to nearest integer for the page index
 				var pageIndex = (int)Math.Round(page);
 				var carouselPosition = pageIndex;
 				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
@@ -414,9 +408,7 @@ internal static class LayoutFactory2
 				}
 
 				//Update the CarouselView position
-				System.Diagnostics.Debug.WriteLine($" Before CreateCarouselLayout: {carouselPosition}");
 				cv2Controller?.SetPosition(carouselPosition);
-				System.Diagnostics.Debug.WriteLine($"After CreateCarouselLayout: {carouselPosition}");
 			};
 
 			return section;
