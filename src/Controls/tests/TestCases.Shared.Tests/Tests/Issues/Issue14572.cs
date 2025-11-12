@@ -10,7 +10,7 @@ public class Issue14572 : _IssuesUITest
 	public override string Issue => "WinUI: TabbedPage pages provided by a DataTemplate crash when swapping to a different tab";
 	[Test]
 	[Category(UITestCategories.TabbedPage)]
-	public void VerifyBackButtonTitleUpdates()
+	public void VerifyTabbedPageDataTemplateSwap()
 	{
 		App.TapTab("Type 2");
 		App.WaitForElement("Type2Content");
