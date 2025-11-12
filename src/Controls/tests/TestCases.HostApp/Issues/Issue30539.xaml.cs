@@ -9,7 +9,6 @@ public partial class Issue30539 : ContentPage
 		InitializeComponent();
 
 		webView.Navigating += WebView_Navigating;
-		webView.Navigated += WebView_Navigated;
 	}
 
 	private void WebView_Navigating(object? sender, WebNavigatingEventArgs e)
@@ -37,20 +36,6 @@ public partial class Issue30539 : ContentPage
 		{
 			cancelLabel.Text = "Can cancel: Yes (navigation cancelled)";
 			cancelLabel.TextColor = Colors.Green;
-		}
-	}
-
-	private async void WebView_Navigated(object? sender, WebNavigatedEventArgs e)
-	{
-		// When the initial page loads, trigger a click on the target="_blank" link via JavaScript
-		// This simulates a user clicking on the link
-		if (e.Result == WebNavigationResult.Success && e.Url.Contains("about:blank", StringComparison.Ordinal) == false && !e.Url.Contains("microsoft.com", StringComparison.Ordinal))
-		{
-			// Small delay to ensure the page is fully loaded
-			await Task.Delay(500);
-
-			// Trigger a click on the first link
-			await webView.EvaluateJavaScriptAsync("document.getElementById('testLink').click();");
 		}
 	}
 }
