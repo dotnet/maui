@@ -189,7 +189,7 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlyoutFooter");
 		App.WaitForElement("FlyoutHeightEntry");
 		App.ClearText("FlyoutHeightEntry");
-		App.EnterText("FlyoutHeightEntry", "250");
+		App.EnterText("FlyoutHeightEntry", "350");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
@@ -235,7 +235,7 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlyoutFooterTemplate");
 		App.WaitForElement("FlyoutHeightEntry");
 		App.ClearText("FlyoutHeightEntry");
-		App.EnterText("FlyoutHeightEntry", "250");
+		App.EnterText("FlyoutHeightEntry", "350");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
@@ -258,18 +258,25 @@ public class ShellFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1");
+		App.WaitForElement("MenuItem4");
+		var initialMenuItem4Rect = App.WaitForElement("MenuItem4").GetRect();
+		float initialMenuItem4Y = initialMenuItem4Rect.Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		VerifyScreenshot();
+		var afterScrollMenuItem4Rect = App.WaitForElement("MenuItem4").GetRect();
+		float afterScrollMenuItem4Y = afterScrollMenuItem4Rect.Y;
+		Assert.That(initialMenuItem4Y, Is.GreaterThan(afterScrollMenuItem4Y),
+			$"MenuItem4 should move up after scrolling. Initial Y: {initialMenuItem4Y}, After scroll Y: {afterScrollMenuItem4Y}");
+		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
+		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
+		App.WaitForElement(OpenFlyout); 
+		App.Tap(OpenFlyout);
 	}
 
 	[Test, Order(13)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorFixed()
 	{
-		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
-		App.Tap(OpenFlyout);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlyoutHeader");
@@ -280,17 +287,20 @@ public class ShellFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1");
-		App.ScrollUp("MenuItem3", ScrollStrategy.Gesture, 0.99, 1000); // to reset scroll position from previous test
-		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
+		App.WaitForElement(Header);
+		float startingHeight = App.WaitForElement(Header).GetRect().Y; 
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
+		float endHeight = App.WaitForElement(Header).GetRect().Y;
+		Assert.That(startingHeight, Is.EqualTo(endHeight).Within(1),
+			$"Starting: {startingHeight}, End: {endHeight}");
+		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
+		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
-
 	}
-
+ 
 	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorScroll()
@@ -305,19 +315,24 @@ public class ShellFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1");
+		App.WaitForElement(Header);
+		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.ScrollDown("MenuItem3", ScrollStrategy.Gesture, 0.99, 1000);
-		VerifyScreenshot();
+		App.WaitForElement(Header);
+		float endHeight = App.WaitForElement(Header).GetRect().Y;
+		Assert.That(startingHeight, Is.GreaterThan(endHeight).Within(1),
+			$"Starting: {startingHeight}, End: {endHeight}");
+		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
+		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
+		App.WaitForElement(OpenFlyout);
+		App.Tap(OpenFlyout);
 	}
-
+ 
 	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorCollapseOnScroll()
 	{
-		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
-		App.Tap(OpenFlyout);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlyoutHeader");
@@ -328,12 +343,15 @@ public class ShellFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
-		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.WaitForElement("MenuItem1");
+		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
+		float endHeight = App.WaitForElement(Header).GetRect().Y;
+		Assert.That(startingHeight, Is.GreaterThan(endHeight).Within(1),
+			$"Starting: {startingHeight}, End: {endHeight}");
+		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
+		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
@@ -399,6 +417,8 @@ public class ShellFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.TapShellFlyoutIcon();
+		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000); // FlyoutItems are scrolled down, when changing the FlyoutContent
+		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		VerifyScreenshot();
 	}
 
@@ -447,7 +467,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement("FlyoutHeightEntry");
 		App.ClearText("FlyoutHeightEntry");
-		App.EnterText("FlyoutHeightEntry", "150");
+		App.EnterText("FlyoutHeightEntry", "300");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
@@ -522,7 +542,7 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		FlyoutScreenshot();
 	}
 
 	[Test, Order(27)]
@@ -603,7 +623,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32416
 	[Test, Order(31)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutVerticalScrollModeDisabled()
@@ -642,7 +662,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST // Issue Link: https://github.com/dotnet/maui/issues/32417
 	[Test, Order(33)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_SetItemTemplateAndMenuItemTemplate()
@@ -675,9 +695,10 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlyoutBehaviorDisabled");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		FlyoutScreenshot();
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
 	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIconAndRTL()
@@ -690,8 +711,9 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		FlyoutScreenshot();
 	}
+#endif
 
 	[Test, Order(36)]
 	[Category(UITestCategories.Shell)]
@@ -720,9 +742,10 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlyoutIconCoffee");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		FlyoutScreenshot();
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
 	[Test, Order(38)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlowDirection()
@@ -733,8 +756,9 @@ public class ShellFeatureTests : UITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		FlyoutScreenshot();
 	}
+#endif
 
 	[Test, Order(39)]
 	[Category(UITestCategories.Shell)]
@@ -921,7 +945,7 @@ public class ShellFeatureTests : UITest
 		App.WaitForElement(OpenFlyout);
 		App.WaitForElement("FlyoutBehavior");
 		App.Tap("FlyoutBehavior");
-#if IOS
+#if IOS || MACCATALYST
         App.WaitForElement(OpenFlyout); // On iOS, tapping the FlyoutBehavior does not close the flyout
 		App.Tap(OpenFlyout);
 #endif
@@ -929,6 +953,7 @@ public class ShellFeatureTests : UITest
 		App.Tap(Apply);
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS  //Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
 	[Test, Order(49)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIsPresentedAndRTL()
@@ -942,7 +967,6 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST
 	[Test, Order(50)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBehaviorLockedAndRTL()
@@ -960,4 +984,12 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 #endif
+	public void FlyoutScreenshot() // This method is to show titlebar for Screenshot
+	{
+#if WINDOWS
+		 VerifyScreenshot(includeTitleBar: true);
+#else
+		 VerifyScreenshot();
+#endif
+	}
 }

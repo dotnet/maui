@@ -124,7 +124,7 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                 "Default" => FlyoutHeaderBehavior.Default,
                 "Fixed" => FlyoutHeaderBehavior.Fixed,
                 "Scroll" => FlyoutHeaderBehavior.Scroll,
-                "Collapse" => FlyoutHeaderBehavior.CollapseOnScroll,
+                "CollapseOnScroll" => FlyoutHeaderBehavior.CollapseOnScroll,
                 _ => FlyoutHeaderBehavior.Default
             };
         }
@@ -207,23 +207,28 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                     _viewModel.FlyoutHeaderTemplate = null;
                     break;
                 case "Header":
-                    _viewModel.FlyoutHeader = new VerticalStackLayout
+                    _viewModel.FlyoutHeader = new Grid()
                     {
-                        Spacing = 5,
-                        Padding = 20,
-                        BackgroundColor = Colors.LightBlue,
+                        HeightRequest = 80,
+                        BackgroundColor = Colors.Black,
+                        AutomationId = "Header",
                         Children =
                         {
-                            new Label
+                            new Image()
                             {
-                                Text = "Header",
-                                AutomationId="Header",
-                                FontSize = 16,
-                                TextColor = Colors.Red,
-                                FontAttributes = FontAttributes.Bold,
-                                HorizontalOptions = LayoutOptions.Center,
-                                VerticalOptions = LayoutOptions.Center,
+                                Aspect = Aspect.AspectFill,
+                                Source = "red.png",
+                                Opacity = 0.6
                             },
+                            new Label()
+                            {
+                                Margin = new Thickness(0, 40, 0, 0),
+                                Text="Header",
+                                TextColor=Colors.Black,
+                                HorizontalOptions = LayoutOptions.Center,
+                                FontAttributes=FontAttributes.Bold,
+                                VerticalTextAlignment = TextAlignment.Center
+                            }
                         }
                     };
                     _viewModel.FlyoutHeaderTemplate = null;
@@ -231,24 +236,32 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                 case "HeaderTemplate":
                     _viewModel.FlyoutHeaderTemplate = new DataTemplate(() =>
                     {
-                        return new Grid
+                        return new Grid()
                         {
-                            Padding = 15,
-                            HeightRequest = 60,
-                            BackgroundColor = Colors.LightGrey,
+                            HeightRequest = 80,
+                            BackgroundColor = Colors.Black,
+                            AutomationId = "HeaderTemplate",
                             Children =
                             {
-                            new Label
-                            {
-                                Text = "HeaderTemplate",
-                                AutomationId="HeaderTemplate",
-                                HorizontalOptions = LayoutOptions.Center,
-                                VerticalOptions = LayoutOptions.Center,
-                                FontAttributes = FontAttributes.Bold,
-                            }
+                                new Image()
+                                {
+                                    Aspect = Aspect.AspectFill,
+                                    Source = "blue.png",
+                                    Opacity = 0.6
+                                },
+                                new Label()
+                                {
+                                    Margin = new Thickness(0, 40, 0, 0),
+                                    Text="HeaderTemplate",
+                                    HorizontalOptions = LayoutOptions.Center,
+                                    TextColor=Colors.Black,
+                                    FontAttributes=FontAttributes.Bold,
+                                    VerticalTextAlignment = TextAlignment.Center
+                                }
                             }
                         };
                     });
+
                     _viewModel.FlyoutHeader = null;
                     break;
             }
@@ -267,11 +280,11 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                     _viewModel.FlyoutFooterTemplate = null;
                     break;
                 case "Footer":
-                    _viewModel.FlyoutFooter = new VerticalStackLayout
+                    _viewModel.FlyoutFooter = new Grid()
                     {
-                        Spacing = 5,
                         Padding = 15,
-                        BackgroundColor = Colors.LightCoral,
+                        HeightRequest = 60,
+                        BackgroundColor = Colors.Red,
                         Children =
                         {
                             new Label
@@ -279,7 +292,7 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                                 Text = "Footer",
                                 AutomationId="Footer",
                                 FontSize = 16,
-                                TextColor = Colors.Red,
+                                TextColor = Colors.Black,
                                 HorizontalOptions = LayoutOptions.Center,
                                 VerticalOptions = LayoutOptions.Center,
                             },
@@ -290,10 +303,10 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                 case "FooterTemplate":
                     _viewModel.FlyoutFooterTemplate = new DataTemplate(() =>
                     {
-                        return new Grid
+                        return new Grid()
                         {
                             Padding = 15,
-                            BackgroundColor = Colors.LightGrey,
+                            BackgroundColor = Colors.Blue,
                             HeightRequest = 60,
                             Children =
                             {
@@ -310,6 +323,7 @@ public partial class ShellFlyoutOptionsPage : ContentPage
                             }
                         };
                     });
+
                     _viewModel.FlyoutFooter = null;
                     break;
             }
