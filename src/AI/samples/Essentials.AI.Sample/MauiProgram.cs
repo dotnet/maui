@@ -5,6 +5,7 @@ using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Maui.Essentials.AI;
 using OpenAI;
 using OpenAI.Chat;
 
@@ -12,7 +13,7 @@ namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
-	public static bool UseCloudAI = true;
+	public static bool UseCloudAI = false;
 
 	public static MauiApp CreateMauiApp()
 	{
@@ -50,7 +51,7 @@ public static class MauiProgram
 		}
 		else
 		{
-			// TODO: Add platform AI chat client registration
+			builder.Services.AddPlatformChatClient();
 		}
 
 		// Register Pages

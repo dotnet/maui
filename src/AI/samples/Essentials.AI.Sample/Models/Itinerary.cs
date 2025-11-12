@@ -24,6 +24,9 @@ public record Itinerary
 
 	public static JsonElement ToJsonSchema(IEnumerable<string> landmarks)
 	{
+		// TODO: see if we can do this inside the client directly
+		// https://github.com/dotnet/maui/issues/32909
+
 		var schema = AIJsonUtilities.CreateJsonSchema(
 			typeof(Itinerary),
 			inferenceOptions: new AIJsonSchemaCreateOptions
