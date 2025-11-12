@@ -46,16 +46,18 @@ Ensure Appium server is running on `http://localhost:4723` before running your s
 
 ## Basic Template
 
-Create a file named `appium-control.cs` in the repository root (this file is already gitignored):
+**IMPORTANT: Create script files inside project directory (e.g., `SandboxAppium/`), not in repository root or `/tmp`.**
 
 ```csharp
 #:package Appium.WebDriver@8.0.1
 
+using System;
+using System.Threading;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Support.UI;
 
 // CRITICAL: Get device UDID from environment variable
 // Without this, Appium will randomly select a device
@@ -126,24 +128,31 @@ Console.ReadLine();
 
 ## Running the Script
 
-```bash
-# Set DEVICE_UDID environment variable
-export DEVICE_UDID=<your-device-udid>
+**⚠️ Important: Create scripts inside project directory (e.g., `SandboxAppium/`), not in `/tmp` or repository root.**
 
-# Start Appium server (in separate terminal or background)
+```bash
+# 1. Create script folder
+mkdir -p SandboxAppium && cd SandboxAppium
+
+# 2. Copy the Basic Template above into a .cs file (or use the Quick Start example)
+
+# 3. Set DEVICE_UDID environment variable
+export DEVICE_UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+
+# 4. Start Appium (separate terminal or background)
 appium &
 
-# Run your script
-dotnet run appium-control.cs
+# 5. Run your script
+dotnet run yourscript.cs
 ```
 
-**Getting the device UDID:**
-- **iOS**: See [Quick Start](#quick-start-with-sandbox-app) for UDID extraction command
-- **Android**: `adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1`
+**For Android:** Replace iOS UDID command with: `adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1`
 
-For a complete end-to-end workflow with the Sandbox app, see the [Quick Start](#quick-start-with-sandbox-app) section above.
+**Complete workflow:** See [Quick Start with Sandbox App](#quick-start-with-sandbox-app) above for full end-to-end example.
 
 ## Common Appium Operations
+
+### Finding and Interacting with Elements
 
 ```csharp
 // Find elements
@@ -164,10 +173,29 @@ var size = element.Size;
 // Wait for element
 var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 wait.Until(d => d.FindElement(MobileBy.AccessibilityId("ElementId")));
+```
 
+### Device Control
+
+**⚠️ Important: Use Appium APIs for device operations, not platform tools.**
+
+```csharp
+// Rotate device and validate
+driver.Orientation = ScreenOrientation.Landscape;
+Thread.Sleep(2000); // Wait for animation
+
+if (driver.Orientation != ScreenOrientation.Landscape)
+    Console.WriteLine("❌ Rotation failed!");
+```
+
+**Why:** `driver.Orientation` actually rotates the device. Platform tools like `xcrun simctl status_bar --orientation` only change the status bar appearance, not the device state.
+
+### Screenshots and Other Operations
+
+```csharp
 // Take screenshot
 var screenshot = driver.GetScreenshot();
-screenshot.SaveAsFile("screenshot.png");
+screenshot.SaveAsFile("/tmp/screenshot.png");
 
 // Navigate
 driver.Navigate().Back();
@@ -176,7 +204,16 @@ driver.Navigate().Back();
 driver.BackgroundApp(TimeSpan.FromSeconds(5));
 ```
 
+## Advanced Patterns
+
+For Shell-specific testing patterns (e.g., opening flyouts), see [UI Tests Instructions](uitests.instructions.md).
+
 ## Troubleshooting
+
+**"#: directives can be only used in file-based programs"**
+- ❌ **Problem**: Script file is in `/tmp` or outside project directory
+- ✅ **Solution**: Move script into project folder (e.g., `SandboxAppium/`)
+- **Why**: The `#:package` directive only works inside a project context in .NET 10
 
 **"DEVICE_UDID environment variable not set"**
 - Set it before running: `export DEVICE_UDID=<your-udid>`
@@ -185,7 +222,7 @@ driver.BackgroundApp(TimeSpan.FromSeconds(5));
 
 **"Could not connect to Appium server"**
 - Verify Appium is running: `curl http://localhost:4723/status`
-- Start Appium: `appium &`
+- Start Appium: `appium &` (or `appium --log-level error &` for less noise)
 
 **"App crashes on launch" or "Cannot launch application"**
 - Rebuild with `--no-incremental` flag (incremental builds can leave app bundles inconsistent)
@@ -200,6 +237,17 @@ driver.BackgroundApp(TimeSpan.FromSeconds(5));
 - Verify DEVICE_UDID is set: `echo $DEVICE_UDID`
 - List devices: `adb devices`
 - Start emulator via Android Studio or: `emulator -avd [avd-name]`
+
+**"Appium server keeps stopping"**
+- Check if port 4723 is already in use: `lsof -i :4723`
+- Kill existing process: `kill -9 <PID>`
+- Restart Appium: `appium &`
+
+**"Rotation doesn't work" or "Device stays in same orientation"**
+- ✅ **Use Appium API**: `driver.Orientation = ScreenOrientation.Landscape`
+- ❌ **Don't use**: `xcrun simctl status_bar --orientation` (only changes status bar, not device)
+- ✅ **Always validate**: Check `driver.Orientation` after rotation
+- ✅ **Wait for animation**: `Thread.Sleep(2000)` after rotation command
 
 ## Additional Resources
 
