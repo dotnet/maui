@@ -34,7 +34,17 @@ public partial class Maui17222 : ContentPage
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			AppInfo.SetCurrent(null);
 		}
+#else
+		public Test()
+		{
+		}
 
+		public void Dispose()
+		{
+		}
+#endif
+
+#if DEBUG
 		[Theory]
 		[Values]
 		public void GetsourceInfo(XamlInflator inflator)
