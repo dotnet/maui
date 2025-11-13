@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if IOS
             var centerX = rect.X + rect.Width / 2;
             var infoWindowY = rect.Y + rect.Height / 2 - InfoWindowOffsetFromCenter;
-             App.TapCoordinates(centerX, infoWindowY);
+            App.TapCoordinates(centerX, infoWindowY);
 #elif MACCATALYST
             var centerX = rect.X + rect.Width / 2 + 20;
             var infoWindowY = rect.Y + rect.Height / 2;
