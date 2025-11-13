@@ -52,7 +52,7 @@ using System.Runtime.InteropServices;
 
 namespace DisplaySettings
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct DEVMODE
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
@@ -62,10 +62,12 @@ namespace DisplaySettings
         public short dmSize;
         public short dmDriverExtra;
         public int dmFields;
+
         public int dmPositionX;
         public int dmPositionY;
         public int dmDisplayOrientation;
         public int dmDisplayFixedOutput;
+
         public short dmColor;
         public short dmDuplex;
         public short dmYResolution;
@@ -79,6 +81,7 @@ namespace DisplaySettings
         public int dmPelsHeight;
         public int dmDisplayFlags;
         public int dmDisplayFrequency;
+
         public int dmICMMethod;
         public int dmICMIntent;
         public int dmMediaType;
@@ -87,14 +90,17 @@ namespace DisplaySettings
         public int dmReserved2;
         public int dmPanningWidth;
         public int dmPanningHeight;
+        
+        public const int DM_PELSWIDTH = 0x80000;
+        public const int DM_PELSHEIGHT = 0x100000;
     }
 
     public class User32
     {
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Ansi)]
         public static extern int EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
         
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Ansi)]
         public static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
         
         public const int ENUM_CURRENT_SETTINGS = -1;
@@ -121,7 +127,7 @@ namespace DisplaySettings
     try {
         # Get current display settings
         $devMode = New-Object DisplaySettings.DEVMODE
-        $devMode.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf($devMode)
+        $devMode.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf([type][DisplaySettings.DEVMODE])
         
         $result = [DisplaySettings.User32]::EnumDisplaySettings($null, [DisplaySettings.User32]::ENUM_CURRENT_SETTINGS, [ref]$devMode)
         
@@ -138,9 +144,10 @@ namespace DisplaySettings
             return $true
         }
         
-        # Set new resolution
+        # Set new resolution and specify which fields are being set
         $devMode.dmPelsWidth = $Width
         $devMode.dmPelsHeight = $Height
+        $devMode.dmFields = [DisplaySettings.DEVMODE]::DM_PELSWIDTH -bor [DisplaySettings.DEVMODE]::DM_PELSHEIGHT
         
         # Test if the resolution is supported
         $testResult = [DisplaySettings.User32]::ChangeDisplaySettings([ref]$devMode, [DisplaySettings.User32]::CDS_TEST)
