@@ -7,6 +7,7 @@ public class Issue15173 : TestShell
 	{
 		FlyoutBehavior = FlyoutBehavior.Flyout;
 		FlyoutBackgroundColor = Colors.White;
+		FlyoutBackdrop = new SolidColorBrush(Colors.Orange);
 
 		// Create flyout content
 		var flyoutContent = new VerticalStackLayout
