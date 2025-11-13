@@ -8,6 +8,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
@@ -76,6 +77,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_navigationArea = PlatformInterop.CreateNavigationBarArea(context, _outerLayout);
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
 
+			// Add inset listener for API 28-29 workaround
+			SetupNavigationAreaInsetListener();
+
 			if (ShellItem is null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
 
@@ -92,6 +96,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _outerLayout;
 		}
 
+		void SetupNavigationAreaInsetListener()
+		{
+			// Only set up listener for API 28-29
+			if ((int)global::Android.OS.Build.VERSION.SdkInt >= 30)
+				return;
+
+			if (_navigationArea == null)
+				return;
+
+			ViewCompat.SetOnApplyWindowInsetsListener(_navigationArea, new NavigationAreaInsetListener());
+		}
 
 		void Destroy()
 		{
@@ -521,6 +536,48 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellAppearance is not null && !_appearanceSet)
 			{
 				SetAppearance(_shellAppearance);
+			}
+		}
+
+		private class NavigationAreaInsetListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+		{
+			public WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
+			{
+				if (insets == null)
+					return insets;
+
+				// Convert to platform WindowInsets for dispatching
+				var platformInsets = insets.ToWindowInsets();
+				if (platformInsets == null)
+					return insets;
+
+				// Apply the Google workaround: dispatch to first-level children only
+				// This fixes the API 28-29 bug where one child consuming insets blocks siblings
+				// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
+				// Note: Only dispatches to immediate children; deeper propagation handled by MauiWindowInsetListener
+				DispatchToFirstLevelChildren(v as ViewGroup, platformInsets);
+
+				return insets;
+			}
+
+			// Dispatches to first-level children only (non-recursive)
+			// Deep propagation is handled by MauiWindowInsetListener for API < 30
+			private void DispatchToFirstLevelChildren(ViewGroup parent, WindowInsets insets)
+			{
+				if (parent == null || insets == null)
+					return;
+
+				int childCount = parent.ChildCount;
+
+				for (int i = 0; i < childCount; i++)
+				{
+					var child = parent.GetChildAt(i);
+					if (child != null)
+					{
+						// Dispatch to immediate child only (non-recursive)
+						child.DispatchApplyWindowInsets(insets);
+					}
+				}
 			}
 		}
 	}

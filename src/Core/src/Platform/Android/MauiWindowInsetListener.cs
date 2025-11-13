@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
@@ -202,11 +203,67 @@ namespace Microsoft.Maui.Platform
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
 			{
-				return customHandler.HandleWindowInsets(v, insets);
+				var result = customHandler.HandleWindowInsets(v, insets);
+				return result;
 			}
 
 			// Apply default window insets for standard views
-			return ApplyDefaultWindowInsets(v, insets);
+			var returnValue = ApplyDefaultWindowInsets(v, insets);
+
+			// For API < 30 and CoordinatorLayout only, apply Google's workaround to dispatch to all children
+			if ((int)global::Android.OS.Build.VERSION.SdkInt < 30 && v is CoordinatorLayout coordinatorLayout)
+			{
+				// Convert back to platform WindowInsets for propagation
+				var platformInsets = returnValue?.ToWindowInsets();
+				if (platformInsets != null)
+				{
+					// Start recursive dispatch using the result, not the original insets
+					DispatchInsetsToAllChildren(coordinatorLayout, platformInsets);
+				}
+
+				return WindowInsetsCompat.Consumed;
+			}
+
+			return returnValue;
+		}
+
+		// Dispatches insets to all children recursively (for API < 30)
+		// This implements Google's workaround for the API 28-29 bug where
+		// one child consuming insets blocks all siblings from receiving them.
+		// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
+		static WindowInsets? DispatchInsetsToAllChildren(AView view, WindowInsets insets)
+		{
+			if (view == null || insets == null)
+			{
+				return insets;
+			}
+
+			// Skip propagation for MauiScrollView and IMauiRecyclerView
+			if (view is MauiScrollView || view is IMauiRecyclerView)
+				return insets;
+
+			// First, let the view's default handler process the insets
+			var outInsets = view.OnApplyWindowInsets(insets);
+
+			// Only propagate to children if:
+			// 1. outInsets is not null
+			// 2. outInsets is not consumed
+			// 3. view is a ViewGroup
+			// 4. view is not MaterialToolbar (propagate TO toolbar, but not to its children)
+			if (outInsets != null && !outInsets.IsConsumed && view is ViewGroup parent && view is not MaterialToolbar)
+			{
+				for (int i = 0; i < parent.ChildCount; i++)
+				{
+					var child = parent.GetChildAt(i);
+					if (child != null)
+					{
+						// Recursively dispatch the RESULT insets (outInsets), not the original
+						DispatchInsetsToAllChildren(child, outInsets);
+					}
+				}
+			}
+
+			return outInsets;
 		}
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
@@ -216,7 +273,7 @@ namespace Microsoft.Maui.Platform
 			// For API 28-29, we need to use the deprecated SystemWindowInsets property
 			Insets? systemBars;
 			Insets? displayCutout;
-			
+
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
@@ -229,14 +286,14 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CS0618 // Type or member is obsolete
 				var legacyInsets = insets.SystemWindowInsets;
 #pragma warning restore CS0618
-				
+
 				systemBars = Insets.Of(
 					legacyInsets?.Left ?? 0,
 					legacyInsets?.Top ?? 0,
 					legacyInsets?.Right ?? 0,
 					legacyInsets?.Bottom ?? 0
 				);
-				
+
 				// DisplayCutout API was added in API 28, but getInsets(Type.DisplayCutout) is API 30+
 				// For API 28-29, use DisplayCutout if available
 				var cutout = insets.DisplayCutout;
@@ -345,10 +402,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
-        {
-            return _trackedViews.Contains(view);
-        }
+		public bool IsViewTracked(AView view)
+		{
+			return _trackedViews.Contains(view);
+		}
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
