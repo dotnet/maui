@@ -499,7 +499,7 @@ internal static class LayoutFactory2
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
         {
             // If the size hasn't changed, use the base implementation
-            if (newBounds.Size.Width == _currentSize.Width && newBounds.Size.Height == _currentSize.Height)
+			if (newBounds.Size.IsCloseTo(_currentSize))
             {
                 return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
             }
