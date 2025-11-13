@@ -23,6 +23,12 @@ public static class SourceGeneratorDriver
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
 	{
+		return RunGenerator<T>(compilation, out _, additionalFiles);
+	}
+
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, out Compilation updatedCompilation, params AdditionalFile[] additionalFiles)
+		where T : IIncrementalGenerator, new()
+	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
 
 		// Tell the driver to track all the incremental generator outputs
@@ -34,9 +40,11 @@ public static class SourceGeneratorDriver
 			.AddAdditionalTexts([.. additionalFiles.Select(f => f.Text)])
 			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
 
-		driver = driver.RunGenerators(compilation);
+		// Use RunGeneratorsAndUpdateCompilation to validate the generated code
+		// This will catch C# compilation errors in the generated code
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out updatedCompilation, out var diagnostics);
 
-		GeneratorDriverRunResult runResult = driver.GetRunResult();
+		var runResult = driver.GetRunResult();
 		return runResult;
 	}
 
