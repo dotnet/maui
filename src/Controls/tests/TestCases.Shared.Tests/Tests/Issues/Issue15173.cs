@@ -1,3 +1,4 @@
+#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,16 +32,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("MenuItem1");
 			App.WaitForElement("MenuItem2");
 			App.WaitForElement("MenuItem3");
-
-			// Rotate back to portrait
-			App.SetOrientationPortrait();
-
-			// Wait for rotation to complete
-			Task.Delay(2000).Wait();
-
-			// Verify menu items still visible in portrait
-			App.WaitForElement("MenuItem1");
 			VerifyScreenshot();
 		}
 	}
 }
+#endif

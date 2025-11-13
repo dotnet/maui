@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 15173, "Shell Flyout overlay does not resize on device rotation", PlatformAffected.iOS | PlatformAffected.MacCatalyst)]
+[Issue(IssueTracker.Github, 15173, "Shell Flyout overlay does not resize on device rotation", PlatformAffected.iOS)]
 public class Issue15173 : TestShell
 {
 	protected override void Init()
@@ -47,7 +47,8 @@ public class Issue15173 : TestShell
 			}
 		};
 
-		Shell.SetFlyoutContent(this, flyoutContent);
+		// Set the flyout content using the property
+		FlyoutContentTemplate = new DataTemplate(() => flyoutContent);
 
 		// Create main content page
 		var mainPage = new ContentPage
