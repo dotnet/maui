@@ -48,7 +48,7 @@ parameters:
   default: $(System.DefaultWorkingDirectory)
 
 stages:
-- stage: deviceTests_ios_android
+- stage: devicetests_ios_catalyst_android
   displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
@@ -115,7 +115,7 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
