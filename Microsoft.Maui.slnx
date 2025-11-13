@@ -173,6 +173,8 @@
     <Project Path="src/TestUtils/src/UITest.Appium/UITest.Appium.csproj" />
     <Project Path="src/TestUtils/src/UITest.Core/UITest.Core.csproj" />
     <Project Path="src/TestUtils/src/UITest.NUnit/UITest.NUnit.csproj" />
+    <Project Path="src/TestUtils/src/VisualTestUtils.MagickNet/VisualTestUtils.MagickNet.csproj" />
+    <Project Path="src/TestUtils/src/VisualTestUtils/VisualTestUtils.csproj" />
   </Folder>
   <Folder Name="/Workload/">
     <Project Path="src/Workload/Microsoft.Maui.Sdk/Microsoft.Maui.Sdk.csproj" />
