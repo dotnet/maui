@@ -633,12 +633,8 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true);
-		
-		// CRITICAL: The getter lambda should NOT reference extension.TargetNullValue when not needed
-		// This test verifies that the generated code compiles without errors
-		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
-		
+		var (result, generated) = RunGenerator(xaml, code);
+
 		// Verify the generated code matches expected structure
 		CodeIsEqual(expected, generated ?? string.Empty);
 	}

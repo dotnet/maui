@@ -424,7 +424,7 @@ static class NodeSGExtensions
 				reportDiagnostic();
 		}
 		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
-			return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
+			return $"new global::System.Uri(@\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
 
 		//default
 		return SymbolDisplay.FormatLiteral(valueString, true);

@@ -19,14 +19,11 @@ public static class SourceGeneratorDriver
 	private static MetadataReference[]? MauiReferences;
 
 	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo="enable");
-
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
-	{
-		return RunGenerator<T>(compilation, assertNoCompilationErrors: false, additionalFiles);
-	}
+		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors);
 
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, bool assertNoCompilationErrors, params AdditionalFile[] additionalFiles)
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile[] additionalFiles, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
@@ -105,26 +102,28 @@ public static class SourceGeneratorDriver
 	{
 		string dotNetAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
-		if (MauiReferences == null)
-		{
-			MauiReferences = new[]
-			{
-				MetadataReference.CreateFromFile(typeof(InternalsVisibleToAttribute).Assembly.Location),
-				// .NET assemblies are finicky and need to be loaded in a special way.
-				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "mscorlib.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Core.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
-				MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),						//System.Private.Uri
-				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
-				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
-				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
-				MetadataReference.CreateFromFile(typeof(Thickness).Assembly.Location),					//Core
-				MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView).Assembly.Location), //Xaml.dll
-			};
-		}
+		MauiReferences ??=
+		[
+			MetadataReference.CreateFromFile(typeof(InternalsVisibleToAttribute).Assembly.Location),
+			// .NET assemblies are finicky and need to be loaded in a special way.
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "mscorlib.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Core.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
+			MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),						//System.Private.Uri
+			MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
+			MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
+			MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
+			MetadataReference.CreateFromFile(typeof(Thickness).Assembly.Location),					//Core
+			MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView).Assembly.Location), //Xaml.dll
+			MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Private.Xml").Location),
+			MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Xml.ReaderWriter").Location),
+		MetadataReference.CreateFromFile(typeof(System.IServiceProvider).Assembly.Location),							//System.ComponentModel
+			MetadataReference.CreateFromFile(typeof(System.ComponentModel.TypeConverter).Assembly.Location),			//System.ComponentModel.TypeConverter
+		];
+
 		return MauiReferences;
 	}
 
