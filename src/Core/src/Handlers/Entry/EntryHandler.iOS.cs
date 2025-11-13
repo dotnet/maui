@@ -192,6 +192,15 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (sender is MauiTextField platformView)
 				{
+					// Update cursor position BEFORE updating text so that when TextChanged event fires,
+					// the CursorPosition property reflects the current native cursor position
+					var cursorPosition = platformView.GetCursorPosition();
+					
+					if (VirtualView?.CursorPosition != cursorPosition)
+					{
+						VirtualView?.CursorPosition = cursorPosition;
+					}
+
 					VirtualView?.UpdateText(platformView.Text);
 				}
 			}
