@@ -28,7 +28,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>9.0.111</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>9.0.120</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/sdk -->
     <MicrosoftNETSdkPackageVersion>10.0.100-rtm.25523.111</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
