@@ -139,6 +139,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var container = new ContainerView(parent.Context, content, MauiContext);
 			container.MatchWidth = true;
+
+			// In Auto or Disabled scroll modes, RecyclerView passes an EXACTLY heightMeasureSpec,
+			// causing items to be measured to the full RecyclerView height.
+			// Setting MeasureHeight = true forces UNSPECIFIED mode, allowing items to use their natural height (~48dp).
+			// This enables RecyclerView to detect when scrolling is needed and to create all required view holders.
+			if (_shellContext.Shell.FlyoutVerticalScrollMode != ScrollMode.Enabled)
+			{
+				container.MeasureHeight = true;
+			}
+
 			container.MeasureHeight = true; // Force height to be measured, not matched to parent
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
