@@ -17,6 +17,7 @@ public partial class Issue29086 : ContentPage
 		Numbers = new ObservableCollection<NumberItem>
 		{
 			new NumberItem { Value = 1 },
+			new NumberItem { Value = 2 },
 		};
 
 		IncrementCommand = new Command<NumberItem>((item) => item.Value++);
