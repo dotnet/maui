@@ -44,7 +44,7 @@ public partial class Maui24849 : ContentPage
 			app.MainPage = page;
 
 			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromArgb("#3c3c3b"), page.button.TextColor); // TODO: Was FromHex with 2 params, added actual value
+			Assert.Equal(Color.FromRgb(0x3c, 0x3c, 0x3b), page.button.TextColor);
 
 			page.button.IsEnabled = true;
 			Assert.True(page.button.IsEnabled);
@@ -52,7 +52,7 @@ public partial class Maui24849 : ContentPage
 
 			page.button.IsEnabled = false;
 			Assert.False(page.button.IsEnabled);
-			Assert.Equal(Color.FromArgb("#3c3c3b"), page.button.TextColor); // TODO: Was FromHex with 2 params, added actual value
+			Assert.Equal(Color.FromRgb(0x3c, 0x3c, 0x3b), page.button.TextColor);
 		}
 	}
 }
