@@ -48,8 +48,8 @@ interface JSInvokeError {
     StackTrace?: string;
 }
 interface DotNetInvokeResult {
-    IsJson: boolean;
-    Result: any;
+    IsJson?: boolean;
+    Result?: any;
     IsError?: boolean;
     ErrorMessage?: string;
     ErrorType?: string;
@@ -205,16 +205,22 @@ interface DotNetInvokeResult {
 
         const message = JSON.stringify(body);
 
-        const requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
-
+        // send the request to .NET
+        const requestUrl = `${window.location.origin}/__hwvInvokeDotNet`;
         const rawResponse = await fetch(requestUrl, {
-            method: 'GET',
+            method: 'POST',
             headers: {
-                'Accept': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Maui-Invoke-Token': 'HybridWebView',
+                'X-Maui-Request-Body': message // Some platforms (Android) do not expose the POST body
+            },
+            body: message
         });
+
         const response: DotNetInvokeResult = await rawResponse.json();
 
+        // a null response is a null response
         if (!response) {
             return null;
         }
@@ -231,10 +237,12 @@ interface DotNetInvokeResult {
             throw error;
         }
 
+        // deserialize if there is JSON data
         if (response.IsJson) {
             return JSON.parse(response.Result);
         }
 
+        // otherwise return the primitive
         return response.Result;
     }
 

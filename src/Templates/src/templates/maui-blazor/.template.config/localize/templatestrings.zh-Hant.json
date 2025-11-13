@@ -4,7 +4,7 @@
   "description": "此專案可用於建立適用於 iOS、Android、Mac Catalyst 和使用 Blazor Hybrid 的 WinUI 的 .NET MAUI 應用程式",
   "postActions/openInEditor/description": "在編輯器中開啟元件/頁面/Home.razor。",
   "symbols/applicationId/description": "覆寫專案中的 $(ApplicationId)",
-  "symbols/Framework/description": "專案的目標架構。",
+  "symbols/Framework/description": "專案的目標 Framework。",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目標 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "包含範例頁面(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和樣式，以示範基本使用模式。",

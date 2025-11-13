@@ -21,35 +21,8 @@ steps:
     skipAndroidEmulatorImages: true
     skipAndroidCreateAvds: true
     skipProvisioning: true
-    skipXcode: true
-
-- script: |
-    echo Remove old Xamarin Settings
-    rm -f ~/Library/Preferences/Xamarin/Settings.plist
-    rm -f ~/Library/Preferences/maui/Settings.plist
-    echo Mac OS version:
-    sw_vers -productVersion
-    echo
-    echo Installed Xcode versions:
-    ls /Applications | grep 'Xcode'
-    echo
-    echo currently selected xcode:
-    xcrun xcode-select --print-path
-    echo
-    echo selecting latest xcode...
-    sudo xcode-select -s /Applications/Xcode_$(XCODE).app
-    xcrun xcode-select --print-path
-    xcodebuild -version
-    sudo xcodebuild -license accept
-    if [[ ${XCODE/\.*/} -ge 26 ]]; then
-      sudo xcodebuild -downloadPlatform iOS -architectureVariant universal
-    else
-      sudo xcodebuild -downloadPlatform iOS
-    fi
-    sudo xcodebuild -runFirstLaunch
-  displayName: Select Xcode Version
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-  timeoutInMinutes: 30
+    skipXcode: false
+    skipSimulatorSetup: false
 
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
@@ -97,11 +70,11 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
-- template: /eng/pipelines/common/setup-android-dependencies.yml
-  parameters:
-    mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    repoLogPath: ${{ parameters.repoLogPath }}
-    androidSdkRoot: ${{ parameters.androidSdkRoot }}
+# - template: /eng/pipelines/common/setup-android-dependencies.yml
+#   parameters:
+#     mauiSourcePath: ${{ parameters.mauiSourcePath }}
+#     repoLogPath: ${{ parameters.repoLogPath }}
+#     androidSdkRoot: ${{ parameters.androidSdkRoot }}
 
 - ${{ if eq(parameters.buildMSBuildTasks, true) }}:
   - template: /eng/pipelines/common/run-dotnet-preview.yml

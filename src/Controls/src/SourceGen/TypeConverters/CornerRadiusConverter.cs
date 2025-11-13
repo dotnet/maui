@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -7,11 +8,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class CornerRadiusConverter : ISGTypeConverter
+class CornerRadiusConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "CornerRadius", "Microsoft.Maui.CornerRadius" };
+	public IEnumerable<string> SupportedTypes => ["CornerRadius", "Microsoft.Maui.CornerRadius"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		// IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here

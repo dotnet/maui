@@ -52,7 +52,7 @@ public static class MockSourceGenerator
 
 	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 	{
-		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
+		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.slnx")))
 			return searchDirectory;
 
 		if (maxSearchDepth <= 0)
@@ -73,7 +73,7 @@ public static class MockSourceGenerator
 		var path = System.IO.Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
 		var analyzerAssembly = Assembly.LoadFrom(path);
 
-		var generatorType = analyzerAssembly?.GetType("Microsoft.Maui.Controls.SourceGen.CodeBehindGenerator")!;
+		var generatorType = analyzerAssembly?.GetType("Microsoft.Maui.Controls.SourceGen.XamlGenerator")!;
 		var generator = (generatorType?.GetConstructor([])?.Invoke([]) as IIncrementalGenerator)?.AsSourceGenerator();
 
 		if (generator is null)

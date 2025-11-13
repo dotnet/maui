@@ -1,14 +1,11 @@
 {
   "tools": {
-    "dotnet": "10.0.100-rtm.25479.115"
+    "dotnet": "10.0.101-servicing.25562.108"
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25531.102",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25531.102"
-  },
-  "sdk": {
-    "allowPrerelease": true
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25562.108",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25562.108"
   }
 }

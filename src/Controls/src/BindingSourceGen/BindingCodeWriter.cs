@@ -81,7 +81,7 @@ public static class BindingCodeWriter
 		}
 		""";
 
-	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2)
+	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 	{
 		if (!binding.NullableContextEnabled)
 		{
@@ -90,7 +90,7 @@ public static class BindingCodeWriter
 		}
 
 		using var builder = new BindingInterceptorCodeBuilder(indent);
-		builder.AppendBindingFactoryMethod(binding, methodName);
+		builder.AppendBindingFactoryMethod(binding, methodName, propertyFlags);
 		return builder.ToString();
 	}
 
@@ -111,7 +111,7 @@ public static class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendBindingFactoryMethod(BindingInvocationDescription binding, string methodName)
+		public void AppendBindingFactoryMethod(BindingInvocationDescription binding, string methodName, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 		{
 			AppendLine(GeneratedCodeAttribute);
 			if (binding.InterceptableLocation is not null)
@@ -177,20 +177,12 @@ public static class BindingCodeWriter
 			Append("handlers: ");
 
 			AppendHandlersArray(binding);
-			AppendLine(')');
+			Append(")");
 			Unindent();
-			AppendLines($$"""
-				{
-					Mode = mode,
-					Converter = converter,
-					ConverterParameter = converterParameter,
-					StringFormat = stringFormat,
-					Source = source,
-					FallbackValue = fallbackValue,
-					TargetNullValue = targetNullValue
-				};
-				""");
-
+			
+			// Only generate property setters for the properties indicated by the flags
+			AppendBindingPropertySetters(propertyFlags);
+			AppendLine(";");
 			AppendBlankLine();
 
 			// Set binding
@@ -386,6 +378,38 @@ public static class BindingCodeWriter
 					_ => part,
 				};
 			}
+		}
+
+		private void AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
+		{
+			// Skip initializer block entirely if no properties need to be set
+			if (propertyFlags == BindingPropertyFlags.None)
+			{
+				return;
+			}
+
+			// Use object initializer syntax for cleaner, shorter code
+			AppendBlankLine();
+			AppendLine('{');
+			Indent();
+			
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
+				AppendLine("Mode = mode,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
+				AppendLine("Converter = converter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
+				AppendLine("ConverterParameter = converterParameter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
+				AppendLine("StringFormat = stringFormat,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
+				AppendLine("Source = source,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
+				AppendLine("FallbackValue = fallbackValue,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
+				AppendLine("TargetNullValue = targetNullValue,");
+			
+			Unindent();
+			Append('}');
 		}
 
 		private void AppendUnsafeAccessors(BindingInvocationDescription binding)

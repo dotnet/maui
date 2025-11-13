@@ -3,12 +3,12 @@
   "name": "App.NET MAUI",
   "description": "Progetto per la creazione di un'applicazione .NET MAUI per iOS, Android, Mac Catalyst e WinUI",
   "postActions/openInEditor/description": "Apre MainPage.xaml nell'editor.",
-  "postActions/restore/description": "Consente di ripristinare i pacchetti NuGet richiesti da questo progetto.",
-  "postActions/restore/manualInstructions/default/text": "Esegui \"dotnet restore\"",
+  "postActions/restore/description": "Ripristinare i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'",
   "symbols/applicationId/description": "Esegue l'override di $(ApplicationId) nel progetto",
-  "symbols/Framework/description": "Framework di destinazione per il progetto.",
+  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE di destinazione",
-  "symbols/IncludeSampleContent/displayName": "_Includi contenuto di esempio",
+  "symbols/IncludeSampleContent/displayName": "_Include contenuto di esempio",
   "symbols/IncludeSampleContent/description": "Consente di configurare se aggiungere pagine di esempio e funzionalità per mostrare modelli di utilizzo di base.",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione."
 }

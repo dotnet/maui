@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,9 +16,9 @@ internal struct CompiledBindingMarkup
 	private readonly SourceGenContext _context;
 	private readonly ElementNode _node;
 	private readonly string _path;
-	private readonly LocalVariable _bindingExtension;
+	private readonly ILocalValue _bindingExtension;
 
-	public CompiledBindingMarkup(ElementNode node, string path, LocalVariable bindingExtension, SourceGenContext context)
+	public CompiledBindingMarkup(ElementNode node, string path, ILocalValue bindingExtension, SourceGenContext context)
 	{
 		_context = context;
 		_node = node;
@@ -56,55 +57,200 @@ internal struct CompiledBindingMarkup
 			IsPublic: false,
 			RequiresAllUnsafeGetters: true);
 
-		LocalVariable extVariable;
+		ILocalValue extVariable;
 		if (!_context.Variables.TryGetValue(_node, out extVariable))
 		{
 			throw new Exception("BindingExtension not found"); // TODO report diagnostic
 		}
 
-		var methodName = $"CreateTypedBindingFrom_{_bindingExtension.Name}";
+		var methodName = $"CreateTypedBindingFrom_{_bindingExtension.ValueAccessor}";
 
 		// TODO emit #line info?
-		// TODO move ShouldUseSetter methods to shared code (public in MAUI?) + the same for the BindingSourceGen?
 
 		var extensionTypeName = isTemplateBinding
 			? "global::Microsoft.Maui.Controls.Xaml.TemplateBindingExtension"
 			: "global::Microsoft.Maui.Controls.Xaml.BindingExtension";
-		var source = isTemplateBinding
-			? "source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent"
-			: "extension.Source";
-		var fallbackValue = isTemplateBinding
-			? "fallbackValue: null"
-			: "extension.FallbackValue";
-		var targetNullValue = isTemplateBinding
-			? "targetNullValue: null"
-			: "extension.TargetNullValue";
 
-		var createBindingLocalMethod = $$"""
-				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
+		// Determine which properties were set in XAML
+		var propertyFlags = BindingPropertyFlags.None;
+		
+		if (_node.HasProperty("Mode"))
+			propertyFlags |= BindingPropertyFlags.Mode;
+		if (_node.HasProperty("Converter"))
+			propertyFlags |= BindingPropertyFlags.Converter;
+		if (_node.HasProperty("ConverterParameter"))
+			propertyFlags |= BindingPropertyFlags.ConverterParameter;
+		if (_node.HasProperty("StringFormat"))
+			propertyFlags |= BindingPropertyFlags.StringFormat;
+		if (_node.HasProperty("Source") || isTemplateBinding)
+			propertyFlags |= BindingPropertyFlags.Source;
+		if (_node.HasProperty("FallbackValue"))
+			propertyFlags |= BindingPropertyFlags.FallbackValue;
+		if (_node.HasProperty("TargetNullValue"))
+			propertyFlags |= BindingPropertyFlags.TargetNullValue;
+
+		//Generate the complete inline binding creation method
+		using var stringWriter = new StringWriter();
+		using var code = new IndentedTextWriter(stringWriter, "\t");
+		
+		code.WriteLine($"static global::Microsoft.Maui.Controls.BindingBase {methodName}({extensionTypeName} extension)");
+		code.WriteLine("{");
+		code.Indent++;
+		
+		// Setter initialization
+		// If we can determine the exact binding mode at compile time, we can avoid generating the setter or avoid the ShouldUseSetter method.
+		// If we cannot, we need to generate a ShouldUseSetter helper method.
+		bool generateSetter = false;
+		bool generateShouldUseSetter = false;
+		if (_node.Properties.TryGetValue("Mode", out INode modeNode))
+		{
+			if (modeNode is ValueNode { Value: string mode })
+			{
+				generateSetter = mode switch
 				{
-					return Create(
-						getter: {{GenerateGetterLambda(binding.Path)}},
-						extension.Mode,
-						extension.Converter,
-						extension.ConverterParameter,
-						extension.StringFormat,
-						{{source}},
-						{{fallbackValue}},
-						{{targetNullValue}});
+					"OneWayToSource" => true,
+					"TwoWay" => true,
+					"Default" => true,
+					"OneWay" => false,
+					"OneTime" => false,
+					_ => true, // unknown mode, be safe and generate the setter
+				};
+			}
+			else
+			{
+				// There is Mono, but it doesn't have a static value -- check `extension.Mode` at runtime
+				generateSetter = true;
+				generateShouldUseSetter = true;
+			}
+		}
+		else
+		{
+			// The user did not set the Mode property, so the binding mode is determined by the target bindable property and its default binding mode.
+			// TODO: Ideally, we should be able to figure out what the default binding mode of the target property is and use that information here.
+			//       Unfortunately, this seems rather difficult at this time. We might be able to do this for built-in MAUI controls at some later point,
+			//       although it is unclear if that could be done in a reliable and future-proof way.
+			//
+			// Skip generating the binding if the property or field at the end of the path is read-only and a propagating the value from target to source
+			// does not make any sense.
+			generateSetter = binding.SetterOptions.IsWritable;
+			generateShouldUseSetter = false;
+		}
 
-				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1)}}
+		code.Write($"global::System.Action<{binding.SourceType}, {binding.PropertyType}>? setter = ");
+		if (generateSetter)
+		{
+			if (generateShouldUseSetter)
+			{
+				code.WriteLine("null;");
+				code.WriteLine("if (ShouldUseSetter(extension.Mode))");
+				code.WriteLine("{");
+				code.Indent++;
+				code.Write("setter = ");
+			}
 
-					[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-					static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
-						=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
-							|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
-							|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
-				}
-				""";
+			if (binding.SetterOptions.IsWritable)
+			{
+				AppendSetterLambda(code, binding);
+			}
+			else
+			{
+				code.WriteLine("static (source, value) =>");
+				code.WriteLine("{");
+				code.Indent++;
+				code.WriteLine("throw new global::System.InvalidOperationException(\"Cannot set value on the source object.\");");
+				code.Indent--;
+				code.WriteLine("};");
+			}
+		
+			if (generateShouldUseSetter)
+			{
+				code.Indent--;
+				code.WriteLine("}");
+			}
 
-		_context.AddLocalMethod(createBindingLocalMethod);
-		newBindingExpression = $"{methodName}({extVariable.Name})";
+			code.WriteLine();
+		}
+		else
+		{
+			code.WriteLine("null;");
+		}
+		
+		// TypedBinding creation
+		code.WriteLine($"return new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
+		code.Indent++;
+		var targetNullValueExpression = isTemplateBinding || !propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue) ? null : "extension.TargetNullValue";
+		code.WriteLine($"getter: source => ({GenerateGetterExpression(binding, sourceVariableName: "source", targetNullValueExpression)}, true),");
+		code.WriteLine("setter,");
+		code.Write("handlers: ");
+		AppendHandlersArray(code, binding);
+		code.Write(")");
+		code.Indent--;
+		
+		// Object initializer if any properties are set
+		if (propertyFlags != BindingPropertyFlags.None)
+		{
+			code.WriteLine();
+			code.WriteLine("{");
+			code.Indent++;
+			
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
+				code.WriteLine("Mode = extension.Mode,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
+				code.WriteLine("Converter = extension.Converter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
+				code.WriteLine("ConverterParameter = extension.ConverterParameter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
+				code.WriteLine("StringFormat = extension.StringFormat,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
+			{
+				if (isTemplateBinding)
+					code.WriteLine("Source = global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent,");
+				else
+					code.WriteLine("Source = extension.Source,");
+			}
+			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
+			{
+				if (isTemplateBinding)
+					code.WriteLine("FallbackValue = null,");
+				else
+					code.WriteLine("FallbackValue = extension.FallbackValue,");
+			}
+			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
+			{
+				if (isTemplateBinding)
+					code.WriteLine("TargetNullValue = null,");
+				else
+					code.WriteLine("TargetNullValue = extension.TargetNullValue,");
+			}
+			
+			code.Indent--;
+			code.WriteLine("};");
+		}
+		else
+		{
+			code.WriteLine(";");
+		}
+
+		if (generateShouldUseSetter)
+		{
+			code.WriteLine();
+
+			// ShouldUseSetter helper
+			code.WriteLine("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
+			code.WriteLine("static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)");
+			code.Indent++;
+			code.WriteLine("=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource");
+			code.Indent++;
+			code.WriteLine("|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay");
+			code.WriteLine("|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;");
+			code.Indent -= 2;
+		}
+
+		code.Indent--;
+		code.WriteLine("}");
+
+		_context.AddLocalMethod(stringWriter.ToString());
+		newBindingExpression = $"{methodName}({extVariable.ValueAccessor})";
 
 		return true;
 	}
@@ -261,37 +407,58 @@ internal struct CompiledBindingMarkup
 			}
 		}
 
-		if (isNullable)
+		propertyType = previousPartType;
+		
+		// Apply nullable annotation if any part of the path introduces nullability
+		// For reference types, mark as nullable so the TypedBinding signature is correct
+		// For value types, we don't mark as nullable here because GenerateGetterExpression
+		// will add ?? default fallback for non-nullable value types with conditional access
+		if (isNullable && !propertyType.IsValueType)
 		{
-			if (propertyType.IsValueType)
-			{
-				propertyType = _context.Compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(propertyType);
-			}
-			else
-			{
-				propertyType = propertyType.WithNullableAnnotation(NullableAnnotation.Annotated);
-			}
+			propertyType = propertyType.WithNullableAnnotation(NullableAnnotation.Annotated);
 		}
 
-		propertyType = previousPartType;
 		bindingPath = new EquatableArray<IPathPart>(bindingPathParts.ToArray());
 		return true;
 	}
 
-	string GenerateGetterLambda(EquatableArray<IPathPart> bindingPath)
+	string GenerateGetterLambda(BindingInvocationDescription binding, string? targetNullValueExpression)
 	{
-		string expression = "source";
-		bool forceConditionalAccessToNextPart = false;
+		return $"static source => {GenerateGetterExpression(binding, sourceVariableName: "source", targetNullValueExpression)}";
+	}
 
-		foreach (var part in bindingPath)
+	string GenerateGetterExpression(
+		BindingInvocationDescription binding,
+		string sourceVariableName,
+		string? targetNullValueExpression = null)
+	{
+		string expression = sourceVariableName;
+		bool forceConditionalAccessToNextPart = false;
+		bool hasConditionalAccess = false;
+
+		foreach (var part in binding.Path)
 		{
 			// Note: AccessExpressionBuilder will happily call unsafe accessors and it expects them to be available.
 			// By calling BindingCodeWriter.GenerateBindingMethod(...), we are ensuring that the unsafe accessors are available.
 			expression = AccessExpressionBuilder.ExtendExpression(expression, MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart));
 			forceConditionalAccessToNextPart = part is Cast;
+			hasConditionalAccess |= forceConditionalAccessToNextPart || part is ConditionalAccess;
 		}
 
-		return $"static source => {expression}";
+		if (hasConditionalAccess && binding.PropertyType is { IsValueType: true, IsNullable: false })
+		{
+			// for non-nullable value types with conditional access in the path, we need to unwrap the getter result
+			// with fallback to either the target null value or default
+			if (targetNullValueExpression is not null)
+			{
+				var nullablePropertyType = binding.PropertyType with { IsNullable = true };
+				expression = $"{expression} ?? {targetNullValueExpression} as {nullablePropertyType}";
+			}
+
+			expression = $"{expression} ?? default";
+		}
+
+		return expression;
 
 		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccessToNextPart)
 			=> (forceConditionalAccessToNextPart, part) switch
@@ -301,4 +468,98 @@ internal struct CompiledBindingMarkup
 				_ => part,
 			};
 	}
+
+	void AppendSetterLambda(IndentedTextWriter code, BindingInvocationDescription binding)
+	{
+		code.Write("static (source, value) =>");
+		code.WriteLine();
+		code.WriteLine("{");
+		code.Indent++;
+		
+		var setter = Setter.From(binding.Path, "source", "value");
+		if (setter.PatternMatchingExpressions.Length > 0)
+		{
+			code.Write("if (");
+			
+			for (int i = 0; i < setter.PatternMatchingExpressions.Length; i++)
+			{
+				if (i > 0)
+				{
+					code.WriteLine();
+					code.Write("&& ");
+				}
+				code.Write(setter.PatternMatchingExpressions[i]);
+			}
+			
+			code.WriteLine(")");
+			code.WriteLine("{");
+			code.Indent++;
+			code.WriteLine(setter.AssignmentStatement);
+			code.Indent--;
+			code.WriteLine("}");
+		}
+		else
+		{
+			code.WriteLine(setter.AssignmentStatement);
+		}
+		
+		code.Indent--;
+		code.WriteLine("};");
+	}
+
+	void AppendHandlersArray(IndentedTextWriter code, BindingInvocationDescription binding)
+	{
+		code.WriteLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
+		code.WriteLine("{");
+		code.Indent++;
+
+		string nextExpression = "source";
+		bool forceConditionalAccessToNextPart = false;
+		foreach (var part in binding.Path)
+		{
+			var previousExpression = nextExpression;
+			nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart));
+			forceConditionalAccessToNextPart = part is Cast;
+
+			// Make binding react for PropertyChanged events on indexer itself
+			if (part is IndexAccess indexAccess)
+			{
+				code.WriteLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+			}
+			else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
+			{
+				code.WriteLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+			}
+
+			// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
+			if (part.PropertyName is string propertyName)
+			{
+				code.WriteLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
+			}
+		}
+
+		code.Indent--;
+		code.Write("}");
+
+		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccess)
+		{
+			if (!forceConditionalAccess)
+			{
+				return part;
+			}
+
+			return part switch
+			{
+				MemberAccess memberAccess => new ConditionalAccess(memberAccess),
+				IndexAccess indexAccess => new ConditionalAccess(indexAccess),
+				_ => part,
+			};
+		}
+	}
+}
+
+internal static class ElementNodeExtensions
+{
+	public static bool HasProperty(this ElementNode node, string propertyName)
+		=> node.Properties.TryGetValue(propertyName, out _);
 }

@@ -6,7 +6,9 @@ parameters:
 - name: postSteps
   type: stepList
   default: []
-- name: pool
+- name: buildPool
+  type: object
+- name: testPool
   type: object
 - name: enableSourceBuild
   type: boolean
@@ -37,7 +39,7 @@ parameters:
   default: 'Release'
 - name: TargetFrameworkVersion
   type: string
-  default: 'net9.0'
+  default: 'net10.0'
 - name: appArtifactName
   type: string
   default: 'device_tests_app'
@@ -53,7 +55,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
+      pool: ${{ parameters.buildPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -63,7 +65,7 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
@@ -103,7 +105,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: false
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
