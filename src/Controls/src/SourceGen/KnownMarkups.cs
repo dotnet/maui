@@ -214,7 +214,7 @@ internal class KnownMarkups
 		else // sourceNode != null
 		{
 			var source = (string)(sourceNode as ValueNode)!.Value;
-			var uri = $"new global::System.Uri(\"{source}\", global::System.UriKind.Relative)";
+			var uri = $"new global::System.Uri(@\"{source}\", global::System.UriKind.Relative)";
 			var rootTargetPath = $"global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({context.RootType.ToFQDisplayString()}))";
 
 			var resourcePath = $"global::Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.GetResourcePath({uri}, {rootTargetPath})";
