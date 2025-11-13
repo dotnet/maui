@@ -148,16 +148,6 @@ public partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
-		// Debug: output diagnostics if any
-		if (result.Diagnostics.Any())
-		{
-			foreach (var diag in result.Diagnostics)
-			{
-				Console.WriteLine($"Diagnostic [{diag.Id}]: {diag.GetMessage()}");
-			}
-		}
-		
 		Assert.False(result.Diagnostics.Any());
 		CodeIsEqual(expected, generated ?? string.Empty);
 	}
@@ -445,16 +435,6 @@ public partial class TestPage
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
-		// Debug: output diagnostics if any
-		if (result.Diagnostics.Any())
-		{
-			foreach (var diag in result.Diagnostics)
-			{
-				Console.WriteLine($"Diagnostic [{diag.Id}]: {diag.GetMessage()} at {diag.Location}");
-			}
-		}
-		
 		Assert.False(result.Diagnostics.Any());
 		CodeIsEqual(expected, generated ?? string.Empty);
 	}
@@ -597,7 +577,7 @@ public partial class TestPage
 		}
 
 		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 15);
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 9);
 		var label = new global::Microsoft.Maui.Controls.Label();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(label!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 3);
 		var __root = this;
@@ -612,14 +592,14 @@ public partial class TestPage
 		label.transientNamescope = iNameScope;
 #endif
 #line 8 "{{testXamlFilePath}}"
-		bindingExtension.Path = "CurrentPerson.Id";
+		bindingExtension.TargetNullValue = "0";
 #line default
 #line 8 "{{testXamlFilePath}}"
-		bindingExtension.TargetNullValue = 0;
+		bindingExtension.Path = "CurrentPerson.Id";
 #line default
 		var bindingBase = CreateTypedBindingFrom_bindingExtension(bindingExtension);
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 15);
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 9);
 		label.SetBinding(global::Microsoft.Maui.Controls.Label.TextProperty, bindingBase);
 #line 8 "{{testXamlFilePath}}"
 		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, label);
