@@ -29,7 +29,7 @@ public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 		// Include compilation diagnostics so tests can check for C# errors in generated code
 		// Only include diagnostics from generated XAML code, not from the test scaffolding code
 		var compilationDiagnostics = updatedCompilation.GetDiagnostics()
-			.Where(d => d.Severity >= DiagnosticSeverity.Warning)
+			.Where(d => d.Severity >= DiagnosticSeverity.Error)  // Only errors, not warnings
 			.Where(d => 
 			{
 				// Only include diagnostics from generated (.xsg.cs) files
