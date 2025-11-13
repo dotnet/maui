@@ -23,10 +23,10 @@ public static class SourceGeneratorDriver
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
 	{
-		return RunGenerator<T>(compilation, out _, additionalFiles);
+		return RunGenerator<T>(compilation, assertNoCompilationErrors: false, additionalFiles);
 	}
 
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, out Compilation updatedCompilation, params AdditionalFile[] additionalFiles)
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, bool assertNoCompilationErrors, params AdditionalFile[] additionalFiles)
 		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
@@ -42,7 +42,22 @@ public static class SourceGeneratorDriver
 
 		// Use RunGeneratorsAndUpdateCompilation to validate the generated code
 		// This will catch C# compilation errors in the generated code
-		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out updatedCompilation, out var diagnostics);
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var diagnostics);
+
+		// Assert that the generated code compiles without errors (if requested)
+		if (assertNoCompilationErrors)
+		{
+			var compilationErrors = updatedCompilation.GetDiagnostics()
+				.Where(d => d.Severity == DiagnosticSeverity.Error)
+				.Where(d => d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+				.ToArray();
+
+			if (compilationErrors.Length > 0)
+			{
+				var errorMessages = string.Join(Environment.NewLine, compilationErrors.Select(e => $"{e.Id}: {e.GetMessage()} at {e.Location}"));
+				throw new InvalidOperationException($"Generated code has compilation errors:{Environment.NewLine}{errorMessages}");
+			}
+		}
 
 		var runResult = driver.GetRunResult();
 		return runResult;
