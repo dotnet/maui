@@ -149,7 +149,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				container.MeasureHeight = true;
 			}
 
-			container.MeasureHeight = true; // Force height to be measured, not matched to parent
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
