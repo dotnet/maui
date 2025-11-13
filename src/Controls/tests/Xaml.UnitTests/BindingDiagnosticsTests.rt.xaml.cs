@@ -12,9 +12,6 @@ public partial class BindingDiagnosticsTests : ContentPage
 	public BindingDiagnosticsTests() => InitializeComponent();
 
 
-#if !DEBUG
-	[Fact(Skip = "This test runs only in debug")]
-#endif
 	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
@@ -30,7 +27,11 @@ public partial class BindingDiagnosticsTests : ContentPage
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 		}
 
+#if !DEBUG
+		[Fact(Skip = "This test runs only in debug")]
+#else
 		[Fact]
+#endif
 		public void Test() // TODO: Fix parameters - was (XamlInflator inflator), needs to be parameterized or use fixed value
 		{
 			// TODO: This test needs to be converted to use a specific inflator or made into a Theory test

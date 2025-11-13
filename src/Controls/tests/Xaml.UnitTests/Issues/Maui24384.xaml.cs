@@ -34,7 +34,7 @@ public partial class Maui24384 : ContentPage
 		{
 			var page = new Maui24384(inflator);
 			var picker = page.Content as Picker;
-			Assert.Equal(Maui24384.StaticLetters, picker.ItemsSource); // TODO: Was Assert.EquivalentTo
+			Assert.Equivalent(Maui24384.StaticLetters, picker.ItemsSource);
 		}
 	}
 }

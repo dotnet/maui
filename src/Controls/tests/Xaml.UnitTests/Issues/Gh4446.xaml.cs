@@ -18,9 +18,10 @@ public partial class Gh4446 : ContentPage
 	{
 		[Theory]
 		[Values]
-		public void BindingThrowsOnWrongConverterParameter()
+		public void BindingThrowsOnWrongConverterParameter(XamlInflator inflator)
 		{
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new Gh4446(inflator) { BindingContext = new Gh4446Item { Text = null } });
+			var page = new Gh4446(inflator) { BindingContext = new Gh4446Item { Text = null } };
+			Assert.NotNull(page);
 		}
 	}
 }

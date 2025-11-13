@@ -38,10 +38,11 @@ public partial class Maui24900 : ContentPage
 
 		[Theory]
 		[Values]
-		public void OnPlatformDoesNotThrow()
+		public void OnPlatformDoesNotThrow(XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
-			// TODO: XUnit has no DoesNotThrow. Remove this or use try/catch if needed: // (() => new Maui24900(inflator));
+			var page = new Maui24900(inflator);
+			Assert.NotNull(page);
 		}
 	}
 }
