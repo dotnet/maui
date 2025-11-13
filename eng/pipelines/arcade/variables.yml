@@ -33,7 +33,7 @@ variables:
 - name: ApiScanServiceConnectionId
   value: 334a6802-ebad-4fb1-bc3b-105bcc70bda2
 # Produce test-signed build for PR and Public builds
-- ${{ if or(eq(variables['_RunAsPublic'], 'true')) }}:
+- ${{ if eq(variables['_RunAsPublic'], 'true') }}:
   # needed for darc (dependency flow) publishing
   - name: _PublishArgs
     value: ''
