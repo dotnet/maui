@@ -485,8 +485,8 @@ public class Product
 		
 		// Check that no CS8603 errors are present - even with non-nullable target property,
 		// the generated getter should handle the nullable path correctly
-		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "CS8603");
-		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error);
+		Assert.False(result.Diagnostics.Any(d => d.Id == "CS8603"));
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -633,11 +633,11 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true);
 		
-		// CRITICAL: The getter lambda should NOT be static because it references extension.TargetNullValue
+		// CRITICAL: The getter lambda should NOT reference extension.TargetNullValue when not needed
 		// This test verifies that the generated code compiles without errors
-		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error);
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		
 		// Verify the generated code matches expected structure
 		CodeIsEqual(expected, generated ?? string.Empty);
