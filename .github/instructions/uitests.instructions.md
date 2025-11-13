@@ -8,6 +8,8 @@ applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCa
 
 This document provides specific guidance for GitHub Copilot when writing UI tests for the .NET MAUI repository.
 
+**Common Command Patterns**: For UDID extraction, device boot, builds, and error checking patterns, see [Common Testing Patterns](common-testing-patterns.md).
+
 **Critical Principle**: UI tests should run on all applicable platforms (iOS, Android, Windows, MacCatalyst) by default unless there is a specific technical limitation.
 
 ## UI Test Structure
@@ -139,17 +141,25 @@ App.Screenshot("TestStep1");
 - **Only ONE** `[Category]` attribute per test
 - Pick the most specific category that applies
 
-### Common Categories
-See [UITestCategories.cs](../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs) for the complete list.
+### Test Categories
 
-Examples:
-- `SafeAreaEdges` - Safe area and padding tests
-- `Button`, `Label`, `Entry`, `Editor` - Specific control tests
-- `CollectionView`, `ListView`, `CarouselView` - Collection control tests
-- `Layout` - Layout-related tests
-- `Shell`, `Navigation`, `TabbedPage` - Navigation tests
-- `Gestures`, `Focus`, `Accessibility` - Interaction tests
-- `Window`, `Page`, `LifeCycle` - Page lifecycle tests
+**CRITICAL**: Always check [UITestCategories.cs](../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs) for the authoritative, complete list of categories.
+
+**Selection rule**: Choose the MOST SPECIFIC category that applies to your test. If multiple categories seem applicable, choose the one that best describes the primary focus of the test.
+
+**Common categories** (examples only - not exhaustive):
+- **SafeArea**: `SafeAreaEdges` - Safe area and padding tests
+- **Basic controls**: `Button`, `Label`, `Entry`, `Editor` - Specific control tests
+- **Collection controls**: `CollectionView`, `ListView`, `CarouselView` - Collection control tests
+- **Layout**: `Layout` - Layout-related tests
+- **Navigation**: `Shell`, `Navigation`, `TabbedPage` - Navigation tests
+- **Interaction**: `Gestures`, `Focus`, `Accessibility` - Interaction tests
+- **Lifecycle**: `Window`, `Page`, `LifeCycle` - Page lifecycle tests
+
+**List all categories programmatically**:
+```bash
+grep -E "public const string [A-Za-z]+ = " src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
+```
 
 **Important**: When a new UI test category is added to `UITestCategories.cs`, also update `eng/pipelines/common/ui-tests.yml` to include the new category.
 
@@ -200,17 +210,44 @@ public void SoftInputBehaviorTest()
 
 ## Running UI Tests Locally
 
+### Prerequisites: Kill Existing Appium Processes
+
+**CRITICAL**: Before running UITests, always kill any existing Appium processes. The UITest framework needs to start its own Appium server, and having a stale process running will cause the tests to fail with an error like:
+
+```
+AppiumServerHasNotBeenStartedLocallyException: The local appium server has not been started.
+Time 120000 ms for the service starting has been expired!
+```
+
+**Solution: Always kill existing Appium processes before running tests:**
+
+```bash
+# Kill any Appium processes on port 4723
+lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9 2>/dev/null && echo "✅ Killed existing Appium processes" || echo "ℹ️ No Appium processes running on port 4723"
+```
+
+**Why this is needed:** The UITest framework automatically starts and manages its own Appium server. If there's already an Appium process running (from a previous test run or manual testing), the framework will timeout trying to start a new one.
+
 ### Quick Test Execution (for rapid development)
 
 When developing and debugging a specific test:
 
 **Android:**
+
+**IMPORTANT**: Like iOS, Android tests also require the `DEVICE_UDID` environment variable to be set to target the correct device/emulator.
+
 1. Deploy the TestCases.HostApp:
    ```bash
    # Use local dotnet if available, otherwise use global dotnet
    ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
    # OR:
    dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+
+   # Check build/deploy succeeded
+   if [ $? -ne 0 ]; then
+       echo "❌ ERROR: Build or deployment failed"
+       exit 1
+   fi
    ```
 
 2. Run your specific test:
@@ -218,7 +255,16 @@ When developing and debugging a specific test:
    # Set DEVICE_UDID environment variable so Appium tests know which device to use
    # Get the device ID from: adb devices
    export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-   
+
+   # Check device was found
+   if [ -z "$DEVICE_UDID" ]; then
+       echo "❌ ERROR: No Android device/emulator found. Start an emulator or connect a device."
+       exit 1
+   fi
+
+   # Verify device is set
+   echo "Using Android device: $DEVICE_UDID"
+
    # Run the test
    dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue12345"
    ```
@@ -348,6 +394,15 @@ export IOS_VERSION="18.0"
 ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
 # OR:
 dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+
+# Check build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build failed"
+    exit 1
+fi
+
+# If the app crashes on launch, rebuild with --no-incremental:
+# dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
 ```
 
 **Step 3: Boot simulator and install app**
@@ -358,13 +413,19 @@ xcrun simctl boot $UDID 2>/dev/null || true
 # Verify simulator is booted
 STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
 if [ "$STATE" != "Booted" ]; then
-    echo "ERROR: Simulator failed to boot. Current state: $STATE"
+    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
     exit 1
 fi
 echo "Simulator is booted and ready"
 
 # Install the app to the simulator
 xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+
+# Check install succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App installation failed"
+    exit 1
+fi
 ```
 
 **Step 4: Run your specific test**
@@ -375,6 +436,20 @@ export DEVICE_UDID=$UDID
 # Run the test
 dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
 ```
+
+**Important Note on Device Targeting:**
+
+The UI test infrastructure automatically reads the `DEVICE_UDID` environment variable to target the correct iOS simulator. You must set this before running tests:
+
+```bash
+# Set the device UDID (from Step 1)
+export DEVICE_UDID=$UDID
+
+# Run the test
+dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
+```
+
+Without `DEVICE_UDID` set, Appium will randomly select a device, which may not have your app installed.
 
 **MacCatalyst:**
 
@@ -409,6 +484,25 @@ dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csp
 1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
 2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
 3. Check emulator: `adb devices`
+
+**iOS App Crashes on Launch or Won't Start with Appium:**
+
+If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`, the issue is often related to incremental builds:
+
+**Solution:** Clean and rebuild with `--no-incremental`:
+```bash
+# Clean first
+dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+
+# Rebuild with no-incremental
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
+
+# Reinstall to simulator
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+```
+
+**Why this happens:** Incremental builds can sometimes leave the app bundle in an inconsistent state, especially after making changes to XAML files or project structure. The `--no-incremental` flag forces a complete rebuild.
 
 ## Before Committing
 

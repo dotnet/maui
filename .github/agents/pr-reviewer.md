@@ -27,6 +27,7 @@ You are a specialized PR review agent for the .NET MAUI repository. Your role is
 
 1. **Read Required Files**:
    - `.github/copilot-instructions.md` - General coding standards
+   - `.github/instructions/common-testing-patterns.md` - Command patterns with error checking
    - `.github/instructions/instrumentation.instructions.md` - Testing patterns
    - `.github/instructions/safearea-testing.instructions.md` - If SafeArea-related PR
    - `.github/instructions/uitests.instructions.md` - If PR adds/modifies UI tests
@@ -178,7 +179,15 @@ When testing is required, use the Sandbox app to validate PR changes:
 
 ### Fetch PR Changes (Without Checking Out)
 
-**CRITICAL**: Stay on the current branch (pr-reviewer) to preserve all instruction files and context. Apply PR changes on top of the current branch instead of checking out the PR branch.
+**CRITICAL**: Stay on your current branch (wherever you are when starting the review) to preserve context. Apply PR changes on top of the current branch instead of checking out the PR branch.
+
+**FIRST STEP - Record Your Starting Branch:**
+```bash
+# Record what branch you're currently on - you'll need this for cleanup
+ORIGINAL_BRANCH=$(git branch --show-current)
+echo "Starting review from branch: $ORIGINAL_BRANCH"
+# Remember this value for cleanup at the end!
+```
 
 ```bash
 # Get the PR number from the user's request
@@ -187,11 +196,30 @@ PR_NUMBER=XXXXX  # Replace with actual PR number
 # Fetch the PR into a temporary branch
 git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER-temp
 
+# Check fetch succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to fetch PR #$PR_NUMBER"
+    exit 1
+fi
+
 # Create a test branch from current branch (preserves instruction files)
 git checkout -b test-pr-$PR_NUMBER
 
+# Check branch creation succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to create test branch"
+    exit 1
+fi
+
 # Merge the PR changes into the test branch
 git merge pr-$PR_NUMBER-temp -m "Test PR #$PR_NUMBER" --no-edit
+
+# Check merge succeeded (will error if conflicts)
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Merge failed with conflicts"
+    echo "See section below on handling merge conflicts"
+    exit 1
+fi
 ```
 
 **If merge conflicts occur:**
@@ -248,10 +276,10 @@ I need help resolving this merge issue before I can test the PR.
 **Why this matters**: If you can't cleanly merge the PR, you can't accurately test it. Testing with incorrect code leads to misleading results. It's better to pause and get help than to provide an incomplete or incorrect review.
 
 **Why this approach:**
-- ✅ Preserves all instruction files from pr-reviewer branch
-- ✅ Tests PR changes on top of latest guidelines
-- ✅ Simple and reliable (standard git merge)
-- ✅ Easy to clean up (just delete test branch)
+- ✅ Preserves your current working context and branch state
+- ✅ Tests PR changes on top of wherever you currently are
+- ✅ Allows agent to maintain proper context across review
+- ✅ Easy to clean up (just delete test branch and return to original branch)
 - ✅ Can compare before/after easily
 - ✅ Handles most conflicts gracefully
 
@@ -259,17 +287,36 @@ I need help resolving this merge issue before I can test the PR.
 
 **iOS Testing**:
 ```bash
-# Find iOS 26 simulator (or specify version based on issue)
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-26-0"] | first | .udid')
+# Find iPhone Xs with highest iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+
+# Check UDID was found
+if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+    echo "❌ ERROR: No iPhone Xs simulator found. Please create one."
+    exit 1
+fi
 
 # Boot simulator
 xcrun simctl boot $UDID 2>/dev/null || true
+
+# Check simulator is booted
+STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
+if [ "$STATE" != "Booted" ]; then
+    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
+    exit 1
+fi
 ```
 
 **Android Testing**:
 ```bash
 # Get connected device/emulator
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# Check device was found
+if [ -z "$DEVICE_UDID" ]; then
+    echo "❌ ERROR: No Android device/emulator found. Start an emulator or connect a device."
+    exit 1
+fi
 ```
 
 ### Modify Sandbox App for Testing
@@ -382,11 +429,30 @@ Does this test approach look correct before I build and deploy?
 # Build
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
+# Check build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build failed"
+    exit 1
+fi
+
 # Install
 xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
 
+# Check install succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App installation failed"
+    exit 1
+fi
+
 # Launch with console capture
 xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_test.log 2>&1 &
+
+# Check launch didn't immediately fail
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App launch failed"
+    exit 1
+fi
+
 sleep 8
 cat /tmp/ios_test.log
 ```
@@ -395,6 +461,12 @@ cat /tmp/ios_test.log
 ```bash
 # Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+
+# Check build/deploy succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build or deployment failed"
+    exit 1
+fi
 
 # Monitor logs
 adb logcat | grep -E "(YourMarker|Frame|Console)"
@@ -614,12 +686,14 @@ See `.github/instructions/safearea-testing.instructions.md` for comprehensive gu
 
 6. **Clean up test branches**
    ```bash
-   # Return to pr-reviewer branch
-   git checkout pr-reviewer
+   # Return to original branch (whatever branch you started on)
+   git checkout $ORIGINAL_BRANCH
    
    # Delete test branches
    git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp
    ```
+   
+   **Note**: Uses `$ORIGINAL_BRANCH` variable you set at the beginning. If you didn't save it, replace with whatever branch you were on when you started the review (e.g., `main`, `pr-reviewer`, etc.)
 
 ### Include Test Results in Review
 
@@ -682,8 +756,8 @@ For each edge case tested, document:
 After testing, clean up all test artifacts:
 
 ```bash
-# Return to pr-reviewer branch
-git checkout pr-reviewer
+# Return to your original branch (use the variable from the beginning)
+git checkout $ORIGINAL_BRANCH  # Or manually specify: main, pr-reviewer, etc.
 
 # Revert any changes to Sandbox app
 git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
@@ -694,6 +768,8 @@ git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp 2>/dev/null || true
 # Clean build artifacts if needed
 dotnet clean
 ```
+
+**Important**: If you didn't save `$ORIGINAL_BRANCH` at the start, replace it with whatever branch you were on when you began the review. This ensures you return to your starting state.
 
 ## Core Responsibilities
 

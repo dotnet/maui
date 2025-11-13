@@ -14,6 +14,7 @@ templatesTest/
 *.userosscache
 *.sln.docstates
 /src/Controls/tests/TestCases.HostApp/MauiProgram.user.cs
+SandboxAppium/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

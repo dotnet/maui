@@ -6,6 +6,8 @@ description: "Guidelines for instrumenting .NET MAUI source code for debugging, 
 
 This guide provides patterns and techniques for adding instrumentation to .NET MAUI source code to debug issues, validate PR changes, and understand runtime behavior.
 
+**Common Command Patterns**: For UDID extraction, device boot, builds, and error checking patterns, see [Common Testing Patterns](common-testing-patterns.md).
+
 **Guiding Principle: Use cross-platform MAUI APIs for all instrumentation.**
 
 ## When to Use Instrumentation
@@ -287,15 +289,48 @@ private async void LogLayoutInfo(object? sender, EventArgs e)
 # Build
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
-# Find simulator
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-26-0"] | first | .udid')
+# Check build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build failed"
+    exit 1
+fi
+
+# Find iPhone Xs with highest iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+
+# Check UDID was found
+if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+    echo "❌ ERROR: No iPhone Xs simulator found. Please create one."
+    exit 1
+fi
 
 # Boot and install
-xcrun simctl boot $UDID
+xcrun simctl boot $UDID 2>/dev/null || true
+
+# Check simulator is booted
+STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
+if [ "$STATE" != "Booted" ]; then
+    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
+    exit 1
+fi
+
 xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
+
+# Check install succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App installation failed"
+    exit 1
+fi
 
 # Launch with console capture
 xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_output.log 2>&1 &
+
+# Check launch didn't immediately fail
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: App launch failed"
+    exit 1
+fi
+
 sleep 5
 cat /tmp/ios_output.log
 ```
@@ -304,6 +339,12 @@ cat /tmp/ios_output.log
 ```bash
 # Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+
+# Check build/deploy succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build or deployment failed"
+    exit 1
+fi
 
 # Monitor logcat
 adb logcat | grep "LAYOUT INFO"

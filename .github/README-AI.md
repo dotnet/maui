@@ -64,9 +64,11 @@ This is by design - it's better to pause and get guidance than provide incomplet
 ### Instruction Files
 These files provide specialized guidance for specific scenarios:
 
+- **`instructions/common-testing-patterns.md`** - Common testing patterns for command sequences (UDID extraction, builds, deploys, error checking)
 - **`instructions/uitests.instructions.md`** - UI testing guidelines (when to use HostApp vs Sandbox)
 - **`instructions/safearea-testing.instructions.md`** - SafeArea testing patterns (measure children, not parents)
 - **`instructions/instrumentation.instructions.md`** - Code instrumentation patterns for debugging and testing
+- **`instructions/appium-control.instructions.md`** - Standalone Appium scripts for manual debugging and exploration
 - **`instructions/templates.instructions.md`** - Template modification rules and conventions
 
 ### General Guidelines

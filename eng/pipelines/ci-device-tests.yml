@@ -58,6 +58,12 @@ parameters:
     name: Azure Pipelines
     vmImage: windows-2022
 
+- name: macOSTestPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+
 - name: macOSPool
   type: object
   default:
@@ -75,7 +81,8 @@ stages:
   # Use Helix for iOS / Android and MacCatalyst Device Tests
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
-      pool: ${{ parameters.macOSPool }}
+      buildPool: ${{ parameters.macOSPool }}
+      testPool: ${{ parameters.macOSTestPool }}
       runAsPublic: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
