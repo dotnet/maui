@@ -7,6 +7,10 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// <summary>
 /// EqualityComparer that normalizes line endings before comparing strings.
 /// This ensures that tests pass regardless of the platform's line ending conventions.
+/// 
+/// NOTE: Consider using SnapshotAssert.Equal() or SnapshotAssert.EqualIgnoringLineEndings() 
+/// instead for new tests. SnapshotAssert provides better diff output and additional features.
+/// See README_SNAPSHOT_TESTING.md for details.
 /// </summary>
 public class LineEndingNormalizedEqualityComparer : IEqualityComparer<string?>
 {

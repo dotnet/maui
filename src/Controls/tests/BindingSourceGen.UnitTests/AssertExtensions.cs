@@ -7,6 +7,13 @@ namespace BindingSourceGen.UnitTests;
 
 internal static class AssertExtensions
 {
+	/// <summary>
+	/// Compares two code strings line by line after trimming and filtering empty lines.
+	/// 
+	/// NOTE: Consider using SnapshotAssert.Equal() instead for new tests.
+	/// SnapshotAssert provides better diff output and is easier to use.
+	/// See README_SNAPSHOT_TESTING.md for details.
+	/// </summary>
 	internal static void CodeIsEqual(string expectedCode, string actualCode)
 	{
 		var expectedLines = SplitCode(expectedCode);
