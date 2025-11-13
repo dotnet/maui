@@ -56,9 +56,10 @@ variables:
 - name: nugetMultiFeedWarnLevel
   value: none
 
+- group: MAUI # This is the main MAUI variable group that contains secret for the apple certificate
+
 # Variable groups required for all builds
 - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui'),  ne(variables['Build.DefinitionName'], 'maui-pr-devicetests'),  ne(variables['Build.DefinitionName'], 'maui-pr-uitests')) }}:
-  - group: MAUI # This is the main MAUI variable group that contains secret for the apple certificate
   - group: maui-provisionator # This is just needed for the provisionator
 
 
