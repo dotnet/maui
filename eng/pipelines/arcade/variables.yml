@@ -25,7 +25,7 @@ variables:
 - name: TreatWarningsAsErrors
   value: false
 - name: _OfficialBuildIdArgs
-  value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+  value: ''
 - name: ApiScanAppId
   value: cbde2fca-1ca1-47f7-8212-fcdf1a556eb2
 - name: ApiScanTenantId
