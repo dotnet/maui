@@ -197,7 +197,12 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateTitleBarContentSize()
 		{
-			if (AppTitleBarContentControl is null)
+			if (!AppWindowId.HasValue || AppTitleBarContentControl is null)
+				return;
+
+			// Get the AppWindow and validate it exists
+			var appWindow = AppWindow.GetFromWindowId(AppWindowId.Value);
+			if (appWindow is null)
 				return;
 
 			if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight &&
@@ -205,11 +210,8 @@ namespace Microsoft.Maui.Platform
 			{
 				UpdateRootNavigationViewMargins(AppTitleBarContentControl.ActualHeight);
 
-				if (AppWindowId.HasValue)
-				{
-					AppWindow.GetFromWindowId(AppWindowId.Value).TitleBar.PreferredHeightOption =
-						_appTitleBarHeight >= 48 ? TitleBarHeightOption.Tall : TitleBarHeightOption.Standard;
-				}
+				appWindow.TitleBar.PreferredHeightOption =
+					_appTitleBarHeight >= 48 ? TitleBarHeightOption.Tall : TitleBarHeightOption.Standard;
 
 				this.RefreshThemeResources();
 			}
@@ -224,19 +226,15 @@ namespace Microsoft.Maui.Platform
 				rectArray.Add(rect);
 			}
 
-			if (AppWindowId.HasValue)
-			{
-				var nonClientInputSrc =
-					InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
+			var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
 
-				if (rectArray.Count > 0)
-				{
-					nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
-				}
-				else
-				{
-					nonClientInputSrc.ClearRegionRects(NonClientRegionKind.Passthrough);
-				}
+			if (rectArray.Count > 0)
+			{
+				nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
+			}
+			else
+			{
+				nonClientInputSrc.ClearRegionRects(NonClientRegionKind.Passthrough);
 			}
 		}
 
