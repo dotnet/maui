@@ -1,5 +1,5 @@
 ---
-name: MAUI C# Expert
+name: CSharpMAUIExpert
 description: An agent specialized in .NET MAUI development, extending general C# expertise with MAUI-specific patterns and practices.
 # version: 2025-11-12a
 ---
