@@ -2446,7 +2446,7 @@ public class IntegrationTests
 	}
 
 	[Fact]
-	public void GenerateBindingWithPrivateSourceType_ReportsError()
+	public void GenerateBindingWithPrivateSourceType()
 	{
 		var source = """
 		using Microsoft.Maui.Controls;
@@ -2471,18 +2471,22 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
 		
-		// Private source types are not currently supported
-		// Should report BSG0007 error
-		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0007", diagnostic.Id);
-		Assert.Contains("internal", diagnostic.GetMessage(), StringComparison.Ordinal);
+		// Private source types are now supported using UnsafeAccessorType
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify the generated code uses object and UnsafeAccessorType
+		var generatedFile = result.GeneratedFiles.Values.FirstOrDefault(f => f.Contains("UnsafeAccessorType", StringComparison.Ordinal));
+		Assert.NotNull(generatedFile);
+		Assert.Contains("Func<object, string>", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("TypedBinding<object, string>", generatedFile, StringComparison.Ordinal);
 	}
 
 	[Fact]
 	public void GenerateBindingWithInternalSourceType_WorksCorrectly()
 	{
-		// Test that internal types DO work (as opposed to private types)
+		// Test that internal types still work correctly (no UnsafeAccessorType needed)
 		var source = """
 		using Microsoft.Maui.Controls;
 
@@ -2508,7 +2512,186 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		// Internal types should work fine
+		// Internal types should work fine without UnsafeAccessorType
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Should NOT use UnsafeAccessorType for internal types
+		var generatedFile = result.GeneratedFiles.Values.FirstOrDefault(f => f.Contains("SetBinding", StringComparison.Ordinal));
+		Assert.NotNull(generatedFile);
+		Assert.DoesNotContain("UnsafeAccessorType", generatedFile, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPrivateSourceAndPropertyTypes()
+	{
+		// Test both source and property types are private
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Entry MyEntry = new Entry();
+
+			public void SetupBinding()
+			{
+				MyEntry.SetBinding(Entry.TextProperty, static (MyViewModel vm) => vm.Data.Value);
+			}
+
+			private class MyViewModel
+			{
+				public PrivateData Data { get; set; } = new PrivateData();
+			}
+
+			private class PrivateData
+			{
+				public string Value { get; set; } = "test";
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
+		AssertExtensions.AssertNoDiagnostics(result);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPrivateSourceType_TwoWayBinding()
+	{
+		// Test that two-way binding works with private types (setter generation)
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Entry MyEntry = new Entry();
+
+			public void SetupBinding()
+			{
+				MyEntry.SetBinding(Entry.TextProperty, static (MyViewModel vm) => vm.MyValue, BindingMode.TwoWay);
+			}
+
+			private class MyViewModel
+			{
+				public string MyValue { get; set; } = "test";
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify setter generation with casting
+		var generatedFile = result.GeneratedFiles.Values.FirstOrDefault(f => f.Contains("SetBinding", StringComparison.Ordinal));
+		Assert.NotNull(generatedFile);
+		Assert.Contains("typedSource", generatedFile, StringComparison.Ordinal); // Should have casting in setter
+	}
+
+	[Fact]
+	public void GenerateBindingWithPrivatePropertyType()
+	{
+		// Test property type is private but source is public
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Label MyLabel = new Label();
+
+			public void SetupBinding()
+			{
+				MyLabel.SetBinding(Label.TextProperty, static (MyViewModel vm) => vm.GetData());
+			}
+
+			public class MyViewModel
+			{
+				public PrivateData GetData() => new PrivateData { Value = "test" };
+			}
+
+			private class PrivateData
+			{
+				public string Value { get; set; }
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		
+		// This should fail because GetData() is a method call
+		Assert.Contains(result.SourceGeneratorDiagnostics, d => d.Id == "BSG0001");
+	}
+
+	[Fact]
+	public void GenerateBindingWithProtectedSourceType()
+	{
+		// Test protected types (also inaccessible)
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Button MyButton = new Button();
+
+			public void SetupBinding()
+			{
+				MyButton.SetBinding(Button.TextProperty, static (MyViewModel vm) => vm.MyValue);
+			}
+
+			protected class MyViewModel
+			{
+				public string MyValue { get; set; } = "test";
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
+		AssertExtensions.AssertNoDiagnostics(result);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPrivateNestedType()
+	{
+		// Test deeply nested private types
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var container = new Container();
+		container.SetupBinding();
+
+		public class Container
+		{
+			internal Label MyLabel = new Label();
+
+			public void SetupBinding()
+			{
+				MyLabel.SetBinding(Label.TextProperty, static (Outer.Inner vm) => vm.Value);
+			}
+
+			private class Outer
+			{
+				public class Inner
+				{
+					public string Value { get; set; } = "nested";
+				}
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 	}
 }

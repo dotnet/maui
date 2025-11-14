@@ -136,9 +136,13 @@ public static class BindingCodeWriter
 			AppendLine('{');
 			Indent();
 
+			// For inaccessible types, use object and cast
+			var sourceTypeForBinding = GetTypeForBinding(binding.SourceType);
+			var propertyTypeForBinding = GetTypeForBinding(binding.PropertyType);
+			
 			// Initialize setter
 			AppendLines($$"""
-				global::System.Action<{{binding.SourceType}}, {{binding.PropertyType}}>? setter = null;
+				global::System.Action<{{sourceTypeForBinding}}, {{propertyTypeForBinding}}>? setter = null;
 				if ({{GetShouldUseSetterCall(binding.MethodType)}})
 				{
 				""");
@@ -167,10 +171,10 @@ public static class BindingCodeWriter
 			AppendLine('}');
 			AppendBlankLine();
 
-			// Create instance of TypedBinding
+			// Create instance of TypedBinding - use object types for inaccessible types
 			AppendLines($$"""
-				var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{{binding.SourceType}}, {{binding.PropertyType}}>(
-					getter: source => (getter(source), true),
+				var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{{sourceTypeForBinding}}, {{propertyTypeForBinding}}>(
+					getter: source => ({{GenerateGetterInvocation(binding)}}),
 					setter,
 				""");
 			Indent();
@@ -200,9 +204,42 @@ public static class BindingCodeWriter
 			}
 
 			AppendUnsafeAccessors(binding);
+			AppendUnsafeAccessorTypes(binding);
 
 			Unindent();
 			AppendLine('}');
+		}
+
+		private static string GetTypeForBinding(TypeDescription type)
+		{
+			// Use object for inaccessible types in TypedBinding
+			return type.IsAccessible ? type.ToString() : "object";
+		}
+
+		private string GenerateGetterInvocation(BindingInvocationDescription binding)
+		{
+			// If source type is inaccessible, we need to cast from object
+			if (!binding.SourceType.IsAccessible)
+			{
+				// Cast to the actual type to invoke the getter, then cast result if needed
+				var castSource = $"({binding.SourceType})source";
+				var getterCall = $"getter({castSource})";
+				
+				// If property type is also inaccessible, cast the result
+				if (!binding.PropertyType.IsAccessible)
+				{
+					return $"(object){getterCall}, true";
+				}
+				return $"{getterCall}, true";
+			}
+			else if (!binding.PropertyType.IsAccessible)
+			{
+				// Only property type is inaccessible, cast result
+				return $"(object)getter(source), true";
+			}
+			
+			// Both types accessible, no casting needed
+			return "getter(source), true";
 		}
 
 		private void AppendFunctionArguments(BindingInvocationDescription binding)
@@ -218,8 +255,17 @@ public static class BindingCodeWriter
 					""");
 			}
 
+			// Use UnsafeAccessorType for inaccessible types
+			var sourceTypeForSignature = GetTypeForSignature(binding.SourceType);
+			var propertyTypeForSignature = GetTypeForSignature(binding.PropertyType);
+
+			if (!binding.SourceType.IsAccessible && binding.SourceType.AssemblyQualifiedName != null)
+			{
+				AppendLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorType(\"{binding.SourceType.AssemblyQualifiedName}\")]");
+			}
+
 			AppendLines($$"""
-				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
+				global::System.Func<{{sourceTypeForSignature}}, {{propertyTypeForSignature}}> getter,
 				global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
 				global::Microsoft.Maui.Controls.IValueConverter? converter = null,
 				object? converterParameter = null,
@@ -230,6 +276,12 @@ public static class BindingCodeWriter
 				""");
 
 			Unindent();
+		}
+
+		private static string GetTypeForSignature(TypeDescription type)
+		{
+			// Use object for inaccessible types in signatures
+			return type.IsAccessible ? type.ToString() : "object";
 		}
 
 		private static string GetShouldUseSetterCall(InterceptedMethodType interceptedMethodType) =>
@@ -265,19 +317,37 @@ public static class BindingCodeWriter
 			AppendLine('{');
 			Indent();
 
+			// Cast source if it's an inaccessible type
+			var actualSourceVar = sourceVariableName;
+			if (!binding.SourceType.IsAccessible)
+			{
+				actualSourceVar = "typedSource";
+				AppendLine($"var {actualSourceVar} = ({binding.SourceType}){sourceVariableName};");
+			}
+
 			var assignedValueExpression = valueVariableName;
+
+			// Cast value if it's an inaccessible type
+			if (!binding.PropertyType.IsAccessible)
+			{
+				var typedValueVar = "typedValue";
+				AppendLine($"var {typedValueVar} = ({binding.PropertyType}){valueVariableName};");
+				assignedValueExpression = typedValueVar;
+			}
 
 			// early return for nullable values if the setter doesn't accept them
 			if (binding.PropertyType.IsNullable && !binding.SetterOptions.AcceptsNullValue)
 			{
 				if (binding.PropertyType.IsValueType)
 				{
-					AppendLine($"if (!{valueVariableName}.HasValue)");
-					assignedValueExpression = $"{valueVariableName}.Value";
+					var checkVar = !binding.PropertyType.IsAccessible ? "typedValue" : valueVariableName;
+					AppendLine($"if (!{checkVar}.HasValue)");
+					assignedValueExpression = $"{checkVar}.Value";
 				}
 				else
 				{
-					AppendLine($"if ({valueVariableName} is null)");
+					var checkVar = !binding.PropertyType.IsAccessible ? "typedValue" : valueVariableName;
+					AppendLine($"if ({checkVar} is null)");
 				}
 				AppendLine('{');
 				Indent();
@@ -286,7 +356,7 @@ public static class BindingCodeWriter
 				AppendLine('}');
 			}
 
-			var setter = Setter.From(binding.Path, sourceVariableName, assignedValueExpression);
+			var setter = Setter.From(binding.Path, actualSourceVar, assignedValueExpression);
 			if (setter.PatternMatchingExpressions.Length > 0)
 			{
 				Append("if (");
@@ -331,12 +401,20 @@ public static class BindingCodeWriter
 
 		private void AppendHandlersArray(BindingInvocationDescription binding)
 		{
-			AppendLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
+			var sourceTypeForHandlers = GetTypeForBinding(binding.SourceType);
+			AppendLine($"new global::System.Tuple<global::System.Func<{sourceTypeForHandlers}, object?>, string>[]");
 			AppendLine('{');
 
 			Indent();
 
-			string nextExpression = "source";
+			// If source type is inaccessible, we need to cast in the lambda
+			string sourceExpression = "source";
+			if (!binding.SourceType.IsAccessible)
+			{
+				sourceExpression = $"(({binding.SourceType})source)";
+			}
+
+			string nextExpression = sourceExpression;
 			bool forceConditonalAccessToNextPart = false;
 			foreach (var part in binding.Path)
 			{
@@ -468,6 +546,13 @@ public static class BindingCodeWriter
 				[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
 				static extern void {{CreateUnsafePropertyAccessorSetMethodName(propertyName)}}({{containingType}} source, {{memberType}} value);
 				""");
+
+		private void AppendUnsafeAccessorTypes(BindingInvocationDescription binding)
+		{
+			// Note: UnsafeAccessorType is applied to the getter parameter in AppendFunctionArguments
+			// We don't need additional declarations here since the attribute on the parameter
+			// is sufficient to enable casting from/to object in the method body
+		}
 
 		public void Dispose()
 		{
