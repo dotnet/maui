@@ -763,7 +763,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Banana"));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In CV2 related issue link: https://github.com/dotnet/maui/issues/28509 and In windows, relates issue: https://github.com/dotnet/maui/issues/28824
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In iOS and Mac, relates issue: https://github.com/dotnet/maui/issues/32225 and In windows, relates issue: https://github.com/dotnet/maui/issues/27946
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
