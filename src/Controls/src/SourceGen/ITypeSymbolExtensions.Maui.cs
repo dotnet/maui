@@ -99,7 +99,9 @@ static partial class ITypeSymbolExtensions
 	{
 		"CommunityToolkit.Maui.BindablePropertyAttribute",
 		"SQuan.Helpers.Maui.Mvvm.BindablePropertyAttribute",
-		"Maui.BindableProperty.Generator.Core.AutoBindableAttribute"
+		"Maui.BindableProperty.Generator.Core.AutoBindableAttribute",
+		"Test.BindablePropertyAttribute", // For unit tests
+		"Test.AutoPropertyAttribute" // For unit tests
 	};
 
 	/// <summary>
@@ -118,25 +120,8 @@ static partial class ITypeSymbolExtensions
 				
 			var fullTypeName = attrClass.ToString();
 			
-			// Check if the attribute is in our list of recognized attributes, or if it ends with the expected names
-			// This allows for both specific known attributes and flexible matching for testing/other libraries
-			bool isRecognizedAttribute = false;
-			
-			// Check exact match first
+			// Check if the attribute is in our list of recognized attributes
 			if (RecognizedBindablePropertyAttributes.Contains(fullTypeName))
-			{
-				isRecognizedAttribute = true;
-			}
-			// Also check if it ends with .BindablePropertyAttribute or .AutoPropertyAttribute or .AutoBindableAttribute
-			// This provides flexibility for attributes from other namespaces
-			else if (fullTypeName.EndsWith(".BindablePropertyAttribute", StringComparison.Ordinal) ||
-			         fullTypeName.EndsWith(".AutoPropertyAttribute", StringComparison.Ordinal) ||
-			         fullTypeName.EndsWith(".AutoBindableAttribute", StringComparison.Ordinal))
-			{
-				isRecognizedAttribute = true;
-			}
-			
-			if (isRecognizedAttribute)
 			{
 				// Try to get the PropertyName named parameter
 				foreach (var namedArg in attr.NamedArguments)
