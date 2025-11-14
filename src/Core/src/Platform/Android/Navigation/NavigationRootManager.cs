@@ -5,7 +5,6 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
@@ -84,16 +83,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				_rootView = navigationLayout;
-			}
-
-			if(!OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				// Dispatches insets to all children recursively (for API < 30)
-				// This implements Google's workaround for the API 28-29 bug where
-				// one child consuming insets blocks all siblings from receiving them.
-				// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
-				ViewGroupCompat.InstallCompatInsetsDispatch(_rootView);
-			}
+			}           
 			
 			// if the incoming view is a Drawer Layout then the Drawer Layout
 			// will be the root view and internally handle all if its view management
