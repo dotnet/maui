@@ -74,5 +74,24 @@ namespace Microsoft.Maui.Controls
 		{
 			IsEnabled = Command.CanExecute(CommandParameter);
 		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current is null)
+				return;
+
+			if (args.NewHandler is null || args.OldHandler is not null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			if (args.NewHandler is not null && args.OldHandler is null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			// Force refresh/re-evaluate AppTheme binding
+			this.RefreshPropertyValue(BackgroundColorProperty, BackgroundColor);
+		}
 	}
 }
