@@ -45,7 +45,7 @@ variables:
   - name: _SignArgs
     value: '/p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName)'
 # Set up non-PR build from internal project
-- ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+- ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   # needed for darc (dependency flow) publishing
   - name: _PublishArgs
     value: >-

@@ -49,8 +49,6 @@ variables:
   value: true
 - name: _RunAsInternal
   value: false
-- name: _InternalBuildArgs
-  value: ''
 - name: cfsNugetWarnLevel
   value: warn
 - name: nugetMultiFeedWarnLevel
@@ -78,9 +76,7 @@ variables:
 
     - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats
-    - name: _InternalBuildArgs
-      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-
+  
 - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
     # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
