@@ -469,7 +469,10 @@ namespace Microsoft.Maui.Platform
 			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 			// to ensure the content is correctly aligned and scrolled. This involves a second layout
 			// arrangement with an adjusted starting point and recalculating the content offset.
-			if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+			var layoutDirectionChanged = _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection;
+			var isRTL = EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
+
+			if (layoutDirectionChanged)
 			{
 				// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
 				// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
@@ -484,25 +487,31 @@ namespace Microsoft.Maui.Platform
 					ShowsVerticalScrollIndicator = showsVertical;
 					ShowsHorizontalScrollIndicator = showsHorizontal;
 				}
+			}
 
-				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			// Apply RTL layout adjustments only when layout direction changes
+			// For dynamic content in RTL, we rely on the native UIScrollView RTL behavior
+			if (layoutDirectionChanged)
+			{
+				if (isRTL)
 				{
-					var horizontalOffset = contentSize.Width - bounds.Width;
-					
+					// When switching to RTL, first arrange content normally to ensure it's visible
 					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 					{
-						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
+						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(0, 0), bounds.Size.ToSize()));
 					}
 					else
 					{
-						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
+						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(0, 0), bounds.Size.ToSize()));
 					}
-					
-					ContentOffset = new CGPoint(horizontalOffset, 0);
 
+					// Then position at the right edge if content is larger than bounds
+					var horizontalOffset = Math.Max(0, contentSize.Width - bounds.Width);
+					ContentOffset = new CGPoint(horizontalOffset, ContentOffset.Y);
 				}
-				else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
+				else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
 				{
+					// Reset to LTR positioning when switching from RTL to LTR
 					ContentOffset = new CGPoint(0, ContentOffset.Y);
 				}
 			}
