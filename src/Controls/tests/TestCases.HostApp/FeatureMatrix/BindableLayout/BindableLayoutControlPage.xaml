@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.BindableLayoutControlMainPage"
+             x:DataType="local:BindableLayoutViewModel"
+             Title="BindableLayoutControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+       <VerticalStackLayout Spacing="3"
+                            Padding="3">
+              <Label Text="StackLayout with BindableLayout"
+                     FontAttributes="Bold"
+                     FontSize="16"
+                     HorizontalOptions="Center"
+                     AutomationId="StackLayoutWithBindableLayout"/>
+              <StackLayout x:Name="MainStackBindableLayout"
+                           BindableLayout.ItemsSource="{Binding ItemsSource}"
+                           BindableLayout.ItemTemplate="{Binding ItemTemplate}"
+                           BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}"
+                           BindableLayout.EmptyView="{Binding StackEmptyView}"
+                           BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}">
+              </StackLayout>
+              <Label Text="FlexLayout with BindableLayout"
+                     FontAttributes="Bold"
+                     FontSize="16"
+                     HorizontalOptions="Center"/>
+              <FlexLayout x:Name="MainFlexBindableLayout"
+                          Direction="Row"
+                          Wrap="Wrap"
+                          BindableLayout.ItemsSource="{Binding ItemsSource}"
+                          BindableLayout.ItemTemplate="{Binding ItemTemplate}"
+                          BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}"
+                          BindableLayout.EmptyView="{Binding FlexEmptyView}"
+                          BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}">
+              </FlexLayout>
+              <!-- 🆕 Grid BindableLayout -->
+              <Label Text="Grid with BindableLayout"
+                     FontAttributes="Bold"
+                     FontSize="16"
+                     HorizontalOptions="Center"
+                     AutomationId="GridWithBindableLayout"/>
+
+              <ScrollView Orientation="Both">
+                     <Grid x:Name="MainGridBindableLayout"
+                           Padding="10"
+                           RowSpacing="10"
+                           ColumnSpacing="10"
+                           BackgroundColor="#f0f0f0"
+                           Loaded="OnGridLoaded"
+                           BindableLayout.ItemsSource="{Binding ItemsSource}"
+                           BindableLayout.ItemTemplate="{Binding ItemTemplate}"
+                           BindableLayout.EmptyView="{Binding GridEmptyView}"
+                           BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}"
+                           BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}">
+                     </Grid>
+              </ScrollView>
+
+              <BoxView HeightRequest="40"/>
+              <!--Add or Remove item based on Index-->
+              <HorizontalStackLayout Spacing="5">
+                     <Label Text="Enter Item Index:"
+                            FontAttributes="Bold"
+                            FontSize="10"
+                            VerticalTextAlignment="Center"/>
+                     <local:UITestEntry  x:Name="IndexEntry"
+                                         Placeholder="Enter item index"
+                                         FontSize="10"
+                                         AutomationId="IndexEntry"
+                                         IsCursorVisible="false"/>
+              </HorizontalStackLayout>
+              <!--Add or Remove Buttons -->
+              <HorizontalStackLayout Spacing="5">
+                     <Button Text="Add Item"
+                             Clicked="AddItems_Clicked"
+                             FontSize="10"
+                             AutomationId="AddItems"/>
+                     <Button Text="Remove Item"
+                             Clicked="RemoveItems_Clicked"
+                             FontSize="10"
+                             AutomationId="RemoveItems"/>
+                     <Button Text="Replace"
+                             Clicked="ReplaceItems_Clicked"
+                             FontSize="10"
+                             AutomationId="ReplaceItems"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
+</ContentPage>
