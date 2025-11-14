@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI için Aspire Hizmet Varsayılanları",
-  "description": ".NET MAUI için Aspire hizmeti varsayılan projesi oluşturmak için bir proje şablonu.",
+  "name": ".NET MAUI için .NET Aspire Hizmet Varsayılanları",
+  "description": ".NET MAUI için .NET Aspire hizmeti varsayılan projesi oluşturmak için bir proje şablonu.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE",
   "symbols/skipRestore/description": "Belirtilmişse oluştururken projenin otomatik geri yüklenmesini atlar.",

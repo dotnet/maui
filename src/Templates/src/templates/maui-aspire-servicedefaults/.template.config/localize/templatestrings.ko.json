@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": "Aspire 서비스 기본값에 대한 .NET MAUI",
-  "description": "Aspire 서비스를 만들기 위한 프로젝트 템플릿은 .NET MAUI 기본 프로젝트입니다.",
+  "name": ".NET Aspire 서비스 기본값에 대한 .NET MAUI",
+  "description": ".NET Aspire 서비스를 만들기 위한 프로젝트 템플릿은 .NET MAUI 기본 프로젝트입니다.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "대상 DOTNET_TFM_VALUE",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",

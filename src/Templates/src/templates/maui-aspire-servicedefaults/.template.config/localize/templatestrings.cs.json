@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI pro výchozí nastavení služby Aspire",
-  "description": "Šablona projektu pro vytvoření výchozího projektu služby Aspire pro .NET MAUI.",
+  "name": ".NET MAUI pro výchozí nastavení služby .NET Aspire",
+  "description": "Šablona projektu pro vytvoření výchozího projektu služby .NET Aspire pro .NET MAUI.",
   "symbols/Framework/description": "Cílová architektura pro projekt.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Cílový DOTNET_TFM_VALUE",
   "symbols/skipRestore/description": "Je-li zadáno, při vytvoření přeskočí automatické obnovení projektu.",
