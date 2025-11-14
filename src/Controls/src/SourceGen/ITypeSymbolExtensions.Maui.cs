@@ -94,8 +94,9 @@ static partial class ITypeSymbolExtensions
 		{
 			var attrName = attr.AttributeClass?.Name;
 			
-			// Check for BindablePropertyAttribute with optional PropertyName parameter
-			if (attrName?.EndsWith("BindablePropertyAttribute", StringComparison.Ordinal) == true)
+			// Check for BindablePropertyAttribute or AutoPropertyAttribute with optional PropertyName parameter
+			if (attrName?.EndsWith("BindablePropertyAttribute", StringComparison.Ordinal) == true ||
+			    attrName?.EndsWith("AutoPropertyAttribute", StringComparison.Ordinal) == true)
 			{
 				// Try to get the PropertyName named parameter
 				foreach (var namedArg in attr.NamedArguments)
@@ -107,25 +108,7 @@ static partial class ITypeSymbolExtensions
 					}
 				}
 				
-				// BindablePropertyAttribute found but no explicit PropertyName
-				explicitPropertyName = null;
-				return true;
-			}
-			
-			// Check for AutoPropertyAttribute with optional PropertyName parameter
-			if (attrName?.EndsWith("AutoPropertyAttribute", StringComparison.Ordinal) == true)
-			{
-				// Try to get the PropertyName named parameter
-				foreach (var namedArg in attr.NamedArguments)
-				{
-					if (namedArg.Key == "PropertyName" && namedArg.Value.Value is string propName)
-					{
-						explicitPropertyName = propName;
-						return true;
-					}
-				}
-				
-				// AutoPropertyAttribute found but no explicit PropertyName
+				// Attribute found but no explicit PropertyName
 				explicitPropertyName = null;
 				return true;
 			}
