@@ -437,23 +437,10 @@ static class SetPropertyHelpers
 
 	static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
 	{
-
 		if (bpFieldSymbol == null)
 			return false;
-		if (node is not ElementNode en)
-			return false;
-		if (!context.Variables.TryGetValue(en, out var localVariable))
-			return false;
 
-		var bindingBaseSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
-
-		if (localVariable.Type.InheritsFrom(bindingBaseSymbol, context))
-			return true;
-
-		if (context.Compilation.HasImplicitConversion(localVariable.Type, bindingBaseSymbol))
-			return true;
-
-		return false;
+		return IsBindingBaseNode(node, context);
 	}
 
 	static void SetBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
