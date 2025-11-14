@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
-			_shellPageContainer = new BoopContainer(Context, _viewhandler);
+			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
 
 			if (_root is ViewGroup vg)
 				vg.AddView(_shellPageContainer);

@@ -203,8 +203,7 @@ namespace Microsoft.Maui.Platform
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
 			{
-				var result = customHandler.HandleWindowInsets(v, insets);
-				return result;
+				return customHandler.HandleWindowInsets(v, insets);
 			}
 
 			return ApplyDefaultWindowInsets(v, insets);

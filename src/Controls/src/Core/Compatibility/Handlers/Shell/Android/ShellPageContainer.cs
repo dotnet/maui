@@ -10,18 +10,6 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	internal class BoopContainer : ShellPageContainer
-	{
-		public BoopContainer(Context context, IPlatformViewHandler child, bool inFragment = false) : base(context, child, inFragment)
-		{
-		}
-
-
-		public override WindowInsets OnApplyWindowInsets(WindowInsets insets)
-		{
-			return base.OnApplyWindowInsets(insets);
-		}
-	}
 	internal class ShellPageContainer : ViewGroup
 	{
 		static int? DarkBackground;
@@ -68,11 +56,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 				SetMeasuredDimension(0, 0);
-		}
-
-		public override WindowInsets OnApplyWindowInsets(WindowInsets insets)
-		{
-			return base.OnApplyWindowInsets(insets);
 		}
 	}
 }
