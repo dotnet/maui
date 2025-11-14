@@ -32,9 +32,8 @@ public class BindablePropertyHeuristic : SourceGenXamlInitializeComponentTestBas
 </ContentPage>
 """;
 
-		// Build the attribute definition with optional PropertyName parameter
+		// Build the attribute usage with optional PropertyName parameter
 		var hasExplicitPropertyName = !string.IsNullOrEmpty(explicitPropertyName);
-		var propertyNameParam = hasExplicitPropertyName ? $"public string PropertyName {{ get; set; }}" : "";
 		var attributeUsage = hasExplicitPropertyName ? $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
 
 		var code =
@@ -48,7 +47,7 @@ namespace Test;
 // Simulates an attribute from a third-party library
 public class {{attributeName}} : Attribute
 {
-	{{propertyNameParam}}
+	public string? PropertyName { get; set; }
 }
 
 [XamlProcessing(XamlInflator.SourceGen)]
@@ -79,12 +78,15 @@ public partial class BalanceView : Label
 	}
 
 	[Theory]
-	[InlineData("BindablePropertyAttribute", "", "BalanceProperty")]
-	[InlineData("BindablePropertyAttribute", "CustomBalance", "CustomBalance")]
-	[InlineData("AutoPropertyAttribute", "", "BalanceProperty")]
-	[InlineData("AutoPropertyAttribute", "CustomBalance", "CustomBalance")]
+	[InlineData("BindablePropertyAttribute", "_balance", "", "BalanceProperty")]
+	[InlineData("BindablePropertyAttribute", "_balance", "CustomBalance", "CustomBalance")]
+	[InlineData("BindablePropertyAttribute", "balance", "", "BalanceProperty")]
+	[InlineData("AutoPropertyAttribute", "_balance", "", "BalanceProperty")]
+	[InlineData("AutoPropertyAttribute", "_balance", "CustomBalance", "CustomBalance")]
+	[InlineData("AutoPropertyAttribute", "balance", "", "BalanceProperty")]
 	public void BindablePropertyHeuristic_WithFieldAndBinding_ShouldGenerateSetBinding(
-		string attributeName, 
+		string attributeName,
+		string fieldName,
 		string? explicitPropertyName,
 		string expectedPropertyFieldName)
 	{
@@ -103,9 +105,8 @@ public partial class BalanceView : Label
 </ContentPage>
 """;
 
-		// Build the attribute definition with optional PropertyName parameter
+		// Build the attribute usage with optional PropertyName parameter
 		var hasExplicitPropertyName = !string.IsNullOrEmpty(explicitPropertyName);
-		var propertyNameParam = hasExplicitPropertyName ? $"public string PropertyName {{ get; set; }}" : "";
 		var attributeUsage = hasExplicitPropertyName ? $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
 
 		var code =
@@ -119,7 +120,7 @@ namespace Test;
 // Simulates an attribute from a third-party library
 public class {{attributeName}} : Attribute
 {
-	{{propertyNameParam}}
+	public string? PropertyName { get; set; }
 }
 
 [XamlProcessing(XamlInflator.SourceGen)]
@@ -134,7 +135,7 @@ public partial class TestPage : ContentPage
 public partial class BalanceView : Label
 {
 	{{attributeUsage}}
-	private double _balance;
+	private double {{fieldName}};
 }
 """;
 
