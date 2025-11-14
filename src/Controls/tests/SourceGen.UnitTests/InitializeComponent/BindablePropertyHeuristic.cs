@@ -8,15 +8,12 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 public class BindablePropertyHeuristic : SourceGenXamlInitializeComponentTestBase
 {
 	[Theory]
-	[InlineData("BindablePropertyAttribute", "property", "", "BalanceProperty")]
-	[InlineData("BindablePropertyAttribute", "property", "CustomBalance", "CustomBalance")]
-	[InlineData("BindablePropertyAttribute", "field_underscore", "", "BalanceProperty")]
-	[InlineData("BindablePropertyAttribute", "field_underscore", "CustomBalance", "CustomBalance")]
-	[InlineData("AutoPropertyAttribute", "property", "", "BalanceProperty")]
-	[InlineData("AutoPropertyAttribute", "property", "CustomBalance", "CustomBalance")]
-	public void BindablePropertyHeuristic_WithAttributeAndBinding_ShouldGenerateSetBinding(
+	[InlineData("BindablePropertyAttribute", "", "BalanceProperty")]
+	[InlineData("BindablePropertyAttribute", "CustomBalance", "CustomBalance")]
+	[InlineData("AutoPropertyAttribute", "", "BalanceProperty")]
+	[InlineData("AutoPropertyAttribute", "CustomBalance", "CustomBalance")]
+	public void BindablePropertyHeuristic_WithPropertyAndBinding_ShouldGenerateSetBinding(
 		string attributeName, 
-		string memberType, 
 		string? explicitPropertyName,
 		string expectedPropertyFieldName)
 	{
@@ -39,14 +36,6 @@ public class BindablePropertyHeuristic : SourceGenXamlInitializeComponentTestBas
 		var hasExplicitPropertyName = !string.IsNullOrEmpty(explicitPropertyName);
 		var propertyNameParam = hasExplicitPropertyName ? $"public string PropertyName {{ get; set; }}" : "";
 		var attributeUsage = hasExplicitPropertyName ? $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
-		
-		// Build the member declaration based on type
-		string memberDeclaration = memberType switch
-		{
-			"property" => $"{attributeUsage}\n\tpublic partial double Balance {{ get; set; }}",
-			"field_underscore" => $"{attributeUsage}\n\tprivate double _balance;",
-			_ => throw new ArgumentException($"Unknown member type: {memberType}")
-		};
 
 		var code =
 $$"""
@@ -73,7 +62,79 @@ public partial class TestPage : ContentPage
 
 public partial class BalanceView : Label
 {
-	{{memberDeclaration}}
+	{{attributeUsage}}
+	public partial double Balance { get; set; }
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Should not have MAUIX2002 error
+		var mauix2002Diagnostics = result.Diagnostics.Where(d => d.Id == "MAUIX2002").ToList();
+		Assert.Empty(mauix2002Diagnostics);
+		
+		// Should have generated code with the correct SetBinding call
+		Assert.NotNull(generated);
+		Assert.Contains($".SetBinding(global::Test.BalanceView.{expectedPropertyFieldName},", generated, StringComparison.Ordinal);
+	}
+
+	[Theory]
+	[InlineData("BindablePropertyAttribute", "", "BalanceProperty")]
+	[InlineData("BindablePropertyAttribute", "CustomBalance", "CustomBalance")]
+	[InlineData("AutoPropertyAttribute", "", "BalanceProperty")]
+	[InlineData("AutoPropertyAttribute", "CustomBalance", "CustomBalance")]
+	public void BindablePropertyHeuristic_WithFieldAndBinding_ShouldGenerateSetBinding(
+		string attributeName, 
+		string? explicitPropertyName,
+		string expectedPropertyFieldName)
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Slider x:Name="BalanceSlider" />
+		<local:BalanceView Balance="{Binding Source={x:Reference BalanceSlider}, x:DataType='Slider', Path=Value}" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		// Build the attribute definition with optional PropertyName parameter
+		var hasExplicitPropertyName = !string.IsNullOrEmpty(explicitPropertyName);
+		var propertyNameParam = hasExplicitPropertyName ? $"public string PropertyName {{ get; set; }}" : "";
+		var attributeUsage = hasExplicitPropertyName ? $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
+
+		var code =
+$$"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+// Simulates an attribute from a third-party library
+public class {{attributeName}} : Attribute
+{
+	{{propertyNameParam}}
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public partial class BalanceView : Label
+{
+	{{attributeUsage}}
+	private double _balance;
 }
 """;
 
