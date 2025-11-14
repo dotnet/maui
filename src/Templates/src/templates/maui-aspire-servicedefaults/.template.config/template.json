@@ -10,9 +10,9 @@
       "API",
       "Service"
     ],
-    "name": ".NET MAUI for .NET Aspire Service Defaults",
+    "name": ".NET MAUI for Aspire Service Defaults",
     "defaultName": "MauiAspire1.ServiceDefaults",
-    "description": "A project template for creating a .NET Aspire service defaults project for .NET MAUI.",
+    "description": "A project template for creating an Aspire service defaults project for .NET MAUI.",
     "shortName": "maui-aspire-servicedefaults",
     "sourceName": "MauiAspire.1.ServiceDefaults",
     "preferNameDirectory": true,
