@@ -13,7 +13,7 @@ public class Issue32348 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void TableViewTextCellCommand()
+	public void CollectionViewVSMBackgroundAndBackgroundColorWorkSimilarly()
 	{
 		App.WaitForElement("Item 2");
 		App.Tap("Item 2");
