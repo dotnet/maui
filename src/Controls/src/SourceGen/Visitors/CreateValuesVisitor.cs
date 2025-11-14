@@ -269,6 +269,36 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		}
 		else if (ctor != null)
 		{
+			// Check if this type is a known value provider that can be inlined.
+			// Use CanProvideValue to verify that ALL properties can be inlined (no markup extensions).
+			if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var valueProvider) &&
+				valueProvider.CanProvideValue(node, Context))
+			{
+				// This element can be fully inlined without property assignments or variable creation.
+				// Skip setting all simple value properties since they'll be handled
+				// by inline initialization in TryProvideValue.
+				// 
+				// This eliminates the dead code that creates:
+				// 1. Empty variable instantiation (var setter = new Setter();)
+				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider, 
+				//    XmlNamespaceResolver, XamlTypeResolver) for property assignments
+				// 
+				// These are not AOT-compatible and were completely dead code.
+				//
+				// Register a placeholder variable entry so TryProvideValue can replace it
+				// with the actual inline instantiation later.
+				foreach (var prop in node.Properties)
+				{
+					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
+						node.SkipProperties.Add(prop.Key);
+				}
+				
+				// Register placeholder - TryProvideValue will create the actual variable
+				// Use empty string as placeholder name since it will be replaced
+				variables[node] = new LocalVariable(type, string.Empty);
+				return;
+			}
+
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 
 			if (requiredPropAndFields.Any())
@@ -284,6 +314,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
+			
 			return;
 		}
 	}

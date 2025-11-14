@@ -114,46 +114,6 @@ internal class KnownMarkups
 		return false;
 	}
 
-	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
-	{
-		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
-
-		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out INode? valueNode) &&
-			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
-			node.CollectionItems.Count == 1)
-			valueNode = node.CollectionItems[0];
-
-		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
-		var bpRef = bpNode.GetBindableProperty(context);
-
-		string targetsetter;
-		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
-			targetsetter = $"TargetName = \"{((ValueNode)targetNode).Value}\", ";
-		else
-			targetsetter = "";
-
-		if (valueNode is ValueNode vn)
-		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
-			return true;
-		}
-		else if (getNodeValue != null)
-		{
-			var lvalue = getNodeValue(valueNode, bpRef.Type);
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
-			return true;
-		}
-		else if (context.Variables.TryGetValue(valueNode, out var variable))
-		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.ValueAccessor}}}";
-			return true;
-		}
-
-		value = string.Empty;
-		//FIXME context.ReportDiagnostic
-		return false;
-	}
-
 	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
