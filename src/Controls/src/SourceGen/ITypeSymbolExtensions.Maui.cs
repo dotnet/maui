@@ -33,34 +33,85 @@ static partial class ITypeSymbolExtensions
 	/// </summary>
 	public static bool HasBindablePropertyHeuristic(this ITypeSymbol type, string propertyName, SourceGenContext context)
 	{
-		// Try to find a matching property or field with the BindablePropertyAttribute
-		// Check property with exact name match
-		var property = type.GetAllProperties(propertyName, context).FirstOrDefault();
-		if (property != null && HasBindablePropertyAttribute(property))
-			return true;
+		// Check if any property name variant has the BindablePropertyAttribute or AutoPropertyAttribute
+		foreach (var name in DerivePotentialPropertyNames(propertyName))
+		{
+			var property = type.GetAllProperties(name, context).FirstOrDefault();
+			if (property != null && HasBindablePropertyOrAutoPropertyAttribute(property, out _))
+				return true;
+		}
 
-		// Check field with underscore prefix (e.g., "_balance" for "Balance")
-		var fieldNameWithUnderscore = $"_{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
-		var field = type.GetAllFields(fieldNameWithUnderscore, context).FirstOrDefault();
-		if (field != null && HasBindablePropertyAttribute(field))
-			return true;
-
-		// Check field with lowercase name (e.g., "balance" for "Balance")
-		var fieldNameLowercase = $"{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
-		field = type.GetAllFields(fieldNameLowercase, context).FirstOrDefault();
-		if (field != null && HasBindablePropertyAttribute(field))
-			return true;
+		// Check if any field name variant has the BindablePropertyAttribute or AutoPropertyAttribute
+		foreach (var name in DerivePotentialFieldNames(propertyName))
+		{
+			var field = type.GetAllFields(name, context).FirstOrDefault();
+			if (field != null && HasBindablePropertyOrAutoPropertyAttribute(field, out _))
+				return true;
+		}
 
 		return false;
 	}
 
 	/// <summary>
-	/// Checks if a symbol has an attribute with a name ending in "BindablePropertyAttribute".
+	/// Derives potential property name variations from a XAML property name.
 	/// </summary>
-	private static bool HasBindablePropertyAttribute(ISymbol symbol)
+	private static IEnumerable<string> DerivePotentialPropertyNames(string propertyName)
 	{
-		return symbol.GetAttributes().Any(attr =>
-			attr.AttributeClass?.Name.EndsWith("BindablePropertyAttribute", StringComparison.Ordinal) == true);
+		// Exact match (e.g., "Balance")
+		yield return propertyName;
+	}
+
+	/// <summary>
+	/// Derives potential field name variations from a XAML property name.
+	/// </summary>
+	private static IEnumerable<string> DerivePotentialFieldNames(string propertyName)
+	{
+		// Underscore prefix with lowercase first letter (e.g., "_balance" for "Balance")
+		yield return $"_{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
+		
+		// Lowercase first letter (e.g., "balance" for "Balance")
+		yield return $"{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
+	}
+
+	/// <summary>
+	/// Checks if a symbol has an attribute with a name ending in "BindablePropertyAttribute" or "AutoPropertyAttribute".
+	/// If the attribute has a PropertyName parameter, returns it in the out parameter.
+	/// </summary>
+	private static bool HasBindablePropertyOrAutoPropertyAttribute(ISymbol symbol, out string? explicitPropertyName)
+	{
+		explicitPropertyName = null;
+		
+		foreach (var attr in symbol.GetAttributes())
+		{
+			var attrName = attr.AttributeClass?.Name;
+			
+			// Check for BindablePropertyAttribute
+			if (attrName?.EndsWith("BindablePropertyAttribute", StringComparison.Ordinal) == true)
+			{
+				explicitPropertyName = null;
+				return true;
+			}
+			
+			// Check for AutoPropertyAttribute with optional PropertyName parameter
+			if (attrName?.EndsWith("AutoPropertyAttribute", StringComparison.Ordinal) == true)
+			{
+				// Try to get the PropertyName named parameter
+				foreach (var namedArg in attr.NamedArguments)
+				{
+					if (namedArg.Key == "PropertyName" && namedArg.Value.Value is string propName)
+					{
+						explicitPropertyName = propName;
+						return true;
+					}
+				}
+				
+				// AutoPropertyAttribute found but no explicit PropertyName
+				explicitPropertyName = null;
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	static bool GetNameAndTypeRef(ref ITypeSymbol elementType, string namespaceURI, ref string localname,

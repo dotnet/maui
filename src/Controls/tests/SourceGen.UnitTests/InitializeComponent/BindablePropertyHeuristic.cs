@@ -283,4 +283,124 @@ public partial class BalanceView : Label
 		Assert.NotNull(generated);
 		Assert.Contains(".Balance = ", generated, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void PropertyWithAutoPropertyAttribute_ShouldNotProduceError()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Slider x:Name="BalanceSlider" />
+		<local:BalanceView Balance="{Binding Source={x:Reference BalanceSlider}, x:DataType='Slider', Path=Value}" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+// Simulates an attribute from a third-party library
+public class AutoPropertyAttribute : Attribute
+{
+	public string PropertyName { get; set; }
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public partial class BalanceView : Label
+{
+	// This simulates what a source generator would generate from AutoPropertyAttribute
+	[AutoProperty] 
+	public partial double Balance { get; set; }
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Should not have MAUIX2002 error
+		var mauix2002Diagnostics = result.Diagnostics.Where(d => d.Id == "MAUIX2002").ToList();
+		Assert.Empty(mauix2002Diagnostics);
+		
+		// Should have generated code
+		Assert.NotNull(generated);
+		Assert.Contains("Balance", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void PropertyWithAutoPropertyAttributeAndExplicitPropertyName_ShouldNotProduceError()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Slider x:Name="BalanceSlider" />
+		<local:BalanceView Balance="{Binding Source={x:Reference BalanceSlider}, x:DataType='Slider', Path=Value}" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+// Simulates an attribute from a third-party library
+public class AutoPropertyAttribute : Attribute
+{
+	public string PropertyName { get; set; }
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public partial class BalanceView : Label
+{
+	// This simulates AutoPropertyAttribute with explicit PropertyName
+	[AutoProperty(PropertyName = "CustomBalance")] 
+	public partial double Balance { get; set; }
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Should not have MAUIX2002 error
+		var mauix2002Diagnostics = result.Diagnostics.Where(d => d.Id == "MAUIX2002").ToList();
+		Assert.Empty(mauix2002Diagnostics);
+		
+		// Should have generated code
+		Assert.NotNull(generated);
+		Assert.Contains("Balance", generated, StringComparison.Ordinal);
+	}
 }
