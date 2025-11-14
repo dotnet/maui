@@ -255,7 +255,7 @@ public partial class BalanceView : Label
 	}
 
 	[Fact]
-	public void PropertyWithAttribute_LiteralValue_ShouldUsePropertySetter()
+	public void PropertyWithAttribute_LiteralValue_ShouldUseSetValue()
 	{
 		var xaml =
 """
@@ -280,6 +280,7 @@ namespace Test;
 // Simulates an attribute from a third-party library
 public class BindablePropertyAttribute : Attribute
 {
+	public string? PropertyName { get; set; }
 }
 
 [XamlProcessing(XamlInflator.SourceGen)]
@@ -293,7 +294,7 @@ public partial class TestPage : ContentPage
 
 public partial class BalanceView : Label
 {
-	// Has attribute and a property setter - literal assignments should use the property setter, not the BP
+	// Has attribute - literal assignments should use SetValue with the generated BP
 	[BindableProperty] 
 	public partial double Balance { get; set; }
 }
@@ -301,11 +302,61 @@ public partial class BalanceView : Label
 
 		var (result, generated) = RunGenerator(xaml, code);
 		
-		// Should NOT have MAUIX2002 error - should use property setter for literal values
+		// Should NOT have MAUIX2002 error
 		var mauix2002Diagnostics = result.Diagnostics.Where(d => d.Id == "MAUIX2002").ToList();
 		Assert.Empty(mauix2002Diagnostics);
 		
-		// Should use property setter, not SetBinding
+		// Should use SetValue with the generated BP, not property setter
+		Assert.NotNull(generated);
+		Assert.Contains(".SetValue(global::Test.BalanceView.BalanceProperty,", generated, StringComparison.Ordinal);
+	}
+	
+	[Fact]
+	public void PropertyWithoutAttribute_LiteralValue_ShouldUsePropertySetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<local:BalanceView Balance="123.45" />
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public partial class BalanceView : Label
+{
+	// No attribute - should fall back to property setter
+	public double Balance { get; set; }
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Should NOT have MAUIX2002 error
+		var mauix2002Diagnostics = result.Diagnostics.Where(d => d.Id == "MAUIX2002").ToList();
+		Assert.Empty(mauix2002Diagnostics);
+		
+		// Should use property setter since there's no attribute
 		Assert.NotNull(generated);
 		Assert.Contains(".Balance = ", generated, StringComparison.Ordinal);
 	}
