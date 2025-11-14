@@ -240,8 +240,7 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		// TODO: NET8 make public for net8.0
-		internal void SetEmptyBorderBrush()
+		public void SetEmptyBorderBrush()
 		{
 			_invalidatePath = true;
 
@@ -510,23 +509,14 @@ namespace Microsoft.Maui.Graphics
 
 			if (disposing)
 			{
-				if (_borderPathEffect != null)
-				{
-					_borderPathEffect.Dispose();
-					_borderPathEffect = null;
-				}
+				_borderPathEffect?.Dispose();
+				_borderPathEffect = null;
 
-				if (_clipPath != null)
-				{
-					_clipPath.Dispose();
-					_clipPath = null;
-				}
+				_clipPath?.Dispose();
+				_clipPath = null;
 
-				if (_fullClipPath != null)
-				{
-					_fullClipPath.Dispose();
-					_fullClipPath = null;
-				}
+				_fullClipPath?.Dispose();
+				_fullClipPath = null;
 			}
 
 			DisposeBorder(disposing);
@@ -538,11 +528,8 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (disposing)
 			{
-				if (_borderPaint != null)
-				{
-					_borderPaint.Dispose();
-					_borderPaint = null;
-				}
+				_borderPaint?.Dispose();
+				_borderPaint = null;
 			}
 		}
 
@@ -673,7 +660,7 @@ namespace Microsoft.Maui.Graphics
 			var data = new GradientData(orderStops.Length);
 
 			int count = 0;
-			foreach (var orderStop in orderStops)
+			foreach (var orderStop in orderStops.OrderBy(s => s.Offset))
 			{
 				data.Colors[count] = orderStop.Color.ToPlatform().ToArgb();
 				data.Offsets[count] = orderStop.Offset;

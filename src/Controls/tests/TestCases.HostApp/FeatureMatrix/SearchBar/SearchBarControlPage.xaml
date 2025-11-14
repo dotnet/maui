@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.SearchBarControlMainPage"
+             x:DataType="local:SearchBarViewModel"
+             Title="ControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid x:Name="MainGrid"
+             RowDefinitions="*,Auto, Auto, Auto, Auto"
+             ColumnDefinitions="0.5*, 0.5*">
+              <Grid x:Name="SearchBarGrid"
+                    Grid.Row="0"
+                    Grid.ColumnSpan="2"
+                    VerticalOptions="Center">
+                     <local:UITestSearchBar x:Name="searchBar"
+                                            IsCursorVisible="False"
+                                            AutomationId="SearchBar"
+                                            CancelButtonColor="{Binding CancelButtonColor}"
+                                            CharacterSpacing="{Binding CharacterSpacing}"
+                                            CursorPosition="{Binding CursorPosition}"
+                                            FlowDirection="{Binding FlowDirection}"
+                                            FontAttributes="{Binding FontAttributes}"
+                                            FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+                                            FontFamily="{Binding FontFamily}"
+                                            FontSize="{Binding FontSize}"
+                                            HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+                                            IsEnabled="{Binding IsEnabled}"
+                                            IsVisible="{Binding IsVisible}"
+                                            Shadow="{Binding Shadow}"
+                                            IsReadOnly="{Binding IsReadOnly}"
+                                            IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
+                                            IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
+                                            Keyboard="{Binding Keyboard}"
+                                            MaxLength="{Binding MaxLength}"
+                                            Placeholder="{Binding Placeholder}"
+                                            PlaceholderColor="{Binding PlaceholderColor}"
+                                            SearchButtonPressed="OnSearchButtonPressed"
+                                            SearchCommand="{Binding SearchCommand}"
+                                            SearchCommandParameter="{Binding Text, x:DataType='SearchBar', Source={x:Reference searchBar}}"
+                                            SelectionLength="{Binding SelectionLength}"
+                                            Text="{Binding Text}"
+                                            TextColor="{Binding TextColor}"
+                                            TextChanged="OnTextChanged"
+                                            TextTransform="{Binding TextTransform}"
+                                            VerticalTextAlignment="{Binding VerticalTextAlignment}"/>
+              </Grid>
+
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="Search Button Pressed: "/>
+              <Label Grid.Row="1"
+                     Grid.Column="1"
+                     x:Name="SearchButtonPressedLabel"
+                     AutomationId="SearchButtonPressedLabel"
+                     HorizontalOptions="Center"
+                     Text="No"/>
+
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="New Text: "/>
+              <Label Grid.Row="2"
+                     Grid.Column="1"
+                     x:Name="NewTextChangedLabel"
+                     HorizontalOptions="Center"
+                     AutomationId="NewTextChangedLabel"/>
+
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Margin="0,0,0,100"
+                     Text="Old Text: "/>
+              <Label Grid.Row="3"
+                     Grid.Column="1"
+                     x:Name="OldTextChangedLabel"
+                     HorizontalOptions="Center"
+                     Margin="0,0,0,100"
+                     AutomationId="OldTextChangedLabel"/>
+       </Grid>
+</ContentPage>

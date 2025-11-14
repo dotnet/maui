@@ -10,7 +10,12 @@
         "Appium",
         "XCUI",
         "Automator",
-        "cgmanifest"
+        "cgmanifest",
+        "Namescopes",
+        "sourcegen",
+        "Tizen",
+        "darc",
+        "Darc"
     ],
     "ignoreWords": [],
     "patterns": [

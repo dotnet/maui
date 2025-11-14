@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using CoreFoundation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -13,6 +14,8 @@ namespace Microsoft.Maui.Platform
 	public class MauiRefreshView : MauiView
 	{
 		bool _isRefreshing;
+		bool _isEnabled = true;
+		bool _isRefreshEnabled = true;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -73,13 +76,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIScrollView scrollView)
 			{
-				if (scrollView.ContentOffset.Y < 0)
-					return true;
-
 				if (refreshing)
-					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY - _refreshControlHeight), true);
+					scrollView.SetContentOffset(new CGPoint(0, _originalY - _refreshControlHeight), true);
 				else
-					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY), true);
+					scrollView.ContentOffset = new CGPoint(0, _originalY);
 
 				return true;
 			}
@@ -105,9 +105,8 @@ namespace Microsoft.Maui.Platform
 		bool TryRemoveRefresh(UIView view, int index = 0)
 		{
 			_refreshControlParent = view;
-
-			if (_refreshControl.Superview != null)
-				_refreshControl.RemoveFromSuperview();
+	
+			_refreshControl.RemoveFromSuperview();
 
 			if (view is UIScrollView scrollView)
 			{
@@ -132,19 +131,26 @@ namespace Microsoft.Maui.Platform
 
 		bool TryInsertRefresh(UIView view, int index = 0)
 		{
-			if (!_refreshControl.Enabled)
+			if (!ShouldAllowRefreshGesture)
 			{
 				return false;
 			}
 
 			_refreshControlParent = view;
-
+ 
 			if (view is UIScrollView scrollView)
 			{
 				if (CanUseRefreshControlProperty())
 					scrollView.RefreshControl = _refreshControl;
 				else
 					scrollView.InsertSubview(_refreshControl, index);
+
+				//Setting the bounds so that the refresh control renders above the potential header
+				_refreshControl.Bounds = new CGRect(
+					_refreshControl.Bounds.X,
+					-scrollView.ContentOffset.Y,
+					_refreshControl.Bounds.Width,
+					_refreshControl.Bounds.Height);
 
 				scrollView.AlwaysBounceVertical = true;
 
@@ -175,24 +181,39 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIsEnabled(bool isRefreshViewEnabled)
 		{
-			_refreshControl.Enabled = isRefreshViewEnabled;
-
-			UserInteractionEnabled = true;
-
-			if (IsRefreshing)
-				return;
-
-			if (isRefreshViewEnabled)
-				TryInsertRefresh(_refreshControlParent);
-			else
-				TryRemoveRefresh(_refreshControlParent);
-
-			UserInteractionEnabled = true;
+			_isEnabled = isRefreshViewEnabled;
+			UpdateRefreshGesture();
 		}
 
-#pragma warning disable CA1416 // TODO: 'UINavigationBar.PrefersLargeTitles' is only supported on: 'ios' 11.0 and later
+		public void UpdateIsRefreshEnabled(bool isRefreshEnabled)
+		{
+			_isRefreshEnabled = isRefreshEnabled;
+			UpdateRefreshGesture();
+		}
+
+		void UpdateRefreshGesture()
+		{
+			if (ShouldAllowRefreshGesture)
+			{
+				if (!IsRefreshing)
+				{
+					TryInsertRefresh(_refreshControlParent);
+				}
+			}
+			else
+			{
+				if (IsRefreshing)
+				{
+					IsRefreshing = false;
+				}
+				TryRemoveRefresh(_refreshControlParent);
+			}
+		}
+
+		bool ShouldAllowRefreshGesture =>
+			_isEnabled && _isRefreshEnabled;
+
 		bool CanUseRefreshControlProperty() =>
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
-#pragma warning restore CA1416
 	}
 }

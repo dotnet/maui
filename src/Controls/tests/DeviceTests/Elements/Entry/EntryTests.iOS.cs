@@ -136,11 +136,15 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					builder.ConfigureMauiHandlers(handlers =>
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<ListView, ListViewRenderer>();
 						handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 						handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 						handlers.AddHandler<Entry, EntryHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<EntryCell, EntryCellRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 					});
 				});
 			}
@@ -156,12 +160,14 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var listView = new ListView()
 				{
 					ItemTemplate = new DataTemplate(() =>
 					{
 						var cell = new EntryCell();
 						cell.SetBinding(EntryCell.TextProperty, ".");
+#pragma warning restore CS0618 // Type or member is obsolete
 						return cell;
 					}),
 					ItemsSource = Enumerable.Range(0, 10).Select(i => $"EntryCell {i}").ToList()
@@ -201,6 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var tableView = new TableView()
 				{
 					Root = new TableRoot("Table Title") {
@@ -217,6 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var layout = new VerticalStackLayout()
 				{

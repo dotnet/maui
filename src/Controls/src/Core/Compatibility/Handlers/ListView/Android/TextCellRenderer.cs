@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		internal TextCellView View { get; private set; }
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if ((View = convertView as TextCellView) == null)
 				View = new TextCellView(context, item);
@@ -34,6 +36,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (args.PropertyName == TextCell.TextProperty.PropertyName || args.PropertyName == TextCell.TextColorProperty.PropertyName)
 				UpdateMainText();
 			else if (args.PropertyName == TextCell.DetailProperty.PropertyName || args.PropertyName == TextCell.DetailColorProperty.PropertyName)
@@ -46,6 +52,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateFlowDirection();
 			else if (args.PropertyName == VisualElement.AutomationIdProperty.PropertyName)
 				UpdateAutomationId();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateAutomationId()
@@ -55,7 +65,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateDetailText()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = (TextCell)Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			View.DetailText = cell.Detail;
 			View.SetDetailTextColor(cell.DetailColor);
 		}
@@ -67,7 +79,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateIsEnabled()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = (TextCell)Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			View.SetIsEnabled(cell.IsEnabled);
 		}
 
@@ -78,13 +92,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateMainText()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = (TextCell)Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			View.MainText = cell.Text;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (!cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				View.SetDefaultMainTextColor(Application.AccentColor);
 			else
 				View.SetDefaultMainTextColor(null);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			View.SetMainTextColor(cell.TextColor);
 
@@ -94,7 +114,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		// ensure we don't get other people's BaseCellView's
 		internal sealed class TextCellView : BaseCellView
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			public TextCellView(Context context, Cell cell) : base(context, cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 			}
 		}

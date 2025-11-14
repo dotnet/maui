@@ -6,7 +6,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.TextCell']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with primary <see cref="Microsoft.Maui.Controls.TextCell.Text"/>  and <see cref="Microsoft.Maui.Controls.TextCell.Detail"/> text.</summary>
+	[Obsolete("The controls which use TextCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public class TextCell : Cell, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
@@ -35,42 +36,45 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="DetailColor"/>.</summary>
 		public static readonly BindableProperty DetailColorProperty = BindableProperty.Create(nameof(DetailColor), typeof(Color), typeof(TextCell), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>Gets or sets the ICommand to be executed when the TextCell is tapped. This is a bindable property.</summary>
+		/// <remarks>Setting the Command property has a side effect of changing the Enabled property depending on ICommand.CanExecute.</remarks>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter passed when invoking the Command. This is a bindable property.</summary>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='Detail']/Docs/*" />
+		/// <summary>Gets or sets the secondary text to be displayed in the TextCell. This is a bindable property.</summary>
 		public string Detail
 		{
 			get { return (string)GetValue(DetailProperty); }
 			set { SetValue(DetailProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='DetailColor']/Docs/*" />
+		/// <summary>Gets or sets the color to render the secondary text. This is a bindable property.</summary>
+		/// <remarks>Not all platforms may support transparent text rendering. Using Color.Default will result in the system theme color being used.</remarks>
 		public Color DetailColor
 		{
 			get { return (Color)GetValue(DetailColorProperty); }
 			set { SetValue(DetailColorProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>Gets or sets the primary text to be displayed. This is a bindable property.</summary>
 		public string Text
 		{
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the color to render the primary text. This is a bindable property.</summary>
+		/// <remarks>Not all platforms may support transparent text rendering. Using Color.Default will result in the system theme color being used. Color.Default is the default color value.</remarks>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextColorProperty); }

@@ -6,6 +6,17 @@
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
+    <!-- default MauiXaml inflators  -->
+    <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
+    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' == 'Debug' ">Runtime</_MauiXamlInflator>
+    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' != 'Debug' ">XamlC</_MauiXamlInflator>
+
+    <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>
+    <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">$(EnableDiagnostics)</EnableMauiXamlDiagnostics>
+    <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">true</EnableMauiXamlDiagnostics>
+    
+    <MauiXamlNoWarn Condition=" '$(MauiXamlNoWarn)' != '' ">$(MauiXamlNoWarn.Replace(';', ','))</MauiXamlNoWarn>
+    
 		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
@@ -73,11 +84,35 @@
 			Condition="'$(_XFTargetsImported)' == 'true'"/>
 	</Target>
 
+  <Target Name="_MauiXamlComputeInflator">
+  	<ItemGroup>
+      <!-- Assign the default inflator to MauiXaml that don't have any -->
+      <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
+      <MauiXaml Inflator="$([MSBuild]::ValueOrDefault('%(MauiXaml.Inflator)','$(_MauiXamlInflator)').Replace(';', ','))"/>
+      <MauiXaml NoWarn="$([MSBuild]::ValueOrDefault('%(MauiXaml.NoWarn)','').Replace(';', ','))"/>
+
+	    <_MauiXaml_SG Remove="@(_MauiXaml_SG)" />
+	    <_MauiXaml_RT Remove="@(_MauiXaml_RT)" />
+	    <_MauiXaml_XC Remove="@(_MauiXaml_XC)" />
+	    <_MauiXaml_SG Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('sourcegen'))" />
+	    <_MauiXaml_RT Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('runtime'))" />
+	    <_MauiXaml_XC Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('xamlc'))" />
+      <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_RT)" />
+      <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_XC)" KeepDuplicates="false" />      
+	</ItemGroup>
+  </Target>
 
   <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
+  <PropertyGroup>
+    <_MauiInjectXamlCssAdditionalFilesDependsOn>
+      _MauiXamlComputeInflator;
+      $(CreateManifestResourceNamesDependsOn);
+    </_MauiInjectXamlCssAdditionalFilesDependsOn>
+  </PropertyGroup>
+    
   <Target Name="_MauiInjectXamlCssAdditionalFiles"
           BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
-          DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
+          DependsOnTargets="$(_MauiInjectXamlCssAdditionalFilesDependsOn)">
     <ItemGroup>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
       <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
@@ -113,6 +148,7 @@
             TargetPath="%(_MauiXamlWithResourceNames.TargetPath)"
             RelativePath="$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(_MauiXamlWithResourceNames.TargetPath)))"
             ItemSpec="%(_MauiXamlWithResourceNames.OriginalItemSpec)"
+            Inflator="%(_MauiXamlWithResourceNames.Inflator)"
             GenKind="Xaml"/>
       <AdditionalFiles Condition="%(_MauiCssWithResourceNames.TargetPath) != ''"
             Include="@(_MauiCssWithResourceNames)"
@@ -129,14 +165,19 @@
   </Target>
 
 
-  <!-- re-add MauiXaml and MauiCss as EmbeddedResources -->
+  <!-- re-add MauiXaml and MauiCss as EmbeddedResources for runtime inflation and XamlC -->
   <PropertyGroup>
     <PrepareResourcesDependsOn>
       _MauiAddXamlEmbeddedResources;
       $(PrepareResourcesDependsOn);
     </PrepareResourcesDependsOn>
+    <_MauiAddXamlEmbeddedResourcesDependsOn>
+      _MauiXamlComputeInflator
+    </_MauiAddXamlEmbeddedResourcesDependsOn>
   </PropertyGroup>
-  <Target Name="_MauiAddXamlEmbeddedResources">
+
+  <Target Name="_MauiAddXamlEmbeddedResources"
+          DependsOnTargets="$(_MauiAddXamlEmbeddedResourcesDependsOn)">
     <ItemGroup>
       <EmbeddedResource Include="@(MauiXaml)" />
       <EmbeddedResource Include="@(MauiCss)" />
@@ -231,12 +272,25 @@
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>
+    
+    <!-- Validate _EnableMauiAspire usage - warn when user manually sets it in optimized builds where it conflicts with intended behavior -->
+    <Warning
+      Code="MA002"
+      Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
+      Condition="'$(_EnableMauiAspire)' != '' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
+    
     <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
+      <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
+      <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
+      
+      <!-- Set _EnableMauiAspire based on whether optimizations are enabled when not already set -->
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
@@ -267,7 +321,29 @@
                                       Condition="'$(MauiHybridWebViewSupported)' != ''"
                                       Value="$(MauiHybridWebViewSupported)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
+                                      Condition="'$(MauiNamescopesSupported)' != ''"
+                                      Value="$(MauiNamescopesSupported)"
+                                      Trim="true" />      
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
+                                      Condition="'$(EnableDiagnostics)' != ''"
+                                      Value="$(EnableDiagnostics)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
+                                      Condition="'$(_EnableMauiAspire)' != ''"
+                                      Value="$(_EnableMauiAspire)"
+                                      Trim="true" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_MauiSetWinUIDefaultsForPublishAot" BeforeTargets="PrepareForBuild" Condition="'$(PublishAot)' == 'true' and '$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <PropertyGroup>
+      <DebugSymbols Condition="'$(DebugSymbols)' == ''">false</DebugSymbols>
+      <DebugType Condition="'$(DebugType)' == ''">None</DebugType>
+      <EmbedXbfInPri Condition="'$(EmbedXbfInPri)' == ''">false</EmbedXbfInPri>
+      <SelfContained Condition="'$(SelfContained)' == ''">true</SelfContained>
+      <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+    </PropertyGroup>
   </Target>
 
 </Project>

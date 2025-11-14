@@ -21,12 +21,12 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI using Blazor Hybrid]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst, WinUI y Tizen usando Blazor Híbrido]]></Val>
+            <Val><![CDATA[Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst y WinUI con Blazor Hybrid]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

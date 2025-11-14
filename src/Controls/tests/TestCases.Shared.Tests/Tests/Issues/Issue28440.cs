@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue28440 : _IssuesUITest
 {
 	public override string Issue => "FlyoutPage IsPresented not updated properly in windows";

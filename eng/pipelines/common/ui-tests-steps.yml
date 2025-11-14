@@ -6,12 +6,12 @@ parameters:
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   configuration: "Release"
   runtimeVariant: "Mono"
   testFilter: ''
   testConfigurationArgs: ''
   skipProvisioning: true
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -23,6 +23,11 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
   inputs:
     artifact: ui-tests-samples-nativeaot
+
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
+  inputs:
+    artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
   condition: eq('${{ parameters.platform }}' , 'windows')
@@ -64,6 +69,7 @@ steps:
     skipAndroidCreateAvds: true
     androidEmulatorApiLevel: ${{ parameters.version }}
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
@@ -94,13 +100,14 @@ steps:
   displayName: 'Add .NET to PATH'
 
 # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
-- task: ScreenResolutionUtility@1
-  condition: eq('${{ parameters.platform }}' , 'windows')
-  inputs:
-    displaySettings: 'specific'
-    width: '1920'
-    height: '1080'
-  displayName: "Set screen resolution"
+- ${{ if ne(variables['Build.DefinitionName'], 'maui-pr-uitests') }}:
+  - task: ScreenResolutionUtility@1
+    condition: eq('${{ parameters.platform }}' , 'windows')
+    inputs:
+      displaySettings: 'specific'
+      width: '1920'
+      height: '1080'
+    displayName: "Set screen resolution"
 
 - task: UseNode@1
   inputs:
@@ -170,6 +177,7 @@ steps:
   condition: always()
   displayName: publish artifacts
 
+# Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh

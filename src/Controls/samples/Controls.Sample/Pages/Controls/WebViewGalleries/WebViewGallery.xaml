@@ -1,0 +1,169 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.WebViewGalleries.WebViewGallery"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="WebView">
+    <views:BasePage.Content>
+        <ScrollView>
+            <VerticalStackLayout    
+                Margin="12">
+                <Label
+                    Text="HtmlWebViewSource (String)"
+                    Style="{StaticResource Headline}"/>
+                <WebView 
+                    x:Name="HtmlSourceWebView"
+                    HeightRequest="150"
+                    HorizontalOptions="FillAndExpand">
+                    <WebView.Source>
+                        <HtmlWebViewSource>
+                            <HtmlWebViewSource.Html>
+                                <![CDATA[
+                                <html>
+                                <head>
+                                </head>
+                                <body>
+                                <h1>.NET MAUI</h1>
+                                <p>This is a local html source.</p>
+                                </body>
+                                </html>                    
+                                ]]>
+                            </HtmlWebViewSource.Html>
+                        </HtmlWebViewSource>
+                    </WebView.Source>
+                </WebView>
+                <Button
+                    Text="Update Source"
+                    Clicked="OnUpdateHtmlSourceClicked"/>
+                <Label
+                    Text="HtmlWebViewSource (File)"
+                    Style="{StaticResource Headline}"/>
+                <WebView 
+                    x:Name="FileWebView" 
+                    HeightRequest="150"
+                    HorizontalOptions="FillAndExpand">
+                    <WebView.Source>
+                        <HtmlWebViewSource>
+                            <HtmlWebViewSource.Html>
+                                <![CDATA[
+                                <HTML>
+                                <BODY>
+                                <H1>.NET MAUI</H1>
+                                <P>Welcome to WebView.</P>
+                                </BODY>
+                                </HTML>
+                                ]]>
+                            </HtmlWebViewSource.Html>
+                        </HtmlWebViewSource>
+                    </WebView.Source>
+                </WebView>
+                <HorizontalStackLayout>
+                    <Entry 
+                        x:Name="input"
+                        WidthRequest="150" 
+                        Margin="12" 
+                        Text="index.html"/>
+                    <Button
+                        Margin="12" 
+                        Text="Load" 
+                        Clicked="OnLoadHtmlFileClicked" 
+                        HeightRequest="48" 
+                        WidthRequest="150" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Entry 
+                        x:Name="userAgent"
+                        Text="{Binding UserAgent, Source={x:Reference FileWebView}}"
+                        WidthRequest="250" 
+                        Margin="12" />
+                    <Button
+                        Margin="12" 
+                        Text="Set User Agent"
+                        Clicked="OnSetUserAgentClicked"
+                        HeightRequest="48" 
+                        WidthRequest="150" />
+                </HorizontalStackLayout>
+                <Label
+                    Text="UrlWebViewSource"
+                    Style="{StaticResource Headline}"/>
+                <WebView 
+                    x:Name="MauiWebView"
+                    Source="https://github.com/dotnet/maui"
+                    HeightRequest="200"
+                    HorizontalOptions="FillAndExpand" />
+                <Label
+                    Text="Go Back"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="GoBack"
+                    Clicked="OnGoBackClicked"/>
+                <Label
+                    Text="Go Forward"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="GoForward"
+                    Clicked="OnGoForwardClicked"/>
+                <Label
+                    Text="Reload"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Reload"
+                    Clicked="OnReloadClicked"/>
+                <Label
+                    Text="Eval Script"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Eval"
+                    Clicked="OnEvalClicked"/>
+				<Label
+                    Text="Eval Script (async)"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Eval Async"
+                    Clicked="OnEvalAsyncClicked"/>
+				<Label
+					x:Name="EvalResultLabel"
+                    Text="..."
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    Text="HTML5 Video"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Load HTML5 Video"
+                    Clicked="OnLoadHtml5VideoClicked" />
+                <Label
+                    Text="Cookies"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Load httpbin.org with Cookies"
+                    Clicked="OnLoadHttpBinClicked" />
+                <VerticalStackLayout
+                    IsVisible="{OnPlatform Android=True, Default=False}">
+                    <Label
+                        Text="Platform Specifics"
+                        Style="{StaticResource Headline}"/>
+                    <Label
+                        Text="Mixed Content Mode"
+                        Style="{StaticResource Headline}"/>
+                    <Button
+                        Text="Allow MixedContentMode"
+                        Clicked="OnAllowMixedContentClicked"/>
+                    <Label
+                        Text="Zoom Controls"
+                        Style="{StaticResource Headline}"/>
+                    <Button
+                        Text="Enable Zoom Controls"
+                        Clicked="OnEnableZoomControlsClicked"/>
+                    <Label
+                        Text="JavaScriptEnabled"
+                        Style="{StaticResource Headline}"/>
+                    <Button
+                        Text="JavaScriptEnabled"
+                        Clicked="OnJavaScriptEnabledClicked"/>
+                    <Label
+                        x:Name="JavaScriptEnabledResult" />
+        </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>

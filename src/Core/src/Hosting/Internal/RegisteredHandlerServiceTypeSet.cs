@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			}
 		}
 
-		public Type ResolveVirtualViewToRegisteredHandlerServiceType(Type type)
+		public Type? ResolveVirtualViewToRegisteredHandlerServiceType(Type type)
 		{
 			Debug.Assert(typeof(IElement).IsAssignableFrom(type));
 
@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			}
 
 			return ResolveVirtualViewFromTypeSet(type, _concreteHandlerServiceTypeSet)
-				?? ResolveVirtualViewFromTypeSet(type, _interfaceHandlerServiceTypeSet)
-				?? throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
+				?? ResolveVirtualViewFromTypeSet(type, _interfaceHandlerServiceTypeSet);
 		}
 
 		private static Type? ResolveVirtualViewFromTypeSet(Type type, HashSet<Type> set)

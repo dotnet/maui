@@ -11,7 +11,7 @@ variables:
 - name: _buildScript
   value: $(Build.SourcesDirectory)\build.cmd -ci
 - name: _buildScriptMacOS
-  value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError 0
+  value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError false
 - name: _helixScriptMacOS
   value: $(Build.SourcesDirectory)/helix.sh
 - name: _helixScript
@@ -26,6 +26,12 @@ variables:
   value: false
 - name: _OfficialBuildIdArgs
   value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+- name: ApiScanAppId
+  value: cbde2fca-1ca1-47f7-8212-fcdf1a556eb2
+- name: ApiScanTenantId
+  value: 72f988bf-86f1-41af-91ab-2d7cd011db47
+- name: ApiScanServiceConnectionId
+  value: 334a6802-ebad-4fb1-bc3b-105bcc70bda2
 # Produce test-signed build for PR and Public builds
 - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
   # needed for darc (dependency flow) publishing
@@ -44,9 +50,10 @@ variables:
   - name: _PublishArgs
     value: >-
       /p:DotNetPublishUsingPipelines=true
-  # - name: _OfficialBuildIdArgs
-  #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-  # needed for signing
+  - name: _OfficialBuildIdArgs
+    value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER) /p:_SkipUpdateBuildNumber=true
+    # -runtimeSourceFeed https://ci.dot.net/internal -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
+    # needed for signing
   - name: _SignType
     value: real
   - name: _SignArgs

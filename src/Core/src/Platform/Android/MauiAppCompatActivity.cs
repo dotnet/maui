@@ -1,7 +1,9 @@
 using Android.OS;
 using Android.Views;
+using AndroidX.Activity;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content.Resources;
+using AndroidX.Core.View;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 
@@ -22,11 +24,17 @@ namespace Microsoft.Maui
 				Resource.Style.Maui_MainTheme_NoActionBar);
 
 			base.OnCreate(savedInstanceState);
+			WindowCompat.SetDecorFitsSystemWindows(Window, false);
 
 			if (IPlatformApplication.Current?.Application is not null)
 			{
 				this.CreatePlatformWindow(IPlatformApplication.Current.Application, savedInstanceState);
 			}
+		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent? e)

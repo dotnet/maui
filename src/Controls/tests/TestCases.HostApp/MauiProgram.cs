@@ -51,6 +51,9 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
 				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
 #endif
+#if IOS
+				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
+#endif
 			});
 
 			appBuilder.Services.AddTransient<TransientPage>();

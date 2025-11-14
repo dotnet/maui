@@ -1,76 +1,60 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[AcceptEmptyServiceProvider]
+public class Maui10583EnumValuesExtension<T> : IMarkupExtension<T[]> where T : struct, Enum
 {
-	[AcceptEmptyServiceProvider]
-	public class Maui10583EnumValuesExtension<T> : IMarkupExtension<T[]> where T : struct, Enum
+	public T[] ProvideValue(IServiceProvider serviceProvider) => Enum.GetValues<T>();
+
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
+}
+
+public enum Maui10583Enum
+{
+	John, Paul, George, Ringo
+}
+
+public partial class Maui10583 : ContentPage
+{
+	public Maui10583() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public T[] ProvideValue(IServiceProvider serviceProvider)
+		[SetUp]
+		public void Setup()
 		{
-			return Enum.GetValues<T>();
+			AppInfo.SetCurrent(new MockAppInfo());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
 		}
 
-		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		[TearDown]
+		public void TearDown()
 		{
-			return ProvideValue(serviceProvider);
-		}
-	}
-
-	public enum Maui10583Enum
-	{
-		John, Paul, George, Ringo
-	}
-
-	public partial class Maui10583 : ContentPage
-	{
-		public Maui10583() => InitializeComponent();
-		public Maui10583(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
+			DispatcherProvider.SetCurrent(null);
+			AppInfo.SetCurrent(null);
 		}
 
-		[TestFixture]
-		class Tests
+		[Test]
+		public void GenericMarkupExtensions([Values] XamlInflator inflator)
 		{
-			[SetUp]
-			public void Setup()
+			if (inflator == XamlInflator.SourceGen)
 			{
-				AppInfo.SetCurrent(new MockAppInfo());
-				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui10583));
 			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				DispatcherProvider.SetCurrent(null);
-				AppInfo.SetCurrent(null);
-			}
-
-			[Test]
-			public void GenericMarkupExtensions([Values(false, true)] bool useCompiledXaml)
-			{
-				if (true)
-				{
-					MockCompiler.Compile(typeof(Maui10583), out var methodDefinition);
-
-				}
-				var page = new Maui10583(useCompiledXaml);
-
-				Assert.That(page.lv.ItemsSource, Is.Not.Null);
-				var items = page.lv.ItemsSource as Maui10583Enum[];
-				Assert.That(items[1], Is.EqualTo(Maui10583Enum.Paul));
+			var page = new Maui10583(inflator);
+			Assert.That(page.lv.ItemsSource, Is.Not.Null);
+			var items = page.lv.ItemsSource as Maui10583Enum[];
+			Assert.That(items[1], Is.EqualTo(Maui10583Enum.Paul));
 
 
-			}
 		}
 	}
 }

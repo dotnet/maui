@@ -15,12 +15,18 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
-- name: runAsPublic
+- name: publishAssets
   type: boolean
   default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
+- name: runAsPublic
+  type: boolean
+  default: true
 - name: buildProjects
   type: string
-  default: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
+  default: '$(Build.SourcesDirectory)/Microsoft.Maui.slnx'
 - name: buildProjectsMac
   type: string
   default: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -34,17 +40,6 @@ parameters:
   - Release
 - name: buildPlatforms
   type: object
-  default:
-  - name: NetCore-Public
-    image: 1es-windows-2022
-    os: Windows
-    buildScript: $(_buildScript)
-    sln: $(buildProjects)
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
-    os: macOS
-    buildScript: $(_buildScriptMacOS)
-    sln: $(buildProjectsMac)
 
 stages:
 - stage: Build
@@ -56,9 +51,9 @@ stages:
       parameters:
         helixRepo: dotnet/maui
         pool: ${{ BuildPlatform }}
-        enableMicrobuild: true
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
         enablePublishUsingPipelines: true
-        enablePublishBuildAssets: true
+        enablePublishBuildAssets: ${{ parameters.publishAssets }}
         enableTelemetry: true
         enableSourceBuild: ${{ parameters.enableSourceBuild }}
         enableSourceIndex: ${{ parameters.enableSourceIndex }}
@@ -89,4 +84,4 @@ stages:
               displayName: 🛠️ Build BuildTasks
 
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects ${{ BuildPlatform.sln }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:CodesignRequireProvisioningProfile=false /p:EnableWindowsTargeting=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
-              displayName: 🛠️ Build Microsoft.Maui.sln
+              displayName: 🛠️ Build Microsoft.Maui

@@ -14,9 +14,10 @@ namespace Microsoft.Maui.Controls
 			Parameter = parameter;
 		}
 
-		internal TappedEventArgs(object? parameter, Func<IElement?, Point?>? getPosition) : this(parameter)
+		internal TappedEventArgs(object? parameter, Func<IElement?, Point?>? getPosition, ButtonsMask buttons) : this(parameter)
 		{
 			_getPosition = getPosition;
+			Buttons = buttons;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="//Member[@MemberName='Parameter']/Docs/*" />

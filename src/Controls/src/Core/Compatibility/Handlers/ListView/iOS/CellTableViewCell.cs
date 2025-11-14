@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		WeakReference<Cell> _cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
 
@@ -19,7 +21,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public Cell Cell
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			get => _cell?.GetTargetOrDefault();
 			set
@@ -51,7 +55,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => PropertyChanged?.Invoke(sender, e);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static UITableViewCell GetPlatformCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var id = cell.GetType().FullName;
 
@@ -113,10 +119,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (Cell is Cell cell)
 				{
 					CellRenderer.SetRealCell(cell, null);
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 				_cell = null;
 			}
 

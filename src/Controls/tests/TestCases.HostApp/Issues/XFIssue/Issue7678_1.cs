@@ -29,9 +29,7 @@ public class Issue7678_2 : TestContentPage
 				SnapPointsAlignment = SnapPointsAlignment.Center
 			};
 
-		// This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29310      
-		// TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved.
-		var carouselView = new CarouselView1
+		var carouselView = new CarouselView
 		{
 			AutomationId = "carouselView",
 			ItemsLayout = itemsLayout,
@@ -119,7 +117,7 @@ public class Issue7678ViewModel_1 : BindableObject
 			});
 		}
 
-		await Task.Delay(500);
+		await Task.Delay(50);
 
 		_items = new ObservableCollection<Issue7678Model_1>(items);
 		OnPropertyChanged(nameof(Items));

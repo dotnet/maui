@@ -2,16 +2,15 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Pages.TitleBarPage"
-             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-             ios:Page.UseSafeArea="False"
+             SafeAreaEdges="All"
              Shell.NavBarIsVisible="True"
              NavigationPage.HasNavigationBar="True"
              Title="TitleBarPage">
 
-    <Grid IgnoreSafeArea="True"
+    <Grid SafeAreaEdges="All"
           RowDefinitions="Auto,*"
         ColumnDefinitions="*,*">
-        <VerticalStackLayout IgnoreSafeArea="True"
+        <VerticalStackLayout SafeAreaEdges="All"
             Spacing="16"
             Margin="16"
             Grid.Column="0">
@@ -20,7 +19,7 @@
                 Text="Content Options"
                 FontSize="24"/>
 
-            <HorizontalStackLayout IgnoreSafeArea="True">
+            <HorizontalStackLayout SafeAreaEdges="All">
                 <CheckBox 
                     x:Name="SetIconCheckBox"
                     IsChecked="False"

@@ -21,25 +21,29 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static void CancelAnimations(this VisualElement view)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			view.AbortAnimation(nameof(LayoutTo));
-			view.AbortAnimation(nameof(TranslateTo));
-			view.AbortAnimation(nameof(RotateTo));
-			view.AbortAnimation(nameof(RotateYTo));
-			view.AbortAnimation(nameof(RotateXTo));
-			view.AbortAnimation(nameof(ScaleTo));
-			view.AbortAnimation(nameof(ScaleXTo));
-			view.AbortAnimation(nameof(ScaleYTo));
-			view.AbortAnimation(nameof(FadeTo));
+			view.AbortAnimation(nameof(LayoutToAsync));
+			view.AbortAnimation(nameof(TranslateToAsync));
+			view.AbortAnimation(nameof(RotateToAsync));
+			view.AbortAnimation(nameof(RotateYToAsync));
+			view.AbortAnimation(nameof(RotateXToAsync));
+			view.AbortAnimation(nameof(ScaleToAsync));
+			view.AbortAnimation(nameof(ScaleXToAsync));
+			view.AbortAnimation(nameof(ScaleYToAsync));
+			view.AbortAnimation(nameof(FadeToAsync));
 		}
 
-		static Task<bool> AnimateTo(this VisualElement view, double start, double end, string name,
+		static Task<bool> AnimateToAsync(this VisualElement view, double start, double end, string name,
 			Action<VisualElement, double> updateAction, uint length = 250, Easing? easing = null)
 		{
-			if (easing == null)
+			if (easing is null)
+			{
 				easing = Easing.Linear;
+			}
 
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -59,6 +63,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 
+		/// <inheritdoc cref="FadeToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use FadeToAsync instead.")]
+		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
+			=> FadeToAsync(view, opacity, length, easing);
+
 		/// <summary>
 		/// Returns a task that performs the fade that is described by the <paramref name="opacity" />, <paramref name = "length" />, and <paramref name="easing" /> parameters.
 		/// </summary>
@@ -66,15 +75,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="opacity">The opacity to fade to.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
+		public static Task<bool> FadeToAsync(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
+			return AnimateToAsync(view, view.Opacity, opacity, nameof(FadeToAsync), (v, value) => v.Opacity = value, length, easing);
 		}
+
+		/// <inheritdoc cref="LayoutToAsync(VisualElement, Rect, uint, Easing?)" />
+		[Obsolete("Please use LayoutToAsync instead.")]
+		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
+			=> LayoutToAsync(view, bounds, length, easing);
 
 		/// <summary>
 		/// <summary>Returns a task that eases the bounds of the <see cref="VisualElement" /> that is specified by the <paramref name="view" />
@@ -84,12 +101,16 @@ namespace Microsoft.Maui.Controls
 		/// <param name="bounds">The layout bounds.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
+		[Obsolete("Use Translation to animate layout changes.")]
+		public static Task<bool> LayoutToAsync(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			Rect start = view.Bounds;
 			Func<double, Rect> computeBounds = progress =>
@@ -102,8 +123,13 @@ namespace Microsoft.Maui.Controls
 				return new Rect(x, y, w, h);
 			};
 
-			return AnimateTo(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
+			return AnimateToAsync(view, 0, 1, nameof(LayoutToAsync), (v, value) => v.Layout(computeBounds(value)), length, easing);
 		}
+
+		/// <inheritdoc cref="RelRotateToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use RelRotateToAsync instead.")]
+		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
+			=> RelRotateToAsync(view, drotation, length, easing);
 
 		/// <summary>
 		/// Rotates the <see cref="VisualElement" /> that is specified by <paramref name="view" /> from its current rotation by <paramref name="drotation" />.
@@ -112,15 +138,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="drotation">The relative rotation.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
+		public static Task<bool> RelRotateToAsync(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return view.RotateTo(view.Rotation + drotation, length, easing);
+			return view.RotateToAsync(view.Rotation + drotation, length, easing);
 		}
+
+		/// <inheritdoc cref="RelScaleToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use RelScaleToAsync instead.")]
+		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
+			=> RelScaleToAsync(view, dscale, length, easing);
 
 		/// <summary>
 		/// Returns a task that scales the <see cref="VisualElement" /> that is specified by <paramref name="view" />
@@ -130,15 +164,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="dscale">The relative scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
+		public static Task<bool> RelScaleToAsync(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return view.ScaleTo(view.Scale + dscale, length, easing);
+			return view.ScaleToAsync(view.Scale + dscale, length, easing);
 		}
+
+		/// <inheritdoc cref="RotateToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use RotateToAsync instead.")]
+		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
+			=> RotateToAsync(view, rotation, length, easing);
 
 		/// <summary>
 		/// Returns a task that rotates the <see cref="VisualElement" /> that is specified by <paramref name="view" />
@@ -148,15 +190,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="rotation">The final rotation value.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
+		public static Task<bool> RotateToAsync(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
+			return AnimateToAsync(view, view.Rotation, rotation, nameof(RotateToAsync), (v, value) => v.Rotation = value, length, easing);
 		}
+
+		/// <inheritdoc cref="RotateXToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use RotateXToAsync instead.")]
+		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
+			=> RotateXToAsync(view, rotation, length, easing);
 
 		/// <summary>
 		/// Returns a task that skews the X axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
@@ -166,15 +216,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="rotation">The final rotation value.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. 
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
+		public static Task<bool> RotateXToAsync(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
+			return AnimateToAsync(view, view.RotationX, rotation, nameof(RotateXToAsync), (v, value) => v.RotationX = value, length, easing);
 		}
+
+		/// <inheritdoc cref="RotateYToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use RotateYToAsync instead.")]
+		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
+			=> RotateYToAsync(view, rotation, length, easing);
 
 		/// <summary>
 		/// Returns a task that skews the Y axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
@@ -184,15 +242,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="rotation">The final rotation value.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
+		public static Task<bool> RotateYToAsync(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
+			return AnimateToAsync(view, view.RotationY, rotation, nameof(RotateYToAsync), (v, value) => v.RotationY = value, length, easing);
 		}
+
+		/// <inheritdoc cref="ScaleToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use ScaleToAsync instead.")]
+		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
+			=> ScaleToAsync(view, scale, length, easing);
 
 		/// <summary>
 		/// Returns a task that scales the <see cref="VisualElement" /> that is specified by <paramref name="view" /> to the absolute scale factor <paramref name="scale" />.
@@ -201,15 +267,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scale">The final absolute scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
+		public static Task<bool> ScaleToAsync(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
+			return AnimateToAsync(view, view.Scale, scale, nameof(ScaleToAsync), (v, value) => v.Scale = value, length, easing);
 		}
+
+		/// <inheritdoc cref="ScaleXToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use ScaleXToAsync instead.")]
+		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
+			=> ScaleXToAsync(view, scale, length, easing);
 
 		/// <summary>
 		/// Returns a task that scales the X axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
@@ -219,15 +293,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scale">The final absolute scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
+		public static Task<bool> ScaleXToAsync(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
+			return AnimateToAsync(view, view.ScaleX, scale, nameof(ScaleXToAsync), (v, value) => v.ScaleX = value, length, easing);
 		}
+
+		/// <inheritdoc cref="ScaleYToAsync(VisualElement, double, uint, Easing?)" />
+		[Obsolete("Please use ScaleYToAsync instead.")]
+		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
+			=> ScaleYToAsync(view, scale, length, easing);
 
 		/// <summary>
 		/// Returns a task that scales the Y axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
@@ -237,15 +319,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scale">The final absolute scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
+		public static Task<bool> ScaleYToAsync(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
+			return AnimateToAsync(view, view.ScaleY, scale, nameof(ScaleYToAsync), (v, value) => v.ScaleY = value, length, easing);
 		}
+
+		/// <inheritdoc cref="TranslateToAsync(VisualElement, double, double, uint, Easing?)" />
+		[Obsolete("Please use TranslateToAsync instead.")]
+		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
+			=> TranslateToAsync(view, x, y, length, easing);
 
 		/// <summary>
 		/// Animates an elements <see cref="VisualElement.TranslationX"/> and <see cref="VisualElement.TranslationY"/> properties
@@ -256,12 +346,15 @@ namespace Microsoft.Maui.Controls
 		/// <param name="y">The y component of the final translation vector.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
-		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
+		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
+		public static Task<bool> TranslateToAsync(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			easing ??= Easing.Linear;
 
@@ -270,19 +363,23 @@ namespace Microsoft.Maui.Controls
 			Action<double> translateX = f =>
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
+				{
 					v.TranslationX = f;
+				}
 			};
 			Action<double> translateY = f =>
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
+				{
 					v.TranslationY = f;
+				}
 			};
 
 			new Animation
 			{
 				{ 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) },
 				{ 0, 1, new Animation(translateY, view.TranslationY, y, easing: easing) }
-			}.Commit(view, nameof(TranslateTo), 16, length, null, (f, a) => tcs.SetResult(a));
+			}.Commit(view, nameof(TranslateToAsync), 16, length, null, (f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
 		}
@@ -411,52 +508,6 @@ namespace Microsoft.Maui.Controls
 				text = rb.IsChecked.ToString();
 
 			return text;
-		}
-
-		internal static bool TrySetValue(this Element element, string text)
-		{
-			if (element is Label label)
-			{
-				label.Text = text;
-				return true;
-			}
-			else if (element is Entry entry)
-			{
-				entry.Text = text;
-				return true;
-			}
-			else if (element is Editor editor)
-			{
-				editor.Text = text;
-				return true;
-			}
-			else if (element is CheckBox cb && bool.TryParse(text, out bool result))
-			{
-				cb.IsChecked = result;
-				return true;
-			}
-			else if (element is Switch sw && bool.TryParse(text, out bool swResult))
-			{
-				sw.IsToggled = swResult;
-				return true;
-			}
-			else if (element is RadioButton rb && bool.TryParse(text, out bool rbResult))
-			{
-				rb.IsChecked = rbResult;
-				return true;
-			}
-			else if (element is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
-			{
-				tp.Time = tpResult;
-				return true;
-			}
-			else if (element is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
-			{
-				dp.Date = dpResult;
-				return true;
-			}
-
-			return false;
 		}
 
 		static internal bool RequestFocus(this VisualElement view)

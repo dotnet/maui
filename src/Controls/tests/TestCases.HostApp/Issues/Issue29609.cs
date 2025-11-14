@@ -8,6 +8,7 @@ public class Issue29609 : ContentPage
 	Issue29609_ViewModel ViewModel;
 	public Issue29609()
 	{
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		ViewModel = new Issue29609_ViewModel();
 		BindingContext = ViewModel;
 		var stack = new StackLayout

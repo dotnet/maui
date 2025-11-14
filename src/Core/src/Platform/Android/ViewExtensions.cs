@@ -461,9 +461,26 @@ namespace Microsoft.Maui.Platform
 			return new Rect(
 				location[0],
 				location[1],
-				(int)platformView.Context.ToPixels(platformView.Width),
-				(int)platformView.Context.ToPixels(platformView.Height));
+				platformView.MeasuredWidth,
+				platformView.MeasuredHeight);
 		}
+
+		internal static Rect GetViewBounds(this View platformView)
+		{
+			if (platformView?.Context is not Context context)
+				return new Rect();
+
+			var location = new int[2];
+			platformView.GetLocationOnScreen(location);
+
+			return new Rect(
+				platformView.FromPixels(location[0]),
+				platformView.FromPixels(location[1]),
+				platformView.FromPixels(platformView.MeasuredWidth),
+				platformView.FromPixels(platformView.MeasuredHeight));
+		}
+
+		internal static Rect GetViewBounds(this IView view) => view.ToPlatform().GetViewBounds();
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
@@ -524,7 +541,7 @@ namespace Microsoft.Maui.Platform
 				return new Rect();
 
 			var context = platformView.Context;
-			var rect = new Android.Graphics.Rect();
+			var rect = new global::Android.Graphics.Rect();
 			platformView.GetGlobalVisibleRect(rect);
 
 			return new Rect(
@@ -805,6 +822,20 @@ namespace Microsoft.Maui.Platform
 			;
 
 			view.Post(ShowSoftInput);
+		}
+
+		internal static bool IsConfirmKey(this Keycode keyCode)
+		{
+			switch (keyCode)
+			{
+				case Keycode.DpadCenter:
+				case Keycode.Enter:
+				case Keycode.Space:
+				case Keycode.NumpadEnter:
+					return true;
+				default:
+					return false;
+			}
 		}
 	}
 }

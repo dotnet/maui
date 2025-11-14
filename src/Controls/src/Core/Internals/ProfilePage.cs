@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="//Member[@MemberName='LoadProfile']/Docs/*" />
+		/// <param name="page">The page parameter.</param>
 		public static void LoadProfile(this ContentPage page)
 		{
 			Profile.Stop();

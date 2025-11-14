@@ -1,6 +1,7 @@
 parameters:
   # Xcode
   skipXcode: false
+  skipSimulatorSetup: false
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
@@ -30,23 +31,47 @@ parameters:
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
-  skipInternalFeeds: false
+  skipInternalFeeds: true
 
 steps:
 
 ##################################################
-#               Provisioning macOS               #
+#               Provisioning Feeds               #
 ##################################################
 
-# Provisioning macOS - Agent cleanser
-- ${{ if ne(parameters.skipProvisionator, true) }}:
-  - template: agent-cleanser/v1.yml@yaml-templates
+- ${{ if ne(parameters.skipInternalFeeds, 'true') }}:
+  - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      UninstallMono: false
-      UninstallXamarinMac: true
-      CleanseAgentToolsDotNet: true
-      SelfHealPowerShell: false
+      legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      
+  - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
+    parameters:
+      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+      outputVariableName: ${{ parameters.outputVariableName }}
+      expiryInHours: ${{ parameters.expiryInHours }}
+      base64Encode: ${{ parameters.base64Encode }}
+
+
+##################################################
+#               Provisioning macOS               #
+##################################################
+  
+#check if the _tool directory exists and remove it
+- pwsh: |
+    $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
+    Write-Host "Agent-Cleanser: Agent tools path for .NET installations: ${dotnetToolsPath}"
+    try {
+      if ([IO.Directory]::Exists($dotnetToolsPath)) {
+        Write-Host "Agent-Cleanser: Deleting: ${dotnetToolsPath}"
+        [IO.Directory]::Delete($dotnetToolsPath, $true)
+      } else {
+        Write-Host "Agent-Cleanser: Skipping cleansing of .NET: No .NET installations found under the agent tools directory: $(Agent.ToolsDirectory)"
+      }
+    } catch {
+      Write-Host "ERROR: EXCEPTION: $($_.Exception.Message)"
+    }
+  displayName: Clean $(Agent.ToolsDirectory)/dotnet directory
+  condition: eq(variables['Agent.OS'], 'Darwin')
 
 # Provisioning macOS - Xcode
 - ${{ if ne(parameters.skipXcode, 'true') }}:
@@ -70,21 +95,95 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      ls /Applications | grep 'Xcode'
+      ls -la /Applications | grep 'Xcode'
       echo
       echo currently selected xcode:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+      # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
+      if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
+        XCODE_VERSION=$(REQUIRED_XCODE)
+      else
+        XCODE_VERSION=$(XCODE)
+      fi
+      
+      # Check if the specified Xcode version exists, if not try fallback
+      XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
+      if [[ ! -d "$XCODE_PATH" ]]; then
+        echo "Xcode version ${XCODE_VERSION} not found at ${XCODE_PATH}"
+        # Extract fallback version by removing the last part after the final dot (e.g., 26.0.1 -> 26.0.0)
+        if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
+          FALLBACK_VERSION="${BASH_REMATCH[1]}.0"
+          FALLBACK_PATH="/Applications/Xcode_${FALLBACK_VERSION}.app"
+          echo "Trying fallback Xcode version: ${FALLBACK_VERSION}"
+          if [[ -d "$FALLBACK_PATH" ]]; then
+            echo "Found fallback Xcode version at ${FALLBACK_PATH}"
+            XCODE_VERSION="$FALLBACK_VERSION"
+            XCODE_PATH="$FALLBACK_PATH"
+          else
+            echo "Warning: Fallback Xcode version ${FALLBACK_VERSION} also not found at ${FALLBACK_PATH}"
+            echo "Proceeding with original version ${XCODE_VERSION} - this may fail"
+          fi
+        else
+          echo "Warning: Cannot determine fallback version for ${XCODE_VERSION}"
+          echo "Proceeding with original version - this may fail"
+        fi
+      else
+        echo "Found Xcode version ${XCODE_VERSION} at ${XCODE_PATH}"
+      fi
+      
+      sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-      sudo xcodebuild -downloadPlatform iOS
+     
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
     timeoutInMinutes: 30
+    continueOnError: true
+
+  - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
+    - script: |
+        echo installing simulator runtimes...
+        # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
+        if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
+          XCODE_VERSION=$(REQUIRED_XCODE)
+        else
+          XCODE_VERSION=$(XCODE)
+        fi
+        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
+        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
+        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
+          RC=0
+          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0 || RC=$?
+          if [[ "$RC" == "70" ]]; then
+            echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
+          elif [[ "$RC" == "0" ]]; then
+            echo "Successfully installed the requested iOS simulator"
+          else
+            echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
+            sudo xcrun simctl runtime delete all
+            # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+            for i in $(seq 1 60); do
+              sleep 1
+              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if [[ $C == 0 ]]; then
+                echo "    still $C simulators left..."
+                break
+              fi
+            done
+            echo "Re-trying simulator runtime installation, if this doesn't work, a reboot might be required"
+            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
+          fi
+        else
+          sudo xcodebuild -downloadPlatform iOS
+        fi
+      displayName: Install Simulator Runtimes
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 30
+      continueOnError: true
 
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
@@ -132,14 +231,21 @@ steps:
     version: $(DOTNET_VERSION)
     includePreviewVersions: true
 
+- script: |
+    dotnet --list-sdks
+    dotnet --version
+  displayName: 'List all .NET SDKs'
+  continueOnError: true
+
 # Provisioning .NET - Clear all NuGet caches
 - ${{ if eq(parameters.clearCaches, 'true') }}:
-  - pwsh: dotnet nuget locals all --clear
+  - script: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
+    continueOnError: true
 
 # Provisioning .NET - .NET tools
-- pwsh: |
-    dotnet tool restore
+- script: |
+    dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
 
 ##################################################
@@ -148,13 +254,13 @@ steps:
 
 # Provisioning Android - JDK
 - ${{ if ne(parameters.skipJdk, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK'
     condition: succeeded()
 
 # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Common Packages'
     condition: succeeded()
 
@@ -173,7 +279,7 @@ steps:
 
 # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
 - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Platform APIs'
     condition: succeeded()
     env:
@@ -181,7 +287,7 @@ steps:
 
 # Provisioning Android - Emulator images (eg: system-images;android-34;google_apis;aarch64)
 - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Emulator Images'
     condition: succeeded()
     env:
@@ -189,22 +295,8 @@ steps:
 
 # Provisioning Android - Android AVDs (actual emulator virtual devices)
 - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+  - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Create AVDs'
     condition: succeeded()
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
-
-##################################################
-#               Provisioning Feeds               #
-##################################################
-
-- ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
-  - template: ../../common/templates-official/steps/enable-internal-sources.yml
-
-  - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
-    parameters:
-      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
-      outputVariableName: ${{ parameters.outputVariableName }}
-      expiryInHours: ${{ parameters.expiryInHours }}
-      base64Encode: ${{ parameters.base64Encode }}

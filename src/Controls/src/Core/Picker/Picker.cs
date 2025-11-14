@@ -14,7 +14,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> control for picking an element in a list.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
@@ -65,29 +65,34 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
+		public static readonly BindableProperty IsOpenProperty =
+			BindableProperty.Create(nameof(IPicker.IsOpen), typeof(bool), typeof(Picker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
+
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the Picker class.</summary>
 		public Picker()
 		{
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>Gets or sets the font family for the picker text. This is a bindable property.</summary>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>Gets or sets the size of the font for the text in the picker.</summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -107,9 +112,10 @@ namespace Microsoft.Maui.Controls
 			set { }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
@@ -135,31 +141,33 @@ namespace Microsoft.Maui.Controls
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='Items']/Docs/*" />
+		/// <summary>Gets the list of choices.</summary>
+		/// <remarks>This property is read-only, but exposes the IList interface, so items can be added using Add().</remarks>
 		public IList<string> Items { get; } = new LockableObservableListWrapper();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemsSource']/Docs/*" />
+		/// <summary>Gets or sets the source list of items to template and display. This is a bindable property.</summary>
 		public IList ItemsSource
 		{
 			get { return (IList)GetValue(ItemsSourceProperty); }
 			set { SetValue(ItemsSourceProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='SelectedIndex']/Docs/*" />
+		/// <summary>Gets or sets the index of the selected item of the picker. This is a bindable property.</summary>
+		/// <remarks>A value of -1 represents no item selected.</remarks>
 		public int SelectedIndex
 		{
 			get { return (int)GetValue(SelectedIndexProperty); }
 			set { SetValue(SelectedIndexProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='SelectedItem']/Docs/*" />
+		/// <summary>Gets or sets the selected item. This is a bindable property.</summary>
 		public object SelectedItem
 		{
 			get { return GetValue(SelectedItemProperty); }
 			set { SetValue(SelectedItemProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the text color. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
@@ -173,7 +181,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>Gets or sets the title for the Picker. This is a bindable property.</summary>
+		/// <remarks>Depending on the platform, the Title is shown as a placeholder, headline, or not showed at all.</remarks>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
@@ -202,7 +211,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		BindingBase _itemDisplayBinding;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemDisplayBinding']/Docs/*" />
+		/// <summary>Gets or sets a binding that selects the property that will be displayed for each object in the list of items.</summary>
 		[DoesNotInheritDataType]
 		public BindingBase ItemDisplayBinding
 		{
@@ -220,7 +229,20 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((Picker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+
 		public event EventHandler SelectedIndexChanged;
+		public event EventHandler<PickerOpenedEventArgs> Opened;
+		public event EventHandler<PickerClosedEventArgs> Closed;
 
 		static readonly BindableProperty s_displayProperty =
 			BindableProperty.Create("Display", typeof(string), typeof(Picker), default(string));
@@ -285,6 +307,43 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).IsLocked = false;
 				((LockableObservableListWrapper)Items).InternalClear();
 			}
+		}
+
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is Picker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler?.VirtualView is not Picker picker)
+				return;
+
+			if (picker.IsOpen)
+				picker.Opened?.Invoke(picker, PickerOpenedEventArgs.Empty);
+			else
+				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

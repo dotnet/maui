@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Microsoft.Maui.MauiBlazorWebView.DeviceTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</AssemblyName>
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <MauiTestProject>true</MauiTestProject>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ApplicationTitle>BlazorWebView Tests</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.mauiblazorwebview.devicetests</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage Include="Resources\Images\*" />
+    <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\samples\WebViewAppShared\WebViewAppShared.csproj" />
+    <ProjectReference Include="..\..\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+  </ItemGroup>
+
+  <!-- include/exclude the *.<platform>.cs files -->
+  <ItemGroup>
+    <None Include="@(Compile)" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
+    <Compile Remove="**\*.Android.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-ios')) and !$(TargetFramework.Contains('-maccatalyst'))">
+    <Compile Remove="**\*.iOS.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="**\*.Windows.cs" />
+  </ItemGroup>
+
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
+
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+</Project>
