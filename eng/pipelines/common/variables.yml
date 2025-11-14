@@ -8,9 +8,9 @@ variables:
 - name: DOTNET_VERSION
   value: 10.0.100-preview.2.25164.34
 - name: REQUIRED_XCODE
-  value: 26.0.0
+  value: 26.0.1
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 26.0.0
+  value: 26.0.1
 - name: XCODE
   value: 26.0.1
 - name: POWERSHELL_VERSION
