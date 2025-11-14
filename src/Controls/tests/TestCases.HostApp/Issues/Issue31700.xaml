@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31700"
+             Title="Issue31700">
+    <Grid RowDefinitions="Auto,*">
+        <Button x:Name="LoadImageButton" 
+                Text="Load Image from Absolute Path" 
+                AutomationId="LoadImageButton"
+                Clicked="OnLoadImageClicked"
+                Grid.Row="0"/>
+        <Grid x:Name="ImageContainer" 
+              Grid.Row="1"
+              Padding="15">
+            <Border Padding="10"
+                    Stroke="Gray">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8"/>
+                </Border.StrokeShape>
+                <Image x:Name="TestImage" 
+                       AutomationId="TestImage"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Aspect="AspectFit"/>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>
