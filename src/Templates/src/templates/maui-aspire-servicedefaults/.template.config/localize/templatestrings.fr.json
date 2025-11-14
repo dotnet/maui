@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI pour les valeurs par .NET Aspire Service Defaults",
-  "description": "Modèle de projet pour la création d’un projet par défaut de service .NET Aspire pour .NET MAUI.",
+  "name": ".NET MAUI pour les valeurs par Aspire Service Defaults",
+  "description": "Modèle de projet pour la création d’un projet par défaut de service Aspire pour .NET MAUI.",
   "symbols/Framework/description": "Infrastructure cible du projet.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE cible",
   "symbols/skipRestore/description": "Si spécifié, ignore la restauration automatique du projet lors de la création.",

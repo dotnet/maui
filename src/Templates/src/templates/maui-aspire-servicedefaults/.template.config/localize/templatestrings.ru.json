@@ -1,7 +1,7 @@
 {
   "author": "Майкрософт",
-  "name": ".NET MAUI для .NET Aspire Service Defaults",
-  "description": "Шаблон проекта для создания проекта с параметрами по умолчанию службы .NET Aspire для .NET MAUI.",
+  "name": ".NET MAUI для Aspire Service Defaults",
+  "description": "Шаблон проекта для создания проекта с параметрами по умолчанию службы Aspire для .NET MAUI.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",

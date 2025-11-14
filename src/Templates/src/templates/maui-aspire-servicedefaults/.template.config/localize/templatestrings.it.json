@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI per le impostazioni predefinite del servizio .NET Aspire",
-  "description": "Un modello di progetto per la creazione di un progetto le impostazioni predefinite del servizio .NET Aspire per .NET MAUI.",
+  "name": ".NET MAUI per le impostazioni predefinite del servizio Aspire",
+  "description": "Un modello di progetto per la creazione di un progetto le impostazioni predefinite del servizio Aspire per .NET MAUI.",
   "symbols/Framework/description": "Framework di destinazione per il progetto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE di destinazione",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
