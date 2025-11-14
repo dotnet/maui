@@ -1178,6 +1178,7 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
+		NavigationType _navigationType;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shell()
@@ -1593,35 +1594,35 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.Replace;
+			_navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
 				case ShellNavigationSource.Pop:
-					navigationType = NavigationType.Pop;
+					_navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
-					navigationType = NavigationType.Push;
+					_navigationType = NavigationType.Push;
 					break;
 				case ShellNavigationSource.PopToRoot:
-					navigationType = NavigationType.PopToRoot;
+					_navigationType = NavigationType.PopToRoot;
 					break;
 				case ShellNavigationSource.Insert:
-					navigationType = NavigationType.Insert;
+					_navigationType = NavigationType.Insert;
 					break;
 			}
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, _navigationType));
+			PropagateSendNavigatedTo();
 			_previousPage = null;
 
 			if (CurrentPage != null)
@@ -1640,24 +1641,26 @@ namespace Microsoft.Maui.Controls
 			// On Windows, the Loaded event has already fired (IsLoaded=true), so SendNavigatedTo runs immediately without altering the flow.
 			if (CurrentPage.IsLoaded)
 			{
-				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
 			}
 			else
 			{
-				void OnCurrentPageLoaded(object sender, EventArgs e)
-				{
-					if (sender is Page page)
-					{
-						page.Loaded -= OnCurrentPageLoaded;
-						page.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
-
-						// Restore flyout behavior observers after deferred NavigatedTo timing
-						// Android requires this call to maintain flyout functionality
-						CurrentContent?.EvaluateDisconnect();
-					}
-				}
-				
 				CurrentPage.Loaded += OnCurrentPageLoaded;
+			}
+		}
+
+		void OnCurrentPageLoaded(object sender, EventArgs e)
+		{
+			if (sender is Page page)
+			{
+				page.Loaded -= OnCurrentPageLoaded;
+				page.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
+				_navigationType = default;
+#if ANDROID
+				// Restore flyout behavior observers after deferred NavigatedTo timing
+				// Android requires this call to maintain flyout functionality
+				CurrentContent?.EvaluateDisconnect();
+#endif
 			}
 		}
 
@@ -1706,6 +1709,13 @@ namespace Microsoft.Maui.Controls
 				}
 
 				_previousPage = CurrentPage;
+
+				// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+				if (CurrentPage != null && !CurrentPage.IsLoaded)
+				{
+					CurrentPage.Loaded -= OnCurrentPageLoaded;
+				}
+
 				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 			}
 		}
