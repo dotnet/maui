@@ -230,10 +230,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		var lambdaParamType = parameters[0].Type;
-		if (!lambdaParamType.IsAccessible())
-		{
-			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambda.GetLocation()));
-		}
+		// Note: We now allow inaccessible types and will use [UnsafeAccessorType] to handle them
 
 		return Result<ITypeSymbol>.Success(lambdaParamType);
 	}

@@ -17,11 +17,14 @@ public static class ITypeSymbolExtensions
 	public static TypeDescription CreateTypeDescription(this ITypeSymbol typeSymbol, bool enabledNullable)
 	{
 		var isNullable = IsTypeNullable(typeSymbol, enabledNullable);
+		var isAccessible = typeSymbol.IsAccessible();
 		return new TypeDescription(
 			GlobalName: GetGlobalName(typeSymbol, isNullable, typeSymbol.IsValueType),
 			IsNullable: isNullable,
 			IsGenericParameter: typeSymbol.Kind == SymbolKind.TypeParameter, //TODO: Add support for generic parameters
-			IsValueType: typeSymbol.IsValueType);
+			IsValueType: typeSymbol.IsValueType,
+			IsAccessible: isAccessible,
+			AssemblyQualifiedName: isAccessible ? null : GetAssemblyQualifiedName(typeSymbol));
 	}
 
 	private static bool IsNullableValueType(this ITypeSymbol typeInfo) =>
@@ -42,5 +45,24 @@ public static class ITypeSymbolExtensions
 		}
 
 		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+	}
+
+	private static string GetAssemblyQualifiedName(this ITypeSymbol typeSymbol)
+	{
+		// For UnsafeAccessorType, we need a format like:
+		// "FullTypeName, AssemblyName, Version=X.X.X.X, Culture=neutral, PublicKeyToken=null"
+		// However, for source-generated code in the same assembly, we can use a simpler format
+		
+		var typeName = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+			.Replace("global::", ""); // Remove global:: prefix for assembly-qualified name
+		
+		var containingAssembly = typeSymbol.ContainingAssembly;
+		if (containingAssembly != null)
+		{
+			// Simple format for same-assembly access
+			return $"{typeName}, {containingAssembly.Name}";
+		}
+		
+		return typeName;
 	}
 }

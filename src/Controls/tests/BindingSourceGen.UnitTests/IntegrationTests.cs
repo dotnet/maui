@@ -2444,6 +2444,93 @@ public class IntegrationTests
 		// The key assertion: no CS8603 errors should be present
 		AssertExtensions.AssertNoDiagnostics(result);
 	}
+
+	[Fact]
+	public void GenerateBindingWithPrivateSourceType()
+	{
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Button MyButton = new Button();
+
+			public void SetupBinding()
+			{
+				MyButton.SetBinding(Button.TextProperty, static (MyViewModel vm) => vm.MyValue);
+			}
+
+			private class MyViewModel
+			{
+				public string MyValue { get; set; } = "test";
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		
+		// Debug: Check if there are source generator diagnostics
+		if (result.Binding == null)
+		{
+			var diagnostics = string.Join("\n", result.SourceGeneratorDiagnostics.Select(d => $"{d.Id}: {d.GetMessage()}"));
+			throw new System.Exception($"Binding was not generated. Diagnostics:\n{diagnostics}");
+		}
+
+		Assert.NotNull(result.Binding);
+
+		// Debug: Dump generated code
+		foreach (var file in result.GeneratedFiles)
+		{
+			System.Console.WriteLine($"\n========== {file.Key} ==========");
+			System.Console.WriteLine(file.Value);
+		}
+
+		// The generated code should compile without accessibility errors
+		AssertExtensions.AssertNoDiagnostics(result);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPrivatePropertyTypeInPath()
+	{
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Entry MyEntry = new Entry();
+
+			public void SetupBinding()
+			{
+				MyEntry.SetBinding(Entry.TextProperty, static (MyViewModel vm) => vm.Data.Value);
+			}
+
+			public class MyViewModel
+			{
+				// Private field that is accessed in the binding path
+				private PrivateData _data = new PrivateData();
+				public PrivateData Data => _data;
+			}
+
+			private class PrivateData
+			{
+				public string Value { get; set; } = "test";
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
+
+		// The generated code should compile without accessibility errors
+		// The path includes vm.Data which returns a private type PrivateData
+		AssertExtensions.AssertNoDiagnostics(result);
+	}
 }
 
 
