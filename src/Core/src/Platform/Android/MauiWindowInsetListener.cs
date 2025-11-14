@@ -207,63 +207,7 @@ namespace Microsoft.Maui.Platform
 				return result;
 			}
 
-			// Apply default window insets for standard views
-			var returnValue = ApplyDefaultWindowInsets(v, insets);
-
-			// For API < 30 and CoordinatorLayout only, apply Google's workaround to dispatch to all children
-			if ((int)global::Android.OS.Build.VERSION.SdkInt < 30 && v is CoordinatorLayout coordinatorLayout)
-			{
-				// Convert back to platform WindowInsets for propagation
-				var platformInsets = returnValue?.ToWindowInsets();
-				if (platformInsets != null)
-				{
-					// Start recursive dispatch using the result, not the original insets
-					DispatchInsetsToAllChildren(coordinatorLayout, platformInsets);
-				}
-
-				return WindowInsetsCompat.Consumed;
-			}
-
-			return returnValue;
-		}
-
-		// Dispatches insets to all children recursively (for API < 30)
-		// This implements Google's workaround for the API 28-29 bug where
-		// one child consuming insets blocks all siblings from receiving them.
-		// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
-		static WindowInsets? DispatchInsetsToAllChildren(AView view, WindowInsets insets)
-		{
-			if (view == null || insets == null)
-			{
-				return insets;
-			}
-
-			// Skip propagation for MauiScrollView and IMauiRecyclerView
-			if (view is MauiScrollView || view is IMauiRecyclerView)
-				return insets;
-
-			// First, let the view's default handler process the insets
-			var outInsets = view.OnApplyWindowInsets(insets);
-
-			// Only propagate to children if:
-			// 1. outInsets is not null
-			// 2. outInsets is not consumed
-			// 3. view is a ViewGroup
-			// 4. view is not MaterialToolbar (propagate TO toolbar, but not to its children)
-			if (outInsets != null && !outInsets.IsConsumed && view is ViewGroup parent && view is not MaterialToolbar)
-			{
-				for (int i = 0; i < parent.ChildCount; i++)
-				{
-					var child = parent.GetChildAt(i);
-					if (child != null)
-					{
-						// Recursively dispatch the RESULT insets (outInsets), not the original
-						DispatchInsetsToAllChildren(child, outInsets);
-					}
-				}
-			}
-
-			return outInsets;
+			return ApplyDefaultWindowInsets(v, insets);
 		}
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)

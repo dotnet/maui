@@ -77,9 +77,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_navigationArea = PlatformInterop.CreateNavigationBarArea(context, _outerLayout);
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
 
-			// Add inset listener for API 28-29 workaround
-			SetupNavigationAreaInsetListener();
-
 			if (ShellItem is null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
 
@@ -94,18 +91,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
 
 			return _outerLayout;
-		}
-
-		void SetupNavigationAreaInsetListener()
-		{
-			// Only set up listener for API 28-29
-			if ((int)global::Android.OS.Build.VERSION.SdkInt >= 30)
-				return;
-
-			if (_navigationArea == null)
-				return;
-
-			ViewCompat.SetOnApplyWindowInsetsListener(_navigationArea, new NavigationAreaInsetListener());
 		}
 
 		void Destroy()
