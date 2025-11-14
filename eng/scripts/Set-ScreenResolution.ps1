@@ -6,8 +6,8 @@ Sets the screen resolution on Windows.
 .DESCRIPTION
 
 This script programmatically sets the screen resolution on Windows machines
-using the ChangeDisplaySettingsEx Windows API. It's designed to work on
-Azure DevOps hosted and self-hosted Windows agents.
+using WMI and Windows API. It's designed to work on Azure DevOps hosted 
+and self-hosted Windows agents.
 
 .PARAMETER Width
 
@@ -45,17 +45,20 @@ function Set-ScreenResolution {
     
     Write-Host "Setting screen resolution to ${Width}x${Height}..."
     
-    # Define the necessary Windows API structures and functions using Add-Type
+    # Define the complete DEVMODE structure with correct size and layout
     $pinvokeCode = @"
 using System;
 using System.Runtime.InteropServices;
 
 namespace DisplaySettings
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public struct DEVMODE
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        private const int CCHDEVICENAME = 32;
+        private const int CCHFORMNAME = 32;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
         public string dmDeviceName;
         public short dmSpecVersion;
         public short dmDriverVersion;
@@ -73,15 +76,16 @@ namespace DisplaySettings
         public short dmYResolution;
         public short dmTTOption;
         public short dmCollate;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
         public string dmFormName;
+
         public short dmLogPixels;
         public int dmBitsPerPel;
         public int dmPelsWidth;
         public int dmPelsHeight;
         public int dmDisplayFlags;
         public int dmDisplayFrequency;
-
         public int dmICMMethod;
         public int dmICMIntent;
         public int dmMediaType;
@@ -90,31 +94,36 @@ namespace DisplaySettings
         public int dmReserved2;
         public int dmPanningWidth;
         public int dmPanningHeight;
-        
-        public const int DM_PELSWIDTH = 0x80000;
-        public const int DM_PELSHEIGHT = 0x100000;
     }
 
-    public class User32
+    public class NativeMethods
     {
-        [DllImport("user32.dll", CharSet = CharSet.Ansi)]
-        public static extern int EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
-        
-        [DllImport("user32.dll", CharSet = CharSet.Ansi)]
-        public static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
-        
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern bool EnumDisplaySettings(string lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int ChangeDisplaySettings(ref DEVMODE lpDevMode, int dwFlags);
+
         public const int ENUM_CURRENT_SETTINGS = -1;
+        public const int ENUM_REGISTRY_SETTINGS = -2;
         public const int CDS_UPDATEREGISTRY = 0x01;
         public const int CDS_TEST = 0x02;
         public const int DISP_CHANGE_SUCCESSFUL = 0;
         public const int DISP_CHANGE_RESTART = 1;
         public const int DISP_CHANGE_FAILED = -1;
+        public const int DISP_CHANGE_BADMODE = -2;
+        public const int DISP_CHANGE_NOTUPDATED = -3;
+        public const int DISP_CHANGE_BADFLAGS = -4;
+        public const int DISP_CHANGE_BADPARAM = -5;
+        
+        public const int DM_PELSWIDTH = 0x80000;
+        public const int DM_PELSHEIGHT = 0x100000;
     }
 }
 "@
 
     # Add the type if it hasn't been added already
-    if (-not ([System.Management.Automation.PSTypeName]'DisplaySettings.User32').Type) {
+    if (-not ([System.Management.Automation.PSTypeName]'DisplaySettings.NativeMethods').Type) {
         try {
             Add-Type -TypeDefinition $pinvokeCode -ErrorAction Stop
         }
@@ -125,52 +134,77 @@ namespace DisplaySettings
     }
 
     try {
-        # Get current display settings
+        # Initialize DEVMODE structure
         $devMode = New-Object DisplaySettings.DEVMODE
-        $devMode.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf([type][DisplaySettings.DEVMODE])
+        $devMode.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf($devMode)
         
-        $result = [DisplaySettings.User32]::EnumDisplaySettings($null, [DisplaySettings.User32]::ENUM_CURRENT_SETTINGS, [ref]$devMode)
+        # Get current display settings
+        $result = [DisplaySettings.NativeMethods]::EnumDisplaySettings($null, [DisplaySettings.NativeMethods]::ENUM_CURRENT_SETTINGS, [ref]$devMode)
         
-        if ($result -eq 0) {
-            Write-Error "Failed to enumerate current display settings"
-            return $false
+        if (-not $result) {
+            Write-Warning "Could not enumerate current display settings. Attempting to set resolution anyway..."
+            # Initialize a new DEVMODE for setting resolution
+            $devMode = New-Object DisplaySettings.DEVMODE
+            $devMode.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf($devMode)
+        }
+        else {
+            Write-Host "Current resolution: $($devMode.dmPelsWidth)x$($devMode.dmPelsHeight)"
+            
+            # Check if the resolution is already set to the desired values
+            if ($devMode.dmPelsWidth -eq $Width -and $devMode.dmPelsHeight -eq $Height) {
+                Write-Host "Screen resolution is already set to ${Width}x${Height}"
+                return $true
+            }
         }
         
-        Write-Host "Current resolution: $($devMode.dmPelsWidth)x$($devMode.dmPelsHeight)"
-        
-        # Check if the resolution is already set to the desired values
-        if ($devMode.dmPelsWidth -eq $Width -and $devMode.dmPelsHeight -eq $Height) {
-            Write-Host "Screen resolution is already set to ${Width}x${Height}"
-            return $true
-        }
-        
-        # Set new resolution and specify which fields are being set
+        # Set new resolution
         $devMode.dmPelsWidth = $Width
         $devMode.dmPelsHeight = $Height
-        $devMode.dmFields = [DisplaySettings.DEVMODE]::DM_PELSWIDTH -bor [DisplaySettings.DEVMODE]::DM_PELSHEIGHT
+        $devMode.dmFields = [DisplaySettings.NativeMethods]::DM_PELSWIDTH -bor [DisplaySettings.NativeMethods]::DM_PELSHEIGHT
         
         # Test if the resolution is supported
-        $testResult = [DisplaySettings.User32]::ChangeDisplaySettings([ref]$devMode, [DisplaySettings.User32]::CDS_TEST)
+        $testResult = [DisplaySettings.NativeMethods]::ChangeDisplaySettings([ref]$devMode, [DisplaySettings.NativeMethods]::CDS_TEST)
         
-        if ($testResult -eq [DisplaySettings.User32]::DISP_CHANGE_FAILED) {
-            Write-Error "The resolution ${Width}x${Height} is not supported by this display"
-            return $false
+        if ($testResult -ne [DisplaySettings.NativeMethods]::DISP_CHANGE_SUCCESSFUL) {
+            Write-Warning "Resolution test returned code: $testResult"
+            
+            switch ($testResult) {
+                ([DisplaySettings.NativeMethods]::DISP_CHANGE_BADMODE) {
+                    Write-Error "The resolution ${Width}x${Height} is not supported by this display (BADMODE)"
+                    return $false
+                }
+                ([DisplaySettings.NativeMethods]::DISP_CHANGE_FAILED) {
+                    Write-Error "The resolution change test failed (FAILED)"
+                    return $false
+                }
+                default {
+                    Write-Warning "Unexpected test result, attempting to apply anyway..."
+                }
+            }
         }
         
         # Apply the resolution change
-        $changeResult = [DisplaySettings.User32]::ChangeDisplaySettings([ref]$devMode, [DisplaySettings.User32]::CDS_UPDATEREGISTRY)
+        $changeResult = [DisplaySettings.NativeMethods]::ChangeDisplaySettings([ref]$devMode, [DisplaySettings.NativeMethods]::CDS_UPDATEREGISTRY)
         
         switch ($changeResult) {
-            ([DisplaySettings.User32]::DISP_CHANGE_SUCCESSFUL) {
+            ([DisplaySettings.NativeMethods]::DISP_CHANGE_SUCCESSFUL) {
                 Write-Host "Successfully set screen resolution to ${Width}x${Height}"
                 return $true
             }
-            ([DisplaySettings.User32]::DISP_CHANGE_RESTART) {
-                Write-Warning "Screen resolution change requires a restart to take effect"
+            ([DisplaySettings.NativeMethods]::DISP_CHANGE_RESTART) {
+                Write-Host "Screen resolution set to ${Width}x${Height}. A restart may be required for some applications."
                 return $true
             }
-            ([DisplaySettings.User32]::DISP_CHANGE_FAILED) {
+            ([DisplaySettings.NativeMethods]::DISP_CHANGE_BADMODE) {
+                Write-Error "The resolution ${Width}x${Height} is not supported by this display"
+                return $false
+            }
+            ([DisplaySettings.NativeMethods]::DISP_CHANGE_FAILED) {
                 Write-Error "Failed to change screen resolution"
+                return $false
+            }
+            ([DisplaySettings.NativeMethods]::DISP_CHANGE_NOTUPDATED) {
+                Write-Error "Failed to update registry with new resolution"
                 return $false
             }
             default {
