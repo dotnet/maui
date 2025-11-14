@@ -195,10 +195,56 @@ public partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void SimplifyOnPlatformWithXKeyAndValueNode()
+	public void SimplifyOnPlatformWithXKeyAndValueNodeWithoutTypeArguments()
 	{
-		// Issue #17461: OnPlatform with x:Key should not be simplified if the target value is a ValueNode
-		// because ValueNodes cannot have x:Key attributes transferred to them
+		// OnPlatform with x:Key but WITHOUT x:TypeArguments should NOT be simplified
+		// when the target value is a ValueNode, because we don't know how to create the typed element
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<OnPlatform x:Key="TestValue">
+			<On Platform="Android" Value="10" />
+			<On Platform="iOS" Value="20" />
+		</OnPlatform>
+	</ContentPage.Resources>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+		Assert.False(result.Diagnostics.Any());
+
+		// OnPlatform should NOT be simplified because there's no x:TypeArguments and the target is a ValueNode
+		Assert.Contains("OnPlatform", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SimplifyOnPlatformWithXKeyAndXTypeArguments()
+	{
+		// OnPlatform with x:Key and x:TypeArguments should be simplified by creating a typed element
+		// For example, OnPlatform with x:TypeArguments="Color" should become <Color x:Key="TestColor">Red</Color>
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -237,10 +283,15 @@ public partial class TestPage : ContentPage
 		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
 		Assert.False(result.Diagnostics.Any());
 
-		// OnPlatform should NOT be simplified because the target value is a simple ValueNode
-		// and we cannot transfer x:Key to a ValueNode
-		Assert.Contains("OnPlatform", generated, StringComparison.Ordinal);
+		// OnPlatform SHOULD be simplified because x:TypeArguments tells us how to create a proper typed element
+		Assert.DoesNotContain("OnPlatform", generated, StringComparison.Ordinal);
 		Assert.Contains("TestColor", generated, StringComparison.Ordinal);
+		// Should contain Red (Android), not Blue (iOS)
+		Assert.Contains("Red", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("Blue", generated, StringComparison.Ordinal);
+
+		// Verify the generated code creates a Color object directly
+		Assert.Contains("Colors.Red", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

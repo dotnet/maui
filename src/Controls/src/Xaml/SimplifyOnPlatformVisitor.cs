@@ -86,10 +86,30 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 			INode keyNode = null;
 			bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out keyNode);
 
-			// If OnPlatform has x:Key but the replacement node is a ValueNode, we cannot transfer the key
-			// directly because ValueNodes don't support properties. In this case, skip simplification.
-			if (hasKey && onNode is ValueNode)
-				return;
+			// If OnPlatform has x:Key but the replacement node is a ValueNode,
+			// check if we have x:TypeArguments to create a proper ElementNode
+			if (hasKey && onNode is ValueNode valueNode)
+			{
+				// Check if OnPlatform has x:TypeArguments
+				if (node.XmlType.TypeArguments != null && node.XmlType.TypeArguments.Count > 0)
+				{
+					// Create a new ElementNode with the type from x:TypeArguments
+					var typeArg = node.XmlType.TypeArguments[0];
+					var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
+					
+					// Set the value as the collection item (for types like Color, this is how they're represented)
+					elementNode.CollectionItems.Add(valueNode);
+					
+					// Replace the ValueNode with the new ElementNode
+					onNode = elementNode;
+				}
+				else
+				{
+					// No x:TypeArguments, so we cannot create a proper ElementNode
+					// Skip simplification
+					return;
+				}
+			}
 
 			//Property node
 			if (node.TryGetPropertyName(parentNode, out XmlName name)
