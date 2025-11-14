@@ -9,6 +9,25 @@ internal static class ISymbolExtensions
 		|| symbol.DeclaredAccessibility == Accessibility.Internal
 		|| symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal;
 
+	// For type symbols, check if the type and all its containing types are accessible
+	internal static bool IsAccessible(this ITypeSymbol typeSymbol)
+	{
+		// Check the type itself
+		if (!((ISymbol)typeSymbol).IsAccessible())
+			return false;
+
+		// Check all containing types
+		var containingType = typeSymbol.ContainingType;
+		while (containingType != null)
+		{
+			if (!((ISymbol)containingType).IsAccessible())
+				return false;
+			containingType = containingType.ContainingType;
+		}
+
+		return true;
+	}
+
 	internal static AccessorKind ToAccessorKind(this ISymbol symbol)
 	{
 		return symbol switch

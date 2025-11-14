@@ -218,27 +218,8 @@ public static class BindingCodeWriter
 
 		private string GenerateGetterInvocation(BindingInvocationDescription binding)
 		{
-			// If source type is inaccessible, we need to cast from object
-			if (!binding.SourceType.IsAccessible)
-			{
-				// Cast to the actual type to invoke the getter, then cast result if needed
-				var castSource = $"({binding.SourceType})source";
-				var getterCall = $"getter({castSource})";
-				
-				// If property type is also inaccessible, cast the result
-				if (!binding.PropertyType.IsAccessible)
-				{
-					return $"(object){getterCall}, true";
-				}
-				return $"{getterCall}, true";
-			}
-			else if (!binding.PropertyType.IsAccessible)
-			{
-				// Only property type is inaccessible, cast result
-				return $"(object)getter(source), true";
-			}
-			
-			// Both types accessible, no casting needed
+			// When types are inaccessible, the getter parameter is Func<object, object> (or mixed)
+			// and we just invoke it directly - no casting needed because the parameter types match
 			return "getter(source), true";
 		}
 
@@ -317,37 +298,21 @@ public static class BindingCodeWriter
 			AppendLine('{');
 			Indent();
 
-			// Cast source if it's an inaccessible type
-			var actualSourceVar = sourceVariableName;
-			if (!binding.SourceType.IsAccessible)
-			{
-				actualSourceVar = "typedSource";
-				AppendLine($"var {actualSourceVar} = ({binding.SourceType}){sourceVariableName};");
-			}
-
+			// No casting needed - when types are inaccessible, parameters are already object
+			// and UnsafeAccessor methods handle the type conversions
 			var assignedValueExpression = valueVariableName;
-
-			// Cast value if it's an inaccessible type
-			if (!binding.PropertyType.IsAccessible)
-			{
-				var typedValueVar = "typedValue";
-				AppendLine($"var {typedValueVar} = ({binding.PropertyType}){valueVariableName};");
-				assignedValueExpression = typedValueVar;
-			}
 
 			// early return for nullable values if the setter doesn't accept them
 			if (binding.PropertyType.IsNullable && !binding.SetterOptions.AcceptsNullValue)
 			{
 				if (binding.PropertyType.IsValueType)
 				{
-					var checkVar = !binding.PropertyType.IsAccessible ? "typedValue" : valueVariableName;
-					AppendLine($"if (!{checkVar}.HasValue)");
-					assignedValueExpression = $"{checkVar}.Value";
+					AppendLine($"if (!{valueVariableName}.HasValue)");
+					assignedValueExpression = $"{valueVariableName}.Value";
 				}
 				else
 				{
-					var checkVar = !binding.PropertyType.IsAccessible ? "typedValue" : valueVariableName;
-					AppendLine($"if ({checkVar} is null)");
+					AppendLine($"if ({valueVariableName} is null)");
 				}
 				AppendLine('{');
 				Indent();
@@ -356,7 +321,7 @@ public static class BindingCodeWriter
 				AppendLine('}');
 			}
 
-			var setter = Setter.From(binding.Path, actualSourceVar, assignedValueExpression);
+			var setter = Setter.From(binding.Path, sourceVariableName, assignedValueExpression);
 			if (setter.PatternMatchingExpressions.Length > 0)
 			{
 				Append("if (");
@@ -407,14 +372,9 @@ public static class BindingCodeWriter
 
 			Indent();
 
-			// If source type is inaccessible, we need to cast in the lambda
-			string sourceExpression = "source";
-			if (!binding.SourceType.IsAccessible)
-			{
-				sourceExpression = $"(({binding.SourceType})source)";
-			}
-
-			string nextExpression = sourceExpression;
+			// No casting needed - when source type is inaccessible, it's already object
+			// and we use UnsafeAccessor methods for member access
+			string nextExpression = "source";
 			bool forceConditonalAccessToNextPart = false;
 			foreach (var part in binding.Path)
 			{
@@ -501,7 +461,7 @@ public static class BindingCodeWriter
 
 				if (unsafeAccessor.Kind == AccessorKind.Field)
 				{
-					AppendUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+					AppendUnsafeFieldAccessorWithType(unsafeAccessor.MemberName, unsafeAccessor.memberType, unsafeAccessor.ContainingType);
 				}
 				else if (unsafeAccessor.Kind == AccessorKind.Property)
 				{
@@ -512,13 +472,13 @@ public static class BindingCodeWriter
 					{
 						// we don't need the unsafe getter if the item is the very last part of the path
 						// because we don't need to access its value while constructing the handlers array
-						AppendUnsafePropertyGetAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+						AppendUnsafePropertyGetAccessorsWithType(unsafeAccessor.MemberName, unsafeAccessor.memberType, unsafeAccessor.ContainingType);
 					}
 
 					if (isLastPart && binding.SetterOptions.IsWritable)
 					{
 						// We only need the unsafe setter if the item is the very last part of the path
-						AppendUnsafePropertySetAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+						AppendUnsafePropertySetAccessorsWithType(unsafeAccessor.MemberName, unsafeAccessor.memberType, unsafeAccessor.ContainingType);
 					}
 				}
 				else
@@ -546,6 +506,55 @@ public static class BindingCodeWriter
 				[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
 				static extern void {{CreateUnsafePropertyAccessorSetMethodName(propertyName)}}({{containingType}} source, {{memberType}} value);
 				""");
+
+		private void AppendUnsafeFieldAccessorWithType(string fieldName, TypeDescription memberType, TypeDescription containingType)
+		{
+			var memberTypeStr = memberType.IsAccessible ? memberType.ToString() : "object";
+			var containingTypeStr = containingType.IsAccessible ? containingType.ToString() : "object";
+			
+			if (!containingType.IsAccessible && containingType.AssemblyQualifiedName != null)
+			{
+				AppendLine($"[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = \"{fieldName}\")]");
+				AppendLine($"static extern ref {memberTypeStr} {CreateUnsafeFieldAccessorMethodName(fieldName)}([global::System.Runtime.CompilerServices.UnsafeAccessorType(\"{containingType.AssemblyQualifiedName}\")] {containingTypeStr} source);");
+			}
+			else
+			{
+				AppendUnsafeFieldAccessor(fieldName, memberTypeStr, containingTypeStr);
+			}
+		}
+
+		private void AppendUnsafePropertyGetAccessorsWithType(string propertyName, TypeDescription memberType, TypeDescription containingType)
+		{
+			var memberTypeStr = memberType.IsAccessible ? memberType.ToString() : "object";
+			var containingTypeStr = containingType.IsAccessible ? containingType.ToString() : "object";
+			
+			if (!containingType.IsAccessible && containingType.AssemblyQualifiedName != null)
+			{
+				AppendLine($"[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"get_{propertyName}\")]");
+				AppendLine($"static extern {memberTypeStr} {CreateUnsafePropertyAccessorGetMethodName(propertyName)}([global::System.Runtime.CompilerServices.UnsafeAccessorType(\"{containingType.AssemblyQualifiedName}\")] {containingTypeStr} source);");
+			}
+			else
+			{
+				AppendUnsafePropertyGetAccessors(propertyName, memberTypeStr, containingTypeStr);
+			}
+		}
+
+		private void AppendUnsafePropertySetAccessorsWithType(string propertyName, TypeDescription memberType, TypeDescription containingType)
+		{
+			var memberTypeStr = memberType.IsAccessible ? memberType.ToString() : "object";
+			var containingTypeStr = containingType.IsAccessible ? containingType.ToString() : "object";
+			var valueTypeStr = memberType.IsAccessible ? memberType.ToString() : "object";
+			
+			if (!containingType.IsAccessible && containingType.AssemblyQualifiedName != null)
+			{
+				AppendLine($"[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_{propertyName}\")]");
+				AppendLine($"static extern void {CreateUnsafePropertyAccessorSetMethodName(propertyName)}([global::System.Runtime.CompilerServices.UnsafeAccessorType(\"{containingType.AssemblyQualifiedName}\")] {containingTypeStr} source, {valueTypeStr} value);");
+			}
+			else
+			{
+				AppendUnsafePropertySetAccessors(propertyName, valueTypeStr, containingTypeStr);
+			}
+		}
 
 		private void AppendUnsafeAccessorTypes(BindingInvocationDescription binding)
 		{

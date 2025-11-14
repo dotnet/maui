@@ -2587,10 +2587,10 @@ public class IntegrationTests
 		Assert.NotNull(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		
-		// Verify setter generation with casting
+		// Verify setter generation with UnsafeAccessor
 		var generatedFile = result.GeneratedFiles.Values.FirstOrDefault(f => f.Contains("SetBinding", StringComparison.Ordinal));
 		Assert.NotNull(generatedFile);
-		Assert.Contains("typedSource", generatedFile, StringComparison.Ordinal); // Should have casting in setter
+		Assert.Contains("UnsafeAccessor", generatedFile, StringComparison.Ordinal); // Should use UnsafeAccessor
 	}
 
 	[Fact]

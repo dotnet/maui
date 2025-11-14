@@ -54,9 +54,13 @@ internal class PathParser
 		var memberType = typeInfo.CreateTypeDescription(_enabledNullable);
 		var containgType = symbol.ContainingType.CreateTypeDescription(_enabledNullable);
 
-		IPathPart part = symbol.IsAccessible()
-			? new MemberAccess(member, !isReferenceType)
-			: new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType);
+		// If either the member is inaccessible OR the containing type is inaccessible,
+		// we need to use UnsafeAccessor
+		bool needsUnsafeAccessor = !symbol.IsAccessible() || !containgType.IsAccessible;
+
+		IPathPart part = needsUnsafeAccessor
+			? new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType)
+			: new MemberAccess(member, !isReferenceType);
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);

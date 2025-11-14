@@ -230,8 +230,10 @@ public class DiagnosticsTests
 	[InlineData("protected")]
 	[InlineData("private protected")]
 	// https://github.com/dotnet/maui/issues/23534
-	public void ReportsWarningWhenSourceTypeIsUnaccessible(string modifier)
+	public void SupportsInaccessibleSourceType(string modifier)
 	{
+		// Previously this test checked for BSG0007 error
+		// Now we support private types using UnsafeAccessorType
 		var source = $$"""
 			using Microsoft.Maui.Controls;
 
@@ -255,9 +257,9 @@ public class DiagnosticsTests
 
 		var result = SourceGenHelpers.Run(source);
 
-		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0007", diagnostic.Id);
-		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+		// Should not have any diagnostics - private types are now supported
+		AssertExtensions.AssertNoDiagnostics(result);
+		Assert.NotNull(result.Binding);
 	}
 
 	[Fact]
