@@ -92,7 +92,18 @@ static partial class ITypeSymbolExtensions
 	}
 
 	/// <summary>
-	/// Checks if a symbol has an attribute with a name ending in "BindablePropertyAttribute" or "AutoPropertyAttribute".
+	/// List of recognized attribute full names that indicate a bindable property will be generated.
+	/// Easy to extend by adding new attribute names to this list.
+	/// </summary>
+	private static readonly string[] RecognizedBindablePropertyAttributes = new[]
+	{
+		"CommunityToolkit.Maui.BindablePropertyAttribute",
+		"SQuan.Helpers.Maui.Mvvm.BindablePropertyAttribute",
+		"Maui.BindableProperty.Generator.Core.AutoBindableAttribute"
+	};
+
+	/// <summary>
+	/// Checks if a symbol has a recognized bindable property attribute.
 	/// If the attribute has a PropertyName parameter, returns it in the out parameter.
 	/// </summary>
 	private static bool HasBindablePropertyOrAutoPropertyAttribute(ISymbol symbol, out string? explicitPropertyName)
@@ -101,11 +112,31 @@ static partial class ITypeSymbolExtensions
 		
 		foreach (var attr in symbol.GetAttributes())
 		{
-			var attrName = attr.AttributeClass?.Name;
+			var attrClass = attr.AttributeClass;
+			if (attrClass == null)
+				continue;
+				
+			var fullTypeName = attrClass.ToString();
 			
-			// Check for BindablePropertyAttribute or AutoPropertyAttribute with optional PropertyName parameter
-			if (attrName?.EndsWith("BindablePropertyAttribute", StringComparison.Ordinal) == true ||
-			    attrName?.EndsWith("AutoPropertyAttribute", StringComparison.Ordinal) == true)
+			// Check if the attribute is in our list of recognized attributes, or if it ends with the expected names
+			// This allows for both specific known attributes and flexible matching for testing/other libraries
+			bool isRecognizedAttribute = false;
+			
+			// Check exact match first
+			if (RecognizedBindablePropertyAttributes.Contains(fullTypeName))
+			{
+				isRecognizedAttribute = true;
+			}
+			// Also check if it ends with .BindablePropertyAttribute or .AutoPropertyAttribute or .AutoBindableAttribute
+			// This provides flexibility for attributes from other namespaces
+			else if (fullTypeName.EndsWith(".BindablePropertyAttribute", StringComparison.Ordinal) ||
+			         fullTypeName.EndsWith(".AutoPropertyAttribute", StringComparison.Ordinal) ||
+			         fullTypeName.EndsWith(".AutoBindableAttribute", StringComparison.Ordinal))
+			{
+				isRecognizedAttribute = true;
+			}
+			
+			if (isRecognizedAttribute)
 			{
 				// Try to get the PropertyName named parameter
 				foreach (var namedArg in attr.NamedArguments)
