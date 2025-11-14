@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
 using Android.Views;
-using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
@@ -206,54 +205,14 @@ namespace Microsoft.Maui.Platform
 				return customHandler.HandleWindowInsets(v, insets);
 			}
 
+			// Apply default window insets for standard views
 			return ApplyDefaultWindowInsets(v, insets);
 		}
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
 		{
-			// Get system bars insets with API level fallback
-			// WindowInsetsCompat.Type.SystemBars() was added in API 30
-			// For API 28-29, we need to use the deprecated SystemWindowInsets property
-			Insets? systemBars;
-			Insets? displayCutout;
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-				displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-			}
-			else // API 28-29
-			{
-				// Use legacy SystemWindowInsets for older APIs
-				// These values represent the area occupied by system bars
-#pragma warning disable CS0618 // Type or member is obsolete
-				var legacyInsets = insets.SystemWindowInsets;
-#pragma warning restore CS0618
-
-				systemBars = Insets.Of(
-					legacyInsets?.Left ?? 0,
-					legacyInsets?.Top ?? 0,
-					legacyInsets?.Right ?? 0,
-					legacyInsets?.Bottom ?? 0
-				);
-
-				// DisplayCutout API was added in API 28, but getInsets(Type.DisplayCutout) is API 30+
-				// For API 28-29, use DisplayCutout if available
-				var cutout = insets.DisplayCutout;
-				if (cutout != null)
-				{
-					displayCutout = Insets.Of(
-						cutout.SafeInsetLeft,
-						cutout.SafeInsetTop,
-						cutout.SafeInsetRight,
-						cutout.SafeInsetBottom
-					);
-				}
-				else
-				{
-					displayCutout = Insets.None;
-				}
-			}
+			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 
 			// Handle MaterialToolbar special case early
 			if (v is MaterialToolbar)
@@ -345,10 +304,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-		public bool IsViewTracked(AView view)
-		{
-			return _trackedViews.Contains(view);
-		}
+        public bool IsViewTracked(AView view)
+        {
+            return _trackedViews.Contains(view);
+        }
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
