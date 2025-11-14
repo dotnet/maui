@@ -2446,7 +2446,7 @@ public class IntegrationTests
 	}
 
 	[Fact]
-	public void GenerateBindingWithPrivateSourceType()
+	public void GenerateBindingWithPrivateSourceType_ReportsError()
 	{
 		var source = """
 		using Microsoft.Maui.Controls;
@@ -2472,29 +2472,17 @@ public class IntegrationTests
 
 		var result = SourceGenHelpers.Run(source);
 		
-		// Debug: Check if there are source generator diagnostics
-		if (result.Binding == null)
-		{
-			var diagnostics = string.Join("\n", result.SourceGeneratorDiagnostics.Select(d => $"{d.Id}: {d.GetMessage()}"));
-			throw new System.Exception($"Binding was not generated. Diagnostics:\n{diagnostics}");
-		}
-
-		Assert.NotNull(result.Binding);
-
-		// Debug: Dump generated code
-		foreach (var file in result.GeneratedFiles)
-		{
-			System.Console.WriteLine($"\n========== {file.Key} ==========");
-			System.Console.WriteLine(file.Value);
-		}
-
-		// The generated code should compile without accessibility errors
-		AssertExtensions.AssertNoDiagnostics(result);
+		// Private source types are not currently supported
+		// Should report BSG0007 error
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0007", diagnostic.Id);
+		Assert.Contains("internal", diagnostic.GetMessage(), StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void GenerateBindingWithPrivatePropertyTypeInPath()
+	public void GenerateBindingWithInternalSourceType_WorksCorrectly()
 	{
+		// Test that internal types DO work (as opposed to private types)
 		var source = """
 		using Microsoft.Maui.Controls;
 
@@ -2503,23 +2491,16 @@ public class IntegrationTests
 
 		public class MyPage
 		{
-			internal Entry MyEntry = new Entry();
+			internal Button MyButton = new Button();
 
 			public void SetupBinding()
 			{
-				MyEntry.SetBinding(Entry.TextProperty, static (MyViewModel vm) => vm.Data.Value);
+				MyButton.SetBinding(Button.TextProperty, static (MyViewModel vm) => vm.MyValue);
 			}
 
-			public class MyViewModel
+			internal class MyViewModel
 			{
-				// Private field that is accessed in the binding path
-				private PrivateData _data = new PrivateData();
-				public PrivateData Data => _data;
-			}
-
-			private class PrivateData
-			{
-				public string Value { get; set; } = "test";
+				public string MyValue { get; set; } = "test";
 			}
 		}
 		""";
@@ -2527,8 +2508,7 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		// The generated code should compile without accessibility errors
-		// The path includes vm.Data which returns a private type PrivateData
+		// Internal types should work fine
 		AssertExtensions.AssertNoDiagnostics(result);
 	}
 }

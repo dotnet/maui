@@ -218,34 +218,8 @@ public static class BindingCodeWriter
 					""");
 			}
 
-			// Generate the getter parameter with UnsafeAccessorType attributes if needed
-			bool sourceTypeNeedsUnsafeAccessor = !binding.SourceType.IsAccessible;
-			bool propertyTypeNeedsUnsafeAccessor = !binding.PropertyType.IsAccessible;
-			
-			if (sourceTypeNeedsUnsafeAccessor || propertyTypeNeedsUnsafeAccessor)
-			{
-				// At least one type is inaccessible - need special handling
-				// We need to apply [UnsafeAccessorType] to the Func parameter itself
-				// The format is: [UnsafeAccessorType("FullTypeName")]
-				if (sourceTypeNeedsUnsafeAccessor)
-				{
-					AppendLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorType(\"{binding.SourceType.AssemblyQualifiedName}\")]");
-				}
-				// For property type, we'd need a separate attribute, but there's no way to apply it to the return type
-				// So we use object for inaccessible types
-				var sourceTypeParam = sourceTypeNeedsUnsafeAccessor ? "object" : binding.SourceType.ToString();
-				var propertyTypeParam = propertyTypeNeedsUnsafeAccessor ? "object" : binding.PropertyType.ToString();
-				AppendLine($"global::System.Func<{sourceTypeParam}, {propertyTypeParam}> getter,");
-			}
-			else
-			{
-				// Both types are accessible - use normal signature
-				AppendLines($$"""
-					global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
-					""");
-			}
-			
 			AppendLines($$"""
+				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
 				global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
 				global::Microsoft.Maui.Controls.IValueConverter? converter = null,
 				object? converterParameter = null,

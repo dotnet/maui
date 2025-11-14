@@ -86,8 +86,8 @@ internal static class DiagnosticsFactory
 		=> new DiagnosticInfo(
 			new DiagnosticDescriptor(
 				id: "BSG0007",
-				title: "Unaccessible type used as lambda parameter",
-				messageFormat: "The lambda parameter type has to be declared as public, internal or protected internal.",
+				title: "Inaccessible type used as lambda parameter",
+				messageFormat: "The lambda parameter type has to be declared as public, internal or protected internal. Private and protected types cannot be used because the generated binding code is in a different namespace. Consider making the type internal instead of private.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),

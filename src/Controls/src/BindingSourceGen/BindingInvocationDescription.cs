@@ -41,9 +41,7 @@ public sealed record TypeDescription(
 	string GlobalName,
 	bool IsValueType = false,
 	bool IsNullable = false,
-	bool IsGenericParameter = false,
-	bool IsAccessible = true,
-	string? AssemblyQualifiedName = null)
+	bool IsGenericParameter = false)
 {
 	public override string ToString()
 		=> IsNullable
