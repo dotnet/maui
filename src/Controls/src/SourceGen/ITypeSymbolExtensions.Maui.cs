@@ -66,6 +66,9 @@ static partial class ITypeSymbolExtensions
 	/// </summary>
 	private static IEnumerable<string> DerivePotentialPropertyNames(string propertyName)
 	{
+		if (string.IsNullOrEmpty(propertyName))
+			yield break;
+		
 		// Exact match (e.g., "Balance")
 		yield return propertyName;
 	}
@@ -75,11 +78,17 @@ static partial class ITypeSymbolExtensions
 	/// </summary>
 	private static IEnumerable<string> DerivePotentialFieldNames(string propertyName)
 	{
+		if (string.IsNullOrEmpty(propertyName))
+			yield break;
+		
 		// Underscore prefix with lowercase first letter (e.g., "_balance" for "Balance")
 		yield return $"_{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
 		
 		// Lowercase first letter (e.g., "balance" for "Balance")
 		yield return $"{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
+		
+		// Uppercase first letter (e.g., "Balance" for "Balance" - uncommon but supported)
+		yield return propertyName;
 	}
 
 	/// <summary>
