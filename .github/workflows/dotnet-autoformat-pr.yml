@@ -14,6 +14,6 @@ jobs:
     - name: 'Autoformat'
       uses: rolfbjarne/autoformat@v0.5
       with:
-        script: 'dotnet format Microsoft.Maui.slnx --no-restore --exclude Templates/src BlazorWebView/src/SharedSource/BlazorWebViewDeveloperTools.cs BlazorWebView/src/SharedSource/BlazorWebViewServiceCollectionExtensions.cs Graphics/src/Graphics.Win2D/W2DCanvas.cs Graphics/src/Graphics.Win2D/W2DExtensions.cs'
+        script: 'dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src BlazorWebView/src/SharedSource/BlazorWebViewDeveloperTools.cs BlazorWebView/src/SharedSource/BlazorWebViewServiceCollectionExtensions.cs Graphics/src/Graphics.Win2D/W2DCanvas.cs Graphics/src/Graphics.Win2D/W2DExtensions.cs'
         onlyFilesModifiedInPullRequest: true
         git_commit_message: 'Auto-format source code'
