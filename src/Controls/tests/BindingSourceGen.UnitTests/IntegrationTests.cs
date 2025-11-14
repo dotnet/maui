@@ -2476,11 +2476,23 @@ public class IntegrationTests
 		// Private source types are now supported using UnsafeAccessorType
 		AssertExtensions.AssertNoDiagnostics(result);
 		
-		// Verify the generated code uses object and UnsafeAccessorType
-		var generatedFile = result.GeneratedFiles.Values.FirstOrDefault(f => f.Contains("UnsafeAccessorType", StringComparison.Ordinal));
-		Assert.NotNull(generatedFile);
-		Assert.Contains("Func<object, string>", generatedFile, StringComparison.Ordinal);
+		// Full snapshot test of generated code - verify key parts
+		var generatedFile = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-12-12.g.cs"];
+		
+		// Verify UnsafeAccessorType is applied to the getter parameter
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessorType(\"MyPage.MyViewModel, compilation\")]", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("global::System.Func<object, string> getter,", generatedFile, StringComparison.Ordinal);
+		
+		// Verify TypedBinding uses object for the inaccessible source type
 		Assert.Contains("TypedBinding<object, string>", generatedFile, StringComparison.Ordinal);
+		
+		// Verify UnsafeAccessor is generated for the property setter
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_MyValue\")]", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("static extern void SetUnsafeProperty_MyValue([global::System.Runtime.CompilerServices.UnsafeAccessorType(\"MyPage.MyViewModel, compilation\")] object source, string value);", generatedFile, StringComparison.Ordinal);
+		
+		// Verify no casting is done in the generated code
+		Assert.DoesNotContain("(MyViewModel)", generatedFile, StringComparison.Ordinal);
+		Assert.DoesNotContain("(object)getter", generatedFile, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2555,6 +2567,26 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Verify generated code has UnsafeAccessor for types in the path
+		var generatedFile = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-12-11.g.cs"];
+		
+		// Debug output to see what's actually generated
+		System.Console.WriteLine("===== GENERATED CODE (Private Source and Property) =====");
+		System.Console.WriteLine(generatedFile);
+		System.Console.WriteLine("===== END =====");
+		
+		// Source type (MyViewModel) is private - UnsafeAccessorType on getter parameter
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessorType(\"MyPage.MyViewModel, compilation\")]", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("global::System.Func<object, string> getter,", generatedFile, StringComparison.Ordinal);
+		
+		// Data property returns private type - needs UnsafeAccessor  
+		Assert.Contains("UnsafeProperty_Data", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("UnsafeAccessorType(\"MyPage.MyViewModel, compilation\")", generatedFile, StringComparison.Ordinal);
+		
+		// Value property on PrivateData - also needs UnsafeAccessor since PrivateData is private
+		Assert.Contains("UnsafeProperty_Value", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("UnsafeAccessorType(\"MyPage.PrivateData, compilation\")", generatedFile, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2588,9 +2620,14 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		
 		// Verify setter generation with UnsafeAccessor
-		var generatedFile = result.GeneratedFiles.Values.FirstOrDefault(f => f.Contains("SetBinding", StringComparison.Ordinal));
-		Assert.NotNull(generatedFile);
-		Assert.Contains("UnsafeAccessor", generatedFile, StringComparison.Ordinal); // Should use UnsafeAccessor
+		var generatedFile = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-12-11.g.cs"];
+		
+		// Verify setter is generated
+		Assert.Contains("setter = static (source, value) =>", generatedFile, StringComparison.Ordinal);
+		
+		// Verify UnsafeAccessor setter method with UnsafeAccessorType on parameter
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_MyValue\")]", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("static extern void SetUnsafeProperty_MyValue([global::System.Runtime.CompilerServices.UnsafeAccessorType(\"MyPage.MyViewModel, compilation\")] object source, string value);", generatedFile, StringComparison.Ordinal);
 	}
 
 	[Fact]
