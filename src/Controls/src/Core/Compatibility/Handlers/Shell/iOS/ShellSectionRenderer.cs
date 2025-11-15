@@ -579,7 +579,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (child == null)
 					continue;
-				var renderer = (IPlatformViewHandler)child.Handler;
+				var renderer = child.Handler as IPlatformViewHandler;
 				if (viewController == renderer?.ViewController)
 					return child;
 			}
