@@ -34,16 +34,24 @@ internal class KnownMarkups
 		var typename = member.Substring(0, dotIdx);
 		var membername = member.Substring(dotIdx + 1);
 
-		var typeSymbol = typename.GetTypeSymbol(context, markupNode);
-		if (typeSymbol == null)
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(typename, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+		if (!xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
 		{
+			//fallback to guessing, if it's a clr-namespace
+			if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
+			{
+				value = $"global::{ns}.{xmlType.Name}.{membername}";
+				return true;
+			}
+
 			//FIXME
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typename}"));
 			value = string.Empty;
 			return false;
 		}
-		var field = typeSymbol.GetAllFields(membername, context).FirstOrDefault(f => f.IsStatic);
-		var property = typeSymbol.GetAllProperties(membername, context).FirstOrDefault(p => p.IsStatic);
+		
+		var field = typeSymbol!.GetAllFields(membername, context).FirstOrDefault(f => f.IsStatic);
+		var property = typeSymbol!.GetAllProperties(membername, context).FirstOrDefault(p => p.IsStatic);
 
 		//TODO handle enums, or contstants
 		if (field == null && property == null)
