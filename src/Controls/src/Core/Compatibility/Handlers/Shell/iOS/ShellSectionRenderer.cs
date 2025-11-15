@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// Bounds check: ensure we have a valid index for pages array
 			int targetIndex = NavigationBar.Items.Length - 1;
-			if (targetIndex < 0 || targetIndex >= pages.Count || pages[targetIndex] is null)
+			if (targetIndex < 0 || targetIndex >= pages.Count)
 				return true;
 
 			_shellSection.SyncStackDownTo(pages[targetIndex]);
