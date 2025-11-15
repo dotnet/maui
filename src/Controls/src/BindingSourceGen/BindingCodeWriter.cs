@@ -204,7 +204,6 @@ public static class BindingCodeWriter
 			}
 
 			AppendUnsafeAccessors(binding);
-			AppendUnsafeAccessorTypes(binding);
 
 			Unindent();
 			AppendLine('}');
@@ -562,12 +561,7 @@ public static class BindingCodeWriter
 			}
 		}
 
-		private void AppendUnsafeAccessorTypes(BindingInvocationDescription binding)
-		{
-			// Note: UnsafeAccessorType is applied to the getter parameter in AppendFunctionArguments
-			// We don't need additional declarations here since the attribute on the parameter
-			// is sufficient to enable casting from/to object in the method body
-		}
+
 
 		public void Dispose()
 		{
