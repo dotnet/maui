@@ -230,7 +230,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		var lambdaParamType = parameters[0].Type;
-		// Now we support inaccessible types using UnsafeAccessorType
 
 		return Result<ITypeSymbol>.Success(lambdaParamType);
 	}

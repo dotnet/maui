@@ -26,15 +26,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ComplexBindingWithInaccessibleTypeInMiddle()
 		{
 			// This test validates that a complex binding path works correctly at runtime
-			// using the source generated code. The types are internal (not private) so that
-			// the test code can access them, but the SetBinding lambda is still source generated
+			// using the source generated code. The types are private nested classes so that
+			// the SetBinding source generator uses UnsafeAccessorType.
 			
 			var label = new Label();
-			var viewModel = new TestPage.ViewModel
+			var viewModel = new ViewModel
 			{
-				Contact = new TestPage.Contact
+				Contact = new Contact
 				{
-					FullName = new TestPage.FullName
+					FullName = new FullName
 					{
 						FirstName = "John",
 						LastName = "Doe"
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// Use the source generated SetBinding method with null-conditional operators
-			label.SetBinding(Label.TextProperty, static (TestPage.ViewModel vm) => vm.Contact?.FullName?.FirstName);
+			label.SetBinding(Label.TextProperty, static (ViewModel vm) => vm.Contact?.FullName?.FirstName);
 			label.BindingContext = viewModel;
 
 			// Verify the binding works
@@ -60,9 +60,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Test that property updates in nested objects propagate correctly
 			
 			var label = new Label();
-			var viewModel = new TestPage.ViewModel();
+			var viewModel = new ViewModel();
 
-			label.SetBinding(Label.TextProperty, static (TestPage.ViewModel vm) => vm.Contact?.FullName?.FirstName);
+			label.SetBinding(Label.TextProperty, static (ViewModel vm) => vm.Contact?.FullName?.FirstName);
 			label.BindingContext = viewModel;
 
 			// Initial value should be empty
@@ -73,9 +73,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Alice", label.Text);
 
 			// Change the entire Contact object
-			viewModel.Contact = new TestPage.Contact
+			viewModel.Contact = new Contact
 			{
-				FullName = new TestPage.FullName
+				FullName = new FullName
 				{
 					FirstName = "Bob"
 				}
@@ -85,17 +85,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TwoWayBindingWithInternalType()
+		public void TwoWayBindingWithPrivateType()
 		{
 			// Test two-way binding with source generated code
 			
 			var entry = new Entry();
-			var viewModel = new TestPage.SimpleViewModel
+			var viewModel = new SimpleViewModel
 			{
 				Name = "Initial"
 			};
 
-			entry.SetBinding(Entry.TextProperty, static (TestPage.SimpleViewModel vm) => vm.Name, BindingMode.TwoWay);
+			entry.SetBinding(Entry.TextProperty, static (SimpleViewModel vm) => vm.Name, BindingMode.TwoWay);
 			entry.BindingContext = viewModel;
 
 			// Verify initial value
@@ -110,30 +110,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("FromEntry", viewModel.Name);
 		}
 
-		// Test page class with internal nested types
-		// Note: These must be internal (not private) since we access them from test code
-		// The SetBinding source generator will treat them as accessible and not use UnsafeAccessor
-		// For testing actual private types, see the integration tests in BindingSourceGen.UnitTests
-		public class TestPage
+		// Private nested view model classes that implement INotifyPropertyChanged
+		// The SetBinding source generator will use UnsafeAccessorType to access these
+		private class ViewModel : System.ComponentModel.INotifyPropertyChanged
 		{
-			// Internal view model with nested internal types implementing INotifyPropertyChanged
-			internal class ViewModel : System.ComponentModel.INotifyPropertyChanged
+			private Contact _contact = new Contact();
+			public Contact Contact
 			{
-				private Contact _contact = new Contact();
-				public Contact Contact
+				get => _contact;
+				set
 				{
-					get => _contact;
-					set
-					{
-						_contact = value;
-						PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Contact)));
-					}
+					_contact = value;
+					PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Contact)));
 				}
-
-				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 
-			internal class Contact : System.ComponentModel.INotifyPropertyChanged
+			public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+		}
+
+		private class Contact : System.ComponentModel.INotifyPropertyChanged
 			{
 				private FullName _fullName = new FullName();
 				public FullName FullName
@@ -149,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 
-			internal class FullName : System.ComponentModel.INotifyPropertyChanged
+		private class FullName : System.ComponentModel.INotifyPropertyChanged
 			{
 				private string _firstName = "";
 				private string _lastName = "";
@@ -177,7 +172,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 
-			internal class SimpleViewModel : System.ComponentModel.INotifyPropertyChanged
+		private class SimpleViewModel : System.ComponentModel.INotifyPropertyChanged
 			{
 				private string _name = "";
 				public string Name
@@ -192,6 +187,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
-		}
 	}
 }

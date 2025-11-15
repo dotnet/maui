@@ -215,12 +215,7 @@ public static class BindingCodeWriter
 			return type.IsAccessible ? type.ToString() : "object";
 		}
 
-		private string GenerateGetterInvocation(BindingInvocationDescription binding)
-		{
-			// When types are inaccessible, the getter parameter is Func<object, object> (or mixed)
-			// and we just invoke it directly - no casting needed because the parameter types match
-			return "getter(source), true";
-		}
+		private string GenerateGetterInvocation(BindingInvocationDescription binding) => "getter(source), true";
 
 		private void AppendFunctionArguments(BindingInvocationDescription binding)
 		{
@@ -260,8 +255,7 @@ public static class BindingCodeWriter
 
 		private static string GetTypeForSignature(TypeDescription type)
 		{
-			// Use object for inaccessible types in signatures
-			return type.IsAccessible ? type.ToString() : "object";
+			return type.IsAccessible ? type.ToString() : (type.IsNullable ? "object?" : "object");
 		}
 
 		private static string GetShouldUseSetterCall(InterceptedMethodType interceptedMethodType) =>
@@ -297,8 +291,6 @@ public static class BindingCodeWriter
 			AppendLine('{');
 			Indent();
 
-			// No casting needed - when types are inaccessible, parameters are already object
-			// and UnsafeAccessor methods handle the type conversions
 			var assignedValueExpression = valueVariableName;
 
 			// early return for nullable values if the setter doesn't accept them
@@ -371,8 +363,6 @@ public static class BindingCodeWriter
 
 			Indent();
 
-			// No casting needed - when source type is inaccessible, it's already object
-			// and we use UnsafeAccessor methods for member access
 			string nextExpression = "source";
 			bool forceConditonalAccessToNextPart = false;
 			foreach (var part in binding.Path)
