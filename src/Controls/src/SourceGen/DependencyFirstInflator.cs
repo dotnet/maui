@@ -30,8 +30,9 @@ class DependencyFirstInflator
 
 	public static void Inflate(SourceGenContext context, ElementNode root, IndentedTextWriter writer)
 	{
+		var name = NamingHelpers.CreateUniqueTypeName(context, $"{context.RootType.Name}Inflator");
 		var rootScope = new TypeScope(null!, (INamedTypeSymbol)context.RootType);
-		var inflatorScope = new InflatorScope(context.RefStructWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t"), $"{context.RootType.Name}Inflator");
+		var inflatorScope = new InflatorScope(context.RefStructWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t"), name);
 
 		var icScope = new InitializeComponentScope(new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { Indent = writer.Indent }, ("inflator", inflatorScope));
 		var ic = ImmutableArray.Create<Scope>(rootScope, icScope);
@@ -42,10 +43,9 @@ class DependencyFirstInflator
 		PreserveNodeValue(root, new ThisValue(context.RootType, rootScope), context);
 		PreserveNodeValue(root, new ScopedVariable(context.RootType, "__root", inflatorScope), context);
 
-		var name = NamingHelpers.CreateUniqueTypeName(context, $"{context.RootType.Name}Inflator");
 		icScope.Writer.WriteLine($"var inflator = new {name}() {{ __root = this }};");
 
-		using (PrePost.NewBlock(inflatorScope.Writer, $"file ref struct {context.RootType.Name}Inflator() {{", "}"))
+		using (PrePost.NewBlock(inflatorScope.Writer, $"file ref struct {name}() {{", "}"))
 		{
 			inflatorScope.Writer.WriteLine($"public required {context.RootType.ToFQDisplayString()} __root {{ get; init; }}");
 			SetNamescope(root, (inf, ic), context, topLevel: true);
