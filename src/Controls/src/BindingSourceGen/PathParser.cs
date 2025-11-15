@@ -110,8 +110,26 @@ internal class PathParser
 	{
 		var member = memberBinding.Name.Identifier.Text;
 		var typeInfo = _context.SemanticModel.GetTypeInfo(memberBinding).Type;
-		var isReferenceType = typeInfo?.IsReferenceType ?? false;
-		IPathPart part = new MemberAccess(member, !isReferenceType);
+		var symbol = _context.SemanticModel.GetSymbolInfo(memberBinding).Symbol;
+
+		if (symbol == null || typeInfo == null)
+		{
+			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(memberBinding.GetLocation()));
+		}
+
+		var isReferenceType = typeInfo.IsReferenceType;
+		var accessorKind = symbol.ToAccessorKind();
+		var memberType = typeInfo.CreateTypeDescription(_enabledNullable);
+		var containingType = symbol.ContainingType.CreateTypeDescription(_enabledNullable);
+
+		// If either the member is inaccessible OR the containing type is inaccessible,
+		// we need to use UnsafeAccessor (same logic as HandleMemberAccessExpression)
+		bool needsUnsafeAccessor = !symbol.IsAccessible() || !containingType.IsAccessible;
+
+		IPathPart part = needsUnsafeAccessor
+			? new InaccessibleMemberAccess(containingType, memberType, accessorKind, member, !isReferenceType)
+			: new MemberAccess(member, !isReferenceType);
+		
 		part = new ConditionalAccess(part);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));

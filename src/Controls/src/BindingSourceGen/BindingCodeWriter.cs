@@ -453,7 +453,10 @@ public static class BindingCodeWriter
 		private void AppendUnsafeAccessors(BindingInvocationDescription binding)
 		{
 			// Append unsafe accessors as local methods
-			var unsafeAccessors = binding.Path.OfType<InaccessibleMemberAccess>();
+			// Need to unwrap ConditionalAccess to find InaccessibleMemberAccess parts
+			var unsafeAccessors = binding.Path
+				.Select(part => part is ConditionalAccess ca ? ca.Part : part)
+				.OfType<InaccessibleMemberAccess>();
 
 			foreach (var unsafeAccessor in unsafeAccessors)
 			{
@@ -465,7 +468,10 @@ public static class BindingCodeWriter
 				}
 				else if (unsafeAccessor.Kind == AccessorKind.Property)
 				{
-					bool isLastPart = unsafeAccessor.Equals(binding.Path.Last());
+					// Check if this is the last part, unwrapping ConditionalAccess if needed
+					var lastPart = binding.Path.Last();
+					var unwrappedLast = lastPart is ConditionalAccess ca ? ca.Part : lastPart;
+					bool isLastPart = unsafeAccessor.Equals(unwrappedLast);
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
 
 					if (!isLastPart || needsGetterForLastPart)

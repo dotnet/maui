@@ -3020,6 +3020,117 @@ public class IntegrationTests
 		Assert.NotNull(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 	}
+
+	[Fact]
+	public void GenerateBindingWithNullablePrivateTypes()
+	{
+		// Complex test with nullable inaccessible types and null-conditional operators in the binding path
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Label MyLabel = new Label();
+
+			public void SetupBinding()
+			{
+				MyLabel.SetBinding(Label.TextProperty, static (ViewModel vm) => vm.Contact?.FullName?.FirstName);
+			}
+
+			private class ViewModel
+			{
+				public Contact? Contact { get; set; }
+			}
+
+			private class Contact
+			{
+				public FullName? FullName { get; set; }
+			}
+
+			private class FullName
+			{
+				public string FirstName { get; set; } = "";
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
+		
+		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		
+		// Nullable private types with null-conditional operators - should work with UnsafeAccessor
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Full snapshot test - nullable private types with null-conditional operators
+		var generatedFileKey = result.GeneratedFiles.Keys.FirstOrDefault(k => k.Contains("Path-To-Program.cs", StringComparison.Ordinal)) 
+			?? throw new InvalidOperationException("Generated binding interceptors file not found");
+		
+		var generatedFile = result.GeneratedFiles[generatedFileKey];
+		
+		// Verify key parts are present with UnsafeAccessorType for all private types
+		Assert.Contains("UnsafeAccessorType(\"MyPage.ViewModel, compilation\")", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("global::System.Func<object, string?> getter,", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("TypedBinding<object, string?>", generatedFile, StringComparison.Ordinal);
+		
+		// Verify all three private types have UnsafeAccessor methods with proper UnsafeAccessorType
+		Assert.Contains("GetUnsafeProperty_Contact", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("UnsafeAccessorType(\"MyPage.Contact, compilation\")", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("GetUnsafeProperty_FullName", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("UnsafeAccessorType(\"MyPage.FullName, compilation\")", generatedFile, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenerateBindingWithPublicNestedClassInPrivateNestedClass()
+	{
+		// Test public nested class inside private nested class - the innermost class should be treated as inaccessible
+		var source = """
+		using Microsoft.Maui.Controls;
+
+		var myPage = new MyPage();
+		myPage.SetupBinding();
+
+		public class MyPage
+		{
+			internal Label MyLabel = new Label();
+
+			public void SetupBinding()
+			{
+				MyLabel.SetBinding(Label.TextProperty, static (X.Y.Z vm) => vm.Value);
+			}
+
+			private class X
+			{
+				public class Y
+				{
+					public class Z
+					{
+						public string Value { get; set; } = "nested";
+					}
+				}
+			}
+		}
+		""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.NotNull(result.Binding);
+		
+		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// The innermost class Z is public, but it's inside private class X, so it should be inaccessible
+		var generatedFile = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-12-11.g.cs"];
+		
+		// Should use UnsafeAccessorType because the containing type chain includes a private type
+		// Note: Nested types use "." separator in assembly-qualified names, not "+"
+		Assert.Contains("UnsafeAccessorType(\"MyPage.X.Y.Z, compilation\")", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("global::System.Func<object, string> getter,", generatedFile, StringComparison.Ordinal);
+		Assert.Contains("TypedBinding<object, string>", generatedFile, StringComparison.Ordinal);
+	}
 }
 
 
