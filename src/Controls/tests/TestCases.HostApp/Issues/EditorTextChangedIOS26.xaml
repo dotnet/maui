@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.EditorTextChangedIOS26">
+
+  <ContentPage.Content>
+    <VerticalStackLayout Padding="20" Spacing="10">
+      <Label Text="Type text in the editor below. The counter should update as you type."
+             FontSize="14"
+             Margin="0,0,0,10"/>
+      
+      <Editor x:Name="TestEditor"
+              AutomationId="TestEditor"
+              Placeholder="Type here to test TextChanged event"
+              HeightRequest="150"
+              TextChanged="OnEditorTextChanged"/>
+      
+      <Label x:Name="EventCountLabel"
+             AutomationId="EventCountLabel"
+             Text="TextChanged event count: 0"
+             FontSize="16"
+             FontAttributes="Bold"
+             TextColor="Green"/>
+      
+      <Label x:Name="LastTextLabel"
+             AutomationId="LastTextLabel"
+             Text="Last text: (empty)"
+             FontSize="14"
+             TextColor="Blue"/>
+    </VerticalStackLayout>
+  </ContentPage.Content>
+</ContentPage>

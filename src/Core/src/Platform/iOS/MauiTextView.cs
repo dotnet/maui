@@ -154,6 +154,7 @@ namespace Microsoft.Maui.Platform
 			_placeholderLabel.Hidden = !string.IsNullOrEmpty(value);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Event handler for UITextView.Changed - proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void OnChanged(object? sender, EventArgs e)
 		{
 			HidePlaceholderIfTextIsPresent(Text);
