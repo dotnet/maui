@@ -497,6 +497,9 @@ static class NodeSGExtensions
 	}
 
 	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context)
+		=> TryProvideValue(node, writer, context, null);
+
+	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue)
 	{
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
@@ -505,7 +508,7 @@ static class NodeSGExtensions
 			return false;
 
 		if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
-			&& provideValue.Invoke(node, writer, context, null, out var returnType0, out var value))
+			&& provideValue.Invoke(node, writer, context, getNodeValue, out var returnType0, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -516,7 +519,7 @@ static class NodeSGExtensions
 		}
 
 		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, writer, context, null, out returnType0, out value))
+			&& provideValue.Invoke(node, writer, context, getNodeValue, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
