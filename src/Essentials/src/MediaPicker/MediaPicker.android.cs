@@ -247,7 +247,8 @@ namespace Microsoft.Maui.Media
 			// Android has a limitation that you need to use a different request for single and multiple picks.
 			// If the selection limit is 1, we can use the single pick method,
 			// otherwise we need to use the multiple pick method.
-			if (options.SelectionLimit == 1)
+			int selectionLimit = options?.SelectionLimit ?? 1;
+			if (selectionLimit == 1)
 			{
 				var singleResult = await PickUsingPhotoPicker(options, photo);
 				return singleResult is not null ? [singleResult] : [];
@@ -258,9 +259,9 @@ namespace Microsoft.Maui.Media
 
 			// Only set the limit for 2 and up. For single selection (limit == 1) is handled above,
 			// and limit == 0 should be treated as unlimited.
-			if (options.SelectionLimit >= 2)
+			if (selectionLimit >= 2)
 			{
-				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
+				pickVisualMediaRequestBuilder.SetMaxItems(selectionLimit);
 			}
 
 			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
