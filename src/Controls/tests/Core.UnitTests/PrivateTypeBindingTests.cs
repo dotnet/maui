@@ -116,27 +116,81 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// For testing actual private types, see the integration tests in BindingSourceGen.UnitTests
 		public class TestPage
 		{
-			// Internal view model with nested internal types
-			// Using simple properties without BindableObject to avoid dispatcher requirements
-			internal class ViewModel
+			// Internal view model with nested internal types implementing INotifyPropertyChanged
+			internal class ViewModel : System.ComponentModel.INotifyPropertyChanged
 			{
-				public Contact Contact { get; set; } = new Contact();
+				private Contact _contact = new Contact();
+				public Contact Contact
+				{
+					get => _contact;
+					set
+					{
+						_contact = value;
+						PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Contact)));
+					}
+				}
+
+				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 
-			internal class Contact
+			internal class Contact : System.ComponentModel.INotifyPropertyChanged
 			{
-				public FullName FullName { get; set; } = new FullName();
+				private FullName _fullName = new FullName();
+				public FullName FullName
+				{
+					get => _fullName;
+					set
+					{
+						_fullName = value;
+						PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(FullName)));
+					}
+				}
+
+				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 
-			internal class FullName
+			internal class FullName : System.ComponentModel.INotifyPropertyChanged
 			{
-				public string FirstName { get; set; } = "";
-				public string LastName { get; set; } = "";
+				private string _firstName = "";
+				private string _lastName = "";
+
+				public string FirstName
+				{
+					get => _firstName;
+					set
+					{
+						_firstName = value;
+						PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(FirstName)));
+					}
+				}
+
+				public string LastName
+				{
+					get => _lastName;
+					set
+					{
+						_lastName = value;
+						PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(LastName)));
+					}
+				}
+
+				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 
-			internal class SimpleViewModel
+			internal class SimpleViewModel : System.ComponentModel.INotifyPropertyChanged
 			{
-				public string Name { get; set; } = "";
+				private string _name = "";
+				public string Name
+				{
+					get => _name;
+					set
+					{
+						_name = value;
+						PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Name)));
+					}
+				}
+
+				public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 			}
 		}
 	}
