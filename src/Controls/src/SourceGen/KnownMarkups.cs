@@ -529,7 +529,7 @@ internal class KnownMarkups
 		while (currentcontext is not null && node is not null)
 		{
 			while (currentcontext is not null && !currentcontext.Scopes.ContainsKey(node))
-				currentcontext = context.ParentContext;
+				currentcontext = currentcontext.ParentContext;
 			if (currentcontext is null)
 				break;
 			var namescope = currentcontext.Scopes[node];
