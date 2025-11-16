@@ -735,3 +735,4 @@ namespace Microsoft.Maui.Media
 		}
 	}
 }
+
