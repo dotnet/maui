@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
@@ -169,6 +170,9 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
+    	using var instrumentation =
+				DiagnosticInstrumentation.StartImageLoading(handler.VirtualView);
+        
 			// Reset platform caps so we don't keep stale values between sources
 			if (handler is ImageHandler ih && ih.PlatformView is not null)
 			{
