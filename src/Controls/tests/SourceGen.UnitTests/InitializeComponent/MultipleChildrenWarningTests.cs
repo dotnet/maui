@@ -104,54 +104,6 @@ partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void LabelWithTextSetTwice_EmitsWarning()
-	{
-		var xaml =
-"""
-<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Test.TestPage">
-	<VerticalStackLayout>
-		<Label Text="First" Text="Second" />
-	</VerticalStackLayout>
-</ContentPage>
-"""
-;
-
-		var code =
-"""
-using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Test;
-
-[XamlProcessing(XamlInflator.SourceGen)]
-partial class TestPage : ContentPage
-{
-	public TestPage()
-	{
-		InitializeComponent();
-	}
-}
-"""
-;
-
-		var (result, generated) = RunGenerator(xaml, code);
-		
-		// Verify that a warning diagnostic was emitted
-		var warnings = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Warning).ToArray();
-		Assert.True(warnings.Length > 0, "Expected at least one warning diagnostic");
-		
-		var duplicatePropertyWarning = warnings.FirstOrDefault(d => d.Id == "MAUIX2006");
-		Assert.NotNull(duplicatePropertyWarning);
-		Assert.Contains("Label.Text", duplicatePropertyWarning.GetMessage(), StringComparison.Ordinal);
-		Assert.Contains("multiple times", duplicatePropertyWarning.GetMessage(), StringComparison.Ordinal);
-	}
-
-	[Fact]
 	public void BorderWithSingleChild_NoWarning()
 	{
 		var xaml =

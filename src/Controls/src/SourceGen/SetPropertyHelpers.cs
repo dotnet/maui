@@ -274,7 +274,7 @@ static class SetPropertyHelpers
 			}
 	}
 
-	static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
+	internal static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
 	{
 		propertyType = null;
 		if ((propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault()) == null)
@@ -286,7 +286,7 @@ static class SetPropertyHelpers
 		return true;
 	}
 
-	static bool CanGetValue(ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
+	internal static bool CanGetValue(ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
 	{
 		propertyType = null;
 		if (bpFieldSymbol == null)

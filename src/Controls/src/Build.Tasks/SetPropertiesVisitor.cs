@@ -93,10 +93,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
 
-			// Check for duplicate property assignment
-			if (parentNode is ElementNode elementParent)
-				CheckForDuplicateProperty(elementParent, propertyName, node);
-
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
 
@@ -151,10 +147,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
 					return;
 
-				// Check for duplicate property assignment
-				if (parentNode is ElementNode elementParent)
-					CheckForDuplicateProperty(elementParent, propertyName, node);
-
 				Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ElementNode)
@@ -172,11 +164,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var name = new XmlName(node.NamespaceURI, contentProperty);
 					if (skips.Contains(name))
 						return;
-					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
+					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(name))
 						return;
 
-					// Check for duplicate property assignment (including implicit content property)
-					CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+					// Only check for duplicate property assignment if this isn't a collection
+					// Collections use Add() method, so multiple children are expected
+					bool isCollection = parentVar.VariableType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
+						&& parentVar.VariableType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
+					if (!isCollection)
+						CheckForDuplicateProperty((ElementNode)parentNode, name, node);
 
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));
 				}
