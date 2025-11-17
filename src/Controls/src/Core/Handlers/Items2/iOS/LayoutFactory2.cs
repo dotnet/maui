@@ -354,7 +354,7 @@ internal static class LayoutFactory2
 				{
 					page = (offset.Y + sectionMargin) / (env.Container.ContentSize.Height - sectionMargin * 2);
 				}
-				
+
 				// Vertical: Scroll stops wherever touch is released (no auto-centering), so use 0.1 (10%) threshold
 				//           to accept positions near page boundaries where scroll naturally settles
 				double pageThreshold = isHorizontal ? (double.Epsilon * 100) : 0.1;
@@ -363,7 +363,7 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				var pageIndex = (int)Math.Round(page);
+				var pageIndex = (int)page;
 				var carouselPosition = pageIndex;
 				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
 				{
