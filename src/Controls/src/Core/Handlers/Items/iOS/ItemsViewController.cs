@@ -762,7 +762,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (_emptyViewFormsElement != null)
+			if (_emptyViewFormsElement is not null)
 			{
 				// Update flow direction for EmptyView 
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
