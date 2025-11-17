@@ -108,7 +108,7 @@ public partial class TestPage
 #line 8 "{{testXamlFilePath}}"
 		staticResourceExtension.Key = "GridRowDef";
 #line default
-		var rowDefinitionCollection = new global::Microsoft.Maui.Controls.RowDefinitionCollection([new RowDefinition(new global::Microsoft.Maui.GridLength(10, global::Microsoft.Maui.GridUnitType.Absolute)), new RowDefinition(global::Microsoft.Maui.GridLength.Star), new RowDefinition(global::Microsoft.Maui.GridLength.Star), new RowDefinition(global::Microsoft.Maui.GridLength.Auto)]);
+		var rowDefinitionCollection = new global::Microsoft.Maui.Controls.RowDefinitionCollection([new global::Microsoft.Maui.Controls.RowDefinition(new global::Microsoft.Maui.GridLength(10, global::Microsoft.Maui.GridUnitType.Absolute)), new global::Microsoft.Maui.Controls.RowDefinition(global::Microsoft.Maui.GridLength.Star), new global::Microsoft.Maui.Controls.RowDefinition(global::Microsoft.Maui.GridLength.Star), new global::Microsoft.Maui.Controls.RowDefinition(global::Microsoft.Maui.GridLength.Auto)]);
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(rowDefinitionCollection!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(rowDefinitionCollection!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 8);
 #line 8 "{{testXamlFilePath}}"
