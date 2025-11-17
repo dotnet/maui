@@ -575,7 +575,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(SelectLayoutManager(ItemsLayout));
-				UpdateEmptyView();
+				if (ShouldUpdateEmptyView())
+				{
+					UpdateEmptyView();
+				}
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
@@ -583,6 +586,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}
+			else if (showEmptyView && currentAdapter == _emptyViewAdapter)
+			{
+				if (ShouldUpdateEmptyView())
+				{
+					SwapAdapter(ItemsViewAdapter, true);
+					UpdateEmptyView();
+				}
+			}
+		}
+
+		bool ShouldUpdateEmptyView()
+		{
+			if (ItemsView is StructuredItemsView structuredItemsView)
+			{
+				if (_emptyViewAdapter.Header != structuredItemsView.Header ||
+					_emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate ||
+					_emptyViewAdapter.Footer != structuredItemsView.Footer ||
+					_emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate ||
+					_emptyViewAdapter.EmptyView != ItemsView.EmptyView ||
+					_emptyViewAdapter.EmptyViewTemplate != ItemsView.EmptyViewTemplate)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		internal void AdjustScrollForItemUpdate()
