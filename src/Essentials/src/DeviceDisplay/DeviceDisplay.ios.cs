@@ -117,15 +117,7 @@ namespace Microsoft.Maui.Devices
 				name.Handle,
 				out var newId);
 
-			if (result == 0)
-			{
-				id = newId;
-			}
-			else
-			{
-				id = 0;
-			}
-
+			id = result == 0 ? newId : 0;
 			return result == 0;
 		}
 
