@@ -1,8 +1,8 @@
-﻿namespace Maui.Controls.Sample;
+namespace Maui.Controls.Sample.Issues;
 
-public partial class MainPage : ContentPage
+public partial class Issue32667MainPage : ContentPage
 {
-	public MainPage()
+	public Issue32667MainPage()
 	{
 		InitializeComponent();
 	}

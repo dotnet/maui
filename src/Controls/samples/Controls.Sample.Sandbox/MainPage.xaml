@@ -1,5 +1,47 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Shell.NavBarIsVisible="False">
+    
+    <ScrollView
+        BackgroundColor="LightBlue"
+        VerticalOptions="Fill">
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+            
+            <Label
+                Text="Main Page"
+                FontSize="32"
+                FontAttributes="Bold"
+                HorizontalOptions="Center"
+                Margin="0,50,0,0"/>
+            
+            <Label
+                Text="Navigation bar is hidden on this page (Shell.NavBarIsVisible=&#34;False&#34;)"
+                FontSize="16"
+                HorizontalOptions="Center"
+                TextColor="DarkBlue"/>
+            
+            <BoxView
+                HeightRequest="200"
+                Color="DarkBlue"
+                Margin="0,20,0,0"/>
+            
+            <Button 
+                Text="Navigate to SubPage"
+                Clicked="OnNavigateToSubPage"
+                BackgroundColor="DarkBlue"
+                TextColor="White"
+                Margin="0,20,0,0"/>
+                
+            <Label
+                Text="Instructions: Tap the button above to navigate to the SubPage. Then use the back button in the navigation bar to return here. The bug will show a blank space where the nav bar used to be."
+                FontSize="14"
+                HorizontalOptions="Center"
+                TextColor="DarkRed"
+                Margin="0,20,0,0"/>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

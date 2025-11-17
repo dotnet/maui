@@ -789,6 +789,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					navigationController.SetNavigationBarHidden(!navBarVisible, animateVisibilityChange);
 				}
 
+				// Update navigation bar visibility based on the incoming page
+				// This ensures the nav bar state is correctly applied when navigating back
+				var animationEnabled = element is not null && Shell.GetNavBarVisibilityAnimationEnabled(element);
+				navigationController.SetNavigationBarHidden(!navBarVisible, animationEnabled && animated);
+
 				var coordinator = viewController.GetTransitionCoordinator();
 				if (coordinator != null && coordinator.IsInteractive)
 				{
