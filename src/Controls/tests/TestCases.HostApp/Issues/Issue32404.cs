@@ -47,10 +47,14 @@ public class Issue32404 : ContentPage
         };
 
         // collectionView EmptyView
-        myCollectionView.EmptyView = new Label
+        var emptyViewGrid = new Grid();
+        var emptyViewLabel = new Label
         {
-            Text = "This is empty view"
+            Text = "This is empty view",
         };
+
+        emptyViewGrid.Add(emptyViewLabel);
+        myCollectionView.EmptyView = emptyViewGrid;
 
         grid.Add(myCollectionView);
         Grid.SetRow(myCollectionView, 2);
