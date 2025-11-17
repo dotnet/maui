@@ -519,35 +519,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			bool isRtl;
-
-			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
-				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
-			else
-				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
-
-			if (isRtl)
+			if (_emptyViewFormsElement is not null)
 			{
-				if (_emptyUIView.Transform.A == -1)
+				// Update flow direction for EmptyView 
+				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
-					return;
-				}
-
-				FlipEmptyView();
-			}
-			else
-			{
-				if (_emptyUIView.Transform.A == -1)
-				{
-					FlipEmptyView();
+					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
 				}
 			}
-		}
-
-		void FlipEmptyView()
-		{
-			// Flip the empty view 180 degrees around the X axis 
-			_emptyUIView.Transform = CGAffineTransform.Scale(_emptyUIView.Transform, -1, 1);
+			else if (_emptyUIView is UILabel label)
+			{
+				// For UILabel, always set to center for better UX
+				label.TextAlignment = UITextAlignment.Center;
+			}
 		}
 
 		void ShowEmptyView()
