@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
+		bool initialLoad = false;
+		bool _isRotating = false;
 		bool _isUpdating = false;
 		int _section = 0;
 		CarouselViewLoopManager _carouselViewLoopManager;
@@ -64,12 +66,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			InitializeCarouselViewLoopManager();
 			base.ViewDidLoad();
+			initialLoad = true;
+
+			// Subscribe to orientation change notifications
+			NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
+		}
+
+		void DeviceOrientationChanged(NSNotification notification)
+		{
+			if (initialLoad)
+			{
+				return;
+			}
+			_isRotating = true;
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
 			UpdateVisualStates();
+			if (initialLoad)
+			{
+				initialLoad = false;
+			}
 		}
 
 
@@ -77,6 +96,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.ViewDidLayoutSubviews();
 			await UpdateInitialPosition();
+
+			if (_isRotating)
+			{
+				BoundsSizeChanged();
+				_isRotating = false;
+			}
+		}
+
+		void BoundsSizeChanged()
+		{
+			// Re-center the current item after bounds change to ensure proper positioning
+			// This is especially important during device rotation to maintain the correct scroll position
+			if (ItemsView is CarouselView carousel)
+			{
+				carousel.ScrollTo(carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
+			}
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -150,10 +185,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			InitialPositionSet = false;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
-
+			// Clean up orientation notification observer
+			NSNotificationCenter.DefaultCenter.RemoveObserver(this, UIDevice.OrientationDidChangeNotification, null);
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
+			_isRotating = false;
+			initialLoad = false;
 		}
 
 		internal void UpdateScrollingConstraints()
@@ -372,6 +410,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			return _isUpdating;
 		}
+
+		internal bool IsRotating()
+		{
+			return _isRotating;
+		}
+
 		internal void UpdateLoop()
 		{
 			if (ItemsView is not CarouselView carousel)
