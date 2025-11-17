@@ -5,7 +5,7 @@ public class Issue32136 : ContentPage
 {
     public Issue32136()
     {
-        CarouselView1 carouselView = new CarouselView1
+        CarouselView2 carouselView = new CarouselView2
         {
             HeightRequest = 400,
             Loop = false,
@@ -36,15 +36,18 @@ public class Issue32136 : ContentPage
             }
         };
 
-        Label currentItemLabel = new Label
-        {
-            AutomationId = "CurrentItemLabel"
-        };
-        currentItemLabel.SetBinding(Label.TextProperty, ".");
+        Label currentItemLabel = new Label();
+        currentItemLabel.AutomationId = "CurrentItemLabel";
+        currentItemLabel.SetBinding(Label.TextProperty, new Binding("CurrentItem", source: carouselView, stringFormat: "CurrentItem = {0}"));
 
-        carouselView.CurrentItemChanged += (s, e) =>
+        Button button = new Button
         {
-            currentItemLabel.Text = $"CurrentItem = {e.CurrentItem}";
+            Text = "Next Item",
+            AutomationId = "ScrollButton"
+        };
+        button.Clicked += (s, e) =>
+        {
+            carouselView.ScrollTo(carouselView.Position + 1, position: ScrollToPosition.Center, animate: true);
         };
 
         Grid grid = new Grid
@@ -61,6 +64,7 @@ public class Issue32136 : ContentPage
 
         grid.Add(carouselView);
         grid.Add(currentItemLabel, row: 1);
+        grid.Add(button, row: 2);
         Content = grid;
     }
 }

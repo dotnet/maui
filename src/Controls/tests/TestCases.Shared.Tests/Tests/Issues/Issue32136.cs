@@ -16,9 +16,8 @@ public class Issue32136 : _IssuesUITest
     [Category(UITestCategories.CarouselView)]
     public void CurrentItemShouldUpdateWhenScrollingVerticalCarouselView()
     {
-        App.WaitForElement("TestCarouselView");
-        App.ScrollDown("TestCarouselView", ScrollStrategy.Gesture, 1.0);
-        Task.Delay(1500).Wait();
+        App.WaitForElement("ScrollButton");
+        App.Tap("ScrollButton");
         var currentItemText = App.WaitForElement("CurrentItemLabel").GetText();
         Assert.That(currentItemText, Is.EqualTo("CurrentItem = Capuchin Monkey"));
     }

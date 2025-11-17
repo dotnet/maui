@@ -365,6 +365,7 @@ internal static class LayoutFactory2
 
 				var pageIndex = (int)page;
 				var carouselPosition = pageIndex;
+
 				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
 				{
 					var maxIndex = loopSource.LoopCount - 1;
