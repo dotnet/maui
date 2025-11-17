@@ -92,7 +92,16 @@ namespace Microsoft.Maui.Platform
 				// This implements Google's workaround for the API 28-29 bug where
 				// one child consuming insets blocks all siblings from receiving them.
 				// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
-				ViewGroupCompat.InstallCompatInsetsDispatch(_rootView);
+				if (_rootView is null)
+				{
+					Microsoft.Maui.ApplicationModel.Logging.Logger.LogWarning(
+						"NavigationRootManager: _rootView is null when attempting to install compat insets dispatch. " +
+						"This may cause incorrect window insets behavior on API < 30.");
+				}
+				else
+				{
+					ViewGroupCompat.InstallCompatInsetsDispatch(_rootView);
+				}
 			}
 			
 			// if the incoming view is a Drawer Layout then the Drawer Layout
