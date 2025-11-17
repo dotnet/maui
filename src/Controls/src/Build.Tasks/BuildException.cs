@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode NamescopeDuplicate = new BuildExceptionCode("XC", 0064, nameof(NamescopeDuplicate), "");
 		public static BuildExceptionCode ContentPropertyAttributeMissing = new BuildExceptionCode("XC", 0065, nameof(ContentPropertyAttributeMissing), "");
 		public static BuildExceptionCode InvalidXaml = new BuildExceptionCode("XC", 0066, nameof(InvalidXaml), "");
-		public static BuildExceptionCode MultipleChildrenInContentProperty = new BuildExceptionCode("XC", 0067, nameof(MultipleChildrenInContentProperty), ""); //warning
+		public static BuildExceptionCode DuplicatePropertyAssignment = new BuildExceptionCode("XC", 0067, nameof(DuplicatePropertyAssignment), ""); //warning
 
 
 		//Extensions

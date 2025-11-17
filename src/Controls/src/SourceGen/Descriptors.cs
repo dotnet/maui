@@ -194,10 +194,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor MultipleChildrenInContentProperty = new DiagnosticDescriptor(
+		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
 			id: "MAUIX2006",
-			title: new LocalizableResourceString(nameof(MauiGResources.MultipleChildrenInContentPropertyTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MultipleChildrenInContentPropertyMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
