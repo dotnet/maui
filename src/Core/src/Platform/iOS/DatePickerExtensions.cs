@@ -93,7 +93,7 @@ public static class DatePickerExtensions
 
 			if (format.Equals("D", StringComparison.Ordinal) == true)
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+				dateFormatter.DateStyle = NSDateFormatterStyle.Full;
 				var strDate = dateFormatter.StringFor(nsDate);
 				platformDatePicker.Text = strDate;
 			}
