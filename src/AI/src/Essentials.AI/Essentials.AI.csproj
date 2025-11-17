@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsBindingProject>true</IsBindingProject>
   </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
@@ -30,7 +31,19 @@
     <XcodeProject Include="..\..\AppleNative\EssentialsAI.xcodeproj">
       <SchemeName>EssentialsAI</SchemeName>
     </XcodeProject>
+    <ObjcBindingApiDefinition Include="Platform\MaciOS\ApiDefinitions.cs" />
+    <ObjcBindingCoreSource Include="Platform\MaciOS\StructsAndEnums.cs" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
+    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-ios26.0\iOS\**\*.cs" />
+    <_FilesUsedForIntellisense Include="Platform\MaciOS\StructsAndEnums.cs" />
+    <Compile Include="@(_FilesUsedForIntellisense)" />
+  </ItemGroup>
+  <Target Name="RemoveGeneratedFiles" BeforeTargets="_CollectGeneratedSources" Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
+    <ItemGroup>
+      <Compile Remove="@(_FilesUsedForIntellisense)" />
+    </ItemGroup>
+  </Target>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 </Project>

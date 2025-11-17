@@ -8,53 +8,53 @@ public static class Extensions
 {
 
 #if IOS || MACCATALYST || MACOS
-	public static IHostApplicationBuilder AddAppleIntelligenceChatClient(this IHostApplicationBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+	public static IServiceCollection AddAppleIntelligenceChatClient(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 	{
-		_ = builder ?? throw new ArgumentNullException(nameof(builder));
+		_ = services ?? throw new ArgumentNullException(nameof(services));
 
-		builder.Services.Add(new ServiceDescriptor(typeof(AppleIntelligenceChatClient), _ => new AppleIntelligenceChatClient(), lifetime));
-		builder.Services.Add(new ServiceDescriptor(typeof(IChatClient), provider => provider.GetRequiredService<AppleIntelligenceChatClient>(), lifetime));
+		services.Add(new ServiceDescriptor(typeof(AppleIntelligenceChatClient), _ => new AppleIntelligenceChatClient(), lifetime));
+		services.Add(new ServiceDescriptor(typeof(IChatClient), provider => provider.GetRequiredService<AppleIntelligenceChatClient>(), lifetime));
 		
-		return builder;
+		return services;
 	}
 #endif
 
 #if ANDROID
-	public static IHostApplicationBuilder AddMLKitGenAIChatClient(this IHostApplicationBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+	public static IServiceCollection AddMLKitGenAIChatClient(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 	{
-		_ = builder ?? throw new ArgumentNullException(nameof(builder));
+		_ = services ?? throw new ArgumentNullException(nameof(services));
 
-		builder.Services.Add(new ServiceDescriptor(typeof(MLKitGenAIChatClient), _ => new MLKitGenAIChatClient(), lifetime));
-		builder.Services.Add(new ServiceDescriptor(typeof(IChatClient), provider => provider.GetRequiredService<MLKitGenAIChatClient>(), lifetime));
+		services.Add(new ServiceDescriptor(typeof(MLKitGenAIChatClient), _ => new MLKitGenAIChatClient(), lifetime));
+		services.Add(new ServiceDescriptor(typeof(IChatClient), provider => provider.GetRequiredService<MLKitGenAIChatClient>(), lifetime));
 		
-		return builder;
+		return services;
 	}
 #endif
 
 #if WINDOWS
-	public static IHostApplicationBuilder AddWindowsAIChatClient(this IHostApplicationBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+	public static IServiceCollection AddWindowsAIChatClient(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 	{
-		_ = builder ?? throw new ArgumentNullException(nameof(builder));
+		_ = services ?? throw new ArgumentNullException(nameof(services));
 
-		builder.Services.Add(new ServiceDescriptor(typeof(WindowsAIChatClient), _ => new WindowsAIChatClient(), lifetime));
-		builder.Services.Add(new ServiceDescriptor(typeof(IChatClient), provider => provider.GetRequiredService<WindowsAIChatClient>(), lifetime));
+		services.Add(new ServiceDescriptor(typeof(WindowsAIChatClient), _ => new WindowsAIChatClient(), lifetime));
+		services.Add(new ServiceDescriptor(typeof(IChatClient), provider => provider.GetRequiredService<WindowsAIChatClient>(), lifetime));
 		
-		return builder;
+		return services;
 	}
 #endif
 
-	public static IHostApplicationBuilder AddPlatformChatClient(this IHostApplicationBuilder builder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+	public static IServiceCollection AddPlatformChatClient(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 	{
-		_ = builder ?? throw new ArgumentNullException(nameof(builder));
+		_ = services ?? throw new ArgumentNullException(nameof(services));
 
 #if IOS || MACCATALYST || MACOS
-		builder.AddAppleIntelligenceChatClient(lifetime);
+		services.AddAppleIntelligenceChatClient(lifetime);
 #elif ANDROID
-		builder.AddMLKitGenAIChatClient(lifetime);
+		services.AddMLKitGenAIChatClient(lifetime);
 #elif WINDOWS
-		builder.AddWindowsAIChatClient(lifetime);
+		services.AddWindowsAIChatClient(lifetime);
 #endif
 
-		return builder;
+		return services;
 	}
 }

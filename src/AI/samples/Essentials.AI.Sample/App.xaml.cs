@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace Maui.Controls.Sample;
+﻿namespace Maui.Controls.Sample;
 
 public partial class App : Application
 {

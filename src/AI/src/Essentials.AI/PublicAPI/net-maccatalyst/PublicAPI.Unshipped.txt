@@ -3,6 +3,15 @@ Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient() -> void
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! chatMessages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! chatMessages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
+Microsoft.Maui.Essentials.AI.ChatClientError
+Microsoft.Maui.Essentials.AI.ChatClientError.Cancelled = 4 -> Microsoft.Maui.Essentials.AI.ChatClientError
+Microsoft.Maui.Essentials.AI.ChatClientError.EmptyMessages = 1 -> Microsoft.Maui.Essentials.AI.ChatClientError
+Microsoft.Maui.Essentials.AI.ChatClientError.InvalidContent = 3 -> Microsoft.Maui.Essentials.AI.ChatClientError
+Microsoft.Maui.Essentials.AI.ChatClientError.InvalidRole = 2 -> Microsoft.Maui.Essentials.AI.ChatClientError
+Microsoft.Maui.Essentials.AI.ChatRoleNative
+Microsoft.Maui.Essentials.AI.ChatRoleNative.Assistant = 1 -> Microsoft.Maui.Essentials.AI.ChatRoleNative
+Microsoft.Maui.Essentials.AI.ChatRoleNative.System = 2 -> Microsoft.Maui.Essentials.AI.ChatRoleNative
+Microsoft.Maui.Essentials.AI.ChatRoleNative.User = 0 -> Microsoft.Maui.Essentials.AI.ChatRoleNative
 Microsoft.Maui.Essentials.AI.Extensions
-static Microsoft.Maui.Essentials.AI.Extensions.AddAppleIntelligenceChatClient(this Microsoft.Extensions.Hosting.IHostApplicationBuilder! builder, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.Hosting.IHostApplicationBuilder!
-static Microsoft.Maui.Essentials.AI.Extensions.AddPlatformChatClient(this Microsoft.Extensions.Hosting.IHostApplicationBuilder! builder, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.Hosting.IHostApplicationBuilder!
+static Microsoft.Maui.Essentials.AI.Extensions.AddAppleIntelligenceChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Maui.Essentials.AI.Extensions.AddPlatformChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

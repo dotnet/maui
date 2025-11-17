@@ -25,12 +25,44 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	}
 
 	/// <inheritdoc />
-	public async Task<ChatResponse> GetResponseAsync(
+	public Task<ChatResponse> GetResponseAsync(
 		IEnumerable<ChatMessage> chatMessages,
 		ChatOptions? options = null,
 		CancellationToken cancellationToken = default)
 	{
-		throw new NotImplementedException();
+		var nativeMessages = chatMessages.Select(ToNative).ToArray();
+
+		var nativeOptions = options is null ? null : ToNative(options);
+
+		var native = new ChatClientNative();
+
+		var tcs = new TaskCompletionSource<ChatResponse>();
+
+		var nativeToken = native.GetResponse(nativeMessages, nativeOptions, (response, error) =>
+        {
+            if (error is not null)
+            {
+				if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
+                {
+                    tcs.TrySetCanceled();
+                }
+				else
+                {
+					tcs.TrySetException(new NSErrorException(error));
+				}
+				
+				return;
+			}
+
+			tcs.TrySetResult(FromNativeChatResponse(response));
+        });
+
+		cancellationToken.Register(() =>
+		{
+			nativeToken?.Cancel();
+		});
+
+		return tcs.Task;
 	}
 
 	/// <inheritdoc />
@@ -76,4 +108,53 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	{
 		// Nothing to dispose. Implementation required for the IChatClient interface.
 	}
+
+	private static ChatResponse FromNativeChatResponse(NSString? response) =>
+		new (new ChatMessage(
+			ChatRole.Assistant,
+			response?.ToString()));
+
+	private ChatMessageNative ToNative(ChatMessage message) => 
+		new()
+		{
+			Role = ToNative(message.Role),
+			Contents = message.Contents.Select(ToNative).ToArray()
+		};
+
+	private ChatRoleNative ToNative(ChatRole role)
+    {
+        if (role == ChatRole.User)
+			return ChatRoleNative.User;
+		else if (role == ChatRole.Assistant)
+			return ChatRoleNative.Assistant;
+		else if (role == ChatRole.System)
+			return ChatRoleNative.System;
+		else
+			throw new ArgumentOutOfRangeException(nameof(role), $"The role '{role}' is not supported by Apple Intelligence chat APIs.");
+    }
+
+	private static ChatOptionsNative ToNative(ChatOptions options) =>
+		new()
+		{
+			TopK = ToNative(options.TopK),
+			Seed = ToNative(options.Seed),
+			Temperature = ToNative(options.Temperature),
+			MaxOutputTokens = ToNative(options.MaxOutputTokens),
+		};
+
+	private static AIContentNative ToNative(AIContent content) =>
+		content switch
+		{
+			TextContent textContent => new TextContentNative(textContent.Text),
+			_ => throw new ArgumentException($"The content type '{content.GetType().FullName}' is not supported by Apple Intelligence chat APIs.", nameof(content))
+		};
+
+	private static NSNumber? ToNative(int? value) =>
+		value.HasValue ? NSNumber.FromInt32(value.Value) : null;
+
+	private static NSNumber? ToNative(float? value) =>
+		value.HasValue ? NSNumber.FromFloat(value.Value) : null;
+
+	private static NSNumber? ToNative(long? value) =>
+		value.HasValue ? NSNumber.FromInt64(value.Value) : null;
 }

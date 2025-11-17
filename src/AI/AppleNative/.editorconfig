@@ -1,0 +1,34 @@
+# EditorConfig for Swift/Apple Native code
+# https://editorconfig.org
+
+root = true
+
+[*.swift]
+charset = utf-8
+indent_style = space
+indent_size = 4
+tab_width = 4
+end_of_line = lf
+insert_final_newline = true
+max_line_length = 120
+trim_trailing_whitespace = true
+
+# Xcode project files
+[*.pbxproj]
+indent_style = tab
+end_of_line = lf
+insert_final_newline = true
+
+# Xcode scheme files
+[*.xcscheme]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+
+# Plist files
+[*.plist]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
