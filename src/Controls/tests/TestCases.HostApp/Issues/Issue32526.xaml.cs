@@ -1,17 +1,17 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 32278, "Shell content page title position incorrect/clipped", PlatformAffected.Android)]
-public partial class Issue32278 : Shell
+[Issue(IssueTracker.Github, 32526, "Shell content page title position incorrect/clipped", PlatformAffected.Android)]
+public partial class Issue32526 : Shell
 {
-	public Issue32278()
+	public Issue32526()
 	{
 		InitializeComponent();
 	}
 }
 
-public class Issue32278MainPage : ContentPage
+public class Issue32526MainPage : ContentPage
 {
-	public Issue32278MainPage()
+	public Issue32526MainPage()
 	{
 		Title = "MainPage";
 		
@@ -34,7 +34,7 @@ public class Issue32278MainPage : ContentPage
 		
 		button.Clicked += async (s, e) =>
 		{
-			await Navigation.PushAsync(new Issue32278NewPage());
+			await Navigation.PushAsync(new Issue32526NewPage());
 		};
 		
 		Content = new VerticalStackLayout
@@ -49,9 +49,9 @@ public class Issue32278MainPage : ContentPage
 	}
 }
 
-public class Issue32278NewPage : ContentPage
+public class Issue32526NewPage : ContentPage
 {
-	public Issue32278NewPage()
+	public Issue32526NewPage()
 	{
 		Title = "Page 2";
 		

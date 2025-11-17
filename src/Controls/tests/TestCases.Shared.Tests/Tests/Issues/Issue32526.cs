@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-public class Issue32278 : _IssuesUITest
+public class Issue32526 : _IssuesUITest
 {
-public Issue32278(TestDevice device) : base(device) { }
+public Issue32526(TestDevice device) : base(device) { }
 
 public override string Issue => "Shell content page title position incorrect/clipped";
 

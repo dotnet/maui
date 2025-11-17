@@ -2,9 +2,9 @@
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-       x:Class="Maui.Controls.Sample.Issues.Issue32278"
-       Title="Issue32278">
+       x:Class="Maui.Controls.Sample.Issues.Issue32526"
+       Title="Issue32526">
     
-    <ShellContent ContentTemplate="{DataTemplate local:Issue32278MainPage}" />
+    <ShellContent ContentTemplate="{DataTemplate local:Issue32526MainPage}" />
     
 </Shell>
