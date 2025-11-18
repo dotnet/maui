@@ -55,7 +55,7 @@ static class ServiceProviderExtensions
 				writer.WriteLine($"new object?[] {{{string.Join(", ", parentObjects)}}},");
 				var bpinfo = bpFieldSymbol?.ToFQDisplayString() ?? String.Empty;
 				var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToFQDisplayString()}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
-				writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
+				writer.WriteLine($"{(bpFieldSymbol != null ? bpinfo : propertySymbol != null ? pinfo : "null")},");
 			if (context.Scopes.TryGetValue(node, out var scope))
 			{
 				List<string> scopes = [scope.namescope.ValueAccessor];
