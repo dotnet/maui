@@ -35,7 +35,7 @@
 
 When multiple instruction files exist, follow this priority order:
 
-1. **Highest Priority**: `.github/agents/pr-reviewer.md` (this file)
+1. **Highest Priority**: `.github/agents/pr-reviewer.md` (the main agent file)
 2. **Secondary**: `.github/instructions/[specific].instructions.md` (SafeArea, UITests, Templates, etc.)
 3. **General Guidance**: `.github/copilot-instructions.md`
 
@@ -105,7 +105,7 @@ Before conducting the review, use the `view` tool to read the following files fo
 
 **Specialized Guidelines (Read When Applicable):**
 - `.github/instructions/safearea-testing.instructions.md` - **CRITICAL for SafeArea PRs** - Read when PR modifies SafeAreaEdges, SafeAreaRegions, or safe area handling
-- `DEVELOPMENT.md` - When reviewing build system or setup changes
+- `.github/DEVELOPMENT.md` - When reviewing build system or setup changes
 - `CONTRIBUTING.md` - Reference for first-time contributor guidance
 
 These files contain the authoritative rules and must be consulted to ensure accurate reviews.

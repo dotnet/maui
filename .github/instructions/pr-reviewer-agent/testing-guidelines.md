@@ -334,3 +334,60 @@ dotnet clean
 ```
 
 **Important**: If you didn't save `$ORIGINAL_BRANCH` at the start, replace it with whatever branch you were on when you began the review. This ensures you return to your starting state.
+
+## Edge Case Discovery
+
+**CRITICAL**: Don't just test the PR author's scenario. Test edge cases they may have missed.
+
+### Required edge cases for UI/Layout PRs:
+
+- **Empty state**: Empty collections, null values, no data
+- **Single item**: Collections with exactly one item
+- **Large data sets**: 100+ items to test scrolling/virtualization
+- **Dynamic changes**: Rapidly toggle properties (e.g., toggle FlowDirection 10 times)
+- **Property combinations**: Test the fix with other properties (e.g., RTL + IsVisible + Margin)
+- **Nested scenarios**: Control inside control (e.g., CollectionView in ScrollView)
+- **Platform-specific**: Test on all affected platforms (iOS, Android, Windows, Mac)
+- **Orientation**: Portrait vs landscape (mobile/tablet)
+- **Screen sizes**: Different screen sizes and densities
+
+### For layout/positioning PRs, also test:
+
+- **Header/Footer**: With and without headers/footers
+- **Padding/Margin**: Various padding and margin combinations
+- **Alignment**: Different HorizontalOptions/VerticalOptions
+- **Parent constraints**: Different parent sizes and constraints
+
+### For behavior/interaction PRs, also test:
+
+- **Timing**: Rapid interactions, delayed interactions
+- **State transitions**: Page appearing/disappearing, backgrounding/foregrounding
+- **User interaction**: Tap, scroll, swipe during state changes
+
+### Document findings:
+
+For each edge case tested, document:
+- What you tested
+- Expected behavior
+- Actual behavior
+- Whether it works correctly or reveals an issue
+
+## SafeArea Testing Guidelines
+
+### Special Case: SafeArea Testing
+
+**If the PR modifies SafeAreaEdges, SafeAreaRegions, or related safe area handling code:**
+
+1. **CRITICAL: Read `.github/instructions/safearea-testing.instructions.md` FIRST** before setting up your test
+2. **Measure CHILD content position**, not the parent container with SafeAreaEdges
+3. **Calculate gaps from screen edges** to detect padding
+4. **Use colored backgrounds** (red parent, yellow child) for visual validation
+
+**Why this is critical**: SafeArea bugs are subtle. The parent container size stays constant - only the child content position changes. Measuring the wrong element will show no difference even when the bug exists.
+
+See `.github/instructions/safearea-testing.instructions.md` for comprehensive guidance including:
+- The "measure children, not parents" principle with visual diagrams
+- Complete XAML and instrumentation code examples
+- How to interpret gap measurements
+- Common mistakes to avoid
+- When to use the validation checkpoint for SafeArea testing
