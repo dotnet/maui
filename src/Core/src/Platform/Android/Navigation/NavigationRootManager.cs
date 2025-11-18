@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Platform
 				// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
 				if (_rootView is null)
 				{
-					Microsoft.Maui.ApplicationModel.Logging.Logger.LogWarning(
+					_mauiContext?.CreateLogger<NavigationRootManager>()?.LogWarning(
 						"NavigationRootManager: _rootView is null when attempting to install compat insets dispatch. " +
 						"This may cause incorrect window insets behavior on API < 30.");
 				}
