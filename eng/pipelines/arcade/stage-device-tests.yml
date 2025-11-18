@@ -150,7 +150,7 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
 
-- stage: devicetests_ios_catalyst_android
+- stage: devicetests_catalyst
   displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests
   dependsOn: 
     - devicetests_build
@@ -198,7 +198,7 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
 
-- stage: devicetests_ios_catalyst_android
+- stage: devicetests_android
   displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests
   dependsOn: 
     - devicetests_build
