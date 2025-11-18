@@ -157,7 +157,7 @@ UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesti
 Before committing any changes, format the codebase using the following command to ensure consistent code style:
 
 ```bash
-dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+dotnet format Microsoft.Maui.slnx --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
 This command:
@@ -275,9 +275,9 @@ dotnet build ./Microsoft.Maui.BuildTasks.slnf
 **Issue: "Dependency version conflicts"**
 ```bash
 # Solution: Full clean and restore
-dotnet clean Microsoft.Maui.sln
+dotnet clean Microsoft.Maui.slnx
 rm -rf bin/ obj/
-dotnet restore Microsoft.Maui.sln --force
+dotnet restore Microsoft.Maui.slnx --force
 ```
 
 **Issue: "Android SDK not found"**
@@ -290,7 +290,7 @@ android # Opens Android SDK Manager
 **Issue: "PublicAPI analyzer failures"**
 ```bash
 # Solution: Use format analyzers first
-dotnet format analyzers Microsoft.Maui.sln
+dotnet format analyzers Microsoft.Maui.slnx
 # If still failing, check build output for required API entries
 ```
 

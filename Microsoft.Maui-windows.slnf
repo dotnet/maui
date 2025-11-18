@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Microsoft.Maui-dev.sln",
+    "path": "Microsoft.Maui-dev.slnx",
     "projects": [
       "src\\AI\\samples\\Essentials.AI.Sample\\Essentials.AI.Sample.csproj",
       "src\\AI\\src\\Essentials.AI\\Essentials.AI.csproj",

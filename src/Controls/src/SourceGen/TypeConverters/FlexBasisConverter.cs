@@ -30,13 +30,13 @@ class FlexBasisConverter : ISGTypeConverter
 				&& float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 			{
 				var flexBasisRelType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!;
-				return $"new {flexBasisRelType.ToFQDisplayString()}({FormatInvariant(relflex / 100)}, true)";
+				return $"new {flexBasisRelType.ToFQDisplayString()}({FormatInvariant(relflex / 100)}f, true)";
 			}
 
 			if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 			{
 				var flexBasisAbsType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!;
-				return $"new {flexBasisAbsType.ToFQDisplayString()}({FormatInvariant(flex)}, false)";
+				return $"new {flexBasisAbsType.ToFQDisplayString()}({FormatInvariant(flex)}f, false)";
 			}
 		}
 

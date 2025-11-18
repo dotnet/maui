@@ -26,7 +26,7 @@ parameters:
   default: true
 - name: buildProjects
   type: string
-  default: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
+  default: '$(Build.SourcesDirectory)/Microsoft.Maui.slnx'
 - name: buildProjectsMac
   type: string
   default: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -84,4 +84,4 @@ stages:
               displayName: 🛠️ Build BuildTasks
 
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects ${{ BuildPlatform.sln }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:CodesignRequireProvisioningProfile=false /p:EnableWindowsTargeting=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
-              displayName: 🛠️ Build Microsoft.Maui.sln
+              displayName: 🛠️ Build Microsoft.Maui.slnx
