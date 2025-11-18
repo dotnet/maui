@@ -99,9 +99,7 @@ static partial class ITypeSymbolExtensions
 	{
 		"CommunityToolkit.Maui.BindablePropertyAttribute",
 		"SQuan.Helpers.Maui.Mvvm.BindablePropertyAttribute",
-		"Maui.BindableProperty.Generator.Core.AutoBindableAttribute",
-		"Test.BindablePropertyAttribute", // For unit tests
-		"Test.AutoPropertyAttribute" // For unit tests
+		"Maui.BindableProperty.Generator.Core.AutoBindableAttribute"
 	};
 
 	/// <summary>

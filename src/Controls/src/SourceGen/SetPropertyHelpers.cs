@@ -283,52 +283,37 @@ static class SetPropertyHelpers
 
 	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, string localName, string? explicitPropertyName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
-		if (bpFieldSymbol != null)
+		// Determine bindable property name: use BP field symbol if available, otherwise use heuristic
+		var bpName = bpFieldSymbol != null 
+			? bpFieldSymbol.ToFQDisplayString() 
+			: $"{parentVar.Type.ToFQDisplayString()}.{explicitPropertyName ?? $"{localName}Property"}";
+		
+		var pType = bpFieldSymbol?.GetBPTypeAndConverter(context)?.type;
+		var property = bpFieldSymbol == null ? parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() : null;
+		
+		if (node is ValueNode valueNode)
 		{
-			// Normal case: we have the BP field symbol
-			var pType = bpFieldSymbol.GetBPTypeAndConverter(context)?.type;
-			if (node is ValueNode valueNode)
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				{
-					var valueString = valueNode.ConvertTo(bpFieldSymbol, writer,context, parentVar);
-					writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {valueString});");
-				}
+				var valueString = bpFieldSymbol != null 
+					? valueNode.ConvertTo(bpFieldSymbol, writer, context, parentVar)
+					: (property != null ? valueNode.ConvertTo(property, writer, context, parentVar) : getNodeValue(node, context.Compilation.ObjectType).ValueAccessor);
+				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {valueString});");
 			}
-			else if (node is ElementNode elementNode)
-				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				{
-					writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {(HasDoubleImplicitConversion(getNodeValue(elementNode, context.Compilation.ObjectType).Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{getNodeValue(node, context.Compilation.ObjectType).ValueAccessor});");
-				}
 		}
-		else
+		else if (node is ElementNode elementNode)
 		{
-			// Heuristic case: generate SetValue call using the expected BindableProperty name
-			// Use explicit property name if provided by attribute, otherwise use the default {localName}Property format
-			var bpName = explicitPropertyName ?? $"{localName}Property";
-			
-			// Try to find the property symbol to get the proper type for conversion
-			var property = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
-			
-			if (node is ValueNode valueNode)
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				{
-					// For value nodes, we need to convert the value to the appropriate type
-					var valueString = property != null ? valueNode.ConvertTo(property, writer, context, parentVar) : getNodeValue(node, context.Compilation.ObjectType).ValueAccessor;
-					writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({parentVar.Type.ToFQDisplayString()}.{bpName}, {valueString});");
-				}
-			}
-			else if (node is ElementNode elementNode)
-			{
-				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				{
-					var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
-					var castPrefix = property != null && !context.Compilation.HasImplicitConversion(localVar.Type, property.Type)
-						? $"({property.Type.ToFQDisplayString()})"
-						: string.Empty;
-					writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({parentVar.Type.ToFQDisplayString()}.{bpName}, {castPrefix}{localVar.ValueAccessor});");
-				}
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				var cast = string.Empty;
+				
+				if (bpFieldSymbol != null && HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
+					cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+				else if (property != null && !context.Compilation.HasImplicitConversion(localVar.Type, property.Type))
+					cast = $"({property.Type.ToFQDisplayString()})";
+				
+				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {cast}{localVar.ValueAccessor});");
 			}
 		}
 		else if (node is ElementNode elementNode)
