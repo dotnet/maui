@@ -4,6 +4,9 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
+#if NET11_0_OR_GREATER
+using Microsoft.Maui.Controls.Internals;
+#endif
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -64,6 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Red, label.TextColor);
 		}
 
+#if NET11_0_OR_GREATER
 		[Fact]
 		public void ThemeChangeUsingSetBinding()
 		{
@@ -80,6 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(Colors.Red, label.TextColor);
 		}
+#endif
 
 		[Fact]
 		public void ThemeChangeUsingUserAppTheme()
