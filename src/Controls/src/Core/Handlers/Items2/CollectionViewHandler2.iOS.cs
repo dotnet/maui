@@ -246,5 +246,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_ => null
 			};
 		}
+
+		protected override void DisconnectHandler(UIView platformView)
+		{
+			_layoutPropertyCache?.Clear();
+			_layoutPropertyCache = null;
+			base.DisconnectHandler(platformView);
+		}
 	}
 }

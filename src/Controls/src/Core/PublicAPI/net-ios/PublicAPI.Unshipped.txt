@@ -1,1 +1,2 @@
 #nullable enable
+~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(UIKit.UIView platformView) -> void
