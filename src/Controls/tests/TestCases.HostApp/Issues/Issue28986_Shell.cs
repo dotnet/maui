@@ -1,4 +1,6 @@
+#if ANDROID
 using Android.Views;
+#endif
 
 namespace Maui.Controls.Sample.Issues;
 
