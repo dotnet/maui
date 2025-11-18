@@ -100,13 +100,16 @@ static class NodeSGExtensions
 
 	// These markup extensions can only provide values late once the properties have their final values
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownLateMarkupExtensions(SourceGenContext context)
-		=> context.knownSGLateMarkupExtensions ??= new(SymbolEqualityComparer.Default)
+	=> context.knownSGLateMarkupExtensions ??= new(SymbolEqualityComparer.Default)
 	{
+		
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.BindingExtension")!, KnownMarkups.ProvideValueForBindingExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")!, KnownMarkups.ProvideValueForTemplateBindingExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension")!, KnownMarkups.ProvideValueForReferenceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")!, KnownMarkups.ProvideValueForStaticResourceExtension},
+#if NET11_0_OR_GREATER
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension")!, KnownMarkups.ProvideValueForAppThemeBindingExtension},
+#endif
 	};
 
 	public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)

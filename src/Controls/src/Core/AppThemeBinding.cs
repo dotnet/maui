@@ -1,12 +1,14 @@
 #nullable disable
 using System;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Internals
 {
-	public class AppThemeBinding : BindingBase
+#if NET11_0_OR_GREATER
+	public 
+#endif
+	class AppThemeBinding : BindingBase
 	{
 		public const string AppThemeResource = "__MAUI_ApplicationTheme__";
 		class AppThemeProxy : Element

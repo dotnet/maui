@@ -557,7 +557,7 @@ internal class KnownMarkups
 	/// </summary>
 	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.AppThemeBinding")!;
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.AppThemeBinding")!;
 
 		if (getNodeValue is null)
 		{
@@ -657,7 +657,7 @@ internal class KnownMarkups
 		if (defaultValue is not null)
 			parts.Add($"Default = {defaultValue}");
 
-		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
+		value = $"new global::Microsoft.Maui.Controls.Internals.AppThemeBinding {{ {string.Join(", ", parts)} }}";
 		return true;
 	}
 
