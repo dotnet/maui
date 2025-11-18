@@ -4,7 +4,10 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue32404 : ContentPage
 {
     Label flowDirectionLabel;
-    CollectionView myCollectionView;
+    CollectionView emptyViewStringCollectionView;
+    CollectionView emptyViewViewCollectionView;
+    CollectionView emptyViewTemplateCollectionView;
+
     public Issue32404()
     {
         var grid = new Grid
@@ -14,6 +17,8 @@ public class Issue32404 : ContentPage
                 {
                     new RowDefinition { Height = GridLength.Auto },
                     new RowDefinition { Height = GridLength.Auto },
+                    new RowDefinition { Height = GridLength.Star },
+                    new RowDefinition { Height = GridLength.Star },
                     new RowDefinition { Height = GridLength.Star }
                 }
         };
@@ -39,26 +44,56 @@ public class Issue32404 : ContentPage
         grid.Add(flowDirectionLabel);
         Grid.SetRow(flowDirectionLabel, 1);
 
-        // CollectionView
-        myCollectionView = new CollectionView
+        // String EmptyView
+        emptyViewStringCollectionView = new CollectionView
         {
             BackgroundColor = Colors.LightGray,
-            FlowDirection = FlowDirection.LeftToRight
+            FlowDirection = FlowDirection.LeftToRight,
+            EmptyView = "EmptyView Text (String)",
+            AutomationId = "CollectionView1"
         };
 
-        // collectionView EmptyView
+        // View EmptyView
+        emptyViewViewCollectionView = new CollectionView
+        {
+            BackgroundColor = Colors.LightBlue,
+            FlowDirection = FlowDirection.LeftToRight,
+            AutomationId = "CollectionView2"
+        };
+
         var emptyViewGrid = new Grid();
         var emptyViewLabel = new Label
         {
-            Text = "This is empty view",
+            Text = "EmptyView (Grid View)",
+        };
+        emptyViewGrid.Add(emptyViewLabel);
+        emptyViewViewCollectionView.EmptyView = emptyViewGrid;
+
+        // DataTemplate EmptyView
+        emptyViewTemplateCollectionView = new CollectionView
+        {
+            BackgroundColor = Colors.LightGreen,
+            FlowDirection = FlowDirection.LeftToRight,
         };
 
-        emptyViewGrid.Add(emptyViewLabel);
-        myCollectionView.EmptyView = emptyViewGrid;
+        emptyViewTemplateCollectionView.EmptyViewTemplate = new DataTemplate(() =>
+        {
+            var stackLayout = new VerticalStackLayout();
+            var templateLabel = new Label
+            {
+                Text = "EmptyView Template",
+            };
 
-        grid.Add(myCollectionView);
-        Grid.SetRow(myCollectionView, 2);
+            stackLayout.Add(templateLabel);
+            return stackLayout;
+        });
 
+        grid.Add(emptyViewStringCollectionView);
+        Grid.SetRow(emptyViewStringCollectionView, 2);
+        grid.Add(emptyViewViewCollectionView);
+        Grid.SetRow(emptyViewViewCollectionView, 3);
+        grid.Add(emptyViewTemplateCollectionView);
+        Grid.SetRow(emptyViewTemplateCollectionView, 4);
         // Set Grid as Content
         Content = grid;
     }
@@ -66,10 +101,19 @@ public class Issue32404 : ContentPage
     void OnToggleFlowDirectionClicked(object sender, EventArgs e)
     {
         // Toggle between LeftToRight and RightToLeft
-        if (myCollectionView.FlowDirection == FlowDirection.LeftToRight)
+        if (emptyViewStringCollectionView.FlowDirection == FlowDirection.LeftToRight)
         {
-            myCollectionView.FlowDirection = FlowDirection.RightToLeft;
+            emptyViewStringCollectionView.FlowDirection = FlowDirection.RightToLeft;
+            emptyViewViewCollectionView.FlowDirection = FlowDirection.RightToLeft;
+            emptyViewTemplateCollectionView.FlowDirection = FlowDirection.RightToLeft;
             flowDirectionLabel.Text = "Current FlowDirection: RightToLeft";
+        }
+        else
+        {
+            emptyViewStringCollectionView.FlowDirection = FlowDirection.LeftToRight;
+            emptyViewViewCollectionView.FlowDirection = FlowDirection.LeftToRight;
+            emptyViewTemplateCollectionView.FlowDirection = FlowDirection.LeftToRight;
+            flowDirectionLabel.Text = "Current FlowDirection: LeftToRight";
         }
     }
 }
