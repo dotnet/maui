@@ -354,7 +354,17 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
+			{
+				// Handle special values that don't need a suffix
+				if (float.IsNaN(floatValue))
+					return "float.NaN";
+				if (float.IsPositiveInfinity(floatValue))
+					return "float.PositiveInfinity";
+				if (float.IsNegativeInfinity(floatValue))
+					return "float.NegativeInfinity";
+				// Regular values need the F suffix
 				return $"{SymbolDisplay.FormatPrimitive(floatValue, true, false)}F";
+			}
 			else
 				reportDiagnostic();
 		}
@@ -363,7 +373,17 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
+			{
+				// Handle special values that don't need a suffix
+				if (double.IsNaN(doubleValue))
+					return "double.NaN";
+				if (double.IsPositiveInfinity(doubleValue))
+					return "double.PositiveInfinity";
+				if (double.IsNegativeInfinity(doubleValue))
+					return "double.NegativeInfinity";
+				// Regular values need the D suffix
 				return $"{SymbolDisplay.FormatPrimitive(doubleValue, true, false)}D";
+			}
 			else
 				reportDiagnostic();
 		}
