@@ -62,28 +62,28 @@ public partial class TestPage
 	{
 		// Fallback to Runtime inflation if the page was updated by HotReload
 		static string? getPathForType(global::System.Type type)
-	{
+		{
 			var assembly = type.Assembly;
 			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
-	{
+			{
 				if (xria.Type == type)
 					return xria.Path;
-	}
+			}
 			return null;
-	}
+		}
 
 		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
-	{
+		{
 			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
 			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
 			Instance = this,
 		});
 
 		if (rlr?.ResourceContent != null)
-	{
+		{
 			this.InitializeComponentRuntime();
 			return;
-	}
+		}
 
 		var label = new global::Microsoft.Maui.Controls.Label();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(label!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
@@ -187,28 +187,28 @@ public partial class TestPage
 	{
 		// Fallback to Runtime inflation if the page was updated by HotReload
 		static string? getPathForType(global::System.Type type)
-	{
+		{
 			var assembly = type.Assembly;
 			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
-	{
+			{
 				if (xria.Type == type)
 					return xria.Path;
-	}
+			}
 			return null;
-	}
+		}
 
 		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
-	{
+		{
 			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
 			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
 			Instance = this,
 		});
 
 		if (rlr?.ResourceContent != null)
-	{
+		{
 			this.InitializeComponentRuntime();
 			return;
-	}
+		}
 
 		var label = new global::Microsoft.Maui.Controls.Label();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(label!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
@@ -260,12 +260,12 @@ public partial class TestPage
 			const string xaml = """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-x:Class="Test.TestPage">
-<FlexLayout>
-<Label Text="Test" FlexLayout.Grow="1.5" FlexLayout.Shrink="0.75" />
-</FlexLayout>
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<FlexLayout>
+		<Label Text="Test" FlexLayout.Grow="1.5" FlexLayout.Shrink="0.75" />
+	</FlexLayout>
 </ContentPage>
 """;
 
@@ -307,28 +307,28 @@ public partial class TestPage
 	{
 		// Fallback to Runtime inflation if the page was updated by HotReload
 		static string? getPathForType(global::System.Type type)
-	{
+		{
 			var assembly = type.Assembly;
 			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
-	{
+			{
 				if (xria.Type == type)
 					return xria.Path;
-	}
+			}
 			return null;
-	}
+		}
 
 		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
-	{
+		{
 			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
 			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
 			Instance = this,
 		});
 
 		if (rlr?.ResourceContent != null)
-	{
+		{
 			this.InitializeComponentRuntime();
 			return;
-	}
+		}
 
 		var label = new global::Microsoft.Maui.Controls.Label();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(label!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
