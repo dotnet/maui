@@ -4,7 +4,7 @@
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
     <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
     <HelixTargetQueues>Windows.10.Amd64.Open;osx.15.arm64.maui.open</HelixTargetQueues>
-    <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
+    <Creator Condition="'$(Creator)' == ''">maui</Creator>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>

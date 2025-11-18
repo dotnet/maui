@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\Microsoft.Maui.slnx",
+    "path": "..\\Microsoft.Maui.sln",
     "projects": [
       "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
       "src\\Controls\\samples\\Controls.Sample.Sandbox\\Maui.Controls.Sample.Sandbox.csproj",

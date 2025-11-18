@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
   </ItemGroup>

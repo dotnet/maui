@@ -45,6 +45,11 @@ class RDSourceConverter : ISGTypeConverter
 		if (value.Contains(";assembly="))
 		{
 			var parts = value.Split([";assembly="], StringSplitOptions.RemoveEmptyEntries);
+			if (parts.Length < 2)
+			{
+				// Invalid format: missing assembly name after ;assembly=
+				return "default";
+			}
 			value = parts[0];
 			var asmName = parts[1];
 			asm = context.Compilation.GetAssembly(asmName)!;

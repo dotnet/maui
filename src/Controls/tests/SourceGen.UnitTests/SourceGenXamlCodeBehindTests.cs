@@ -547,4 +547,42 @@ internal class InternalButVisible : Label { }
 
 		Assert.True(generated.Contains("External.InternalButVisible internalButVisible", StringComparison.Ordinal));
 	}
+
+	[Fact]
+	public void TestCodeBehindGenerator_OnPlatform_Android()
+	{
+		// Issue #32521: Named controls under OnPlatform should only generate fields for the target platform
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<OnPlatform x:TypeArguments="ScrollView">
+		<On Platform="Android">
+			<ScrollView>
+				<Button x:Name="CounterBtnAndroid" Text="Click me Android" />
+			</ScrollView>
+		</On>
+		<On Platform="iOS">
+			<ScrollView>
+				<Button x:Name="CounterBtnIOS" Text="Click me iOS" />
+			</ScrollView>
+		</On>
+	</OnPlatform>
+</ContentPage>
+""";
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml, TargetFramework: "net10.0-android"));
+
+		Assert.False(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+
+		// Should contain Android button field
+		Assert.Contains("CounterBtnAndroid", generated, StringComparison.Ordinal);
+		// Should NOT contain iOS button field
+		Assert.DoesNotContain("CounterBtnIOS", generated, StringComparison.Ordinal);
+	}
 }

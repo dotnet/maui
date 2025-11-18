@@ -35,12 +35,20 @@ public partial class HotReloadStaticResourceException : ContentPage
 		[Test]
 		public void MissingResourceExceptionAreHandled([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
 		{
+			bool handled = false;
 			Controls.Internals.ResourceLoader.ExceptionHandler2 = (ex) =>
 			{
 				var (exception, filepath) = ex;
-				
+				Assert.AreEqual("HotReloadStaticResourceException.xaml", filepath);
+				if (exception is XamlParseException xpe && xpe.Message.Contains("StaticResource not found for key MissingResource", System.StringComparison.Ordinal))
+				{
+					handled = true;
+					Assert.AreEqual(13, xpe.XmlInfo.LinePosition);
+				}
+
 			};
 			var page = new HotReloadStaticResourceException(inflator);
+			Assert.IsTrue(handled, "Exception was not handled");
 		}
 #endif
 	}
