@@ -19,6 +19,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    
     // 1. Create the client
     ChatClientNative *client = [[ChatClientNative alloc] init];
     

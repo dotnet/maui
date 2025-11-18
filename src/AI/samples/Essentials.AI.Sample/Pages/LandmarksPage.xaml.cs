@@ -11,17 +11,7 @@ public partial class LandmarksPage : ContentPage
         BindingContext = viewModel;
     }
 
-    private async void OnFeaturedLandmarkTapped(object? sender, Landmark landmark)
-    {
-        await NavigateToTripPlanning(landmark);
-    }
-
     private async void OnLandmarkTapped(object? sender, Landmark landmark)
-    {
-        await NavigateToTripPlanning(landmark);
-    }
-
-    private async Task NavigateToTripPlanning(Landmark landmark)
     {
         var parameters = new Dictionary<string, object>
         {

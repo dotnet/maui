@@ -13,6 +13,7 @@
 		34E8252C2ECBE5BE00E8D536 /* Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8252B2ECBE5BE00E8D536 /* Cancellation.swift */; };
 		34E8252E2ECBE5DB00E8D536 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8252D2ECBE5DB00E8D536 /* Errors.swift */; };
 		34E825302ECBE5F400E8D536 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8252F2ECBE5F400E8D536 /* ChatClient.swift */; };
+		34E8256F2ECCE3C100E8D536 /* JsonSchemaDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		34E8252B2ECBE5BE00E8D536 /* Cancellation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cancellation.swift; sourceTree = "<group>"; };
 		34E8252D2ECBE5DB00E8D536 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		34E8252F2ECBE5F400E8D536 /* ChatClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClient.swift; sourceTree = "<group>"; };
+		34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSchemaDecoder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +47,7 @@
 				34E825292ECBE59F00E8D536 /* ChatMessageContent.swift */,
 				34E825252ECBE58E00E8D536 /* ChatOptions.swift */,
 				34E8252D2ECBE5DB00E8D536 /* Errors.swift */,
+				34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */,
 				34279C912EC421CC00583050 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -144,6 +147,7 @@
 				34E8252E2ECBE5DB00E8D536 /* Errors.swift in Sources */,
 				34E8252A2ECBE59F00E8D536 /* ChatMessageContent.swift in Sources */,
 				34E825282ECBE59700E8D536 /* ChatMessage.swift in Sources */,
+				34E8256F2ECCE3C100E8D536 /* JsonSchemaDecoder.swift in Sources */,
 				34E825262ECBE58F00E8D536 /* ChatOptions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

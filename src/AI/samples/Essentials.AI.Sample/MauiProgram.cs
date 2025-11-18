@@ -1,6 +1,7 @@
 ﻿using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
+using Microsoft.Extensions.AI;
 using Microsoft.Maui.Essentials.AI;
 
 namespace Maui.Controls.Sample;

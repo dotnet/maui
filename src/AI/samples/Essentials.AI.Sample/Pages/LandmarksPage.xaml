@@ -23,7 +23,7 @@
             <views:LandmarkFeaturedItemView
                 Landmark="{Binding FeaturedLandmark}"
                 IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
-                LandmarkTapped="OnFeaturedLandmarkTapped" />
+                LandmarkTapped="OnLandmarkTapped" />
 
             <!-- Continents -->
             <VerticalStackLayout 
