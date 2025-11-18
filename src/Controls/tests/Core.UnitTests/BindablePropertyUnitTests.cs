@@ -191,5 +191,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, ((TestStruct)bindable.GetValue(prop)).IntValue);
 		}
 
+		[Fact]
+		public void SetValueThrowsExceptionWhenValidationFails()
+		{
+			var propertyName = "foo";
+			var prop = BindableProperty.Create(
+				propertyName,
+				typeof(int),
+				typeof(MockBindable),
+				defaultValue: 0,
+				validateValue: (b, v) => (int)v >= 0);
+
+			var bindable = new MockBindable();
+			var exception = Assert.Throws<ArgumentException>(() => bindable.SetValue(prop, -1));
+			Assert.Equal($"Value is an invalid value for {propertyName} (Parameter 'value')", exception.Message);
+		}
 	}
 }
