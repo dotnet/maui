@@ -530,25 +530,10 @@ public class ShellFeatureTests : UITest
 
 	[Test, Order(26)]
 	[Category(UITestCategories.Shell)]
-	public void VerifyShellFlyout_FlyoutBehaviorDisabledAndRTL()
+	public void VerifyShellFlyout_BackgroundImageAspect_AspectFit()
 	{
 		App.WaitForElement(OpenFlyout); //// To close the flyout for previous test
 		App.Tap(OpenFlyout);
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("FlyoutBehaviorDisabled");
-		App.Tap("FlyoutBehaviorDisabled");
-		App.WaitForElement("FlowDirectionRTL");
-		App.Tap("FlowDirectionRTL");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		FlyoutScreenshot();
-	}
-
-	[Test, Order(27)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShellFlyout_BackgroundImageAspect_AspectFit()
-	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlyoutBackgroundDotnetImage");
@@ -562,7 +547,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(28)]
+	[Test, Order(27)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageAspect_Fill()
 	{
@@ -581,7 +566,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(29)]
+	[Test, Order(28)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundImage()
 	{
@@ -604,7 +589,7 @@ public class ShellFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(30)]
+	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageAndBackDrop()
 	{
@@ -624,7 +609,7 @@ public class ShellFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32416
-	[Test, Order(31)]
+	[Test, Order(30)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutVerticalScrollModeDisabled()
 	{
@@ -645,7 +630,7 @@ public class ShellFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(32)]
+	[Test, Order(31)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_BackgroundImageSetToNull()
 	{
@@ -663,7 +648,7 @@ public class ShellFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST // Issue Link: https://github.com/dotnet/maui/issues/32417
-	[Test, Order(33)]
+	[Test, Order(32)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_SetItemTemplateAndMenuItemTemplate()
 	{
@@ -683,7 +668,7 @@ public class ShellFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(34)]
+	[Test, Order(33)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutBehaviorDisabled()
 	{
@@ -699,6 +684,21 @@ public class ShellFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
+	[Test, Order(34)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyout_FlyoutBehaviorDisabledAndRTL()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlyoutBehaviorDisabled");
+		App.Tap("FlyoutBehaviorDisabled");
+		App.WaitForElement("FlowDirectionRTL");
+		App.Tap("FlowDirectionRTL");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		FlyoutScreenshot();
+	}
+	
 	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIconAndRTL()
