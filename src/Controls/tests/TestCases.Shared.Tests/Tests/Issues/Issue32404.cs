@@ -17,6 +17,8 @@ public class Issue32404 : _IssuesUITest
     {
         App.WaitForElement("Issue32404ToggleButton");
         App.Tap("Issue32404ToggleButton");
-        VerifyScreenshot();
+        VerifyScreenshot("FlowDirectionShouldWorkOnEmptyView_RightToLeft");
+        App.Tap("Issue32404ToggleButton");
+        VerifyScreenshot("FlowDirectionShouldWorkOnEmptyView_LeftToRight");
     }
 }
