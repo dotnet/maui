@@ -9,6 +9,7 @@ using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.Logging;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
