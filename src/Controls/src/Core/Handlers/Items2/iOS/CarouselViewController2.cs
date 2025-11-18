@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
-		bool initialLoad = false;
 		bool _isRotating = false;
 		bool _isUpdating = false;
 		int _section = 0;
@@ -66,29 +65,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			InitializeCarouselViewLoopManager();
 			base.ViewDidLoad();
-			initialLoad = true;
-
 			// Subscribe to orientation change notifications
 			NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		void DeviceOrientationChanged(NSNotification notification)
 		{
-			if (initialLoad)
+			if (InitialPositionSet)
 			{
-				return;
+				_isRotating = true;
 			}
-			_isRotating = true;
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
 			UpdateVisualStates();
-			if (initialLoad)
-			{
-				initialLoad = false;
-			}
 		}
 
 
@@ -108,7 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			// Re-center the current item after bounds change to ensure proper positioning
 			// This is especially important during device rotation to maintain the correct scroll position
-			if (ItemsView is CarouselView carousel)
+			if (ItemsView is CarouselView carousel && carousel.Position >= 0)
 			{
 				carousel.ScrollTo(carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
 			}
@@ -191,7 +183,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
-			initialLoad = false;
 		}
 
 		internal void UpdateScrollingConstraints()
