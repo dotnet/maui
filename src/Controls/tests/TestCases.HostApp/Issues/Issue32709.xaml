@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32709"
+             Title="Issue 32709 - TimePicker with null Time and TimeSelected event">
+
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Issue 32709: TimePicker with null Time and TimeSelected event" 
+               FontSize="18" 
+               FontAttributes="Bold"/>
+        
+        <Label Text="TimePicker with Time=11:25 AM and TimeSelected event:" />
+        <TimePicker x:Name="TimePicker1"
+                    Time="11:25:00"
+                    TimeSelected="OnTimeSelected"
+                    AutomationId="TimePicker1"/>
+        
+        <Label Text="TimePicker with Time=null and TimeSelected event:" />
+        <TimePicker x:Name="TimePicker2"
+                    Time="{x:Null}"
+                    TimeSelected="OnTimeSelected"
+                    AutomationId="TimePicker2"/>
+        
+        <Label x:Name="StatusLabel" 
+               Text="Ready"
+               AutomationId="StatusLabel"/>
+        
+        <Button x:Name="TestButton"
+                Text="Trigger Time Change"
+                Clicked="OnTestButtonClicked"
+                AutomationId="TestButton"/>
+    </VerticalStackLayout>
+</ContentPage>
