@@ -130,7 +130,7 @@ error RS0016: Symbol 'X' is not marked as public API
 **Solution**:
 ```bash
 # Let analyzers fix PublicAPI.Unshipped.txt files
-dotnet format analyzers Microsoft.Maui.sln
+dotnet format analyzers Microsoft.Maui.slnx
 ```
 
 **Why**: See `.github/copilot-instructions.md` section "PublicAPI.Unshipped.txt File Management"
