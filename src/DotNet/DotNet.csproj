@@ -8,7 +8,7 @@
     <DotNetFeedUrl>https://ci.dot.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
-    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">true</PrivateSdk>
+    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
