@@ -10,6 +10,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
+using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Microsoft.Maui.Platform
 {
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Platform
 		bool _isInsetListenerSet;
 		Java.Lang.IRunnable? _setAppBarLiftTargetRunnable;
 		Android.Views.LayoutDirection _prevLayoutDirection = Android.Views.LayoutDirection.Ltr;
+		ALayoutDirection _prevLayoutDirection = ALayoutDirection.Ltr;
 		bool _checkedForRtlScroll;
 
 		internal float LastX { get; set; }
@@ -402,7 +404,7 @@ namespace Microsoft.Maui.Platform
 			// Handle RTL initial positioning
 			if (!_checkedForRtlScroll && _hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
 			{
-				if (_hScrollView.LayoutDirection == Android.Views.LayoutDirection.Rtl)
+				if (_hScrollView.LayoutDirection == ALayoutDirection.Rtl)
 				{
 					Post(() =>
 					{
