@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.ActivityListView"
+    x:DataType="models:DayPlan">
+
+    <VerticalStackLayout Padding="15" BindableLayout.ItemsSource="{Binding Activities}" Spacing="15">
+        <BindableLayout.ItemTemplate>
+            <DataTemplate x:DataType="models:Activity">
+                <HorizontalStackLayout Spacing="12">
+                    <Border WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" Stroke="Transparent"
+                            BackgroundColor="{StaticResource Primary}" VerticalOptions="Start">
+                        <Label Text="●" FontSize="16" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    
+                    <VerticalStackLayout Spacing="4" VerticalOptions="Start">
+                        <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                        <Label Text="{Binding Description}" FontSize="14" LineBreakMode="WordWrap"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </DataTemplate>
+        </BindableLayout.ItemTemplate>
+    </VerticalStackLayout>
+
+</ContentView>

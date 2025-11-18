@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.DayView"
+    x:DataType="models:DayPlan">
+
+    <Border Padding="0" StrokeShape="RoundRectangle 16" Stroke="Transparent"
+            BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray900}}"
+            Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.2}">
+        <VerticalStackLayout Spacing="0">
+            <Border HeightRequest="200" StrokeShape="RoundRectangle 16,16,0,0" Stroke="Transparent">
+                <Grid>
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray800}}" />
+                    <Label Text="🗺️" FontSize="48" HorizontalOptions="Center" VerticalOptions="Center" Opacity="0.3" />
+                    
+                    <VerticalStackLayout VerticalOptions="End" Padding="15" Spacing="5">
+                        <Label Text="{Binding WeatherForecast}" FontSize="14" TextColor="White"
+                               IsVisible="{Binding WeatherForecast, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                        <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" TextColor="White" />
+                        <Label Text="{Binding Subtitle}" FontSize="14" TextColor="White" Opacity="0.9" />
+                    </VerticalStackLayout>
+                    <BoxView Color="Black" Opacity="0.4" VerticalOptions="End" HeightRequest="100" />
+                </Grid>
+            </Border>
+            
+            <views:ActivityListView />
+        </VerticalStackLayout>
+    </Border>
+
+</ContentView>

@@ -1,4 +1,5 @@
 ﻿using Maui.Controls.Sample.Pages;
+using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Essentials.AI;
 
@@ -19,8 +20,18 @@ public static class MauiProgram
 
 		builder.Services.AddPlatformChatClient();
 
-		builder.Services.AddTransient<MainPage>();
-		builder.Services.AddTransient<ChatViewModel>();
+		// Register Pages
+		builder.Services.AddTransient<LandmarksPage>();
+		builder.Services.AddTransient<TripPlanningPage>();
+
+		// Register ViewModels
+		builder.Services.AddTransient<LandmarksViewModel>();
+		builder.Services.AddTransient<TripPlanningViewModel>();
+
+		// Register Services
+		builder.Services.AddSingleton<LandmarkDataService>(sp => LandmarkDataService.Instance);
+		builder.Services.AddTransient<ItineraryService>();
+		builder.Services.AddTransient<TaggingService>();
 
 		return builder.Build();
 	}

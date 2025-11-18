@@ -4,11 +4,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Maui.Controls.Sample.Pages"
-    Title="Maui.Controls.Sample">
+    Title="Foundation Models Trip Planner">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate pages:MainPage}"
-        Route="MainPage" />
+        ContentTemplate="{DataTemplate pages:LandmarksPage}"
+        Route="LandmarksPage" />
 
 </Shell>

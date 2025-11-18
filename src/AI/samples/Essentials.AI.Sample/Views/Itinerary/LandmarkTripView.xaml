@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.LandmarkTripView"
+    x:DataType="viewModels:TripPlanningViewModel">
+
+    <Grid>
+        <!-- Background Header Image -->
+        <Image VerticalOptions="Start" HeightRequest="420" Aspect="AspectFill" ZIndex="0"
+               Source="{Binding Landmark.BackgroundImageName, StringFormat='images/backgrounds/{0}.jpg'}" />
+        
+        <!-- Gradient overlay -->
+        <BoxView VerticalOptions="Start" HeightRequest="420" ZIndex="0">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="Transparent" Offset="0.3" />
+                    <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="0.85" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <!-- Main Content -->
+        <ScrollView ZIndex="2">
+            <VerticalStackLayout Spacing="20">
+                <!-- Spacer for header -->
+                <BoxView HeightRequest="20" Color="Transparent" />
+
+                <!-- LandmarkDescriptionView - initial state -->
+                <views:LandmarkDescriptionView 
+                    IsVisible="{Binding HasRequestedItinerary, Converter={StaticResource InvertedBoolConverter}}" />
+
+                <!-- ItineraryPlanningView - generating state -->
+                <views:ItineraryPlanningView 
+                    IsVisible="{Binding IsGeneratingItinerary}" />
+
+                <!-- ItineraryView - complete state -->
+                <views:ItineraryView 
+                    IsVisible="{Binding Itinerary, Converter={StaticResource IsNotNullConverter}}" />
+
+                <!-- Bottom spacer -->
+                <BoxView HeightRequest="20" Color="Transparent" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Generate Itinerary Button (floating) -->
+        <Border IsVisible="{Binding ShowGenerateButton}" VerticalOptions="End" Padding="20,10,20,20" ZIndex="3"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                Shadow="{Shadow Brush=Black, Offset='0,-2', Radius=8, Opacity=0.1}">
+            <Button Text="✨ Generate Itinerary" Command="{Binding GenerateItineraryCommand}"
+                    FontSize="18" FontAttributes="Bold" HeightRequest="56" CornerRadius="12"
+                    BackgroundColor="{StaticResource Primary}" TextColor="White" />
+        </Border>
+    </Grid>
+
+</ContentView>
