@@ -30,6 +30,7 @@ public class HybridWebViewFeatureTests : UITest
 		Assert.That(hybridRootLabel, Is.EqualTo("HybridWebView1"), "Hybrid Root label should be displayed correctly.");
 		var hybridDefaultFile = App.FindElement("DefaultFileLabel").GetText();
 		Assert.That(hybridDefaultFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -38,6 +39,7 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
+		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView1Button");
 		App.Tap("HybridWebView1Button");
 		App.WaitForElement("ImageHtmlButton");
@@ -55,6 +57,7 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
+		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
 		App.WaitForElement("HybridRootLabel");
@@ -70,9 +73,10 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
+		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView1Button");
 		App.Tap("HybridWebView1Button");
-		Thread.Sleep(2000); // Allow time for the UI to update
+		Thread.Sleep(5000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -81,7 +85,7 @@ public class HybridWebViewFeatureTests : UITest
 
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
-		Thread.Sleep(2000); // Allow time for the UI to update
+		Thread.Sleep(5000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -95,11 +99,12 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
+		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView1Button");
 		App.Tap("HybridWebView1Button");
 		App.WaitForElement("ImageHtmlButton");
 		App.Tap("ImageHtmlButton");
-		Thread.Sleep(2000); // Allow time for the UI to update
+		Thread.Sleep(5000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -108,7 +113,7 @@ public class HybridWebViewFeatureTests : UITest
 
 		App.WaitForElement("NavigationHtmlButton");
 		App.Tap("NavigationHtmlButton");
-		Thread.Sleep(2000); // Allow time for the UI to update
+		Thread.Sleep(5000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -122,9 +127,9 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
+		Thread.Sleep(5000);
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
-		Thread.Sleep(2000); // Allow time for the UI to update
 		VerifyScreenshot();
 	}
 
@@ -145,6 +150,7 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
+		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
 		App.WaitForElement("IndexHtmlButton");
