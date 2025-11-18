@@ -772,7 +772,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (_emptyUIView is UILabel label)
 			{
-				// For UILabel, always set to center for better UX
+				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
 				label.TextAlignment = UITextAlignment.Center;
 			}
 		}
