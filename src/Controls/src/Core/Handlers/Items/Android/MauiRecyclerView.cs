@@ -575,10 +575,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(SelectLayoutManager(ItemsLayout));
-				if (ShouldUpdateEmptyView())
-				{
-					UpdateEmptyView();
-				}
+				UpdateEmptyView();
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
@@ -590,7 +587,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (ShouldUpdateEmptyView())
 				{
-					SwapAdapter(ItemsViewAdapter, true);
+					// Header/footer properties changed - detach and reattach adapter to force RecyclerView to recalculate the positions.
+					SetAdapter(null);
+					SwapAdapter(_emptyViewAdapter, true);
 					UpdateEmptyView();
 				}
 			}
