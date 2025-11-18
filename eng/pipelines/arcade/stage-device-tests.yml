@@ -48,7 +48,7 @@ parameters:
   default: $(System.DefaultWorkingDirectory)
 
 stages:
-- stage: devicetests_ios_catalyst_android
+- stage: devicetests_build
   displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
@@ -102,6 +102,11 @@ stages:
           condition: not(succeeded())
           artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
 
+- stage: devicetests_ios
+  displayName: ${{ parameters.TargetFrameworkVersion }} iOS Helix Tests
+  dependsOn: 
+    - devicetests_build
+  jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
@@ -120,8 +125,6 @@ stages:
         clean: all
       jobs:
       - job: device_tests_ios
-        dependsOn:
-        - builddevice_tests
         displayName: Run DeviceTests iOS
         timeoutInMinutes: 240
         variables:
@@ -147,9 +150,12 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
 
+- stage: devicetests_ios_catalyst_android
+  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests
+  dependsOn: 
+    - devicetests_build
+  jobs:
       - job: device_tests_maccatalyst
-        dependsOn:
-        - builddevice_tests
         displayName: Run DeviceTests MacCatalyst
         timeoutInMinutes: 240
         variables:
@@ -175,9 +181,12 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
 
+- stage: devicetests_ios_catalyst_android
+  displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests
+  dependsOn: 
+    - devicetests_build
+  jobs:
       - job: device_tests_android
-        dependsOn:
-        - builddevice_tests
         displayName: Run DeviceTests Android
         timeoutInMinutes: 240
         variables:
