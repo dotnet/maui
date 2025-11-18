@@ -71,7 +71,7 @@ stages:
       jobs:
       - job: builddevice_tests
         displayName: Build Device Tests
-        timeoutInMinutes: 240
+        timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -149,6 +149,8 @@ stages:
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
+            WorkItemTimeout: 04:00:00
+            XUnitWorkItemTimeout: 04:00:00
 
 - stage: devicetests_catalyst
   displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests
@@ -174,7 +176,7 @@ stages:
       jobs:
       - job: device_tests_maccatalyst
         displayName: Run DeviceTests MacCatalyst
-        timeoutInMinutes: 240
+        timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -222,7 +224,7 @@ stages:
       jobs:
       - job: device_tests_android
         displayName: Run DeviceTests Android
-        timeoutInMinutes: 240
+        timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
