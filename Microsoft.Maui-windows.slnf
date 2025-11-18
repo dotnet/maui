@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Microsoft.Maui-dev.sln",
+    "path": "Microsoft.Maui-dev.slnx",
     "projects": [
       "src\\BlazorWebView\\samples\\BlazorWinFormsApp\\BlazorWinFormsApp.csproj",
       "src\\BlazorWebView\\samples\\BlazorWpfApp\\BlazorWpfApp.csproj",
