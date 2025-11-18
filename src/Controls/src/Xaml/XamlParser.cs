@@ -132,6 +132,9 @@ namespace Microsoft.Maui.Controls.Xaml
 						else
 							node.CollectionItems.Add(new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader));
 						break;
+					case XmlNodeType.Comment:
+						// Ignore XML comments
+						break;
 					default:
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						break;
@@ -189,6 +192,9 @@ namespace Microsoft.Maui.Controls.Xaml
 						nodes.Add(node);
 						break;
 					case XmlNodeType.Whitespace:
+						break;
+					case XmlNodeType.Comment:
+						// Ignore XML comments
 						break;
 					default:
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
