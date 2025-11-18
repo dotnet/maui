@@ -34,7 +34,6 @@ public class Issue32271 : ContentPage
 		{
 			Content = scrollViewContent,
 			FlowDirection = FlowDirection.RightToLeft,
-			Orientation = ScrollOrientation.Horizontal
 		};
 		scrollView.SetBinding(ScrollView.OrientationProperty, static (Issue32271ScrollViewViewModel vm) => vm.Orientation);
 
