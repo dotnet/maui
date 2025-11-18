@@ -101,6 +101,18 @@
     </Project>
     <Project Path="src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/AI/" />
+  <Folder Name="/AI/samples/">
+    <Project Path="src/AI/samples/Essentials.AI.Sample/Essentials.AI.Sample.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/AI/src/">
+    <Project Path="src/AI/src/Essentials.AI/Essentials.AI.csproj" />
+  </Folder>
+  <Folder Name="/AI/test/">
+    <Project Path="src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj" />
+  </Folder>
   <Folder Name="/Graphics/" />
   <Folder Name="/Graphics/samples/">
     <Project Path="src/Graphics/samples/GraphicsTester.Android/GraphicsTester.Android.csproj">

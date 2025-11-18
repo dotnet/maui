@@ -1,4 +1,16 @@
 <Solution>
+  <Folder Name="/AI/" />
+  <Folder Name="/AI/samples/">
+    <Project Path="src/AI/samples/Essentials.AI.Sample/Essentials.AI.Sample.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/AI/src/">
+    <Project Path="src/AI/src/Essentials.AI/Essentials.AI.csproj" />
+  </Folder>
+  <Folder Name="/AI/test/">
+    <Project Path="src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj" />
+  </Folder>
   <Folder Name="/BlazorWebView/" />
   <Folder Name="/BlazorWebView/samples/">
     <Project Path="src/BlazorWebView/samples/BlazorWinFormsApp/BlazorWinFormsApp.csproj" />
