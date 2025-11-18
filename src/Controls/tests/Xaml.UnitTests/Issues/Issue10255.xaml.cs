@@ -53,6 +53,7 @@ public partial class Issue10255 : ContentPage
 			Assert.That(workingConverter.FalseObject, Is.EqualTo(80));
 		}
 
+#if NET11_0_OR_GREATER
 		[Test]
 		public void ImplicitStringCastWorks()
 		{
@@ -88,6 +89,7 @@ public partial class Issue10255 : ContentPage
 		{
 			Assert.Throws<FormatException>(() => { GridLength gl = "invalid"; });
 		}
+#endif
 	}
 }
 

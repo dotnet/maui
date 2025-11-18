@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
