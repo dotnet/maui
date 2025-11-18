@@ -155,6 +155,23 @@ stages:
   dependsOn: 
     - devicetests_build
   jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
       - job: device_tests_maccatalyst
         displayName: Run DeviceTests MacCatalyst
         timeoutInMinutes: 240
@@ -186,6 +203,23 @@ stages:
   dependsOn: 
     - devicetests_build
   jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
       - job: device_tests_android
         displayName: Run DeviceTests Android
         timeoutInMinutes: 240
