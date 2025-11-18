@@ -28,7 +28,7 @@ public class ChatViewModel(IChatClient chatClient) : BindableObject
 	}
 
 	public Command SendMessageCommand =>
-		field ?? new Command(async () => await SendMessageAsync(), () => !string.IsNullOrWhiteSpace(MessageText));
+		field ??= new Command(async () => await SendMessageAsync(), () => !string.IsNullOrWhiteSpace(MessageText));
 
 	private async Task SendMessageAsync()
 	{

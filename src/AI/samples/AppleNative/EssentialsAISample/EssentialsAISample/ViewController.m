@@ -27,7 +27,7 @@
     
     // 3. Create the message and attach the content
     ChatMessageNative *message = [[ChatMessageNative alloc] init];
-    message.role = ChatRoleNativeUser;
+    message.role = ChatRoleNativeAssistant;
     message.contents = @[ textContent ];
     
     // 4. (Optional) create options

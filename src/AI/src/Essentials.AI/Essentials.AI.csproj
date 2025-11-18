@@ -34,8 +34,13 @@
     <ObjcBindingApiDefinition Include="Platform\MaciOS\ApiDefinitions.cs" />
     <ObjcBindingCoreSource Include="Platform\MaciOS\StructsAndEnums.cs" />
   </ItemGroup>
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+  <!-- Some helpers for Intellisense -->
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
-    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-ios26.0\iOS\**\*.cs" />
+    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-maccatalyst26.0\MacCatalyst\**\*.cs" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-maccatalyst26.0\MacCatalyst\ObjCRuntime\Messaging.g.cs')" />
+    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-ios26.0\iOS\**\*.cs" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-ios26.0\iOS\ObjCRuntime\Messaging.g.cs')" />
     <_FilesUsedForIntellisense Include="Platform\MaciOS\StructsAndEnums.cs" />
     <Compile Include="@(_FilesUsedForIntellisense)" />
   </ItemGroup>
@@ -44,6 +49,4 @@
       <Compile Remove="@(_FilesUsedForIntellisense)" />
     </ItemGroup>
   </Target>
-  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
-  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 </Project>

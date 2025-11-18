@@ -42,6 +42,7 @@
             Padding="0,10,0,0">
             <Entry
                 x:Name="MessageEntry"
+                Text="{Binding MessageText}"
                 Placeholder="Type your message..."
                 ReturnCommand="{Binding SendMessageCommand}"
                 ReturnType="Send"/>

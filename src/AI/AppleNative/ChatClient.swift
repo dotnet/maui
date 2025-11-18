@@ -1,82 +1,6 @@
+
 import Foundation
 import FoundationModels
-
-// MARK: - Errors
-
-@objc(ChatClientError)
-public enum ChatClientError: Int {
-    case emptyMessages = 1
-    case invalidRole = 2
-    case invalidContent = 3
-    case cancelled = 4
-}
-
-extension NSError {
-    static func chatError(_ code: ChatClientError, description: String) -> NSError {
-        NSError(
-            domain: "ChatClientNative",
-            code: code.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: description]
-        )
-    }
-}
-
-// MARK: - Options
-
-@objc(ChatOptionsNative)
-public class ChatOptionsNative: NSObject {
-    @objc public var topK: NSNumber? = nil
-    @objc public var seed: NSNumber? = nil
-    @objc public var temperature: NSNumber? = nil
-    @objc public var maxOutputTokens: NSNumber? = nil
-}
-
-// MARK: - Messages
-
-@objc(ChatMessageNative)
-public class ChatMessageNative: NSObject {
-    @objc public var role: ChatRoleNative = .user
-    @objc public var contents: [AIContentNative] = []
-}
-
-@objc(AIContentNative)
-public class AIContentNative: NSObject {}
-
-@objc(TextContentNative)
-public class TextContentNative: AIContentNative {
-    @objc public init(text: String) {
-        self.text = text
-    }
-    @objc public var text: String
-}
-
-@objc(ChatRoleNative)
-public enum ChatRoleNative: Int {
-    case user
-    case assistant
-    case system
-}
-
-// MARK: - Cancellation
-
-@objc(CancellationTokenNative)
-public class CancellationTokenNative: NSObject {
-    private var task: Task<Void, Never>
-
-    init(task: Task<Void, Never>) {
-        self.task = task
-    }
-
-    @objc public func cancel() {
-        task.cancel()
-    }
-
-    @objc public var isCancelled: Bool {
-        task.isCancelled
-    }
-}
-
-// MARK: - Client
 
 @objc(ChatClientNative)
 public class ChatClientNative: NSObject {
@@ -89,7 +13,7 @@ public class ChatClientNative: NSObject {
         guard !messages.isEmpty else {
             let error = NSError.chatError(
                 .emptyMessages,
-                description: "No messages provided"
+                description: "No messages provided."
             )
             onComplete(nil, error)
             return nil
@@ -142,7 +66,7 @@ public class ChatClientNative: NSObject {
             } catch is CancellationError {
                 let error = NSError.chatError(
                     .cancelled,
-                    description: "Request was cancelled"
+                    description: "Request was cancelled."
                 )
                 callerQueue?.async { onComplete(nil, error) } ?? onComplete(nil, error)
             } catch let error as NSError {
@@ -157,7 +81,7 @@ public class ChatClientNative: NSObject {
         guard message.role == .user else {
             throw NSError.chatError(
                 .invalidRole,
-                description: "Only user messages can be prompts"
+                description: "Only user messages can be prompts. Found: \(message.role)"
             )
         }
 
@@ -169,7 +93,7 @@ public class ChatClientNative: NSObject {
                 default:
                     throw NSError.chatError(
                         .invalidContent,
-                        description: "Unsupported content type in prompt"
+                        description: "Unsupported content type in prompt. Found: \(type(of: $0))"
                     )
                 }
             }
@@ -184,10 +108,24 @@ public class ChatClientNative: NSObject {
                     segments: message.contents.map(self.toTranscriptSegment)
                 )
             )
+        case .assistant:
+            return try .response(
+                Transcript.Response(
+                    assetIDs: [],
+                    segments: message.contents.map(self.toTranscriptSegment)
+                )
+            )
+        case .system:
+            return try .instructions(
+                Transcript.Instructions(
+                    segments: message.contents.map(self.toTranscriptSegment),
+                    toolDefinitions: []
+                )
+            )
         default:
             throw NSError.chatError(
                 .invalidRole,
-                description: "Unsupported role in transcript"
+                description: "Unsupported role in transcript. Found: \(message.role)"
             )
         }
     }
@@ -199,7 +137,7 @@ public class ChatClientNative: NSObject {
         default:
             throw NSError.chatError(
                 .invalidContent,
-                description: "Unsupported content type in transcript"
+                description: "Unsupported content type in transcript. Found: \(type(of: content))"
             )
         }
     }

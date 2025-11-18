@@ -114,14 +114,14 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			ChatRole.Assistant,
 			response?.ToString()));
 
-	private ChatMessageNative ToNative(ChatMessage message) => 
+	private static ChatMessageNative ToNative(ChatMessage message) => 
 		new()
 		{
 			Role = ToNative(message.Role),
-			Contents = message.Contents.Select(ToNative).ToArray()
+			Contents = [.. message.Contents.Select(ToNative)]
 		};
 
-	private ChatRoleNative ToNative(ChatRole role)
+	private static ChatRoleNative ToNative(ChatRole role)
     {
         if (role == ChatRole.User)
 			return ChatRoleNative.User;
@@ -152,8 +152,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	private static NSNumber? ToNative(int? value) =>
 		value.HasValue ? NSNumber.FromInt32(value.Value) : null;
 
-	private static NSNumber? ToNative(float? value) =>
-		value.HasValue ? NSNumber.FromFloat(value.Value) : null;
+	private static NSNumber? ToNative(double? value) =>
+		value.HasValue ? NSNumber.FromDouble(value.Value) : null;
 
 	private static NSNumber? ToNative(long? value) =>
 		value.HasValue ? NSNumber.FromInt64(value.Value) : null;
