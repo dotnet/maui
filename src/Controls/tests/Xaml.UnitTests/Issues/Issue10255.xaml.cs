@@ -27,6 +27,10 @@ public partial class Issue10255 : ContentPage
 		[Test]
 		public void GenericConverterWithGridLengthWorks([Values] XamlInflator inflator)
 		{
+#if !NET11_0_OR_GREATER
+			if (inflator == XamlInflator.XamlC)
+				Assert.Ignore("XamlC compilation of implicit string to GridLength cast requires .NET 11 or greater");
+#endif
 			var page = new Issue10255(inflator);
 			
 			// Test that the converters were created successfully

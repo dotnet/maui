@@ -102,6 +102,7 @@ namespace Microsoft.Maui
 			return new GridLength(absoluteValue);
 		}
 
+#if NET11_0_OR_GREATER
 		/// <summary>Converts a string to a GridLength using the type converter.</summary>
 		/// <param name="value">The string value representing a GridLength ("auto", "*", "2*", or a number).</param>
 		/// <returns>A GridLength instance parsed from the string.</returns>
@@ -114,6 +115,7 @@ namespace Microsoft.Maui
 			
 			return Converters.GridLengthTypeConverter.ParseStringToGridLength(value);
 		}
+#endif
 
 		/// <summary>Returns a string that represents this GridLength.</summary>
 		/// <returns>A string representation in the format "{Value}.{GridUnitType}".</returns>
