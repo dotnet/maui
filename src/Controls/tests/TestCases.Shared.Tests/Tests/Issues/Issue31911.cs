@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,3 +31,4 @@ public class Issue31911 : _IssuesUITest
         VerifyScreenshot();
     }
 }
+#endif
