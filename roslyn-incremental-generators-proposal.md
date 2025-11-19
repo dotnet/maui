@@ -75,7 +75,7 @@ public void Initialize(IncrementalGeneratorInitializationContext context)
     
     // Phase 2: Provide implementations
     // Can see all declarations from Phase 1
-    context.RegisterImplementationOutput(
+    `contextRntationSourceOutput` and .RegisterImplementationSourceOutput(
         source: ...,
         action: (context, source) => 
         {
@@ -96,7 +96,7 @@ public void Initialize(IncrementalGeneratorInitializationContext context)
 
 #### Phase 2: Implementation Phase
 1. Use `EnrichedCompilation` that includes all generator declarations
-2. Execute all `RegisterImplementationOutput` actions
+2. Execute all `RegisterSourceOutput` and `RegisterImplementationSourceOutput` actions
 3. Each generator can now see types declared by other generators
 4. Produce final compilation output
 
@@ -128,7 +128,8 @@ public partial class MainPage : ContentPage
 {
     public MainPage()
     {
-        BindingContext = new MainViewModel(); // Error: MainViewModel.Title doesn't exist yet
+        BindingContext = new MainViewModel();
+        BindingContext.Text = "Hello";  // Error: MainViewModel.Title doesn't exist yet
     }
 }
 ```
@@ -152,7 +153,7 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         BindingContext = new MainViewModel(); // ✓ MainViewModel.Title is visible
-        Title = "Hello"; // ✓ Compiles successfully
+        BindingContext.Title = "Hello"; // ✓ Compiles successfully
     }
 }
 
@@ -188,10 +189,11 @@ public partial class MainViewModel : ObservableObject
 
 ## Open Questions
 
-1. **Naming**: `RegisterDeclarationOutput` vs `RegisterSignatureOutput` vs reusing `RegisterSourceOutput`?
+1. **Naming**: `RegisterDeclarationOutput` vs `RegisterSignatureOutput` vs reusing `RegisterSourceOutput` (breaking change)?
 2. **Granularity**: Should declaration vs implementation be per-generator or per-output?
 3. **Diagnostics**: How should errors in Phase 1 affect Phase 2 execution?
 4. **Incremental behavior**: What level of caching between phases?
+5. **Strictness**: Should the limitation to produce just declarations in the first phase be a strict requirement or just a recommendataion?
 
 ## Related Work
 
