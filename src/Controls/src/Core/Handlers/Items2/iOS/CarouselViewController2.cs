@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (ItemsSource is null || ItemsSource.ItemCount == 0)
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
 			{
 				return;
 			}

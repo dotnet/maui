@@ -495,6 +495,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
+			{
+				return;
+			}
+
 			if (carousel.Loop)
 			{
 				carouselPosition = _carouselViewLoopManager?.GetCorrectPositionForCenterItem(CollectionView) ?? -1;
