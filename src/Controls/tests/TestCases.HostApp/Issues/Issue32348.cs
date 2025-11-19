@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 32348, "CollectionView VSM Background and BackgroundColor work similarly", PlatformAffected.iOS | PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 32348, "CollectionView VSM Background and BackgroundColor work similarly", PlatformAffected.iOS | PlatformAffected.Android | PlatformAffected.macOS)]
 public class Issue32348 : ContentPage
 {
 	public ObservableCollection<string> BackgroundItems { get; set; }
