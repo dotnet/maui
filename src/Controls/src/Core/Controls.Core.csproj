@@ -71,8 +71,6 @@
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
-    <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
-    <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">

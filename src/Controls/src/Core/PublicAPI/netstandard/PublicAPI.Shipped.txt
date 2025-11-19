@@ -258,7 +258,6 @@
 ~Microsoft.Maui.Controls.Compatibility.Grid.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.Compatibility.Grid>
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.get -> Microsoft.Maui.Controls.RowDefinitionCollection
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.set -> void
-~Microsoft.Maui.Controls.Compatibility.INativeElementView.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Compatibility.Layout.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.Compatibility.Layout.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.Compatibility.Layout.OnChildMeasureInvalidated(object sender, System.EventArgs e) -> void
@@ -4329,7 +4328,6 @@ Microsoft.Maui.Controls.Compatibility.Grid.Grid() -> void
 Microsoft.Maui.Controls.Compatibility.Grid.InvalidateMeasureInernalNonVirtual(Microsoft.Maui.Controls.Internals.InvalidationTrigger trigger) -> void
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.get -> double
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.set -> void
-Microsoft.Maui.Controls.Compatibility.INativeElementView
 Microsoft.Maui.Controls.Compatibility.Layout
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.set -> void

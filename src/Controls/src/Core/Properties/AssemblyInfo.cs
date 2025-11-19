@@ -2,29 +2,15 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
-using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Components.WebView.Maui")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Windows")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.UAP.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Compatibility.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS.Classic")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.Android")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.FlexLayout.UnitTests")]

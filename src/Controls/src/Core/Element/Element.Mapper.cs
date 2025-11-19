@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
 

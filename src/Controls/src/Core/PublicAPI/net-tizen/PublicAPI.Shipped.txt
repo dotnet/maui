@@ -260,7 +260,6 @@
 ~Microsoft.Maui.Controls.Compatibility.Grid.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.Compatibility.Grid>
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.get -> Microsoft.Maui.Controls.RowDefinitionCollection
 ~Microsoft.Maui.Controls.Compatibility.Grid.RowDefinitions.set -> void
-~Microsoft.Maui.Controls.Compatibility.INativeElementView.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Compatibility.Layout.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~Microsoft.Maui.Controls.Compatibility.Layout.LowerChild(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.Compatibility.Layout.OnChildMeasureInvalidated(object sender, System.EventArgs e) -> void
@@ -473,10 +472,6 @@
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.HandlerChangingEventArgs(Microsoft.Maui.IElementHandler oldHandler, Microsoft.Maui.IElementHandler newHandler) -> void
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.NewHandler.get -> Microsoft.Maui.IElementHandler
 ~Microsoft.Maui.Controls.HandlerChangingEventArgs.OldHandler.get -> Microsoft.Maui.IElementHandler
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellWrapperTemplate.CellWrapperTemplate(Microsoft.Maui.Controls.DataTemplate source, Microsoft.Maui.Controls.BindableObject container = null) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.CellWrapperTemplateSelector.CellWrapperTemplateSelector(Microsoft.Maui.Controls.DataTemplateSelector selector) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor.ListViewAdaptor(Microsoft.Maui.Controls.ListView listview, System.Collections.IEnumerable items, Microsoft.Maui.Controls.DataTemplate template) -> void
-~Microsoft.Maui.Controls.Handlers.Compatibility.TableViewAdaptor.TableViewAdaptor(Microsoft.Maui.Controls.TableView tableView, System.Collections.IEnumerable items, Microsoft.Maui.Controls.DataTemplate template) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CarouselViewHandler(Microsoft.Maui.PropertyMapper mapper = null) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.CollectionViewHandler(Microsoft.Maui.PropertyMapper mapper = null) -> void
 ~Microsoft.Maui.Controls.Handlers.Items.GroupableItemsViewHandler<TItemsView>
@@ -1777,12 +1772,6 @@
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
-~override Microsoft.Maui.Controls.Handlers.Compatibility.CellWrapperTemplateSelector.OnSelectTemplate(object item, Microsoft.Maui.Controls.BindableObject container) -> Microsoft.Maui.Controls.DataTemplate
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor.CreateFooterView() -> Microsoft.Maui.Controls.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor.CreateHeaderView() -> Microsoft.Maui.Controls.View
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.ListView> e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.TableView> e) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.CollectionView
 ~override Microsoft.Maui.Controls.Handlers.Items.GroupableItemsViewHandler<TItemsView>.CreatePlatformView() -> Tizen.UIExtensions.NUI.CollectionView
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.ConnectHandler(Tizen.UIExtensions.NUI.CollectionView nativeView) -> void
@@ -2240,9 +2229,6 @@
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int column = 0, int row = 0) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int left, int right, int top, int bottom) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
-~static Microsoft.Maui.Controls.Handlers.Compatibility.CellContentFactory.CreateContent(object data, Microsoft.Maui.Controls.BindableObject container = null) -> Microsoft.Maui.Controls.View
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ListView, Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer>
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ListView, Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer>
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapIsSwipeEnabled(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
@@ -4310,7 +4296,6 @@ Microsoft.Maui.Controls.Compatibility.Grid.Grid() -> void
 Microsoft.Maui.Controls.Compatibility.Grid.InvalidateMeasureInernalNonVirtual(Microsoft.Maui.Controls.Internals.InvalidationTrigger trigger) -> void
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.get -> double
 Microsoft.Maui.Controls.Compatibility.Grid.RowSpacing.set -> void
-Microsoft.Maui.Controls.Compatibility.INativeElementView
 Microsoft.Maui.Controls.Compatibility.Layout
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.get -> bool
 Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparent.set -> void
@@ -4656,41 +4641,6 @@ Microsoft.Maui.Controls.HandlerChangingEventArgs
 Microsoft.Maui.Controls.HandlerProperties
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellContentFactory
-Microsoft.Maui.Controls.Handlers.Compatibility.CellContentFactory.CellContentFactory() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellWrapperTemplate
-Microsoft.Maui.Controls.Handlers.Compatibility.CellWrapperTemplateSelector
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Element.get -> Microsoft.Maui.Controls.Frame?
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Element.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.ListViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.UpdateAdaptor(bool initialize) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.SectionCell
-Microsoft.Maui.Controls.Handlers.Compatibility.SectionCell.SectionCell() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewAdaptor
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.TableViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer.ViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.Control.get -> TPlatformView?
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.SetNativeControl(TPlatformView! control) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.AutoPackage.get -> bool
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.AutoPackage.set -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.Element.get -> TElement?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ElementChanged -> System.EventHandler<Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement!>!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.ElementPropertyChanged -> System.EventHandler<System.ComponentModel.PropertyChangedEventArgs!>?
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MauiContext.get -> Microsoft.Maui.IMauiContext!
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetElement(Microsoft.Maui.IView! view) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateLayout() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer() -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.CarouselViewHandler() -> void
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewItemTemplateAdaptor
@@ -7261,15 +7211,6 @@ override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Controls.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor.IsSelectable.get -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor.MeasureItem(double widthConstraint, double heightConstraint) -> Tizen.UIExtensions.Common.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdaptor.MeasureItem(int index, double widthConstraint, double heightConstraint) -> Tizen.UIExtensions.Common.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewAdaptor.IsSelectable.get -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewAdaptor.MeasureItem(double widthConstraint, double heightConstraint) -> Tizen.UIExtensions.Common.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewAdaptor.MeasureItem(int index, double widthConstraint, double heightConstraint) -> Tizen.UIExtensions.Common.Size
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewItemTemplateAdaptor.MeasureItem(double widthConstraint, double heightConstraint) -> Tizen.UIExtensions.Common.Size
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewItemTemplateAdaptor.MeasureItem(int index, double widthConstraint, double heightConstraint) -> Tizen.UIExtensions.Common.Size
 override Microsoft.Maui.Controls.Handlers.Items.EmptyItemAdaptor.GetFooterView() -> Tizen.NUI.BaseComponents.View?
@@ -7496,15 +7437,6 @@ static Microsoft.Maui.Controls.FontExtensions.ToFont(this Microsoft.Maui.Control
 static Microsoft.Maui.Controls.FontExtensions.WithAttributes(this Microsoft.Maui.Font font, Microsoft.Maui.Controls.FontAttributes attributes) -> Microsoft.Maui.Font
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Frame!, Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Frame!, Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapAutomationId(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapAutomationPropertiesIsInAccessibleTree(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapBackground(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapBackgroundColor(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MapIsEnabled(Microsoft.Maui.IPlatformViewHandler! handler, TElement! view) -> void
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRendererCommandMapper -> Microsoft.Maui.CommandMapper<TElement!, Microsoft.Maui.IPlatformViewHandler!>!
-static Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRendererMapper -> Microsoft.Maui.IPropertyMapper<TElement!, Microsoft.Maui.IPlatformViewHandler!>!
 static Microsoft.Maui.Controls.Handlers.Items.EmptyItemAdaptor.Create(Microsoft.Maui.Controls.ItemsView! itemsView) -> Microsoft.Maui.Controls.Handlers.Items.EmptyItemAdaptor!
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! view) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyout(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
@@ -7705,19 +7637,6 @@ virtual Microsoft.Maui.Controls.Element.OnParentChanged() -> void
 virtual Microsoft.Maui.Controls.Element.OnParentSet() -> void
 virtual Microsoft.Maui.Controls.FlyoutPage.ShouldShowToolbarButton() -> bool
 virtual Microsoft.Maui.Controls.HandlerAttribute.ShouldRegister() -> bool
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<Microsoft.Maui.Controls.Frame!>! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.CreateNativeControl() -> TPlatformView!
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.DisconnectHandler(TPlatformView! oldPlatformView) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MinimumSize() -> Microsoft.Maui.Graphics.Size
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnElementChanged(Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement!>! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnElementPropertyChanged(object! sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetAutomationId(string! id) -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetImportantForAccessibility() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.SetIsEnabled() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateBackground() -> void
-virtual Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.UpdateBackgroundColor() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items.GroupItemSource.Dispose(bool disposing) -> void
 virtual Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor.CreateFooterView() -> Microsoft.Maui.Controls.View?
 virtual Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor.CreateHeaderView() -> Microsoft.Maui.Controls.View?

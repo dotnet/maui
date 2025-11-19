@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
