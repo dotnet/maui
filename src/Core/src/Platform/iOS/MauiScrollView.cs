@@ -306,12 +306,12 @@ namespace Microsoft.Maui.Platform
 				if (ContentSize != contentSize)
 				{
 					ContentSize = contentSize;
+
+					// Invalidation stops at `UIScrollViews` for performance reasons,
+					// but when the content size changes, we need to invalidate the ancestors
+					// in case the ScrollView is configured to grow/shrink with its content.
+					this.InvalidateAncestorsMeasures();
 				}
-				
-				// Invalidation stops at `UIScrollViews` for performance reasons,
-				// but when the content size changes, we need to invalidate the ancestors
-				// in case the ScrollView is configured to grow/shrink with its content.
-				this.InvalidateAncestorsMeasures();
 			}
 
 			base.LayoutSubviews();
@@ -587,7 +587,7 @@ namespace Microsoft.Maui.Platform
 			SetNeedsLayout();
 			InvalidateConstraintsCache();
 
-			return !isPropagating;
+			return true;
 		}
 
 		/// <summary>
