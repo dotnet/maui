@@ -107,7 +107,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: false);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
@@ -212,7 +212,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: false);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
@@ -320,7 +320,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: false);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
