@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnImplicitStyleChanged()
 		{
-			List<Style> applicableStyles = new List<Style>();
+			List<Style> applicableStyles = new List<Style>(_implicitStyles.Count);
 			var first = true;
 
 			// Collect all applicable styles from the type hierarchy
