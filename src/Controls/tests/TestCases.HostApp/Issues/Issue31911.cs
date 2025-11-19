@@ -28,14 +28,14 @@ public class Issue31911 : ContentPage
         Label headerContent = new Label
         {
             BackgroundColor = Colors.LightBlue,
-            Text = "Header: Click me to verify EmptyView position",
+            Text = "Header: This is the header content.",
         };
         collectionView.Header = headerContent;
 
         Label footerContent = new Label
         {
             BackgroundColor = Colors.LightCoral,
-            Text = "Footer: Click me to verify EmptyView position",
+            Text = "Footer: This is the footer content.",
         };
         collectionView.Footer = footerContent;
 
