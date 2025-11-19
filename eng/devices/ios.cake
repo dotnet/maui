@@ -488,9 +488,106 @@ string GetUDID(string testDevice, string tool)
 	return result;
 }
 
+void CleanupUnusableRuntimes()
+{
+	Information("Checking for unusable runtime disk images...");
+	try
+	{
+		IEnumerable<string> redirectedStandardOutput = new List<string>();
+		var exitCode = StartProcess("xcrun",
+			new ProcessSettings {
+				Arguments = "simctl runtime list -j",
+				RedirectStandardOutput = true,
+				RedirectedStandardOutputHandler = line => {
+					if (line != null)
+					{
+						((List<string>)redirectedStandardOutput).Add(line);
+					}
+					return line;
+				}
+			}
+		);
+
+		if (exitCode != 0)
+		{
+			Warning($"Failed to list simulator runtimes (exit code: {exitCode}). Skipping unusable runtime cleanup.");
+			return;
+		}
+
+		var output = string.Join("\n", redirectedStandardOutput);
+		if (string.IsNullOrWhiteSpace(output))
+		{
+			Information("No runtime information available.");
+			return;
+		}
+
+		// Parse JSON to find unusable runtimes
+		// We're looking for entries with "state" : "Unusable"
+		var lines = output.Split('\n');
+		var unusableIdentifiers = new List<string>();
+		string currentIdentifier = null;
+
+		foreach (var line in lines)
+		{
+			// Look for identifier lines like: "8728D520-0F86-4227-AE03-716249BBB18C" : {
+			if (line.Contains("\" : {") && !line.Contains("devices"))
+			{
+				var identifierMatch = System.Text.RegularExpressions.Regex.Match(line, "\"([0-9A-Fa-f-]+)\"\\s*:\\s*\\{");
+				if (identifierMatch.Success)
+				{
+					currentIdentifier = identifierMatch.Groups[1].Value;
+				}
+			}
+			// Look for state: Unusable
+			else if (line.Contains("\"state\"") && line.Contains("Unusable") && currentIdentifier != null)
+			{
+				unusableIdentifiers.Add(currentIdentifier);
+				Information($"Found unusable runtime: {currentIdentifier}");
+				currentIdentifier = null;
+			}
+		}
+
+		if (unusableIdentifiers.Count == 0)
+		{
+			Information("No unusable runtimes found.");
+			return;
+		}
+
+		// Delete unusable runtimes
+		foreach (var identifier in unusableIdentifiers)
+		{
+			Information($"Deleting unusable runtime: {identifier}");
+			try
+			{
+				var deleteExitCode = StartProcess("xcrun", $"simctl runtime delete {identifier}");
+				if (deleteExitCode == 0)
+				{
+					Information($"Successfully deleted unusable runtime: {identifier}");
+				}
+				else
+				{
+					Warning($"Failed to delete unusable runtime {identifier} (exit code: {deleteExitCode})");
+				}
+			}
+			catch (Exception ex)
+			{
+				Warning($"Exception while deleting unusable runtime {identifier}: {ex.Message}");
+			}
+		}
+	}
+	catch (Exception ex)
+	{
+		Warning($"Exception during unusable runtime cleanup: {ex.Message}");
+	}
+}
+
 void GetSimulators(string version, string tool)
 {
 	Information("Getting simulators for version {0}", version);
+	
+	// Clean up any unusable runtimes before calling XHarness
+	CleanupUnusableRuntimes();
+	
 	DotNetTool("tool", new DotNetToolSettings
 	{
 		ToolPath = tool,
