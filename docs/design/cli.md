@@ -347,12 +347,11 @@ requiring a custom protocol server.
 If an MCP server is deemed useful after the CLI is completed, it could
 be implemented as a thin wrapper that exposes the CLI operations
 through the MCP protocol. Both Visual Studio and VS Code extensions
-provide options for redistributing MCP servers, making distribution
-straightforward.
+provide options for distributing MCP servers, so we would likely do
+this through .NET MAUI tooling.
 
 **Decision**: Build the CLI first. The MCP server can be added later
-if there's demonstrated need, rather than building custom protocol
-infrastructure upfront.
+if there's demonstrated need.
 
 ## References
 
