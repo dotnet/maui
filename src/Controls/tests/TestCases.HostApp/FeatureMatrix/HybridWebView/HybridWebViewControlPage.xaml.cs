@@ -13,6 +13,10 @@ public partial class HybridWebViewControlPage : ContentPage
 		_viewModel = new HybridWebViewViewModel();
 		MyHybridWebView.RawMessageReceived += OnRawMessageReceived;
 		BindingContext = _viewModel;
+		
+		// Explicitly set HybridRoot to ensure it's properly initialized
+		// This is needed especially for multi-RID builds where binding might not trigger immediately
+		MyHybridWebView.HybridRoot = _viewModel.HybridRoot;
 	}
 
 	private async void OnEvaluateJavaScriptClicked(object sender, EventArgs e)
