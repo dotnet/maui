@@ -5,7 +5,7 @@ public class Issue16119 : TestShell
 {
 	protected override void Init()
 	{
-		MenuBarItem menuBarItem = new MenuBarItem {  Text = "Menu Flyout Item" };
+		MenuBarItem menuBarItem = new MenuBarItem { Text = "Menu Flyout Item" };
 
 		MenuFlyoutItem menuFlyoutItem = new MenuFlyoutItem
 		{
@@ -14,6 +14,19 @@ public class Issue16119 : TestShell
 		};
 		menuBarItem.Add(menuFlyoutItem);
 
+		MenuFlyoutSubItem menuFlyoutSubItem = new MenuFlyoutSubItem
+		{
+			Text = "Sub Menu",
+			IconImageSource = new FileImageSource { File = "small_dotnet_bot.png" }
+		};
+
+		menuFlyoutSubItem.Add(new MenuFlyoutItem
+		{
+			Text = "Sub Item 1",
+			IconImageSource = new FileImageSource { File = "small_dotnet_bot.png" }
+		});
+
+		menuBarItem.Add(menuFlyoutSubItem);
 		MenuBarItems.Add(menuBarItem);
 
 		VerticalStackLayout layout = new VerticalStackLayout
@@ -26,7 +39,7 @@ public class Issue16119 : TestShell
 				new Label
 				{
 					AutomationId = "Issue16119DescriptionLabel",
-					Text = "The test passes if the MenuFlyoutItem's icon is in original color instead of monochrome",
+					Text = "The test passes if the MenuFlyoutItem and MenuFlyoutSubItem icons are in original color instead of monochrome",
 					HorizontalOptions = LayoutOptions.Center,
 					FontSize = 12
 				},
