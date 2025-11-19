@@ -12,6 +12,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui;
 
