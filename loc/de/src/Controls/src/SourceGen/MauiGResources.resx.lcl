@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[XAML parsing failed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fehler bei der XAML-Analyse.]]></Val>
+            <Val><![CDATA[Fehler bei der XAML-Analyse]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
