@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 #if NET11_0_OR_GREATER
-	public // TODO: add to PublicAPI.Unshipped.txt once we start targetting net11
+	public // TODO: add to PublicAPI.Unshipped.txt once we start targeting net11
 #endif
 	class AppThemeBinding : BindingBase
 	{
-		public const string AppThemeResource = "__MAUI_ApplicationTheme__";
+		internal const string AppThemeResource = "__MAUI_ApplicationTheme__";
 		class AppThemeProxy : Element
 		{
 			public AppThemeProxy(Element parent, AppThemeBinding binding)
