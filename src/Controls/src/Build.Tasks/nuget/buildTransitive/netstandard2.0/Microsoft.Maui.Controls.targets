@@ -116,7 +116,7 @@
 	<!-- Warn when Runtime or XamlC inflator is explicitly set -->
 	<Warning 
 		Code="MAUI1001"
-		Text="MauiXamlInflator is explicitly set to '$(MauiXamlInflator)'. Runtime negatively impacts build performance, and XamlC prevents debugging capabilities like XAML Hot Reload. Consider removing the MauiXamlInflator property to use the recommended defaults, or set it to 'SourceGen' for optimal performance and debugging experience." 
+		Text="MauiXamlInflator is explicitly set to '$(MauiXamlInflator)'. Runtime negatively impacts build performance, and XamlC prevents debugging capabilities like XAML Hot Reload. Consider setting it to 'SourceGen' for optimal performance and debugging experience, or remove it to use configuration-based defaults (Runtime in Debug, XamlC in Release)." 
 		Condition="'$(MauiXamlInflator)' != '' And ($([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('runtime')) Or $([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('xamlc')))" />
   </Target>
 
