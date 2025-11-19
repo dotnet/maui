@@ -179,7 +179,7 @@
   <Target Name="_MauiAddXamlEmbeddedResources"
           DependsOnTargets="$(_MauiAddXamlEmbeddedResourcesDependsOn)">
     <ItemGroup>
-      <EmbeddedResource Include="@(MauiXaml)" />
+      <EmbeddedResource Include="@(_MauiXaml_AsEmbeddedResource)" />
       <EmbeddedResource Include="@(MauiCss)" />
     </ItemGroup>
   </Target>
