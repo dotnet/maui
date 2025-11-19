@@ -158,6 +158,9 @@ fi
 ```
 
 **Android Testing**:
+
+**CRITICAL**: If starting an emulator, use the background daemon pattern from [Common Testing Patterns: Android Emulator Startup](../../instructions/common-testing-patterns.md#android-emulator-startup-with-error-checking) to ensure it persists across sessions.
+
 ```bash
 # Get connected device/emulator
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
@@ -168,6 +171,12 @@ if [ -z "$DEVICE_UDID" ]; then
     exit 1
 fi
 ```
+
+**Important Android Rules**:
+- ✅ **Start emulators with subshell + background**: `cd $ANDROID_HOME/emulator && (./emulator -avd Name ... &)`
+- ❌ **NEVER use `adb kill-server`** - This disconnects active emulators and is almost never needed
+- ❌ **NEVER use `mode="async"` for emulators** - They will be killed when the session ends
+- ✅ **Check `adb devices` first** - If device is visible, no action needed
 
 ## Build and Deploy
 

@@ -106,6 +106,93 @@ echo "Simulator is booted and ready"
 
 ---
 
+### Android Emulator Startup with Error Checking
+
+**Used in**: PR reviews, investigation work
+
+**Pattern**:
+```bash
+# Clean up any existing emulator processes
+pkill -9 qemu-system-x86_64 2>/dev/null || true
+pkill -9 emulator 2>/dev/null || true
+sleep 2
+
+# CRITICAL: Start emulator as background daemon that survives session end
+# Use subshell with & to fully detach from current session
+cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+
+# Wait a moment for process to start
+sleep 3
+
+# Verify emulator process started
+EMULATOR_PID=$(ps aux | grep "qemu.*Pixel_9" | grep -v grep | awk '{print $2}')
+if [ -z "$EMULATOR_PID" ]; then
+    echo "❌ ERROR: Emulator failed to start"
+    exit 1
+fi
+echo "✅ Emulator started as background daemon (PID: $EMULATOR_PID)"
+
+# Wait for device to appear
+echo "Waiting for device to appear..."
+adb wait-for-device
+
+# Wait for boot to complete
+echo "Waiting for boot to complete..."
+until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
+    sleep 2
+    echo -n "."
+done
+echo ""
+
+# Get device UDID
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# Verify device is ready
+if [ -z "$DEVICE_UDID" ]; then
+    echo "❌ ERROR: Emulator started but device not found"
+    exit 1
+fi
+
+# Check API level
+API_LEVEL=$(adb shell getprop ro.build.version.sdk)
+echo "✅ Emulator ready: $DEVICE_UDID (API $API_LEVEL)"
+```
+
+**When to use**: Starting Android emulator for testing
+
+**Why this pattern is critical**:
+
+The subshell `()` with `&` pattern is essential for emulator persistence:
+- **Problem**: Using `mode="async"` attaches the emulator to the bash session, causing it to be killed when the session ends
+- **Root cause**: Background processes attached to sessions are terminated during cleanup, even with `nohup`
+- **Solution**: Subshell `()` creates a new process group that's detached from the current session
+- **Result**: Emulator persists even when AI agent finishes responding or sessions end
+
+**Wrong approach (emulator dies)**:
+```bash
+# DON'T DO THIS - emulator will be killed when session ends
+bash --mode=async ./emulator -avd Pixel_9 &
+```
+
+**Correct approach (emulator persists)**:
+```bash
+# Subshell with & fully detaches the process
+cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 ... &)
+```
+
+**Critical details**: 
+- The emulator command must be run from `$ANDROID_HOME/emulator` directory. Running from other directories causes "Qt library not found" and "qemu-system not found" errors
+- **Use subshell `()` with `&`** to start emulator as true background daemon that persists after bash session ends
+- **NEVER use `adb kill-server`** - This disconnects ALL active ADB connections and causes emulators to lose connection. Almost never necessary
+- **NEVER use `mode="async"` for emulators** - Processes will be terminated when the session ends
+- **Check first**: Run `adb devices` before starting - if device is already visible, no action needed
+
+**Available emulators**: List with `emulator -list-avds`
+
+**To verify persistence**: After starting emulator, note the PID, finish the current task, then check if the process still exists with `ps aux | grep <PID>`
+
+---
+
 ## 3. Build Patterns
 
 ### Sandbox App Build (iOS)
