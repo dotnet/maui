@@ -59,7 +59,7 @@
                      </Grid>
               </ScrollView>
 
-              <BoxView HeightRequest="40"/>
+              <BoxView HeightRequest="20"/>
               <!--Add or Remove item based on Index-->
               <HorizontalStackLayout Spacing="5">
                      <Label Text="Enter Item Index:"
@@ -87,5 +87,67 @@
                              FontSize="10"
                              AutomationId="ReplaceItems"/>
               </HorizontalStackLayout>
+              <Label x:Name="DirectApiSummaryLabel"
+                     AutomationId="DirectApiSummaryLabel"
+                     FontSize="12"
+                     LineBreakMode="WordWrap"
+                     Text="(Set/Get Methods)"/>
+              <!-- Set API Buttons (code-behind handlers) -->
+              <VerticalStackLayout Spacing="6">
+                     <HorizontalStackLayout Spacing="6">
+                            <Button Text="Set EmptyView"
+                                    Clicked="OnSetEmptyViewClicked"
+                                    AutomationId="SetEmptyView"
+                                    FontSize="10"/>
+                            <Button Text="Set EmptyViewTemplate"
+                                    Clicked="OnSetEmptyViewTemplateClicked"
+                                    AutomationId="SetEmptyViewTemplate"
+                                    FontSize="10"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="6">
+                            <Button Text="Set ItemsSource"
+                                    Clicked="OnSetItemsSourceClicked"
+                                    AutomationId="SetItemsSource"
+                                    FontSize="10"/>
+                            <Button Text="Set ItemTemplate"
+                                    Clicked="OnSetItemTemplateClicked"
+                                    AutomationId="SetItemTemplate"
+                                    FontSize="10"/>
+                            <Button Text="Set ItemTemplateSelector"
+                                    Clicked="OnSetItemTemplateSelectorClicked"
+                                    AutomationId="SetItemTemplateSelector"
+                                    FontSize="10"/>
+                     </HorizontalStackLayout>
+                     <!-- Get API Buttons (each updates summary label) -->
+                     <HorizontalStackLayout Spacing="6">
+                            <Button Text="Get EmptyView"
+                                    Clicked="OnGetEmptyViewClicked"
+                                    AutomationId="GetEmptyView"
+                                    FontSize="10"/>
+                            <Button Text="Get EmptyViewTemplate"
+                                    Clicked="OnGetEmptyViewTemplateClicked"
+                                    AutomationId="GetEmptyViewTemplate"
+                                    FontSize="10"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="6">
+                            <Button Text="Get ItemsSource"
+                                    Clicked="OnGetItemsSourceClicked"
+                                    AutomationId="GetItemsSource"
+                                    FontSize="10"/>
+                            <Button Text="Get ItemTemplate"
+                                    Clicked="OnGetItemTemplateClicked"
+                                    AutomationId="GetItemTemplate"
+                                    FontSize="10"/>
+                            <Button Text="Get ItemTemplateSelector"
+                                    Clicked="OnGetItemTemplateSelectorClicked"
+                                    AutomationId="GetItemTemplateSelector"
+                                    FontSize="10"/>
+                     </HorizontalStackLayout>
+                     <Button Text="Reset"
+                             Clicked="OnClearAllClicked"
+                             AutomationId="ResetButton"
+                             FontSize="10"/>
+              </VerticalStackLayout>
+
        </VerticalStackLayout>
 </ContentPage>
