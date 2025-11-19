@@ -17,6 +17,7 @@ public partial class HybridWebViewControlPage : ContentPage
 		// Explicitly set HybridRoot to ensure it's properly initialized
 		// This is needed especially for multi-RID builds where binding might not trigger immediately
 		MyHybridWebView.HybridRoot = _viewModel.HybridRoot;
+		MyHybridWebView.DefaultFile = _viewModel.DefaultFile;
 	}
 
 	private async void OnEvaluateJavaScriptClicked(object sender, EventArgs e)
