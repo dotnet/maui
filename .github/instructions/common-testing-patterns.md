@@ -106,57 +106,6 @@ echo "Simulator is booted and ready"
 
 ---
 
-### Android Emulator Startup with Error Checking
-
-**Used in**: Investigation work
-
-**Pattern**:
-```bash
-# Clean up any existing emulator processes
-pkill -9 qemu-system-x86_64 2>/dev/null || true
-pkill -9 emulator 2>/dev/null || true
-sleep 2
-
-# Restart adb server
-adb kill-server && sleep 1 && adb start-server && sleep 2
-
-# Start emulator (must run from SDK emulator directory to find dependencies)
-cd $ANDROID_HOME/emulator && ./emulator -avd Nexus_5X_API_30 -no-snapshot-load -no-audio -no-boot-anim &
-
-# Wait for device to appear
-echo "Waiting for device to appear..."
-adb wait-for-device
-
-# Wait for boot to complete
-echo "Waiting for boot to complete..."
-until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
-    sleep 2
-    echo -n "."
-done
-echo ""
-
-# Get device UDID
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# Verify device is ready
-if [ -z "$DEVICE_UDID" ]; then
-    echo "❌ ERROR: Emulator started but device not found"
-    exit 1
-fi
-
-# Check API level
-API_LEVEL=$(adb shell getprop ro.build.version.sdk)
-echo "✅ Emulator ready: $DEVICE_UDID (API $API_LEVEL)"
-```
-
-**When to use**: Starting Android emulator for testing
-
-**Critical detail**: The emulator command must be run from `$ANDROID_HOME/emulator` directory. Running from other directories causes "Qt library not found" and "qemu-system not found" errors.
-
-**Available emulators**: List with `emulator -list-avds`
-
----
-
 ## 3. Build Patterns
 
 ### Sandbox App Build (iOS)
