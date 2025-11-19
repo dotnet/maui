@@ -453,7 +453,7 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					// delete the AVD first, if it exists
 					Information("Deleting AVD if exists: {0}...", avdName);
 					try { AndroidAvdDelete(avdName, avdSettings); }
-					catch { }
+					catch (Exception ex) { Warning("Failed to delete AVD: {0}", ex.Message); }
 
 					// create the new AVD
 					Information("Creating AVD: {0} ({1})...", avdName, avdImage);
@@ -566,7 +566,7 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 		Information("AndroidAvdDelete");
 		// delete the AVD
 		try { AndroidAvdDelete(androidAvd, avdSettings); }
-		catch { }
+		catch (Exception ex) { Warning("Failed to delete AVD during cleanup: {0}", ex.Message); }
 	}
 }
 
