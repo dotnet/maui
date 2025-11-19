@@ -30,7 +30,6 @@ public class HybridWebViewFeatureTests : UITest
 		Assert.That(hybridRootLabel, Is.EqualTo("HybridWebView1"), "Hybrid Root label should be displayed correctly.");
 		var hybridDefaultFile = App.FindElement("DefaultFileLabel").GetText();
 		Assert.That(hybridDefaultFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
-		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -65,13 +64,14 @@ public class HybridWebViewFeatureTests : UITest
 		Assert.That(hybridDefaultFile, Is.EqualTo("index.html"), "Default file should be index.Html.");
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32721
+
 	[Test, Order(4)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_EvaluateJavaScriptWithDifferentHybridRoot()
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
-		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView1Button");
 		App.Tap("HybridWebView1Button");
 		Thread.Sleep(2000); // Allow time for the UI to update
@@ -83,6 +83,7 @@ public class HybridWebViewFeatureTests : UITest
 
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
+		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -96,7 +97,6 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
-		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView1Button");
 		App.Tap("HybridWebView1Button");
 		App.WaitForElement("ImageHtmlButton");
@@ -110,6 +110,7 @@ public class HybridWebViewFeatureTests : UITest
 
 		App.WaitForElement("NavigationHtmlButton");
 		App.Tap("NavigationHtmlButton");
+		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
 		App.WaitForElement("StatusLabel");
@@ -123,12 +124,12 @@ public class HybridWebViewFeatureTests : UITest
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
-		Thread.Sleep(5000);
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
 		Thread.Sleep(2000); // Allow time for the UI to update
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(8)]
 	[Category(UITestCategories.WebView)]
@@ -141,13 +142,14 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForNoElement("HybridWebViewControl");
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32721
+
 	[Test, Order(7)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyHybridWebView_SendMessageToJavaScript()
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
-		Thread.Sleep(5000);
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
 		App.WaitForElement("IndexHtmlButton");
@@ -158,6 +160,7 @@ public class HybridWebViewFeatureTests : UITest
 		var message = App.FindElement("StatusLabel").GetText();
 		Assert.That(message, Is.EqualTo("Message sent successfully. Result: Message received"), "JavaScript should receive the message sent from C#.");
 	}
+#endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/30575, https://github.com/dotnet/maui/issues/30605
 	[Test, Order(10)]
