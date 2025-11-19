@@ -137,35 +137,49 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+					var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
 					var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
 					int flyoutViewBottomInset = 0;
 
 					if (FooterView is not null)
 					{
-						v.SetPadding(0, 0, 0, bottomInset);
 						flyoutViewBottomInset = 0;
+						if (appbarLayout.MeasuredHeight > 0)
+						{
+							// When AppBarLayout exists, let it handle the top inset
+							v.SetPadding(leftInset, 0, 0, bottomInset);
+							appbarLayout?.SetPadding(0, topInset, 0, 0);
+						}
+						else
+						{
+							// No AppBarLayout, root view handles top inset
+							v.SetPadding(leftInset, topInset, 0, bottomInset);
+							appbarLayout?.SetPadding(0, 0, 0, 0);
+						}
 					}
 					else
 					{
 						flyoutViewBottomInset = bottomInset;
-						v.SetPadding(0, 0, 0, 0);
+						if (appbarLayout.MeasuredHeight > 0)
+						{
+							// When AppBarLayout exists, let it handle the top inset
+							v.SetPadding(leftInset, 0, 0, 0);
+							appbarLayout?.SetPadding(0, topInset, 0, 0);
+						}
+						else
+						{
+							// No AppBarLayout, root view handles top inset
+							v.SetPadding(leftInset, topInset, 0, 0);
+							appbarLayout?.SetPadding(0, 0, 0, 0);
+						}
 					}
 
-					if (appbarLayout.MeasuredHeight > 0)
-					{
-						FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
-						appbarLayout?.SetPadding(0, topInset, 0, 0);
-					}
-					else
-					{
-						FlyoutView?.SetPadding(0, topInset, 0, flyoutViewBottomInset);
-						appbarLayout?.SetPadding(0, 0, 0, 0);
-					}
+					FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
 
 					if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 					{
-						bgImage.SetPadding(0, topInset, 0, bottomInset);
+						bgImage.SetPadding(leftInset, topInset, 0, bottomInset);
 					}
 
 					return WindowInsetsCompat.Consumed;
