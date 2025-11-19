@@ -7,33 +7,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class ShellModalAppearingTests : ShellTestBase
 	{
 		[Fact]
-		public async Task ModalPageOnAppearingTriggeredOnceWithShellItemChange()
-		{
-			// Create shell with two ShellItems
-			TestShell shell = new TestShell();
-
-			// Register modal page route
-			Routing.RegisterRoute("ModalPage", typeof(ModalPage31584));
-
-			// Add two shell items
-			shell.Items.Add(CreateShellItem(shellItemRoute: "MainPage", shellSectionRoute: "MainSection", shellContentRoute: "MainContent"));
-			shell.Items.Add(CreateShellItem(shellItemRoute: "Home", shellSectionRoute: "HomeSection", shellContentRoute: "HomeContent"));
-
-			// Ensure we're on the MainPage ShellItem initially
-			Assert.Equal("MainPage", shell.CurrentItem.Route);
-
-			// Navigate to modal page via different ShellItem (//Home/ModalPage)
-			await shell.GoToAsync("//Home/ModalPage");
-
-			// Get the modal page
-			var modalPage = (shell.Items[1].Items[0] as IShellSectionController).PresentedPage as ModalPage31584;
-			Assert.NotNull(modalPage);
-
-			// Verify OnAppearing was called exactly once
-			Assert.Equal(1, modalPage.AppearingCount);
-		}
-
-		[Fact]
 		public async Task ModalPageOnAppearingTriggeredOnceWithShellItemChangeToModal()
 		{
 			// Test the exact scenario from the issue: navigating from one ShellItem to another with a modal page
