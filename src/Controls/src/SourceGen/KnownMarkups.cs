@@ -638,26 +638,59 @@ internal class KnownMarkups
 		// At least one value must be set
 		if (lightValue is null && darkValue is null && defaultValue is null)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
-				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError,
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""),
 				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
 			value = string.Empty;
 			return false;
 		}
 
-		// Build the AppThemeBinding initialization expression
-		var parts = new List<string>();
-		
-		if (lightValue is not null)
-			parts.Add($"Light = {lightValue}");
-		
-		if (darkValue is not null)
-			parts.Add($"Dark = {darkValue}");
-		
-		if (defaultValue is not null)
-			parts.Add($"Default = {defaultValue}");
+		// Determine which helper method to call based on which values are set
+		string helperMethodName;
+		var args = new List<string>();
 
-		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
+		if (lightValue is not null && darkValue is not null && defaultValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLightDarkDefault";
+			args.Add(lightValue);
+			args.Add(darkValue);
+			args.Add(defaultValue);
+		}
+		else if (lightValue is not null && darkValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLightDark";
+			args.Add(lightValue);
+			args.Add(darkValue);
+		}
+		else if (lightValue is not null && defaultValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLightDefault";
+			args.Add(lightValue);
+			args.Add(defaultValue);
+		}
+		else if (darkValue is not null && defaultValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingDarkDefault";
+			args.Add(darkValue);
+			args.Add(defaultValue);
+		}
+		else if (lightValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLight";
+			args.Add(lightValue);
+		}
+		else if (darkValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingDark";
+			args.Add(darkValue);
+		}
+		else // defaultValue is not null
+		{
+			helperMethodName = "CreateAppThemeBindingDefault";
+			args.Add(defaultValue!);
+		}
+
+		value = $"global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.{helperMethodName}({string.Join(", ", args)})";
 		return true;
 	}
 
