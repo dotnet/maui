@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Ignore file for Catalyst and Windows platforms. This test is applicable for mobile platforms only.
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Ignore file for Catalyst and Windows platforms. This test is applicable for mobile platforms only.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

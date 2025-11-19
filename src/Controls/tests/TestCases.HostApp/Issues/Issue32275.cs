@@ -1,4 +1,4 @@
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 32275, "[NET10] SafeAreaEdges cannot be set for Shell and the flyout menu collides with display notch and status bar in landscape mode", PlatformAffected.Android)]
 public class Issue32275 : TestShell
@@ -38,4 +38,5 @@ public class Issue32275 : TestShell
 		}
 	}
 }
+
 
