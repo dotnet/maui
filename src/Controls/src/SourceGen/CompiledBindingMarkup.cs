@@ -407,13 +407,7 @@ internal struct CompiledBindingMarkup
 			}
 		}
 
-		// After the loop, update propertyType to the type of the last property in the path
-		// For self-bindings (empty path), propertyType remains as sourceType
-		if (bindingPathParts.Count > 0)
-		{
-			propertyType = previousPartType;
-		}
-		else
+		if (bindingPathParts.Count == 0)
 		{
 			// Handle self-binding case (path is "." or empty after splitting)
 			// For self-bindings, the property type is the source type itself
@@ -423,6 +417,8 @@ internal struct CompiledBindingMarkup
 				AcceptsNullValue: sourceType.IsTypeNullable(enabledNullable: true));
 		}
 
+		// After the loop, update propertyType to the type of the last property in the path
+		// For self-bindings (empty path), propertyType remains as sourceType
 		propertyType = previousPartType;
 
 		// Apply nullable annotation if any part of the path introduces nullability
