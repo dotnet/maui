@@ -5,9 +5,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class GridFeatureTests : UITest
+public class GridFeatureTests : _GalleryUITest
 {
 	public const string GridFeatureMatrix = "Grid Feature Matrix";
+	public override string GalleryPageName => GridFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string RowEntry = "RowEntry";
@@ -24,12 +25,6 @@ public class GridFeatureTests : UITest
 	public GridFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(GridFeatureMatrix);
 	}
 
 	[Test]
