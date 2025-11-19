@@ -11,7 +11,7 @@
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <MauiXamlInflator>SourceGen</MauiXamlInflator>
+    <!-- <MauiXamlInflator>SourceGen</MauiXamlInflator> -->
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
@@ -34,6 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
   </ItemGroup>
 

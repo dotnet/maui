@@ -1,4 +1,3 @@
-
 import Foundation
 import FoundationModels
 
@@ -35,6 +34,17 @@ public class ChatClientNative: NSObject {
                 )
                 let prompt = try self.toPrompt(message: lastMessage)
 
+                // Parse the JSON schema from the options
+                let schema: GenerationSchema? = try {
+                    if let jsonSchema = options?.responseJsonSchema {
+                        let decoder = JSONDecoder()
+                        let data = String(jsonSchema).data(using: .utf8)!
+                        let decoded = try decoder.decode(GenerationSchema.self, from: data)
+                        return decoded
+                    }
+                    return nil
+                }()
+
                 // Map options into GenerationOptions
                 let genOptions = GenerationOptions(
                     sampling: {
@@ -53,14 +63,27 @@ public class ChatClientNative: NSObject {
                     transcript: transcript
                 )
 
-                let response = try await session.respond(
-                    to: prompt,
-                    options: genOptions
-                )
+                let response: (text: String, transcript: ArraySlice<Transcript.Entry>) = try await {
+                    if let jsonSchema = schema {
+                        let inner = try await session.respond(
+                            to: prompt,
+                            schema: jsonSchema,
+                            includeSchemaInPrompt: false,
+                            options: genOptions
+                        )
+                        return (inner.content.jsonString, inner.transcriptEntries)
+                    } else {
+                        let inner = try await session.respond(
+                            to: prompt,
+                            options: genOptions
+                        )
+                        return (inner.content, inner.transcriptEntries)
+                    }
+                }()
 
                 try Task.checkCancellation()
 
-                let resp = response.content
+                let resp = response.text
                 callerQueue?.async { onComplete(NSString(string: resp), nil) }
                     ?? onComplete(NSString(string: resp), nil)
             } catch is CancellationError {

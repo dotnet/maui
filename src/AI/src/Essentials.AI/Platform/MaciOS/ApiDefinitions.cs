@@ -91,6 +91,10 @@ namespace Microsoft.Maui.Essentials.AI;
 	// @property (nonatomic, strong) NSNumber * _Nullable maxOutputTokens;
 	[NullAllowed, Export ("maxOutputTokens", ArgumentSemantic.Strong)]
 	NSNumber MaxOutputTokens { get; set; }
+
+	// @property (nonatomic, strong) NSString * _Nullable responseJsonSchema;
+	[NullAllowed, Export ("responseJsonSchema", ArgumentSemantic.Strong)]
+	NSString ResponseJsonSchema { get; set; }
 }
 
 // @interface TextContentNative : AIContentNative

@@ -6,6 +6,8 @@
     <RootNamespace>Microsoft.Maui.Essentials.AI.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,14 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\AI\src\Essentials.AI\Essentials.AI.csproj" />
-    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="TestClasses\DispatcherStub.cs" />
   </ItemGroup>
 
 </Project>

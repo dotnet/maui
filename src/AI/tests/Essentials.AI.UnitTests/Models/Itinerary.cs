@@ -2,9 +2,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 
-namespace Maui.Controls.Sample.Models;
+namespace Microsoft.Maui.Essentials.AI.UnitTests.Models;
 
 public record Itinerary
 {
@@ -98,8 +99,7 @@ public record Itinerary
                     {
                         new Activity { Type = ActivityKind.FoodAndDining, Title = "The Restaurant serving Sushi", Description = "Visit an authentic sushi restaurant for lunch." },
                         new Activity { Type = ActivityKind.Shopping, Title = "The Plaza", Description = "Enjoy souvenir shopping at various shops." },
-                        new Activity { Type = ActivityKind.Sightseeing, Title = "The Beautiful Cherry Blossom Park", Description = "Admire the beautiful cherry blossom trees in the park." },
-                        new Activity { Type = ActivityKind.HotelAndLodging, Title = "The Hotel", Description = "Spend one final evening in the hotspring before heading home." }
+                        new Activity { Type = ActivityKind.Sightseeing, Title = "The Beautiful Cherry Blossom Park", Description = "Admire the beautiful cherry blossom trees in the park." }
                     }
                 }
             }

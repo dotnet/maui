@@ -140,7 +140,15 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			Seed = ToNative(options.Seed),
 			Temperature = ToNative(options.Temperature),
 			MaxOutputTokens = ToNative(options.MaxOutputTokens),
+			ResponseJsonSchema = ToNative(options.ResponseFormat)
 		};
+
+	private static NSString? ToNative(ChatResponseFormat? format) =>
+        format switch
+        {
+            ChatResponseFormatJson jsonFormat => (NSString?)jsonFormat.Schema.ToString(),
+            _ => null
+        };
 
 	private static AIContentNative ToNative(AIContent content) =>
 		content switch
