@@ -58,8 +58,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
-			handler.PlatformView.Icon =
-				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+			var iconSource = view.Source?.ToIconSource(handler.MauiContext!);
+
+			if (iconSource is BitmapIconSource bitmapIconSource)
+			{
+				bitmapIconSource.ShowAsMonochrome = false;
+			}
+
+			handler.PlatformView.Icon = iconSource?.CreateIconElement();
 		}
 
 		public override void SetVirtualView(IElement view)
