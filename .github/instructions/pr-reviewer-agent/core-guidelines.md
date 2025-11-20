@@ -54,13 +54,116 @@ When multiple instruction files exist, follow this priority order:
 4. 🔍 Test edge cases not mentioned by PR author
 5. 📊 Compare behavior WITH and WITHOUT the PR changes
 6. 📝 Document findings with actual measurements and evidence
-7. ✅ Write comprehensive review based on real testing, not just code inspection
-   - **Output**: Create a markdown file named `Review_Feedback_Issue_XXXXX.md` (replace XXXXX with actual issue number)
+7. ✅ **MANDATORY**: Write comprehensive review and create `Review_Feedback_Issue_XXXXX.md` file
+   - **Output**: **ALWAYS** create a markdown file named `Review_Feedback_Issue_XXXXX.md` (replace XXXXX with actual issue number)
+   - **When**: Create this file at the end of EVERY PR review, without exception
    - **Content**: Include test results, measurements, edge cases tested, and evidence-based recommendations
    - **Location**: Save in repository root or as specified by user
+   - **Critical**: This file is the deliverable for every review - do not skip this step
 8. 📤 **If submitting changes as a PR**: Use title format `[PR-Reviewer] <Original PR Title>`
    - This clearly identifies agent-generated PRs containing review feedback and suggested improvements
    - Example: `[PR-Reviewer] Fix RTL padding for CollectionView on iOS`
+
+## 🎯 Critical Success Factors
+
+### Factor 1: Read Instructions First
+
+**RULE**: You MUST read all instruction files BEFORE creating any plans.
+
+**Why this matters**:
+```
+Without instructions:         With instructions:
+├─ Make assumptions          ├─ Use established patterns
+├─ Use wrong app             ├─ Choose correct app
+├─ Plan unnecessary steps    ├─ Adapt to actual situation
+└─ Waste time correcting     └─ Get it right first time
+```
+
+**What this looks like in practice**:
+- ❌ BAD: User asks for review → Agent creates 10-step todo → Discovers mistakes later
+- ✅ GOOD: User asks for review → Agent reads instructions → Agent creates correct plan
+
+### Factor 2: Checkpoint Before Expensive Operations
+
+**MANDATORY CHECKPOINTS:**
+
+#### Checkpoint 1: After Initial Analysis (Low cost to fix)
+**When**: After reading instructions and analyzing PR
+**Show user**:
+- Your understanding of what the PR fixes
+- Which app you'll use (Sandbox or HostApp) and why
+- High-level test plan
+
+**User can correct**: Misunderstandings, wrong app choice, missing context
+
+---
+
+#### Checkpoint 2: Before Building (Medium cost to fix) 🚨 CRITICAL
+**When**: After creating test code but BEFORE building
+**Show user**:
+- The exact test code you created
+- What will be measured
+- Why this validates the fix
+- Explicitly ask: "Should I proceed with building?"
+
+**Why critical**: Building takes 10-15 minutes. If your test design is wrong, this checkpoint saves that wasted time.
+
+**User can correct**: Test design flaws, missing test cases, wrong approach
+
+---
+
+#### Checkpoint 3: Before Final Review (High cost to fix)
+**When**: After testing complete, before final recommendation
+**Show user**:
+- Raw data (timings, logs, observations)
+- Your interpretation
+- Draft recommendation
+
+**User can correct**: Data interpretation, missed issues, recommendation logic
+
+### Factor 3: Test WITH and WITHOUT the Fix
+
+**RULE**: You MUST test both scenarios to prove the fix works.
+
+**Process**:
+```
+1. Checkout main branch version of changed file
+2. Build and test (capture baseline behavior)
+3. Restore PR branch version
+4. Build and test (capture improved behavior)  
+5. Compare: baseline vs improved
+```
+
+**Why this matters**:
+- Proves the fix actually fixes the issue
+- Proves the fix doesn't break existing functionality
+- Provides objective data for review
+
+**Red flags if you skip this**:
+- Can't prove fix works
+- Might have false positive (app worked anyway)
+- Subjective review instead of data-driven
+
+### Factor 4: Deep Analysis Over Surface Review
+
+**Surface review** (❌ not acceptable):
+- "This PR adds a PresentationCompleted event"
+- "The PR modifies ModalNavigationManager"
+- "The changes look good"
+
+**Deep review** (✅ acceptable):
+- "WHY was PresentationCompleted needed? Because DialogFragment.OnStart() completes after Show() returns, creating a race condition where PopModal is called before the dialog is fully presented."
+- "WHY separate animated vs non-animated paths? Because animated modals naturally wait for animation completion, but non-animated modals returned immediately, before OnStart()."
+- "EDGE CASE: What if OnStart() never fires? This could cause an infinite hang if the activity is destroyed."
+
+**How to do deep analysis**:
+1. Understand the root cause, not just the symptoms
+2. Explain WHY each change was made
+3. Identify potential edge cases or issues
+4. Think about what could go wrong
+5. Consider platform-specific behavior
+
+---
 
 ## 🤖 UI Automation: ALWAYS Use Appium
 
