@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Media
 
 		static async Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
 		{
-			// Handle empty or null results - return empty list instead of null
+			// Handle null or empty results (cancellation) - return empty list per API contract
 			if (results == null || results.Length == 0)
 				return [];
 
@@ -735,4 +735,3 @@ namespace Microsoft.Maui.Media
 		}
 	}
 }
-
