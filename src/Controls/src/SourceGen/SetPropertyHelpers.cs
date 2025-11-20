@@ -166,6 +166,34 @@ static class SetPropertyHelpers
 		if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 			return true;
 
+		// Check if both types are collections (implement IEnumerable) and an explicit conversion exists
+		// In this case, we're likely assigning a collection to a collection property (like ItemsSource)
+		if (localVar.Type.SpecialType != SpecialType.System_String)
+		{
+			var propertyIsCollection = property.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
+			var valueIsCollection = localVar.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
+			
+			// Both are collections - check if explicit conversion exists or cast is valid
+			if (propertyIsCollection && valueIsCollection)
+			{
+				// Check for explicit conversion operator
+				if (HasExplicitConversion(localVar.Type, property.Type, context))
+					return true;
+				
+				// Or check if cast is valid (reference types with potential relationship)
+				if (localVar.Type.IsReferenceType && property.Type.IsReferenceType)
+				{
+					if (localVar.Type.InheritsFrom(property.Type, context) ||
+					    property.Type.InheritsFrom(localVar.Type, context) ||
+					    property.Type.TypeKind == TypeKind.Interface ||
+					    localVar.Type.TypeKind == TypeKind.Interface)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
 		return false;
 	}
 
@@ -252,8 +280,43 @@ static class SetPropertyHelpers
 		if (HasDoubleImplicitConversion(localVar.Type, bpTypeAndConverter?.type, context, out _))
 			return true;
 
-		return localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context)
-			|| bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!);
+		if (localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context))
+			return true;
+		
+		if (bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!))
+			return true;
+
+		// Check if both types are collections (implement IEnumerable) and an explicit conversion exists
+		// In this case, we're likely assigning a collection to a collection property (like ItemsSource)
+		// SetValue accepts object, so an explicit cast will work at runtime if valid
+		var propertyType = bpTypeAndConverter?.type;
+		if (propertyType != null && localVar.Type.SpecialType != SpecialType.System_String)
+		{
+			var propertyIsCollection = propertyType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
+			var valueIsCollection = localVar.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
+			
+			// Both are collections - check if explicit conversion exists or cast is valid
+			if (propertyIsCollection && valueIsCollection)
+			{
+				// Check for explicit conversion operator
+				if (HasExplicitConversion(localVar.Type, propertyType, context))
+					return true;
+				
+				// Or check if cast is valid (reference types with potential relationship)
+				if (localVar.Type.IsReferenceType && propertyType.IsReferenceType)
+				{
+					if (localVar.Type.InheritsFrom(propertyType, context) ||
+					    propertyType.InheritsFrom(localVar.Type, context) ||
+					    propertyType.TypeKind == TypeKind.Interface ||
+					    localVar.Type.TypeKind == TypeKind.Interface)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
@@ -270,7 +333,42 @@ static class SetPropertyHelpers
 		else if (node is ElementNode elementNode)
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {(HasDoubleImplicitConversion(getNodeValue(elementNode, context.Compilation.ObjectType).Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{getNodeValue(node, context.Compilation.ObjectType).ValueAccessor});");
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				string cast = string.Empty;
+				
+				if (HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
+				{
+					cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+				}
+				// If both are collections but no implicit conversion, check if explicit conversion exists or cast is valid
+				else if (pType != null && localVar.Type.SpecialType != SpecialType.System_String && !context.Compilation.HasImplicitConversion(localVar.Type, pType))
+				{
+					var propertyIsCollection = pType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
+					var valueIsCollection = localVar.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
+					
+					// Both are collections - check if explicit conversion exists or cast is valid
+					if (propertyIsCollection && valueIsCollection)
+					{
+						// Check for explicit conversion operator
+						if (HasExplicitConversion(localVar.Type, pType, context))
+						{
+							cast = $"({pType.ToFQDisplayString()})";
+						}
+						// Or check if cast is valid (reference types with potential relationship)
+						else if (localVar.Type.IsReferenceType && pType.IsReferenceType)
+						{
+							if (localVar.Type.InheritsFrom(pType, context) ||
+							    pType.InheritsFrom(localVar.Type, context) ||
+							    pType.TypeKind == TypeKind.Interface ||
+							    localVar.Type.TypeKind == TypeKind.Interface)
+							{
+								cast = $"({pType.ToFQDisplayString()})";
+							}
+						}
+					}
+				}
+				
+				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {cast}{localVar.ValueAccessor});");
 			}
 	}
 
@@ -328,6 +426,37 @@ static class SetPropertyHelpers
 		return false;
 	}
 
+	static bool HasExplicitConversion(ITypeSymbol? fromType, ITypeSymbol? toType, SourceGenContext context)
+	{
+		if (fromType == null || toType == null)
+			return false;
+
+		// If there's already an implicit conversion, we don't need explicit cast
+		if (context.Compilation.HasImplicitConversion(fromType, toType))
+			return false;
+
+		// Check for explicit conversion operators on both types
+		IMethodSymbol[] conversionOps =
+			[
+				.. fromType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion),
+				.. toType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion)
+			];
+
+		foreach (var conversionOp in conversionOps)
+		{
+			// Check if this conversion operator can convert fromType to toType
+			// The operator parameter must accept fromType (implicitly or explicitly)
+			// The operator return type must be toType (implicitly or explicitly)
+			if (SymbolEqualityComparer.Default.Equals(conversionOp.Parameters[0].Type, fromType) &&
+			    SymbolEqualityComparer.Default.Equals(conversionOp.ReturnType, toType))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	static void Set(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
 		var property = parentVar.Type.GetAllProperties(localName, context).First();
@@ -342,7 +471,11 @@ static class SetPropertyHelpers
 		}
 		else if (node is ElementNode elementNode)
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){(HasDoubleImplicitConversion(getNodeValue(elementNode, context.Compilation.ObjectType).Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{getNodeValue(elementNode, context.Compilation.ObjectType).ValueAccessor};");
+			{
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				string intermediateCast = HasDoubleImplicitConversion(localVar.Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty;
+				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){intermediateCast}{localVar.ValueAccessor};");
+			}
 	}
 
 	static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
