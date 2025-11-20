@@ -2,4 +2,73 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <Grid Padding="20" RowSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="400"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Title -->
+        <Label Grid.Row="0" 
+               Text="Vertical CarouselView Centering Test" 
+               FontSize="18" 
+               FontAttributes="Bold" 
+               HorizontalOptions="Center"/>
+        
+        <!-- Handler info -->
+        <Label x:Name="HandlerLabel"
+               Grid.Row="1" 
+               Text="Handler: Unknown" 
+               FontSize="14" 
+               HorizontalOptions="Center"/>
+        
+        <!-- CarouselView with Vertical Orientation -->
+        <CarouselView x:Name="TestCarouselView"
+                      Grid.Row="2"
+                      BackgroundColor="LightGray"
+                      Loop="True">
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"/>
+            </CarouselView.ItemsLayout>
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Grid BackgroundColor="LightBlue" Padding="20">
+                        <Label Text="{Binding}" 
+                               FontSize="24" 
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" 
+                               VerticalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+        
+        <!-- Current Item Display -->
+        <Label x:Name="CurrentItemLabel" 
+               AutomationId="CurrentItemLabel"
+               Grid.Row="3" 
+               Text="CurrentItem: (waiting...)" 
+               FontSize="16" 
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+        
+        <!-- Instructions -->
+        <Label Grid.Row="4"
+               Text="Loop=True - Test scrolling past last item"
+               FontSize="12"
+               HorizontalOptions="Center"
+               TextColor="Gray"/>
+        
+        <!-- Scroll Button -->
+        <Button x:Name="ScrollButton" 
+                AutomationId="ScrollButton"
+                Grid.Row="5" 
+                Text="Scroll to Next Item" 
+                Clicked="OnScrollButtonClicked"
+                HorizontalOptions="Center"/>
+    </Grid>
 </ContentPage>
