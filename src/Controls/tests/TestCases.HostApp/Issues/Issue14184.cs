@@ -12,6 +12,7 @@ public class Issue14184 : ContentPage
 			AutomationId = "DisabledCarouselView",
 			HeightRequest = 300,
 			IsEnabled = false,
+			Loop = false,
 			ItemsSource = new string[] { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
 			ItemTemplate = new DataTemplate(() =>
 			{
