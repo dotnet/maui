@@ -162,37 +162,12 @@ static class SetPropertyHelpers
 		if (HasDoubleImplicitConversion(localVar.Type, property.Type, context, out _))
 			return true;
 
+		if (HasExplicitConversion(localVar.Type, property.Type, context))
+			return true;
+
 		//TODO could we replace this by a runimt check (generating a if/else) ?            
 		if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 			return true;
-
-		// Check if both types are collections (implement IEnumerable) and an explicit conversion exists
-		// In this case, we're likely assigning a collection to a collection property (like ItemsSource)
-		if (localVar.Type.SpecialType != SpecialType.System_String)
-		{
-			var propertyIsCollection = property.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
-			var valueIsCollection = localVar.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
-			
-			// Both are collections - check if explicit conversion exists or cast is valid
-			if (propertyIsCollection && valueIsCollection)
-			{
-				// Check for explicit conversion operator
-				if (HasExplicitConversion(localVar.Type, property.Type, context))
-					return true;
-				
-				// Or check if cast is valid (reference types with potential relationship)
-				if (localVar.Type.IsReferenceType && property.Type.IsReferenceType)
-				{
-					if (localVar.Type.InheritsFrom(property.Type, context) ||
-					    property.Type.InheritsFrom(localVar.Type, context) ||
-					    property.Type.TypeKind == TypeKind.Interface ||
-					    localVar.Type.TypeKind == TypeKind.Interface)
-					{
-						return true;
-					}
-				}
-			}
-		}
 
 		return false;
 	}
@@ -280,41 +255,14 @@ static class SetPropertyHelpers
 		if (HasDoubleImplicitConversion(localVar.Type, bpTypeAndConverter?.type, context, out _))
 			return true;
 
+		if (HasExplicitConversion(localVar.Type, bpTypeAndConverter?.type, context))
+			return true;
+
 		if (localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context))
 			return true;
 		
 		if (bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!))
 			return true;
-
-		// Check if both types are collections (implement IEnumerable) and an explicit conversion exists
-		// In this case, we're likely assigning a collection to a collection property (like ItemsSource)
-		// SetValue accepts object, so an explicit cast will work at runtime if valid
-		var propertyType = bpTypeAndConverter?.type;
-		if (propertyType != null && localVar.Type.SpecialType != SpecialType.System_String)
-		{
-			var propertyIsCollection = propertyType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
-			var valueIsCollection = localVar.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
-			
-			// Both are collections - check if explicit conversion exists or cast is valid
-			if (propertyIsCollection && valueIsCollection)
-			{
-				// Check for explicit conversion operator
-				if (HasExplicitConversion(localVar.Type, propertyType, context))
-					return true;
-				
-				// Or check if cast is valid (reference types with potential relationship)
-				if (localVar.Type.IsReferenceType && propertyType.IsReferenceType)
-				{
-					if (localVar.Type.InheritsFrom(propertyType, context) ||
-					    propertyType.InheritsFrom(localVar.Type, context) ||
-					    propertyType.TypeKind == TypeKind.Interface ||
-					    localVar.Type.TypeKind == TypeKind.Interface)
-					{
-						return true;
-					}
-				}
-			}
-		}
 
 		return false;
 	}
@@ -340,31 +288,12 @@ static class SetPropertyHelpers
 				{
 					cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 				}
-				// If both are collections but no implicit conversion, check if explicit conversion exists or cast is valid
-				else if (pType != null && localVar.Type.SpecialType != SpecialType.System_String && !context.Compilation.HasImplicitConversion(localVar.Type, pType))
+				else if (pType != null && !context.Compilation.HasImplicitConversion(localVar.Type, pType) && HasExplicitConversion(localVar.Type, pType, context))
 				{
-					var propertyIsCollection = pType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
-					var valueIsCollection = localVar.Type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable");
-					
-					// Both are collections - check if explicit conversion exists or cast is valid
-					if (propertyIsCollection && valueIsCollection)
+					// Only add cast if the source type is not object (object can be cast to anything at runtime)
+					if (!localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 					{
-						// Check for explicit conversion operator
-						if (HasExplicitConversion(localVar.Type, pType, context))
-						{
-							cast = $"({pType.ToFQDisplayString()})";
-						}
-						// Or check if cast is valid (reference types with potential relationship)
-						else if (localVar.Type.IsReferenceType && pType.IsReferenceType)
-						{
-							if (localVar.Type.InheritsFrom(pType, context) ||
-							    pType.InheritsFrom(localVar.Type, context) ||
-							    pType.TypeKind == TypeKind.Interface ||
-							    localVar.Type.TypeKind == TypeKind.Interface)
-							{
-								cast = $"({pType.ToFQDisplayString()})";
-							}
-						}
+						cast = $"({pType.ToFQDisplayString()})";
 					}
 				}
 				
@@ -445,12 +374,31 @@ static class SetPropertyHelpers
 		foreach (var conversionOp in conversionOps)
 		{
 			// Check if this conversion operator can convert fromType to toType
-			// The operator parameter must accept fromType (implicitly or explicitly)
-			// The operator return type must be toType (implicitly or explicitly)
 			if (SymbolEqualityComparer.Default.Equals(conversionOp.Parameters[0].Type, fromType) &&
 			    SymbolEqualityComparer.Default.Equals(conversionOp.ReturnType, toType))
 			{
 				return true;
+			}
+		}
+
+		// Check for valid reference type casts (inheritance or interface)
+		// Only allow if both are collections or both are non-collections
+		if (fromType.IsReferenceType && toType.IsReferenceType)
+		{
+			var fromIsCollection = fromType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable") && fromType.SpecialType != SpecialType.System_String;
+			var toIsCollection = toType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable") && toType.SpecialType != SpecialType.System_String;
+			
+			// Both must be collections, or both must be non-collections
+			if (fromIsCollection == toIsCollection)
+			{
+				// Same inheritance chain or one is an interface
+				if (fromType.InheritsFrom(toType, context) ||
+				    toType.InheritsFrom(fromType, context) ||
+				    toType.TypeKind == TypeKind.Interface ||
+				    fromType.TypeKind == TypeKind.Interface)
+				{
+					return true;
+				}
 			}
 		}
 

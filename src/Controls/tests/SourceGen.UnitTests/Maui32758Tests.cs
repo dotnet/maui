@@ -18,19 +18,6 @@ public class Maui32758Tests : SourceGenTestsBase
 	[Fact]
 	public void StaticExtensionOnPickerItemsSourceShouldUseSetValue()
 	{
-		// Test that Static markup extension on Picker.ItemsSource generates SetValue instead of Add to collection
-		// 
-		// Issue: https://github.com/dotnet/maui/issues/32758
-		// 
-		// When using x:Static to bind a static list to Picker.ItemsSource, the source generator
-		// incorrectly generates code that tries to Add() to a collection returned by GetValue():
-		//   ((global::System.Collections.IList)picker.GetValue(Picker.ItemsSourceProperty)).Add((object)staticExtension);
-		// 
-		// This throws NullReferenceException because ItemsSource is null until set.
-		// 
-		// The correct code should use SetValue() to set the entire collection:
-		//   picker.SetValue(Picker.ItemsSourceProperty, staticExtension);
-		//
 		var viewModelCode =
 """
 using System.Collections.Generic;
@@ -75,8 +62,6 @@ public partial class TestPage : ContentPage
 """;
 
 		var compilation = CreateMauiCompilation();
-		
-		// Add the view model code and codebehind to the compilation
 		compilation = compilation.AddSyntaxTrees(
 			CSharpSyntaxTree.ParseText(viewModelCode),
 			CSharpSyntaxTree.ParseText(codeBehind)
@@ -92,27 +77,9 @@ public partial class TestPage : ContentPage
 
 		var result = RunGenerator<XamlGenerator>(compilation, xamlFile);
 
-		// Check for compilation errors
 		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-		
-		// Output diagnostics for debugging
-		System.Console.WriteLine($"=== DIAGNOSTICS ({result.Diagnostics.Length} total) ===");
-		foreach (var diag in result.Diagnostics)
-		{
-			System.Console.WriteLine($"{diag.Severity}: {diag.GetMessage()}");
-		}
-		System.Console.WriteLine("=== END DIAGNOSTICS ===");
-		
 		Assert.False(errors.Any(), $"Found errors: {string.Join(", ", errors.Select(e => e.GetMessage()))}");
 
-		// Get the generated code (InitializeComponent implementation in .xsg.cs file)
-		System.Console.WriteLine($"=== Generated sources count: {result.Results[0].GeneratedSources.Length} ===");
-		foreach (var (source, idx) in result.Results[0].GeneratedSources.Select((s, i) => (s, i)))
-		{
-			System.Console.WriteLine($"[{idx}] Source hint: {source.HintName}");
-		}
-		
-		// Find the Test.xaml.xsg.cs file (the InitializeComponent implementation)
 		var generatedSource = result.Results[0].GeneratedSources.FirstOrDefault(s => s.HintName.EndsWith(".xsg.cs", System.StringComparison.Ordinal));
 		if (generatedSource.SourceText == null)
 		{
@@ -121,14 +88,6 @@ public partial class TestPage : ContentPage
 		}
 		
 		var generatedCode = generatedSource.SourceText.ToString();
-		
-		System.Console.WriteLine("=== FULL GENERATED CODE (.xsg.cs) ===");
-		System.Console.WriteLine(generatedCode);
-		System.Console.WriteLine("=== END GENERATED CODE ===");
-
-		// CRITICAL: The generated code should use SetValue, NOT GetValue().Add()
-		// Wrong pattern: ((global::System.Collections.IList)picker1.GetValue(global::Microsoft.Maui.Controls.Picker.ItemsSourceProperty)).Add((object)staticExtension);
-		// Correct pattern: picker1.SetValue(global::Microsoft.Maui.Controls.Picker.ItemsSourceProperty, <static value>);
 
 		var expected = 
 """
@@ -206,7 +165,6 @@ public partial class TestPage
 	[Fact]
 	public void StaticExtensionOnListViewItemsSourceShouldUseSetValue()
 	{
-		// Test that Static markup extension on ListView.ItemsSource also uses SetValue
 		var viewModelCode =
 """
 using System.Collections.Generic;
@@ -251,8 +209,6 @@ public partial class TestPage : ContentPage
 """;
 
 		var compilation = CreateMauiCompilation();
-		
-		// Add the view model code and codebehind to the compilation
 		compilation = compilation.AddSyntaxTrees(
 			CSharpSyntaxTree.ParseText(viewModelCode),
 			CSharpSyntaxTree.ParseText(codeBehind)
@@ -268,12 +224,9 @@ public partial class TestPage : ContentPage
 
 		var result = RunGenerator<XamlGenerator>(compilation, xamlFile);
 
-		// Check for compilation errors
 		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-		
 		Assert.False(errors.Any(), $"Found errors: {string.Join(", ", errors.Select(e => e.GetMessage()))}");
 
-		// Get the generated code
 		var generatedSource = result.Results[0].GeneratedSources.FirstOrDefault(s => s.HintName.EndsWith(".xsg.cs", System.StringComparison.Ordinal));
 		if (generatedSource.SourceText == null)
 		{
@@ -282,12 +235,6 @@ public partial class TestPage : ContentPage
 		}
 		
 		var generatedCode = generatedSource.SourceText.ToString();
-		
-		System.Console.WriteLine("=== GENERATED CODE (.xsg.cs) ===");
-		System.Console.WriteLine(generatedCode);
-		System.Console.WriteLine("=== END ===");
-
-		// Should use SetValue, not GetValue().Add()
 		var expected = 
 """
 //------------------------------------------------------------------------------
