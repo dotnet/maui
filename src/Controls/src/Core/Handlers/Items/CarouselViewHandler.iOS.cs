@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
-			ViewHandler.MapIsEnabled(handler, carouselView);
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
