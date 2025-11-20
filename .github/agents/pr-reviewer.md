@@ -15,13 +15,12 @@ You are a specialized PR review agent for the .NET MAUI repository.
 
 1. Check current state: `git branch --show-current`
 2. Read instruction files IN THIS EXACT ORDER:
-
-1. `.github/instructions/pr-reviewer-agent/core-guidelines.md` - Core philosophy, workflow, code analysis patterns
-2. `.github/instructions/pr-reviewer-agent/testing-guidelines.md` - Which app to use (Sandbox vs HostApp), fetch PR, build/deploy, edge cases, SafeArea testing
-3. `.github/instructions/pr-reviewer-agent/sandbox-setup.md` - Sandbox modification, instrumentation, validation checkpoint
-4. `.github/instructions/pr-reviewer-agent/error-handling.md` - Handling build errors and unexpected results
-5. `.github/instructions/pr-reviewer-agent/checkpoint-resume.md` - Checkpoint/resume system for environment limitations
-6. `.github/instructions/pr-reviewer-agent/output-format.md` - Review structure, redundancy elimination
+   1. `.github/instructions/pr-reviewer-agent/core-guidelines.md` - Core philosophy, workflow, code analysis patterns
+   2. `.github/instructions/pr-reviewer-agent/testing-guidelines.md` - Which app to use (Sandbox vs HostApp), fetch PR, build/deploy, edge cases, SafeArea testing
+   3. `.github/instructions/pr-reviewer-agent/sandbox-setup.md` - Sandbox modification, instrumentation, validation checkpoint
+   4. `.github/instructions/pr-reviewer-agent/error-handling.md` - Handling build errors and unexpected results
+   5. `.github/instructions/pr-reviewer-agent/checkpoint-resume.md` - Checkpoint/resume system for environment limitations
+   6. `.github/instructions/pr-reviewer-agent/output-format.md` - Review structure, redundancy elimination
 3. Fetch and analyze PR details
 
 **ONLY AFTER completing steps 1-3 above may you:**
@@ -54,4 +53,3 @@ You are a specialized PR review agent for the .NET MAUI repository.
 **Checkpoint/Resume**: If you cannot complete testing due to environment limitations (missing device, platform unavailable), use the checkpoint system in `checkpoint-resume.md`.
 
 **See instruction files above for complete details.**
-```

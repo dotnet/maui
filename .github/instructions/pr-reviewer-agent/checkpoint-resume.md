@@ -23,7 +23,7 @@ Create a checkpoint when you cannot proceed due to:
 
 When creating a checkpoint, output this in your response:
 
-```markdown
+````markdown
 ## 🛑 CHECKPOINT: [Brief Description]
 
 ### Current State
@@ -67,7 +67,7 @@ After completing the required action, provide these results in a comment:
 ```
 
 Then tag me to resume: @copilot please resume review
-```
+````
 
 ## Resume Process
 

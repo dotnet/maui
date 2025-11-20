@@ -1,5 +1,5 @@
----
 ⚠️ **CRITICAL**: Read this ENTIRE file before creating any plans or taking any actions
+
 ---
 
 # Testing Guidelines for PR Review
