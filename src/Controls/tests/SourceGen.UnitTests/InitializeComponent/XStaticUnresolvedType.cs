@@ -110,7 +110,17 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: false);
+		var additionalCode = """
+namespace MyApp.Routes
+{
+	public static class Route
+	{
+		public static string Value => "TestRoute";
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true, additionalCode: additionalCode);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
@@ -218,7 +228,17 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: false);
+		var additionalCode = """
+namespace ExternalLib.Constants
+{
+	public static class AppConstants
+	{
+		public static string AppName => "TestApp";
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true, additionalCode: additionalCode);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
@@ -326,7 +346,17 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: false);
+		var additionalCode = """
+namespace MyApp.Config
+{
+	public static class Settings
+	{
+		public static double DefaultFontSize => 14.0;
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true, additionalCode: additionalCode);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
