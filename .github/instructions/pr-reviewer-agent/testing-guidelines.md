@@ -1,6 +1,64 @@
-# Testing Guidelines
+---
+⚠️ **CRITICAL**: Read this ENTIRE file before creating any plans or taking any actions
+---
 
-## Which App to Use for Testing
+# Testing Guidelines for PR Review
+
+## 🎯 The #1 Rule: Which App to Use
+
+### Default Answer: **Sandbox App**
+
+Use `src/Controls/samples/Controls.Sample.Sandbox/` for PR validation **UNLESS** you are explicitly asked to write or validate UI tests.
+
+### Quick Decision Tree:
+
+```
+Are you writing/debugging UI tests? 
+├─ YES → Use TestCases.HostApp
+└─ NO  → Use Sandbox app ✅ (99% of PR reviews)
+```
+
+### ⚠️ Common Confusion: "But the PR has test files!"
+
+**Scenario**: PR adds files to `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXX.cs`
+
+❌ **WRONG THINKING**: "The PR adds test files to HostApp, so I should use HostApp"
+✅ **RIGHT THINKING**: "The PR adds automated test files. I use Sandbox to manually validate the fix."
+
+**Why**: 
+- Those test files are for the AUTOMATED UI testing framework
+- You are doing MANUAL validation with real testing
+- HostApp is only needed when writing/debugging those automated tests
+
+### 💰 Cost of Wrong App Choice
+
+**Using HostApp when you should use Sandbox:**
+- ⏱️ Wasted time: 15+ minutes building
+- 📦 Unnecessary complexity: 1000+ tests in project
+- 🐛 Harder debugging: Can't isolate behavior
+- 😞 User frustration: Obvious mistake
+
+**Using Sandbox (correct choice):**
+- ⏱️ Fast builds: 2-3 minutes
+- 🎯 Focused testing: Only your test code
+- 🔍 Easy debugging: Clear isolation
+- ✅ Professional approach
+
+### 📋 App Selection Reference
+
+| Scenario | Correct App | Why |
+|----------|------------|-----|
+| Validating PR fix | Sandbox ✅ | Quick, isolated, easy to instrument |
+| Testing before/after comparison | Sandbox ✅ | Can modify without affecting tests |
+| User says "review this PR" | Sandbox ✅ | Default for all PR validation |
+| User says "write a UI test" | HostApp ✅ | That's what HostApp is for |
+| User says "validate the UI test" | HostApp ✅ | Testing the test itself |
+| PR adds test files | Sandbox ✅ | Test files ≠ what you test with |
+| Unsure which to use | Sandbox ✅ | When in doubt, default here |
+
+---
+
+## Which App to Use for Testing (Detailed)
 
 **CRITICAL DISTINCTION**: There are two testing apps in the repository, and choosing the wrong one wastes significant time (20+ minutes for unnecessary builds).
 
