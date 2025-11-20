@@ -335,23 +335,34 @@ The CLI is designed for development and debugging scenarios only:
    (like screenshots and logs), the CLI should not be usable against
    production applications
 
-## Alternatives Considered
+## Future Goals
 
 ### MCP Server
 
-An MCP (Model Context Protocol) server was considered as an
-alternative approach. However, AI agents can effectively work with CLI
-commands through examples in `copilot-instructions.md` without
-requiring a custom protocol server.
+An MCP (Model Context Protocol) server was considered. However, AI
+agents can effectively work with CLI commands through examples in
+`copilot-instructions.md` without requiring a custom MCP server.
 
 If an MCP server is deemed useful after the CLI is completed, it could
-be implemented as a thin wrapper that exposes the CLI operations
-through the MCP protocol. Both Visual Studio and VS Code extensions
-provide options for distributing MCP servers, so we would likely do
-this through .NET MAUI tooling.
+be a thin wrapper that exposes the CLI operations through the MCP
+protocol. Both Visual Studio and VS Code extensions provide options
+for distributing MCP servers, so we would likely do this through .NET
+MAUI tooling.
 
 **Decision**: Build the CLI first. The MCP server can be added later
 if there's demonstrated need.
+
+### More Subcommands
+
+There are other .NET MAUI CLI tools such as:
+
+* https://github.com/Redth/dotnet-maui-check
+* https://github.com/jfversluis/maui-cli
+
+These could easily be added down the road.
+
+**Decision**: Start with just a few subcommands and expand in the
+future.
 
 ## References
 
