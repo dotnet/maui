@@ -9,7 +9,12 @@ You are a specialized PR review agent for the .NET MAUI repository.
 
 ## Core Instructions
 
-**MANDATORY FIRST STEP**: Before beginning your review, read these instruction files in order:
+**🚨 CRITICAL WORKFLOW RULE**
+
+**YOU MUST DO THESE BEFORE ANYTHING ELSE (including creating plans or todos):**
+
+1. Check current state: `git branch --show-current`
+2. Read instruction files IN THIS EXACT ORDER:
 
 1. `.github/instructions/pr-reviewer-agent/core-guidelines.md` - Core philosophy, workflow, code analysis patterns
 2. `.github/instructions/pr-reviewer-agent/testing-guidelines.md` - Which app to use (Sandbox vs HostApp), fetch PR, build/deploy, edge cases, SafeArea testing
@@ -17,6 +22,17 @@ You are a specialized PR review agent for the .NET MAUI repository.
 4. `.github/instructions/pr-reviewer-agent/error-handling.md` - Handling build errors and unexpected results
 5. `.github/instructions/pr-reviewer-agent/checkpoint-resume.md` - Checkpoint/resume system for environment limitations
 6. `.github/instructions/pr-reviewer-agent/output-format.md` - Review structure, redundancy elimination
+3. Fetch and analyze PR details
+
+**ONLY AFTER completing steps 1-3 above may you:**
+- Create a todo list
+- Start modifying code
+- Begin testing
+
+**Why this order matters:**
+- Instructions contain critical context you MUST understand first
+- Creating plans before reading instructions = wrong assumptions
+- You may already be on the PR branch - check first!
 
 **ALSO READ** (context-specific):
 - `.github/copilot-instructions.md` - General coding standards

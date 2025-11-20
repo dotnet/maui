@@ -1,5 +1,161 @@
 # Error Handling
 
+## 🚫 Common Mistakes & How to Avoid Them
+
+### Mistake #1: Building the Wrong App ⭐ MOST COMMON
+
+**Symptom**: Agent tries to build `TestCases.HostApp` for PR validation
+
+**Why it happens**:
+- PR includes test files in HostApp directory
+- Agent sees test files and assumes that's what to use
+- Instructions not read before planning
+
+**How to avoid**:
+1. Read testing-guidelines.md FIRST
+2. Remember: Sandbox = PR validation (default)
+3. HostApp = writing/debugging UI tests only
+
+**Cost if not avoided**: 15+ minutes wasted building
+
+---
+
+### Mistake #2: Planning Before Reading Instructions
+
+**Symptom**: Agent creates detailed todo list immediately after user request
+
+**Why it happens**:
+- Eager to show organization and planning
+- Assumes workflow without context
+- Wants to appear proactive
+
+**How to avoid**:
+1. Resist urge to plan immediately
+2. Read ALL instruction files first
+3. Create plan based on instructions, not assumptions
+
+**Cost if not avoided**: Plan has to be recreated, shows lack of process discipline
+
+---
+
+### Mistake #3: Not Checking Current Branch
+
+**Symptom**: Planning to "fetch PR" or "checkout branch" when already on correct branch
+
+**Why it happens**:
+- Assumes starting from main branch
+- Doesn't check current state before planning
+- Copy-paste workflow without adaptation
+
+**How to avoid**:
+1. ALWAYS run `git branch --show-current` first
+2. Adapt workflow to actual situation
+3. Don't assume starting state
+
+**Cost if not avoided**: Unnecessary git operations, potential branch confusion
+
+---
+
+### Mistake #4: Building Without User Validation
+
+**Symptom**: Agent modifies Sandbox code and immediately starts building
+
+**Why it happens**:
+- Wants to show progress quickly
+- Confident in test design
+- Doesn't realize build cost
+
+**How to avoid**:
+1. Create test code first
+2. Show it to user with explanation
+3. Wait for approval before building
+4. Remember: building takes 10-15 minutes
+
+**Cost if not avoided**: Wasted build time if design is wrong
+
+---
+
+### Mistake #5: Only Testing WITH the Fix
+
+**Symptom**: Agent only tests the PR branch, doesn't test baseline
+
+**Why it happens**:
+- Assumes fix must work if tests pass
+- Skips comparative analysis
+- Doesn't realize need to prove fix actually fixes
+
+**How to avoid**:
+1. Test WITHOUT fix first (baseline)
+2. Document baseline behavior
+3. Test WITH fix second
+4. Compare baseline vs improved
+5. Prove the fix actually fixes the issue
+
+**Cost if not avoided**: Can't prove fix works, subjective review
+
+---
+
+### Mistake #6: Surface-Level Code Review
+
+**Symptom**: Describing WHAT changed without explaining WHY
+
+**Example bad review**:
+- "This PR adds an event"
+- "The code was modified"
+- "Looks good to me"
+
+**Why it happens**:
+- Focused on diff, not root cause
+- Not understanding platform behavior
+- Quick review over thorough review
+
+**How to avoid**:
+1. Understand the root cause of the issue
+2. Explain WHY each change was needed
+3. Identify edge cases
+4. Consider platform-specific implications
+
+**Cost if not avoided**: Missed issues, shallow review, no real validation
+
+---
+
+## ✅ Checklist: Am I Doing This Right?
+
+Before proceeding with each phase, check:
+
+### ☑️ Initial Phase:
+- [ ] Read ALL instruction files before creating plan
+- [ ] Checked current branch state
+- [ ] Fetched and understood PR details
+- [ ] Created plan based on instructions, not assumptions
+
+### ☑️ Planning Phase:
+- [ ] Using Sandbox app (unless writing UI tests)
+- [ ] Planned to test WITHOUT and WITH fix
+- [ ] Included validation checkpoint before building
+- [ ] Test design will provide measurable data
+
+### ☑️ Implementation Phase:
+- [ ] Created comprehensive test scenarios
+- [ ] Added instrumentation for measurements
+- [ ] Showed test code to user BEFORE building
+- [ ] Got user approval to proceed
+
+### ☑️ Testing Phase:
+- [ ] Tested WITHOUT fix (baseline)
+- [ ] Captured baseline data
+- [ ] Tested WITH fix
+- [ ] Captured improved data
+- [ ] Compared baseline vs improved
+
+### ☑️ Review Phase:
+- [ ] Explained WHY fix works, not just WHAT changed
+- [ ] Identified potential edge cases
+- [ ] Provided objective data, not subjective opinion
+- [ ] Made clear recommendation (approve/request changes)
+
+---
+
 ## Handling Build Errors
 
 If the build fails, follow this 3-step debugging process:
