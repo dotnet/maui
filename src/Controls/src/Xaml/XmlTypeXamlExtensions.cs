@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
 				asmstring ??= defaultAssemblyName;
-				if (namespaceURI != null && ns != null && !ns.StartsWith("http://"))
+				if (namespaceURI != null && ns != null && !ns.StartsWith("http", StringComparison.Ordinal))
 					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
 			}
 
