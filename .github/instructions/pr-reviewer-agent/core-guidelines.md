@@ -62,6 +62,43 @@ When multiple instruction files exist, follow this priority order:
    - This clearly identifies agent-generated PRs containing review feedback and suggested improvements
    - Example: `[PR-Reviewer] Fix RTL padding for CollectionView on iOS`
 
+## 🤖 UI Automation: ALWAYS Use Appium
+
+**CRITICAL RULE: For ANY device UI interaction, use Appium - NEVER use direct ADB/simctl commands**
+
+**✅ CORRECT - Use Appium for**:
+- Tapping buttons, controls, menu items
+- Opening menus, drawers, flyouts
+- Scrolling, swiping, gestures
+- Entering text
+- Rotating device orientation
+- Taking screenshots
+- Finding and verifying UI elements
+- Any interaction a user would perform
+
+**❌ WRONG - Never use these for UI interaction**:
+- `adb shell input tap` - Use Appium element tap instead
+- `adb shell input swipe` - Use Appium gestures instead
+- `adb shell input text` - Use Appium SendKeys instead
+- `xcrun simctl ui` - Use Appium iOS interactions instead
+
+**When ADB/simctl ARE acceptable**:
+- ✅ `adb devices` - Check device connection
+- ✅ `adb logcat` - Monitor logs (read-only)
+- ✅ `adb shell getprop` - Read device properties (read-only)
+- ✅ `xcrun simctl list` - List simulators
+- ✅ `xcrun simctl boot` - Boot simulator
+- ✅ Device setup/configuration (not UI interaction)
+
+**Why this matters**:
+- Appium provides reliable element location (no guessing coordinates)
+- Appium waits for elements to be ready
+- Appium verifies actions succeeded
+- Appium works across different screen sizes/orientations
+- Coordinate-based taps are brittle and unreliable
+
+**Reference**: See [Appium Control Scripts Instructions](../appium-control.instructions.md) for creating Appium test scripts
+
 **Why this matters**: Code review alone is insufficient. Many issues only surface when running actual code on real platforms with real scenarios. Your testing often reveals edge cases and issues the PR author didn't consider.
 
 **NEVER GIVE UP Principle**:

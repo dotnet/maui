@@ -6,6 +6,16 @@ description: "Quick reference for creating standalone Appium control scripts for
 
 Create standalone C# scripts for manual Appium-based debugging and exploration of .NET MAUI apps. Use these when you need direct control outside of automated tests.
 
+**🚨 CRITICAL: Use .NET 10 Native Scripting (NOT dotnet-script)**
+
+This repository uses **.NET 10's built-in scripting features** with the `#:package` directive. Do NOT use `dotnet-script` or the old `#r` directive syntax.
+
+**🚨 CRITICAL: Appium is the ONLY way to interact with device UI**
+
+- ✅ **ALWAYS use Appium** for tapping, swiping, finding elements, rotating device, etc.
+- ❌ **NEVER use** `adb shell input tap`, `adb shell input swipe`, or coordinate-based commands
+- **Why**: Appium provides reliable element location, proper waits, and cross-device compatibility
+
 **Common Command Patterns**: For UDID extraction, device boot, and build patterns, see [Common Testing Patterns](common-testing-patterns.md).
 
 ## When to Use
@@ -15,6 +25,7 @@ Create standalone C# scripts for manual Appium-based debugging and exploration o
 - **Investigation** - Reproduce issues or explore edge cases
 - **Learning** - Understand how Appium interacts with MAUI apps
 - **Prototyping** - Test Appium interactions before creating full UI tests
+- **PR validation** - Testing PRs that affect UI behavior
 
 **Not for automated testing** - For automated UI tests, use the established test infrastructure in `src/Controls/tests/`.
 
@@ -90,6 +101,8 @@ The fastest way to experiment with Appium is using the Sandbox app (`src/Control
 
    # Run your script (from SandboxAppium/ directory)
    cd SandboxAppium
+   
+   # Run with .NET 10's native scripting (NOT dotnet-script)
    dotnet run yourscript.cs
    ```
 
@@ -116,7 +129,12 @@ Ensure Appium server is running on `http://localhost:4723` before running your s
 
 ## Basic Template
 
-**IMPORTANT: Create script files inside project directory (e.g., `SandboxAppium/`), not in repository root or `/tmp`.**
+**🚨 CRITICAL: .NET 10 Scripting Requirements**
+
+1. **Use `#:package` directive** (NOT `#r` or dotnet-script syntax)
+2. **Create scripts inside project directory** (e.g., `SandboxAppium/`), not in `/tmp` or repository root
+3. **Run with `dotnet run`** (NOT `dotnet script` or `dotnet-script`)
+4. **Requires .NET 10 SDK** - These scripts use .NET 10's native scripting features
 
 ```csharp
 #:package Appium.WebDriver@8.0.1
@@ -230,6 +248,14 @@ catch (Exception ex)
 
 ## Running the Script
 
+**🚨 CRITICAL: .NET 10 Native Scripting (NOT dotnet-script)**
+
+- ✅ **DO**: Use `dotnet run yourscript.cs` (.NET 10 native scripting)
+- ✅ **DO**: Use `#:package Appium.WebDriver@8.0.1` directive
+- ❌ **DON'T**: Use `dotnet script` or `dotnet-script` commands
+- ❌ **DON'T**: Use `#r` directive syntax (that's for dotnet-script, not .NET 10)
+- ❌ **DON'T**: Create scripts in `/tmp` or repository root
+
 **⚠️ Important: Create scripts inside project directory (e.g., `SandboxAppium/`), not in `/tmp` or repository root.**
 
 ```bash
@@ -254,6 +280,62 @@ dotnet run yourscript.cs
 **For Android:** Replace iOS UDID command with: `adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1`
 
 **Complete workflow:** See [Quick Start with Sandbox App](#quick-start-with-sandbox-app) above for full end-to-end example.
+
+## ❌ Wrong vs ✅ Right Approach
+
+### Opening a Flyout Menu
+
+**❌ WRONG - Using ADB commands (brittle, unreliable)**:
+```bash
+# DON'T DO THIS - coordinates are device-specific and unreliable
+adb shell input tap 100 100  # Guess where hamburger menu is
+sleep 2  # Hope it opened
+```
+
+**✅ RIGHT - Using Appium (reliable, verifiable)**:
+```csharp
+// Find the hamburger menu by its accessibility properties
+var flyoutButton = driver.FindElement(
+    MobileBy.XPath("//android.widget.ImageButton[@content-desc='Open navigation drawer']")
+);
+flyoutButton.Click();
+
+// Verify it actually opened
+var flyoutItems = driver.FindElements(MobileBy.XPath("//android.widget.TextView[contains(@text, 'Item')]"));
+Console.WriteLine($"Flyout opened with {flyoutItems.Count} items");
+```
+
+### Rotating Device
+
+**❌ WRONG - Using simctl/ADB**:
+```bash
+# DON'T DO THIS - doesn't guarantee app orientation changed
+adb shell content insert --uri content://settings/system --bind name:s:user_rotation --bind value:i:1
+```
+
+**✅ RIGHT - Using Appium**:
+```csharp
+// Appium handles rotation properly and waits for completion
+driver.Orientation = ScreenOrientation.Landscape;
+
+// Verify rotation succeeded
+if (driver.Orientation != ScreenOrientation.Landscape)
+{
+    Console.WriteLine("❌ Rotation failed!");
+}
+```
+
+### Taking Screenshots
+
+**✅ BOTH are acceptable** (Appium preferred for consistency):
+```csharp
+// Appium (preferred - works cross-platform)
+var screenshot = driver.GetScreenshot();
+screenshot.SaveAsFile("/tmp/screenshot.png");
+
+// ADB (acceptable for Android-only scenarios)
+// adb exec-out screencap -p > screenshot.png
+```
 
 ## Common Appium Operations
 
@@ -349,7 +431,7 @@ For Shell-specific testing patterns (e.g., opening flyouts), see [UI Tests Instr
 **"Device not found" (Android)**
 - Verify DEVICE_UDID is set: `echo $DEVICE_UDID`
 - List devices: `adb devices`
-- Start emulator via Android Studio or: `emulator -avd [avd-name]`
+- Start emulator: See [Common Testing Patterns: Android Emulator Startup](common-testing-patterns.md#android-emulator-startup-with-error-checking) for the correct background daemon pattern
 
 **"Appium server keeps stopping"**
 - Check if port 4723 is already in use: `lsof -i :4723`

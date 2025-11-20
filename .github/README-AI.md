@@ -8,6 +8,8 @@ The PR reviewer agent conducts thorough, constructive code reviews of .NET MAUI 
 
 ### How to Use
 
+#### Option 1: GitHub Copilot CLI (Local)
+
 ```bash
 # Start GitHub Copilot CLI with agent support
 copilot --allow-all-tools --allow-all-paths
@@ -19,13 +21,28 @@ copilot --allow-all-tools --allow-all-paths
 please review <link to PR>
 ```
 
-### Example
+#### Example
 
 ```bash
 copilot --allow-all-tools --allow-all-paths
 /agent pr-reviewer
 please review https://github.com/dotnet/maui/pull/32372
 ```
+
+#### Option 2: GitHub Copilot Agents (Web)
+
+1. **Navigate to the agents tab** at https://github.com/copilot/agents
+
+2. **Select your repository and branch** using the dropdown menus in the text box
+
+3. **Choose your agent** from the dropdown (pr-reviewer)
+
+4. **Enter a task** in the text box:
+   - For PR reviews: `Please review this PR: https://github.com/dotnet/maui/pull/XXXXX`
+
+5. **Click Start task** or press Return
+
+6. **Follow the agent's progress** - The agent task will appear below the text box. Click into it to see live updates.
 
 ## What the Agent Does
 
