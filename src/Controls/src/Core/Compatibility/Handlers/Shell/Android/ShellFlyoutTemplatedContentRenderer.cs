@@ -130,7 +130,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (insets == null || v == null)
 					return insets;
 
-				if (v is CoordinatorLayout)
+				if (FlyoutView is IHandleWindowInsets handleWindowInsets)
+				{
+					return base.OnApplyWindowInsets(v, insets);
+				}
+
+				if (v is CoordinatorLayout && FlyoutView is not null)
 				{
 					// The flyout overlaps the status bar so we don't really care about insetting it
 					var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
@@ -175,7 +180,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						}
 					}
 
-					FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
+					FlyoutView.SetPadding(0, 0, 0, flyoutViewBottomInset);
 
 					if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 					{
