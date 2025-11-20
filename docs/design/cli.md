@@ -356,8 +356,11 @@ if there's demonstrated need.
 
 There are other .NET MAUI CLI tools such as:
 
-* https://github.com/Redth/dotnet-maui-check
-* https://github.com/jfversluis/maui-cli
+- .NET MAUI "Check" / "Doctor"
+  - https://github.com/Redth/dotnet-maui-check
+  - https://github.com/jfversluis/maui-cli
+- Android SDK Management
+  - https://github.com/Redth/AndroidSdk.Tools
 
 These could easily be added down the road.
 
