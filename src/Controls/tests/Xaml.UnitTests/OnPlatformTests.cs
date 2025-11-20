@@ -139,6 +139,36 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
+
+		[Test]
+		public void MissingPlatformUsesDefaultValue()
+		{
+			// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
+			// runtime should use default(T) instead of throwing an exception
+			var xaml = @"
+			<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+				<ContentPage.Resources>
+					<OnPlatform x:Key=""SizeMedium"" x:TypeArguments=""x:Double"">
+						<On Platform=""iOS"" Value=""40""/>
+						<On Platform=""Android"" Value=""30""/>
+						<On Platform=""UWP"" Value=""60""/>
+					</OnPlatform>
+				</ContentPage.Resources>
+				<Label Text=""Test"" WidthRequest=""{StaticResource SizeMedium}"" />
+			</ContentPage>";
+
+			ContentPage page;
+
+			// Test with MacCatalyst where platform is not defined
+			mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+			page = new ContentPage().LoadFromXaml(xaml);
+			
+			// Should use default value (0.0 for double) instead of throwing
+			var label = page.Content as Label;
+			Assert.NotNull(label);
+			Assert.AreEqual(0.0, label.WidthRequest);
+		}
 	}
 
 	[TestFixture]
