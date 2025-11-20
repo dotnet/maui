@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
+    <None Remove="Handlers\HybridWebView\HybridWebView.js" />
   </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
