@@ -6,6 +6,10 @@ description: "Quick reference for creating standalone Appium control scripts for
 
 Create standalone C# scripts for manual Appium-based debugging and exploration of .NET MAUI apps. Use these when you need direct control outside of automated tests.
 
+**🚨 CRITICAL: Use .NET 10 Native Scripting (NOT dotnet-script)**
+
+This repository uses **.NET 10's built-in scripting features** with the `#:package` directive. Do NOT use `dotnet-script` or the old `#r` directive syntax.
+
 **🚨 CRITICAL: Appium is the ONLY way to interact with device UI**
 
 - ✅ **ALWAYS use Appium** for tapping, swiping, finding elements, rotating device, etc.
@@ -97,6 +101,8 @@ The fastest way to experiment with Appium is using the Sandbox app (`src/Control
 
    # Run your script (from SandboxAppium/ directory)
    cd SandboxAppium
+   
+   # Run with .NET 10's native scripting (NOT dotnet-script)
    dotnet run yourscript.cs
    ```
 
@@ -123,7 +129,12 @@ Ensure Appium server is running on `http://localhost:4723` before running your s
 
 ## Basic Template
 
-**IMPORTANT: Create script files inside project directory (e.g., `SandboxAppium/`), not in repository root or `/tmp`.**
+**🚨 CRITICAL: .NET 10 Scripting Requirements**
+
+1. **Use `#:package` directive** (NOT `#r` or dotnet-script syntax)
+2. **Create scripts inside project directory** (e.g., `SandboxAppium/`), not in `/tmp` or repository root
+3. **Run with `dotnet run`** (NOT `dotnet script` or `dotnet-script`)
+4. **Requires .NET 10 SDK** - These scripts use .NET 10's native scripting features
 
 ```csharp
 #:package Appium.WebDriver@8.0.1
@@ -236,6 +247,14 @@ catch (Exception ex)
 - **Deployment**: Use `dotnet build -t:Run` to build, install, and launch the app in one command
 
 ## Running the Script
+
+**🚨 CRITICAL: .NET 10 Native Scripting (NOT dotnet-script)**
+
+- ✅ **DO**: Use `dotnet run yourscript.cs` (.NET 10 native scripting)
+- ✅ **DO**: Use `#:package Appium.WebDriver@8.0.1` directive
+- ❌ **DON'T**: Use `dotnet script` or `dotnet-script` commands
+- ❌ **DON'T**: Use `#r` directive syntax (that's for dotnet-script, not .NET 10)
+- ❌ **DON'T**: Create scripts in `/tmp` or repository root
 
 **⚠️ Important: Create scripts inside project directory (e.g., `SandboxAppium/`), not in `/tmp` or repository root.**
 
