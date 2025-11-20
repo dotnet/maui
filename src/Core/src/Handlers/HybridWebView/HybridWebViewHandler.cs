@@ -104,6 +104,7 @@ namespace Microsoft.Maui.Handlers
 		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
 			!AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) || enabled;
 
+#if PLATFORM && !TIZEN
 		void MessageReceived(string rawMessage) =>
 			HybridWebViewHelper.ProcessRawMessage(this, VirtualView, rawMessage);
 
@@ -117,6 +118,8 @@ namespace Microsoft.Maui.Handlers
 				streamBody,
 				stringBody);
 		}
+
+#endif
 
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
