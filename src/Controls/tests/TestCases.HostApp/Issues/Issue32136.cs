@@ -38,7 +38,7 @@ public class Issue32136 : ContentPage
 
         Label currentItemLabel = new Label();
         currentItemLabel.AutomationId = "CurrentItemLabel";
-        currentItemLabel.SetBinding(Label.TextProperty, new Binding("CurrentItem", source: carouselView, stringFormat: "CurrentItem = {0}"));
+        currentItemLabel.Text = "CurrentItem = Baboon";
 
         Button button = new Button
         {
@@ -47,7 +47,13 @@ public class Issue32136 : ContentPage
         };
         button.Clicked += (s, e) =>
         {
+            currentItemLabel.Text = "Button was clicked";
             carouselView.ScrollTo(carouselView.Position + 1, position: ScrollToPosition.Center, animate: true);
+        };
+
+        carouselView.CurrentItemChanged += (s, e) =>
+        {
+            currentItemLabel.Text = $"CurrentItem = {e.CurrentItem}";
         };
 
         Grid grid = new Grid
