@@ -31,7 +31,6 @@ When creating a checkpoint, output this in your response:
   - Fetched PR #XXXXX
   - Modified Sandbox app with test case
   - Analyzed code changes
-  - [etc...]
 
 - ⏸️ **Paused At**: [Where you stopped]
   - Ready to test on [platform/device]
@@ -46,11 +45,6 @@ When creating a checkpoint, output this in your response:
 1. [Specific command or action needed]
 2. [What to observe/measure]
 3. [What data to capture]
-
-**Expected file locations**:
-- App binary: `[path to built app]`
-- Test case: `[path to Sandbox MainPage]`
-- Instrumentation: `[what to look for in console output]`
 
 ### How to Resume
 
@@ -72,7 +66,7 @@ After completing the required action, provide these results in a comment:
 [Attach screenshots]
 ```
 
-Then tag me to resume: @github-copilot please resume review with these results
+Then tag me to resume: @copilot please resume review
 ```
 
 ## Resume Process
@@ -106,13 +100,6 @@ When you receive checkpoint results:
 
 **Steps to complete**:
 1. Deploy built app to physical iPhone:
-   ```bash
-   # Connect iPhone and get UDID
-   xcrun xctrace list devices
-   
-   # Install app (replace UDID)
-   ios-deploy --bundle artifacts/bin/Controls.Sample.Sandbox/Debug/net10.0-ios/iphoneos-arm64/Controls.Sample.Sandbox.app --id YOUR_DEVICE_UDID
-   ```
 
 2. Launch app and observe:
    - CollectionView with RTL FlowDirection
@@ -120,16 +107,9 @@ When you receive checkpoint results:
    - Scroll behavior in RTL mode
    - Visual alignment of items
 
-3. Capture console output showing STATE CAPTURE logs
-
-**Expected file locations**:
-- App binary: `artifacts/bin/Controls.Sample.Sandbox/Debug/net10.0-ios/iphoneos-arm64/`
-- Test case: `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml`
-- Look for: `[STATE CAPTURE]` in Xcode console logs
-
 ### How to Resume
 
-Provide results in this format, then tag @github-copilot to resume.
+Provide observations, then tag @copilot to resume.
 ```
 
 ### Example 2: Specific Android API Level
@@ -153,34 +133,15 @@ Provide results in this format, then tag @github-copilot to resume.
 
 **Steps to complete**:
 1. Create and start Android 12 emulator:
-   ```bash
-   # Create emulator if needed
-   avdmanager create avd -n API31 -k "system-images;android-31;google_apis;x86_64"
-   
-   # Start emulator
-   emulator -avd API31
-   
-   # Deploy app
-   adb install artifacts/bin/Controls.Sample.Sandbox/Debug/net10.0-android/Controls.Sample.Sandbox-Signed.apk
-   ```
 
 2. Test Entry focus behavior:
    - Tap Entry control
    - Observe keyboard appearance
    - Check console for STATE CAPTURE logs
 
-3. Capture logcat output:
-   ```bash
-   adb logcat | grep "STATE CAPTURE"
-   ```
-
-**Expected file locations**:
-- APK: `artifacts/bin/Controls.Sample.Sandbox/Debug/net10.0-android/Controls.Sample.Sandbox-Signed.apk`
-- Test case: `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml`
-
 ### How to Resume
 
-Provide logcat output and observations, then tag @github-copilot to resume.
+Provide observations, then tag @copilot to resume.
 ```
 
 ### Example 3: Windows-Specific Testing
@@ -204,11 +165,6 @@ Provide logcat output and observations, then tag @github-copilot to resume.
 
 **Steps to complete**:
 1. On Windows machine, clone and build:
-   ```powershell
-   git fetch origin pull/27821/head:pr-27821
-   git checkout pr-27821
-   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-windows -t:Run
-   ```
 
 2. Observe Window behavior:
    - Window opens at correct size
@@ -217,13 +173,9 @@ Provide logcat output and observations, then tag @github-copilot to resume.
 
 3. Capture console output
 
-**Expected file locations**:
-- Project: `src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj`
-- Test case in MainPage.xaml
-
 ### How to Resume
 
-Provide console output and window behavior observations, then tag @github-copilot to resume.
+Provide console output and window behavior observations, then tag @copilot to resume.
 ```
 
 ## Checkpoint Best Practices
@@ -270,20 +222,6 @@ If someone provides partial results, acknowledge and request remaining data:
 ⏸️ **Still Need**: Android API 31 test results
 
 Please complete checkpoint 2/2 before I can finalize the review.
-```
-
-### Invalid Results
-
-If provided results are incomplete or unclear:
-
-```markdown
-❌ **Issue with Results**: Console output is missing STATE CAPTURE logs
-
-Please re-run the test and ensure you capture the full console output including:
-- `[STATE CAPTURE: Before]` section
-- `[STATE CAPTURE: After]` section
-
-Tag me again when you have complete results.
 ```
 
 ## Integration with Review Workflow
