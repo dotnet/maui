@@ -515,6 +515,50 @@ internal class KnownMarkups
 		}
 	}
 
+	internal static bool ProvideValueForDataTemplateExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.DataTemplate")!;
+
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+			&& !markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+			&& markupNode.CollectionItems.Count == 1)
+			typeNameNode = markupNode.CollectionItems[0];
+
+		if (typeNameNode is not ValueNode vn)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid DataTemplate"));
+			value = "default";
+			return false;
+		}
+
+		var typeName = vn.Value as string;
+		if (IsNullOrEmpty(typeName))
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid DataTemplate"));
+			value = "default";
+			return false;
+		}
+
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+		if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+		{
+			context.Types[markupNode] = typeSymbol!;
+			value = $"new global::Microsoft.Maui.Controls.DataTemplate(typeof({typeSymbol!.ToFQDisplayString()}))";
+			return true;
+		}
+
+		//fallback to guessing, if it's a clr-namespace
+		if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
+		{
+			value = $"new global::Microsoft.Maui.Controls.DataTemplate(typeof(global::{ns}.{xmlType.Name}))";
+			return true;
+		}
+
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, null, $"{typeName}"));
+		value = "default";
+		return false;
+	}
+
 	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		// should be possible to return the right value, as soon as we no longer use the namescope
