@@ -16,10 +16,17 @@ public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 	protected record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, string Lineinfo = "enable")
 		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn, LineInfo: Lineinfo);
 
-	protected (GeneratorDriverRunResult result, string? text) RunGenerator(string xaml, string code, string noWarn = "", string targetFramework = "", string? path = null, string lineinfo = "enable", bool assertNoCompilationErrors = true)
+	protected (GeneratorDriverRunResult result, string? text) RunGenerator(string xaml, string code, string noWarn = "", string targetFramework = "", string? path = null, string lineinfo = "enable", bool assertNoCompilationErrors = true, string? additionalCode = null)
 	{
 		var compilation = CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		
+		// Add additional code if provided (e.g., stub types for unresolved references)
+		if (!string.IsNullOrEmpty(additionalCode))
+		{
+			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(additionalCode));
+		}
+		
 		var workingDirectory = Environment.CurrentDirectory;
 		var xamlFile = new AdditionalXamlFile(Path.Combine(workingDirectory, path ?? "Test.xaml"), xaml, RelativePath: path ?? "Test.xaml", TargetFramework: targetFramework, NoWarn: noWarn, ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml", Lineinfo: lineinfo);
 		var result = RunGenerator<XamlGenerator>(compilation, xamlFile, assertNoCompilationErrors);
