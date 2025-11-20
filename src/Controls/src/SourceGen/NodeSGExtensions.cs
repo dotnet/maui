@@ -96,6 +96,7 @@ static class NodeSGExtensions
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DataTemplateExtension")!, KnownMarkups.ProvideValueForDataTemplateExtension},
 	};
 
 	// These markup extensions can only provide values late once the properties have their final values
