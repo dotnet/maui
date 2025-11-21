@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32041"
+             Title="Issue 32041">
+    
+    <!-- Full-height container with distinct visual marker at bottom -->
+    <!-- We'll measure this container's height to verify it resizes when keyboard appears -->
+    <Grid x:Name="MainContainer" 
+          AutomationId="MainContainer"
+          BackgroundColor="LightBlue"
+          RowDefinitions="*,Auto">
+        
+        <!-- Filler content to ensure container fills screen -->
+        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+            <Label 
+                Text="Test keyboard overlap with SoftInput.AdjustResize"
+                FontSize="18"
+                FontAttributes="Bold"/>
+            
+            <Label 
+                Text="With AdjustResize, the entire container should resize (height decreases) when keyboard appears. The bottom marker should remain visible above the keyboard."
+                FontSize="14"
+                TextColor="DarkSlateGray"/>
+        </VerticalStackLayout>
+        
+        <!-- Bottom marker - this should stay visible above keyboard -->
+        <!-- We test by measuring the container height, not the marker position -->
+        <Border Grid.Row="1"
+                AutomationId="BottomMarker"
+                BackgroundColor="Red"
+                HeightRequest="60"
+                Margin="0">
+            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                <Label 
+                    Text="BOTTOM MARKER"
+                    FontSize="12"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    HorizontalOptions="Center"/>
+                <Entry 
+                    Placeholder="Tap here to show keyboard"
+                    AutomationId="TestEntry"
+                    BackgroundColor="White"
+                    WidthRequest="250"/>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>
