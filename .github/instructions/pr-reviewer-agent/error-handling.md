@@ -166,11 +166,9 @@ If the build fails, follow this 3-step debugging process:
 
 ```bash
 # Error: Build tasks not found
-dotnet clean ./Microsoft.Maui.BuildTasks.slnf
 dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
 # Error: Dependency version conflicts
-dotnet clean Microsoft.Maui.slnx
 rm -rf bin/ obj/
 dotnet restore Microsoft.Maui.slnx --force
 
@@ -201,8 +199,6 @@ dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.S
 2. [Second attempt to fix]
 
 **Next steps**:
-- [ ] Try clean build: `dotnet clean && dotnet build`
-- [ ] Try different build configuration
 - [ ] Need help understanding this error
 ```
 

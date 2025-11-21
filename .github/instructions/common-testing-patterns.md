@@ -201,7 +201,7 @@ cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 ... &)
 
 **Pattern**:
 ```bash
-# Build (use --no-incremental only if app crashes on launch)
+# Build
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
 # Check build succeeded
@@ -214,8 +214,6 @@ echo "Build successful"
 ```
 
 **When to use**: Building Sandbox app for iOS testing
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
 
 ### Sandbox App Build and Deploy (Android)
 
@@ -249,8 +247,6 @@ fi
 
 **Why `-t:Run`**: On Android, use the `Run` target which builds, installs, and launches the app in one command
 
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
-
 ---
 
 ### Sandbox App Build (Android)
@@ -259,7 +255,7 @@ fi
 
 **Pattern**:
 ```bash
-# Build and deploy (use --no-incremental only if app crashes on launch)
+# Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
 
 # Check build/deploy succeeded
@@ -301,8 +297,6 @@ echo "Build successful"
 ```
 
 **When to use**: Building TestCases.HostApp for automated UI tests
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
 
 ---
 
@@ -449,11 +443,8 @@ git branch -D test-pr-* baseline-test pr-*-temp 2>/dev/null || true
 
 **Pattern**:
 ```bash
-# Clean and retry build
-dotnet clean [project-path]
-rm -rf bin/ obj/
-dotnet tool restore --force
-dotnet build [project-path] --verbosity normal --no-incremental
+# Retry build with verbose output
+dotnet build [project-path] --verbosity normal
 
 # If still failing, check for:
 # - Wrong .NET SDK version (check global.json)
@@ -499,7 +490,6 @@ error: Could not find Microsoft.Maui.Resizetizer.BuildTasks
 **Solution**:
 ```bash
 # Rebuild build tasks
-dotnet clean ./Microsoft.Maui.BuildTasks.slnf
 dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
 # Check build succeeded
@@ -521,8 +511,7 @@ error: Unable to resolve dependencies
 
 **Solution**:
 ```bash
-# Full clean and restore
-dotnet clean Microsoft.Maui.sln
+# Remove artifacts and restore
 rm -rf bin/ obj/
 dotnet restore Microsoft.Maui.sln --force
 
@@ -839,7 +828,7 @@ Error occurs during testing
     │
     ├─ Deployment error?
     │  ├─ Install failed → Check device booted, uninstall old version
-    │  ├─ App crashes → Rebuild with --no-incremental
+    │  ├─ App crashes → Check crash logs for exception
     │  └─ App won't launch → Check console logs for error
     │
     ├─ Runtime error?

@@ -395,9 +395,6 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 
 # Delete test branches
 git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp 2>/dev/null || true
-
-# Clean build artifacts if needed
-dotnet clean
 ```
 
 **Important**: If you didn't save `$ORIGINAL_BRANCH` at the start, replace it with whatever branch you were on when you began the review. This ensures you return to your starting state.
