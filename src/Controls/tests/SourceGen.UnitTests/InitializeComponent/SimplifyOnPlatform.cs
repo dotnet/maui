@@ -404,6 +404,7 @@ public partial class TestPage : ContentPage
 		// The generated code should look like: label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);
 		// where double1 is assigned from double0 which is: double double0 = default;
 		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
-		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double0);", generated, StringComparison.Ordinal);
+		Assert.Contains("var double1 = double0;", generated, StringComparison.Ordinal);
+		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);", generated, StringComparison.Ordinal);
 	}
 }
