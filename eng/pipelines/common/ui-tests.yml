@@ -227,7 +227,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: 26.0
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -269,7 +269,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: 26.0
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -312,7 +312,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: 26.0
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -362,7 +362,7 @@ stages:
                       parameters:
                         platform: ios
                         ${{ if eq(version, 'latest') }}:
-                          version: 18.5
+                          version: 26.0
                         ${{ if ne(version, 'latest') }}:
                           version: ${{ version }}
                         path: ${{ project.ios }}

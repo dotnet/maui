@@ -33,7 +33,7 @@ stages:
           useExitCodeForErrors: true
           ${{ if eq(job.testCategory, 'RunOniOS') }}:
             envVariables:
-              IOS_TEST_DEVICE: ios-simulator-64_18.5
+              IOS_TEST_DEVICE: ios-simulator-64_26.0
 
       - task: PublishTestResults@2
         inputs:
