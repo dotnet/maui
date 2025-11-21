@@ -35,7 +35,6 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
-- group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
 
 parameters:
