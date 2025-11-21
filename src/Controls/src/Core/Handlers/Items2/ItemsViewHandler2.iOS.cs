@@ -33,9 +33,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
-		};
-
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[Controls.VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled
+		};		
+		
 		UICollectionViewLayout _layout;
 
 		protected override void DisconnectHandler(UIView platformView)
@@ -113,6 +114,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.Controller?.UpdateVisibility();
+		}
+
+		// TODO: Change the modifier to public in .NET 11.
+		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.Controller?.CollectionView?.UpdateIsEnabled(itemsView);
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
