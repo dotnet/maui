@@ -189,6 +189,10 @@ stages:
           inputs:
             testRunner: VSTest
             testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+        - task: PublishCodeCoverageResults@2
+          displayName: "Publish code coverage"
+          inputs:
+            summaryFileLocation: '$(build.artifactstagingdirectory)/**/*.cobertura.xml'
         - task: PublishBuildArtifacts@1
           condition: always()
           displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
@@ -308,6 +312,10 @@ stages:
           testRunner: VSTest
           testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
           testRunTitle: ${{ BuildPlatform.name }} sample build tests
+      - task: PublishCodeCoverageResults@2
+        displayName: "Publish code coverage"
+        inputs:
+          summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
       - task: PublishBuildArtifacts@1
         condition: always()
         displayName: publish artifacts
