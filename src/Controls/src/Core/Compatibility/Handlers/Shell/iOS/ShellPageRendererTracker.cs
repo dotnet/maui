@@ -476,7 +476,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// We only check height because the navigation bar constrains vertical space (44pt height),
 					// but allows horizontal flexibility. Width can vary based on icon design and content,
 					// while height must fit within the fixed navigation bar bounds to avoid clipping.
-					
 					// if the image is bigger than the default available size, resize it
 
 					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
@@ -906,7 +905,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SearchHandler.SetValue(SearchHandler.QueryProperty, sc.SearchBar.Text);
 			});
-
+			searchBar.OnEditingStopped += OnEditingCompleted;
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
@@ -946,6 +945,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			(SearchHandler as ISearchHandlerController)?.ClearPlaceholderClicked();
 		}
 
+		void OnEditingCompleted(object sender, EventArgs e)
+		{
+			_searchController.Active = false;
+		}
+
 		void DettachSearchController()
 		{
 
@@ -965,6 +969,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController?.SetSearchResultsUpdater(_ => { });
+			if (_searchController?.SearchBar is not null)
+			{
+				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
+			}
 			_searchController = null;
 		}
 
@@ -982,6 +990,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void SearchButtonClicked(object? sender, EventArgs e)
 		{
 			(SearchHandler as ISearchHandlerController)?.QueryConfirmed();
+			_searchController.Active = false;
 		}
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
@@ -1129,6 +1138,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tvc.Disconnect();
 			}
 
+			if (_searchController?.SearchBar is not null)
+			{
+				_searchController.SearchBar.OnEditingStopped -= OnEditingCompleted;
+			}
 			_context = null;
 			SearchHandler = null;
 			Page = null;
