@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Media
 			// TODO throw exception?
 			if (!OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
-				return null;
+				return [];
 			}
 
 			if (!photo && !pickExisting)
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Media
 			{
 				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
 				{
-					Handler = () => tcs.TrySetResult(null)
+					Handler = () => tcs.TrySetResult([])
 				};
 			}
 
@@ -265,9 +265,13 @@ namespace Microsoft.Maui.Media
 
 		static async Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
 		{
-			var fileResults = results?
+			// Handle null or empty results (cancellation) - return empty list per API contract
+			if (results == null || results.Length == 0)
+				return [];
+
+			var fileResults = results
 				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
-				.ToList() ?? [];
+				.ToList();
 
 			// Apply rotation if needed for images
 			if (ImageProcessor.IsRotationNeeded(options))
@@ -498,7 +502,7 @@ namespace Microsoft.Maui.Media
 		public override void DidFinishPicking(PHPickerViewController picker, PHPickerResult[] results)
 		{
 			picker.DismissViewController(true, null);
-			CompletedHandler?.Invoke(results?.Length > 0 ? results : null);
+			CompletedHandler?.Invoke(results?.Length > 0 ? results : []);
 		}
 	}
 
