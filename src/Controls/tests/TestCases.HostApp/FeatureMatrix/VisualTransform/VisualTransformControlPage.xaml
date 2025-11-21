@@ -131,25 +131,13 @@
                                           <Label Text="Anchor Points"
                                                  FontAttributes="Bold"
                                                  TextColor="DarkRed"/>
-                                          <StackLayout Orientation="Horizontal">
+                                          <StackLayout Orientation="Vertical">
                                                  <Label Text="{Binding AnchorX, StringFormat='AnchorX: {0:F2}'}"
                                                         AutomationId="AnchorXValueLabel"/>
-                                                 <Label Text="  "/>
+                                                
                                                  <Label Text="{Binding AnchorY, StringFormat='AnchorY: {0:F2}'}"
                                                         AutomationId="AnchorYValueLabel"/>
                                           </StackLayout>
-                                   </StackLayout>
-
-                                   <StackLayout Grid.Row="2"
-                                                Grid.ColumnSpan="2"
-                                                Margin="0,10,0,0"
-                                                AutomationId="CSSTransformDisplay">
-                                          <Label Text="CSS Transform String"
-                                                 FontAttributes="Bold"
-                                                 TextColor="Purple"/>
-                                          <Label Text="{Binding Transform, StringFormat='Transform: {0}'}"
-                                                 LineBreakMode="WordWrap"
-                                                 AutomationId="CSSTransformValueLabel"/>
                                    </StackLayout>
                             </Grid>
                      </StackLayout>
