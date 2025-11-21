@@ -148,6 +148,24 @@ dotnet cake --target=dotnet-pack
   - **XAML tests**: `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
   - **To find other test projects**: `find . -name "*.UnitTests.csproj"` or check the solution file
 
+#### Testing Framework Selection
+
+MAUI uses specific test frameworks for different test types:
+
+- **Unit Tests** (`*.UnitTests` projects) - Use **xUnit**
+  - Examples: `Controls.Core.UnitTests`, `Controls.BindingSourceGen.UnitTests`
+  - Standard xUnit patterns: `[Fact]`, `[Theory]` with `[InlineData]`
+
+- **UI Tests** (`TestCases.Shared.Tests` and platform-specific) - Use **NUnit** with Appium
+  - Inherit from `_IssuesUITest` base class
+  - Use `[Test]` attribute and `[Category(UITestCategories.XXX)]`
+  - Requires two files: test page in HostApp + test class in Shared.Tests
+  - See [UI Testing Guidelines](instructions/uitests.instructions.md) for details
+
+- **Device Tests** (`*.DeviceTests` projects) - Use **xUnit**
+  - Run on actual devices/simulators
+  - Same patterns as unit tests but with device-specific capabilities
+
 #### UI Testing
 
 UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesting-Guide.md) for comprehensive documentation.
