@@ -380,6 +380,17 @@ namespace Microsoft.Maui.Platform
 				&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null;
 		}
 
+		/// <summary>
+		/// Checks if any parent MauiView is already applying safe area adjustments.
+		/// This prevents multiple views in the hierarchy from applying conflicting safe area logic.
+		/// </summary>
+		/// <returns>True if a parent is already handling safe area adjustments, false otherwise</returns>
+		bool IsParentHandlingSafeArea()
+		{
+			return this.FindParent(x => x is MauiView mv
+				&& mv._appliesSafeAreaAdjustments
+				&& mv.View is ISafeAreaView or ISafeAreaView2) is not null;
+		}
 
 		/// <summary>
 		/// Checks if the current measure information is still valid for the given constraints.
@@ -591,7 +602,9 @@ namespace Microsoft.Maui.Platform
 			UpdateKeyboardSubscription();
 
 			// If nothing changed, we don't need to do anything
-			if (!_safeAreaInvalidated)
+			// Also check if a parent is already handling safe area adjustments
+			// If so, don't apply safe area adjustments
+			if (!_safeAreaInvalidated || IsParentHandlingSafeArea())
 			{
 				return true;
 			}
