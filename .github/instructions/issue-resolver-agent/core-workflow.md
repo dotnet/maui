@@ -139,10 +139,40 @@
 4. **Check for breaking changes** - will this affect existing user code?
 5. **Plan tests** - what automated tests will verify this fix?
 
-**Validation checkpoint** (optional but recommended for complex fixes):
-- Show your planned approach to the user
-- Explain what you'll change and why
-- Get confirmation before implementing
+**Validation checkpoint** (recommended for complex fixes):
+
+**When to use**:
+- Multi-file changes affecting multiple components
+- Platform-specific fixes you're uncertain about
+- Changes to public APIs or breaking changes
+- Performance optimizations
+- Fixes where you're unsure of the root cause
+
+**Skip for**: Simple fixes (typos, obvious null checks, single-line changes)
+
+**Checkpoint format**:
+```markdown
+## 🛑 Validation Checkpoint: Issue #XXXXX
+
+### Root Cause Analysis
+**What's broken**: [Explain the actual bug]
+**Why it's broken**: [Root cause, not just symptoms]
+**Evidence**: [Stack traces, measurements, logs that prove this]
+
+### Proposed Solution
+**Approach**: [High-level explanation]
+**Files to modify**:
+1. `path/to/file.cs` - [What changes and why]
+
+**Why this approach**: [Addresses root cause, minimal impact, follows patterns]
+**Alternatives considered**: [Other approaches and why rejected]
+**Risks**: [Potential issues and mitigations]
+
+### Question
+Does this approach make sense before I implement it?
+```
+
+**After checkpoint**: If confirmed, proceed to Step 5. If concerns raised, adjust approach.
 
 ### Step 5: Implement Fix
 
@@ -165,13 +195,25 @@
 **Verify your fix works:**
 
 1. **Test in Sandbox app** - Original issue scenario works correctly
-2. **Test edge cases** - Empty state, null values, rapid changes, etc.
-3. **Test on all affected platforms** - iOS, Android, Windows, Mac
-4. **Test WITH and WITHOUT the fix** - Confirm fix actually solves the problem
+2. **Test WITH and WITHOUT the fix** - Confirm fix actually solves the problem
+3. **Test edge cases systematically** - See below
+4. **Test on all affected platforms** - iOS, Android, Windows, Mac
 5. **Test related scenarios** - Ensure fix doesn't break similar functionality
 
+**Don't just test the happy path - systematically test edge cases.**
+
+See **[Edge Case Testing Guide](../../edge-case-testing.md)** for comprehensive edge case patterns and checklist.
+
+**Priority edge cases for fix validation**:
+1. **Data states** - Test with null, empty, single item, and large data sets
+2. **Rapid property changes** - Toggle the fixed property 10+ times rapidly
+3. **Platform-specific** - Test RTL layout, safe areas, orientation changes on affected platforms
+4. **Related functionality** - Ensure the fix doesn't break similar features
+
+**Document your edge case testing** in the PR description using the template from [Edge Case Testing Guide](../../edge-case-testing.md#documenting-edge-case-testing).
+
 **Use same testing approach as pr-reviewer:**
-- Modify Sandbox app with instrumentation
+- Modify Sandbox app with instrumentation (see [Instrumentation Guide](../../instrumentation.instructions.md))
 - Capture measurements before and after fix
 - Document test results with actual data
 

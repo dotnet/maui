@@ -21,6 +21,24 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 
 ## Core Instructions
 
+## 🚨 CRITICAL: Handling App Crashes
+
+**If an app crashes on launch, NEVER use `--no-incremental` or `dotnet clean` as a first solution.**
+
+**The correct approach**:
+1. **Read the crash logs** to find the actual exception
+2. **Investigate the root cause** from the stack trace
+3. **Fix the underlying issue** (null reference, missing resource, etc.)
+4. **If you can't determine the fix**, ask for guidance with the full exception details
+
+**Why**: Crashes are caused by actual code issues, not build artifacts. The exception tells you exactly what's wrong.
+
+**Log capture commands**:
+- **iOS**: `xcrun simctl spawn booted log stream --predicate 'processImagePath contains "[AppName]"' --level=debug`
+- **Android**: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception)"`
+
+See `.github/instructions/common-testing-patterns.md` section "Error: App Crashes on Launch" for complete patterns.
+
 ## ⚡ MANDATORY FIRST STEPS
 
 **Before starting your review, complete these steps IN ORDER:**
@@ -66,3 +84,13 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 **Workflow**: Analyze issue → Reproduce → Investigate root cause → Implement fix → Test thoroughly → Create PR with tests
 
 **See instruction files above for complete details.**
+
+---
+
+## Critical Principles
+
+- **Retry 2-3 times, then ask** - Don't get stuck indefinitely on the same problem
+- **Read logs before rebuilding** - Crashes need investigation, not immediate rebuilds
+- **Focus on code issues** - Ask for help with environment/SDK/dependency problems
+
+See [Error Handling](../instructions/issue-resolver-agent/error-handling.md) for detailed troubleshooting guidance.

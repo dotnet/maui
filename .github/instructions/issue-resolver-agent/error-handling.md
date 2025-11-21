@@ -166,62 +166,31 @@ Waiting for more details before proceeding.
 
 ## Build Errors During Fix Development
 
-### Common Build Errors and Solutions
+**See [Common Testing Patterns: Error Handling](../../common-testing-patterns.md#common-error-handling-patterns) for comprehensive build error solutions.**
 
-#### 1. PublicAPI.Unshipped.txt Errors
+**Note**: We assume your development environment is correctly set up with all required dependencies and platform SDKs (Android SDK, Xcode, Windows SDK). If you encounter environment setup issues, ask for guidance.
 
-**Error:**
-```
-error RS0016: Symbol 'Microsoft.Maui.Controls.CollectionView.UpdateLayoutDirection()' 
-is not marked as public API
-```
+### Issue Resolver Specific Guidance
 
-**Solution:**
+When a build error occurs during fix development:
 
-**Don't disable analyzer or suppress:**
-```csharp
-// ❌ BAD: Hiding the problem
-#pragma warning disable RS0016
-```
+**Assumption**: The baseline (code before your changes) compiled successfully. Focus on fixing the error your changes introduced.
 
-**Fix the PublicAPI.Unshipped.txt file:**
+#### Step 1: Common Build Errors - Quick Reference
 
-1. **Locate the file** for the affected project:
-   ```bash
-   find src/Core -name "PublicAPI.Unshipped.txt"
-   ```
+**PublicAPI Analyzer Errors**:
+- **When**: Adding/modifying public APIs
+- **Solution**: Use `dotnet format analyzers` (NEVER disable the analyzer)
+- **Details**: [Common Testing Patterns: PublicAPI Errors](../../common-testing-patterns.md#error-publicapi-analyzer-failures)
 
-2. **Add the missing API** to the file:
-   ```
-   Microsoft.Maui.Controls.CollectionView.UpdateLayoutDirection(Microsoft.Maui.FlowDirection) -> void
-   ```
+#### Step 2: Issue-Specific Build Errors
 
-3. **Or use `dotnet format analyzers`**:
-   ```bash
-   dotnet format analyzers Microsoft.Maui.sln
-   ```
+**Platform-Specific Compilation Errors**:
 
-4. **If still having issues, revert and re-add:**
-   ```bash
-   # Revert all PublicAPI.Unshipped.txt changes
-   git checkout -- **/PublicAPI.Unshipped.txt
-   
-   # Re-run format analyzers
-   dotnet format analyzers Microsoft.Maui.sln
-   ```
-
-See "PublicAPI.Unshipped.txt File Management" in `.github/copilot-instructions.md` for more details.
-
-#### 2. Platform-Specific Compilation Errors
-
-**Error:**
-```
-error CS0246: The type or namespace name 'UIKit' could not be found
-```
-
-**Solution**: Add proper conditional compilation:
+If you see `error CS0246: The type or namespace name 'UIKit' could not be found`:
 
 ```csharp
+// Add proper conditional compilation
 #if IOS || MACCATALYST
 using UIKit;
 
@@ -232,37 +201,15 @@ internal static void UpdateLayoutDirection(this UICollectionViewCompositionalLay
 #endif
 ```
 
-**Verify targeting is correct:**
+**Verify targeting**:
 ```xml
 <!-- In .csproj file -->
 <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
 ```
 
-#### 3. Missing Assembly References
+**Null Reference Warnings** (`warning CS8602: Dereference of a possibly null reference`):
 
-**Error:**
-```
-error CS0012: The type 'SomeType' is defined in an assembly that is not referenced
-```
-
-**Solution**: Add package reference if needed:
-
-```bash
-# Find which package contains the type
-dotnet add package <PackageName>
-
-# Or check existing references
-grep -r "SomeType" src/Core/src/Core.csproj
-```
-
-#### 4. Null Reference Warnings (Nullable Context)
-
-**Error:**
-```
-warning CS8602: Dereference of a possibly null reference
-```
-
-**Solution**: Add proper null checks:
+Add proper null checks:
 
 ```csharp
 // ❌ BAD: Ignoring the warning
@@ -274,6 +221,52 @@ if (handler.PlatformView is not null)
 
 // OR
 handler.PlatformView?.UpdateSomething();
+```
+
+#### Step 3: Build Error Decision Tree
+
+```
+Build error occurs during fix development
+    │
+    ├─ Check common patterns (Step 1):
+    │  └─ PublicAPI → dotnet format analyzers
+    │
+    ├─ Check issue-specific patterns (Step 2):
+    │  ├─ Platform compilation → Add conditional directives
+    │  └─ Null warnings → Add proper null checks
+    │
+    └─ After 2-3 fix attempts fail:
+           └─ Ask for guidance (see Step 4)
+```
+
+#### Step 4: When to Ask for Help
+
+**Stop and ask for guidance if:**
+
+1. **Error persists after 2-3 fix attempts**
+2. **Error message is cryptic** ("Unknown error", unclear stack traces)
+3. **Error affects files you didn't modify**
+4. **Suspected build system or infrastructure issue**
+
+**How to ask**:
+```markdown
+## Build Error During Fix for Issue #XXXXX
+
+**What I changed**:
+- `path/to/file1.cs` - [Description of changes]
+- `path/to/file2.cs` - [Description of changes]
+
+**Error message**:
+```
+[Full error output including stack trace]
+```
+
+**What I've tried**:
+1. [First attempt] - [Result]
+2. [Second attempt] - [Result]
+3. [Third attempt] - [Result]
+
+**Request**: [What you need help with]
 ```
 
 ## Unexpected Behavior After Fix

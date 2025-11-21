@@ -133,114 +133,123 @@ Examples:
 
 ### Writing UI Tests
 
-**Required for every fix**: Create automated tests to prevent regressions.
+**REQUIRED for every fix**: Create automated UI tests to prevent regressions.
 
-#### Step 1: Create Test Page
+#### Complete UI Test Creation Guide
 
-**File**: `src/Controls/tests/TestCases.HostApp/Issues/Issue12345.xaml`
+See **[UI Tests Instructions](../../uitests.instructions.md)** for comprehensive guidance on creating UI tests.
 
+#### Quick Checklist for Issue Tests
+
+Every issue fix requires tests in **TWO locations**:
+
+**1. Test Page (HostApp)**  
+Create `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`:
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue12345"
-             Title="Issue 12345 - CollectionView RTL Padding">
-
-    <VerticalStackLayout>
+             x:Class="Maui.Controls.Sample.Issues.IssueXXXXX"
+             Title="Issue XXXXX">
+    <StackLayout>
         <!-- Reproduce the issue scenario -->
-        <CollectionView x:Name="TestCollection"
-                        AutomationId="TestCollection"
-                        FlowDirection="RightToLeft"
-                        ItemsSource="{Binding Items}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding .}" 
-                           Padding="16,8"
-                           AutomationId="ItemLabel"/>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        
-        <Label x:Name="StatusLabel"
-               AutomationId="StatusLabel"
-               Text="Ready"/>
-    </VerticalStackLayout>
+        <Button x:Name="TestButton" 
+                AutomationId="TestButton"
+                Text="Click Me" />
+        <Label x:Name="ResultLabel"
+               AutomationId="ResultLabel" />
+    </StackLayout>
 </ContentPage>
 ```
 
-**File**: `src/Controls/tests/TestCases.HostApp/Issues/Issue12345.xaml.cs`
+**Key requirements**:
+- Use `x:Name` for elements you'll reference in code
+- Use `AutomationId` for elements tests will interact with
+- Reproduce the issue scenario, not just any scenario
 
+**2. Test Page Code-Behind (HostApp)**  
+Create `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs`:
 ```csharp
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
+namespace Maui.Controls.Sample.Issues;
 
-namespace Maui.Controls.Sample.Issues
+[Issue(IssueTracker.Github, XXXXX, "Brief description", PlatformAffected.All)]
+public partial class IssueXXXXX : ContentPage
 {
-    [Issue(IssueTracker.Github, 12345, "CollectionView RTL padding incorrect", 
-           PlatformAffected.iOS)]
-    public partial class Issue12345 : ContentPage
+    public IssueXXXXX()
     {
-        public ObservableCollection<string> Items { get; set; }
-
-        public Issue12345()
-        {
-            InitializeComponent();
-            
-            Items = new ObservableCollection<string>
-            {
-                "Item 1",
-                "Item 2",
-                "Item 3"
-            };
-            
-            BindingContext = this;
-        }
+        InitializeComponent();
     }
 }
 ```
 
-#### Step 2: Create NUnit Test
+**Critical**: Include `[Issue]` attribute with tracker, number, description, and affected platforms.
 
-**File**: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs`
-
+**3. NUnit Test (Shared Tests)**  
+Create `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`:
 ```csharp
-using NUnit.Framework;
-using UITest.Appium;
-using UITest.Core;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+public class IssueXXXXX : _IssuesUITest
 {
-    public class Issue12345 : _IssuesUITest
+    public override string Issue => "Brief description of what's being tested";
+
+    public IssueXXXXX(TestDevice device) : base(device) { }
+
+    [Test]
+    [Category(UITestCategories.YourCategory)]  // ONE category only
+    public void IssueXXXXXTestName()
     {
-        public Issue12345(TestDevice device) : base(device)
-        {
-        }
-
-        public override string Issue => "CollectionView RTL padding incorrect on iOS";
-
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void CollectionViewRTLPaddingShouldBeCorrect()
-        {
-            // Wait for collection to load
-            App.WaitForElement("TestCollection");
-            
-            // Verify the fix with screenshot
-            // Screenshot will show RTL padding is correctly applied
-            VerifyScreenshot();
-        }
+        App.WaitForElement("TestButton");
+        App.Tap("TestButton");
+        
+        var result = App.FindElement("ResultLabel").GetText();
+        Assert.That(result, Is.EqualTo("Expected Value"));
+        
+        // Optional: Visual verification
+        VerifyScreenshot();
     }
 }
 ```
 
-**Key points for UI tests:**
-- Use `[Issue]` attribute with issue number and description
-- Add proper `AutomationId` to all interactive elements
-- Use `VerifyScreenshot()` for visual validation
-- Add to appropriate `[Category]` (CollectionView, Label, Entry, etc.)
-- Keep test simple and focused on the specific issue
+**Critical**:
+- Inherit from `_IssuesUITest`
+- Use only ONE `[Category]` attribute
+- Test the fix, not just that the page loads
 
-See `.github/instructions/uitests.instructions.md` for comprehensive UI testing guidance.
+#### Running Your Tests Locally
+
+**Before committing**, verify your tests work:
+
+```bash
+# Android
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+
+# iOS
+# ... (see uitests.instructions.md for complete iOS workflow)
+```
+
+See [UI Tests Instructions](../../uitests.instructions.md) for:
+- Complete test creation workflow
+- Platform-specific considerations
+- Troubleshooting test failures
+- Screenshot verification patterns
+- Running tests in CI/CD
+
+#### Common UI Test Mistakes
+
+❌ **Don't**:
+- Use multiple `[Category]` attributes (pick ONE)
+- Test only that the page loads (test the actual fix)
+- Forget `AutomationId` on interactive elements
+- Skip local testing before committing
+
+✅ **Do**:
+- Test the specific behavior that was broken
+- Include edge cases in your tests
+- Use descriptive test method names
+- Verify tests pass locally on at least one platform
 
 ### Code Formatting
 

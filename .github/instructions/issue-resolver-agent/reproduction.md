@@ -119,65 +119,51 @@ namespace Maui.Controls.Sample
 
 ## Build and Deploy for Reproduction
 
-### iOS
+**See [Common Testing Patterns](../../common-testing-patterns.md) for detailed build and deploy commands with error checking.**
 
+### iOS Workflow
+
+**Complete workflow** (follow these links for detailed commands):
+1. [UDID Extraction](../../common-testing-patterns.md#ios-simulator-udid-iphone-xs-highest-ios-version) - Find iPhone Xs with highest iOS version
+2. [Device Boot](../../common-testing-patterns.md#ios-simulator-boot-with-error-checking) - Boot simulator with verification
+3. [Build Sandbox](../../common-testing-patterns.md#sandbox-app-build-ios) - Build the Sandbox app
+4. [Install App](../../common-testing-patterns.md#ios-app-install-with-error-checking) - Install to simulator
+5. [Launch with Logs](../../common-testing-patterns.md#ios-app-launch-with-console-capture) - Launch and capture console output
+
+**Quick reference** (experienced users):
 ```bash
-# Find iPhone Xs with highest iOS version
+# Get UDID, boot, build, install, launch
 UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-
-# Check UDID was found
-if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-    echo "❌ ERROR: No iPhone Xs simulator found"
-    exit 1
-fi
-
-# Build
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-
-# Check build succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build failed"
-    exit 1
-fi
-
-# Boot simulator
 xcrun simctl boot $UDID 2>/dev/null || true
-
-# Install
+dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-
-# Launch with console capture
 xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/issue_reproduction.log 2>&1 &
-
-# Wait and show logs
-sleep 8
-cat /tmp/issue_reproduction.log
+sleep 8 && cat /tmp/issue_reproduction.log
 ```
 
-### Android
+See [Common Testing Patterns](../../common-testing-patterns.md) for commands with complete error checking at each step.
 
+### Android Workflow
+
+**Complete workflow**:
+1. [UDID Extraction](../../common-testing-patterns.md#android-device-udid) - Get device/emulator ID
+2. [Build and Deploy](../../common-testing-patterns.md#android-build-and-deploy-combined) - Build, install, and launch in one command
+3. [Monitor Logs](../../common-testing-patterns.md#android-logcat-monitoring) - Capture logcat output
+
+**Quick reference**:
 ```bash
-# Get connected device/emulator
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# Check device was found
-if [ -z "$DEVICE_UDID" ]; then
-    echo "❌ ERROR: No Android device/emulator found"
-    exit 1
-fi
-
-# Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-
-# Check build/deploy succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build or deployment failed"
-    exit 1
-fi
-
-# Monitor logs
 adb logcat | grep -E "(Issue|Console|ERROR)"
 ```
+
+See [Common Testing Patterns](../../common-testing-patterns.md) for commands with complete error checking.
+
+### Troubleshooting
+
+If builds or deployments fail, see:
+- [Common Testing Patterns: Error Handling](../../common-testing-patterns.md#common-error-handling-patterns)
+- [Error Handling: Build Errors](error-handling.md#build-errors-during-reproduction)
 
 ## Verification Points
 
