@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
+		bool _hasMeasuredWithCells = false;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
@@ -124,6 +125,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			else if (cell is DefaultCell2 DefaultCell2)
 			{
 				DefaultCell2.Label.Text = ItemsSource[indexpathAdjusted].ToString();
+			}
+
+			// For horizontal layouts, invalidate measure after first cell is created
+			// so the CollectionView can resize to match the cell height
+			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal && !_hasMeasuredWithCells)
+			{
+				_hasMeasuredWithCells = true;
+				Console.WriteLine($"[ItemsViewController2] First cell created, invalidating measure");
+				ItemsView?.InvalidateMeasure();
 			}
 
 			return cell;
@@ -448,7 +458,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return _emptyUIView.Frame.Size.ToSize();
 			}
 
-			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+			var contentSize = CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+			Console.WriteLine($"[ItemsViewController2] GetSize - Original contentSize: {contentSize}");
+			
+			// For horizontal CollectionViews in auto-sized containers, use the height of the first cell
+			// instead of the full CollectionViewContentSize which returns the entire viewport height
+			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+			{
+				var indexPathsForVisibleItems = CollectionView.IndexPathsForVisibleItems;
+				Console.WriteLine($"[ItemsViewController2] GetSize - Horizontal layout, visible items count: {indexPathsForVisibleItems?.Length ?? 0}");
+				
+				if (indexPathsForVisibleItems?.Length > 0)
+				{
+					var indexPath = indexPathsForVisibleItems.OrderBy(x => x.Section).ThenBy(x => x.Item).FirstOrDefault();
+					Console.WriteLine($"[ItemsViewController2] GetSize - Using first visible item at section {indexPath?.Section}, item {indexPath?.Item}");
+					
+					// Get the actual cell and use its measured content size, not the frame
+					var cell = CollectionView.CellForItem(indexPath);
+					if (cell is TemplatedCell2 templatedCell && templatedCell.PlatformHandler?.VirtualView is { } virtualView)
+					{
+						// Use the measured size from the virtual view
+						var measuredHeight = virtualView.DesiredSize.Height;
+						if (measuredHeight > 0)
+						{
+							contentSize.Height = measuredHeight;
+							_hasMeasuredWithCells = true;
+							Console.WriteLine($"[ItemsViewController2] GetSize - Using cell's measured content height: {contentSize.Height}");
+						}
+					}
+					else if (cell != null && cell.Frame.Height > 0)
+					{
+						// Fallback to frame height for non-templated cells
+						Console.WriteLine($"[ItemsViewController2] GetSize - Cell frame: {cell.Frame}");
+						contentSize.Height = cell.Frame.Height;
+						_hasMeasuredWithCells = true;
+						Console.WriteLine($"[ItemsViewController2] GetSize - Updated height to cell frame height: {contentSize.Height}");
+					}
+				}
+				else
+				{
+					Console.WriteLine($"[ItemsViewController2] GetSize - No visible items yet, using layout's contentSize");
+				}
+			}
+
+			Console.WriteLine($"[ItemsViewController2] GetSize - Final contentSize: {contentSize}");
+			return contentSize;
 		}
 
 		internal UICollectionViewScrollDirection GetScrollDirection()

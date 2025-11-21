@@ -221,10 +221,10 @@ internal static class LayoutFactory2
 			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
 			// Dynamic, estimated width
 			NSCollectionLayoutDimension.CreateEstimated(30f),
-			// Fill the height for horizontal
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
+			// Dynamic, estimated height for horizontal - use reasonable default that cells can expand from
+			NSCollectionLayoutDimension.CreateEstimated(44f),
 			NSCollectionLayoutDimension.CreateEstimated(30f),
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
+			NSCollectionLayoutDimension.CreateEstimated(44f),
 			linearItemsLayout.ItemSpacing,
 			null,
 			linearItemsLayout.ItemsUpdatingScrollMode);

@@ -1,12 +1,14 @@
-﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:system="clr-namespace:System;assembly=netstandard"
-             x:Class="Maui.Controls.Sample.MainPage">
+             x:Class="Maui.Controls.Sample.Issues.Issue24392">
     <Grid RowDefinitions="Auto, Auto, *">
         <Label
             Grid.Row="0"
             Text="header"
             BackgroundColor="CornflowerBlue"
+            AutomationId="HeaderLabel"
             />
 
         <CollectionView
@@ -14,6 +16,7 @@
             Grid.Row="1"
             BackgroundColor="LightCoral"
             ItemsSource="{Binding MyItemList}"
+            AutomationId="TestCollectionView"
             >
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout
@@ -62,6 +65,7 @@
             Grid.Row="2"
             Text="Content"
             BackgroundColor="Aquamarine"
+            AutomationId="ContentLabel"
             />
     </Grid>
 </ContentPage>

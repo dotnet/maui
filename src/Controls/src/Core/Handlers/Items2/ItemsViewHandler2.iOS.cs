@@ -170,7 +170,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var contentSize = Controller.GetSize();
+			Console.WriteLine($"[ItemsViewHandler2] GetDesiredSize - contentSize from GetSize(): {contentSize}");
 			contentSize = EnsureContentSizeForScrollDirection(widthConstraint, heightConstraint, contentSize);
+			Console.WriteLine($"[ItemsViewHandler2] GetDesiredSize - after EnsureContentSize: {contentSize}");
 
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
@@ -181,7 +183,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			width = ViewHandlerExtensions.ResolveConstraints(width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
 			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
-			return new Size(width, height);
+			var finalSize = new Size(width, height);
+			Console.WriteLine($"[ItemsViewHandler2] GetDesiredSize - final size: {finalSize}, constraints: ({widthConstraint}, {heightConstraint})");
+			return finalSize;
 		}
 
 		Size EnsureContentSizeForScrollDirection(double widthConstraint, double heightConstraint, Size contentSize)
