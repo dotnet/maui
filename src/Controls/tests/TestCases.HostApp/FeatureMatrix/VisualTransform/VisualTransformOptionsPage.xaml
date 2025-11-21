@@ -181,17 +181,14 @@
               <StackLayout Grid.Row="3"
                            Grid.Column="0"
                            Spacing="2">
-                     <Label x:Name="AnchorXLabel"
-                            Text="AnchorX: 0.00"
+                     <Label Text="AnchorX"
                             FontAttributes="Bold"
                             FontSize="12"
                             TextColor="DarkRed"/>
-                     <Entry x:Name="AnchorXEntry"
+                     <Entry Text="{Binding AnchorX, Mode=TwoWay}"
                             Keyboard="Numeric"
                             HorizontalTextAlignment="Center"
                             FontSize="12"
-                            Text="0"
-                            TextChanged="OnAnchorXChanged"
                             AutomationId="AnchorXEntry"/>
                      <Label Text="0.0-1.0"
                             FontSize="10"
@@ -201,26 +198,21 @@
               <StackLayout Grid.Row="3"
                            Grid.Column="1"
                            Spacing="2">
-                     <Label x:Name="AnchorYLabel"
-                            Text="AnchorY: 0.00"
+                     <Label Text="AnchorY"
                             FontAttributes="Bold"
                             FontSize="12"
                             TextColor="DarkRed"/>
-                     <Entry x:Name="AnchorYEntry"
+                     <Entry Text="{Binding AnchorY, Mode=TwoWay}"
                             Keyboard="Numeric"
                             HorizontalTextAlignment="Center"
                             FontSize="12"
-                            Text="0"
-                            TextChanged="OnAnchorYChanged"
                             AutomationId="AnchorYEntry"/>
                      <Label Text="0.0-1.0"
                             FontSize="10"
                             HorizontalOptions="Center"/>
               </StackLayout>
 
-
-
-              <!-- Quick Presets Section -->
+              <!-- Visual Options Section -->
               <Label Grid.Row="4"
                      Grid.ColumnSpan="4"
                      Text="Visual Options"
@@ -251,8 +243,5 @@
                                    FontSize="14"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
-
-
-
        </Grid>
 </ContentPage>

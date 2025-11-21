@@ -3,20 +3,20 @@ namespace Maui.Controls.Sample;
 public partial class VisualTransformControlPage : NavigationPage
 {
 
-	private VisualTransformViewModal _viewModel;
+	private VisualTransformViewModel _viewModel;
 
 	public VisualTransformControlPage()
 	{
-		_viewModel = new VisualTransformViewModal();
+		_viewModel = new VisualTransformViewModel();
 		PushAsync(new VisualTransformControlMainPage(_viewModel));
 	}
 }
 
 public partial class VisualTransformControlMainPage : ContentPage
 {
-	private VisualTransformViewModal _viewModel;
+	private VisualTransformViewModel _viewModel;
 
-	public VisualTransformControlMainPage(VisualTransformViewModal viewModel)
+	public VisualTransformControlMainPage(VisualTransformViewModel viewModel)
 	{
 		InitializeComponent();
 		_viewModel = viewModel;
