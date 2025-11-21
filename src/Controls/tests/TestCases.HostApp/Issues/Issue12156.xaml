@@ -2,11 +2,10 @@
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-       ios:Page.LargeTitleDisplay="Always"
        x:Class="Maui.Controls.Sample.Issues.Issue12156">
 
     <ShellContent Title="Home">
-        <ContentPage>
+        <ContentPage ios:Page.LargeTitleDisplay="Always">
             <Label
                 Text="Issue 12156"
                 AutomationId="Label"
