@@ -767,10 +767,11 @@ namespace Microsoft.Maui.Controls.Internals
 #pragma warning disable CS0618 // Type or member is obsolete
 				groupProxy.HeaderContent.SetBinding(
 					TextCell.TextProperty,
-					TypedBinding.ForSingleNestingLevel(
-						nameof(TemplatedItemsList<TView, TItem>.Name),
-						getter: static (TemplatedItemsList<TView, TItem> list) => list.Name,
-						setter: static (list, val) => list.Name = val));
+					new TypedBinding<TemplatedItemsList<TView, TItem>, string>(
+						getter: static list => (list.Name, true),
+						setter: static (list, val) => list.Name = val,
+						handlersCount: 1,
+						handlers: static list => [(list, "Name")]));
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
