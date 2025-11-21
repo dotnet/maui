@@ -162,6 +162,9 @@ static class SetPropertyHelpers
 		if (HasDoubleImplicitConversion(localVar.Type, property.Type, context, out _))
 			return true;
 
+		if (HasExplicitConversion(localVar.Type, property.Type, context))
+			return true;
+
 		//TODO could we replace this by a runimt check (generating a if/else) ?            
 		if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 			return true;
@@ -252,8 +255,16 @@ static class SetPropertyHelpers
 		if (HasDoubleImplicitConversion(localVar.Type, bpTypeAndConverter?.type, context, out _))
 			return true;
 
-		return localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context)
-			|| bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!);
+		if (HasExplicitConversion(localVar.Type, bpTypeAndConverter?.type, context))
+			return true;
+
+		if (localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context))
+			return true;
+		
+		if (bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!))
+			return true;
+
+		return false;
 	}
 
 	static void SetValue(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
@@ -270,7 +281,23 @@ static class SetPropertyHelpers
 		else if (node is ElementNode elementNode)
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {(HasDoubleImplicitConversion(getNodeValue(elementNode, context.Compilation.ObjectType).Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{getNodeValue(node, context.Compilation.ObjectType).ValueAccessor});");
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				string cast = string.Empty;
+				
+				if (HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
+				{
+					cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+				}
+				else if (pType != null && !context.Compilation.HasImplicitConversion(localVar.Type, pType) && HasExplicitConversion(localVar.Type, pType, context))
+				{
+					// Only add cast if the source type is not object (object can be cast to anything at runtime)
+					if (!localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+					{
+						cast = $"({pType.ToFQDisplayString()})";
+					}
+				}
+				
+				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpFieldSymbol.ToFQDisplayString()}, {cast}{localVar.ValueAccessor});");
 			}
 	}
 
@@ -328,6 +355,56 @@ static class SetPropertyHelpers
 		return false;
 	}
 
+	static bool HasExplicitConversion(ITypeSymbol? fromType, ITypeSymbol? toType, SourceGenContext context)
+	{
+		if (fromType == null || toType == null)
+			return false;
+
+		// If there's already an implicit conversion, we don't need explicit cast
+		if (context.Compilation.HasImplicitConversion(fromType, toType))
+			return false;
+
+		// Check for explicit conversion operators on both types
+		IMethodSymbol[] conversionOps =
+			[
+				.. fromType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion),
+				.. toType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion)
+			];
+
+		foreach (var conversionOp in conversionOps)
+		{
+			// Check if this conversion operator can convert fromType to toType
+			if (SymbolEqualityComparer.Default.Equals(conversionOp.Parameters[0].Type, fromType) &&
+			    SymbolEqualityComparer.Default.Equals(conversionOp.ReturnType, toType))
+			{
+				return true;
+			}
+		}
+
+		// Check for valid reference type casts (inheritance or interface)
+		// Only allow if both are collections or both are non-collections
+		if (fromType.IsReferenceType && toType.IsReferenceType)
+		{
+			var fromIsCollection = fromType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable") && fromType.SpecialType != SpecialType.System_String;
+			var toIsCollection = toType.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable") && toType.SpecialType != SpecialType.System_String;
+			
+			// Both must be collections, or both must be non-collections
+			if (fromIsCollection == toIsCollection)
+			{
+				// Same inheritance chain or one is an interface
+				if (fromType.InheritsFrom(toType, context) ||
+				    toType.InheritsFrom(fromType, context) ||
+				    toType.TypeKind == TypeKind.Interface ||
+				    fromType.TypeKind == TypeKind.Interface)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	static void Set(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
 		var property = parentVar.Type.GetAllProperties(localName, context).First();
@@ -342,7 +419,11 @@ static class SetPropertyHelpers
 		}
 		else if (node is ElementNode elementNode)
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){(HasDoubleImplicitConversion(getNodeValue(elementNode, context.Compilation.ObjectType).Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty)}{getNodeValue(elementNode, context.Compilation.ObjectType).ValueAccessor};");
+			{
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				string intermediateCast = HasDoubleImplicitConversion(localVar.Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString() + ")" : string.Empty;
+				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){intermediateCast}{localVar.ValueAccessor};");
+			}
 	}
 
 	static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
