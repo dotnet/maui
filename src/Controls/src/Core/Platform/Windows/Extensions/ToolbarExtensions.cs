@@ -50,6 +50,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = toolbar.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
 
+			if (toolbar.TitleView?.Handler != null)
+			{
+				// Disconnect the handler to ensure the TitleView is properly detached when reusing the same page instance.
+				toolbar.TitleView.Handler.DisconnectHandler();
+			}
+
 			platformToolbar.TitleView = toolbar.TitleView?.ToPlatform(toolbar.Handler.MauiContext);
 
 			if (toolbar.TitleView is IView view)
