@@ -221,6 +221,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_bound = true;
 			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 			this.UpdateAccessibilityTraits(itemsView);
+			if(this.Selected)
+			{
+				UpdateVisualStates();
+				UpdateSelectionColor();
+			}
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)
