@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellFlyoutRenderer : UIViewController, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver
+	public class ShellFlyoutRenderer : UIViewController, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver, IUIViewLifeCycleEvents
 	{
 		#region IAppearanceObserver
 
@@ -131,6 +131,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewPropertyAnimator _flyoutAnimation;
 		Brush _backdropBrush;
 		bool _layoutOccured;
+		EventHandler _movedToWindow;
 
 		public UIViewAnimationCurve AnimationCurve { get; set; } = UIViewAnimationCurve.EaseOut;
 
@@ -219,10 +220,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutSidebar(false);
 		}
 
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
 		public override void ViewWillAppear(bool animated)
 		{
 			UpdateFlowDirection();
 			base.ViewWillAppear(animated);
+		}
+
+		public override void ViewDidDisappear(bool animated)
+		{
+			base.ViewDidDisappear(animated);
+
+			if (View.Window is null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+
+			if (View.Window is not null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewDidLoad()
