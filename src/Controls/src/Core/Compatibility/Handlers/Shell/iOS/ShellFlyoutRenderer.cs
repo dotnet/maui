@@ -74,6 +74,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			PanGestureRecognizer.ShouldReceiveTouch += (sender, touch) =>
 			{
+				if (_flyoutBehavior == FlyoutBehavior.Disabled)
+					return false;
+					
 				if (!context.AllowFlyoutGesture || _flyoutBehavior != FlyoutBehavior.Flyout)
 					return false;
 				var view = View;
@@ -117,6 +120,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				IsOpen = true;
 			else if (behavior == FlyoutBehavior.Disabled)
 				IsOpen = false;
+			
+			UpdatePanGestureEnabled();
+			
 			LayoutSidebar(false);
 			UpdateFlyoutAccessibility();
 		}
@@ -240,6 +246,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellController)Shell).AddFlyoutBehaviorObserver(this);
 			UpdateFlowDirection();
 			UpdateFlyoutAccessibility();
+			UpdatePanGestureEnabled();
+		}
+		
+		void UpdatePanGestureEnabled()
+		{
+			if (PanGestureRecognizer != null)
+			{
+				PanGestureRecognizer.Enabled = _flyoutBehavior != FlyoutBehavior.Disabled;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
