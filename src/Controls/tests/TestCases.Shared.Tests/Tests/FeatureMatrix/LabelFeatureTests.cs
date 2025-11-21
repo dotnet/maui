@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class LabelFeatureTests : UITest
+public class LabelFeatureTests : _GalleryUITest
 {
 	public const string LabelFeatureMatrix = "Label Feature Matrix";
 	public const string Options = "Options";
@@ -46,16 +46,11 @@ public class LabelFeatureTests : UITest
 	public const string LineBreakModeNoWrap = "LineBreakModeNoWrap";
 	public const string MainLabel = "MainLabel";
 
+	public override string GalleryPageName => LabelFeatureMatrix;
 
 	public LabelFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(LabelFeatureMatrix);
 	}
 
 	[Test, Order(1)]
