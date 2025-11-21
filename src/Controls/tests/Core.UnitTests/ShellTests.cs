@@ -446,6 +446,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task BackNavigationDefaultsToAnimatedWhenNotSpecified()
+		{
+			Routing.RegisterRoute(nameof(BackNavigationDefaultsToAnimatedWhenNotSpecified), typeof(ContentPage));
+			var shellContent = new ShellContent();
+			var shell = new TestShell(new TestFlyoutItem(new TestShellSection(shellContent)));
+			await shell.GoToAsync(nameof(BackNavigationDefaultsToAnimatedWhenNotSpecified));
+			
+			// Navigate back without specifying animate parameter (null)
+			await shell.GoToAsync("..");
+			
+			// Should default to animated (true) to match other navigation methods
+			Assert.True(shell.LastPopWasAnimated);
+		}
+
+		[Fact]
 		public async Task DefaultRoutesMaintainedIfThatsAllThereIs()
 		{
 			Routing.RegisterRoute(nameof(DefaultRoutesMaintainedIfThatsAllThereIs), typeof(ContentPage));
