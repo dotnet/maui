@@ -145,7 +145,7 @@ Task("dotnet-build")
     {
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.slnx");
         }
         else
         {

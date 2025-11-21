@@ -54,8 +54,8 @@ jobs:
 
       - name: Run dotnet format
         run: |
-          dotnet restore Microsoft.Maui.sln 
-          dotnet format Microsoft.Maui.sln --exclude Templates/src --exclude-diagnostics CA1822
+          dotnet restore Microsoft.Maui.slnx 
+          dotnet format Microsoft.Maui.slnx --exclude Templates/src --exclude-diagnostics CA1822
     
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4

@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\Microsoft.Maui.sln",
+    "path": "..\\..\\Microsoft.Maui.slnx",
     "projects": [
       "src\\Graphics\\samples\\GraphicsTester.Android\\GraphicsTester.Android.csproj",
       "src\\Graphics\\samples\\GraphicsTester.MacCatalyst\\GraphicsTester.MacCatalyst.csproj",

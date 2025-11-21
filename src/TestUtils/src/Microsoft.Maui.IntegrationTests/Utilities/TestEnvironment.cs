@@ -23,7 +23,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 			{
-				if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
+				if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.slnx")))
 					return searchDirectory;
 
 				if (maxSearchDepth <= 0)
