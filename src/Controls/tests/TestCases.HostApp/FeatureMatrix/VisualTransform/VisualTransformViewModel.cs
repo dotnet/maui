@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 
-public class VisualTransformViewModal : INotifyPropertyChanged
+public class VisualTransformViewModel : INotifyPropertyChanged
 {
 	public event PropertyChangedEventHandler PropertyChanged;
 	// Core Transformation Properties
@@ -208,9 +208,7 @@ public class VisualTransformViewModal : INotifyPropertyChanged
 		TranslationY = 0.0;
 		AnchorX = 0.5;
 		AnchorY = 0.5;
-		// Force property change notification for UI state
-		_isVisible = false; // Set to opposite first
-		IsVisible = true;   // Then set to desired value to trigger change
+		IsVisible = true;
 		HasShadow = false;
 	}
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
