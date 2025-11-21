@@ -19,6 +19,10 @@ public class Issue32791 : _IssuesUITest
 		App.WaitForElement("DisabledCarouselView");
 		App.ScrollRight("DisabledCarouselView");
 
+#if MACCATALYST
+		// MacCatalyst: Wait for item transition to complete after scroll gesture
+		Thread.Sleep(1000);
+#endif
 		var statusText = App.WaitForElement("Issue32791StatusLabel").GetText();
 		Assert.That(statusText, Is.EqualTo("Success"));
 	}
