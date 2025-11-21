@@ -47,9 +47,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			if (Controller is not CarouselViewController2 carouselViewController2)
+			{
+				return;
+			}
+
+			carouselViewController2.ScrollToRequested = true;
+
 			if (VirtualView?.Loop == true)
 			{
-				var goToIndexPath = (Controller as CarouselViewController2).GetScrollToIndexPath(args.Index);
+				var goToIndexPath = carouselViewController2.GetScrollToIndexPath(args.Index);
 
 				if (!IsIndexPathValid(goToIndexPath))
 				{
