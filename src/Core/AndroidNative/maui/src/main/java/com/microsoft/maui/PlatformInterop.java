@@ -30,6 +30,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -174,32 +175,32 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static LinearLayout createNavigationBarOuterLayout(Context context) {
-        LinearLayout linearLayout = new LinearLayout(context);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        return linearLayout;
+    public static RelativeLayout createNavigationBarOuterLayout(Context context) {
+        RelativeLayout relativeLayout = new RelativeLayout(context);
+        relativeLayout.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        return relativeLayout;
     }
 
     @NonNull
-    public static FrameLayout createNavigationBarArea(Context context, LinearLayout linearLayout) {
+    public static FrameLayout createNavigationBarArea(Context context, RelativeLayout relativeLayout) {
         FrameLayout frameLayout = new FrameLayout(context);
         frameLayout.setId(View.generateViewId());
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        layoutParams.gravity = Gravity.FILL;
-        layoutParams.weight = 1;
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.addRule(RelativeLayout.ABOVE, View.generateViewId());
         frameLayout.setLayoutParams(layoutParams);
-        linearLayout.addView(frameLayout);
+        relativeLayout.addView(frameLayout);
         return frameLayout;
     }
 
     @NonNull
-    public static BottomNavigationView createNavigationBar(Context context, int styleAttribute, LinearLayout linearLayout, BottomNavigationView.OnItemSelectedListener listener) {
+    public static BottomNavigationView createNavigationBar(Context context, int styleAttribute, RelativeLayout relativeLayout, BottomNavigationView.OnItemSelectedListener listener) {
         BottomNavigationView navigationView = new BottomNavigationView(context, null, styleAttribute);
-        navigationView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        navigationView.setLayoutParams(layoutParams);
         navigationView.setBackgroundColor(Color.WHITE);
         navigationView.setOnItemSelectedListener(listener);
-        linearLayout.addView(navigationView);
+        relativeLayout.addView(navigationView);
         return navigationView;
     }
 
