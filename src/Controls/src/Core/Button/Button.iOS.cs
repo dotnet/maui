@@ -204,10 +204,21 @@ namespace Microsoft.Maui.Controls
 				// Which makes the later math easier to follow				
 				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += titleWidth / 2;
-					imageInsets.Right -= titleWidth / 2;
-					titleInsets.Left -= imageWidth / 2;
-					titleInsets.Right += imageWidth / 2;
+					bool isRTL = button.FlowDirection == FlowDirection.RightToLeft;
+					if (isRTL)
+					{
+						imageInsets.Left -= titleWidth / 2;
+						imageInsets.Right += titleWidth / 2;
+						titleInsets.Left += imageWidth / 2;
+						titleInsets.Right -= imageWidth / 2;
+					}
+					else
+					{
+						imageInsets.Left += titleWidth / 2;
+						imageInsets.Right -= titleWidth / 2;
+						titleInsets.Left -= imageWidth / 2;
+						titleInsets.Right += imageWidth / 2;
+					}
 				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
@@ -238,20 +249,44 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
-					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+					bool isRTL = button.FlowDirection == FlowDirection.RightToLeft;
+					if (isRTL)
+					{
+						imageInsets.Left += (titleWidth / 2) + sharedSpacing;
+						imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
 
-					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
+						titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
+						titleInsets.Right += (imageWidth / 2) + sharedSpacing;
+					}
+					else
+					{
+						imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
+						imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+
+						titleInsets.Left += (imageWidth / 2) + sharedSpacing;
+						titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
+					}
 
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
+					bool isRTL = button.FlowDirection == FlowDirection.RightToLeft;
+					if (isRTL)
+					{
+						imageInsets.Left += (titleWidth / 2) + sharedSpacing;
+						imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
 
-					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
+						titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
+						titleInsets.Right += (imageWidth / 2) + sharedSpacing;
+					}
+					else
+					{
+						imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
+						imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+
+						titleInsets.Left += (imageWidth / 2) + sharedSpacing;
+						titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
+					}
 				}
 			}
 
