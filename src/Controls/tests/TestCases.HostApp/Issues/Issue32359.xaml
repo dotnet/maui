@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32359"
+             Title="Issue 32359">
+    
+    <Grid RowDefinitions="Auto,Auto,*" Padding="10">
+        <Label Grid.Row="0" 
+               Text="CollectionView RTL - VerticalGrid 4 Columns" 
+               FontSize="16" 
+               FontAttributes="Bold" 
+               Margin="0,0,0,10"/>
+        
+        <HorizontalStackLayout Grid.Row="1" Spacing="10" Margin="0,0,0,10">
+            <Button x:Name="SetRtlButton" 
+                    Text="Set RTL"
+                    AutomationId="SetRtlButton"/>
+            <Button x:Name="SetLtrButton" 
+                    Text="Set LTR"
+                    AutomationId="SetLtrButton"/>
+            <Label x:Name="StatusLabel" 
+                   Text="Current: LTR" 
+                   AutomationId="StatusLabel"
+                   VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+        
+        <CollectionView x:Name="TestCollectionView" 
+                        Grid.Row="2"
+                        AutomationId="TestCollectionView">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="4"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid BackgroundColor="LightBlue" 
+                          Margin="2" 
+                          HeightRequest="60"
+                          WidthRequest="80">
+                        <Label Text="{Binding .}" 
+                               HorizontalOptions="Center" 
+                               VerticalOptions="Center"
+                               FontSize="14"
+                               TextColor="Black"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+    
+</ContentPage>

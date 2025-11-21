@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext)
 		{
-			throw new NotImplementedException();
+			return new AlertRequestHelper();
 		}
 
 		internal partial class AlertRequestHelper

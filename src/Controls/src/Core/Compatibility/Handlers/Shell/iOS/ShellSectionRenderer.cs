@@ -805,6 +805,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						navBarVisible = _self._renderer.ShowNavBar;
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
+
+					// Update navigation bar visibility during the transition
+					// This ensures the correct nav bar state is applied as part of the navigation animation
+					bool animateVisibilityChange = animated && Shell.GetNavBarVisibilityAnimationEnabled(element);
+					navigationController.SetNavigationBarHidden(!navBarVisible, animateVisibilityChange);
 				}
 
 				var coordinator = viewController.GetTransitionCoordinator();
