@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
 		{
-			if (viewHolder.ItemViewType != target.ItemViewType)
+			if (viewHolder.ItemViewType != target.ItemViewType && _adapter is ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource> reorderableItemsViewAdapter && !reorderableItemsViewAdapter.CanReorderBetweenItemsView(viewHolder.ItemViewType, target.ItemViewType))
 			{
 				return false;
 			}
