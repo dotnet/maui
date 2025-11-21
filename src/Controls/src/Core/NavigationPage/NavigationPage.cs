@@ -933,6 +933,10 @@ namespace Microsoft.Maui.Controls
 						Owner.NavigationType = NavigationType.Remove;
 						Owner.RemoveFromInnerChildren(page);
 
+						// Only disconnect handlers if the removed page is not visible.
+						// When the current page is removed, the handler is disconnected through PopAsync().
+						page?.DisconnectHandlers();
+
 						if (Owner.RootPage == page)
 							Owner.RootPage = (Page)Owner.InternalChildren[0];
 					},
