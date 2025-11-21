@@ -163,6 +163,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 			base.PrepareForReuse();
+			
+			// Ensure visual state is reset when cell is reused
+			// This prevents the previous selection state from persisting
+			UpdateVisualStates();
+			
+			// Reset SelectedBackgroundView to ensure it's re-evaluated in Bind
+			// This fixes an issue on iOS 26.1 where the color persists incorrectly
+			if (SelectedBackgroundView != null && PlatformHandler?.VirtualView is View view && IsUsingVSMForSelectionColor(view))
+			{
+				SelectedBackgroundView.BackgroundColor = UIKit.UIColor.Clear;
+			}
 		}
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
