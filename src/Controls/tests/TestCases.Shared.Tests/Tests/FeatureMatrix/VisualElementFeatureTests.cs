@@ -20,7 +20,7 @@ public class VisualTransformFeatureTests : UITest
 		App.NavigateToGallery(VisualTransformFeatureMatrix);
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //For iOS & macOS, see issue: https://github.com/dotnet/maui/issues/32767 and for Android, see issue: https://github.com/dotnet/maui/issues/32731
 
 	[Test]
 	public void VisualTransform_ScaleXWithShadow()
