@@ -86,8 +86,14 @@
 
   <Target Name="_MauiXamlComputeInflator">
   	<ItemGroup>
+      <!-- Compute the configuration-based default inflator (independent of MauiXamlInflator property) -->
+      <_MauiXamlDefaultInflator Condition=" '$(Configuration)' == 'Debug' " Include="Runtime" />
+      <_MauiXamlDefaultInflator Condition=" '$(Configuration)' != 'Debug' " Include="XamlC" />
+      
       <!-- Assign the default inflator to MauiXaml that don't have any -->
       <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
+      <!-- Special value 'Default' reverts to configuration-based defaults (Runtime in Debug, XamlC in Release) -->
+      <MauiXaml Condition="'%(MauiXaml.Inflator)' == 'Default'" Inflator="@(_MauiXamlDefaultInflator)" />
       <MauiXaml Inflator="$([MSBuild]::ValueOrDefault('%(MauiXaml.Inflator)','$(_MauiXamlInflator)').Replace(';', ','))"/>
       <MauiXaml NoWarn="$([MSBuild]::ValueOrDefault('%(MauiXaml.NoWarn)','').Replace(';', ','))"/>
 
@@ -100,6 +106,18 @@
       <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_RT)" />
       <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_XC)" KeepDuplicates="false" />      
 	</ItemGroup>
+	
+	<!-- Inform when XAML source generation is enabled -->
+	<Message 
+		Text="XAML source generation is enabled (MauiXamlInflator=SourceGen). This generates C# code from XAML at compile time for better performance. To disable, remove the MauiXamlInflator line from your .csproj file (reverts to configuration-based defaults: Runtime in Debug, XamlC in Release)." 
+		Importance="high" 
+		Condition="'$(MauiXamlInflator)' != '' And $([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('sourcegen'))" />
+	
+	<!-- Warn when Runtime or XamlC inflator is explicitly set -->
+	<Warning 
+		Code="MAUI1001"
+		Text="MauiXamlInflator is explicitly set to '$(MauiXamlInflator)'. The 'Runtime' inflator negatively impacts runtime performance and is only recommended for Debug builds. The 'XamlC' inflator prevents debugging capabilities like XAML Hot Reload. Consider setting it to 'SourceGen' for optimal performance and debugging experience, or remove it to use configuration-based defaults (Runtime in Debug, XamlC in Release)." 
+		Condition="'$(MauiXamlInflator)' != '' And ($([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('runtime')) Or $([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('xamlc')))" />
   </Target>
 
   <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
