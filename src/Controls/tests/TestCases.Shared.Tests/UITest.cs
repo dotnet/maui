@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 	public abstract class UITest : UITestBase
 	{
-		string _defaultiOSVersion = "18.5";
+		string _defaultiOSVersion = "26.0";
 
 		protected const int SetupMaxRetries = 1;
 		readonly VisualRegressionTester _visualRegressionTester;
