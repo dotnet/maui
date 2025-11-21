@@ -82,14 +82,22 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				style.LineHeightMultiple = new nfloat(lineHeight);
 			}
-
-			style.Alignment = defaultHorizontalAlignment switch
+			
+			if (span.Parent is FormattedString formattedString && formattedString.Parent is Label parentLabel)
 			{
-				TextAlignment.Start => UITextAlignment.Left,
-				TextAlignment.Center => UITextAlignment.Center,
-				TextAlignment.End => UITextAlignment.Right,
-				_ => UITextAlignment.Left
-			};
+				var flowDirection = parentLabel.FlowDirection;
+				style.Alignment = defaultHorizontalAlignment.ToPlatformHorizontal(flowDirection.ToUIUserInterfaceLayoutDirection());
+			}
+			else
+			{
+				style.Alignment = defaultHorizontalAlignment switch
+				{
+					TextAlignment.Start => UITextAlignment.Left,
+					TextAlignment.Center => UITextAlignment.Center,
+					TextAlignment.End => UITextAlignment.Right,
+					_ => UITextAlignment.Left
+				};
+			}
 
 			var font = span.ToFont(defaultFontSize);
 			if (font.IsDefault && defaultFont.HasValue)
