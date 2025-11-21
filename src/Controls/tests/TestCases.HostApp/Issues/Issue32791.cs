@@ -1,11 +1,11 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14184, "Setting the IsEnabled property of the CarouselView to false does not prevent swiping through items", PlatformAffected.Android | PlatformAffected.iOS )]
-public class Issue14184 : ContentPage
+[Issue(IssueTracker.Github, 32791, "Setting the IsEnabled property of the CarouselView to false does not prevent swiping through items", PlatformAffected.Android | PlatformAffected.iOS )]
+public class Issue32791 : ContentPage
 {
 	CarouselView _carouselView;
 	Label _statusLabel;
-	public Issue14184()
+	public Issue32791()
 	{
 		_carouselView = new CarouselView
 		{
@@ -34,7 +34,7 @@ public class Issue14184 : ContentPage
 
 		_statusLabel = new Label
 		{
-			AutomationId = "Issue14184StatusLabel",
+			AutomationId = "Issue32791StatusLabel",
 			Text = "Success",
 		};
 

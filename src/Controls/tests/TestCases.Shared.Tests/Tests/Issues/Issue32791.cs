@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue14184 : _IssuesUITest
+public class Issue32791 : _IssuesUITest
 {
-	public Issue14184(TestDevice device) : base(device)
+	public Issue32791(TestDevice device) : base(device)
 	{
 	}
 
@@ -19,7 +19,7 @@ public class Issue14184 : _IssuesUITest
 		App.WaitForElement("DisabledCarouselView");
 		App.ScrollRight("DisabledCarouselView");
 
-		var statusText = App.WaitForElement("Issue14184StatusLabel").GetText();
+		var statusText = App.WaitForElement("Issue32791StatusLabel").GetText();
 		Assert.That(statusText, Is.EqualTo("Success"));
 	}
 }
