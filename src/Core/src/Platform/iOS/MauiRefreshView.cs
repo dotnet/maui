@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using CoreFoundation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -43,6 +42,8 @@ namespace Microsoft.Maui.Platform
 				{
 					if (_isRefreshing)
 					{
+						// Store the current scroll position when refresh starts
+						StoreCurrentScrollPosition();
 						TryOffsetRefresh(this, IsRefreshing);
 						_refreshControl.BeginRefreshing();
 					}
@@ -76,6 +77,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIScrollView scrollView)
 			{
+				if (scrollView.ContentOffset.Y < 0)
+					return true;
+
 				if (refreshing)
 					scrollView.SetContentOffset(new CGPoint(0, _originalY - _refreshControlHeight), true);
 				else
@@ -100,6 +104,22 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return false;
+		}
+
+		void StoreCurrentScrollPosition()
+		{
+			// Store the current scroll position from the refresh control parent
+			if (_refreshControlParent is UIScrollView scrollView)
+			{
+				if (scrollView.ContentSize.Height <= scrollView.Bounds.Height)
+				{
+					_originalY = 0; // Stay at top
+				}
+				else
+				{
+					_originalY = scrollView.ContentOffset.Y;
+				}
+			}
 		}
 
 		bool TryRemoveRefresh(UIView view, int index = 0)
