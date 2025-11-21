@@ -72,7 +72,12 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		await Task.Delay(100);
-		App.DismissKeyboard();
+#if ANDROID || IOS
+		if (App.IsKeyboardShown())
+		{
+			App.DismissKeyboard();
+		}
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
