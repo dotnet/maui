@@ -27,14 +27,23 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
-
-[XamlProcessing(XamlInflator.SourceGen)]
-partial class TestPage : ContentPage
+namespace Test
 {
-	public TestPage()
+	[XamlProcessing(XamlInflator.SourceGen)]
+	partial class TestPage : ContentPage
 	{
-		InitializeComponent();
+		public TestPage()
+		{
+			InitializeComponent();
+		}
+	}
+}
+
+namespace MyApp.Routes
+{
+	public static class Route
+	{
+		public static string Value => "TestRoute";
 	}
 }
 """;
@@ -110,7 +119,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
@@ -135,14 +144,23 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
-
-[XamlProcessing(XamlInflator.SourceGen)]
-partial class TestPage : ContentPage
+namespace Test
 {
-	public TestPage()
+	[XamlProcessing(XamlInflator.SourceGen)]
+	partial class TestPage : ContentPage
 	{
-		InitializeComponent();
+		public TestPage()
+		{
+			InitializeComponent();
+		}
+	}
+}
+
+namespace ExternalLib.Constants
+{
+	public static class AppConstants
+	{
+		public static string AppName => "TestApp";
 	}
 }
 """;
@@ -218,7 +236,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
@@ -243,14 +261,23 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
-
-[XamlProcessing(XamlInflator.SourceGen)]
-partial class TestPage : ContentPage
+namespace Test
 {
-	public TestPage()
+	[XamlProcessing(XamlInflator.SourceGen)]
+	partial class TestPage : ContentPage
 	{
-		InitializeComponent();
+		public TestPage()
+		{
+			InitializeComponent();
+		}
+	}
+}
+
+namespace MyApp.Config
+{
+	public static class Settings
+	{
+		public static double DefaultFontSize => 14.0;
 	}
 }
 """;
@@ -326,7 +353,7 @@ public partial class TestPage
 
 """;
 
-		var (result, generated) = RunGenerator(xaml, code);
+		var (result, generated) = RunGenerator(xaml, code, assertNoCompilationErrors: true);
 		Assert.False(result.Diagnostics.Any());
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}

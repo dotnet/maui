@@ -178,7 +178,7 @@ internal struct CompiledBindingMarkup
 		// TypedBinding creation
 		code.WriteLine($"return new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
 		code.Indent++;
-		var targetNullValueExpression = isTemplateBinding || !propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue) ? null : "extension.TargetNullValue";
+		var targetNullValueExpression = isTemplateBinding || !propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue) ? null : "extension.TargetNullValue";
 		code.WriteLine($"getter: source => ({GenerateGetterExpression(binding, sourceVariableName: "source", targetNullValueExpression)}, true),");
 		code.WriteLine("setter,");
 		code.Write("handlers: ");

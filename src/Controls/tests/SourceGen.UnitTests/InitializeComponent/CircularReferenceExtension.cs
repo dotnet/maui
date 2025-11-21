@@ -155,7 +155,7 @@ partial class BugPage : ContentPage
 				
 				// Run generator with BOTH files at once - this creates the shared context
 				// that triggers the infinite loop with the buggy code
-				var result = RunGenerator<XamlGenerator>(compilation, expanderFile, bugFile);
+				var result = RunGenerator<XamlGenerator>(compilation, [expanderFile, bugFile]);
 				
 				return result;
 			}, cts.Token);
