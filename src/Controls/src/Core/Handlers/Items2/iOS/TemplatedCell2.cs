@@ -207,6 +207,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
+				
+				if (this.Selected)
+				{
+					UpdateVisualStates();
+					UpdateSelectionColor();
+				}
 			}
 
 			if (PlatformHandler?.VirtualView is View view)
