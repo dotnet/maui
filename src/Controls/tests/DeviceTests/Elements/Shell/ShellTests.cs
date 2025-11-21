@@ -554,17 +554,17 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new ShellContent()
 						{
-							Route = "Item1",
+							Route = "PageItem1",
 							Content = page1
 						},
 						new ShellContent()
 						{
-							Route = "Item2",
+							Route = "PageItem2",
 							Content = page2
 						},
 						new ShellContent()
 						{
-							Route = "Item3",
+							Route = "PageItem3",
 							Content = page3
 						},
 					}
@@ -581,16 +581,16 @@ namespace Microsoft.Maui.DeviceTests
 					return view.Handler != null && view.ToPlatform() == GetTitleView(handler);
 				}
 
-				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("//PageItem2");
 				await AssertEventually(() => viewIsTitleView(titleView2));
 
-				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//PageItem1");
 				await AssertEventually(() => viewIsTitleView(titleView1));
 
-				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("//PageItem2");
 				await AssertEventually(() => viewIsTitleView(titleView2));
 
-				await shell.GoToAsync("//Item3");
+				await shell.GoToAsync("//PageItem3");
 				await AssertEventually(() => viewIsTitleView(shellTitleView));
 			});
 		}
@@ -611,12 +611,12 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new ShellContent()
 						{
-							Route = "Item1",
+							Route = "NewPageItem1",
 							Content = page1
 						},
 						new ShellContent()
 						{
-							Route = "Item2",
+							Route = "NewPageItem2",
 							Content = page2
 						},
 					}
@@ -626,8 +626,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				var initialHandler = page1.Handler;
-				await shell.GoToAsync("//Item2");
-				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//NewPageItem2");
+				await shell.GoToAsync("//NewPageItem1");
 				Assert.Equal(initialHandler, page1.Handler);
 			});
 		}
@@ -723,7 +723,18 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// TODO MAUI Fix this 
 				await Task.Delay(100);
-				await shell.GoToAsync("//page2");
+
+				// Navigate to the second item's route (dynamically determined)
+				string secondItemRoute = null;
+				if (shell.Items.Count > 1)
+				{
+					secondItemRoute = shell.Items[1].Route;
+				}
+
+				if (!string.IsNullOrEmpty(secondItemRoute))
+				{
+					await shell.GoToAsync($"//{secondItemRoute}");
+				}
 				await Task.Delay(100);
 			});
 		}
@@ -1146,5 +1157,36 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke(value);
 				return value;
 			});
+
+		[Fact(DisplayName = "Duplicate Routes Should Throws Exception")]
+		public void ShouldThrowsArgumentExceptionOnDuplicateRoutes()
+		{
+			var shell = new Shell();
+			var sameRoute = $"DuplicateRoute";
+
+			var flyoutItem1 = new FlyoutItem();
+			var shellContent1 = new ShellContent
+			{
+				Title = "Home"
+			};
+			flyoutItem1.Items.Add(shellContent1);
+			shell.Items.Add(flyoutItem1);
+
+			var flyoutItem2 = new FlyoutItem();
+			var shellContent2 = new ShellContent
+			{
+				Title = "Home"
+			};
+			flyoutItem2.Items.Add(shellContent2);
+			shell.Items.Add(flyoutItem2);
+
+			shellContent1.Route = sameRoute;
+			var exception = Assert.Throws<ArgumentException>(() =>
+			{
+				shellContent2.Route = sameRoute;
+			});
+
+			Assert.Equal($"Duplicated Route: \"{sameRoute}\" is already registered to another element of type ShellContent. Routes must be unique across the Shell hierarchy to avoid navigation conflicts. (Parameter 'route')", exception.Message);
+		}
 	}
 }
