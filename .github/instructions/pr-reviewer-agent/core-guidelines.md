@@ -58,11 +58,14 @@ When multiple instruction files exist, follow this priority order:
    - **Output**: **ALWAYS** create a markdown file named `Review_Feedback_Issue_XXXXX.md` (replace XXXXX with actual issue number)
    - **When**: Create this file at the end of EVERY PR review, without exception
    - **Content**: Include test results, measurements, edge cases tested, and evidence-based recommendations
+   - **Format**: Use the collapsible format specified in `output-format.md`
    - **Location**: Save in repository root or as specified by user
    - **Critical**: This file is the deliverable for every review - do not skip this step
-8. 📤 **If submitting changes as a PR**: Use title format `[PR-Reviewer] <Original PR Title>`
-   - This clearly identifies agent-generated PRs containing review feedback and suggested improvements
-   - Example: `[PR-Reviewer] Fix RTL padding for CollectionView on iOS`
+8. 📤 **If submitting changes/fixes as a PR**: 
+   - **MANDATORY Title Format**: `[PR-Reviewer] <Original PR Title>`
+   - **Purpose**: Clearly identifies agent-generated PRs containing review feedback and suggested improvements
+   - **Example**: `[PR-Reviewer] Fix RTL padding for CollectionView on iOS`
+   - **Rule**: ALWAYS start PR titles with `[PR-Reviewer]` prefix when creating PRs with fixes or improvements
 
 ## 🎯 Critical Success Factors
 
