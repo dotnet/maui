@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			return contentViewHandler.PlatformView.Subviews[0].Subviews.Length;
 		}
 
-		[Fact, Category(TestCategory.Layout)]
+		[Fact]
 		public async Task ContentViewHasExpectedSize()
 		{
 			var contentView = new ContentView();
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(100, size.Height);
 		}
 
-		[Fact, Category(TestCategory.Layout)]
+		[Fact]
 		public async Task ContentViewRespondsWhenViewAdded()
 		{
 			var contentView = new ContentView();
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(100, updatedSize.Height);
 		}
 
-		[Fact(Skip="Failing https://github.com/dotnet/maui/issues/32368"), Category(TestCategory.Layout)]
+		[Fact(Skip="Failing https://github.com/dotnet/maui/issues/32368")]
 		public async Task ContentViewRespondsWhenViewRemoved()
 		{
 			var contentView = new ContentView();
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, updatedSize.Height);
 		}
 
-		[Fact, Category(TestCategory.Layout)]
+		[Fact]
 		public async Task ContentViewRespondsWhenViewUpdated()
 		{
 			var contentView = new ContentView();

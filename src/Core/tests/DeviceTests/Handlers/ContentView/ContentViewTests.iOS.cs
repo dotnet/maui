@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 	[Category(TestCategory.ContentView)]
 	public partial class ContentViewTests
 	{
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task FlowDirectionPropagatesToContent()
 		{
 			var contentView = new ContentViewStub();
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task FlowDirectionPropagatesToDescendants()
 		{
 			var contentView = new ContentViewStub();
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task FlowDirectionPropagatesToUpdatedContent()
 		{
 			var contentView = new ContentViewStub() { FlowDirection = FlowDirection.RightToLeft };
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task DoesNotPropagateToContentWithExplicitFlowDirection()
 		{
 			var contentView = new ContentViewStub();

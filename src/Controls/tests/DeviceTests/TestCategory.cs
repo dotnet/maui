@@ -4,6 +4,7 @@
 	{
 		public const string Accessibility = "Accessibility";
 		public const string Application = "Application";
+		public const string AlertDialog = "AlertDialog";
 		public const string Behavior = "Behavior";
 		public const string Border = "Border";
 		public const string BoxView = "BoxView";

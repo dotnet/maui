@@ -211,7 +211,6 @@ namespace Microsoft.Maui.DeviceTests
 #if !WINDOWS
 
 		[Fact]
-		[Category(TestCategory.TextFormatting)]
 		public async Task LineHeightAppliedWhenTextAdded()
 		{
 			double xplatLineHeight = 2;
@@ -230,7 +229,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Category(TestCategory.TextFormatting)]
 		public async Task CharacterSpacingAppliedWhenTextAdded()
 		{
 			double xplatCharacterSpacing = 1.5;
@@ -249,7 +247,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Category(TestCategory.TextFormatting)]
 		public async Task LineHeightSurvivesCharacterSpacing()
 		{
 			double xplatCharacterSpacing = 1.5;
