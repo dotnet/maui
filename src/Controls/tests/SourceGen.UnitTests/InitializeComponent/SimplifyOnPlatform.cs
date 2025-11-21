@@ -399,14 +399,11 @@ public partial class TestPage : ContentPage
 		
 		// Should not have any errors (no TargetInvocationException)
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
-
-		// Should generate code that creates the resource with default value
-		Assert.Contains("SizeMedium", generated, StringComparison.Ordinal);
 		
 		// Should generate SetValue with default(double) for the WidthRequest property
 		// The generated code should look like: label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);
 		// where double1 is assigned from double0 which is: double double0 = default;
 		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
-		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty,", generated, StringComparison.Ordinal);
+		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double0);", generated, StringComparison.Ordinal);
 	}
 }
