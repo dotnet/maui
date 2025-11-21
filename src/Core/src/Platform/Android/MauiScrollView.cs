@@ -10,6 +10,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
+using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Microsoft.Maui.Platform
 {
@@ -25,6 +26,8 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
+		ALayoutDirection _prevLayoutDirection = ALayoutDirection.Ltr;
+		bool _checkedForRtlScroll;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -157,6 +160,12 @@ namespace Microsoft.Maui.Platform
 			bool orientationChanged = _scrollOrientation != orientation;
 			_scrollOrientation = orientation;
 
+			// Reset RTL tracking when orientation changes
+			if (orientationChanged)
+			{
+				_checkedForRtlScroll = false;
+			}
+
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
 			{
 				if (_hScrollView == null)
@@ -198,6 +207,28 @@ namespace Microsoft.Maui.Platform
 					_hScrollView?.RemoveFromParent();
 					AddView(_content);
 				}
+			}
+		}
+
+		internal void UpdateFlowDirection(IView view)
+		{
+			var layoutDirection = ViewExtensions.GetLayoutDirection(view);
+
+			// Handle FlowDirection specifically for horizontal scroll view
+			if (_hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
+			{
+				if (_prevLayoutDirection != layoutDirection)
+				{
+					_prevLayoutDirection = layoutDirection;
+					_hScrollView.LayoutDirection = layoutDirection;
+					_checkedForRtlScroll = false; // Reset to allow re-evaluation
+				}
+			}
+			else
+			{
+				// Fallback to default mechanism for other cases (vertical scroll or no horizontal scroll)
+				// Use the common ViewExtensions logic for standard FlowDirection handling
+				this.LayoutDirection = layoutDirection;
 			}
 		}
 
@@ -297,6 +328,21 @@ namespace Microsoft.Maui.Platform
 				hScrollViewHeight = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
 				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
+
+			// Handle RTL initial positioning
+			if (!_checkedForRtlScroll && _hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
+			{
+				if (_hScrollView.LayoutDirection == ALayoutDirection.Rtl)
+				{
+					Post(() =>
+					{
+						// Scroll to the right end for RTL
+						_hScrollView?.ScrollTo(_hScrollView?.GetChildAt(0)?.Width ?? 0, 0);
+					});
+				}
+			}
+
+			_checkedForRtlScroll = true;
 
 			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
 			{
@@ -401,6 +447,7 @@ namespace Microsoft.Maui.Platform
 		void IOnScrollChangeListener.OnScrollChange(NestedScrollView? v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 #pragma warning restore CA1822
 		{
+			_checkedForRtlScroll = true;
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
 		}
 	}
