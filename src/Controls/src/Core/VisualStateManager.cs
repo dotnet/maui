@@ -81,6 +81,10 @@ namespace Microsoft.Maui.Controls
 			groups.Specificity = vsgSpecificity;
 
 			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+			
+			// Debug output for issue #27202
+			System.Diagnostics.Debug.WriteLine($"[VSM] GoToState({name}) - VSG specificity: {vsgSpecificity.StyleInfo}");
+			System.Diagnostics.Debug.WriteLine($"[VSM] VSM setter specificity will be used");
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -697,6 +701,12 @@ namespace Microsoft.Maui.Controls
 			{
 				group.VisualElement = clone.VisualElement;
 				clone.Add(group.Clone());
+			}
+			
+			// Preserve specificity when cloning (issue #27202)
+			if (groups is VisualStateGroupList sourceList)
+			{
+				clone.Specificity = sourceList.Specificity;
 			}
 
 			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
