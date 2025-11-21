@@ -23,8 +23,7 @@ public partial class Bugzilla39636 : ContentPage
 		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
 
 		[Test]
-		public void OnPlatformWithMissingTargetPlatformShouldUseDefault(
-			[Values(XamlInflator.Runtime, XamlInflator.SourceGen, XamlInflator.XamlC)] XamlInflator inflator)
+		public void OnPlatformWithMissingTargetPlatformShouldUseDefault([Values] XamlInflator inflator)
 		{
 			// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
 			// all inflators should use default(T) instead of throwing an exception
