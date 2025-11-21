@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentHeader != null)
 			{
 				Element.RemoveLogicalChild(_currentHeader);
+				_currentHeader.Cleanup();
 				_currentHeader = null;
 			}
 
@@ -158,6 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentFooter != null)
 			{
 				Element.RemoveLogicalChild(_currentFooter);
+				_currentFooter.Cleanup();
 				_currentFooter = null;
 			}
 
