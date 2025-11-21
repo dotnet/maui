@@ -1664,11 +1664,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (n is null)
 						return;
 
-					Container titleViewContainer = new Container(titleView, n.NavigationBar);
+					Container titleViewContainer = CreateTitleViewContainer(titleView, n.NavigationBar);
 
 					UpdateTitleImage(titleViewContainer, titleIcon);
 					NavigationItem.TitleView = titleViewContainer;
 				}
+			}
+
+			/// <summary>
+			/// Creates a Container with the appropriate configuration for the current iOS version.
+			/// For iOS 26+, uses autoresizing masks and sets frame from navigation bar to prevent layout issues.
+			/// </summary>
+			Container CreateTitleViewContainer(View titleView, UINavigationBar navigationBar)
+			{
+				// iOS 26+ requires autoresizing masks and explicit frame sizing to prevent TitleView from covering content
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					var navigationBarFrame = navigationBar.Frame;
+					if (navigationBarFrame != CGRect.Empty)
+					{
+						return new Container(titleView, navigationBar, navigationBarFrame);
+					}
+					// Fallback: If navigation bar frame isn't available, use standard constructor
+					// The view will still use autoresizing masks (configured in constructor)
+				}
+
+				return new Container(titleView, navigationBar);
 			}
 
 			void UpdateIconColor()
@@ -2083,13 +2104,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			IPlatformViewHandler _child;
 			UIImageView _icon;
 			bool _disposed;
+			nfloat? _navigationBarHeight;
 
 			//https://developer.apple.com/documentation/uikit/uiview/2865930-directionallayoutmargins
 			const int SystemMargin = 16;
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				// For iOS 26+, we need to use autoresizing masks instead of constraints to ensure proper TitleView display
+				InitializeContainer(view, bar, null);
+			}
+
+			/// <summary>
+			/// Creates a Container with an explicitly set frame from the navigation bar.
+			/// Used on iOS 26+ to ensure proper sizing when using autoresizing masks.
+			/// </summary>
+			/// <param name="view">The MAUI view to display in the title</param>
+			/// <param name="bar">The navigation bar</param>
+			/// <param name="navigationBarFrame">The navigation bar frame to use for sizing</param>
+			internal Container(View view, UINavigationBar bar, CGRect navigationBarFrame) : base(CGRect.Empty)
+			{
+				// Set frame to match navigation bar dimensions, starting at origin (0,0)
+				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				InitializeContainer(view, bar, navigationBarFrame.Height);
+			}
+
+			void InitializeContainer(View view, UINavigationBar bar, nfloat? navigationBarHeight)
+			{
+				// iOS 26+ and MacCatalyst 26+ require autoresizing masks instead of constraints
+				// to prevent TitleView from expanding beyond navigation bar bounds and covering content.
+				// This is a workaround for layout behavior changes in iOS 26.
 				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = true;
@@ -2106,6 +2149,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_bar = bar as MauiControlsNavigationBar;
+				_navigationBarHeight = navigationBarHeight;
+
 				if (view != null)
 				{
 					_view = view;
@@ -2170,9 +2215,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				get
 				{
+					// For iOS 26+, use the actual navigation bar height if available
+					if (_navigationBarHeight.HasValue)
+						return _navigationBarHeight.Value;
+
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
+					// Fallback to device-specific defaults
+					// Note: iOS 26+ uses taller navigation bars, but this fallback
+					// should rarely be hit as we prefer using the actual navigation bar frame
 					return (DeviceInfo.Idiom == DeviceIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
 				}
 			}
