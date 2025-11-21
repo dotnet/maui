@@ -73,6 +73,7 @@ variables:
     - name: _SignType
       value: real
 
+    - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats
 
 - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
