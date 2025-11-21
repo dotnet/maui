@@ -254,5 +254,7 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string AmbiguousTypeMessage => ResourceManager.GetString("AmbiguousTypeMessage", resourceCulture);
 		internal static string RequiredPropertyTitle => ResourceManager.GetString("RequiredPropertyTitle", resourceCulture);
 		internal static string RequiredPropertyMessage => ResourceManager.GetString("RequiredPropertyMessage", resourceCulture);
+		internal static string DuplicatePropertyAssignmentTitle => ResourceManager.GetString("DuplicatePropertyAssignmentTitle", resourceCulture);
+		internal static string DuplicatePropertyAssignmentMessage => ResourceManager.GetString("DuplicatePropertyAssignmentMessage", resourceCulture);
 	}
 }

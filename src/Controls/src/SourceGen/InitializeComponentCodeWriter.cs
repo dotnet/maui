@@ -122,7 +122,8 @@ $$"""
 			return;
 		}
 
-""");
+"""
+);
 					}
 					Visit(root, sgcontext);
 

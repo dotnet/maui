@@ -35,7 +35,7 @@ public partial class Gh5095 : ContentPage
 					.RunMauiSourceGenerator(typeof(Gh5095));
 
 				//FIXME check the diagnostic code
-				Assert.That(result.Diagnostics.Length, Is.EqualTo(1));
+				Assert.That(result.Diagnostics.Length, Is.EqualTo(2)); // 1 for invalid text "8", 1 for multiple children in ContentPage
 			}
 		}
 	}
