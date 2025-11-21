@@ -352,4 +352,59 @@ public partial class TestPage : ContentPage
 		Assert.Contains("Red", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain("Blue", generated, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void OnPlatformWithMissingTargetPlatformShouldUseDefault()
+	{
+		// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
+		// SourceGen should use default(T) instead of throwing an exception
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<OnPlatform x:Key="SizeMedium" x:TypeArguments="x:Double">
+			<On Platform="iOS" Value="40"/>
+			<On Platform="Android" Value="30"/>
+			<On Platform="UWP" Value="60"/>
+		</OnPlatform>
+	</ContentPage.Resources>
+	<Label Text="Test" WidthRequest="{StaticResource SizeMedium}" />
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		// Test with MacCatalyst where platform is not defined
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-maccatalyst");
+		
+		// Should not have any errors (no TargetInvocationException)
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		
+		// Should generate SetValue with default(double) for the WidthRequest property
+		// The generated code should look like: label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);
+		// where double1 is assigned from double0 which is: double double0 = default;
+		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
+		Assert.Contains("var double1 = double0;", generated, StringComparison.Ordinal);
+		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);", generated, StringComparison.Ordinal);
+	}
 }
