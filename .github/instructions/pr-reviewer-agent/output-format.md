@@ -2,27 +2,128 @@
 
 ## Review Output Format
 
-Structure your review in this order:
+**CRITICAL**: All reviews MUST be saved to a file named `Review_Feedback_Issue_XXXXX.md` (replace XXXXX with the actual issue number).
+
+Structure your review in this exact format:
 
 ```markdown
-## Summary
-[2-3 sentence overview of what the PR does and your assessment]
-
-## Code Review
-[Your analysis of the code changes - see core-guidelines.md for details]
-
-## Testing
-[Results from your manual testing with the Sandbox app]
-
-## Issues Found
-[Any problems, concerns, or questions - or "None" if everything looks good]
+# Review Feedback: PR #XXXXX - [PR Title]
 
 ## Recommendation
 ✅ **Approve** - Ready to merge
 ⚠️ **Request Changes** - Issues must be fixed
 💬 **Comment** - Feedback but not blocking
 ⏸️ **Paused** - Cannot complete review (conflicts, environment issues, etc.)
+
+**Required changes** (if any):
+1. [First required change]
+2. [Second required change]
+
+**Recommended changes** (if any):
+1. [First suggested improvement]
+2. [Second suggested improvement]
+
+---
+
+<details>
+<summary><b>📋 For full PR Review from agent, expand here</b></summary>
+
+## Summary
+[2-3 sentence overview of what the PR does and your assessment]
+
+---
+
+## Code Review
+[Your analysis of the code changes - see core-guidelines.md for details]
+
+---
+
+## Test Coverage Review
+[Analysis of tests added/modified in the PR]
+
+### Issues Found in Tests (if any)
+[Specific test issues with file locations and line numbers]
+
+---
+
+## Testing
+[Results from your manual testing with the Sandbox app]
+
+### Manual Testing (if applicable)
+[Your testing results]
+
+### Recommended Testing Steps (if checkpoint created)
+[Commands for others to test]
+
+---
+
+## Security Review
+[Security assessment - or "✅ No security concerns" if none found]
+
+---
+
+## Breaking Changes
+[Breaking change analysis - or "✅ No breaking changes" if none found]
+
+---
+
+## Documentation
+[Documentation review - or "✅ Adequate" if satisfactory]
+
+---
+
+## Issues to Address
+
+### Must Fix Before Merge
+[Critical issues that block approval]
+
+### Should Fix (Recommended)
+[Important improvements that should be made]
+
+### Optional Improvements
+[Nice-to-have suggestions]
+
+---
+
+## Approval Checklist
+- [ ] Code solves the stated problem correctly
+- [ ] Minimal, focused changes
+- [ ] No breaking changes
+- [ ] Appropriate test coverage exists
+- [ ] No security concerns
+- [ ] Follows .NET MAUI conventions
+[Add specific items relevant to this PR]
+
+---
+
+## Review Metadata
+- **Reviewer**: @copilot (PR Review Agent)
+- **Review Date**: [YYYY-MM-DD]
+- **PR Number**: #XXXXX
+- **Issue Number**: #XXXXX
+- **Platforms Tested**: [List or "None"]
+- **Test Approach**: [Brief description]
+
+</details>
 ```
+
+### Format Requirements
+
+1. **Top section (always visible)**:
+   - Title with PR number and title
+   - Clear recommendation
+   - Action items separated into "Required" and "Recommended"
+   - Keep this section concise - reader should understand next steps immediately
+
+2. **Collapsible section**:
+   - Contains all detailed analysis
+   - Wrapped in `<details>` tag with descriptive summary
+   - Organized into clearly separated sections with `---` dividers
+   - Full review context for those who want deep dive
+
+3. **File naming**:
+   - Always `Review_Feedback_Issue_XXXXX.md` where XXXXX is the issue number
+   - Save in repository root unless user specifies different location
 
 ## Final Review Step: Eliminate Redundancy
 

@@ -51,23 +51,42 @@
 - `[Issue-Resolver] Fix #11111 - Entry cursor position wrong in RTL mode`
 
 **The `[Issue-Resolver]` prefix:**
+- **MANDATORY**: All PRs from the issue-resolver agent MUST use this prefix
 - Identifies PRs created by the issue-resolver agent
 - Helps maintainers track agent-generated contributions
-- Distinguishes from community PRs
+- Distinguishes from community PRs and PR reviewer agent PRs (`[PR-Reviewer]`)
+- Allows filtering and statistics on agent-generated fixes
 
 ### PR Description Template
+
+**CRITICAL**: Use collapsible format to keep PR description concise while providing complete details.
 
 **Complete template to use:**
 
 ```markdown
 Fixes #XXXXX
 
-## Description
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
+## Summary
 
 [Brief description of what the issue was and what this PR fixes]
 
 Example: 
-"CollectionView was not applying correct padding in RTL mode on iOS because the compositional layout wasn't configured to respect the semantic content attribute."
+"CollectionView was not applying correct padding in RTL mode on iOS. This PR fixes the issue by configuring the UICollectionViewCompositionalLayout to respect the FlowDirection property."
+
+**Quick verification:**
+- ✅ Tested on iOS 18.0 - RTL padding now correct
+- ✅ All edge cases pass (rapid toggling, nested containers, etc.)
+- ✅ UI tests added and passing
+
+---
+
+<details>
+<summary><b>📋 For full PR details, expand here</b></summary>
 
 ## Root Cause
 
@@ -75,6 +94,8 @@ Example:
 
 Example:
 "The `UpdateFlowDirection` method in `CollectionViewHandler.iOS.cs` only set the `SemanticContentAttribute` on the UICollectionView itself, but UICollectionViewCompositionalLayout requires explicit configuration on the layout object to properly handle RTL scenarios. The layout continued using LTR direction regardless of the view's semantic attribute."
+
+---
 
 ## Solution
 
@@ -87,6 +108,8 @@ Example:
 - Modified `CollectionViewHandler.iOS.cs` to update layout configuration
 - Added `UpdateLayoutDirection()` extension method
 - Updated `MapFlowDirection()` to configure both view and layout
+
+---
 
 ## Testing
 
@@ -138,6 +161,8 @@ Verified these related scenarios still work correctly:
 - ✅ Nested RTL controls
 - ✅ CollectionView with different ItemsLayout types
 
+---
+
 ## Test Coverage
 
 **UI Tests Added:**
@@ -148,6 +173,8 @@ Verified these related scenarios still work correctly:
 - CollectionView displays with correct RTL padding
 - Padding values are swapped correctly (left/right)
 - Screenshot verification confirms visual correctness
+
+---
 
 ## Breaking Changes
 
@@ -160,6 +187,8 @@ Verified these related scenarios still work correctly:
 - [Explain why they are necessary]
 - [Provide migration guidance]
 
+---
+
 ## Additional Notes
 
 [Any other context for reviewers]
@@ -168,7 +197,56 @@ Examples:
 - "This fix only affects iOS. Android already handles this correctly."
 - "Considered alternative approach X, but rejected because Y."
 - "This may need backporting to release/X.X branch."
+
+---
+
+## PR Metadata
+- **Submitted by**: @copilot (Issue Resolver Agent)
+- **Issue**: #XXXXX
+- **Platforms Fixed**: iOS
+- **Breaking Changes**: None
+
+</details>
 ```
+
+### Format Requirements
+
+1. **Top section (always visible)**:
+   - Title showing issue number
+   - Required testing note for users
+   - Brief summary (2-3 sentences)
+   - Quick verification checkboxes
+   - Keep this section concise - reviewers should understand the fix immediately
+
+2. **Collapsible section**:
+   - Contains all detailed information
+   - Wrapped in `<details>` tag with descriptive summary
+   - Organized into clearly separated sections with `---` dividers
+   - Full context for reviewers who want to deep dive
+
+3. **Required elements** (inside or outside collapsible):
+   - `Fixes #XXXXX` link at the top
+   - User testing note (always at top, outside collapsible)
+   - Root cause explanation
+   - Solution approach
+   - Testing results (before/after)
+   - Edge cases tested
+   - UI test locations
+
+### Why Use Collapsible Format
+
+**Benefits**:
+- **Concise first impression**: Reviewers see summary and can quickly assess
+- **Complete details available**: All information preserved for thorough review
+- **Better GitHub UI**: Long PRs don't dominate the screen
+- **Faster triage**: Maintainers can quickly scan multiple PRs
+- **Professional appearance**: Shows organization and consideration for reviewers
+
+**When to expand details**:
+- Initial code review
+- Questions about edge cases
+- Understanding root cause
+- Verifying test coverage
 
 ### Writing UI Tests
 
