@@ -201,7 +201,7 @@ cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 ... &)
 
 **Pattern**:
 ```bash
-# Build (use --no-incremental only if app crashes on launch)
+# Build
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
 # Check build succeeded
@@ -214,8 +214,6 @@ echo "Build successful"
 ```
 
 **When to use**: Building Sandbox app for iOS testing
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
 
 ### Sandbox App Build and Deploy (Android)
 
@@ -249,8 +247,6 @@ fi
 
 **Why `-t:Run`**: On Android, use the `Run` target which builds, installs, and launches the app in one command
 
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
-
 ---
 
 ### Sandbox App Build (Android)
@@ -259,7 +255,7 @@ fi
 
 **Pattern**:
 ```bash
-# Build and deploy (use --no-incremental only if app crashes on launch)
+# Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
 
 # Check build/deploy succeeded
@@ -301,8 +297,6 @@ echo "Build successful"
 ```
 
 **When to use**: Building TestCases.HostApp for automated UI tests
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
 
 ---
 
@@ -449,11 +443,8 @@ git branch -D test-pr-* baseline-test pr-*-temp 2>/dev/null || true
 
 **Pattern**:
 ```bash
-# Clean and retry build
-dotnet clean [project-path]
-rm -rf bin/ obj/
-dotnet tool restore --force
-dotnet build [project-path] --verbosity normal --no-incremental
+# Retry build with verbose output
+dotnet build [project-path] --verbosity normal
 
 # If still failing, check for:
 # - Wrong .NET SDK version (check global.json)
@@ -479,6 +470,428 @@ This keeps instructions DRY while maintaining readability.
 
 ---
 
-**Last Updated**: 2025-11-12
+**Last Updated**: 2025-11-21
 
 **Note**: These patterns include error checking at every critical step to ensure AI agents can detect and handle failures early.
+
+---
+
+## 9. Common Error Handling Patterns
+
+### Build Errors
+
+#### Error: Build Tasks Not Found
+
+**Symptom**:
+```
+error: Could not find Microsoft.Maui.Resizetizer.BuildTasks
+```
+
+**Solution**:
+```bash
+# Rebuild build tasks
+dotnet build ./Microsoft.Maui.BuildTasks.slnf
+
+# Check build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Build tasks compilation failed"
+    exit 1
+fi
+```
+
+---
+
+#### Error: Dependency Version Conflicts
+
+**Symptom**:
+```
+error: Package version conflict detected
+error: Unable to resolve dependencies
+```
+
+**Solution**:
+```bash
+# Remove artifacts and restore
+rm -rf bin/ obj/
+dotnet restore Microsoft.Maui.sln --force
+
+# Check restore succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Dependency restore failed"
+    exit 1
+fi
+```
+
+---
+
+#### Error: PublicAPI Analyzer Failures
+
+**Symptom**:
+```
+error RS0016: Symbol 'X' is not marked as public API
+```
+
+**Solution - Use dotnet format analyzers**:
+```bash
+# Let analyzers fix PublicAPI.Unshipped.txt files
+dotnet format analyzers Microsoft.Maui.sln
+
+# Check if it fixed the issue
+dotnet build [project-path]
+```
+
+**Solution - Manual fix if needed**:
+```bash
+# If dotnet format doesn't work, revert and re-add
+git checkout -- **/PublicAPI.Unshipped.txt
+dotnet format analyzers Microsoft.Maui.sln
+
+# NEVER disable the analyzer or add #pragma warning disable
+```
+
+**Why**: See `.github/copilot-instructions.md` section "PublicAPI.Unshipped.txt File Management"
+
+---
+
+#### Error: Platform SDK Not Found
+
+**iOS - Xcode Not Found**:
+```bash
+# Check Xcode installation
+xcode-select --print-path
+
+# If not found, install Xcode command line tools
+xcode-select --install
+```
+
+**Android - SDK Not Found**:
+```bash
+# Check ANDROID_HOME environment variable
+echo $ANDROID_HOME
+
+# If not set, find Android SDK location
+android  # Opens Android SDK Manager
+
+# Or manually set (adjust path to your SDK location)
+export ANDROID_HOME=/path/to/android-sdk
+```
+
+---
+
+### Deployment Errors
+
+#### Error: App Installation Failed (iOS)
+
+**Symptom**:
+```
+error: Failed to install app to simulator
+```
+
+**Solution**:
+```bash
+# Ensure simulator is booted
+xcrun simctl boot $UDID 2>/dev/null || true
+
+# Wait a moment for boot
+sleep 3
+
+# Verify booted
+STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
+if [ "$STATE" != "Booted" ]; then
+    echo "❌ ERROR: Simulator not booted. State: $STATE"
+    exit 1
+fi
+
+# Retry install
+xcrun simctl install $UDID [path-to-.app]
+```
+
+---
+
+#### Error: App Installation Failed (Android)
+
+**Symptom**:
+```
+adb: failed to install [app]: INSTALL_FAILED_UPDATE_INCOMPATIBLE
+```
+
+**Solution**:
+```bash
+# Uninstall previous version
+adb uninstall com.microsoft.maui.sandbox
+
+# Check uninstall succeeded
+if [ $? -eq 0 ]; then
+    echo "✅ Uninstalled previous version"
+fi
+
+# Retry installation
+adb install artifacts/path/to/app.apk
+```
+
+---
+
+#### Error: App Crashes on Launch
+
+**Solution: Read the crash logs to find the exception**
+
+**iOS**:
+```bash
+# Capture crash logs
+xcrun simctl spawn booted log stream --predicate 'processImagePath contains "[AppName]"' --level=debug > /tmp/ios_crash.log 2>&1 &
+LOG_PID=$!
+
+# Try to launch the app
+xcrun simctl launch $UDID [bundle-id]
+
+# Wait for crash
+sleep 3
+
+# Stop log capture
+kill $LOG_PID
+
+# Find the exception
+cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
+```
+
+**Android**:
+```bash
+# Monitor crash logs in real-time
+adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
+
+# Or capture to file
+adb logcat > /tmp/android_crash.log 2>&1 &
+LOGCAT_PID=$!
+
+# Launch app
+dotnet build [project-path] -f net10.0-android -t:Run
+
+# Wait for crash
+sleep 3
+
+# Stop logcat
+kill $LOGCAT_PID
+
+# Review crash
+cat /tmp/android_crash.log | grep -A 30 "FATAL EXCEPTION"
+```
+
+**Next steps after finding the exception**:
+1. **Investigate the root cause** - What line is throwing? Why?
+2. **Check for null references** - Are required objects initialized?
+3. **Verify resources exist** - Are all needed files/IDs present?
+4. **Check platform compatibility** - Is the code compatible with the target OS version?
+5. **If you can't fix it**, ask for help with the full exception details
+
+**Why not clean/rebuild**: Crashes are caused by actual code issues, not build artifacts. Reading the exception tells you exactly what's wrong.
+
+---
+
+### Runtime Errors
+
+#### Error: Console Output Not Captured
+
+**iOS**:
+```bash
+# Ensure using --console-pty flag
+xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/output.log 2>&1 &
+
+# Wait for app to start
+sleep 5
+
+# Check log file has content
+if [ ! -s /tmp/output.log ]; then
+    echo "⚠️ WARNING: Log file is empty"
+fi
+
+cat /tmp/output.log
+```
+
+**Android**:
+```bash
+# Ensure logcat is running before app launch
+adb logcat > /tmp/android.log 2>&1 &
+LOGCAT_PID=$!
+
+# Launch app (dotnet build -t:Run)
+
+# Wait for logging
+sleep 5
+
+# Stop logcat
+kill $LOGCAT_PID
+
+# Check log
+cat /tmp/android.log | grep "YourMarker"
+```
+
+---
+
+#### Error: Measurements Show Zero or Null
+
+**Symptom**: Layout measurements are 0x0 or null
+
+**Cause**: Measuring before layout completes
+
+**Solution**:
+```csharp
+// DON'T measure immediately
+private void OnLoaded(object sender, EventArgs e)
+{
+    // Layout not complete yet!
+    Console.WriteLine($"Bounds: {TestElement.Bounds}");  // Might be 0x0
+}
+
+// DO wait for layout
+private void OnLoaded(object sender, EventArgs e)
+{
+    // Wait for layout to complete
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        Console.WriteLine($"Bounds: {TestElement.Bounds}");  // Actual values
+    });
+}
+```
+
+**See**: [Instrumentation Instructions](instrumentation.instructions.md#timing-when-to-measure) for proper timing patterns
+
+---
+
+### Testing Errors
+
+#### Error: Appium Server Not Starting
+
+**Symptom**:
+```
+AppiumServerHasNotBeenStartedLocallyException
+```
+
+**Solution**:
+```bash
+# Kill existing Appium processes
+lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9 2>/dev/null
+
+# Verify port is free
+lsof -i :4723
+# Should show nothing
+
+# Start Appium fresh
+appium --log-level error &
+
+# Wait for startup
+sleep 3
+
+# Verify it's running
+curl http://localhost:4723/status
+```
+
+**Why**: UITest framework needs to start its own Appium server. Existing processes block it.
+
+**Reference**: `.github/instructions/uitests.instructions.md` - "Prerequisites: Kill Existing Appium Processes"
+
+---
+
+#### Error: DEVICE_UDID Not Set
+
+**Symptom**:
+```
+ERROR: DEVICE_UDID environment variable not set
+```
+
+**Solution**:
+```bash
+# iOS - Set DEVICE_UDID before running tests
+export DEVICE_UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+
+# Android - Set DEVICE_UDID before running tests
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# Verify it's set
+echo "DEVICE_UDID: $DEVICE_UDID"
+
+# Now run tests
+dotnet test [test-project]
+```
+
+---
+
+### Decision Tree: What to Do When Errors Occur
+
+```
+Error occurs during testing
+    │
+    ├─ Build error?
+    │  ├─ Build tasks missing → Rebuild Microsoft.Maui.BuildTasks.slnf
+    │  ├─ Dependency conflict → Clean + restore --force
+    │  ├─ PublicAPI error → dotnet format analyzers
+    │  └─ Platform SDK missing → Install/configure SDK
+    │
+    ├─ Deployment error?
+    │  ├─ Install failed → Check device booted, uninstall old version
+    │  ├─ App crashes → Check crash logs for exception
+    │  └─ App won't launch → Check console logs for error
+    │
+    ├─ Runtime error?
+    │  ├─ No console output → Check --console-pty flag or logcat running
+    │  ├─ Zero measurements → Add Dispatcher.DispatchDelayed delay
+    │  └─ Unexpected behavior → Add more instrumentation
+    │
+    └─ Testing error?
+       ├─ Appium won't start → Kill existing Appium processes
+       ├─ DEVICE_UDID missing → Set environment variable
+       └─ Test crashes → Check app is installed and running
+```
+
+---
+
+### When to Ask for Help
+
+**Stop and ask for guidance if:**
+
+1. **Error persists after 2-3 fix attempts** - Don't waste hours debugging
+2. **Error message is cryptic** - "Unknown error" or stack traces without context
+3. **Platform-specific issue you're unfamiliar with** - E.g., iOS code signing issues
+4. **Suspected infrastructure problem** - .NET SDK corruption, simulator issues
+5. **Multiple errors compound** - Fixing one reveals another, chain of failures
+
+**How to ask**:
+```markdown
+## Error Encountered
+
+**Command that failed**:
+```bash
+[exact command]
+```
+
+**Error output**:
+```
+[relevant error message]
+```
+
+**What I've tried**:
+1. [First attempt] - [result]
+2. [Second attempt] - [result]
+
+**Environment**:
+- Platform: [iOS/Android/Windows/Mac]
+- .NET SDK: [version from `dotnet --version`]
+- Device: [simulator/emulator/physical]
+
+**Request**: [What you need help with]
+```
+
+---
+
+## Summary of Error Handling Principles
+
+1. **Check success after every critical step** - Don't assume commands succeed
+2. **Exit early on errors** - Use `if [ $? -ne 0 ]; then exit 1; fi`
+3. **Provide clear error messages** - Explain what failed and why
+4. **Try simple fixes first** - Clean/rebuild before complex debugging
+5. **Know when to ask for help** - 2-3 attempts maximum before escalating
+6. **Document errors and solutions** - Help others avoid same issues
+
+**Related Documentation**:
+- `.github/instructions/issue-resolver-agent/error-handling.md` - Issue resolution specific errors
+- `.github/instructions/pr-reviewer-agent/error-handling.md` - PR review specific errors
+- `.github/copilot-instructions.md` - Troubleshooting section

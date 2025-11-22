@@ -401,8 +401,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# If the app crashes on launch, rebuild with --no-incremental:
-# dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
+# If the app crashes on launch, check the logs for the exception:
+# xcrun simctl spawn booted log stream --predicate 'processImagePath contains "TestCases.HostApp"' --level=debug
+# Look for the crash exception and investigate the root cause
 ```
 
 **Step 3: Boot simulator and install app**
@@ -475,34 +476,49 @@ If you encounter navigation fragment errors or resource ID issues:
 java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
 ```
 
-**Solution:** Build with `--no-incremental` to force a clean build:
+**Solution:** Read the crash logs to find the actual exception:
 ```bash
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+# Monitor logcat for the crash
+adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
 ```
 
-**Other debugging steps:**
-1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
-2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
-3. Check emulator: `adb devices`
+**Debugging steps:**
+1. **Find the exception** in logcat - look for the stack trace
+2. **Investigate the root cause** - What line of code is throwing? Why?
+3. **Check for null references** - Are required resources missing?
+4. **Verify resource IDs exist** - Check if the ID referenced actually exists in the app
+5. If you can't determine the fix, **ask for guidance** with the full exception details
 
 **iOS App Crashes on Launch or Won't Start with Appium:**
 
-If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`, the issue is often related to incremental builds:
+If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`:
 
-**Solution:** Clean and rebuild with `--no-incremental`:
+**Solution:** Read the crash logs to find the actual exception:
 ```bash
-# Clean first
-dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+# Capture crash logs
+xcrun simctl spawn booted log stream --predicate 'processImagePath contains "TestCases.HostApp"' --level=debug > /tmp/ios_crash.log 2>&1 &
+LOG_PID=$!
 
-# Rebuild with no-incremental
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
+# Try to launch the app
+xcrun simctl launch $UDID com.microsoft.maui.uitests
 
-# Reinstall to simulator
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+# Wait a moment for crash
+sleep 3
+
+# Stop log capture
+kill $LOG_PID
+
+# Review the crash log
+cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
 ```
 
-**Why this happens:** Incremental builds can sometimes leave the app bundle in an inconsistent state, especially after making changes to XAML files or project structure. The `--no-incremental` flag forces a complete rebuild.
+**Debugging steps:**
+1. **Find the exception** in the crash log - look for stack traces
+2. **Investigate the root cause** - What's causing the crash?
+3. **Check for missing resources** - Are all required files included in the bundle?
+4. **Verify Info.plist** - Are required keys present?
+5. **Check for platform-specific issues** - iOS version compatibility, permissions, etc.
+6. If you can't determine the fix, **ask for guidance** with the full exception details
 
 ## Before Committing
 
