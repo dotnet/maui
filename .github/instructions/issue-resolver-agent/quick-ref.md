@@ -92,6 +92,51 @@ public static void MapProperty(IMyHandler handler, IMyView view)
 
 ---
 
+## UI Automation with Appium (For UI Tests)
+
+**CRITICAL: When writing UI tests, use Appium - NOT adb/xcrun commands**
+
+### When Appium is REQUIRED:
+- ✅ Writing UI tests in TestCases.HostApp
+- ✅ Verifying UI interactions during testing
+- ✅ ANY test that involves tapping, scrolling, or UI gestures
+
+### When ADB/xcrun ARE acceptable:
+- ✅ `adb devices` - Check device connection
+- ✅ `adb logcat` - Monitor logs (read-only)
+- ✅ `xcrun simctl list` - List simulators
+- ✅ Device setup/configuration (not UI interaction)
+
+### Quick Appium Script Template:
+
+```csharp
+// File: test_issue_XXXXX.cs (use .cs NOT .csx)
+#r "nuget: Appium.WebDriver, 5.0.0-rc.6"
+using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
+
+var options = new AppiumOptions();
+options.AddAdditionalAppiumOption("platformName", "Android");
+options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
+options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
+options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
+options.AddAdditionalAppiumOption("noReset", true);
+
+var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
+
+// Find and tap button by AutomationId
+var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
+button.Click();
+
+driver.Quit();
+```
+
+**Run with**: `dotnet run test_issue_XXXXX.cs` (NOT `dotnet-script`)
+
+📖 **Full Appium guide**: [../appium-control.instructions.md](../appium-control.instructions.md)
+
+---
+
 ## Common Fix Patterns
 
 **📚 Complete patterns library**: See [Shared Fix Patterns](../shared/fix-patterns.md)

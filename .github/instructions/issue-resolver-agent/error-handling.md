@@ -32,6 +32,27 @@ This document covers issue resolver-specific errors: reproduction failures, fix 
 
 **Remember**: Checkpoints exist to catch wrong approaches early. Use them.
 
+## Common Pitfalls
+
+### Using ADB/xcrun Instead of Appium for UI Tests
+
+**Issue**: Trying to use `adb shell input tap` or `xcrun simctl ui` for UI test automation
+
+**Why this fails**:
+- Coordinate-based commands break with different screen sizes
+- Cannot verify element state or wait for elements
+- Tests become brittle and unreliable
+
+**Correct approach**: Use Appium for UI tests
+- Element-based interaction (finds by AutomationId)
+- Waits for elements to be ready
+- Verifies actions succeeded
+- Works across different screen sizes
+
+**See**: [quick-ref.md#ui-automation-with-appium](quick-ref.md#ui-automation-with-appium) for templates and guidance
+
+---
+
 ## Reproduction Failures
 
 ### Issue Does Not Reproduce

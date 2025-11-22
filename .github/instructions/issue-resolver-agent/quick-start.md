@@ -105,6 +105,7 @@ See [quick-ref.md](quick-ref.md) for:
 - Complete iOS/Android reproduction workflows
 - Test code templates
 - Instrumentation patterns
+- **Appium guidance** (for UI tests - use Appium, not adb/xcrun)
 - PR description template
 
 ---
