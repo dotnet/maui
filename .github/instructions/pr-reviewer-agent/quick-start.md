@@ -48,6 +48,14 @@ Read these in order:
    - SafeArea PR? → Read [safearea-testing.instructions.md](../safearea-testing.instructions.md)
    - UI test files in PR? → Read [uitests.instructions.md](../uitests.instructions.md)
 
+4. **UI Interaction Rule** (10 seconds)
+   - ✅ **Appium** = ALL user interactions (tapping, scrolling, gestures)
+   - ❌ **ADB/xcrun** = Only for device setup and log monitoring
+   
+   **Decision**: If you need to interact with app UI → Use Appium script
+   
+   See [appium-control.instructions.md](../appium-control.instructions.md) for complete guide.
+
 ---
 
 ## 🚀 Start Working (90 seconds)

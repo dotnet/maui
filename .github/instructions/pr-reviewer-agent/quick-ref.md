@@ -73,6 +73,55 @@ cat /tmp/android_test.log | grep "TEST OUTPUT"
 
 ---
 
+## 🤖 UI Automation with Appium (REQUIRED for UI interaction)
+
+**CRITICAL: Use Appium for ANY user-visible interaction**
+
+### When Appium is REQUIRED:
+- ✅ Tapping buttons, controls, UI elements
+- ✅ Opening menus, drawers, flyouts  
+- ✅ Scrolling, swiping, gestures
+- ✅ Entering text, rotating device
+- ✅ ANY action a user would perform
+
+### When ADB/xcrun ARE acceptable:
+- ✅ `adb devices` - Check device connection
+- ✅ `adb logcat` - Monitor logs (read-only)
+- ✅ `adb shell getprop` - Read device properties (read-only)
+- ✅ `xcrun simctl list` - List simulators
+- ✅ `xcrun simctl boot` - Boot simulator
+- ✅ Device setup/configuration (not UI interaction)
+
+### Quick Appium Script Template:
+
+```csharp
+// File: test_pr_XXXXX.cs (use .cs NOT .csx)
+#r "nuget: Appium.WebDriver, 5.0.0-rc.6"
+using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
+
+var options = new AppiumOptions();
+options.AddAdditionalAppiumOption("platformName", "Android");
+options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
+options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
+options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
+options.AddAdditionalAppiumOption("noReset", true);
+
+var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
+
+// Find and tap button
+var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
+button.Click();
+
+driver.Quit();
+```
+
+**Run with**: `dotnet run test_pr_XXXXX.cs` (NOT `dotnet-script`)
+
+📖 **Full Appium guide**: [../appium-control.instructions.md](../appium-control.instructions.md)
+
+---
+
 ### Android Emulator Startup (REQUIRED when no device)
 
 **When to use**: `adb devices` shows no devices connected

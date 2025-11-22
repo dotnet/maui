@@ -177,7 +177,85 @@ After attempting solutions and hitting genuine blocker:
 
 ---
 
-### Mistake #7: Surface-Level Code Review
+### Mistake #7: Using ADB/xcrun Instead of Appium for UI Interaction ⭐ CRITICAL
+
+**Symptom**: Agent uses `adb shell input tap` or `xcrun simctl ui` to interact with app
+
+**Why it happens**:
+- Appium seems more complex than direct commands
+- Prior knowledge of adb/xcrun commands
+- Didn't read appium-control.instructions.md carefully
+- Read instructions but fell back to "familiar but wrong" cached patterns
+- Fell back to adb when Appium seemed difficult
+
+**How to avoid**:
+1. **Read appium-control.instructions.md FIRST** before attempting UI interaction
+2. Remember: Appium is REQUIRED for reliability (element-based vs coordinate-based)
+3. **Use .cs files with `dotnet run`** (NOT .csx files with dotnet-script)
+4. When Appium fails, debug the Appium approach (don't fall back to adb)
+5. **Internalize instructions, don't just skim them**
+
+**Complete sequence**:
+```bash
+# 1. Create Appium script (.cs file, NOT .csx)
+cat > test_pr_XXXXX.cs << 'EOF'
+#r "nuget: Appium.WebDriver, 5.0.0-rc.6"
+using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
+
+var options = new AppiumOptions();
+options.AddAdditionalAppiumOption("platformName", "Android");
+options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
+options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
+options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
+options.AddAdditionalAppiumOption("noReset", true);
+
+var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
+
+// Find and tap button by AutomationId
+var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
+button.Click();
+
+driver.Quit();
+EOF
+
+# 2. Start Appium server (if not running)
+appium --allow-insecure chromedriver_autodownload > /tmp/appium.log 2>&1 &
+APPIUM_PID=$!
+sleep 3
+
+# 3. Run script with dotnet run (NOT dotnet-script)
+dotnet run test_pr_XXXXX.cs
+```
+
+**When to use ADB/xcrun** (acceptable):
+- ✅ Device status: `adb devices`, `xcrun simctl list`
+- ✅ Log monitoring: `adb logcat` (read-only)
+- ✅ Device properties: `adb shell getprop` (read-only)
+- ✅ Device setup: Boot simulator, install app
+
+**When you MUST use Appium**:
+- ❌ Tapping buttons, controls, menu items
+- ❌ Opening menus, drawers, flyouts
+- ❌ Scrolling, swiping, gestures
+- ❌ Entering text in fields
+- ❌ ANY user interaction
+
+**Why this matters**:
+- Coordinate-based taps (`adb shell input tap`) break with different screen sizes
+- Can't verify element state or wait for elements
+- Brittle and unreliable
+- Violates explicit instructions
+
+**Cost if not avoided**:
+- Unreliable tests that work once then fail
+- Can't verify actions succeeded
+- Wasted time debugging coordinate issues
+- **Instructions explicitly forbid this approach**
+
+---
+
+### Mistake #8: Surface-Level Code Review
 
 **Symptom**: Describing WHAT changed without explaining WHY
 
