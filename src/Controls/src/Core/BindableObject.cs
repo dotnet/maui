@@ -566,7 +566,7 @@ namespace Microsoft.Maui.Controls
 			if (property.ValidateValue != null && !property.ValidateValue(this, value))
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Value is an invalid value for {property.PropertyName}");
-				return;
+				throw new ArgumentException($"Value is an invalid value for {property.PropertyName}", nameof(value));
 			}
 
 			if (property.CoerceValue != null)
