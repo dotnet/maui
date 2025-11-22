@@ -101,24 +101,21 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #6: Giving Up Without Starting Emulator ⭐ CRITICAL
+### Mistake #6: Giving Up Without Attempting Solutions ⭐ CRITICAL
 
-**Symptom**: Agent sees "no device connected" and skips testing or does code-only review
+**Symptom**: Agent sees "no device connected" or other blocker and skips testing entirely
 
 **Why it happens**:
-- Assumes missing device is a blocker
-- Doesn't realize emulator can be started
-- Takes the "easy way out" instead of solving the problem
-- Forgets instructions include emulator startup commands
+- Assumes missing device/platform is an insurmountable blocker
+- Doesn't realize solutions exist (emulator startup, checkpoint for unavailable platforms)
+- Takes the "easy way out" instead of problem-solving
+- Forgets instructions include both solutions and escalation paths
 
 **How to avoid**:
-1. **ALWAYS check for device first**: `adb devices`
-2. **If no device, START EMULATOR** - don't skip testing!
-3. Use emulator startup commands from quick-ref.md
-4. Wait for emulator to boot completely
-5. Only ask for help if emulator fails to start
 
-**The correct sequence**:
+**Step 1: ATTEMPT available solutions first**
+
+For Android:
 ```bash
 # 1. Check for device
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
@@ -134,19 +131,53 @@ if [ -z "$DEVICE_UDID" ]; then
     export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
 fi
 
-# 3. Now proceed with testing
+# 3. If emulator failed, check logs
+if [ -z "$DEVICE_UDID" ]; then
+    echo "Emulator failed to start. Checking logs..."
+    cat /tmp/emulator.log
+    # Now proceed to Step 2 (checkpoint)
+fi
 ```
 
-**When to ask for help**:
-- Emulator fails to start after multiple attempts
-- `$ANDROID_HOME` is not set
-- No emulator AVDs exist (`emulator -list-avds` returns empty)
+For iOS:
+```bash
+# Check for available simulators
+xcrun simctl list devices | grep iPhone
+# Attempt to boot simulator (see quick-ref.md)
+```
 
-**Cost if not avoided**: **Complete testing failure** - can't validate Android-specific fixes without testing on Android
+**Step 2: If solutions fail, CREATE CHECKPOINT (don't skip testing!)**
+
+After attempting solutions and hitting genuine blocker:
+- ✅ **DO**: Create manual verification checkpoint (see testing-guidelines.md)
+- ✅ **DO**: Provide user with exact steps to test manually
+- ✅ **DO**: Include comprehensive PR analysis
+- ❌ **DON'T**: Skip testing and do code-only review
+- ❌ **DON'T**: Assume PR works without validation
+
+**The complete sequence**:
+1. Check for device/platform availability
+2. Attempt startup (emulator/simulator) if missing
+3. If startup fails, examine logs/errors
+4. If genuine blocker (platform unavailable, emulator won't start), CREATE CHECKPOINT
+5. Provide user with manual test steps in checkpoint
+6. Wait for user validation before proceeding
+
+**When checkpoint is needed**:
+- Emulator fails to start after attempting startup sequence
+- Platform unavailable (iOS on Linux, Windows on macOS)
+- `$ANDROID_HOME` not set or no AVDs available
+- Other environment issues preventing testing
+
+**Checkpoint template**: See testing-guidelines.md "Manual Verification Required" section
+
+**Cost if not avoided**: 
+- **Without checkpoint**: **Complete testing failure** - PR approved with no validation
+- **Skipping solutions**: Preventable blockers become actual blockers
 
 ---
 
-### Mistake #6: Surface-Level Code Review
+### Mistake #7: Surface-Level Code Review
 
 **Symptom**: Describing WHAT changed without explaining WHY
 
@@ -188,6 +219,8 @@ Before proceeding with each phase, check:
 
 ### ☑️ Implementation Phase:
 - [ ] Created comprehensive test scenarios
+- [ ] If blocked from testing, attempted all available solutions first
+- [ ] If still blocked, created manual verification checkpoint (not skipped testing)
 - [ ] Added instrumentation for measurements
 - [ ] Showed test code to user BEFORE building
 - [ ] Got user approval to proceed

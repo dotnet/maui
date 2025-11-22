@@ -521,6 +521,140 @@ For each edge case tested, document:
 
 **Time management**: Start with high priority edge cases. If you're approaching time budget limits, document which edge cases you couldn't test and note in review.
 
+## 🛑 Manual Verification Required When Testing Unavailable
+
+**CRITICAL**: If you cannot run tests locally **after attempting all available solutions**, you MUST pause and create a manual verification checkpoint.
+
+### When to Create Manual Verification Checkpoint
+
+Create a checkpoint when:
+- ❌ **Android emulator fails to start** (after following startup sequence from quick-ref.md)
+- ❌ **Platform unavailable** (iOS on Linux, Windows on macOS, Mac on Windows)
+- ❌ **Cannot interact with app UI** (crashes immediately, unresponsive)
+- ❌ **Need visual verification** (colors, layouts, animations, positioning)
+- ❌ **Environment issues** (`$ANDROID_HOME` not set, no AVDs available, SDK issues)
+
+### 🚨 What You MUST Try First
+
+**DO NOT create checkpoint until you've attempted these**:
+
+**For Android**:
+1. ✅ Check for device: `adb devices`
+2. ✅ Attempt emulator startup (see quick-ref.md for commands)
+3. ✅ Wait for full boot sequence
+4. ✅ Check emulator logs if startup fails: `cat /tmp/emulator.log`
+
+**For iOS**:
+1. ✅ Check for simulators: `xcrun simctl list devices`
+2. ✅ Attempt to boot simulator
+3. ✅ Verify simulator state
+
+**Only after trying these steps and hitting a genuine blocker**, create the checkpoint.
+
+### Checkpoint Template: Cannot Validate PR
+
+```markdown
+## 🛑 CHECKPOINT: Cannot Validate PR on [Platform]
+
+**I cannot interact with the app in this environment to validate the PR changes.**
+
+### What I Attempted
+
+**Platform**: [Android/iOS/Windows/Mac]
+
+**Steps taken**:
+- ✅ Checked for device: `adb devices` → [result]
+- ✅ Attempted emulator startup: [command used]
+- ❌ **Blocker**: [specific error or unavailability reason]
+
+**Evidence**:
+```bash
+[Show actual command output, error messages, logs]
+```
+
+### PR Analysis
+
+**PR #XXXXX**: [Brief description]
+
+**Files changed**:
+- `[file path]` - [what changed]
+- `[file path]` - [what changed]
+
+**What the fix does** (based on code analysis):
+[Explain the changes in plain language]
+
+**Expected behavior WITH fix**:
+[What should happen after the fix]
+
+**Expected behavior WITHOUT fix** (the bug):
+[What currently happens that's wrong]
+
+### Manual Verification Steps Needed
+
+**Platform**: [Android/iOS/Windows/Mac]
+
+**To verify this PR works, you'll need to**:
+
+1. **Build sandbox app with PR changes**:
+   ```bash
+   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-[platform] -t:Run
+   ```
+
+2. **Reproduce the original issue** (verify bug exists):
+   - Action: [specific steps]
+   - Expected bug: [what should be wrong]
+   - Confirms: We understand the problem
+
+3. **Verify the fix works**:
+   - Action: [specific steps]
+   - Expected result: [what should be fixed]
+   - Confirms: PR resolves the issue
+
+4. **Test edge cases** (if applicable):
+   - [Edge case 1 to test]
+   - [Edge case 2 to test]
+
+### What I Need From You
+
+Please verify:
+- [ ] The original issue reproduces as described (confirms bug understanding)
+- [ ] PR changes fix the issue (confirms fix works)
+- [ ] No regressions in similar functionality
+- [ ] Behavior matches expectations
+
+**Once you confirm the fix works**, I will:
+- Provide comprehensive review feedback
+- Note any code quality observations
+- Recommend approval or suggest improvements
+
+**If the fix doesn't work as expected**, I will:
+- Revise my analysis
+- Suggest alternative approaches
+- Request clarification from PR author
+```
+
+### DO NOT Skip Testing Without Checkpoint
+
+**❌ WRONG**:
+```
+"I can't test on Android, so I'll just do a code review."
+"No emulator available, I'll approve based on code analysis."
+"Let's skip testing and trust the CI."
+```
+
+**✅ RIGHT**:
+```
+"I attempted to start Android emulator but it failed (see checkpoint).
+I've created a comprehensive test plan for you to verify manually."
+```
+
+### Cost of Skipping This Step
+
+- **Without checkpoint**: PR approved with no validation → Broken code merges
+- **With checkpoint**: User validates → High confidence in PR quality
+
+---
+
 ## SafeArea Testing Guidelines
 
 ### Special Case: SafeArea Testing
