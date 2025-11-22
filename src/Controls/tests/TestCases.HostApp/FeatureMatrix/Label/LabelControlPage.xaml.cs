@@ -30,4 +30,12 @@ public partial class LabelControlMainPage : ContentPage
 		BindingContext = _viewModel = new LabelViewModel();
 		await Navigation.PushAsync(new LabelOptionsPage(_viewModel));
 	}
+
+	void MainLabel_Tapped(object sender, TappedEventArgs e)
+	{
+		// Recreate the page to verify initial mappers
+		ToolbarItems.Clear();
+		Content = new ContentView();
+		InitializeComponent();
+	}
 }
