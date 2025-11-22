@@ -1,5 +1,37 @@
 # Error Handling and Troubleshooting
 
+**For common build/deploy errors**: See [Shared Error Handling](../shared/error-handling-common.md)
+
+This document covers issue resolver-specific errors: reproduction failures, fix development issues, and investigation challenges.
+
+**Quick Links**:
+- Common build errors: [Shared Error Handling](../shared/error-handling-common.md)
+- Platform workflows: [Shared Platform Workflows](../shared/platform-workflows.md)
+- Quick command reference: [quick-ref.md#common-errors--solutions](quick-ref.md#common-errors--solutions)
+
+## When to Ask for Help
+
+**Prioritize your time - don't get stuck indefinitely:**
+
+🔴 **Ask immediately** (environment/infrastructure issues):
+- SDK installation problems (wrong .NET version, missing workloads)
+- IDE/tooling failures (VS Code crashes, extension errors)
+- Repository configuration issues (git, permissions)
+- Missing credentials or access
+
+🟡 **Ask after 30 minutes** (stuck on technical issue):
+- Cannot reproduce issue after trying multiple platforms/scenarios
+- Build errors that common solutions don't fix
+- Unclear how to instrument specific platform code
+- Root cause analysis going in circles
+
+🟢 **Ask after 2-3 retry attempts** (temporary failures):
+- Intermittent test failures
+- Emulator/simulator flakiness
+- Network-related issues during build
+
+**Remember**: Checkpoints exist to catch wrong approaches early. Use them.
+
 ## Reproduction Failures
 
 ### Issue Does Not Reproduce
@@ -166,9 +198,9 @@ Waiting for more details before proceeding.
 
 ## Build Errors During Fix Development
 
-**See [Common Testing Patterns: Error Handling](../../common-testing-patterns.md#common-error-handling-patterns) for comprehensive build error solutions.**
+**For common build errors**: See [Shared Error Handling - Build Errors](../shared/error-handling-common.md#build-errors)
 
-**Note**: We assume your development environment is correctly set up with all required dependencies and platform SDKs (Android SDK, Xcode, Windows SDK). If you encounter environment setup issues, ask for guidance.
+**Note**: We assume your development environment is correctly set up with all required dependencies and platform SDKs. If you encounter environment setup issues, ask for guidance.
 
 ### Issue Resolver Specific Guidance
 
@@ -176,12 +208,12 @@ When a build error occurs during fix development:
 
 **Assumption**: The baseline (code before your changes) compiled successfully. Focus on fixing the error your changes introduced.
 
-#### Step 1: Common Build Errors - Quick Reference
+#### Step 1: Try Common Fixes First
 
-**PublicAPI Analyzer Errors**:
-- **When**: Adding/modifying public APIs
-- **Solution**: Use `dotnet format analyzers` (NEVER disable the analyzer)
-- **Details**: [Common Testing Patterns: PublicAPI Errors](../../common-testing-patterns.md#error-publicapi-analyzer-failures)
+**Common build errors** (see [Shared Error Handling](../shared/error-handling-common.md#build-errors) for details):
+- Build tasks not found → `dotnet build ./Microsoft.Maui.BuildTasks.slnf`
+- Dependency conflicts → `rm -rf bin/ obj/ && dotnet restore --force`
+- PublicAPI errors → `dotnet format analyzers Microsoft.Maui.sln` (NEVER disable the analyzer)
 
 #### Step 2: Issue-Specific Build Errors
 

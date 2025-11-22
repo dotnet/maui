@@ -1,5 +1,10 @@
 # Solution Development and Implementation
 
+**Quick Links**:
+- Common fix patterns: [quick-ref.md#common-fix-patterns](quick-ref.md#common-fix-patterns)
+- Instrumentation templates: [quick-ref.md#instrumentation-templates](quick-ref.md#instrumentation-templates)
+- Checkpoint 2 template: [quick-ref.md#checkpoint-2](quick-ref.md#checkpoint-2-before-implementation)
+
 ## Designing the Fix
 
 **Before writing any code, plan your solution:**
@@ -12,6 +17,8 @@
 - What is the sequence of events leading to the bug?
 - Is this platform-specific or affects all platforms?
 - What assumptions in the code are being violated?
+
+**See [quick-ref.md#instrumentation-templates](quick-ref.md#instrumentation-templates) for copy-paste instrumentation patterns.**
 
 **Example investigation:**
 ```markdown

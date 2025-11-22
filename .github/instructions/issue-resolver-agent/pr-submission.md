@@ -1,5 +1,44 @@
 # PR Submission Guidelines
 
+**Quick Links**:
+- PR description template (copy-paste): [quick-ref.md#pr-description-template](quick-ref.md#pr-description-template)
+- Self-check before submitting: See "Pre-Submission Self-Check" section below
+
+## Pre-Submission Self-Check (MANDATORY)
+
+**Before creating your PR, verify ALL items:**
+
+✅ **Completeness Check**:
+- [ ] Issue reproduced and documented
+- [ ] Root cause identified and explained
+- [ ] Fix implemented and tested
+- [ ] Edge cases tested (🔴 HIGH priority at minimum)
+- [ ] UI tests created (HostApp page + NUnit test)
+- [ ] UI tests verified (fails without fix, passes with fix)
+- [ ] Code formatted (`dotnet format Microsoft.Maui.sln --no-restore`)
+- [ ] No breaking changes (or documented if unavoidable)
+
+✅ **Quality Check**:
+- [ ] Fix addresses root cause (not just symptoms)
+- [ ] Minimal changes (no unnecessary refactoring)
+- [ ] Follows existing patterns
+- [ ] Platform-specific code properly organized (.ios.cs, .android.cs, etc.)
+- [ ] No commented-out code or debug logging left behind
+- [ ] Null safety and error handling considered
+
+✅ **Documentation Check**:
+- [ ] PR description complete (uses template from quick-ref.md)
+- [ ] Before/after evidence included
+- [ ] Edge cases documented with priority levels
+- [ ] PublicAPI.Unshipped.txt updated if any public APIs changed
+- [ ] Breaking changes noted (if any)
+
+**If ANY item fails**: Address it before creating the PR.
+
+**If all items pass**: Proceed with PR creation below.
+
+---
+
 ## Creating the Pull Request
 
 ### PR Title Format

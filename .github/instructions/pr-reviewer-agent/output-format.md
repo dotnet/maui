@@ -322,6 +322,31 @@ Write:
 Lines 23-25: Proper error handling with null check and logging.
 ```
 
+## Self-Check Before Posting Review
+
+**MANDATORY: Run this checklist before posting your review:**
+
+### ✅ Redundancy Check
+- [ ] No information repeated in multiple sections
+- [ ] Platform details mentioned only once
+- [ ] Conclusion stated once (not in every section)
+- [ ] Related issues grouped together
+- [ ] No obvious/redundant statements
+
+### ✅ Completeness Check
+- [ ] All sections present (Summary, Code Review, Testing, Issues Found, Recommendation)
+- [ ] Testing includes both WITH and WITHOUT PR results
+- [ ] Issues are specific (not vague)
+- [ ] Recommendation is clear
+
+### ✅ Quality Check
+- [ ] Code review explains WHY, not just WHAT
+- [ ] Test results show actual measurements
+- [ ] Review is concise and respects reader's time
+- [ ] No speculation - only tested observations
+
+**If any item is unchecked, revise before posting.**
+
 ## Final Note on Brevity
 
 **Remember**: Your review is likely one of many the PR author will read. Make every word count.

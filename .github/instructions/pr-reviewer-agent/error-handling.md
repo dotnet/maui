@@ -1,5 +1,11 @@
 # Error Handling
 
+**For common build/deploy errors**: See [Shared Error Handling](../shared/error-handling-common.md)
+
+This document covers PR reviewer-specific errors and common mistakes.
+
+---
+
 ## 🚫 Common Mistakes & How to Avoid Them
 
 ### Mistake #1: Building the Wrong App ⭐ MOST COMMON
@@ -158,24 +164,19 @@ Before proceeding with each phase, check:
 
 ## Handling Build Errors
 
-If the build fails, follow this 3-step debugging process:
+**For common build errors**: See [Shared Error Handling - Build Errors](../shared/error-handling-common.md#build-errors)
 
-### Step 1: Check for Common Issues
+If the build fails during PR review, follow this debugging process:
 
-**Common Build Failures**:
+### Step 1: Try Common Fixes
 
-```bash
-# Error: Build tasks not found
-dotnet build ./Microsoft.Maui.BuildTasks.slnf
+**Quick fixes for common issues**:
 
-# Error: Dependency version conflicts
-rm -rf bin/ obj/
-dotnet restore Microsoft.Maui.slnx --force
-
-# Error: Android SDK not found
-export ANDROID_HOME=/path/to/android-sdk
-# Or run: android  # Opens Android SDK Manager
-```
+See [Shared Error Handling](../shared/error-handling-common.md#build-errors) for:
+- Build tasks not found
+- Dependency version conflicts
+- PublicAPI analyzer failures
+- Platform SDK not found
 
 ### Step 2: Report the Error
 

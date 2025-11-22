@@ -1,150 +1,52 @@
 # Sandbox Setup and Instrumentation
 
+## CRITICAL: Determine CollectionView Handler Type First
+
+**Before modifying the Sandbox app**, check if the PR affects CollectionView/CarouselView handlers.
+
+See **[CollectionView Handler Detection](collectionview-handler-detection.md)** for complete algorithm and configuration.
+
+**Quick summary**:
+```bash
+# Check if PR modifies handler files
+git diff <base>..<pr> --name-only | grep "Handlers/Items"
+
+# Path contains:
+# "Items/" (NOT "Items2") → Enable CollectionViewHandler
+# "Items2/" → Enable CollectionViewHandler2
+```
+
+**Why this matters**: iOS/MacCatalyst defaults to CollectionViewHandler2. If PR fixes a bug in CollectionViewHandler, you MUST explicitly enable it or the bug won't reproduce.
+
+---
+
 ## Modify Sandbox App for Testing
 
-After fetching the PR, modify the Sandbox app to test the scenario.
+After determining the handler type (if needed), modify the Sandbox app to test the scenario.
 
-**File Locations**:
-- `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml` (UI layout)
-- `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs` (code-behind)
+### Quick Start: Use Template
 
-**General Instrumentation Pattern**:
+**For most PRs**, use the copy-paste template from [quick-ref.md](quick-ref.md#test-code-template-copy-paste):
+- Complete XAML structure with visual debugging (colored backgrounds)
+- Code-behind with proper timing and measurements
+- Ready to customize for your scenario
 
-**MainPage.xaml** - Create visual test scenario:
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.MainPage">
-    
-    <!-- Use colored backgrounds for visual debugging -->
-    <Grid x:Name="RootGrid" BackgroundColor="Red">
-        
-        <!-- The element you're testing -->
-        <ContentView x:Name="TestElement" 
-                     BackgroundColor="Yellow"
-                     SafeAreaEdges="Top,Bottom"
-                     Loaded="OnLoaded">
-            <Label Text="Test Content" 
-                   x:Name="ContentLabel"/>
-        </ContentView>
-    </Grid>
-</ContentPage>
-```
+### Detailed Patterns and Techniques
 
-**MainPage.xaml.cs** - Capture measurements on Loaded:
-```csharp
-using Microsoft.Maui.Controls;
+**For comprehensive instrumentation patterns**, see **[Instrumentation Guide](../../instrumentation.instructions.md)**:
+- [Key Techniques](../../instrumentation.instructions.md#key-instrumentation-techniques) - Console output, timing, measurements
+- [Common Patterns](../../instrumentation.instructions.md#common-instrumentation-patterns) - Property testing, collections, nested content
+- [Platform-Specific Positioning](../../instrumentation.instructions.md#platform-specific-positioning) - Screen coordinates
+- [SafeArea Testing](../../safearea-testing.instructions.md) - SafeArea-specific patterns
 
-namespace Maui.Controls.Sample
-{
-    public partial class MainPage : ContentPage
-    {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
+### Standard Workflow
 
-        private void OnLoaded(object sender, EventArgs e)
-        {
-            // Wait for layout to complete
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
-            {
-                // Capture measurements
-                var element = (View)sender;
-                var bounds = element.Bounds;
-                var frame = element.Frame;
-                
-                Console.WriteLine("=== TEST OUTPUT ===");
-                Console.WriteLine($"Element Bounds: {bounds}");
-                Console.WriteLine($"Element Frame: {frame}");
-                Console.WriteLine($"Element Y: {bounds.Y}");
-                Console.WriteLine($"Element Height: {bounds.Height}");
-                Console.WriteLine($"Screen Height: {DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density}");
-                
-                // For nested content (SafeArea testing)
-                if (ContentLabel != null)
-                {
-                    Console.WriteLine($"Content Bounds: {ContentLabel.Bounds}");
-                    Console.WriteLine($"Content Y: {ContentLabel.Bounds.Y}");
-                    
-                    // Calculate gaps from edges
-                    double topGap = ContentLabel.Bounds.Y;
-                    double screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
-                    double bottomGap = screenHeight - (ContentLabel.Bounds.Y + ContentLabel.Bounds.Height);
-                    
-                    Console.WriteLine($"Top Gap: {topGap}");
-                    Console.WriteLine($"Bottom Gap: {bottomGap}");
-                }
-                
-                Console.WriteLine("=== END TEST OUTPUT ===");
-            });
-        }
-    }
-}
-```
+1. Copy template from [quick-ref.md](quick-ref.md#test-code-template-copy-paste)
+2. Customize for your test scenario
+3. **STOP** - Use validation checkpoint (show code to user)
+4. Build, deploy, capture console output
 
-**Key Instrumentation Techniques**:
-
-1. **Use `Console.WriteLine`** - Output is captured in test logs
-2. **Add markers** - "=== TEST OUTPUT ===" makes it easy to find in logs
-3. **Use `Loaded` event** - Ensures measurements happen after layout
-4. **Add delay** - `Dispatcher.DispatchDelayed(500ms)` ensures layout completed
-5. **Capture absolute position** - Not just size, but position from edges
-6. **Calculate gaps** - Especially for SafeArea testing (top/bottom gaps)
-7. **Color code elements** - Makes visual inspection easier (red parent, yellow child)
-8. **Measure correct elements** - Children positions, not parent sizes
-
-**Common Instrumentation Patterns**:
-
-**Pattern 1: Property Change Testing**
-```csharp
-// Test property toggle multiple times
-private async void OnLoaded(object sender, EventArgs e)
-{
-    Console.WriteLine("=== TEST: Property Toggle ===");
-    
-    for (int i = 0; i < 5; i++)
-    {
-        TestElement.FlowDirection = FlowDirection.RightToLeft;
-        await Task.Delay(500);
-        Console.WriteLine($"Iteration {i}: RTL Bounds = {TestElement.Bounds}");
-        
-        TestElement.FlowDirection = FlowDirection.LeftToRight;
-        await Task.Delay(500);
-        Console.WriteLine($"Iteration {i}: LTR Bounds = {TestElement.Bounds}");
-    }
-}
-```
-
-**Pattern 2: Nested Content Measurement**
-```csharp
-// Measure child within parent
-private void OnLoaded(object sender, EventArgs e)
-{
-    Console.WriteLine("=== TEST: Parent and Child ===");
-    Console.WriteLine($"Parent Bounds: {RootGrid.Bounds}");
-    Console.WriteLine($"Child Bounds: {ContentLabel.Bounds}");
-    Console.WriteLine($"Child Absolute Y: {ContentLabel.Bounds.Y + RootGrid.Bounds.Y}");
-}
-```
-
-**Pattern 3: Collection/List Testing**
-```csharp
-// Add large data set for scrolling test
-public MainPage()
-{
-    InitializeComponent();
-    
-    var items = Enumerable.Range(1, 100).Select(i => $"Item {i}").ToList();
-    TestCollectionView.ItemsSource = items;
-}
-
-private void OnLoaded(object sender, EventArgs e)
-{
-    Console.WriteLine($"=== TEST: {TestCollectionView.ItemsSource.Count} items loaded ===");
-}
-```
+---
 
 ## Validation Checkpoint (WHEN to Use It)
 
@@ -188,71 +90,35 @@ Before building and running the test (which takes time), I want to confirm my te
 </ContentView>
 ```
 
+**Instrumentation**:
 ```csharp
-// Show instrumentation code
-Console.WriteLine($"Content Y: {ContentLabel.Bounds.Y}");
-Console.WriteLine($"Top Gap: {topGap}");
+// Show key measurement code
+private void OnLoaded(object sender, EventArgs e)
+{
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        Console.WriteLine($"Content Y: {ContentLabel.Y}");
+        double bottomGap = screenHeight - (ContentLabel.Y + ContentLabel.Height);
+        Console.WriteLine($"Bottom Gap: {bottomGap}");
+    });
+}
 ```
 
-**What I'm measuring**: [Explain what data you'll capture]
-- Content position from top edge (should show gap with SafeArea)
-- Content position from bottom edge (should show gap with SafeArea)
+**What I'm measuring**: [Explain what values you'll capture and why]
 
-**Why this approach**: [Justify why you're measuring these specific things]
-- SafeArea testing requires measuring child position, not parent size
-- Gaps from edges will show if padding is applied correctly
+**Expected result WITHOUT PR**: [What you expect to see]
 
-**Does this test setup look correct?** If yes, I'll proceed with build/deploy/test. If not, please let me know what to adjust.
+**Expected result WITH PR**: [What should change]
+
+**Edge cases to test**:
+- [Edge case 1]
+- [Edge case 2]
+
+Does this test setup correctly validate the PR fix?
 ```
 
-**Why validation checkpoint exists:**
+**User responses**:
+- ✅ User confirms → Proceed with build/deploy/test
+- ❌ User corrects you → Adjust setup and show updated checkpoint
+- 💭 User asks questions → Clarify and show revised checkpoint
 
-❌ **Problem without validation checkpoint:**
-```
-Agent: "Let me test this SafeArea fix..."
-[20 minutes of building, deploying, testing with WRONG measurements]
-Agent: "Here are the results: parent size is 400x800"
-User: "No, you should have measured the child position, not parent size"
-Agent: "Let me try again..."
-[Another 20 minutes wasted]
-```
-
-✅ **With validation checkpoint:**
-```
-Agent: "Let me test this SafeArea fix..."
-Agent: "Validation Checkpoint - I plan to measure child Y position and gaps"
-User: "Yes, that's correct" OR "No, also measure X position for RTL"
-Agent: [Builds and tests with CORRECT setup on first try]
-[20 minutes saved]
-```
-
-**Example Validation Checkpoint (SafeArea)**:
-
-```markdown
-## Validation Checkpoint - SafeArea Test Setup
-
-**Test Scenario**: Verify SafeArea respects Top and Bottom edges for Label within ContentView
-
-**Sandbox Setup**:
-- Red parent Grid (full screen)
-- Yellow ContentView with SafeAreaEdges="Top,Bottom"
-- Label inside ContentView
-
-**Measurements I'll capture**:
-1. `ContentLabel.Bounds.Y` - Position from ContentView top
-2. `TopGap` - Calculated as `ContentLabel.Bounds.Y`
-3. `BottomGap` - Calculated as `screenHeight - (Y + Height)`
-
-**Why measuring child, not parent**:
-- Per `.github/instructions/safearea-testing.instructions.md`, SafeArea affects child position
-- Parent ContentView size stays constant
-- Only child Label will be inset from edges
-
-**Expected Results**:
-- WITHOUT PR: Top gap should be ~0 (bug)
-- WITH PR: Top gap should be ~47px (status bar height)
-
-Does this test setup correctly validate the SafeArea fix?
-```
-
-**When user confirms**, proceed with build/deploy/test. If user corrects you, adjust the setup and show updated checkpoint.

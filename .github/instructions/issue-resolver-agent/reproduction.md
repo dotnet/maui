@@ -1,5 +1,11 @@
 # Issue Reproduction Guidelines
 
+**Quick Links**:
+- Complete iOS reproduction workflow: [quick-ref.md#complete-ios-reproduction-workflow](quick-ref.md#complete-ios-reproduction-workflow)
+- Complete Android reproduction workflow: [quick-ref.md#complete-android-reproduction-workflow](quick-ref.md#complete-android-reproduction-workflow)
+- Instrumentation templates: [quick-ref.md#instrumentation-templates](quick-ref.md#instrumentation-templates)
+- Checkpoint 1 template: [quick-ref.md#checkpoint-1](quick-ref.md#checkpoint-1-after-reproduction)
+
 ## Sandbox App Setup for Reproduction
 
 **Default app for issue reproduction**: `src/Controls/samples/Controls.Sample.Sandbox/`
@@ -9,6 +15,8 @@
 - Simple, empty app you can modify freely
 - Easy to add instrumentation
 - Perfect for quick reproduction and testing
+
+**See [quick-ref.md](quick-ref.md) for complete copy-paste commands to build and run Sandbox app on iOS and Android.**
 
 ### Creating Reproduction Test Case
 

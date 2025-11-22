@@ -85,41 +85,32 @@ Without instructions:         With instructions:
 
 ### Factor 2: Checkpoint Before Expensive Operations
 
-**MANDATORY CHECKPOINTS:**
+**See [testing-guidelines.md](testing-guidelines.md#mandatory-workflow-with-checkpoints) for complete checkpoint workflow.**
 
-#### Checkpoint 1: After Initial Analysis (Low cost to fix)
-**When**: After reading instructions and analyzing PR
-**Show user**:
-- Your understanding of what the PR fixes
-- Which app you'll use (Sandbox or HostApp) and why
-- High-level test plan
+**Quick summary - MANDATORY checkpoints:**
 
-**User can correct**: Misunderstandings, wrong app choice, missing context
-
----
-
-#### Checkpoint 2: Before Building (Medium cost to fix) 🚨 CRITICAL
+#### 🛑 CHECKPOINT 1: Before Building (MANDATORY - ALWAYS DO THIS)
 **When**: After creating test code but BEFORE building
-**Show user**:
-- The exact test code you created
-- What will be measured
-- Why this validates the fix
-- Explicitly ask: "Should I proceed with building?"
+**Cost to fix if wrong**: 10-15 minutes wasted on wrong build
+**What to show**: Test code, what you'll measure, expected results
+**Template**: See [testing-guidelines.md](testing-guidelines.md#checkpoint-1-before-building-mandatory)
 
-**Why critical**: Building takes 10-15 minutes. If your test design is wrong, this checkpoint saves that wasted time.
-
-**User can correct**: Test design flaws, missing test cases, wrong approach
+**⚠️ CRITICAL RULE**: DO NOT BUILD without user approval at this checkpoint.
 
 ---
 
-#### Checkpoint 3: Before Final Review (High cost to fix)
-**When**: After testing complete, before final recommendation
-**Show user**:
-- Raw data (timings, logs, observations)
-- Your interpretation
-- Draft recommendation
+#### 🛑 CHECKPOINT 2: Before Final Review (Recommended)
+**When**: After testing complete, before posting review
+**Cost to fix if wrong**: Wrong recommendation, missed issues
+**What to show**: Raw data, interpretation, draft recommendation
+**Template**: See [testing-guidelines.md](testing-guidelines.md#checkpoint-2-before-final-review-recommended)
 
-**User can correct**: Data interpretation, missed issues, recommendation logic
+---
+
+**Checkpoint enforcement**:
+- Checkpoint 1 is MANDATORY - no exceptions
+- Checkpoint 2 is recommended for complex PRs or unclear results
+- If you skip Checkpoint 1 and build with wrong test design, you've violated core workflow
 
 ### Factor 3: Test WITH and WITHOUT the Fix
 

@@ -1,18 +1,27 @@
 # Core Workflow for Issue Resolution
 
-## ⏱️ TIME AND THOROUGHNESS
+## ⏱️ TIME BUDGETS AND THOROUGHNESS
 
-**CRITICAL: You have unlimited time. Never skip reproduction or testing due to time concerns.**
+**Set appropriate time expectations based on issue complexity:**
 
-- ✅ **DO**: Take as much time as needed to thoroughly reproduce and fix the issue
-- ✅ **DO**: Test multiple scenarios and edge cases, even if it takes hours
+| Issue Type | Expected Time | What's Included |
+|------------|---------------|-----------------|
+| **Simple** | 1-2 hours | Typo fixes, obvious null checks, simple property bugs |
+| **Medium** | 3-6 hours | Single-file bug fixes, handler issues, basic layout problems |
+| **Complex** | 6-12 hours | Multi-file changes, architecture issues, platform-specific edge cases |
+
+**Time includes**: Reproduction, investigation, implementation, testing, UI tests, and PR submission.
+
+**Quality over speed**:
+- ✅ **DO**: Take the time needed to thoroughly reproduce and fix the issue
+- ✅ **DO**: Test multiple scenarios and edge cases within the time budget
 - ✅ **DO**: Investigate root causes deeply, don't just patch symptoms
 - ✅ **DO**: Continue working until the issue is fully resolved with proper tests
 - ❌ **DON'T**: Rush to implementation without proper reproduction
 - ❌ **DON'T**: Skip writing tests because "it works in the Sandbox"
 - ❌ **DON'T**: Submit incomplete solutions
 
-**The user will stop you when they want you to stop. Until then, keep investigating and fixing.**
+**If exceeding time budget**: Use mandatory checkpoints to validate your approach and ask for help.
 
 ## ⚡ MANDATORY FIRST STEPS
 
@@ -42,14 +51,18 @@
 **Your Workflow**:
 1. 📖 **Analyze the issue report** - Understand what's broken and why it matters
 2. 🔍 **Reproduce the issue** - Create test case in Sandbox app that demonstrates the problem
-3. 🧪 **Investigate root cause** - Use instrumentation and debugging to understand WHY it fails
-4. 💡 **Design solution** - Plan the fix, considering edge cases and platform differences
-5. ⚙️ **Implement fix** - Write the code changes in the appropriate files
-6. ✅ **Test thoroughly** - Verify fix works, doesn't break other scenarios, handles edge cases
-7. 📝 **Write UI tests** - Create automated tests in TestCases.HostApp/Shared.Tests
-8. 📤 **Submit PR** - Create PR with fix, tests, and documentation
+3. 🛑 **CHECKPOINT 1** - Show reproduction to user, get approval before investigating
+4. 🧪 **Investigate root cause** - Use instrumentation and debugging to understand WHY it fails
+5. 💡 **Design solution** - Plan the fix, considering edge cases and platform differences
+6. 🛑 **CHECKPOINT 2** - Show fix design to user, get approval before implementing
+7. ⚙️ **Implement fix** - Write the code changes in the appropriate files
+8. ✅ **Test thoroughly** - Verify fix works, doesn't break other scenarios, handles edge cases
+9. 📝 **Write UI tests** - Create automated tests in TestCases.HostApp/Shared.Tests
+10. 📤 **Submit PR** - Create PR with fix, tests, and documentation
 
 **Why this matters**: Many "fixes" fail because they address symptoms without understanding root causes, miss edge cases, or break other scenarios. Your deep investigation prevents regressions.
+
+**Why checkpoints matter**: Mandatory checkpoints (after reproduction and before implementation) ensure you're on the right track before investing hours in the wrong solution.
 
 ## Issue Resolution Workflow
 
@@ -111,6 +124,12 @@
 **Screenshots**: [If applicable]
 ```
 
+**🛑 CHECKPOINT 1: MANDATORY STOP**
+
+After reproducing the issue, you MUST stop and show the user your reproduction before investigating further. Use the template from [quick-ref.md#checkpoint-1](quick-ref.md#checkpoint-1-after-reproduction).
+
+**Do NOT proceed to investigation without user approval.**
+
 ### Step 3: Investigate Root Cause
 
 **Don't just fix symptoms - understand WHY the bug exists:**
@@ -139,40 +158,11 @@
 4. **Check for breaking changes** - will this affect existing user code?
 5. **Plan tests** - what automated tests will verify this fix?
 
-**Validation checkpoint** (recommended for complex fixes):
+**🛑 CHECKPOINT 2: MANDATORY STOP**
 
-**When to use**:
-- Multi-file changes affecting multiple components
-- Platform-specific fixes you're uncertain about
-- Changes to public APIs or breaking changes
-- Performance optimizations
-- Fixes where you're unsure of the root cause
+After completing root cause analysis and designing your fix approach, you MUST stop and show the user your fix design before implementing. Use the template from [quick-ref.md#checkpoint-2](quick-ref.md#checkpoint-2-before-implementation).
 
-**Skip for**: Simple fixes (typos, obvious null checks, single-line changes)
-
-**Checkpoint format**:
-```markdown
-## 🛑 Validation Checkpoint: Issue #XXXXX
-
-### Root Cause Analysis
-**What's broken**: [Explain the actual bug]
-**Why it's broken**: [Root cause, not just symptoms]
-**Evidence**: [Stack traces, measurements, logs that prove this]
-
-### Proposed Solution
-**Approach**: [High-level explanation]
-**Files to modify**:
-1. `path/to/file.cs` - [What changes and why]
-
-**Why this approach**: [Addresses root cause, minimal impact, follows patterns]
-**Alternatives considered**: [Other approaches and why rejected]
-**Risks**: [Potential issues and mitigations]
-
-### Question
-Does this approach make sense before I implement it?
-```
-
-**After checkpoint**: If confirmed, proceed to Step 5. If concerns raised, adjust approach.
+**Do NOT implement the fix without user approval.**
 
 ### Step 5: Implement Fix
 
@@ -202,15 +192,35 @@ Does this approach make sense before I implement it?
 
 **Don't just test the happy path - systematically test edge cases.**
 
-See **[Edge Case Testing Guide](../../edge-case-testing.md)** for comprehensive edge case patterns and checklist.
+**Prioritize edge cases (test HIGH first, then MEDIUM, then LOW if time allows)**:
 
-**Priority edge cases for fix validation**:
-1. **Data states** - Test with null, empty, single item, and large data sets
-2. **Rapid property changes** - Toggle the fixed property 10+ times rapidly
-3. **Platform-specific** - Test RTL layout, safe areas, orientation changes on affected platforms
-4. **Related functionality** - Ensure the fix doesn't break similar features
+🔴 **HIGH Priority** (Must test - affects correctness):
+- Null/empty data
+- Boundary values (min/max, 0, negative numbers)
+- State transitions (enabled→disabled, visible→collapsed)
+- Platform-specific critical scenarios (RTL on affected platforms, safe area if layout-related)
 
-**Document your edge case testing** in the PR description using the template from [Edge Case Testing Guide](../../edge-case-testing.md#documenting-edge-case-testing).
+🟡 **MEDIUM Priority** (Important - affects robustness):
+- Rapid property changes (toggle 10+ times)
+- Large data sets (1000+ items for collections)
+- Multiple quick interactions (tap/swipe repeatedly)
+- Orientation changes on mobile platforms
+- Dark/light theme switching
+
+⚫ **LOW Priority** (Nice to have - edge of edge cases):
+- Extreme data sizes (10,000+ items)
+- Unusual combinations of properties
+- Obscure platform-specific scenarios
+- Performance testing beyond functional correctness
+
+**Document your edge case testing** in the PR description:
+```markdown
+**Edge Cases Tested**:
+- 🔴 HIGH: Null data handling - PASS
+- 🔴 HIGH: RTL layout on iOS - PASS
+- 🟡 MEDIUM: Rapid property changes (20 toggles) - PASS
+- 🟡 MEDIUM: 1000 item collection - PASS
+```
 
 **Use same testing approach as pr-reviewer:**
 - Modify Sandbox app with instrumentation (see [Instrumentation Guide](../../instrumentation.instructions.md))
@@ -235,12 +245,41 @@ See UITesting-Guide.md for complete test creation details.
 
 ### Step 8: Submit PR
 
+**Before creating the PR, run self-check:**
+
+**Self-Check Before PR Submission** (MANDATORY):
+
+✅ **Completeness Check**:
+- [ ] Issue reproduced and documented
+- [ ] Root cause identified and explained
+- [ ] Fix implemented and tested
+- [ ] Edge cases tested (HIGH priority at minimum)
+- [ ] UI tests created (HostApp page + NUnit test)
+- [ ] UI tests verified (fails without fix, passes with fix)
+- [ ] Code formatted (`dotnet format`)
+- [ ] No breaking changes (or documented if unavoidable)
+
+✅ **Quality Check**:
+- [ ] Fix addresses root cause (not just symptoms)
+- [ ] Minimal changes (no unnecessary refactoring)
+- [ ] Follows existing patterns
+- [ ] Platform-specific code properly organized
+- [ ] No commented-out code or debug logging left behind
+
+✅ **Documentation Check**:
+- [ ] PR description complete (uses template)
+- [ ] Before/after evidence included
+- [ ] Edge cases documented
+- [ ] PublicAPI.Unshipped.txt updated if needed
+
+**If all checks pass, proceed with PR creation.**
+
 **Create a pull request with your fix:**
 
 1. **PR Title**: `[Issue-Resolver] Fix #XXXXX - <Brief Description>`
    - Example: `[Issue-Resolver] Fix #12345 - CollectionView RTL padding incorrect`
 
-2. **PR Description** must include:
+2. **PR Description** must include (use template from [quick-ref.md](quick-ref.md#pr-description-template)):
    ```markdown
    Fixes #XXXXX
    
