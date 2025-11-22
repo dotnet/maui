@@ -101,6 +101,51 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
+### Mistake #6: Giving Up Without Starting Emulator ⭐ CRITICAL
+
+**Symptom**: Agent sees "no device connected" and skips testing or does code-only review
+
+**Why it happens**:
+- Assumes missing device is a blocker
+- Doesn't realize emulator can be started
+- Takes the "easy way out" instead of solving the problem
+- Forgets instructions include emulator startup commands
+
+**How to avoid**:
+1. **ALWAYS check for device first**: `adb devices`
+2. **If no device, START EMULATOR** - don't skip testing!
+3. Use emulator startup commands from quick-ref.md
+4. Wait for emulator to boot completely
+5. Only ask for help if emulator fails to start
+
+**The correct sequence**:
+```bash
+# 1. Check for device
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# 2. If no device, START EMULATOR (don't give up!)
+if [ -z "$DEVICE_UDID" ]; then
+    echo "No device found. Starting emulator..."
+    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+    adb wait-for-device
+    until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
+        sleep 2
+    done
+    export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+fi
+
+# 3. Now proceed with testing
+```
+
+**When to ask for help**:
+- Emulator fails to start after multiple attempts
+- `$ANDROID_HOME` is not set
+- No emulator AVDs exist (`emulator -list-avds` returns empty)
+
+**Cost if not avoided**: **Complete testing failure** - can't validate Android-specific fixes without testing on Android
+
+---
+
 ### Mistake #6: Surface-Level Code Review
 
 **Symptom**: Describing WHAT changed without explaining WHY

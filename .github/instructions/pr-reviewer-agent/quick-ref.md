@@ -43,49 +43,43 @@ xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_te
 
 ### Android Quick Start
 
+**⚠️ CRITICAL**: If no device found, START AN EMULATOR - don't skip testing!
+
 ```bash
-# Get device, build/deploy, monitor logs - see shared doc for full sequence
+# 1. Check for device
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# 2. If no device found, start emulator (see below)
+if [ -z "$DEVICE_UDID" ]; then
+    echo "❌ No device found. Starting emulator..."
+    # See "Android Emulator Startup" section below
+fi
+
+# 3. Build and deploy
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-adb logcat | grep -E "(TEST OUTPUT|Console|FATAL)"
+
+# 4. Monitor logs
 adb logcat > /tmp/android_test.log 2>&1 &
 LOGCAT_PID=$!
 
 # ... do testing ...
 
-# Stop logcat
+# 5. Stop logcat and view output
 kill $LOGCAT_PID
-
-# View output
 cat /tmp/android_test.log | grep "TEST OUTPUT"
 ```
 
+📖 **Complete workflow**: [Shared Platform Workflows - Android](../shared/platform-workflows.md#complete-android-reproduction-workflow)
+
 ---
 
-### Android Emulator Startup (If Needed)
+### Android Emulator Startup (REQUIRED when no device)
+
+**When to use**: `adb devices` shows no devices connected
 
 ```bash
-# ⚠️ CRITICAL: Use subshell + & pattern for persistence
-
-# Clean up old processes
-pkill -9 qemu-system-x86_64 2>/dev/null || true
-pkill -9 emulator 2>/dev/null || true
-sleep 2
-
-# Start emulator as background daemon
+# CRITICAL: Use subshell with & to persist emulator
 cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
-
-# Wait for process
-sleep 3
-
-# Verify started
-EMULATOR_PID=$(ps aux | grep "qemu.*Pixel_9" | grep -v grep | awk '{print $2}')
-if [ -z "$EMULATOR_PID" ]; then
-    echo "❌ ERROR: Emulator failed to start"
-    exit 1
-fi
-
-echo "✅ Emulator started (PID: $EMULATOR_PID)"
 
 # Wait for boot
 adb wait-for-device
@@ -95,114 +89,12 @@ until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
 done
 
 echo "✅ Emulator ready"
+
+# Now get device UDID
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
 ```
 
-**Why this pattern?** Subshell `()` with `&` detaches emulator from session so it survives when agent finishes.
-
----
-
-## 🧪 Test Code Template (Copy-Paste)
-
-### XAML
-
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.MainPage"
-             Title="Issue #XXXXX Test">
-
-    <!-- Red parent, yellow child for visual debugging -->
-    <Grid x:Name="RootGrid" BackgroundColor="Red">
-        <ContentView x:Name="TestElement"
-                     BackgroundColor="Yellow"
-                     Loaded="OnLoaded">
-            <Label Text="Test Content" x:Name="ContentLabel"/>
-        </ContentView>
-    </Grid>
-</ContentPage>
-```
-
-### Code-Behind
-
-```csharp
-using Microsoft.Maui.Controls;
-using System;
-
-namespace Maui.Controls.Sample
-{
-    public partial class MainPage : ContentPage
-    {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
-
-        private void OnLoaded(object sender, EventArgs e)
-        {
-            // Wait for layout
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
-            {
-                CaptureState("OnLoaded");
-            });
-        }
-
-        private void CaptureState(string context)
-        {
-            Console.WriteLine($"=== TEST OUTPUT: {context} ===");
-            Console.WriteLine($"Element Bounds: {TestElement.Bounds}");
-            Console.WriteLine($"Element Width: {TestElement.Width}, Height: {TestElement.Height}");
-            
-            if (ContentLabel != null)
-            {
-                Console.WriteLine($"Content Position: X={ContentLabel.X}, Y={ContentLabel.Y}");
-            }
-            
-            var screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
-            var screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
-            Console.WriteLine($"Screen Size: {screenWidth}x{screenHeight}");
-            Console.WriteLine("=== END TEST OUTPUT ===\n");
-        }
-    }
-}
-```
-
----
-
-## 🔄 Test WITH/WITHOUT PR Pattern
-
-```bash
-# After fetching PR to test-pr-XXXXX branch
-
-# 1. Test WITHOUT fix (baseline)
-NUM_COMMITS=$(git log --oneline $ORIGINAL_BRANCH..HEAD | wc -l)
-git checkout -b baseline-test HEAD~$NUM_COMMITS
-
-# Build, deploy, capture baseline output
-# ...
-
-# 2. Test WITH fix
-git checkout test-pr-XXXXX
-
-# Build, deploy, capture improved output
-# ...
-
-# 3. Compare results in review
-```
-
-```
-
-📖 **Complete workflow**: [Shared Platform Workflows - Android](../shared/platform-workflows.md#complete-android-reproduction-workflow)
-
-### Android Emulator Startup
-
-```bash
-# CRITICAL: Use subshell with & to persist emulator
-cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
-adb wait-for-device
-```
-
-📖 **Full startup sequence**: [Shared Platform Workflows - Android Emulator](../shared/platform-workflows.md#android-emulator-startup)
+📖 **Full startup sequence with error handling**: [Shared Platform Workflows - Android Emulator](../shared/platform-workflows.md#android-emulator-startup)
 
 ---
 

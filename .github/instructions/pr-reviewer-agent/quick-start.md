@@ -146,9 +146,18 @@ UDID=$(xcrun simctl list devices available --json | jq -r '...')
 
 **Android Testing**:
 ```bash
-# Complete workflow - see quick-ref.md for full version
+# 1. Check for device
 export DEVICE_UDID=$(adb devices | grep device | awk '{print $1}' | head -1)
-# ... build, deploy
+
+# 2. If no device, START EMULATOR (don't skip!)
+if [ -z "$DEVICE_UDID" ]; then
+    echo "No device found. Starting emulator..."
+    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+    adb wait-for-device
+fi
+
+# 3. Build and deploy
+# ... see quick-ref.md for complete workflow
 ```
 
 ---
