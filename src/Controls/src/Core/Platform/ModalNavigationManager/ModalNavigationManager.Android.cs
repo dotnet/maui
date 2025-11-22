@@ -168,8 +168,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			TaskCompletionSource<bool> animationCompletionSource = new();
-
 			var parentView = GetModalParentView();
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
@@ -185,19 +183,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				dialogFragment!.AnimationEnded += OnAnimationEnded;
+				TaskCompletionSource<bool> animationCompletionSource = new();
+				
+				dialogFragment.AnimationEnded += OnAnimationEnded;
+
+				void OnAnimationEnded(object? sender, EventArgs e)
+				{
+					dialogFragment.AnimationEnded -= OnAnimationEnded;
+					animationCompletionSource.SetResult(true);
+				}
 
 				await animationCompletionSource.Task;
 			}
 			else
 			{
-				animationCompletionSource.TrySetResult(true);
-			}
+				// Non-animated modals need to wait for presentation completion to prevent race conditions
+				TaskCompletionSource<bool> presentationCompletionSource = new();
+				
+				dialogFragment.PresentationCompleted += OnPresentationCompleted;
 
-			void OnAnimationEnded(object? sender, EventArgs e)
-			{
-				dialogFragment!.AnimationEnded -= OnAnimationEnded;
-				animationCompletionSource.SetResult(true);
+				void OnPresentationCompleted(object? sender, EventArgs e)
+				{
+					dialogFragment.PresentationCompleted -= OnPresentationCompleted;
+					presentationCompletionSource.SetResult(true);
+				}
+
+				await presentationCompletionSource.Task;
 			}
 		}
 
@@ -209,8 +220,8 @@ namespace Microsoft.Maui.Controls.Platform
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
 
-			public event EventHandler? AnimationEnded;
-
+			internal event EventHandler? AnimationEnded;
+			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
 
@@ -361,6 +372,9 @@ namespace Microsoft.Maui.Controls.Platform
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
+
+				// Signal that the modal is fully presented and ready
+				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
