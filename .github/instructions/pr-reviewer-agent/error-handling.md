@@ -1,8 +1,49 @@
 # Error Handling
 
+**For common build/deploy errors**: See [Shared Error Handling](../shared/error-handling-common.md)
+
+This document covers PR reviewer-specific errors and common mistakes.
+
+---
+
 ## 🚫 Common Mistakes & How to Avoid Them
 
-### Mistake #1: Building the Wrong App ⭐ MOST COMMON
+### Mistake #1: Skipping Testing When Device Not Found ⭐ MOST CRITICAL
+
+**Symptom**: Agent sees "no device connected" and creates code-only review without attempting to start emulator
+
+**Why it happens**:
+- Sees `adb devices` shows no devices
+- Assumes testing is impossible
+- Doesn't attempt emulator startup
+- Skips directly to code-only review
+
+**How to avoid**:
+1. ✅ Check for device: `adb devices`
+2. ✅ If none found, **START EMULATOR** (see quick-ref.md Android Emulator Startup section)
+3. ✅ If emulator fails, examine logs: `cat /tmp/emulator.log`
+4. ✅ If genuine blocker, CREATE CHECKPOINT (see testing-guidelines.md "Manual Verification Required")
+5. ✅ Provide user with manual test steps
+
+**Complete Android startup sequence**:
+```bash
+# If no device found, start emulator
+if [ -z "$(adb devices | grep -v 'List' | grep 'device')" ]; then
+    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+    adb wait-for-device
+    until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
+        sleep 2
+        echo -n "."
+    done
+    echo "✅ Emulator ready"
+fi
+```
+
+**Cost if not avoided**: **COMPLETE TESTING FAILURE** - PR approved with ZERO validation
+
+---
+
+### Mistake #2: Building the Wrong App ⭐ VERY COMMON
 
 **Symptom**: Agent tries to build `TestCases.HostApp` for PR validation
 
@@ -20,7 +61,7 @@
 
 ---
 
-### Mistake #2: Planning Before Reading Instructions
+### Mistake #3: Planning Before Reading Instructions
 
 **Symptom**: Agent creates detailed todo list immediately after user request
 
@@ -38,7 +79,7 @@
 
 ---
 
-### Mistake #3: Not Checking Current Branch
+### Mistake #4: Not Checking Current Branch
 
 **Symptom**: Planning to "fetch PR" or "checkout branch" when already on correct branch
 
@@ -56,7 +97,7 @@
 
 ---
 
-### Mistake #4: Building Without User Validation
+### Mistake #5: Building Without User Validation
 
 **Symptom**: Agent modifies Sandbox code and immediately starts building
 
@@ -75,7 +116,7 @@
 
 ---
 
-### Mistake #5: Only Testing WITH the Fix
+### Mistake #6: Only Testing WITH the Fix
 
 **Symptom**: Agent only tests the PR branch, doesn't test baseline
 
@@ -95,7 +136,161 @@
 
 ---
 
-### Mistake #6: Surface-Level Code Review
+### Mistake #7: Giving Up Without Attempting Solutions ⭐ CRITICAL
+
+**Symptom**: Agent sees "no device connected" or other blocker and skips testing entirely
+
+**Why it happens**:
+- Assumes missing device/platform is an insurmountable blocker
+- Doesn't realize solutions exist (emulator startup, checkpoint for unavailable platforms)
+- Takes the "easy way out" instead of problem-solving
+- Forgets instructions include both solutions and escalation paths
+
+**How to avoid**:
+
+**Step 1: ATTEMPT available solutions first**
+
+For Android:
+```bash
+# 1. Check for device
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# 2. If no device, START EMULATOR (don't give up!)
+if [ -z "$DEVICE_UDID" ]; then
+    echo "No device found. Starting emulator..."
+    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+    adb wait-for-device
+    until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
+        sleep 2
+    done
+    export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+fi
+
+# 3. If emulator failed, check logs
+if [ -z "$DEVICE_UDID" ]; then
+    echo "Emulator failed to start. Checking logs..."
+    cat /tmp/emulator.log
+    # Now proceed to Step 2 (checkpoint)
+fi
+```
+
+For iOS:
+```bash
+# Check for available simulators
+xcrun simctl list devices | grep iPhone
+# Attempt to boot simulator (see quick-ref.md)
+```
+
+**Step 2: If solutions fail, CREATE CHECKPOINT (don't skip testing!)**
+
+After attempting solutions and hitting genuine blocker:
+- ✅ **DO**: Create manual verification checkpoint (see testing-guidelines.md)
+- ✅ **DO**: Provide user with exact steps to test manually
+- ✅ **DO**: Include comprehensive PR analysis
+- ❌ **DON'T**: Skip testing and do code-only review
+- ❌ **DON'T**: Assume PR works without validation
+
+**The complete sequence**:
+1. Check for device/platform availability
+2. Attempt startup (emulator/simulator) if missing
+3. If startup fails, examine logs/errors
+4. If genuine blocker (platform unavailable, emulator won't start), CREATE CHECKPOINT
+5. Provide user with manual test steps in checkpoint
+6. Wait for user validation before proceeding
+
+**When checkpoint is needed**:
+- Emulator fails to start after attempting startup sequence
+- Platform unavailable (iOS on Linux, Windows on macOS)
+- `$ANDROID_HOME` not set or no AVDs available
+- Other environment issues preventing testing
+
+**Checkpoint template**: See testing-guidelines.md "Manual Verification Required" section
+
+**Cost if not avoided**: 
+- **Without checkpoint**: **Complete testing failure** - PR approved with no validation
+- **Skipping solutions**: Preventable blockers become actual blockers
+
+---
+
+### Mistake #8: Using ADB/xcrun Instead of Appium for UI Interaction ⭐ CRITICAL
+
+**Symptom**: Agent uses `adb shell input tap` or `xcrun simctl ui` to interact with app
+
+**Why it happens**:
+- Appium seems more complex than direct commands
+- Prior knowledge of adb/xcrun commands
+- Didn't read appium-control.instructions.md carefully
+- Read instructions but fell back to "familiar but wrong" cached patterns
+- Fell back to adb when Appium seemed difficult
+
+**How to avoid**:
+1. **Read appium-control.instructions.md FIRST** before attempting UI interaction
+2. Remember: Appium is REQUIRED for reliability (element-based vs coordinate-based)
+3. **Use .cs files with `dotnet run`** (NOT .csx files with dotnet-script)
+4. When Appium fails, debug the Appium approach (don't fall back to adb)
+5. **Internalize instructions, don't just skim them**
+
+**Complete sequence**:
+```bash
+# 1. Create Appium script (.cs file, NOT .csx)
+cat > test_pr_XXXXX.cs << 'EOF'
+#r "nuget: Appium.WebDriver, 8.0.1"
+using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
+
+var options = new AppiumOptions();
+options.AddAdditionalAppiumOption("platformName", "Android");
+options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
+options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
+options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
+options.AddAdditionalAppiumOption("noReset", true);
+
+var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
+
+// Find and tap button by AutomationId
+var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
+button.Click();
+
+driver.Quit();
+EOF
+
+# 2. Start Appium server (if not running)
+appium --allow-insecure chromedriver_autodownload > /tmp/appium.log 2>&1 &
+APPIUM_PID=$!
+sleep 3
+
+# 3. Run script with dotnet run (NOT dotnet-script)
+dotnet run test_pr_XXXXX.cs
+```
+
+**When to use ADB/xcrun** (acceptable):
+- ✅ Device status: `adb devices`, `xcrun simctl list`
+- ✅ Log monitoring: `adb logcat` (read-only)
+- ✅ Device properties: `adb shell getprop` (read-only)
+- ✅ Device setup: Boot simulator, install app
+
+**When you MUST use Appium**:
+- ❌ Tapping buttons, controls, menu items
+- ❌ Opening menus, drawers, flyouts
+- ❌ Scrolling, swiping, gestures
+- ❌ Entering text in fields
+- ❌ ANY user interaction
+
+**Why this matters**:
+- Coordinate-based taps (`adb shell input tap`) break with different screen sizes
+- Can't verify element state or wait for elements
+- Brittle and unreliable
+- Violates explicit instructions
+
+**Cost if not avoided**:
+- Unreliable tests that work once then fail
+- Can't verify actions succeeded
+- Wasted time debugging coordinate issues
+- **Instructions explicitly forbid this approach**
+
+---
+
+### Mistake #9: Surface-Level Code Review
 
 **Symptom**: Describing WHAT changed without explaining WHY
 
@@ -137,6 +332,8 @@ Before proceeding with each phase, check:
 
 ### ☑️ Implementation Phase:
 - [ ] Created comprehensive test scenarios
+- [ ] If blocked from testing, attempted all available solutions first
+- [ ] If still blocked, created manual verification checkpoint (not skipped testing)
 - [ ] Added instrumentation for measurements
 - [ ] Showed test code to user BEFORE building
 - [ ] Got user approval to proceed
@@ -158,26 +355,19 @@ Before proceeding with each phase, check:
 
 ## Handling Build Errors
 
-If the build fails, follow this 3-step debugging process:
+**For common build errors**: See [Shared Error Handling - Build Errors](../shared/error-handling-common.md#build-errors)
 
-### Step 1: Check for Common Issues
+If the build fails during PR review, follow this debugging process:
 
-**Common Build Failures**:
+### Step 1: Try Common Fixes
 
-```bash
-# Error: Build tasks not found
-dotnet clean ./Microsoft.Maui.BuildTasks.slnf
-dotnet build ./Microsoft.Maui.BuildTasks.slnf
+**Quick fixes for common issues**:
 
-# Error: Dependency version conflicts
-dotnet clean Microsoft.Maui.slnx
-rm -rf bin/ obj/
-dotnet restore Microsoft.Maui.slnx --force
-
-# Error: Android SDK not found
-export ANDROID_HOME=/path/to/android-sdk
-# Or run: android  # Opens Android SDK Manager
-```
+See [Shared Error Handling](../shared/error-handling-common.md#build-errors) for:
+- Build tasks not found
+- Dependency version conflicts
+- PublicAPI analyzer failures
+- Platform SDK not found
 
 ### Step 2: Report the Error
 
@@ -201,8 +391,6 @@ dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.S
 2. [Second attempt to fix]
 
 **Next steps**:
-- [ ] Try clean build: `dotnet clean && dotnet build`
-- [ ] Try different build configuration
 - [ ] Need help understanding this error
 ```
 

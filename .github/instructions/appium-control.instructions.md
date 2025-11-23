@@ -251,7 +251,7 @@ catch (Exception ex)
 **🚨 CRITICAL: .NET 10 Native Scripting (NOT dotnet-script)**
 
 - ✅ **DO**: Use `dotnet run yourscript.cs` (.NET 10 native scripting)
-- ✅ **DO**: Use `#:package Appium.WebDriver@8.0.1` directive
+- ✅ **DO**: Use `#:package Appium.WebDriver@8.0.1` directive (latest stable version)
 - ❌ **DON'T**: Use `dotnet script` or `dotnet-script` commands
 - ❌ **DON'T**: Use `#r` directive syntax (that's for dotnet-script, not .NET 10)
 - ❌ **DON'T**: Create scripts in `/tmp` or repository root
@@ -420,8 +420,10 @@ For Shell-specific testing patterns (e.g., opening flyouts), see [UI Tests Instr
 - Start Appium: `appium &` (or `appium --log-level error &` for less noise)
 
 **"App crashes on launch" or "Cannot launch application"**
-- Rebuild with `--no-incremental` flag (incremental builds can leave app bundles inconsistent)
-- See [UI Testing Guide](../../docs/UITesting-Guide.md) for detailed troubleshooting steps
+- **Read the crash logs** to find the exception (iOS: `xcrun simctl spawn booted log stream`, Android: `adb logcat`)
+- **Investigate the root cause** from the exception stack trace
+- **If you can't fix it**, ask for guidance with the full exception details
+- See [Common Testing Patterns: App Crashes](../common-testing-patterns.md#error-app-crashes-on-launch) for detailed log capture commands
 
 **"Device not found" (iOS)**
 - Verify DEVICE_UDID is set: `echo $DEVICE_UDID`

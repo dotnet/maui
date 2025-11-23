@@ -125,6 +125,37 @@ User asks to review PR #XXXXX
 - **Validating the PR's fix** = Sandbox app (99% of reviews)
 - **Writing/validating automated tests** = TestCases.HostApp (1% of reviews, only when explicitly asked)
 
+---
+
+## 🎛️ CollectionView/CarouselView Handler Detection
+
+**CRITICAL**: If the PR affects CollectionView or CarouselView, you MUST determine which handler implementation to enable before testing.
+
+See **[CollectionView Handler Detection Guide](collectionview-handler-detection.md)** for complete algorithm, configuration examples, and platform-specific notes.
+
+### Quick Summary
+
+**Detection pattern**:
+```bash
+# Check which handler files were changed
+git diff <base>..<pr> --name-only | grep "Handlers/Items"
+
+# Look at path:
+# "Handlers/Items/" (NOT "Items2") → CollectionViewHandler
+# "Handlers/Items2/" → CollectionViewHandler2
+```
+
+**Why this matters**: iOS/MacCatalyst defaults to CollectionViewHandler2. If a PR fixes a bug in CollectionViewHandler, you MUST explicitly enable it or the bug won't reproduce.
+
+**Configuration**: Edit `src/Controls/samples/Controls.Sample.Sandbox/MauiProgram.cs` - see [Handler Detection Guide](collectionview-handler-detection.md#configuration-examples) for complete code.
+
+| Path Pattern | Handler to Enable |
+|--------------|------------------|
+| `Handlers/Items/` | CollectionViewHandler (original) |
+| `Handlers/Items2/` | CollectionViewHandler2 (new) |
+
+---
+
 ## Fetch PR Changes (Without Checking Out)
 
 **CRITICAL**: Stay on your current branch (wherever you are when starting the review) to preserve context. Apply PR changes on top of the current branch instead of checking out the PR branch.
@@ -191,44 +222,91 @@ git commit --no-edit
 - ✅ Can compare before/after easily
 - ✅ Handles most conflicts gracefully
 
+## ⚠️ MANDATORY Workflow with Checkpoints
+
+### Workflow Overview
+
+```
+1. Fetch PR → Analyze code
+2. Create test code
+3. 🛑 CHECKPOINT 1 (MANDATORY): Show test code, get approval
+4. Build & Deploy → Test WITHOUT fix  
+5. Test WITH fix → Compare results
+6. 🛑 CHECKPOINT 2 (Recommended): Show raw data
+7. Write review → Eliminate redundancy
+```
+
+### 🛑 CHECKPOINT 1: Before Building (MANDATORY)
+
+**After creating test code, STOP and post this to user:**
+
+```markdown
+## Validation Checkpoint - Before Building
+
+**Test code created** (Sandbox app modified):
+
+**XAML**:
+```xml
+[Show relevant XAML snippet - what you're testing]
+```
+
+**Instrumentation**:
+```csharp
+[Show measurement code - what you'll capture]
+```
+
+**What I'm measuring**: [Clear explanation of data you'll collect]
+
+**Expected WITHOUT PR**: [Baseline behavior/measurements]
+**Expected WITH PR**: [How it should change with the fix]
+
+**Build time**: ~10-15 minutes
+
+Should I proceed with building?
+```
+
+**⚠️ DO NOT BUILD without user approval** - Building takes 10-15 minutes. If test design is wrong, this checkpoint saves that wasted time.
+
+**User can correct at this point**:
+- Wrong test approach
+- Missing test cases
+- Measuring wrong thing
+- Wrong app choice
+
+### 🛑 CHECKPOINT 2: Before Final Review (Recommended)
+
+**After testing, before posting review:**
+
+```markdown
+## Data Review Checkpoint
+
+**Raw test results**:
+
+WITHOUT PR:
+```
+[Console output/measurements]
+```
+
+WITH PR:
+```
+[Console output/measurements]
+```
+
+**My interpretation**: [What the data means]
+
+**Draft recommendation**: [Approve/Request Changes/etc.]
+
+Does this interpretation look correct?
+```
+
 ## Setup Test Environment
 
-**iOS Testing**:
-```bash
-# Find iPhone Xs with highest iOS version
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+**Complete command sequences**: See [quick-ref.md](quick-ref.md) for copy-paste workflows.
 
-# Check UDID was found
-if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-    echo "❌ ERROR: No iPhone Xs simulator found. Please create one."
-    exit 1
-fi
-
-# Boot simulator
-xcrun simctl boot $UDID 2>/dev/null || true
-
-# Check simulator is booted
-STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
-if [ "$STATE" != "Booted" ]; then
-    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
-    exit 1
-fi
-```
-
-**Android Testing**:
-
-**CRITICAL**: If starting an emulator, use the background daemon pattern from [Common Testing Patterns: Android Emulator Startup](../../instructions/common-testing-patterns.md#android-emulator-startup-with-error-checking) to ensure it persists across sessions.
-
-```bash
-# Get connected device/emulator
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# Check device was found
-if [ -z "$DEVICE_UDID" ]; then
-    echo "❌ ERROR: No Android device/emulator found. Start an emulator or connect a device."
-    exit 1
-fi
-```
+**Key patterns** (reference only - use quick-ref.md for actual commands):
+- iOS: UDID extraction, boot, verify - See [quick-ref.md](quick-ref.md#ios-testing-complete-sequence)
+- Android: Device detection, emulator startup - See [quick-ref.md](quick-ref.md#android-testing-complete-sequence)
+- Full patterns with error checking: [common-testing-patterns.md](../common-testing-patterns.md)
 
 **Important Android Rules**:
 - ✅ **Start emulators with subshell + background**: `cd $ANDROID_HOME/emulator && (./emulator -avd Name ... &)`
@@ -238,53 +316,12 @@ fi
 
 ## Build and Deploy
 
-**iOS**:
-```bash
-# Build
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
+**Complete command sequences**: See [quick-ref.md](quick-ref.md) for copy-paste workflows including error checking.
 
-# Check build succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build failed"
-    exit 1
-fi
-
-# Install
-xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-
-# Check install succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: App installation failed"
-    exit 1
-fi
-
-# Launch with console capture
-xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_test.log 2>&1 &
-
-# Check launch didn't immediately fail
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: App launch failed"
-    exit 1
-fi
-
-sleep 8
-cat /tmp/ios_test.log
-```
-
-**Android**:
-```bash
-# Build and deploy
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-
-# Check build/deploy succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build or deployment failed"
-    exit 1
-fi
-
-# Monitor logs
-adb logcat | grep -E "(YourMarker|Frame|Console)"
-```
+**Quick reference**:
+- iOS build/deploy: [quick-ref.md](quick-ref.md#ios-testing-complete-sequence)
+- Android build/deploy: [quick-ref.md](quick-ref.md#android-testing-complete-sequence)
+- Error handling: [error-handling.md](error-handling.md)
 
 ## Success Verification Points
 
@@ -395,49 +432,228 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 
 # Delete test branches
 git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp 2>/dev/null || true
-
-# Clean build artifacts if needed
-dotnet clean
 ```
 
 **Important**: If you didn't save `$ORIGINAL_BRANCH` at the start, replace it with whatever branch you were on when you began the review. This ensures you return to your starting state.
+
+## Time Budget Guidance
+
+### Realistic Time Expectations
+
+**Simple PRs** (property fix, single file): **30-45 minutes**
+- Read & analyze: 5 min
+- Create test: 5 min
+- Checkpoint 1: 2 min (wait for approval)
+- Build & test: 20 min
+- Write review: 10 min
+
+**Medium PRs** (bug fix, multiple files): **1-2 hours**
+- Read & analyze: 10 min
+- Create test: 15 min
+- Checkpoint 1: 3 min (wait for approval)
+- Build & test (WITH/WITHOUT): 40 min
+- Edge cases: 20 min
+- Write review: 15 min
+
+**Complex PRs** (architecture change, SafeArea): **2-4 hours**
+- Read & analyze: 20 min
+- Create test with instrumentation: 30 min
+- Checkpoint 1: 5 min (wait for approval)
+- Build & test: 60 min
+- Multiple edge cases: 60 min
+- Write review: 30 min
+
+**⚠️ Exceeding these times significantly?**
+- Use [checkpoint-resume.md](checkpoint-resume.md) if blocked by environment
+- Ask for help if stuck on errors/issues
+- Consider if you're over-testing minor PRs
+
+**✅ Have unlimited time**: But use it wisely. Don't waste time on wrong approaches.
 
 ## Edge Case Discovery
 
 **CRITICAL**: Don't just test the PR author's scenario. Test edge cases they may have missed.
 
-### Required edge cases for UI/Layout PRs:
+### 🔴 HIGH PRIORITY Edge Cases (Always Test)
+
+Test these for every UI/Layout PR:
 
 - **Empty state**: Empty collections, null values, no data
-- **Single item**: Collections with exactly one item
-- **Large data sets**: 100+ items to test scrolling/virtualization
-- **Dynamic changes**: Rapidly toggle properties (e.g., toggle FlowDirection 10 times)
 - **Property combinations**: Test the fix with other properties (e.g., RTL + IsVisible + Margin)
-- **Nested scenarios**: Control inside control (e.g., CollectionView in ScrollView)
 - **Platform-specific**: Test on all affected platforms (iOS, Android, Windows, Mac)
+
+### 🟡 MEDIUM PRIORITY Edge Cases (Test If Time Permits)
+
+Test these for complex PRs or if time allows:
+
+- **Single item**: Collections with exactly one item
+- **Dynamic changes**: Rapidly toggle properties (e.g., toggle FlowDirection 10 times)
+- **Nested scenarios**: Control inside control (e.g., CollectionView in ScrollView)
+- **Large data sets**: 100+ items to test scrolling/virtualization
+
+### ⚫ LOW PRIORITY Edge Cases (Optional)
+
+Test these only if you have extra time or PR is particularly risky:
+
 - **Orientation**: Portrait vs landscape (mobile/tablet)
 - **Screen sizes**: Different screen sizes and densities
-
-### For layout/positioning PRs, also test:
-
-- **Header/Footer**: With and without headers/footers
-- **Padding/Margin**: Various padding and margin combinations
-- **Alignment**: Different HorizontalOptions/VerticalOptions
-- **Parent constraints**: Different parent sizes and constraints
-
-### For behavior/interaction PRs, also test:
-
-- **Timing**: Rapid interactions, delayed interactions
 - **State transitions**: Page appearing/disappearing, backgrounding/foregrounding
-- **User interaction**: Tap, scroll, swipe during state changes
 
-### Document findings:
+### For Layout/Positioning PRs, Also Consider:
+
+**🔴 High**: Padding/Margin combinations, Parent constraints
+**🟡 Medium**: Header/Footer presence, Alignment options
+**⚫ Low**: Different parent sizes
+
+### For Behavior/Interaction PRs, Also Consider:
+
+**🔴 High**: Timing of interactions
+**🟡 Medium**: Rapid interactions
+**⚫ Low**: User interaction during state changes
+
+### Document Findings
 
 For each edge case tested, document:
 - What you tested
 - Expected behavior
 - Actual behavior
 - Whether it works correctly or reveals an issue
+
+**Time management**: Start with high priority edge cases. If you're approaching time budget limits, document which edge cases you couldn't test and note in review.
+
+## 🛑 Manual Verification Required When Testing Unavailable
+
+**CRITICAL**: If you cannot run tests locally **after attempting all available solutions**, you MUST pause and create a manual verification checkpoint.
+
+### When to Create Manual Verification Checkpoint
+
+Create a checkpoint when:
+- ❌ **Android emulator fails to start** (after following startup sequence from quick-ref.md)
+- ❌ **Platform unavailable** (iOS on Linux, Windows on macOS, Mac on Windows)
+- ❌ **Cannot interact with app UI** (crashes immediately, unresponsive)
+- ❌ **Need visual verification** (colors, layouts, animations, positioning)
+- ❌ **Environment issues** (`$ANDROID_HOME` not set, no AVDs available, SDK issues)
+
+### 🚨 What You MUST Try First
+
+**DO NOT create checkpoint until you've attempted these**:
+
+**For Android**:
+1. ✅ Check for device: `adb devices`
+2. ✅ Attempt emulator startup (see quick-ref.md for commands)
+3. ✅ Wait for full boot sequence
+4. ✅ Check emulator logs if startup fails: `cat /tmp/emulator.log`
+
+**For iOS**:
+1. ✅ Check for simulators: `xcrun simctl list devices`
+2. ✅ Attempt to boot simulator
+3. ✅ Verify simulator state
+
+**Only after trying these steps and hitting a genuine blocker**, create the checkpoint.
+
+### Checkpoint Template: Cannot Validate PR
+
+```markdown
+## 🛑 CHECKPOINT: Cannot Validate PR on [Platform]
+
+**I cannot interact with the app in this environment to validate the PR changes.**
+
+### What I Attempted
+
+**Platform**: [Android/iOS/Windows/Mac]
+
+**Steps taken**:
+- ✅ Checked for device: `adb devices` → [result]
+- ✅ Attempted emulator startup: [command used]
+- ❌ **Blocker**: [specific error or unavailability reason]
+
+**Evidence**:
+```bash
+[Show actual command output, error messages, logs]
+```
+
+### PR Analysis
+
+**PR #XXXXX**: [Brief description]
+
+**Files changed**:
+- `[file path]` - [what changed]
+- `[file path]` - [what changed]
+
+**What the fix does** (based on code analysis):
+[Explain the changes in plain language]
+
+**Expected behavior WITH fix**:
+[What should happen after the fix]
+
+**Expected behavior WITHOUT fix** (the bug):
+[What currently happens that's wrong]
+
+### Manual Verification Steps Needed
+
+**Platform**: [Android/iOS/Windows/Mac]
+
+**To verify this PR works, you'll need to**:
+
+1. **Build sandbox app with PR changes**:
+   ```bash
+   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-[platform] -t:Run
+   ```
+
+2. **Reproduce the original issue** (verify bug exists):
+   - Action: [specific steps]
+   - Expected bug: [what should be wrong]
+   - Confirms: We understand the problem
+
+3. **Verify the fix works**:
+   - Action: [specific steps]
+   - Expected result: [what should be fixed]
+   - Confirms: PR resolves the issue
+
+4. **Test edge cases** (if applicable):
+   - [Edge case 1 to test]
+   - [Edge case 2 to test]
+
+### What I Need From You
+
+Please verify:
+- [ ] The original issue reproduces as described (confirms bug understanding)
+- [ ] PR changes fix the issue (confirms fix works)
+- [ ] No regressions in similar functionality
+- [ ] Behavior matches expectations
+
+**Once you confirm the fix works**, I will:
+- Provide comprehensive review feedback
+- Note any code quality observations
+- Recommend approval or suggest improvements
+
+**If the fix doesn't work as expected**, I will:
+- Revise my analysis
+- Suggest alternative approaches
+- Request clarification from PR author
+```
+
+### DO NOT Skip Testing Without Checkpoint
+
+**❌ WRONG**:
+```
+"I can't test on Android, so I'll just do a code review."
+"No emulator available, I'll approve based on code analysis."
+"Let's skip testing and trust the CI."
+```
+
+**✅ RIGHT**:
+```
+"I attempted to start Android emulator but it failed (see checkpoint).
+I've created a comprehensive test plan for you to verify manually."
+```
+
+### Cost of Skipping This Step
+
+- **Without checkpoint**: PR approved with no validation → Broken code merges
+- **With checkpoint**: User validates → High confidence in PR quality
+
+---
 
 ## SafeArea Testing Guidelines
 
