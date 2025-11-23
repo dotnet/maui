@@ -86,4 +86,27 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
 		}
 	}
+
+	private void OnScrollToPositionChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton radioButton) || !e.Value)
+			return;
+
+		if (radioButton == ScrollToPositionMakeVisible)
+			_viewModel.ScrollToPosition = ScrollToPosition.MakeVisible;
+		else if (radioButton == ScrollToPositionStart)
+			_viewModel.ScrollToPosition = ScrollToPosition.Start;
+		else if (radioButton == ScrollToPositionCenter)
+			_viewModel.ScrollToPosition = ScrollToPosition.Center;
+		else if (radioButton == ScrollToPositionEnd)
+			_viewModel.ScrollToPosition = ScrollToPosition.End;
+	}
+
+	private void ScrollToIndexEntry_TextChanged(object sender, TextChangedEventArgs e)
+    {
+		if (int.TryParse(ScrollToIndexEntry.Text, out int index))
+		{
+			_viewModel.ScrollToIndex = index;
+		}
+    }
 }
