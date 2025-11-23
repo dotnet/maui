@@ -203,7 +203,6 @@ namespace Microsoft.Maui.Controls.Platform
 			await _waitForModalToFinishTask;
 
 			var tcs = new TaskCompletionSource<bool>();
-			var previousTask = _waitForModalToFinishTask;
 			_waitForModalToFinishTask = tcs.Task;
 
 			try
@@ -269,7 +268,6 @@ namespace Microsoft.Maui.Controls.Platform
 			await _waitForModalToFinishTask;
 
 			var tcs = new TaskCompletionSource<bool>();
-			var previousTask = _waitForModalToFinishTask;
 			_waitForModalToFinishTask = tcs.Task;
 
 			try
