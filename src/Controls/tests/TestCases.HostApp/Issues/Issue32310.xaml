@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32310"
+             Title="Modal Navigation Hang Test">
+    <StackLayout Padding="20" Spacing="20">
+        <Label Text="Test for modal navigation hang with Task.Yield()" 
+               HorizontalOptions="Center" 
+               FontSize="16" />
+        
+        <Label Text="This test verifies that calling PopModalAsync immediately after PushModalAsync with a single Task.Yield() in between does not hang the app." />
+        
+        <Button x:Name="TestButton"
+                Text="Test Modal (One Task.Yield)"
+                AutomationId="TestButton"
+                Clicked="OnTestButtonClicked" />
+                
+        <Label x:Name="StatusLabel"
+               Text="Ready to test"
+               AutomationId="StatusLabel"
+               HorizontalOptions="Center" />
+    </StackLayout>
+</ContentPage>
