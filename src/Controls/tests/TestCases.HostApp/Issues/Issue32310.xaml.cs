@@ -10,6 +10,7 @@ public partial class Issue32310 : ContentPage
 
 	async void OnTestButtonClicked(object sender, EventArgs e)
 	{
+		ContentPage modalPage = null;
 		try
 		{
 			StatusLabel.Text = "Testing...";
@@ -17,7 +18,8 @@ public partial class Issue32310 : ContentPage
 			// This is the exact scenario from the bug report:
 			// PushModalAsync followed by PopModalAsync with only one Task.Yield in between
 			// Without the fix, this would hang the app with a blank screen
-			await Navigation.PushModalAsync(new ContentPage() { Content = new Label() { Text = "Modal Content" } }, false);
+			modalPage = new ContentPage() { Content = new Label() { Text = "Modal Content" } };
+			await Navigation.PushModalAsync(modalPage, false);
 
 			await Task.Yield();
 
@@ -29,6 +31,11 @@ public partial class Issue32310 : ContentPage
 		catch (Exception ex)
 		{
 			StatusLabel.Text = $"Failed: {ex.Message}";
+		}
+		finally
+		{
+			// The modal page will be cleaned up by the navigation system
+			// We don't need to explicitly dispose it
 		}
 	}
 }
