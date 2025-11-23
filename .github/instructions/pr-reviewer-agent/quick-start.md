@@ -146,6 +146,75 @@ Show raw data and ask if interpretation is correct.
 
 ---
 
+## 🔄 Reverting PR Changes for Testing
+
+**Goal**: Test WITH and WITHOUT the PR changes to prove the fix works.
+
+### ⚠️ Common Mistake: Partial Revert
+
+**❌ WRONG Approach**:
+```bash
+# Don't just comment out "the fix" - PRs often make multiple changes
+# This leaves PR infrastructure in place, giving false results
+```
+
+**✅ CORRECT Approach**:
+```bash
+# 1. First, see ALL changes the PR made
+git diff main..HEAD -- path/to/changed/file.cs
+
+# 2. Read the full diff - understand EVERYTHING that changed
+# Don't assume you know what changed without reading it
+
+# 3. Revert the entire file to main branch state
+git checkout main -- path/to/changed/file.cs
+
+# 4. Verify revert was complete (should show NO diff)
+git diff main -- path/to/changed/file.cs
+```
+
+### Testing Workflow
+
+**Phase 1: Test WITHOUT PR (baseline)**
+```bash
+# Revert to main branch code
+git checkout main -- src/path/to/changed/file.cs
+
+# Verify no differences remain
+git diff main -- src/path/to/changed/file.cs  # Should be empty
+
+# Build and test
+dotnet build ... -t:Run
+
+# Document results: "Bug reproduces"
+```
+
+**Phase 2: Test WITH PR (fix)**
+```bash
+# Restore PR changes
+git checkout HEAD -- src/path/to/changed/file.cs
+
+# Verify PR changes are back
+git diff main -- src/path/to/changed/file.cs  # Should show PR changes
+
+# Build and test
+dotnet build ... -t:Run
+
+# Document results: "Bug is fixed"
+```
+
+### Verification Checklist
+
+After reverting:
+- [ ] Ran `git diff main -- <file>` and saw NO output
+- [ ] If you see ANY diff, the revert was incomplete
+- [ ] PRs often change multiple files - check all changed files
+- [ ] Don't skip verification - it's fast and catches mistakes
+
+**Why this matters**: Partial reverts leave PR infrastructure in place, making it impossible to see if the PR actually fixes anything.
+
+---
+
 ## 📋 Common Commands (Copy-Paste)
 
 See [quick-ref.md](quick-ref.md) for complete command sequences.

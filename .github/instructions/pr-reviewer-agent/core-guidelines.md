@@ -122,14 +122,69 @@ Without instructions:         With instructions:
 
 **RULE**: You MUST test both scenarios to prove the fix works.
 
-**Process**:
+#### Understanding the PR Before Reverting
+
+**⚠️ CRITICAL: Don't assume you know what the PR changed - READ THE FULL DIFF FIRST**
+
+**Common mistake pattern**:
 ```
-1. Checkout main branch version of changed file
-2. Build and test (capture baseline behavior)
-3. Restore PR branch version
-4. Build and test (capture improved behavior)  
-5. Compare: baseline vs improved
+❌ Agent sees one obvious change (e.g., "await" line)
+❌ Agent comments out that line
+❌ Agent thinks PR is reverted
+❌ Agent tests and gets confusing/wrong results
 ```
+
+**Why this fails**:
+- PRs often make **multiple structural changes** across different locations
+- PRs may add new events, methods, or entire code blocks
+- Commenting out "the fix" leaves PR infrastructure in place
+- Partial reverts give false baseline results
+
+**Correct approach**:
+```bash
+# Step 1: See ALL changes the PR made
+git diff main..HEAD -- path/to/file.cs
+
+# Step 2: READ the entire diff output
+# - What files changed?
+# - What was added vs modified vs deleted?
+# - Are there new methods, events, or classes?
+# - How many logical changes were made?
+
+# Step 3: Revert the ENTIRE file (not just one line)
+git checkout main -- path/to/file.cs
+
+# Step 4: VERIFY revert succeeded
+git diff main -- path/to/file.cs  # Should show NOTHING
+
+# If you see any diff output, revert didn't complete
+```
+
+#### Testing Process
+
+**Phase 1: Test WITHOUT PR (baseline)**
+```
+1. Revert to main branch version
+2. Verify with: git diff main -- <file>  (should be empty)
+3. Build and test
+4. Document results
+```
+
+**Phase 2: Test WITH PR (fixed version)**
+```
+1. Restore PR changes: git checkout HEAD -- <file>
+2. Verify with: git diff main -- <file>  (should show PR changes)
+3. Build and test
+4. Compare to baseline
+```
+
+**Verification checklist**:
+- [ ] Ran `git diff main..HEAD` to see ALL PR changes
+- [ ] Read the full diff before reverting
+- [ ] Used `git checkout main` to revert entire file
+- [ ] Verified revert with `git diff main` (should be empty)
+- [ ] If multiple files changed, reverted ALL of them
+- [ ] Never just commented out one line
 
 **Why this matters**:
 - Proves the fix actually fixes the issue
