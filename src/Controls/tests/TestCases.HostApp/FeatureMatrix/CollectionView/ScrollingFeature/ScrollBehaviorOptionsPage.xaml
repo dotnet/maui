@@ -54,7 +54,7 @@
                                      CheckedChanged="OnItemsUpdatingScrollModeChanged"
                                      AutomationId="ItemsUpdatingKeepLastItemInView"/>
                     </HorizontalStackLayout>
-                     <HorizontalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="10">
                         <RadioButton x:Name="ItemsUpdatingKeepScrollOffset"
                                      Content="KeepScrollOffset"
                                      FontSize="10"
@@ -93,7 +93,7 @@
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceGroupedList2"/>
-                         <RadioButton x:Name="ItemsSourceGroupedList3"
+                        <RadioButton x:Name="ItemsSourceGroupedList3"
                                      Content="Grouped List3"
                                      FontSize="10"
                                      GroupName="ItemsSourceGroup"
@@ -124,7 +124,7 @@
                                  FontSize="11"
                                  AutomationId="IsGroupedFalse"/>
                 </StackLayout>
-                 <Label Text="ItemsLayout:"
+                <Label Text="ItemsLayout:"
                        FontAttributes="Bold"
                        FontSize="12"/>
                 <VerticalStackLayout>
@@ -160,6 +160,50 @@
                                      AutomationId="ItemsLayoutHorizontalGrid"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
+                <Label Text="ScrollToPosition:"
+                       FontAttributes="Bold"
+                       FontSize="12"/>
+                <VerticalStackLayout>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ScrollToPositionMakeVisible"
+                                     Content="MakeVisible"
+                                     FontSize="11"
+                                     IsChecked="True"
+                                     GroupName="ScrollToPositionGroup"
+                                     CheckedChanged="OnScrollToPositionChanged"
+                                     AutomationId="ScrollToPositionMakeVisible"/>
+                        <RadioButton x:Name="ScrollToPositionStart"
+                                     Content="Start"
+                                     FontSize="11"
+                                     GroupName="ScrollToPositionGroup"
+                                     CheckedChanged="OnScrollToPositionChanged"
+                                     AutomationId="ScrollToPositionStart"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout>
+                        <RadioButton x:Name="ScrollToPositionCenter"
+                                     Content="Center"
+                                     FontSize="11"
+                                     GroupName="ScrollToPositionGroup"
+                                     CheckedChanged="OnScrollToPositionChanged"
+                                     AutomationId="ScrollToPositionCenter"/>
+                        <RadioButton x:Name="ScrollToPositionEnd"
+                                     Content="End"
+                                     FontSize="11"
+                                     GroupName="ScrollToPositionGroup"
+                                     CheckedChanged="OnScrollToPositionChanged"
+                                     AutomationId="ScrollToPositionEnd"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <Label Text="ScrollToIndex:"
+                       FontAttributes="Bold"
+                       FontSize="12"/>
+                <Entry x:Name="ScrollToIndexEntry"
+                       Text="0"
+                       FontSize="11"
+                       Keyboard="Numeric"
+                       TextChanged="ScrollToIndexEntry_TextChanged"
+                       AutomationId="ScrollToIndexEntry"/>
             </StackLayout>
         </Grid>
     </ScrollView>

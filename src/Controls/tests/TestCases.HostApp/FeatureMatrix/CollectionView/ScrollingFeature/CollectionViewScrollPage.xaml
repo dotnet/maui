@@ -12,7 +12,20 @@
     
     <Grid RowDefinitions="Auto, *">
         <!-- Fixed Buttons Row -->
-        <StackLayout Grid.Row="0" Spacing="40" Padding="40">
+        <StackLayout Grid.Row="0" Spacing="4" Padding="5">
+            <HorizontalStackLayout>
+                <Label Text="Scrolled Event: "/>
+                <Label x:Name="scrolledEventLabel" AutomationId="ScrolledEventLabel"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout>
+                <Label Text="ScrollToRequested Event: "/>
+                <Label x:Name="scrollToRequestedLabel" AutomationId="ScrollToRequestedLabel"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout>
+                <Label Text="RemainingItemsThresholdReached Event: "/>
+                <Label x:Name="remainingItemsThresholdLabel" AutomationId="RemainingItemsThresholdLabel"/>
+            </HorizontalStackLayout>
+            <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked"/>
             <Button Text="Add" Command="{Binding AddItemCommand}" IsVisible="{Binding ShowAddRemoveButtons}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
         </StackLayout>
         
@@ -26,6 +39,10 @@
                 IsGrouped="{Binding IsGrouped}"
                 GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
                 ItemsLayout="{Binding ItemsLayout}"
+                Scrolled="OnCollectionViewScrolled"
+                ScrollToRequested="OnCollectionViewScrollToRequested"
+                RemainingItemsThreshold="5"
+                RemainingItemsThresholdReached="OnRemainingItemsThresholdReached"
                 AutomationId="CollectionViewControl">  
             </local:CollectionView2>
     </Grid>
