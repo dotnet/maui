@@ -37,7 +37,7 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 - **iOS**: `xcrun simctl spawn booted log stream --predicate 'processImagePath contains "[AppName]"' --level=debug`
 - **Android**: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception)"`
 
-See `.github/instructions/common-testing-patterns.md` section "Error: App Crashes on Launch" for complete patterns.
+See [common-testing-patterns.md](../instructions/common-testing-patterns.md) section "Error: App Crashes on Launch" for complete patterns.
 
 ## ⚡ GETTING STARTED (Progressive Disclosure)
 
