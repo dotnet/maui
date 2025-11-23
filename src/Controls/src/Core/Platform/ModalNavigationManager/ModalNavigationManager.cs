@@ -202,113 +202,135 @@ namespace Microsoft.Maui.Controls.Platform
 
 			await _waitForModalToFinishTask;
 
-			Page modal = _modalPages[_modalPages.Count - 1].Page;
+			var tcs = new TaskCompletionSource<bool>();
+			var previousTask = _waitForModalToFinishTask;
+			_waitForModalToFinishTask = tcs.Task;
 
-			if (_window.OnModalPopping(modal))
+			try
 			{
-				_window.OnPopCanceled();
-				return null;
-			}
+				Page modal = _modalPages[_modalPages.Count - 1].Page;
 
-			_modalPages.Remove(modal);
+				if (_window.OnModalPopping(modal))
+				{
+					_window.OnPopCanceled();
+					return null;
+				}
 
-			if (FireLifeCycleEvents)
-			{
-				modal.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Pop));
-			}
+				_modalPages.Remove(modal);
 
-			modal.SendDisappearing();
+				if (FireLifeCycleEvents)
+				{
+					modal.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Pop));
+				}
 
-			// With shell we want to make sure to only fire the appearing event
-			// on the final page that will be visible after the pop has completed
-			if (_window.Page is Shell shell)
-			{
-				if (!shell.CurrentItem.CurrentItem.IsPoppingModalStack)
+				modal.SendDisappearing();
+
+				// With shell we want to make sure to only fire the appearing event
+				// on the final page that will be visible after the pop has completed
+				if (_window.Page is Shell shell)
+				{
+					if (!shell.CurrentItem.CurrentItem.IsPoppingModalStack)
+					{
+						CurrentPage?.SendAppearing();
+					}
+				}
+				else
 				{
 					CurrentPage?.SendAppearing();
 				}
+
+				bool isPlatformReady = IsModalReady;
+				Task popTask =
+					(isPlatformReady && !syncing) ? PopModalPlatformAsync(animated) : Task.CompletedTask;
+
+				await popTask;
+				modal.Parent?.RemoveLogicalChild(modal);
+				_window.OnModalPopped(modal);
+
+				if (FireLifeCycleEvents)
+				{
+					modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Pop));
+					CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal, NavigationType.Pop));
+				}
+
+				if (!isPlatformReady)
+					SyncModalStackWhenPlatformIsReady();
+
+				return modal;
 			}
-			else
+			finally
 			{
-				CurrentPage?.SendAppearing();
+				tcs.SetResult(true);
 			}
-
-			bool isPlatformReady = IsModalReady;
-			Task popTask =
-				(isPlatformReady && !syncing) ? PopModalPlatformAsync(animated) : Task.CompletedTask;
-
-			await popTask;
-			modal.Parent?.RemoveLogicalChild(modal);
-			_window.OnModalPopped(modal);
-
-			if (FireLifeCycleEvents)
-			{
-				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Pop));
-				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal, NavigationType.Pop));
-			}
-
-			if (!isPlatformReady)
-				SyncModalStackWhenPlatformIsReady();
-
-			return modal;
 		}
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
 			await _waitForModalToFinishTask;
 
-			_window.OnModalPushing(modal);
+			var tcs = new TaskCompletionSource<bool>();
+			var previousTask = _waitForModalToFinishTask;
+			_waitForModalToFinishTask = tcs.Task;
 
-			var previousPage = CurrentPage;
-			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
-			_window.AddLogicalChild(modal);
-
-			if (FireLifeCycleEvents)
+			try
 			{
-				previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Push));
-			}
+				_window.OnModalPushing(modal);
 
-			if (_window.Page is Shell shell)
-			{
-				// With shell we want to make sure to only fire the appearing event
-				// on the final page that will be visible after the pop has completed
-				if (!shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				var previousPage = CurrentPage;
+				_modalPages.Add(new NavigationStepRequest(modal, true, animated));
+				_window.AddLogicalChild(modal);
+
+				if (FireLifeCycleEvents)
+				{
+					previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Push));
+				}
+
+				if (_window.Page is Shell shell)
+				{
+					// With shell we want to make sure to only fire the appearing event
+					// on the final page that will be visible after the pop has completed
+					if (!shell.CurrentItem.CurrentItem.IsPushingModalStack)
+					{
+						previousPage?.SendDisappearing();
+						CurrentPage?.SendAppearing();
+					}
+				}
+				else
 				{
 					previousPage?.SendDisappearing();
 					CurrentPage?.SendAppearing();
 				}
-			}
-			else
-			{
-				previousPage?.SendDisappearing();
-				CurrentPage?.SendAppearing();
-			}
 
-			bool isPlatformReady = IsModalReady;
-			if (isPlatformReady && !syncing)
-			{
-				if (ModalStack.Count == 0)
+				bool isPlatformReady = IsModalReady;
+				if (isPlatformReady && !syncing)
 				{
-					modal.NavigationProxy.Inner = _window.Navigation;
-					await PushModalPlatformAsync(modal, animated);
+					if (ModalStack.Count == 0)
+					{
+						modal.NavigationProxy.Inner = _window.Navigation;
+						await PushModalPlatformAsync(modal, animated);
+					}
+					else
+					{
+						await PushModalPlatformAsync(modal, animated);
+						modal.NavigationProxy.Inner = _window.Navigation;
+					}
 				}
-				else
+
+				if (FireLifeCycleEvents)
 				{
-					await PushModalPlatformAsync(modal, animated);
-					modal.NavigationProxy.Inner = _window.Navigation;
+					previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Push));
+					CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
 				}
-			}
 
-			if (FireLifeCycleEvents)
+				_window.OnModalPushed(modal);
+
+				if (!isPlatformReady)
+					SyncModalStackWhenPlatformIsReady();
+			}
+			finally
 			{
-				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Push));
-				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
+				tcs.SetResult(true);
 			}
-
-			_window.OnModalPushed(modal);
-
-			if (!isPlatformReady)
-				SyncModalStackWhenPlatformIsReady();
 		}
 
 		void SettingNewPage()

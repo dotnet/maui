@@ -2,4 +2,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+    
+    <VerticalStackLayout Padding="30" Spacing="25">
+        <Label Text="Issue #32310 Reproduction"
+               FontSize="24"
+               HorizontalOptions="Center" />
+        
+        <Button x:Name="TestButton"
+                Text="Test Modal Hang (One Task.Yield)"
+                Clicked="OnTestButtonClicked" />
+        
+        <Button x:Name="TestButton2"
+                Text="Test Modal Working (Two Task.Yields)"
+                Clicked="OnTestButton2Clicked" />
+        
+        <Label x:Name="StatusLabel"
+               Text="Ready"
+               HorizontalOptions="Center" />
+    </VerticalStackLayout>
+    
 </ContentPage>
