@@ -251,7 +251,7 @@ catch (Exception ex)
 **🚨 CRITICAL: .NET 10 Native Scripting (NOT dotnet-script)**
 
 - ✅ **DO**: Use `dotnet run yourscript.cs` (.NET 10 native scripting)
-- ✅ **DO**: Use `#:package Appium.WebDriver@8.0.1` directive
+- ✅ **DO**: Use `#:package Appium.WebDriver@8.0.1` directive (latest stable version)
 - ❌ **DON'T**: Use `dotnet script` or `dotnet-script` commands
 - ❌ **DON'T**: Use `#r` directive syntax (that's for dotnet-script, not .NET 10)
 - ❌ **DON'T**: Create scripts in `/tmp` or repository root

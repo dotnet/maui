@@ -96,7 +96,7 @@ cat /tmp/android_test.log | grep "TEST OUTPUT"
 
 ```csharp
 // File: test_pr_XXXXX.cs (use .cs NOT .csx)
-#r "nuget: Appium.WebDriver, 5.0.0-rc.6"
+#r "nuget: Appium.WebDriver, 8.0.1"
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 

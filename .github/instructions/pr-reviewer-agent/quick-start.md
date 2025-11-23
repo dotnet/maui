@@ -43,7 +43,12 @@ Read these in order:
    5. Write review → Eliminate redundancy
    ```
 
-3. **Special Cases** (30 seconds - read if applicable)
+3. **UI Interaction Rule** (10 seconds)
+   - For ANY device UI interaction, use **Appium** (Appium.WebDriver@8.0.1)
+   - NEVER use `adb shell input` or `xcrun simctl ui` commands
+   - See [core-guidelines.md](core-guidelines.md#ui-automation-always-use-appium)
+
+4. **Special Cases** (30 seconds - read if applicable)
    - CollectionView/CarouselView PR? → Read [collectionview-handler-detection.md](collectionview-handler-detection.md)
    - SafeArea PR? → Read [safearea-testing.instructions.md](../safearea-testing.instructions.md)
    - UI test files in PR? → Read [uitests.instructions.md](../uitests.instructions.md)

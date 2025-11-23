@@ -2,15 +2,18 @@
 
 ## ⏱️ TIME AND THOROUGHNESS
 
-**CRITICAL: You have unlimited time. Never skip testing or cut corners due to time concerns.**
+**CRITICAL: Quality over speed. Never skip testing to save time.**
 
 - ✅ **DO**: Take as much time as needed to thoroughly test and validate
 - ✅ **DO**: Build and test multiple scenarios, even if it takes 30+ minutes
 - ✅ **DO**: Test every edge case you can think of
-- ✅ **DO**: Continue working until the review is complete and comprehensive
+- ✅ **DO**: Use time budgets (see testing-guidelines.md) as **estimates for planning**, not hard limits
+- ✅ **DO**: If exceeding typical time ranges, use checkpoint system to get guidance
 - ❌ **DON'T**: Say things like "due to time constraints" or "given time limitations"
-- ❌ **DON'T**: Skip testing because you think it will take too long
+- ❌ **DON'T**: Skip testing because "it's taking too long"
 - ❌ **DON'T**: Rush through the review to save time
+
+**Time budgets are guides to help you recognize when to checkpoint, not deadlines.**
 
 **The user will stop you when they want you to stop. Until then, keep testing and validating.**
 

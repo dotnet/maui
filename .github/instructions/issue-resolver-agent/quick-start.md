@@ -46,6 +46,13 @@ git branch --show-current
 **For reproduction**: ✅ Use Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox/`)
 **For UI tests**: ✅ Use TestCases.HostApp (`src/Controls/tests/TestCases.HostApp/`)
 
+### UI Interaction Rule (10 seconds)
+
+**For ANY device UI interaction**: Use **Appium** (Appium.WebDriver@8.0.1)
+- ✅ Use Appium for taps, swipes, text entry
+- ❌ NEVER use `adb shell input` or `xcrun simctl ui` commands
+- See [../appium-control.instructions.md](../appium-control.instructions.md) for templates
+
 ### Mandatory Checkpoints (30 seconds)
 
 **🛑 CHECKPOINT 1 - After Reproduction (MANDATORY)**

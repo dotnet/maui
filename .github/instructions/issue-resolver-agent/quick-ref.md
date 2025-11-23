@@ -111,7 +111,7 @@ public static void MapProperty(IMyHandler handler, IMyView view)
 
 ```csharp
 // File: test_issue_XXXXX.cs (use .cs NOT .csx)
-#r "nuget: Appium.WebDriver, 5.0.0-rc.6"
+#r "nuget: Appium.WebDriver, 8.0.1"
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 

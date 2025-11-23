@@ -17,6 +17,8 @@ Comprehensive guidance for creating automated UI tests for .NET MAUI using Appiu
 
 ### All Platforms
 
+**Appium Package**: All UI tests use `Appium.WebDriver@8.0.1` (latest stable version)
+
 ```bash
 # Restore tools (required)
 

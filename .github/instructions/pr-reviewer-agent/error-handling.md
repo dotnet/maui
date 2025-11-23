@@ -8,7 +8,42 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ## 🚫 Common Mistakes & How to Avoid Them
 
-### Mistake #1: Building the Wrong App ⭐ MOST COMMON
+### Mistake #1: Skipping Testing When Device Not Found ⭐ MOST CRITICAL
+
+**Symptom**: Agent sees "no device connected" and creates code-only review without attempting to start emulator
+
+**Why it happens**:
+- Sees `adb devices` shows no devices
+- Assumes testing is impossible
+- Doesn't attempt emulator startup
+- Skips directly to code-only review
+
+**How to avoid**:
+1. ✅ Check for device: `adb devices`
+2. ✅ If none found, **START EMULATOR** (see quick-ref.md Android Emulator Startup section)
+3. ✅ If emulator fails, examine logs: `cat /tmp/emulator.log`
+4. ✅ If genuine blocker, CREATE CHECKPOINT (see testing-guidelines.md "Manual Verification Required")
+5. ✅ Provide user with manual test steps
+
+**Complete Android startup sequence**:
+```bash
+# If no device found, start emulator
+if [ -z "$(adb devices | grep -v 'List' | grep 'device')" ]; then
+    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+    adb wait-for-device
+    until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
+        sleep 2
+        echo -n "."
+    done
+    echo "✅ Emulator ready"
+fi
+```
+
+**Cost if not avoided**: **COMPLETE TESTING FAILURE** - PR approved with ZERO validation
+
+---
+
+### Mistake #2: Building the Wrong App ⭐ VERY COMMON
 
 **Symptom**: Agent tries to build `TestCases.HostApp` for PR validation
 
@@ -26,7 +61,7 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #2: Planning Before Reading Instructions
+### Mistake #3: Planning Before Reading Instructions
 
 **Symptom**: Agent creates detailed todo list immediately after user request
 
@@ -44,7 +79,7 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #3: Not Checking Current Branch
+### Mistake #4: Not Checking Current Branch
 
 **Symptom**: Planning to "fetch PR" or "checkout branch" when already on correct branch
 
@@ -62,7 +97,7 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #4: Building Without User Validation
+### Mistake #5: Building Without User Validation
 
 **Symptom**: Agent modifies Sandbox code and immediately starts building
 
@@ -81,7 +116,7 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #5: Only Testing WITH the Fix
+### Mistake #6: Only Testing WITH the Fix
 
 **Symptom**: Agent only tests the PR branch, doesn't test baseline
 
@@ -101,7 +136,7 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #6: Giving Up Without Attempting Solutions ⭐ CRITICAL
+### Mistake #7: Giving Up Without Attempting Solutions ⭐ CRITICAL
 
 **Symptom**: Agent sees "no device connected" or other blocker and skips testing entirely
 
@@ -177,7 +212,7 @@ After attempting solutions and hitting genuine blocker:
 
 ---
 
-### Mistake #7: Using ADB/xcrun Instead of Appium for UI Interaction ⭐ CRITICAL
+### Mistake #8: Using ADB/xcrun Instead of Appium for UI Interaction ⭐ CRITICAL
 
 **Symptom**: Agent uses `adb shell input tap` or `xcrun simctl ui` to interact with app
 
@@ -199,7 +234,7 @@ After attempting solutions and hitting genuine blocker:
 ```bash
 # 1. Create Appium script (.cs file, NOT .csx)
 cat > test_pr_XXXXX.cs << 'EOF'
-#r "nuget: Appium.WebDriver, 5.0.0-rc.6"
+#r "nuget: Appium.WebDriver, 8.0.1"
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 
@@ -255,7 +290,7 @@ dotnet run test_pr_XXXXX.cs
 
 ---
 
-### Mistake #8: Surface-Level Code Review
+### Mistake #9: Surface-Level Code Review
 
 **Symptom**: Describing WHAT changed without explaining WHY
 

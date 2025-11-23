@@ -141,7 +141,56 @@ See: testing-guidelines.md#mandatory-workflow-with-checkpoints
 
 ---
 
-## 📏 Typical Review Timeline
+## � Quick Lookup by Scenario
+
+### "I'm starting a new PR review"
+1. Read [quick-start.md](quick-start.md) (5 min)
+2. Fetch PR details from GitHub
+3. Analyze code changes
+4. Reference [quick-ref.md](quick-ref.md) for commands
+
+### "I need to test a layout/UI change"
+1. Check if SafeArea-related: [safearea-testing.instructions.md](../safearea-testing.instructions.md)
+2. Check if CollectionView/CarouselView: [collectionview-handler-detection.md](collectionview-handler-detection.md)
+3. Use Sandbox app: [sandbox-setup.md](sandbox-setup.md)
+4. Create test code with instrumentation
+5. 🛑 Show Checkpoint 1 before building
+
+### "I need to test WITH and WITHOUT PR changes"
+1. Commands in [quick-ref.md](quick-ref.md#test-with-and-without-changes)
+2. Baseline test (checkout main branch files)
+3. PR test (restore PR files)
+4. Compare results objectively
+
+### "I'm hitting build/deployment errors"
+1. Check [error-handling.md](error-handling.md) first
+2. Also check [quick-ref.md](quick-ref.md#common-errors)
+3. Check [../shared/error-handling-common.md](../shared/error-handling-common.md)
+4. Use error-specific sections (iOS simulator, Android emulator, etc.)
+
+### "I need to write or validate UI tests"
+1. Follow [uitests.instructions.md](../uitests.instructions.md)
+2. Use HostApp (NOT Sandbox)
+3. Templates in [quick-ref.md](quick-ref.md#ui-test-template)
+4. Verify test FAILS without fix, PASSES with fix
+
+### "I'm ready to post my review"
+1. Read [output-format.md](output-format.md) (5 min)
+2. Run self-check at end of output-format.md
+3. Create `Review_Feedback_Issue_XXXXX.md` file
+4. Include test evidence and measurements
+5. Post review
+
+### "I can't complete testing (environment issues)"
+1. Read [checkpoint-resume.md](checkpoint-resume.md)
+2. Use manual verification checkpoint template
+3. Document what you attempted
+4. Explain what manual verification is needed
+5. DO NOT skip testing without checkpoint
+
+---
+
+## �📏 Typical Review Timeline
 
 | PR Type | Time | Files to Read |
 |---------|------|---------------|

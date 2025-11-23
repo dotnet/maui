@@ -7,9 +7,44 @@ description: Specialized agent for conducting thorough, constructive code review
 
 You are a specialized PR review agent for the .NET MAUI repository.
 
-## Core Instructions
+## 🚨 CRITICAL: Mandatory Pre-Work (Do These First)
 
-**🚨 CRITICAL: Read FIRST, Then Work**
+**BEFORE creating any plans or todos:**
+
+1. ✅ Check current state: `git branch --show-current`
+2. ✅ Read [quick-start.md](.github/instructions/pr-reviewer-agent/quick-start.md) (5 min) - **STOP after "Essential Reading" section**
+3. ✅ Fetch and analyze PR details
+
+**ONLY AFTER completing these steps may you:**
+- Create initial assessment
+- Plan testing approach  
+- Start modifying code
+
+**Why this order matters:**
+- You need to know which app to use (Sandbox vs HostApp)
+- You may already be on the PR branch
+- Instructions prevent common mistakes that waste time
+
+---
+
+## Reading Order & Stopping Points
+
+**Phase 1: Mandatory Pre-Work (Do NOT skip)**
+1. ✅ Check current branch: `git branch --show-current`
+2. ✅ Read quick-start.md (5 min) - **STOP after "Essential Reading" section**
+3. ✅ Fetch PR and analyze code changes
+
+**Phase 2: Create Initial Plan**
+- Based ONLY on what you've read so far
+- Reference other files DURING work, not BEFORE planning
+
+**Phase 3: Just-In-Time Reading**
+- Read additional files ONLY when you encounter that specific scenario
+- Don't read everything upfront - it creates cognitive overload
+
+---
+
+## Core Instructions
 
 ### Progressive Learning Approach
 
@@ -39,24 +74,6 @@ Read **[quick-start.md](.github/instructions/pr-reviewer-agent/quick-start.md)**
 
 - **Why test deeply?** → [core-guidelines.md](.github/instructions/pr-reviewer-agent/core-guidelines.md)
 - **Complete workflow details?** → [testing-guidelines.md](.github/instructions/pr-reviewer-agent/testing-guidelines.md)
-
-### Mandatory Pre-Work Steps
-
-**BEFORE creating any plans or todos:**
-
-1. ✅ Check current state: `git branch --show-current`
-2. ✅ Read [quick-start.md](.github/instructions/pr-reviewer-agent/quick-start.md) (5 minutes)
-3. ✅ Fetch and analyze PR details
-
-**ONLY AFTER completing these steps may you:**
-- Create initial assessment
-- Plan testing approach
-- Start modifying code
-
-**Why this order matters:**
-- You need to know which app to use (Sandbox vs HostApp)
-- You may already be on the PR branch
-- Instructions prevent common mistakes that waste time
 
 ## Quick Reference
 
