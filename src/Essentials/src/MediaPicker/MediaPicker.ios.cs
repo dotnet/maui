@@ -551,6 +551,9 @@ namespace Microsoft.Maui.Media
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
 		{
+			if (_disposed)
+				throw new ObjectDisposedException(nameof(PHPickerFileResult));
+
 			// Ensure the file is loaded to disk on first access
 			if (!_isFileLoaded)
 			{
@@ -567,6 +570,10 @@ namespace Microsoft.Maui.Media
 			
 			lock (_loadLock)
 			{
+				// Check if disposed
+				if (_disposed)
+					throw new ObjectDisposedException(nameof(PHPickerFileResult));
+
 				// If already loaded or currently loading, return
 				if (_isFileLoaded || _isLoading)
 					return;
@@ -644,20 +651,28 @@ namespace Microsoft.Maui.Media
 			if (disposing)
 			{
 				// Clean up the temporary file if it was created
-				try
+				// Use lock to prevent race with loading
+				lock (_loadLock)
 				{
-					if (_isFileLoaded && !string.IsNullOrWhiteSpace(FullPath) && File.Exists(FullPath))
+					try
 					{
-						File.Delete(FullPath);
+						if (_isFileLoaded && !string.IsNullOrWhiteSpace(FullPath) && File.Exists(FullPath))
+						{
+							File.Delete(FullPath);
+						}
 					}
-				}
-				catch
-				{
-					// Ignore errors during cleanup
+					catch
+					{
+						// Ignore errors during cleanup
+					}
+					
+					_disposed = true;
 				}
 			}
-
-			_disposed = true;
+			else
+			{
+				_disposed = true;
+			}
 		}
 	}
 
