@@ -239,14 +239,35 @@ After reverting:
 
 ## 📋 Common Commands (Copy-Paste)
 
-**Sandbox App Testing** (use these scripts for all PR validation):
-```powershell
-# iOS
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+**🚨 MANDATORY: Always Use BuildAndRunSandbox.ps1**
 
+**There is ONLY ONE way to test Sandbox app - use the script:**
+
+```powershell
 # Android
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+
+# iOS
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 ```
+
+**What the script does for you** (so you don't do these manually):
+- ✅ Detects and boots devices automatically
+- ✅ Builds the Sandbox app
+- ✅ Deploys to device
+- ✅ Starts/stops Appium server
+- ✅ Runs your Appium test script
+- ✅ Captures all logs to `SandboxAppium/` directory
+
+**❌ DO NOT do any of these manually**:
+- ❌ `dotnet build ... -t:Run` - Script handles this
+- ❌ `adb logcat` - Script captures logs automatically
+- ❌ Manually create/run Appium scripts - Script does this
+- ❌ `xcrun simctl launch` - Script handles this
+
+**✅ YOUR ONLY JOB**: Edit `SandboxAppium/RunWithAppiumTest.cs` with your test logic
+
+---
 
 **HostApp UI Testing** (only when writing/validating UI tests):
 ```powershell
@@ -259,31 +280,16 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue
 
 See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing-patterns.md) for more details.
 
-**Manual commands** (for troubleshooting):
-```bash
-# 1. Check for device
-export DEVICE_UDID=$(adb devices | grep device | awk '{print $1}' | head -1)
-
-# 2. If no device, START EMULATOR (don't skip!)
-if [ -z "$DEVICE_UDID" ]; then
-    echo "No device found. Starting emulator..."
-    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
-    adb wait-for-device
-fi
-
-# 3. Build and deploy
-# ... see quick-ref.md for complete workflow
-```
-
 ---
 
-## ❌ Top 5 Mistakes to Avoid
+## ❌ Top 6 Mistakes to Avoid
 
-1. ❌ **Building without showing test code first** → Wasted 15+ minutes if wrong
-2. ❌ **Using HostApp for PR validation** → Should use Sandbox
-3. ❌ **Only testing WITH fix** → Must test baseline too
-4. ❌ **Not checking current branch first** → Might already be on PR branch
-5. ❌ **Forgetting to eliminate redundancy in review** → Read [output-format.md](output-format.md) before posting
+1. ❌ **Using manual commands instead of BuildAndRunSandbox.ps1** → Script does everything automatically
+2. ❌ **Building without showing test code first** → Wasted 15+ minutes if wrong
+3. ❌ **Using HostApp for PR validation** → Should use Sandbox
+4. ❌ **Only testing WITH fix** → Must test baseline too
+5. ❌ **Not checking current branch first** → Might already be on PR branch
+6. ❌ **Forgetting to eliminate redundancy in review** → Read [output-format.md](output-format.md) before posting
 
 ---
 

@@ -615,13 +615,36 @@ Create a checkpoint when:
 
 **Platform**: [Android/iOS/Windows/Mac]
 
+**🚨 MANDATORY: Use BuildAndRunSandbox.ps1 Script**
+
+There is **ONLY ONE WAY** to test Sandbox app changes:
+
+```powershell
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+```
+
+**Do NOT do these manually**:
+- ❌ `dotnet build` commands
+- ❌ `adb logcat` or `xcrun simctl launch` commands  
+- ❌ Manually run Appium
+- ❌ Any build/deploy steps by hand
+
+**The script does EVERYTHING**:
+- ✅ Detects and boots devices
+- ✅ Builds and deploys Sandbox app
+- ✅ Manages Appium server
+- ✅ Runs your test script (`SandboxAppium/RunWithAppiumTest.cs`)
+- ✅ Captures all logs
+
 **To verify this PR works, you'll need to**:
 
-1. **Build and run sandbox app with PR changes**:
+1. **Edit your Appium test script**: `SandboxAppium/RunWithAppiumTest.cs`
+   - Add test logic (tap buttons, verify behavior)
+   
+2. **Run the automated script**:
    ```powershell
    pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
    ```
-   (This handles device detection, building, deployment, and Appium test execution)
 
 2. **Reproduce the original issue** (verify bug exists):
    - Action: [specific steps]
