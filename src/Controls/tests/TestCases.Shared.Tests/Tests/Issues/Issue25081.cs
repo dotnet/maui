@@ -15,7 +15,7 @@ public class Issue25081 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
-	public async Task VerifyFlyoutIconBackgroundColor()
+	public void VerifyFlyoutIconBackgroundColor()
 	{
 		App.WaitForElement("ColorChangeButton");
 		VerifyScreenshot(includeTitleBar: true);
@@ -23,7 +23,7 @@ public class Issue25081 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.Shell)]
-	public async Task VerifyDynamicFlyoutIconBackgroundColor()
+	public void VerifyDynamicFlyoutIconBackgroundColor()
 	{
 
 		App.WaitForElement("ColorChangeButton");
