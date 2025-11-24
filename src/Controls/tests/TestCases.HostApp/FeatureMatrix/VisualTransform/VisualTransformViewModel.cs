@@ -50,9 +50,9 @@ public class VisualTransformViewModel : INotifyPropertyChanged
 					? new Shadow
 					{
 						Radius = 2,
-						Opacity = 0.15f,
+						Opacity = 0.9f,
 						Brush = new SolidColorBrush(Colors.Gray),
-						Offset = new Point(0, 0) // No offset to prevent positioning issues
+						Offset = new Point(10, 10) // No offset to prevent positioning issues
 					}
 					: null;
 				OnPropertyChanged(nameof(HasShadow));
