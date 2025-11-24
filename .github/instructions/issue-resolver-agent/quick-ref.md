@@ -499,7 +499,7 @@ git rebase origin/main
 - [Testing edge cases](solution-development.md#edge-case-testing)
 
 **Before PR**:
-- [UI Testing Guide](../../docs/UITesting-Guide.md)
+- [UI Testing Guide](../../../docs/UITesting-Guide.md)
 - [PR submission checklist](pr-submission.md#pr-checklist)
 
 ---

@@ -143,7 +143,7 @@ Reviews .NET MAUI pull requests through code analysis AND hands-on device testin
 
 ## Related Resources
 
-- [Core Guidelines](.github/instructions/pr-reviewer-agent/core-guidelines.md) - Full workflow details
-- [Testing Guidelines](.github/instructions/pr-reviewer-agent/testing-guidelines.md) - Platform setup, build patterns
-- [Appium Instructions](.github/instructions/appium-control.instructions.md) - UI automation patterns
-- [Common Testing Patterns](.github/instructions/common-testing-patterns.md) - Device setup, error checking
+- [Core Guidelines](../instructions/pr-reviewer-agent/core-guidelines.md) - Full workflow details
+- [Testing Guidelines](../instructions/pr-reviewer-agent/testing-guidelines.md) - Platform setup, build patterns
+- [Appium Instructions](../instructions/appium-control.instructions.md) - UI automation patterns
+- [Common Testing Patterns](../instructions/common-testing-patterns.md) - Device setup, error checking
