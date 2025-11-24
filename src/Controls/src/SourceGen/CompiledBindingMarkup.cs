@@ -407,19 +407,29 @@ internal struct CompiledBindingMarkup
 			}
 		}
 
-		if (isNullable)
+		if (bindingPathParts.Count == 0)
 		{
-			if (propertyType.IsValueType)
-			{
-				propertyType = _context.Compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(propertyType);
-			}
-			else
-			{
-				propertyType = propertyType.WithNullableAnnotation(NullableAnnotation.Annotated);
-			}
+			// Handle self-binding case (path is "." or empty after splitting)
+			// For self-bindings, the property type is the source type itself
+			// and there's no property to set, so we mark it as not writable
+			setterOptions = new SetterOptions(
+				IsWritable: false,
+				AcceptsNullValue: sourceType.IsTypeNullable(enabledNullable: true));
 		}
 
+		// After the loop, update propertyType to the type of the last property in the path
+		// For self-bindings (empty path), propertyType remains as sourceType
 		propertyType = previousPartType;
+
+		// Apply nullable annotation if any part of the path introduces nullability
+		// For reference types, mark as nullable so the TypedBinding signature is correct
+		// For value types, we don't mark as nullable here because GenerateGetterExpression
+		// will add ?? default fallback for non-nullable value types with conditional access
+		if (isNullable && !propertyType.IsValueType)
+		{
+			propertyType = propertyType.WithNullableAnnotation(NullableAnnotation.Annotated);
+		}
+
 		bindingPath = new EquatableArray<IPathPart>(bindingPathParts.ToArray());
 		return true;
 	}

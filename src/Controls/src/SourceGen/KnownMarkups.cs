@@ -34,16 +34,24 @@ internal class KnownMarkups
 		var typename = member.Substring(0, dotIdx);
 		var membername = member.Substring(dotIdx + 1);
 
-		var typeSymbol = typename.GetTypeSymbol(context, markupNode);
-		if (typeSymbol == null)
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(typename, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+		if (!xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
 		{
+			//fallback to guessing, if it's a clr-namespace
+			if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
+			{
+				value = $"global::{ns}.{xmlType.Name}.{membername}";
+				return true;
+			}
+
 			//FIXME
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typename}"));
 			value = string.Empty;
 			return false;
 		}
-		var field = typeSymbol.GetAllFields(membername, context).FirstOrDefault(f => f.IsStatic);
-		var property = typeSymbol.GetAllProperties(membername, context).FirstOrDefault(p => p.IsStatic);
+		
+		var field = typeSymbol!.GetAllFields(membername, context).FirstOrDefault(f => f.IsStatic);
+		var property = typeSymbol!.GetAllProperties(membername, context).FirstOrDefault(p => p.IsStatic);
 
 		//TODO handle enums, or contstants
 		if (field == null && property == null)
@@ -282,10 +290,17 @@ internal class KnownMarkups
 
 		static string GetBindingPath(ElementNode node)
 		{
-			if (node.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
+			// Try to find Path property - check both null and empty string namespaces
+			// as the namespace can vary depending on context (e.g., when x:DataType is present)
+			if (node.Properties.TryGetValue(new XmlName(null, "Path"), out var pathNode)
 				&& pathNode is ValueNode { Value: string pathValue })
 			{
 				return pathValue;
+			}
+			else if (node.Properties.TryGetValue(new XmlName("", "Path"), out pathNode)
+				&& pathNode is ValueNode { Value: string pathValue2 })
+			{
+				return pathValue2;
 			}
 			else if (node.CollectionItems.Count == 1
 				&& node.CollectionItems[0] is ValueNode { Value: string singleCollectionItemValue })
@@ -467,6 +482,50 @@ internal class KnownMarkups
 		}
 	}
 
+	internal static bool ProvideValueForDataTemplateExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.DataTemplate")!;
+
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+			&& !markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+			&& markupNode.CollectionItems.Count == 1)
+			typeNameNode = markupNode.CollectionItems[0];
+
+		if (typeNameNode is not ValueNode vn)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid DataTemplate"));
+			value = "default";
+			return false;
+		}
+
+		var typeName = vn.Value as string;
+		if (IsNullOrEmpty(typeName))
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid DataTemplate"));
+			value = "default";
+			return false;
+		}
+
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+		if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+		{
+			context.Types[markupNode] = typeSymbol!;
+			value = $"new global::Microsoft.Maui.Controls.DataTemplate(typeof({typeSymbol!.ToFQDisplayString()}))";
+			return true;
+		}
+
+		//fallback to guessing, if it's a clr-namespace
+		if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
+		{
+			value = $"new global::Microsoft.Maui.Controls.DataTemplate(typeof(global::{ns}.{xmlType.Name}))";
+			return true;
+		}
+
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, null, $"{typeName}"));
+		value = "default";
+		return false;
+	}
+
 	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		// should be possible to return the right value, as soon as we no longer use the namescope
@@ -481,7 +540,7 @@ internal class KnownMarkups
 		while (currentcontext is not null && node is not null)
 		{
 			while (currentcontext is not null && !currentcontext.Scopes.ContainsKey(node))
-				currentcontext = context.ParentContext;
+				currentcontext = currentcontext.ParentContext;
 			if (currentcontext is null)
 				break;
 			var namescope = currentcontext.Scopes[node];
@@ -520,10 +579,11 @@ internal class KnownMarkups
 
 		// Get the target property type for type conversion
 		ITypeSymbol? propertyType = null;
+		IFieldSymbol? bpFieldSymbol = null;
 		if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
 		{
 			var localName = propertyName.LocalName;
-			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
+			bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
 			var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 			propertyType = typeandconverter?.type ?? propertySymbol?.Type;
@@ -532,6 +592,32 @@ internal class KnownMarkups
 		// Default to object if we can't determine property type
 		if (propertyType is null)
 			propertyType = context.Compilation.ObjectType;
+
+		// Helper to get value from node - handles both ValueNode (direct conversion) and ElementNode (via getNodeValue)
+		string? GetNodeValueString(INode? targetNode)
+		{
+			if (targetNode is null)
+				return null;
+				
+			if (targetNode is ValueNode vn)
+			{
+				// For ValueNode, convert directly using the property type
+				if (bpFieldSymbol is not null)
+					return vn.ConvertTo(bpFieldSymbol, writer, context, context.Variables.TryGetValue(node.Parent, out var pv) ? pv : null);
+				else if (propertyType is not null)
+					return vn.ConvertTo(propertyType, writer, context, context.Variables.TryGetValue(node.Parent, out var pv) ? pv : null);
+				else
+					return NodeSGExtensions.ValueForLanguagePrimitive(vn.Value as string ?? string.Empty, context.Compilation.ObjectType, context, vn);
+			}
+			else if (targetNode is ElementNode)
+			{
+				// For ElementNode, use getNodeValue to get the variable reference
+				var local = getNodeValue(targetNode, propertyType);
+				return local.ValueAccessor;
+			}
+			
+			return null;
+		}
 
 		// Extract Light, Dark, and Default values from the markup extension
 		string? lightValue = null;
@@ -543,49 +629,79 @@ internal class KnownMarkups
 			|| node.Properties.TryGetValue(new XmlName(null, "Default"), out defaultNode)
 			|| (node.CollectionItems.Count == 1 && (defaultNode = node.CollectionItems[0]) != null))
 		{
-			var defaultLocal = getNodeValue(defaultNode, propertyType);
-			defaultValue = defaultLocal.ValueAccessor;
+			defaultValue = GetNodeValueString(defaultNode);
 		}
 
 		// Check for Light property
 		if (node.Properties.TryGetValue(new XmlName("", "Light"), out INode? lightNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Light"), out lightNode))
 		{
-			var lightLocal = getNodeValue(lightNode, propertyType);
-			lightValue = lightLocal.ValueAccessor;
+			lightValue = GetNodeValueString(lightNode);
 		}
 
 		// Check for Dark property
 		if (node.Properties.TryGetValue(new XmlName("", "Dark"), out INode? darkNode)
 			|| node.Properties.TryGetValue(new XmlName(null, "Dark"), out darkNode))
 		{
-			var darkLocal = getNodeValue(darkNode, propertyType);
-			darkValue = darkLocal.ValueAccessor;
+			darkValue = GetNodeValueString(darkNode);
 		}
 
 		// At least one value must be set
 		if (lightValue is null && darkValue is null && defaultValue is null)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
-				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError,
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""),
 				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
 			value = string.Empty;
 			return false;
 		}
 
-		// Build the AppThemeBinding initialization expression
-		var parts = new List<string>();
-		
-		if (lightValue is not null)
-			parts.Add($"Light = {lightValue}");
-		
-		if (darkValue is not null)
-			parts.Add($"Dark = {darkValue}");
-		
-		if (defaultValue is not null)
-			parts.Add($"Default = {defaultValue}");
+		// Determine which helper method to call based on which values are set
+		string helperMethodName;
+		var args = new List<string>();
 
-		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
+		if (lightValue is not null && darkValue is not null && defaultValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLightDarkDefault";
+			args.Add(lightValue);
+			args.Add(darkValue);
+			args.Add(defaultValue);
+		}
+		else if (lightValue is not null && darkValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLightDark";
+			args.Add(lightValue);
+			args.Add(darkValue);
+		}
+		else if (lightValue is not null && defaultValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLightDefault";
+			args.Add(lightValue);
+			args.Add(defaultValue);
+		}
+		else if (darkValue is not null && defaultValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingDarkDefault";
+			args.Add(darkValue);
+			args.Add(defaultValue);
+		}
+		else if (lightValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingLight";
+			args.Add(lightValue);
+		}
+		else if (darkValue is not null)
+		{
+			helperMethodName = "CreateAppThemeBindingDark";
+			args.Add(darkValue);
+		}
+		else // defaultValue is not null
+		{
+			helperMethodName = "CreateAppThemeBindingDefault";
+			args.Add(defaultValue!);
+		}
+
+		value = $"global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.{helperMethodName}({string.Join(", ", args)})";
 		return true;
 	}
 
@@ -609,21 +725,12 @@ internal class KnownMarkups
 		}
 
 		var resource = GetResourceNode(eNode, context, (string)keyValueNode.Value);
-		if (resource != null && getNodeValue != null)
-		{
-			var lvalue = getNodeValue(resource, context.Compilation.ObjectType);
-			value = lvalue.ValueAccessor;
-			returnType = lvalue.Type;
-			return true;
-		}
-		
 		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
 		{
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
 		}
-
 
 		//if the resource is a string, try to convert it
 		if (resource.CollectionItems.Count == 1 && resource.CollectionItems[0] is ValueNode vn && vn.Value is string)
@@ -636,6 +743,14 @@ internal class KnownMarkups
 				var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
+				var converter = typeandconverter?.converter;
+				
+				// If no converter from BP, check the property's TypeConverter attribute
+				if (converter == null && propertySymbol != null)
+				{
+					List<AttributeData> attributes = [.. propertySymbol.GetAttributes(), .. propertyType!.GetAttributes()];
+					converter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+				}
 
 				if (propertyType!.Equals(context.Compilation.GetSpecialType(SpecialType.System_String), SymbolEqualityComparer.Default))
 				{
@@ -645,7 +760,7 @@ internal class KnownMarkups
 				}
 				try
 				{
-					value = vn.ConvertTo(propertyType!, typeandconverter?.converter, writer, context, parentVar);
+					value = vn.ConvertTo(propertyType!, converter, writer, context, parentVar);
 				}
 				catch (Exception)
 				{
@@ -657,6 +772,15 @@ internal class KnownMarkups
 				returnType = propertyType;
 				return true;
 			}
+		}
+		
+		// If we get here and getNodeValue is provided, use it as fallback
+		if (getNodeValue != null)
+		{
+			var lvalue = getNodeValue(resource, context.Compilation.ObjectType);
+			value = lvalue.ValueAccessor;
+			returnType = lvalue.Type;
+			return true;
 		}
 
 		//Fallback to runtime resolution of StaticResource

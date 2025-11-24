@@ -6,7 +6,9 @@ parameters:
 - name: postSteps
   type: stepList
   default: []
-- name: pool
+- name: buildPool
+  type: object
+- name: testPool
   type: object
 - name: enableSourceBuild
   type: boolean
@@ -46,14 +48,14 @@ parameters:
   default: $(System.DefaultWorkingDirectory)
 
 stages:
-- stage: deviceTests_ios_android
+- stage: devicetests_build
   displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
+      pool: ${{ parameters.buildPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -69,7 +71,7 @@ stages:
       jobs:
       - job: builddevice_tests
         displayName: Build Device Tests
-        timeoutInMinutes: 240
+        timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -100,10 +102,15 @@ stages:
           condition: not(succeeded())
           artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
 
+- stage: devicetests_ios
+  displayName: ${{ parameters.TargetFrameworkVersion }} iOS Helix Tests
+  dependsOn: 
+    - devicetests_build
+  jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: false
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -113,13 +120,11 @@ stages:
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
       workspace:
         clean: all
       jobs:
       - job: device_tests_ios
-        dependsOn:
-        - builddevice_tests
         displayName: Run DeviceTests iOS
         timeoutInMinutes: 240
         variables:
@@ -144,12 +149,34 @@ stages:
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
+            WorkItemTimeout: 04:00:00
+            XUnitWorkItemTimeout: 04:00:00
 
+- stage: devicetests_catalyst
+  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests
+  dependsOn: 
+    - devicetests_build
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
       - job: device_tests_maccatalyst
-        dependsOn:
-        - builddevice_tests
         displayName: Run DeviceTests MacCatalyst
-        timeoutInMinutes: 240
+        timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -173,11 +200,31 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
 
+- stage: devicetests_android
+  displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests
+  dependsOn: 
+    - devicetests_build
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
       - job: device_tests_android
-        dependsOn:
-        - builddevice_tests
         displayName: Run DeviceTests Android
-        timeoutInMinutes: 240
+        timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
