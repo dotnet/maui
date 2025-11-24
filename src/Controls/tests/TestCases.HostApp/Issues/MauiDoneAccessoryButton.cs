@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 0, "MauiDoneAccessoryView DoneButton should be accessible for UI testing", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 32825, "MauiDoneAccessoryView DoneButton should be accessible for UI testing", PlatformAffected.iOS)]
 public class MauiDoneAccessoryButton : TestContentPage
 {
 	protected override void Init()
