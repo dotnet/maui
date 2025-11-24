@@ -254,7 +254,7 @@ Examples:
 
 #### Complete UI Test Creation Guide
 
-See **[UI Tests Instructions](../../uitests.instructions.md)** for comprehensive guidance on creating UI tests.
+See **[UI Tests Instructions](../uitests.instructions.md)** for comprehensive guidance on creating UI tests.
 
 #### Quick Checklist for Issue Tests
 
@@ -347,7 +347,7 @@ dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Androi
 # ... (see uitests.instructions.md for complete iOS workflow)
 ```
 
-See [UI Tests Instructions](../../uitests.instructions.md) for:
+See [UI Tests Instructions](../uitests.instructions.md) for:
 - Complete test creation workflow
 - Platform-specific considerations
 - Troubleshooting test failures

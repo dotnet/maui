@@ -127,16 +127,16 @@ namespace Maui.Controls.Sample
 
 ## Build and Deploy for Reproduction
 
-**See [Common Testing Patterns](../../common-testing-patterns.md) for detailed build and deploy commands with error checking.**
+**See [Common Testing Patterns](../common-testing-patterns.md) for detailed build and deploy commands with error checking.**
 
 ### iOS Workflow
 
 **Complete workflow** (follow these links for detailed commands):
-1. [UDID Extraction](../../common-testing-patterns.md#ios-simulator-udid-iphone-xs-highest-ios-version) - Find iPhone Xs with highest iOS version
-2. [Device Boot](../../common-testing-patterns.md#ios-simulator-boot-with-error-checking) - Boot simulator with verification
-3. [Build Sandbox](../../common-testing-patterns.md#sandbox-app-build-ios) - Build the Sandbox app
-4. [Install App](../../common-testing-patterns.md#ios-app-install-with-error-checking) - Install to simulator
-5. [Launch with Logs](../../common-testing-patterns.md#ios-app-launch-with-console-capture) - Launch and capture console output
+1. [UDID Extraction](../common-testing-patterns.md#ios-simulator-udid-iphone-xs-highest-ios-version) - Find iPhone Xs with highest iOS version
+2. [Device Boot](../common-testing-patterns.md#ios-simulator-boot-with-error-checking) - Boot simulator with verification
+3. [Build Sandbox](../common-testing-patterns.md#sandbox-app-build-ios) - Build the Sandbox app
+4. [Install App](../common-testing-patterns.md#ios-app-install-with-error-checking) - Install to simulator
+5. [Launch with Logs](../common-testing-patterns.md#ios-app-launch-with-console-capture) - Launch and capture console output
 
 **Quick reference** (experienced users):
 ```bash
@@ -149,14 +149,14 @@ xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/issue_
 sleep 8 && cat /tmp/issue_reproduction.log
 ```
 
-See [Common Testing Patterns](../../common-testing-patterns.md) for commands with complete error checking at each step.
+See [Common Testing Patterns](../common-testing-patterns.md) for commands with complete error checking at each step.
 
 ### Android Workflow
 
 **Complete workflow**:
-1. [UDID Extraction](../../common-testing-patterns.md#android-device-udid) - Get device/emulator ID
-2. [Build and Deploy](../../common-testing-patterns.md#android-build-and-deploy-combined) - Build, install, and launch in one command
-3. [Monitor Logs](../../common-testing-patterns.md#android-logcat-monitoring) - Capture logcat output
+1. [UDID Extraction](../common-testing-patterns.md#android-device-udid) - Get device/emulator ID
+2. [Build and Deploy](../common-testing-patterns.md#android-build-and-deploy-combined) - Build, install, and launch in one command
+3. [Monitor Logs](../common-testing-patterns.md#android-logcat-monitoring) - Capture logcat output
 
 **Quick reference**:
 ```bash
@@ -165,12 +165,12 @@ dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.S
 adb logcat | grep -E "(Issue|Console|ERROR)"
 ```
 
-See [Common Testing Patterns](../../common-testing-patterns.md) for commands with complete error checking.
+See [Common Testing Patterns](../common-testing-patterns.md) for commands with complete error checking.
 
 ### Troubleshooting
 
 If builds or deployments fail, see:
-- [Common Testing Patterns: Error Handling](../../common-testing-patterns.md#common-error-handling-patterns)
+- [Common Testing Patterns: Error Handling](../common-testing-patterns.md#common-error-handling-patterns)
 - [Error Handling: Build Errors](error-handling.md#build-errors-during-reproduction)
 
 ## Verification Points

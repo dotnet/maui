@@ -223,7 +223,7 @@ After completing root cause analysis and designing your fix approach, you MUST s
 ```
 
 **Use same testing approach as pr-reviewer:**
-- Modify Sandbox app with instrumentation (see [Instrumentation Guide](../../instrumentation.instructions.md))
+- Modify Sandbox app with instrumentation (see [Instrumentation Guide](../instrumentation.instructions.md))
 - Capture measurements before and after fix
 - Document test results with actual data
 
