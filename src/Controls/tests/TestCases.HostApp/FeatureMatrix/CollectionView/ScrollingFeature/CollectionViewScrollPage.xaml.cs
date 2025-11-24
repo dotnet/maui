@@ -18,10 +18,10 @@ public partial class CollectionViewScrollPage : ContentPage
 		BindingContext = _viewModel = new CollectionViewViewModel();
 		_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
 		_viewModel.ScrollToPosition = ScrollToPosition.MakeVisible;
-		scrolledEventLabel.Text = "";
-		scrollToRequestedLabel.Text = "";
-		remainingItemsThresholdLabel.Text = "";
-		reorderCompletedLabel.Text = "";
+		scrolledEventLabel.Text = "Not Fired";
+		scrollToRequestedLabel.Text = "Not Fired";
+		remainingItemsThresholdLabel.Text = "Not Fired";
+		reorderCompletedLabel.Text = "Not Fired";
 		await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
 	}
 
