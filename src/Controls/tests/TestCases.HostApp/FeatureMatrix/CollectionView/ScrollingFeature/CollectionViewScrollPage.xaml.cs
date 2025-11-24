@@ -21,6 +21,7 @@ public partial class CollectionViewScrollPage : ContentPage
 		scrolledEventLabel.Text = "";
 		scrollToRequestedLabel.Text = "";
 		remainingItemsThresholdLabel.Text = "";
+		reorderCompletedLabel.Text = "";
 		await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
 	}
 
@@ -42,5 +43,10 @@ public partial class CollectionViewScrollPage : ContentPage
 	private void OnRemainingItemsThresholdReached(object sender, EventArgs e)
 	{
 		remainingItemsThresholdLabel.Text = "RemainingItemsThresholdReached Event Fired";
+	}
+
+	private void OnReorderCompleted(object sender, EventArgs e)
+	{
+		reorderCompletedLabel.Text = $"ReorderCompleted Event Fired";
 	}
 }
