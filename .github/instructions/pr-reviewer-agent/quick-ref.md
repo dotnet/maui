@@ -24,52 +24,41 @@ When in doubt → Sandbox app
 
 ---
 
-## 📦 Platform Testing - Quick Commands
+## 📦 Platform Testing - Use BuildAndRunSandbox.ps1
 
-**Full workflows with error checking**: See [Shared Platform Workflows](../shared/platform-workflows.md)
+**CRITICAL**: Use the `BuildAndRunSandbox.ps1` script for all Sandbox app testing. It handles all device detection, building, deployment, Appium management, and log capture automatically.
 
-### iOS Quick Start
+### Quick Start
 
-```bash
-# Get UDID, boot, build, install, launch - see shared doc for full sequence
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl boot $UDID 2>/dev/null || true
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_test.log 2>&1 &
+**Script location**: `.github/scripts/BuildAndRunSandbox.ps1`
+
+```powershell
+# iOS
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+
+# Android
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 ```
 
-📖 **Complete workflow**: [Shared Platform Workflows - iOS](../shared/platform-workflows.md#complete-ios-reproduction-workflow)
+**What the script handles**:
+- ✅ Automatic device detection and boot (iPhone Xs for iOS, first available for Android)
+- ✅ Building Sandbox app (always fresh build)
+- ✅ App installation and deployment
+- ✅ Appium server management (auto-start/stop)
+- ✅ Running your Appium test script (`SandboxAppium/RunWithAppiumTest.cs`)
+- ✅ Complete log capture to `SandboxAppium/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
+  - Console output from your test script
 
-### Android Quick Start
+**Prerequisites**:
+1. Create `SandboxAppium/RunWithAppiumTest.cs` using template:
+   ```bash
+   cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+   ```
+2. Modify the template for your test scenario
 
-**⚠️ CRITICAL**: If no device found, START AN EMULATOR - don't skip testing!
-
-```bash
-# 1. Check for device
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# 2. If no device found, start emulator (see below)
-if [ -z "$DEVICE_UDID" ]; then
-    echo "❌ No device found. Starting emulator..."
-    # See "Android Emulator Startup" section below
-fi
-
-# 3. Build and deploy
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-
-# 4. Monitor logs
-adb logcat > /tmp/android_test.log 2>&1 &
-LOGCAT_PID=$!
-
-# ... do testing ...
-
-# 5. Stop logcat and view output
-kill $LOGCAT_PID
-cat /tmp/android_test.log | grep "TEST OUTPUT"
-```
-
-📖 **Complete workflow**: [Shared Platform Workflows - Android](../shared/platform-workflows.md#complete-android-reproduction-workflow)
+📖 **Full documentation**: See [Common Testing Patterns](../common-testing-patterns.md)
 
 ---
 
@@ -94,56 +83,30 @@ cat /tmp/android_test.log | grep "TEST OUTPUT"
 
 ### Quick Appium Script Template:
 
-```csharp
-// File: test_pr_XXXXX.cs (use .cs NOT .csx)
-#r "nuget: Appium.WebDriver, 8.0.1"
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Android;
-
-var options = new AppiumOptions();
-options.AddAdditionalAppiumOption("platformName", "Android");
-options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
-options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
-options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
-options.AddAdditionalAppiumOption("noReset", true);
-
-var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
-
-// Find and tap button
-var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
-button.Click();
-
-driver.Quit();
-```
-
-**Run with**: `dotnet run test_pr_XXXXX.cs` (NOT `dotnet-script`)
-
-📖 **Full Appium guide**: [../appium-control.instructions.md](../appium-control.instructions.md)
-
----
-
-### Android Emulator Startup (REQUIRED when no device)
-
-**When to use**: `adb devices` shows no devices connected
+**CRITICAL**: Use the template file provided in the repository:
 
 ```bash
-# CRITICAL: Use subshell with & to persist emulator
-cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
+# Copy template to SandboxAppium directory
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
 
-# Wait for boot
-adb wait-for-device
-until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
-    sleep 2
-    echo -n "."
-done
-
-echo "✅ Emulator ready"
-
-# Now get device UDID
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+# Edit the file to customize for your test scenario:
+# 1. Set ISSUE_NUMBER constant
+# 2. Set PLATFORM constant ("android" or "ios")
+# 3. Implement test logic in the "Test Logic" section
 ```
 
-📖 **Full startup sequence with error handling**: [Shared Platform Workflows - Android Emulator](../shared/platform-workflows.md#android-emulator-startup)
+**The template includes**:
+- ✅ Proper .NET 10 scripting syntax (`#:package` directive)
+- ✅ Platform-specific Appium configuration
+- ✅ Automatic device UDID handling
+- ✅ PID capture for Android logcat filtering
+- ✅ Error handling and troubleshooting guidance
+- ✅ Screenshot capture before/after test
+- ✅ Complete example test logic to customize
+
+**Run with**: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform <android|ios>`
+
+📖 **Full Appium guide**: [../appium-control.instructions.md](../appium-control.instructions.md)
 
 ---
 

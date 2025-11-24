@@ -31,7 +31,25 @@ This repository uses **.NET 10's built-in scripting features** with the `#:packa
 
 ## Quick Start with Sandbox App
 
-The fastest way to experiment with Appium is using the Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox`):
+**⚡ Recommended: Use BuildAndRunSandbox.ps1 Script**
+
+The easiest way to test with Appium is using the automated script:
+
+```powershell
+# 1. Copy Appium template
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+
+# 2. Edit the template for your test scenario
+
+# 3. Run everything with one command
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+```
+
+The script handles device detection, building, deployment, Appium management, and log capture automatically. See [Common Testing Patterns](common-testing-patterns.md) for details.
+
+---
+
+**Alternative: Manual Build and Deploy** (for advanced scenarios or troubleshooting):
 
 1. **Modify `MainPage.xaml`** to add controls with `AutomationId` attributes
 
@@ -42,7 +60,7 @@ The fastest way to experiment with Appium is using the Sandbox app (`src/Control
    # Build
    dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
 
-   # Get device UDID
+   # Get device UDID (see Common Testing Patterns for full command)
    UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
    # Verify UDID was found

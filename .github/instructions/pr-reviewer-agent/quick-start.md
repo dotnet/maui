@@ -183,8 +183,8 @@ git checkout main -- src/path/to/changed/file.cs
 # Verify no differences remain
 git diff main -- src/path/to/changed/file.cs  # Should be empty
 
-# Build and test
-dotnet build ... -t:Run
+# Build and test using automated script
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 
 # Document results: "Bug reproduces"
 ```
@@ -197,8 +197,8 @@ git checkout HEAD -- src/path/to/changed/file.cs
 # Verify PR changes are back
 git diff main -- src/path/to/changed/file.cs  # Should show PR changes
 
-# Build and test
-dotnet build ... -t:Run
+# Build and test using automated script
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 
 # Document results: "Bug is fixed"
 ```
@@ -217,16 +217,27 @@ After reverting:
 
 ## 📋 Common Commands (Copy-Paste)
 
-See [quick-ref.md](quick-ref.md) for complete command sequences.
+**Sandbox App Testing** (use these scripts for all PR validation):
+```powershell
+# iOS
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 
-**iOS Testing**:
-```bash
-# Complete workflow - see quick-ref.md for full version
-UDID=$(xcrun simctl list devices available --json | jq -r '...')
-# ... build, install, launch
+# Android
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 ```
 
-**Android Testing**:
+**HostApp UI Testing** (only when writing/validating UI tests):
+```powershell
+# iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
+
+# Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+```
+
+See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing-patterns.md) for more details.
+
+**Manual commands** (for troubleshooting):
 ```bash
 # 1. Check for device
 export DEVICE_UDID=$(adb devices | grep device | awk '{print $1}' | head -1)

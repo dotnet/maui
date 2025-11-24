@@ -4,7 +4,17 @@ description: "Shared platform-specific workflows for iOS, Android, and MacCataly
 
 # Platform-Specific Workflows
 
-This document contains platform-specific workflows shared by both PR reviewer and issue resolver agents. Use these workflows for reproducing issues, building apps, and capturing diagnostics.
+**⚠️ IMPORTANT: Use Automated Scripts First**
+
+For most testing scenarios, use the automated PowerShell scripts instead of manual commands:
+- **Sandbox app testing**: Use `.github/scripts/BuildAndRunSandbox.ps1` - See [Common Testing Patterns](../common-testing-patterns.md)
+- **HostApp UI tests**: Use `.github/scripts/BuildAndRunHostApp.ps1` - See [Common Testing Patterns](../common-testing-patterns.md)
+
+**This document provides manual workflows for**:
+- Low-level troubleshooting when scripts fail
+- Understanding what the scripts do internally
+- Advanced scenarios not covered by scripts
+- Reference documentation for platform-specific commands
 
 ---
 

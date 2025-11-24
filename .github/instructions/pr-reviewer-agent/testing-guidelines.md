@@ -595,10 +595,11 @@ Create a checkpoint when:
 
 **To verify this PR works, you'll need to**:
 
-1. **Build sandbox app with PR changes**:
-   ```bash
-   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-[platform] -t:Run
+1. **Build and run sandbox app with PR changes**:
+   ```powershell
+   pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
    ```
+   (This handles device detection, building, deployment, and Appium test execution)
 
 2. **Reproduce the original issue** (verify bug exists):
    - Action: [specific steps]
