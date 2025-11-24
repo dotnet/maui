@@ -92,7 +92,7 @@ Here's a simple .NET MAUI page with various controls:
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MyMauiApp.MainPage"
-             BackgroundColor="{DynamicResource PageBackgroundColor}">
+             Background="{DynamicResource PageBackgroundColor}">
 
     <ScrollView>
         <VerticalStackLayout Spacing="25" Padding="30">
@@ -165,6 +165,15 @@ public partial class MainPage : ContentPage
 ```
 
 Use the [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui) for MVVM helpers and the [MVVM Toolkit](https://github.com/CommunityToolkit/dotnet) for source generators and commands.
+
+### XAML Enhancements
+
+.NET MAUI includes powerful XAML features for cleaner, more efficient code:
+
+- **XAML Source Generation** - Compile-time XAML parsing for better performance and smaller app sizes
+- **XAML Simplifications** - Reduced boilerplate with improved syntax and type inference
+
+Learn more about [XAML compilation and source generation](https://learn.microsoft.com/dotnet/maui/xaml/xamlc?view=net-maui-10.0).
 
 ### Shell Navigation
 
@@ -241,9 +250,9 @@ We welcome your feedback and contributions!
 - **Security Issues**: Report security vulnerabilities via [Microsoft Security Response Center](https://msrc.microsoft.com/)
 
 ### Community
-- **Discord**: Join the [.NET Discord server](https://aka.ms/dotnet-discord)
-- **Twitter**: Follow [@dotnet](https://twitter.com/dotnet) and [@mauidotnet](https://twitter.com/mauidotnet)
-- **YouTube**: Watch tutorials on [dotnet YouTube channel](https://www.youtube.com/dotnet)
+- **Discord**: Join the [.NET Discord server](https://aka.ms/dotnet-discord) or the [MAUIverse Discord](https://mauiverse.net/discord) (community-driven, not Microsoft official)
+- **X (formerly Twitter)**: Follow [@dotnet](https://twitter.com/dotnet)
+- **YouTube**: Watch tutorials on [.NET YouTube channel](https://www.youtube.com/dotnet)
 
 ## 🤝 Contributing
 
@@ -276,7 +285,7 @@ We encourage contributions from the community! .NET MAUI is an open-source proje
 
 ---
 
-**[Get Started with .NET MAUI](https://dotnet.microsoft.com/en-us/apps/maui)** | 
+**[Get Started with .NET MAUI](https://dotnet.microsoft.com/apps/maui)** | 
 **[Documentation](https://learn.microsoft.com/dotnet/maui/)** | 
 **[Samples](https://github.com/dotnet/maui-samples)** | 
 **[GitHub](https://github.com/dotnet/maui)**
