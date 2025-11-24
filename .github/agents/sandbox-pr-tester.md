@@ -77,6 +77,16 @@ gh pr checkout <PR_NUMBER>
 
 ### Step 3: Test WITH PR Fix
 
+**Choose platform to test:**
+
+1. **Check PR title** for `[Android]`, `[iOS]`, `[Windows]`, `[Mac]` tags
+2. **Check modified files** for platform-specific paths:
+   - `Platform/Android/` → Test Android
+   - `Platform/iOS/` → Test iOS
+   - Files with `.Android.`, `.iOS.`, `.MacCatalyst.` → Platform-specific
+3. **Default**: Test **Android** (faster setup, better device availability)
+4. **If cross-platform**: Test at least one platform, ideally both Android + iOS
+
 **🚨 CRITICAL**: ALWAYS use the BuildAndRunSandbox.ps1 script:
 
 ```bash
@@ -91,23 +101,35 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 - ✅ Appium test finds expected elements
 - ✅ Behavior matches expected fix
 
-**Document:**
-- What test scenario you're running
-- What behavior you observe
-- Whether the fix appears to work
-- Any errors or unexpected behavior
-
-**Note to user**: If you want to verify the bug reproduction without the fix, you can manually revert the PR changes and rerun the test.
+**What to document in your summary:**
+- ✅ Which test scenario you created (from issue/UITest/custom)
+- ✅ Specific actions your test performs
+- ✅ What behavior you observed
+- ✅ Whether fix works as expected
+- ✅ Any warnings, errors, or unexpected behavior
 
 ---
 
-### Step 4: Clean Up
+### 📝 Note for User
 
+**Test scenario is ready in Sandbox for manual verification.**
+
+**To verify bug reproduction (optional):**
 ```bash
-# Always revert Sandbox changes before committing
-git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
-git checkout -- SandboxAppium/
+# 1. Revert the PR fix files
+git checkout main -- [list specific fix files from PR]
+
+# 2. Rerun test - bug should appear
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+
+# 3. Restore fix
+git checkout HEAD -- [fix files]
+
+# 4. Rerun test - bug should be gone
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 ```
+
+This proves the test scenario correctly reproduces the bug.
 
 ## Key Resources
 
@@ -186,16 +208,46 @@ OR
 7. **Clean up after testing** - Always revert Sandbox changes
 8. **Document your test scenario** - Be specific so user can verify reproduction if needed
 
-## Common Mistakes to Avoid
+## When to Report vs. When to Escalate
+
+### ✅ Just Report (Continue Testing)
+- Minor warnings in logs (unrelated to fix)
+- Small visual glitches (if not what's being fixed)
+- Non-critical Appium delays or timeouts that eventually succeed
+- Platform-specific behavior differences (document them)
+
+### 🔧 Debug and Fix (Analyze Logs and Retry)
+
+**How to debug:**
+- **BuildAndRunSandbox.ps1 generates all logs** - Read from `SandboxAppium/` directory:
+  - `android-device.log` or `ios-device.log` - Device logs
+  - `appium.log` - Appium server logs
+- **Never run manual commands** - Don't run `dotnet tool restore`, `adb logcat`, etc.
+- **Never try to capture logs yourself** - Script already captured them
+
+**What to fix:**
+- **Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry
+- **App crashes** - Read device log from `SandboxAppium/`, check stack trace, fix test code or reproduction scenario
+- Cannot find reproduction scenario - Try alternative approaches (UITests, code analysis)
+- Test code errors - Fix Appium script or MainPage code based on error messages
+
+### 🚫 STOP and Report (Cannot Proceed After Attempts)
+- Cannot checkout PR (git errors)
+- BuildAndRunSandbox.ps1 doesn't exist
+- No device/simulator available
+- SDK version mismatch with no resolution
+- Build failures persist after troubleshooting attempts
+- App crashes that appear unrelated to test code or fix
+Document your test scenario** - Be specific so user can verify reproduction if needed
+8. **Leave Sandbox as-is** - User will iterate on it after your testing
 
 - ❌ Using TestCases.HostApp for manual PR validation (use Sandbox)
 - ❌ Manual build/deploy commands instead of BuildAndRunSandbox.ps1
-- ❌ Not cleaning up Sandbox after testing
-- ❌ Committing test code to the repository
 - ❌ Testing only one platform when PR affects multiple
 - ❌ Using screenshots for validation (use Appium element queries)
 - ❌ Creating test scenario without checking issue for reproduction steps
 - ❌ Ignoring PR's existing UITests when available
+- ❌ Cleaning up or reverting Sandbox changes (user will iterate on it)
 
 ## Troubleshooting
 
