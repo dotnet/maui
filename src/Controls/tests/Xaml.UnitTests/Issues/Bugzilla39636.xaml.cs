@@ -6,9 +6,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Bugzilla39636 : ContentPage
 {
-	public Bugzilla39636() => InitializeComponent();
-	public Bugzilla39636(XamlInflator inflator) => InitializeComponent(inflator);
-
 	[TestFixture]
 	class Tests
 	{
