@@ -31,12 +31,29 @@ Test PRs by creating reproduction scenarios in the Sandbox app and validating fi
 ### 1. Setup Phase
 
 ```bash
-# Check current state
-git branch --show-current
+# 1. Check current state
+CURRENT_BRANCH=$(git branch --show-current)
+echo "Current branch: $CURRENT_BRANCH"
 
-# Fetch PR (if not already on branch)
+# 2. Save current branch for potential merge
+ORIGINAL_BRANCH=$CURRENT_BRANCH
+
+# 3. Fetch PR
 gh pr checkout <PR_NUMBER>
+
+# 4. If we weren't on main, merge in changes from original branch
+# This preserves any local work (e.g., agent code testing)
+if [ "$ORIGINAL_BRANCH" != "main" ] && [ "$ORIGINAL_BRANCH" != "$(git branch --show-current)" ]; then
+    echo "⚠️  Merging changes from $ORIGINAL_BRANCH to preserve local work..."
+    git merge $ORIGINAL_BRANCH --no-edit || {
+        echo "❌ Merge conflict detected. Resolve conflicts before proceeding."
+        exit 1
+    }
+    echo "✅ Merged $ORIGINAL_BRANCH successfully"
+fi
 ```
+
+**Why this matters**: If you're testing agent code on a feature branch, this ensures you don't lose that work when switching to test a PR.
 
 ### 2. Understand the PR
 
