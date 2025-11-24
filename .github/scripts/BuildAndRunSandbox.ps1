@@ -77,14 +77,18 @@ if (-not (Test-Path $SandboxAppiumDir)) {
 # Clean up old log files and screenshots from previous runs
 Write-Step "Cleaning up old test artifacts..."
 
-$deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
-$appiumLogFile = Join-Path $SandboxAppiumDir "appium.log"
-
-if (Test-Path $deviceLogFile) {
-    Remove-Item $deviceLogFile -Force
-    Write-Info "Cleaned up old $Platform-device.log"
+# Clean up ALL device logs (android-device.log, ios-device.log, etc.)
+$deviceLogs = Get-ChildItem -Path $SandboxAppiumDir -Filter "*-device.log" -ErrorAction SilentlyContinue
+if ($deviceLogs) {
+    foreach ($log in $deviceLogs) {
+        Remove-Item $log.FullName -Force
+        Write-Info "Cleaned up old $($log.Name)"
+    }
+} else {
+    Write-Info "No old device logs to clean up"
 }
 
+$appiumLogFile = Join-Path $SandboxAppiumDir "appium.log"
 if (Test-Path $appiumLogFile) {
     Remove-Item $appiumLogFile -Force
     Write-Info "Cleaned up old appium.log"
