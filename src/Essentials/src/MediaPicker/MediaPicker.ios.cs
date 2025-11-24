@@ -522,6 +522,7 @@ namespace Microsoft.Maui.Media
 		readonly NSItemProvider _provider;
 		readonly object _loadLock = new object();
 		bool _isFileLoaded;
+		bool _isLoading; // Track loading in progress
 		bool _disposed;
 
 		internal PHPickerFileResult(NSItemProvider provider)
@@ -566,59 +567,61 @@ namespace Microsoft.Maui.Media
 			
 			lock (_loadLock)
 			{
-				if (!_isFileLoaded && !string.IsNullOrWhiteSpace(FullPath))
+				// If already loaded or currently loading, return
+				if (_isFileLoaded || _isLoading)
+					return;
+
+				if (string.IsNullOrWhiteSpace(FullPath))
+					return;
+
+				// Check if file already exists (another instance may have created it)
+				if (File.Exists(FullPath))
 				{
-					// Check if another thread is already loading or has loaded the file
-					if (!File.Exists(FullPath))
-					{
-						shouldLoad = true;
-						// Don't set _isFileLoaded here - wait for successful completion
-					}
-					else
-					{
-						_isFileLoaded = true;
-						return;
-					}
-				}
-				else
-				{
+					_isFileLoaded = true;
 					return;
 				}
+
+				// Mark as loading to prevent other threads from also attempting to load
+				_isLoading = true;
+				shouldLoad = true;
 			}
 
 			if (shouldLoad)
 			{
 				try
 				{
+					// Validate provider is not null
+					if (_provider == null)
+					{
+						throw new InvalidOperationException("Item provider is null");
+					}
+
 					// Load the data from the provider
-					var data = await _provider?.LoadDataRepresentationAsync(_identifier);
+					var data = await _provider.LoadDataRepresentationAsync(_identifier);
 					if (data == null)
 					{
 						throw new InvalidOperationException("Failed to load data from provider");
 					}
 
-					// Write the data to the temporary file
+					// Write the data to the temporary file using FileMode.CreateNew for atomic creation
 					using var stream = data.AsStream();
-					
-					// Ensure we're not overwriting an existing file (though unlikely with GUID)
-					if (File.Exists(FullPath))
-					{
-						throw new IOException($"Temporary file already exists: {FullPath}");
-					}
-					
-					using var fileStream = File.Create(FullPath);
+					using var fileStream = new FileStream(FullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
 					await stream.CopyToAsync(fileStream);
 					
 					// Only mark as loaded after successful write
 					lock (_loadLock)
 					{
 						_isFileLoaded = true;
+						_isLoading = false;
 					}
 				}
 				catch
 				{
-					// If loading fails, don't mark as loaded so it can be retried
-					// Note: _isFileLoaded is still false, so no need to reset it
+					// If loading fails, reset loading flag so it can be retried
+					lock (_loadLock)
+					{
+						_isLoading = false;
+					}
 					throw;
 				}
 			}
