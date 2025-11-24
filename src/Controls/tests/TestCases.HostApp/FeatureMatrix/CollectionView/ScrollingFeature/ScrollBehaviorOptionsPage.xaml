@@ -160,6 +160,8 @@
                                      AutomationId="ItemsLayoutHorizontalGrid"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
+
+                <!-- ScrollToPosition Selection -->
                 <Label Text="ScrollToPosition:"
                        FontAttributes="Bold"
                        FontSize="12"/>
@@ -195,6 +197,7 @@
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
 
+                <!-- ScrollToIndex Selection -->
                 <Label Text="ScrollToIndex:"
                        FontAttributes="Bold"
                        FontSize="12"/>
@@ -202,8 +205,30 @@
                        Text="0"
                        FontSize="11"
                        Keyboard="Numeric"
+                       HorizontalOptions="Start"
                        TextChanged="ScrollToIndexEntry_TextChanged"
+                       WidthRequest="100"
                        AutomationId="ScrollToIndexEntry"/>
+
+                <!-- Can Reorder Items -->
+                <Label Text="Can Reorder Items:"
+                       FontAttributes="Bold"
+                       FontSize="12"/>
+                <StackLayout Orientation="Horizontal">
+                    <RadioButton x:Name="CanReorderItemsFalse"
+                                 Content="False"
+                                 IsChecked="True"
+                                 CheckedChanged="OnCanReorderItemsChanged"
+                                 FontSize="11"
+                                 GroupName="CanReorderItemsGroup"
+                                 AutomationId="CanReorderItemsFalse"/>
+                    <RadioButton x:Name="CanReorderItemsTrue"
+                                 Content="True"
+                                 CheckedChanged="OnCanReorderItemsChanged"
+                                 FontSize="11"
+                                 GroupName="CanReorderItemsGroup"
+                                 AutomationId="CanReorderItemsTrue"/>
+                </StackLayout>
             </StackLayout>
         </Grid>
     </ScrollView>

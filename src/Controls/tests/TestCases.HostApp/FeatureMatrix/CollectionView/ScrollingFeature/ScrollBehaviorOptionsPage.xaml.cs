@@ -109,4 +109,16 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 			_viewModel.ScrollToIndex = index;
 		}
     }
+
+	private void OnCanReorderItemsChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (CanReorderItemsTrue.IsChecked)
+		{
+			_viewModel.CanReorderItems = true;
+		}
+		else if (CanReorderItemsFalse.IsChecked)
+		{
+			_viewModel.CanReorderItems = false;
+		}
+	}
 }
