@@ -197,6 +197,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 			  <PackageReference Include="Microsoft.Identity.Client" Version="4.79.1" />
 			  <PackageReference Include="Microsoft.Identity.Client.Desktop.WinUI3" Version="4.79.1"/>
 			</ItemGroup>
+			</Project>
 			""");
 
 		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
