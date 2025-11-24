@@ -28,25 +28,33 @@ Test PRs by creating reproduction scenarios in the Sandbox app and validating fi
 
 ## 🚨 Critical Requirements for Android Testing
 
-**ANDROID APPIUM REQUIREMENT - appium:noReset**
+**ANDROID-ONLY REQUIREMENT - appium:noReset**
+
+⚠️ **This ONLY applies to Android, NOT iOS**
 
 When testing on Android, the Appium test script **MUST** have this capability:
 
 ```csharp
-options.AddAdditionalAppiumOption("appium:noReset", true);
+// ANDROID ONLY - Do NOT add this for iOS
+if (PLATFORM == "android")
+{
+    options.AddAdditionalAppiumOption("appium:noReset", true);
+}
 ```
 
-**Why this is critical:**
+**Why this is critical for Android:**
 - Without `noReset`, Appium clears app data between runs
-- This breaks .NET MAUI's Fast Deployment mechanism
+- This breaks .NET MAUI's Fast Deployment mechanism on Android
 - App crashes with: `"No assemblies found in '.../__override__/...' ... Assuming this is part of Fast Deployment. Exiting..."`
 - The app will crash immediately on launch before any test can run
 
-**Where to set it:**
-- Template: `.github/scripts/templates/RunWithAppiumTest.template.cs` (line ~68)
-- Active test: `SandboxAppium/RunWithAppiumTest.cs`
+**iOS does NOT need this** - iOS deployment works differently and doesn't use Fast Deployment
 
-**⚠️ NEVER REMOVE THIS CAPABILITY** - All Android tests depend on it
+**Where to set it:**
+- Template: `.github/scripts/templates/RunWithAppiumTest.template.cs` (line ~68, Android section only)
+- Active test: `SandboxAppium/RunWithAppiumTest.cs` (Android section only)
+
+**⚠️ NEVER REMOVE THIS CAPABILITY FROM ANDROID** - All Android tests depend on it
 
 ---
 
@@ -121,9 +129,21 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 
 **What to validate:**
 - ✅ App launches successfully
+- ✅ **CRITICAL**: Verify app is actually running before proceeding:
+  - Check device logs show MainPage initialization
+  - Confirm Appium can find your initial test element
+  - If element not found: STOP and investigate logs (see Troubleshooting)
 - ✅ Test scenario completes without crashes/hangs
 - ✅ Appium test finds expected elements
 - ✅ Behavior matches expected fix
+
+**If Appium can't find initial element:**
+🚨 **DO NOT PROCEED** - Something is wrong:
+1. Check device logs for crashes/exceptions
+2. Verify XAML AutomationIds match test code
+3. Confirm app actually loaded MainPage (check logs for "MainPage" messages)
+4. Check if XAML has matching event handler (e.g., `Clicked="OnNavigateClicked"` needs method in code-behind)
+5. See [Element Not Found Troubleshooting](#element-not-found-on-first-screen) section
 
 **What to document in your summary:**
 - ✅ Which test scenario you created (from issue/UITest/custom)
@@ -325,6 +345,53 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 Unable to proceed with validation. Please advise.
 ```
 
+### Element Not Found on First Screen
+**Action**: ALWAYS investigate - Do NOT assume app is working
+
+🚨 **CRITICAL**: If Appium can't find your initial element (e.g., test button), the app is NOT running correctly.
+
+**DO NOT ASSUME**:
+- ❌ "App is just loading slowly" - Wait longer
+- ❌ "AutomationId is wrong" - Just try different locators
+- ❌ "Maybe the page didn't navigate yet" - Try other elements
+
+**IMMEDIATELY CHECK**:
+
+1. **Check device logs for crashes**:
+   ```bash
+   # Android - Look for "FATAL", "crash", or "Exception"
+   grep -i "FATAL\|crash\|exception" SandboxAppium/android-device.log | tail -20
+   
+   # iOS - Look for "Terminating app" or "exception"
+   grep -i "terminating\|exception\|crash" SandboxAppium/ios-device.log | tail -20
+   ```
+
+2. **Verify app actually launched**:
+   ```bash
+   # Android - Check if MainPage initialized
+   grep "SANDBOX.*MainPage" SandboxAppium/android-device.log
+   
+   # iOS - Check if app process is present
+   grep "Maui.Controls.Sample.Sandbox" SandboxAppium/ios-device.log | head -5
+   ```
+
+3. **Common Root Causes**:
+   - **App crashed on launch** - Check logs for exception/crash
+   - **XAML parse error** - Missing event handler in code-behind
+   - **AutomationId mismatch** - XAML has different name than test expects
+   - **Wrong page displayed** - App navigated somewhere else
+   - **Android Fast Deployment issue** - Missing `noReset` capability
+
+**Debugging Steps**:
+
+1. Check logs first (see commands above)
+2. If crashed: Find and fix the exception
+3. If XAML error: Verify event handler exists and matches
+4. If no crash: Verify AutomationIds match between XAML and test
+5. If still unclear: Check Appium page source: `driver.PageSource`
+
+---
+
 ### App Crashes Immediately on Launch (Android)
 **Action**: Check for Fast Deployment error first
 
@@ -337,11 +404,11 @@ grep "Abort message" SandboxAppium/android-device.log
 
 **If you see: "No assemblies found in '.../__override__/...' ... Fast Deployment"**
 
-**Root Cause**: Missing `appium:noReset` capability in Appium options
+**Root Cause**: Missing `appium:noReset` capability in Appium options (ANDROID ONLY)
 
 **Fix**:
 1. Open `SandboxAppium/RunWithAppiumTest.cs`
-2. Find the Android options section
+2. Find the Android options section (inside `if (PLATFORM == "android")` block)
 3. Verify this line exists:
    ```csharp
    options.AddAdditionalAppiumOption("appium:noReset", true);
@@ -350,6 +417,8 @@ grep "Abort message" SandboxAppium/android-device.log
 5. Rerun test: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android`
 
 **This is NOT a PR bug** - It's a test infrastructure issue. Once fixed, retry the test.
+
+**⚠️ iOS DOES NOT USE noReset** - Do not add this capability for iOS
 
 ---
 
