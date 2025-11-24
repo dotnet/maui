@@ -39,8 +39,16 @@ namespace Microsoft.Maui.Platform
 				visibility = (int)view.Visibility.ToPlatformVisibility();
 			}
 
+			// If the view is wrapped in a WrapperView (e.g., for Shadow or Clip), apply transforms to the wrapper
+			// This ensures that shadows and clips are transformed along with the content
+			AView transformTarget = platformView;
+			if (platformView.Parent is WrapperView wrapperView)
+			{
+				transformTarget = wrapperView;
+			}
+
 			// NOTE: use named arguments for clarity
-			PlatformInterop.Set(platformView,
+			PlatformInterop.Set(transformTarget,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
