@@ -111,10 +111,14 @@ Any concerns about this approach?
 **Use BuildAndRunSandbox.ps1** for automated testing:
 
 ```bash
-# 1. Copy Appium test template
+# 1. Modify Sandbox app to reproduce the issue
+# Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+# Add controls and AutomationId attributes for testing
+
+# 2. Copy and customize Appium test template
 cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
 
-# 2. Edit the file:
+# Edit SandboxAppium/RunWithAppiumTest.cs:
 # - Set ISSUE_NUMBER (replace 00000)
 # - Set PLATFORM ("android" or "ios")
 # - COMPLETELY CUSTOMIZE the "Test Logic" section for your Sandbox app:
@@ -124,15 +128,19 @@ cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWith
 #   * Add YOUR assertions to verify the issue or expected behavior
 #   * Think of it as writing a fresh Appium test that matches your Sandbox app
 
-# 3. Modify Sandbox app if needed
-# Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
-# Add AutomationId attributes for Appium
-
-# 4. Run the test
+# 3. Run the script - it handles everything:
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 ```
 
-**Logs saved to**: `SandboxAppium/appium.log` and `SandboxAppium/logcat.log`
+**What the script does**:
+- ✅ Builds Sandbox app
+- ✅ Auto-detects device/emulator
+- ✅ Manages Appium server (starts/stops automatically)
+- ✅ Deploys and launches app via Appium
+- ✅ Runs your test script
+- ✅ Captures all logs automatically
+
+**Logs saved to**: `SandboxAppium/appium.log`, `SandboxAppium/android-device.log` (or `ios-device.log`)
 
 📖 **Full details**: [quick-ref.md](quick-ref.md#reproduction-workflows)
 

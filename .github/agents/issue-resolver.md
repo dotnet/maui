@@ -21,21 +21,65 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 
 ## Core Instructions
 
-## 🚨 CRITICAL: Handling App Crashes
+## 🚨 CRITICAL: Using PowerShell Scripts for Testing
+
+**All app testing is now automated through PowerShell scripts. NEVER use manual build/deploy/log commands.**
+
+### For Issue Reproduction (Sandbox App):
+```powershell
+# Android
+.github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+
+# iOS
+.github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
+```
+
+**What it does**:
+- Builds the Sandbox app
+- Manages Appium server (starts if needed, stops when done)
+- Deploys and launches app via Appium
+- Captures all logs automatically to `SandboxAppium/` directory:
+  - `appium.log` - Appium server logs (both platforms)
+  - `android-device.log` - Android device logs (filtered to app PID)
+  - `ios-device.log` - iOS simulator logs (filtered to app bundle)
+  - `RunWithAppiumTest.cs` - The Appium test script that ran
+
+**How to use**:
+1. Modify `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml` and `.xaml.cs` to reproduce the issue
+2. Run the script for your target platform
+3. Read the generated log files in `SandboxAppium/` to see results
+
+### For UI Test Execution (HostApp):
+```powershell
+# Run specific test by name
+.github/scripts/BuildAndRunHostApp.ps1 -Platform Android -TestFilter "FullyQualifiedName~IssueXXXXX"
+
+# Run tests by category
+.github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -Category "SafeAreaEdges"
+```
+
+**What it does**:
+- Builds TestCases.HostApp for the platform
+- Manages Appium server automatically
+- Runs `dotnet test` with your filters
+- Captures all logs to `HostAppCustomAgentTmpLogs/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` / `ios-device.log` - Device logs (filtered to app PID)
+  - `test-results.log` - Test execution results
+
+### Handling App Crashes:
 
 **If an app crashes on launch, NEVER use `--no-incremental` or `dotnet clean` as a first solution.**
 
 **The correct approach**:
-1. **Run BuildAndRunSandbox.ps1** - It automatically captures all logs
-2. **Read the crash logs** from `SandboxAppium/logcat.log` (Android) or `SandboxAppium/appium.log` (iOS)
+1. **The PS1 script already captured all logs** - They're in `SandboxAppium/` or `HostAppCustomAgentTmpLogs/`
+2. **Read the device logs** (`android-device.log` or `ios-device.log`)
 3. **Find the actual exception** in the logs
 4. **Investigate the root cause** from the stack trace
 5. **Fix the underlying issue** (null reference, missing resource, etc.)
 6. **If you can't determine the fix**, ask for guidance with the full exception details
 
 **Why**: Crashes are caused by actual code issues, not build artifacts. The exception tells you exactly what's wrong.
-
-**All logs are automatically saved to** `SandboxAppium/` directory after running the script.
 
 ## ⚡ GETTING STARTED (Progressive Disclosure)
 
@@ -47,7 +91,7 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
    - Time budgets and when to ask for help
 
 2. **Keep [quick-ref.md](../instructions/issue-resolver-agent/quick-ref.md) OPEN** (your daily reference)
-   - Copy-paste commands for iOS/Android reproduction
+   - PowerShell script commands for iOS/Android testing
    - Instrumentation templates
    - UI test checklist and templates
    - Checkpoint templates (MANDATORY before certain steps)

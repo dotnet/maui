@@ -127,17 +127,17 @@ namespace Maui.Controls.Sample
 
 ## Build and Deploy for Reproduction
 
-**See [Common Testing Patterns](../common-testing-patterns.md) for detailed build and deploy commands with error checking.**
-
-### Recommended: Use BuildAndRunSandbox.ps1
-
-**Automated workflow** - Handles build, deploy, Appium, and logging:
+**ALWAYS use BuildAndRunSandbox.ps1 for reproduction testing:**
 
 ```bash
-# 1. Create Appium test script
+# 1. Modify Sandbox app to reproduce the issue
+#    Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+#    Add controls and AutomationId attributes for testing
+
+# 2. Copy and customize Appium test template
 cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
 
-# 2. Edit SandboxAppium/RunWithAppiumTest.cs:
+# Edit SandboxAppium/RunWithAppiumTest.cs:
 #    - Set ISSUE_NUMBER (replace 00000)
 #    - Set PLATFORM ("android" or "ios")
 #    - CUSTOMIZE test logic to match your Sandbox app UI:
@@ -145,46 +145,30 @@ cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWith
 #      * Interact with your specific controls
 #      * Template is just a starting point - modify completely!
 
-# 3. Modify Sandbox app if needed
-#    Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
-#    Add AutomationId attributes for Appium interaction
-
-# 4. Run complete test
+# 3. Run the script (handles everything):
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+# OR for iOS:
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 ```
 
-**What it does**:
-- ✅ Builds Sandbox app
-- ✅ Auto-detects devices
-- ✅ Manages Appium (starts/stops automatically)
-- ✅ Captures all logs (`SandboxAppium/appium.log`, `SandboxAppium/logcat.log`)
-- ✅ Runs your Appium test
+**What the script does**:
+- ✅ Builds Sandbox app for target platform
+- ✅ Auto-detects device/emulator
+- ✅ Manages Appium server (starts if needed, stops when done)
+- ✅ Deploys and launches app via Appium
+- ✅ Runs your customized test script
+- ✅ Captures all logs automatically to `SandboxAppium/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` or `ios-device.log` - Device logs (filtered to app)
+  - `RunWithAppiumTest.cs` - Your test script
 
-**When to use**: Issue reproduction with UI interaction (taps, swipes, etc.)
-
-### Manual Workflows (For non-UI reproduction)
-
-**iOS Manual** (when you need console logging without Appium):
-```bash
-# Follow detailed patterns in Common Testing Patterns
-# 1. Get UDID, 2. Boot device, 3. Build, 4. Install, 5. Launch
-```
-See [Common Testing Patterns - iOS](../../common-testing-patterns.md#complete-ios-reproduction-workflow)
-
-**Manual Workflows are rarely needed** - The BuildAndRunSandbox.ps1 script handles all common scenarios.
-
-**Only use manual workflows for**:
-- Advanced debugging scenarios
-- Non-UI reproduction without Appium
-- When script doesn't support your use case
-
-See [Common Testing Patterns](../../common-testing-patterns.md) for manual command patterns.
+**This is the ONLY way to run reproduction tests.** No manual build/deploy commands.
 
 ### Troubleshooting
 
-If builds or deployments fail, see:
-- [Common Testing Patterns: Error Handling](../common-testing-patterns.md#common-error-handling-patterns)
+If the script fails, see:
 - [Error Handling: Build Errors](error-handling.md#build-errors-during-reproduction)
+- Generated log files in `SandboxAppium/` directory
 
 ## Verification Points
 

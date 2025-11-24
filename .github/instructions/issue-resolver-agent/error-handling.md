@@ -233,8 +233,7 @@ When a build error occurs during fix development:
 
 **Common build errors** (see [Shared Error Handling](../shared/error-handling-common.md#build-errors) for details):
 - Build tasks not found → `dotnet build ./Microsoft.Maui.BuildTasks.slnf`
-- Dependency conflicts → `rm -rf bin/ obj/ && dotnet restore --force`
-- PublicAPI errors → `dotnet format analyzers Microsoft.Maui.sln` (NEVER disable the analyzer)
+- PublicAPI errors → `dotnet format analyzers Microsoft.Maui.slnx` (NEVER disable the analyzer)
 
 #### Step 2: Issue-Specific Build Errors
 
@@ -346,12 +345,12 @@ public static void MapFlowDirection(ICollectionViewHandler handler, ICollectionV
 
 **Check logs:**
 ```bash
-# Run BuildAndRunSandbox.ps1 and check generated logs
+# Run BuildAndRunSandbox.ps1 to test your fix
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 
-# Then read the logs
-cat SandboxAppium/logcat.log | grep "\[DEBUG\]"  # Android
-cat SandboxAppium/appium.log | grep "\[DEBUG\]"   # iOS
+# Then read the generated logs
+cat SandboxAppium/android-device.log | grep "\[DEBUG\]"  # Android
+cat SandboxAppium/ios-device.log | grep "\[DEBUG\]"      # iOS
 ```
 
 **If logging doesn't appear:**
@@ -422,10 +421,10 @@ var listView = new ListView { FlowDirection = FlowDirection.RightToLeft };
 **Run existing tests:**
 ```powershell
 # Run all CollectionView tests on Android
-./.github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "CollectionView"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "CollectionView"
 
 # Or on iOS
-./.github/scripts/BuildAndRunHostApp.ps1 -Platform ios -Category "CollectionView"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -Category "CollectionView"
 
 # Check test results and logs in HostAppCustomAgentTmpLogs/
 ```
