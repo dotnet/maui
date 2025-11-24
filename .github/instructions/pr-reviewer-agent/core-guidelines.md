@@ -58,6 +58,78 @@ When multiple instruction files exist, follow this priority order:
 5. 📊 Compare behavior WITH and WITHOUT the PR changes
 6. 📝 Document findings with actual measurements and evidence
 7. ✅ **MANDATORY**: Write comprehensive review and create `Review_Feedback_Issue_XXXXX.md` file
+
+## 🚨 CRITICAL: Screenshot and Validation Rules
+
+### Rule 1: NEVER Use Screenshots for Validation
+
+**❌ PROHIBITED:**
+- Using screenshot file sizes to detect bugs
+- Comparing screenshots visually to validate fixes
+- Relying on screenshot appearance to determine UI state
+- Making conclusions based on "screenshot looks blank/different"
+
+**✅ REQUIRED:**
+- **ALWAYS use Appium** to programmatically verify UI state
+- Use element queries to check what page/state the app is in
+- Verify expected elements exist/don't exist with Appium FindElement
+- Capture actual UI state through Appium driver queries
+
+**Why**: Screenshots are unreliable and can't be trusted for validation. Appium provides programmatic, verifiable UI state.
+
+**Example - WRONG way:**
+```csharp
+// ❌ WRONG: Taking screenshot and checking file size
+var screenshot = driver.GetScreenshot();
+screenshot.SaveAsFile("/tmp/test.png");
+// Then checking if file is 22KB vs 95KB to detect bug - NO!
+```
+
+**Example - RIGHT way:**
+```csharp
+// ✅ RIGHT: Using Appium to verify UI state
+try {
+    var mainPageTitle = driver.FindElement(MobileBy.Id("MainPageTitle"));
+    Console.WriteLine("✅ On main page - navigation succeeded");
+} catch {
+    Console.WriteLine("❌ Not on main page - app may be hung");
+}
+
+try {
+    var modalLabel = driver.FindElement(MobileBy.Id("ModalLabel"));
+    Console.WriteLine("❌ Still on modal - pop failed");
+} catch {
+    Console.WriteLine("✅ Modal was popped successfully");
+}
+```
+
+### Rule 2: Screenshot Storage Location
+
+**Screenshots are managed by your Appium test script**:
+
+When writing `SandboxAppium/RunWithAppiumTest.cs`:
+- ✅ **ALWAYS save to**: `SandboxAppium/` directory
+- ❌ **NEVER save to**: `/tmp/`, repository root, or any other location
+- 📝 **Purpose**: Documentation/debugging only - never for validation
+
+**Correct path pattern**:
+```csharp
+// In your Appium test script
+var screenshot = driver.GetScreenshot();
+screenshot.SaveAsFile("SandboxAppium/test_state_before.png");  // ✅ Correct
+```
+
+**Wrong patterns**:
+```csharp
+screenshot.SaveAsFile("/tmp/test.png");           // ❌ Wrong location
+screenshot.SaveAsFile("test.png");                 // ❌ Wrong location (repo root)
+screenshot.SaveAsFile("../screenshots/test.png");  // ❌ Wrong location
+```
+
+**Why**: 
+- Keeps all test artifacts together in one directory
+- BuildAndRunSandbox.ps1 automatically cleans up old screenshots before each run
+- Easy for user to review all test outputs in one place
    - **Output**: **ALWAYS** create a markdown file named `Review_Feedback_Issue_XXXXX.md` (replace XXXXX with actual issue number)
    - **When**: Create this file at the end of EVERY PR review, without exception
    - **Content**: Include test results, measurements, edge cases tested, and evidence-based recommendations
@@ -69,6 +141,57 @@ When multiple instruction files exist, follow this priority order:
    - **Purpose**: Clearly identifies agent-generated PRs containing review feedback and suggested improvements
    - **Example**: `[PR-Reviewer] Fix RTL padding for CollectionView on iOS`
    - **Rule**: ALWAYS start PR titles with `[PR-Reviewer]` prefix when creating PRs with fixes or improvements
+
+## 📝 Summary and Documentation Expectations
+
+### When to Create Summaries
+
+**Proactively offer summaries at natural breakpoints**:
+
+1. **After completing PR testing** (before writing final review)
+   - "I've completed testing WITH and WITHOUT the PR. Would you like me to summarize the findings before I write the review?"
+
+2. **After deep analysis or investigation**
+   - "I've completed the deep analysis of the fix. Should I create a summary document?"
+
+3. **After making instruction/script improvements**
+   - "I've updated the instructions based on our discussion. Should I summarize the changes?"
+
+4. **When conversation reaches significant milestone**
+   - After implementing major changes
+   - After discovering important findings
+   - After extended back-and-forth troubleshooting
+
+**Always create summary when user asks**:
+- "Can you summarize..."
+- "What did we accomplish..."
+- "Recap the findings..."
+
+### Summary Format
+
+**For PR reviews**:
+- Include comprehensive findings in `Review_Feedback_Issue_XXXXX.md`
+- Structure: Problem → Testing → Results → Edge Cases → Recommendation
+
+**For conversation/work session**:
+Offer to create summary document with:
+- **What was accomplished** - High-level achievements
+- **Key findings/decisions** - Important discoveries or choices made
+- **Changes made** - Concrete modifications to code/instructions/scripts
+- **Outstanding items** - What still needs attention
+
+**Example offer**:
+```
+"We've completed [major milestone]. Would you like me to create a summary document covering:
+- What we accomplished
+- Key findings
+- Changes made
+- Next steps
+
+This will help document our work session."
+```
+
+---
 
 ## 🎯 Critical Success Factors
 

@@ -166,10 +166,11 @@ try
         
         Console.WriteLine($"✅ Found button: {button.Text}");
         
-        // Take screenshot before test
+        // Take screenshot before test (for debugging/documentation only)
+        // NOTE: NEVER use screenshots for validation - always use Appium element queries
         var screenshotBefore = driver.GetScreenshot();
-        screenshotBefore.SaveAsFile("/tmp/issue_XXXXX_before.png");
-        Console.WriteLine("📸 Screenshot saved: /tmp/issue_XXXXX_before.png");
+        screenshotBefore.SaveAsFile("SandboxAppium/issue_XXXXX_before.png");
+        Console.WriteLine("📸 Screenshot saved: SandboxAppium/issue_XXXXX_before.png");
         
         // Perform action
         Console.WriteLine("\n🔘 Tapping button...");
@@ -205,10 +206,11 @@ try
             Console.WriteLine("⚠️  Could not find status indicator");
         }
         
-        // Take screenshot after test
+        // Take screenshot after test (for debugging/documentation only)
+        // NOTE: NEVER use screenshots for validation - always use Appium element queries
         var screenshotAfter = driver.GetScreenshot();
-        screenshotAfter.SaveAsFile("/tmp/issue_XXXXX_after.png");
-        Console.WriteLine("📸 Screenshot saved: /tmp/issue_XXXXX_after.png");
+        screenshotAfter.SaveAsFile("SandboxAppium/issue_XXXXX_after.png");
+        Console.WriteLine("📸 Screenshot saved: SandboxAppium/issue_XXXXX_after.png");
         
         // Check if UI is visible (not blank)
         var pageSource = driver.PageSource;

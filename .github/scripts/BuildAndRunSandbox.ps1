@@ -74,7 +74,9 @@ if (-not (Test-Path $SandboxAppiumDir)) {
     exit 1
 }
 
-# Clean up old log files from previous runs
+# Clean up old log files and screenshots from previous runs
+Write-Step "Cleaning up old test artifacts..."
+
 $deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
 $appiumLogFile = Join-Path $SandboxAppiumDir "appium.log"
 
@@ -86,6 +88,17 @@ if (Test-Path $deviceLogFile) {
 if (Test-Path $appiumLogFile) {
     Remove-Item $appiumLogFile -Force
     Write-Info "Cleaned up old appium.log"
+}
+
+# Clean up all screenshots (*.png files) in SandboxAppium directory
+$screenshots = Get-ChildItem -Path $SandboxAppiumDir -Filter "*.png" -ErrorAction SilentlyContinue
+if ($screenshots) {
+    foreach ($screenshot in $screenshots) {
+        Remove-Item $screenshot.FullName -Force
+        Write-Info "Removed old screenshot: $($screenshot.Name)"
+    }
+} else {
+    Write-Info "No old screenshots to clean up"
 }
 
 # Check if RunWithAppiumTest.cs exists

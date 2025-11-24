@@ -133,34 +133,48 @@ Proceed? Any concerns about this approach?
 
 ## 🛑 Mandatory Checkpoints
 
-### Checkpoint 1: Before Building (MANDATORY)
+### Checkpoint 1: STOP AND ASK BEFORE BUILDING (MANDATORY)
 
-After creating test code, **STOP and show user**:
+**🚨 CRITICAL RULE: NEVER build without showing your plan and getting approval.**
+
+After creating test code, **STOP and ask**:
 
 ```markdown
-## Validation Checkpoint - Before Building
+## 🛑 Checkpoint 1: Show Me Your Plan
 
-**Test code created**:
+I've created test code to validate this PR. Before I build (which takes 10-15 minutes), here's my approach:
+
+**Test code**:
 
 XAML:
 ```xml
-[Show relevant XAML snippet]
+[Show relevant XAML snippet with AutomationIds]
 ```
 
-Code:
+Code-behind:
 ```csharp
-[Show instrumentation code]
+[Show instrumentation code that captures measurements]
 ```
 
-**What I'm measuring**: [Explain]
+**Validation approach**:
+- What I'm measuring: [Specific measurements/properties]
+- How I'll validate: [Appium element queries, not screenshots]
+- Test sequence: [Steps the test will perform]
 
-**Expected WITHOUT PR**: [What you expect]
-**Expected WITH PR**: [What should change]
+**Expected results**:
+- WITHOUT PR fix: [Specific expected behavior/measurements]
+- WITH PR fix: [How behavior should change]
 
-Should I proceed with building? (Build takes 10-15 minutes)
+**Should I proceed with building?** (This will take 10-15 minutes)
 ```
 
-**Do NOT build without approval.**
+**Why this checkpoint is mandatory**:
+- ❌ Building wrong test wastes 10-15 minutes
+- ❌ Measuring wrong things wastes entire test cycle
+- ✅ User validates approach before expensive operation
+- ✅ Catches mistakes early
+
+**NEVER build without explicit approval at this checkpoint.**
 
 ### Checkpoint 2: Before Final Review (Optional but Recommended)
 
@@ -319,11 +333,58 @@ See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing
 
 ---
 
+## 🚨 CRITICAL: Validation and Screenshot Rules
+
+### Never Use Screenshots for Validation
+
+**❌ PROHIBITED:**
+- Using screenshot file sizes to determine if bug exists
+- Comparing screenshots visually to validate fixes
+- Making conclusions based on screenshot appearance
+
+**✅ REQUIRED:**
+- **ALWAYS use Appium element queries** to verify UI state
+- Use `FindElement` to check if elements exist/don't exist
+- Programmatically verify which page the app is on
+
+**Example:**
+```csharp
+// ✅ RIGHT: Use Appium to verify state
+try {
+    driver.FindElement(MobileBy.Id("MainPageTitle"));
+    Console.WriteLine("✅ On main page");
+} catch {
+    Console.WriteLine("❌ Not on main page - bug reproduced");
+}
+```
+
+### Screenshot Storage Location
+
+**Screenshots are managed by the Appium test script**:
+
+When creating your Appium test in `SandboxAppium/RunWithAppiumTest.cs`:
+- ✅ **Save screenshots to**: `SandboxAppium/` directory
+- ❌ **Never save to**: `/tmp/` or any other location
+- 📝 **Purpose**: Documentation/debugging only - never for validation
+
+**Example**:
+```csharp
+// In your Appium test script
+var screenshot = driver.GetScreenshot();
+screenshot.SaveAsFile("SandboxAppium/test_before.png");  // ✅ Correct
+// NOT: screenshot.SaveAsFile("/tmp/test_before.png");   // ❌ Wrong
+```
+
+**Automatic cleanup**: BuildAndRunSandbox.ps1 removes all old `*.png` files from `SandboxAppium/` before each test run.
+
+---
+
 ## ✅ Ready to Start
 
 You now know:
 - ✅ Which app to use (Sandbox, not HostApp)
 - ✅ Workflow with mandatory checkpoints
+- ✅ How to validate (Appium, not screenshots)
 - ✅ Where to find detailed instructions
 - ✅ Common mistakes to avoid
 
