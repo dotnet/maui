@@ -187,8 +187,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
 					|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
 				
-				// Only warn if the property exists and is NOT a collection (doesn't support Add)
-				if (hasProperty && propertyType != null && !propertyType.CanAdd(context))
+				// Only warn if:
+				// 1. We can resolve the property and its type
+				// 2. The property type is NOT a collection (doesn't support Add)
+				// 3. The property type is not System.Object (unresolved generic)
+				bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
+				if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
 					CheckForDuplicateProperty((ElementNode)parentNode, name, node);
 
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
