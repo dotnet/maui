@@ -10,34 +10,24 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ### Mistake #1: Skipping Testing When Device Not Found ⭐ MOST CRITICAL
 
-**Symptom**: Agent sees "no device connected" and creates code-only review without attempting to start emulator
+**Symptom**: Agent sees "no device connected" and creates code-only review without testing
 
 **Why it happens**:
-- Sees `adb devices` shows no devices
-- Assumes testing is impossible
-- Doesn't attempt emulator startup
+- Assumes testing is impossible without device
+- Doesn't realize PS1 script handles device/emulator management
 - Skips directly to code-only review
 
 **How to avoid**:
-1. ✅ Check for device: `adb devices`
-2. ✅ If none found, **START EMULATOR** (see quick-ref.md Android Emulator Startup section)
-3. ✅ If emulator fails, examine logs: `cat /tmp/emulator.log`
-4. ✅ If genuine blocker, CREATE CHECKPOINT (see testing-guidelines.md "Manual Verification Required")
-5. ✅ Provide user with manual test steps
-
-**Complete Android startup sequence**:
-```bash
-# If no device found, start emulator
-if [ -z "$(adb devices | grep -v 'List' | grep 'device')" ]; then
-    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
-    adb wait-for-device
-    until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
-        sleep 2
-        echo -n "."
-    done
-    echo "✅ Emulator ready"
-fi
-```
+1. ✅ **Just run the BuildAndRunSandbox.ps1 script** - it handles everything:
+   ```powershell
+   .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+   # OR
+   .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
+   ```
+2. ✅ The script automatically detects devices and starts emulator/simulator if needed
+3. ✅ If script fails, read the log files in `SandboxAppium/` to understand why
+4. ✅ If genuine blocker (unavailable platform, environment issue), CREATE CHECKPOINT
+5. ✅ Provide user with manual test steps in checkpoint
 
 **Cost if not avoided**: **COMPLETE TESTING FAILURE** - PR approved with ZERO validation
 
@@ -138,64 +128,52 @@ fi
 
 ### Mistake #7: Giving Up Without Attempting Solutions ⭐ CRITICAL
 
-**Symptom**: Agent sees "no device connected" or other blocker and skips testing entirely
+**Symptom**: Agent sees error and skips testing entirely
 
 **Why it happens**:
-- Assumes missing device/platform is an insurmountable blocker
-- Doesn't realize solutions exist (emulator startup, checkpoint for unavailable platforms)
+- Assumes error is insurmountable
+- Doesn't read the log files the PS1 script generates
 - Takes the "easy way out" instead of problem-solving
-- Forgets instructions include both solutions and escalation paths
 
 **How to avoid**:
 
-**Step 1: ATTEMPT available solutions first**
-
-**For both Android and iOS**: Use the BuildAndRunSandbox.ps1 script, which handles device detection and emulator startup automatically:
+**Step 1: ALWAYS run the PS1 script first**
 
 ```powershell
-# The script will:
-# 1. Auto-detect devices
-# 2. Start emulator/simulator if no device found (Android only - prompts for confirmation)
-# 3. Build and deploy Sandbox app
-# 4. Run your Appium test
-
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+.github/scripts/BuildAndRunSandbox.ps1 -Platform Android
 # OR
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+.github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 ```
 
-**If the script fails**, check the log files in `SandboxAppium/`:
+The script handles device detection, emulator/simulator startup, building, deploying, and log capture.
+
+**Step 2: If script fails, READ THE LOG FILES**
+
+Check the log files in `SandboxAppium/`:
 - `appium.log` - Appium server issues
-- `android-device.log` or `ios-device.log` - Device/app issues
+- `android-device.log` or `ios-device.log` - Device/app issues (includes crashes, exceptions)
 
-**Step 2: If solutions fail, CREATE CHECKPOINT (don't skip testing!)**
+**Step 3: Investigate the actual problem**
 
-After attempting solutions and hitting genuine blocker:
+- If app crashes: Find the exception in device log, understand root cause
+- If build fails: Check the error message, try common fixes (see shared error-handling-common.md)
+- If device issues: Verify emulator/simulator is available and working
+
+**Step 4: If genuine blocker, CREATE CHECKPOINT (don't skip testing!)**
+
+After attempting to fix and hitting genuine blocker:
 - ✅ **DO**: Create manual verification checkpoint (see testing-guidelines.md)
 - ✅ **DO**: Provide user with exact steps to test manually
 - ✅ **DO**: Include comprehensive PR analysis
 - ❌ **DON'T**: Skip testing and do code-only review
 - ❌ **DON'T**: Assume PR works without validation
 
-**The complete sequence**:
-1. Check for device/platform availability
-2. Attempt startup (emulator/simulator) if missing
-3. If startup fails, examine logs/errors
-4. If genuine blocker (platform unavailable, emulator won't start), CREATE CHECKPOINT
-5. Provide user with manual test steps in checkpoint
-6. Wait for user validation before proceeding
-
 **When checkpoint is needed**:
-- Emulator fails to start after attempting startup sequence
 - Platform unavailable (iOS on Linux, Windows on macOS)
-- `$ANDROID_HOME` not set or no AVDs available
-- Other environment issues preventing testing
+- Environment issues that can't be fixed (missing SDKs, no AVDs)
+- NOT for app crashes or build errors (those need investigation)
 
-**Checkpoint template**: See testing-guidelines.md "Manual Verification Required" section
-
-**Cost if not avoided**: 
-- **Without checkpoint**: **Complete testing failure** - PR approved with no validation
-- **Skipping solutions**: Preventable blockers become actual blockers
+**Cost if not avoided**: **Complete testing failure** - PR approved with no validation
 
 ---
 
@@ -205,69 +183,47 @@ After attempting solutions and hitting genuine blocker:
 
 **Why it happens**:
 - Appium seems more complex than direct commands
-- Prior knowledge of adb/xcrun commands
-- Didn't read appium-control.instructions.md carefully
-- Read instructions but fell back to "familiar but wrong" cached patterns
-- Fell back to adb when Appium seemed difficult
+- Didn't realize PS1 script handles everything
+- Fell back to manual commands instead of using the automated workflow
 
 **How to avoid**:
-1. **Read appium-control.instructions.md FIRST** before attempting UI interaction
-2. Remember: Appium is REQUIRED for reliability (element-based vs coordinate-based)
-3. **Use the Appium template** from `.github/scripts/templates/RunWithAppiumTest.template.cs`
-4. When Appium fails, debug the Appium approach (don't fall back to adb)
-5. **Internalize instructions, don't just skim them**
+1. **ALWAYS use BuildAndRunSandbox.ps1** - it handles all testing automatically
+2. **Customize RunWithAppiumTest.cs** in `SandboxAppium/` for your test scenario:
+   ```csharp
+   // Copy from template
+   cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+   
+   // Edit the test logic section:
+   var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
+   button.Click();
+   ```
+3. **Run the script** - it handles Appium startup, device management, deployment, everything:
+   ```powershell
+   .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+   ```
 
-**Complete sequence**:
-```bash
-# 1. Copy Appium template to SandboxAppium directory
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+**When you MUST use Appium** (via RunWithAppiumTest.cs):
+- ✅ Tapping buttons, controls, menu items
+- ✅ Opening menus, drawers, flyouts
+- ✅ Scrolling, swiping, gestures
+- ✅ Entering text in fields
+- ✅ ANY user interaction
 
-# 2. Edit the file to customize:
-#    - Set ISSUE_NUMBER constant
-#    - Set PLATFORM constant ("android" or "ios")
-#    - Implement test logic in the "Test Logic" section
-
-# 3. Run with BuildAndRunSandbox.ps1 script
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
-var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
-button.Click();
-
-driver.Quit();
-EOF
-
-# 2. Start Appium server (if not running)
-appium --allow-insecure chromedriver_autodownload > /tmp/appium.log 2>&1 &
-APPIUM_PID=$!
-sleep 3
-
-# 3. Run script with dotnet run (NOT dotnet-script)
-dotnet run test_pr_XXXXX.cs
-```
-
-**When to use ADB/xcrun** (acceptable):
-- ✅ Device status: `adb devices`, `xcrun simctl list`
-- ✅ Log monitoring: `adb logcat` (read-only)
-- ✅ Device properties: `adb shell getprop` (read-only)
-- ✅ Device setup: Boot simulator, install app
-
-**When you MUST use Appium**:
-- ❌ Tapping buttons, controls, menu items
-- ❌ Opening menus, drawers, flyouts
-- ❌ Scrolling, swiping, gestures
-- ❌ Entering text in fields
-- ❌ ANY user interaction
+**When manual commands are acceptable**:
+- ❌ NEVER for UI interaction
+- Note: PS1 script handles device status, log capture, everything else
 
 **Why this matters**:
-- Coordinate-based taps (`adb shell input tap`) break with different screen sizes
+- Coordinate-based taps break with different screen sizes
 - Can't verify element state or wait for elements
 - Brittle and unreliable
-- Violates explicit instructions
+- **PS1 script provides the correct, automated workflow**
 
 **Cost if not avoided**:
 - Unreliable tests that work once then fail
 - Can't verify actions succeeded
-- Wasted time debugging coordinate issues
-- **Instructions explicitly forbid this approach**
+- Wasted time debugging manual commands
+- **Violates the automated testing workflow**
 
 ---
 
