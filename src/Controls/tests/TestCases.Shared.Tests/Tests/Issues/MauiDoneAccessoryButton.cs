@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class MauiDoneAccessoryButton : _IssuesUITest
 {
+	const string DoneButtonAutomationId = "Microsoft.Maui.Platform.MauiDoneAccessory.DoneButton";
+
 	public MauiDoneAccessoryButton(TestDevice device) : base(device)
 	{
 	}
@@ -23,18 +25,14 @@ public class MauiDoneAccessoryButton : _IssuesUITest
 		// Tap the entry to bring up the keyboard
 		App.Tap("NumericEntry");
 		
-		// Give keyboard time to appear
-		App.WaitForElement("NumericEntry");
-		
-		// Verify the Done button is accessible by its automation ID
-		// The Done button should have accessibility identifier: "Microsoft.Maui.Platform.MauiDoneAccessory.DoneButton"
-		var doneButton = App.WaitForElement("Microsoft.Maui.Platform.MauiDoneAccessory.DoneButton");
+		// Wait for the Done button to appear in the keyboard accessory view
+		var doneButton = App.WaitForElement(DoneButtonAutomationId);
 		
 		// Verify the Done button exists and is accessible
 		Assert.That(doneButton, Is.Not.Null, "Done button should be accessible via its automation ID");
 		
 		// Tap the Done button
-		App.Tap("Microsoft.Maui.Platform.MauiDoneAccessory.DoneButton");
+		App.Tap(DoneButtonAutomationId);
 		
 		// Verify the completed event was triggered
 		var result = App.FindElement("ResultLabel").GetText();
