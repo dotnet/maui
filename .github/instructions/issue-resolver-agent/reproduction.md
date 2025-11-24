@@ -258,7 +258,7 @@ Expected value: 393, Actual value: 0  ❌ BUG CONFIRMED
 
 ## Instrumentation Patterns
 
-See `.github/instructions/instrumentation.instructions.md` for comprehensive patterns.
+See `.github/instructions/instrumentation.md` for comprehensive patterns.
 
 **Quick patterns for common scenarios:**
 

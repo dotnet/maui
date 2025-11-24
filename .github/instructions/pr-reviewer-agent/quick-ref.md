@@ -112,7 +112,7 @@ cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWith
 
 ## 🧪 Test Code Template (Copy-Paste)
 
-**Full instrumentation patterns**: See [Instrumentation Guide](../instrumentation.instructions.md)
+**Full instrumentation patterns**: See [Instrumentation Guide](../instrumentation.md)
 
 ### XAML
 
@@ -342,8 +342,8 @@ git branch -D test-pr-* baseline-test pr-*-temp 2>/dev/null || true
 - **Agent-specific errors**: [error-handling.md](error-handling.md)
 
 **Specialized Guides**:
-- **Instrumentation**: [../instrumentation.instructions.md](../instrumentation.instructions.md)
-- **SafeArea testing**: [../safearea-testing.instructions.md](../safearea-testing.instructions.md)
+- **Instrumentation**: [../instrumentation.md](../instrumentation.md)
+- **SafeArea testing**: [../safearea-testing.md](../safearea-testing.md)
 - **Command patterns**: [../common-testing-patterns.md](../common-testing-patterns.md)
 
 ---

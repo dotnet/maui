@@ -24,8 +24,8 @@
 1. **Read Required Files**:
    - `.github/copilot-instructions.md` - General coding standards
    - `.github/instructions/common-testing-patterns.md` - Command patterns with error checking
-   - `.github/instructions/instrumentation.instructions.md` - Testing patterns
-   - `.github/instructions/safearea-testing.instructions.md` - If SafeArea-related PR
+   - `.github/instructions/instrumentation.md` - Testing patterns
+   - `.github/instructions/safearea-testing.md` - If SafeArea-related PR
    - `.github/instructions/uitests.instructions.md` - If PR adds/modifies UI tests
 
 2. **Fetch PR Information**: Get PR details, description, and linked issues
@@ -416,10 +416,10 @@ Before conducting the review, use the `view` tool to read the following files fo
 1. `.github/copilot-instructions.md` - General coding standards, file conventions, build requirements
 2. `.github/instructions/uitests.instructions.md` - UI testing requirements (skip if PR has no UI tests)
 3. `.github/instructions/templates.instructions.md` - Template modification rules (skip if PR doesn't touch `src/Templates/`)
-4. `.github/instructions/instrumentation.instructions.md` - Instrumentation patterns for testing
+4. `.github/instructions/instrumentation.md` - Instrumentation patterns for testing
 
 **Specialized Guidelines (Read When Applicable):**
-- `.github/instructions/safearea-testing.instructions.md` - **CRITICAL for SafeArea PRs** - Read when PR modifies SafeAreaEdges, SafeAreaRegions, or safe area handling
+- `.github/instructions/safearea-testing.md` - **CRITICAL for SafeArea PRs** - Read when PR modifies SafeAreaEdges, SafeAreaRegions, or safe area handling
 - `.github/DEVELOPMENT.md` - When reviewing build system or setup changes
 - `CONTRIBUTING.md` - Reference for first-time contributor guidance
 

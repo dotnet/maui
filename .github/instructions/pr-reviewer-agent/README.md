@@ -51,9 +51,9 @@ Read these when working with specific controls or scenarios:
 | File | When to Read | What It Covers |
 |------|--------------|----------------|
 | [collectionview-handler-detection.md](collectionview-handler-detection.md) | PR affects CollectionView/CarouselView | Handler detection algorithm, MauiProgram.cs configuration |
-| [../safearea-testing.instructions.md](../safearea-testing.instructions.md) | PR modifies SafeArea code | Measure children not parents, gap calculations, instrumentation |
+| [../safearea-testing.md](../safearea-testing.md) | PR modifies SafeArea code | Measure children not parents, gap calculations, instrumentation |
 | [../uitests.instructions.md](../uitests.instructions.md) | PR adds/modifies UI tests | UI test file structure, Appium patterns |
-| [../instrumentation.instructions.md](../instrumentation.instructions.md) | Need detailed patterns | Complete instrumentation guide with advanced techniques |
+| [../instrumentation.md](../instrumentation.md) | Need detailed patterns | Complete instrumentation guide with advanced techniques |
 
 ---
 
@@ -89,7 +89,7 @@ Read these when working with specific controls or scenarios:
 
 ### Priority 3: Context-Specific (Read If Applicable)
 6. **collectionview-handler-detection.md** - CollectionView/CarouselView only
-7. **safearea-testing.instructions.md** - SafeArea changes only
+7. **safearea-testing.md** - SafeArea changes only
 8. **uitests.instructions.md** - UI test files only
 
 ### Priority 4: Before Finishing
@@ -97,7 +97,7 @@ Read these when working with specific controls or scenarios:
 
 ### Priority 5: Deep Dive (Optional)
 10. **core-guidelines.md** - Philosophy and rationale
-11. **instrumentation.instructions.md** - Advanced patterns
+11. **instrumentation.md** - Advanced patterns
 12. **checkpoint-resume.md** - Environment limitations
 
 ---
@@ -150,7 +150,7 @@ See: testing-guidelines.md#mandatory-workflow-with-checkpoints
 4. Reference [quick-ref.md](quick-ref.md) for commands
 
 ### "I need to test a layout/UI change"
-1. Check if SafeArea-related: [safearea-testing.instructions.md](../safearea-testing.instructions.md)
+1. Check if SafeArea-related: [safearea-testing.md](../safearea-testing.md)
 2. Check if CollectionView/CarouselView: [collectionview-handler-detection.md](collectionview-handler-detection.md)
 3. Use Sandbox app: [sandbox-setup.md](sandbox-setup.md)
 4. Create test code with instrumentation
@@ -238,8 +238,8 @@ Files outside this directory that you may need:
 
 - **[../.github/copilot-instructions.md](../../copilot-instructions.md)** - General .NET MAUI coding standards
 - **[../common-testing-patterns.md](../common-testing-patterns.md)** - Reusable command patterns
-- **[../instrumentation.instructions.md](../instrumentation.instructions.md)** - Complete instrumentation guide
-- **[../safearea-testing.instructions.md](../safearea-testing.instructions.md)** - SafeArea testing patterns
+- **[../instrumentation.md](../instrumentation.md)** - Complete instrumentation guide
+- **[../safearea-testing.md](../safearea-testing.md)** - SafeArea testing patterns
 - **[../uitests.instructions.md](../uitests.instructions.md)** - UI test creation guide
 - **[../../docs/UITesting-Guide.md](../../../docs/UITesting-Guide.md)** - UI testing reference
 

@@ -280,7 +280,7 @@ Console.WriteLine($"Child Y: {ContentLabel.Y}");
 Console.WriteLine($"Gap from top: {ContentLabel.Y}");
 ```
 
-See [SafeArea Testing Instructions](safearea-testing.instructions.md) for detailed SafeArea testing patterns.
+See [SafeArea Testing Instructions](safearea-testing.md) for detailed SafeArea testing patterns.
 
 ### 4. Calculate Gaps from Screen Edges
 
@@ -861,7 +861,7 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 ## Related Documentation
 
 - [Common Testing Patterns](common-testing-patterns.md) - Build, deploy, error handling commands
-- [SafeArea Testing Instructions](safearea-testing.instructions.md) - **Specialized guide for SafeArea testing** (measure children, not parents)
+- [SafeArea Testing Instructions](safearea-testing.md) - **Specialized guide for SafeArea testing** (measure children, not parents)
 - [Edge Case Testing](edge-case-testing.md) - Comprehensive test scenario checklist
 - [UI Tests Instructions](uitests.instructions.md) - Creating automated UI tests
 - [Appium Control Scripts](appium-control.instructions.md) - UI automation patterns

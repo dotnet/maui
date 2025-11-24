@@ -159,8 +159,8 @@ These provide specialized guidance for specific scenarios used by both agents:
 
 - **`instructions/common-testing-patterns.md`** - Command sequences (UDID extraction, builds, deploys, error checking)
 - **`instructions/uitests.instructions.md`** - UI testing guidelines (when to use HostApp vs Sandbox)
-- **`instructions/safearea-testing.instructions.md`** - SafeArea testing patterns (measure children, not parents)
-- **`instructions/instrumentation.instructions.md`** - Code instrumentation for debugging and testing
+- **`instructions/safearea-testing.md`** - SafeArea testing patterns (measure children, not parents)
+- **`instructions/instrumentation.md`** - Code instrumentation for debugging and testing
 - **`instructions/appium-control.instructions.md`** - Standalone Appium scripts for manual debugging
 - **`instructions/templates.instructions.md`** - Template modification rules
 

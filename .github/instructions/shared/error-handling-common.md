@@ -164,7 +164,7 @@ dotnet format analyzers Microsoft.Maui.sln
 
 - [BuildAndRunSandbox.ps1](../../scripts/BuildAndRunSandbox.ps1) - Sandbox app testing script
 - [BuildAndRunHostApp.ps1](../../scripts/BuildAndRunHostApp.ps1) - HostApp UI test script
-- [Instrumentation Guide](../instrumentation.instructions.md) - Adding debug logging
+- [Instrumentation Guide](../instrumentation.md) - Adding debug logging
 
 **Agent-Specific Error Handling**:
 - [Issue Resolver Error Handling](../issue-resolver-agent/error-handling.md) - Fix development errors

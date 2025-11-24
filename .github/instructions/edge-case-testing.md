@@ -360,7 +360,7 @@ TestElement.SafeAreaEdges = SafeAreaEdges.None;
 - Notches/home indicators avoided
 - Status bar area handled
 
-See `.github/instructions/safearea-testing.instructions.md` for detailed SafeArea testing patterns.
+See `.github/instructions/safearea-testing.md` for detailed SafeArea testing patterns.
 
 ### 6. Interaction Edge Cases
 
@@ -623,8 +623,8 @@ Fix works well overall. Found one issue with very long text that should be addre
 
 ## Related Documentation
 
-- `.github/instructions/instrumentation.instructions.md` - How to instrument test code
-- `.github/instructions/safearea-testing.instructions.md` - SafeArea-specific edge cases
+- `.github/instructions/instrumentation.md` - How to instrument test code
+- `.github/instructions/safearea-testing.md` - SafeArea-specific edge cases
 - `.github/instructions/uitests.instructions.md` - Creating automated edge case tests
 - `.github/copilot-instructions.md` - Platform-specific considerations
 

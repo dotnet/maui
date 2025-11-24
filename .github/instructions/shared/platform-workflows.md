@@ -431,7 +431,7 @@ artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Co
 ## Related Documentation
 
 - [Common Testing Patterns](../common-testing-patterns.md) - Additional patterns with error handling
-- [Instrumentation Guide](../instrumentation.instructions.md) - Adding console logging for debugging
+- [Instrumentation Guide](../instrumentation.md) - Adding console logging for debugging
 - [Error Handling](../shared/error-handling-common.md) - Troubleshooting build and deploy errors
 
 ---

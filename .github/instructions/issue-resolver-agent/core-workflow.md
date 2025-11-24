@@ -30,7 +30,7 @@
 1. **Read Required Files**:
    - `.github/copilot-instructions.md` - General coding standards
    - `.github/instructions/common-testing-patterns.md` - Command patterns with error checking
-   - `.github/instructions/instrumentation.instructions.md` - Testing patterns
+   - `.github/instructions/instrumentation.md` - Testing patterns
    - Issue-specific instruction files if applicable (SafeArea, UITests, Templates)
 
 2. **Analyze the Issue**:
@@ -140,7 +140,7 @@ After reproducing the issue, you MUST stop and show the user your reproduction b
 4. **Review related code** - what else might be affected?
 5. **Test edge cases** - when does it fail vs. when does it work?
 
-**Use instrumentation patterns from `.github/instructions/instrumentation.instructions.md`**
+**Use instrumentation patterns from `.github/instructions/instrumentation.md`**
 
 **Questions to answer:**
 - Where in the code does the failure occur?
@@ -223,7 +223,7 @@ After completing root cause analysis and designing your fix approach, you MUST s
 ```
 
 **Use same testing approach as pr-reviewer:**
-- Modify Sandbox app with instrumentation (see [Instrumentation Guide](../instrumentation.instructions.md))
+- Modify Sandbox app with instrumentation (see [Instrumentation Guide](../instrumentation.md))
 - Capture measurements before and after fix
 - Document test results with actual data
 

@@ -151,7 +151,7 @@ dotnet format analyzers Microsoft.Maui.sln
 
 - **Issue Resolution**: `.github/instructions/issue-resolver-agent/` - Full workflow and guidelines
 - **UI Tests**: `.github/instructions/uitests.instructions.md` - Writing automated UI tests
-- **Instrumentation**: `.github/instructions/instrumentation.instructions.md` - Adding debug instrumentation
+- **Instrumentation**: `.github/instructions/instrumentation.md` - Adding debug instrumentation
 - **Troubleshooting**: `.github/copilot-instructions.md` - General development troubleshooting
 
 ---

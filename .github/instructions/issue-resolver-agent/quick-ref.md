@@ -81,13 +81,13 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 
 ### Manual Workflows (Advanced)
 
-For manual testing without Appium, see [Instrumentation Guide](../instrumentation.instructions.md)
+For manual testing without Appium, see [Instrumentation Guide](../instrumentation.md)
 
 ---
 
 ## Instrumentation Templates
 
-**📚 Complete instrumentation guide**: See [Instrumentation Instructions](../instrumentation.instructions.md)
+**📚 Complete instrumentation guide**: See [Instrumentation Instructions](../instrumentation.md)
 
 ### Quick Patterns
 
@@ -114,7 +114,7 @@ public static void MapProperty(IMyHandler handler, IMyView view)
 }
 ```
 
-📖 **Full patterns**: [Instrumentation Instructions](../instrumentation.instructions.md)
+📖 **Full patterns**: [Instrumentation Instructions](../instrumentation.md)
 
 ---
 
@@ -491,7 +491,7 @@ git rebase origin/main
 ## Quick Links
 
 **During reproduction**:
-- [Instrumentation Guide](../instrumentation.instructions.md)
+- [Instrumentation Guide](../instrumentation.md)
 - [Common Testing Patterns](../common-testing-patterns.md)
 
 **During investigation**:

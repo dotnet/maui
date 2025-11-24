@@ -33,11 +33,11 @@ After determining the handler type (if needed), modify the Sandbox app to test t
 
 ### Detailed Patterns and Techniques
 
-**For comprehensive instrumentation patterns**, see **[Instrumentation Guide](../instrumentation.instructions.md)**:
-- [Key Techniques](../instrumentation.instructions.md#key-instrumentation-techniques) - Console output, timing, measurements
-- [Common Patterns](../instrumentation.instructions.md#common-instrumentation-patterns) - Property testing, collections, nested content
-- [Platform-Specific Positioning](../instrumentation.instructions.md#platform-specific-positioning) - Screen coordinates
-- [SafeArea Testing](../safearea-testing.instructions.md) - SafeArea-specific patterns
+**For comprehensive instrumentation patterns**, see **[Instrumentation Guide](../instrumentation.md)**:
+- [Key Techniques](../instrumentation.md#key-instrumentation-techniques) - Console output, timing, measurements
+- [Common Patterns](../instrumentation.md#common-instrumentation-patterns) - Property testing, collections, nested content
+- [Platform-Specific Positioning](../instrumentation.md#platform-specific-positioning) - Screen coordinates
+- [SafeArea Testing](../safearea-testing.md) - SafeArea-specific patterns
 
 ### Standard Workflow
 

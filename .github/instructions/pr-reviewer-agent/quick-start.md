@@ -56,7 +56,7 @@ Read these in order:
 
 4. **Special Cases** (30 seconds - read if applicable)
    - CollectionView/CarouselView PR? → Read [collectionview-handler-detection.md](collectionview-handler-detection.md)
-   - SafeArea PR? → Read [safearea-testing.instructions.md](../safearea-testing.instructions.md)
+   - SafeArea PR? → Read [safearea-testing.md](../safearea-testing.md)
    - UI test files in PR? → Read [uitests.instructions.md](../uitests.instructions.md)
 
 4. **UI Interaction Rule** (10 seconds)
