@@ -46,11 +46,32 @@ namespace Microsoft.Maui
 				var ctx = new NSStringDrawingContext();
 
 				var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
-				attString.DrawString(new CGRect(
-					imagesize.Width / 2 - boundingRect.Size.Width / 2,
-					imagesize.Height / 2 - boundingRect.Size.Height / 2,
-					imagesize.Width,
-					imagesize.Height));
+
+				nfloat x = imagesize.Width / 2 - boundingRect.Size.Width / 2;
+				nfloat y;
+
+				// On iOS 26+, use font metrics for better vertical centering to account for baseline variations
+				// This is particularly important for fonts like OpenSans that have non-standard baseline positioning
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					// Calculate vertical offset using font metrics (ascender + descender) for proper centering
+					// The capHeight provides the height of uppercase letters, which is more reliable for centering glyphs
+					var fontAscender = font.Ascender;
+					var fontDescender = font.Descender; // Note: descender is typically negative
+					var fontHeight = fontAscender - fontDescender; // Total font height
+
+					// Center the glyph using the font's actual metrics
+					// Start from the center of the image, subtract half the total font height,
+					// then add the descender offset to properly position the baseline
+					y = (imagesize.Height - fontHeight) / 2 - fontDescender;
+				}
+				else
+				{
+					// Pre-iOS 26: Use bounding rect centering (existing behavior)
+					y = imagesize.Height / 2 - boundingRect.Size.Height / 2;
+				}
+
+				attString.DrawString(new CGRect(x, y, imagesize.Width, imagesize.Height));
 
 				// Using UIRenderingMode.Automatic when the FontImageSource color is null (where 'Automatic' adapts based on the context and properly applies color) 
 				// and UIRenderingMode.AlwaysOriginal when the FontImageSource color is specified ensures the given color is applied correctly

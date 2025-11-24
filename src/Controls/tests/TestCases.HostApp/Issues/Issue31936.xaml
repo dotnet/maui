@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Maui.Controls.Sample.Issues.Issue31936"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Issue31936">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding BackCommand}"
+                            IsEnabled="True"
+                            IsVisible="True">
+            <BackButtonBehavior.IconOverride>
+                <FontImageSource FontFamily="OpenSansSemibold"
+                                 Glyph="&#x2039;" />
+            </BackButtonBehavior.IconOverride>
+        </BackButtonBehavior>
+    </Shell.BackButtonBehavior>
+
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="G4: Shell BackButtonBehavior with FontImageSource" 
+               FontSize="18"
+               FontAttributes="Bold"/>
+        <Label Text="1. Observe the back button (left arrow) in the navigation bar." />
+        <Label Text="2. On iOS 26, the glyph should be vertically centered." />
+        <Label Text="3. Press the back button to navigate to the previous screen." />
+        <Label Text="4. The test fails if:" />
+        <Label Text="   - The back button glyph is not vertically centered (iOS 26)" 
+               Margin="20,0,0,0"/>
+        <Label Text="   - The back button does not appear" 
+               Margin="20,0,0,0"/>
+        <Label Text="   - The back button does not work" 
+               Margin="20,0,0,0"/>
+        
+        <Label x:Name="StatusLabel"
+               Text="Test page loaded successfully"
+               AutomationId="StatusLabel"
+               TextColor="Green"
+               Margin="0,20,0,0"/>
+    </VerticalStackLayout>
+</ContentPage>
