@@ -26,6 +26,30 @@ Test PRs by creating reproduction scenarios in the Sandbox app and validating fi
 - ❌ PR only adds documentation
 - ❌ PR only modifies build scripts
 
+## 🚨 Critical Requirements for Android Testing
+
+**ANDROID APPIUM REQUIREMENT - appium:noReset**
+
+When testing on Android, the Appium test script **MUST** have this capability:
+
+```csharp
+options.AddAdditionalAppiumOption("appium:noReset", true);
+```
+
+**Why this is critical:**
+- Without `noReset`, Appium clears app data between runs
+- This breaks .NET MAUI's Fast Deployment mechanism
+- App crashes with: `"No assemblies found in '.../__override__/...' ... Assuming this is part of Fast Deployment. Exiting..."`
+- The app will crash immediately on launch before any test can run
+
+**Where to set it:**
+- Template: `.github/scripts/templates/RunWithAppiumTest.template.cs` (line ~68)
+- Active test: `SandboxAppium/RunWithAppiumTest.cs`
+
+**⚠️ NEVER REMOVE THIS CAPABILITY** - All Android tests depend on it
+
+---
+
 ## Core Workflow
 
 ### Step 1: Checkout PR and Understand Issue
@@ -218,16 +242,45 @@ OR
 
 ### 🔧 Debug and Fix (Analyze Logs and Retry)
 
+**🚨 CRITICAL RULE: NEVER RUN MANUAL COMMANDS**
+
+The BuildAndRunSandbox.ps1 script handles EVERYTHING:
+- ✅ Building the app
+- ✅ Deploying to device
+- ✅ Capturing logs (device + Appium)
+- ✅ Running Appium tests
+- ✅ Cleaning logcat before tests
+
+**❌ NEVER RUN THESE COMMANDS:**
+- `adb logcat` - Script captures logs to `SandboxAppium/android-device.log`
+- `adb logcat -c` - Script clears logcat automatically before test
+- `adb shell` - Script handles device interactions
+- `dotnet build` - Script builds the app
+- `dotnet run` - Script runs the Appium test
+- `xcrun simctl` - Script handles iOS simulator
+- Any other `adb`, `xcrun`, or manual build commands
+
+**✅ ONLY DO THIS:**
+```bash
+# Run the script and let it handle everything
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+
+# If it fails, analyze the OUTPUT and captured LOGS
+# Logs are in: SandboxAppium/android-device.log or SandboxAppium/ios-device.log
+```
+
 **How to debug:**
 - **BuildAndRunSandbox.ps1 generates all logs** - Read from `SandboxAppium/` directory:
-  - `android-device.log` or `ios-device.log` - Device logs
+  - `android-device.log` or `ios-device.log` - **ALL device logs are here**
   - `appium.log` - Appium server logs
-- **Never run manual commands** - Don't run `dotnet tool restore`, `adb logcat`, etc.
+- **Read the script output** - Build errors, deployment status shown in output
+- **Analyze captured logs** - Use `grep`, `cat`, `tail` to read log files
 - **Never try to capture logs yourself** - Script already captured them
 
 **What to fix:**
 - **Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry
 - **App crashes** - Read device log from `SandboxAppium/`, check stack trace, fix test code or reproduction scenario
+- **Fast Deployment errors** - Ensure `appium:noReset` is set to `true` in Appium options
 - Cannot find reproduction scenario - Try alternative approaches (UITests, code analysis)
 - Test code errors - Fix Appium script or MainPage code based on error messages
 
@@ -272,7 +325,35 @@ OR
 Unable to proceed with validation. Please advise.
 ```
 
-### App Crashes
+### App Crashes Immediately on Launch (Android)
+**Action**: Check for Fast Deployment error first
+
+```bash
+# Search device log for Fast Deployment error
+grep "No assemblies found" SandboxAppium/android-device.log
+# OR
+grep "Abort message" SandboxAppium/android-device.log
+```
+
+**If you see: "No assemblies found in '.../__override__/...' ... Fast Deployment"**
+
+**Root Cause**: Missing `appium:noReset` capability in Appium options
+
+**Fix**:
+1. Open `SandboxAppium/RunWithAppiumTest.cs`
+2. Find the Android options section
+3. Verify this line exists:
+   ```csharp
+   options.AddAdditionalAppiumOption("appium:noReset", true);
+   ```
+4. If missing, add it (see template for exact placement)
+5. Rerun test: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android`
+
+**This is NOT a PR bug** - It's a test infrastructure issue. Once fixed, retry the test.
+
+---
+
+### App Crashes During Test (Other Reasons)
 **Action**: Analyze crash logs and report
 
 ```markdown

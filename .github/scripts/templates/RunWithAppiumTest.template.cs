@@ -15,6 +15,12 @@
  * - For Android: Script outputs SANDBOX_APP_PID=<pid> which PowerShell captures for logcat filtering
  * - For iOS: PID capture not needed (iOS uses different logging mechanism)
  * - The BuildAndRunSandbox.ps1 script will automatically capture all logs
+ * 
+ * 🚨 CRITICAL - ANDROID REQUIREMENT:
+ * - The "appium:noReset" capability MUST be set to true for Android (line 63)
+ * - Without it, Appium clears app data causing Fast Deployment to fail
+ * - This results in "No assemblies found" crash on app launch
+ * - ⚠️  NEVER REMOVE the noReset capability - Android tests depend on it
  */
 
 using System;
@@ -60,7 +66,13 @@ if (PLATFORM == "android")
     options.AutomationName = "UIAutomator2";
     options.AddAdditionalAppiumOption("appium:appPackage", "com.microsoft.maui.sandbox");
     options.AddAdditionalAppiumOption("appium:appActivity", "com.microsoft.maui.sandbox.MainActivity");
+    
+    // 🚨 CRITICAL: noReset MUST be set to true for Android
+    // Without this, Appium clears app data between runs causing Fast Deployment to fail
+    // This results in "No assemblies found" crash immediately on app launch
+    // ⚠️  DO NOT REMOVE THIS LINE - Android tests will fail without it
     options.AddAdditionalAppiumOption("appium:noReset", true);
+    
     options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
     options.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
 }
