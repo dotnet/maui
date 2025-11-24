@@ -102,6 +102,7 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		static void MapShadow(IBorderHandler handler, IBorderView border)
 		{
+#if IOS || MACCATALYST
 			const double epsilon = 0.0001d;
 			CATransform3D existingTransform = CATransform3D.Identity;
 			CGPoint existingAnchorPoint = new CGPoint(0.5f, 0.5f);
@@ -153,6 +154,7 @@ namespace Microsoft.Maui.Handlers
 				childLayerFinal.Transform = existingTransform;
 				childLayerFinal.AnchorPoint = existingAnchorPoint;
 			}
+#endif
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
