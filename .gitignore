@@ -15,6 +15,7 @@ templatesTest/
 *.sln.docstates
 /src/Controls/tests/TestCases.HostApp/MauiProgram.user.cs
 SandboxAppium/
+HostAppCustomAgentTmpLogs/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

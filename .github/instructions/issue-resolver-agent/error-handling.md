@@ -420,12 +420,14 @@ var listView = new ListView { FlowDirection = FlowDirection.RightToLeft };
 ```
 
 **Run existing tests:**
-```bash
-# Run all CollectionView tests
-dotnet test src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj \
-  --filter "Category=CollectionView"
+```powershell
+# Run all CollectionView tests on Android
+./.github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "CollectionView"
 
-# Check for failures
+# Or on iOS
+./.github/scripts/BuildAndRunHostApp.ps1 -Platform ios -Category "CollectionView"
+
+# Check test results and logs in HostAppCustomAgentTmpLogs/
 ```
 
 **Review your changes:**

@@ -335,17 +335,17 @@ public class IssueXXXXX : _IssuesUITest
 
 #### Running Your Tests Locally
 
-**Before committing**, verify your tests work:
+**Before committing**, verify your tests work using BuildAndRunHostApp.ps1:
 
 ```bash
 # Android
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 
 # iOS
-# ... (see uitests.instructions.md for complete iOS workflow)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
+
+**All logs saved to**: `HostAppCustomAgentTmpLogs/` (check these if tests fail)
 
 See [UI Tests Instructions](../uitests.instructions.md) for:
 - Complete test creation workflow

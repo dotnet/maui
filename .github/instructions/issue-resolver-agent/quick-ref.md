@@ -270,25 +270,22 @@ public class IssueXXXXX : _IssuesUITest
 
 ### 3. Run Test Locally
 
+Use the BuildAndRunHostApp.ps1 script to build, deploy, and run your UI test:
+
 **iOS**:
 ```bash
-# Build and install HostApp
-./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-xcrun simctl boot $UDID 2>/dev/null || true
-xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
-
-# Run test
-dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
 
 **Android**:
 ```bash
-# Build and deploy HostApp
-./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-
-# Run test
-dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 ```
+
+**All logs saved to**: `HostAppCustomAgentTmpLogs/`
+- `appium.log` - Appium server logs
+- `ios-device.log` / `android-device.log` - Device logs
+- `test-results.log` - Test execution output
 
 ### 4. Verify Test Quality
 
