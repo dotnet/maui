@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31539, "Applying Shadow property affects the properties in Visual Transform Matrix", PlatformAffected.iOS | PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 32724, "Applying Shadow property affects the properties in Visual Transform Matrix", PlatformAffected.iOS | PlatformAffected.macOS)]
 
 public class Issue32724 : ContentPage
     {
