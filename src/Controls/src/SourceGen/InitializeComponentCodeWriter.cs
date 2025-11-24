@@ -130,7 +130,8 @@ $$"""
 			return;
 		}
 
-""");
+"""
+);
 					}
 					Visit(root, sgcontext);
 

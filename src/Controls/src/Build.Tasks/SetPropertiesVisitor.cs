@@ -43,6 +43,31 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		ModuleDefinition Module { get; } = context.Body.Method.Module;
 
+		// Track properties that have been set to detect duplicates
+		readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+		void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+		{
+			if (!setProperties.TryGetValue(parentNode, out var props))
+			{
+				props = new HashSet<XmlName>();
+				setProperties[parentNode] = props;
+			}
+
+			if (!props.Add(propertyName))
+			{
+				// Property is being set multiple times
+				Context.LoggingHelper.LogWarningOrError(
+					MultipleChildrenInContentProperty,
+					Context.XamlFilePath,
+					lineInfo.LineNumber,
+					lineInfo.LinePosition,
+					0,
+					0,
+					$"{parentNode.XmlType.Name}.{propertyName.LocalName}");
+			}
+		}
+
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			//TODO support Label text as element
@@ -67,6 +92,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
+
+			// Check for duplicate property assignment
+			if (parentNode is ElementNode elementParent)
+				CheckForDuplicateProperty(elementParent, propertyName, node);
+
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
 
@@ -121,6 +151,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
 					return;
 
+				// Check for duplicate property assignment
+				if (parentNode is ElementNode elementParent)
+					CheckForDuplicateProperty(elementParent, propertyName, node);
+
 				Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ElementNode)
@@ -140,6 +174,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						return;
 					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
 						return;
+
+					// Check for duplicate property assignment (including implicit content property)
+					CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));
 				}
 				// Collection element, implicit content, or implicit collection element.
@@ -537,7 +575,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// continue compilation
 			}
 
-			if (   dataTypeNode is ElementNode enode
+			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{

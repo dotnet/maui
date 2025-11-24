@@ -32,6 +32,33 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
+	// Track properties that have been set to detect duplicates
+	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+	void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+	{
+		if (!setProperties.TryGetValue(parentNode, out var props))
+		{
+			props = new HashSet<XmlName>();
+			setProperties[parentNode] = props;
+		}
+
+		if (!props.Add(propertyName))
+		{
+			// Property is being set multiple times - check if this warning should be suppressed via NoWarn
+			var noWarn = Context.ProjectItem.NoWarn;
+			bool shouldSuppress = !string.IsNullOrEmpty(noWarn) &&
+				(noWarn.Contains("2015") || noWarn.Contains("MAUIX2015"));
+
+			if (!shouldSuppress)
+			{
+				var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MultipleChildrenInContentProperty, location, propertyDisplayName));
+			}
+		}
+	}
+
 	public void Visit(ValueNode node, INode parentNode)
 	{
 		//TODO support Label text as element
@@ -59,6 +86,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
+
+		// Check for duplicate property assignment
+		if (parentNode is ElementNode elementParent)
+			CheckForDuplicateProperty(elementParent, propertyName, node);
+
 		SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 	}
 
@@ -128,6 +160,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			//     return;
 			// if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
 			//     return;
+
+			// Check for duplicate property assignment
+			if (parentNode is ElementNode elementParent)
+				CheckForDuplicateProperty(elementParent, propertyName, node);
+
 			SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ElementNode)
@@ -144,6 +181,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					return;
 				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
 					return;
+
+				// Check for duplicate property assignment (including implicit content property)
+				CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
 			else if (parentVar.Type.CanAdd(context))
