@@ -167,12 +167,35 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(name))
 						return;
 
-					// Only check for duplicate property assignment if this isn't a collection
-					// Collections use Add() method, so multiple children are expected
-					bool isCollection = parentVar.VariableType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
-						&& parentVar.VariableType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
-					if (!isCollection)
-						CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+					// Only check for duplicate property assignment if the property is not a collection
+					// Get the property type to check if it's a collection (has Add method)
+					var propLocalName = name.LocalName;
+					var propBpRef = GetBindablePropertyReference(parentVar, name.NamespaceURI, ref propLocalName, out var attached, Context, node);
+					
+					TypeReference contentPropType = null;
+					bool canResolveProperty = false;
+					
+					if (CanGetValue(parentVar, propBpRef, attached, node, Context, out _))
+					{
+						GetValue(parentVar, propBpRef, node, Context, out contentPropType);
+						canResolveProperty = true;
+					}
+					else if (CanGet(parentVar, propLocalName, Context, out _))
+					{
+						Get(parentVar, propLocalName, node, Context, out contentPropType);
+						canResolveProperty = true;
+					}
+					
+					// Only check for duplicates if we can resolve the property and it's not a collection
+					if (canResolveProperty && contentPropType != null)
+					{
+						bool isCollection = contentPropType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
+							&& contentPropType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
+						
+						if (!isCollection)
+							CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+					}
+					// If we can't resolve the property type, skip the duplicate check to avoid false positives
 
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));
 				}
