@@ -15,21 +15,21 @@
         <StackLayout Grid.Row="0" Spacing="4" Padding="5">
             <HorizontalStackLayout>
                 <Label Text="Scrolled Event: "/>
-                <Label x:Name="scrolledEventLabel" AutomationId="ScrolledEventLabel"/>
+                <Label x:Name="scrolledEventLabel" Text="Not Fired" AutomationId="ScrolledEventLabel"/>
             </HorizontalStackLayout>
             <HorizontalStackLayout>
                 <Label Text="ScrollToRequested Event: "/>
-                <Label x:Name="scrollToRequestedLabel" AutomationId="ScrollToRequestedLabel"/>
+                <Label x:Name="scrollToRequestedLabel" Text="Not Fired" AutomationId="ScrollToRequestedLabel"/>
             </HorizontalStackLayout>
             <HorizontalStackLayout>
                 <Label Text="RemainingItemsThresholdReached Event: "/>
-                <Label x:Name="remainingItemsThresholdLabel" AutomationId="RemainingItemsThresholdLabel"/>
+                <Label x:Name="remainingItemsThresholdLabel" Text="Not Fired" AutomationId="RemainingItemsThresholdLabel"/>
             </HorizontalStackLayout>
             <HorizontalStackLayout>
                 <Label Text="ReorderCompleted Event: "/>
-                <Label x:Name="reorderCompletedLabel" AutomationId="ReorderCompletedLabel"/>
+                <Label x:Name="reorderCompletedLabel" Text="Not Fired" AutomationId="ReorderCompletedLabel"/>
             </HorizontalStackLayout>
-            <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked" WidthRequest="150"/>
+            <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked" WidthRequest="150" AutomationId="ScrollTo"/>
             <Button Text="Add" Command="{Binding AddItemCommand}" IsVisible="{Binding ShowAddRemoveButtons}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
         </StackLayout>
         
