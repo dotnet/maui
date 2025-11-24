@@ -28,91 +28,54 @@ Test PRs by creating reproduction scenarios in the Sandbox app and validating fi
 
 ## Core Workflow
 
-### 1. Setup Phase
+### Step 1: Checkout PR and Understand Issue
 
 ```bash
-# 1. Check current state
-CURRENT_BRANCH=$(git branch --show-current)
-echo "Current branch: $CURRENT_BRANCH"
-
-# 2. Save current branch for potential merge
-ORIGINAL_BRANCH=$CURRENT_BRANCH
-
-# 3. Fetch PR
+# Fetch and checkout PR
 gh pr checkout <PR_NUMBER>
-
-# 4. If we weren't on main, merge in changes from original branch
-# This preserves any local work (e.g., agent code testing)
-if [ "$ORIGINAL_BRANCH" != "main" ] && [ "$ORIGINAL_BRANCH" != "$(git branch --show-current)" ]; then
-    echo "⚠️  Merging changes from $ORIGINAL_BRANCH to preserve local work..."
-    git merge $ORIGINAL_BRANCH --no-edit || {
-        echo "❌ Merge conflict detected. Resolve conflicts before proceeding."
-        exit 1
-    }
-    echo "✅ Merged $ORIGINAL_BRANCH successfully"
-fi
 ```
 
-**Why this matters**: If you're testing agent code on a feature branch, this ensures you don't lose that work when switching to test a PR.
-
-### 2. Understand the PR
-
-- Read PR description and linked issue
-- Identify what's being fixed
+**Understand the issue thoroughly:**
+- Read PR description and linked issue report
+- Identify what bug is being fixed
 - Note affected platforms
-- Review code changes
+- Look for reproduction steps in the issue
+- Review PR changes to understand the fix
 
-### 3. Create Test Scenario in Sandbox
+---
 
-**Location**: `src/Controls/samples/Controls.Sample.Sandbox/`
+### Step 2: Create Test Scenario in Sandbox
 
-**Files to Modify**:
-- `MainPage.xaml` - UI for reproduction
-- `MainPage.xaml.cs` - Code-behind with instrumentation
+**Choose test scenario source (in priority order):**
+
+1. **From Issue Reproduction** (Preferred)
+   - Look for "Reproduction" or "Steps to Reproduce" in the linked issue
+   - Use the exact scenario the user reported
+   - This proves you're testing what the user experienced
+
+2. **From PR's UI Tests** (Alternative)
+   - Check if PR includes files in `TestCases.HostApp/Issues/IssueXXXXX.*`
+   - Adapt the test page code to Sandbox
+   - Simplify if needed for manual testing
+
+3. **Create Your Own** (Last Resort)
+   - If no repro available, design scenario based on PR changes
+   - Focus on the specific code paths modified by the fix
+   - Keep it simple and focused
+
+**Files to modify**:
+- `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml[.cs]` - UI and code for reproduction
 - `SandboxAppium/RunWithAppiumTest.cs` - Appium test script
 
-**XAML Pattern**:
-```xml
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.MainPage">
-    
-    <Grid x:Name="TestContainer" BackgroundColor="Red">
-        <ContentView x:Name="TestElement" BackgroundColor="Yellow">
-            <Button x:Name="TriggerButton" 
-                    Text="Trigger Issue"
-                    AutomationId="TriggerButton"
-                    Clicked="OnButtonClicked"/>
-        </ContentView>
-    </Grid>
-</ContentPage>
-```
+**Implementation**:
+- Copy reproduction code from issue or UITest
+- Add `AutomationId` to interactive elements
+- Add console logging for debugging
+- See [Instrumentation Guide](../instructions/instrumentation.md) for patterns and examples
 
-**Code-Behind Pattern**:
-```csharp
-private void OnButtonClicked(object sender, EventArgs e)
-{
-    Console.WriteLine("=== TEST: Starting reproduction sequence ===");
-    
-    // Trigger the issue
-    // ... test code ...
-    
-    Console.WriteLine("=== TEST: Sequence completed ===");
-}
-```
+---
 
-**Appium Test Pattern**:
-```csharp
-// Find and tap button
-var button = driver.FindElement(MobileBy.Id("TriggerButton"));
-button.Click();
-
-// Wait and verify
-Thread.Sleep(5000);
-Console.WriteLine("✅ Test completed");
-```
-
-### 4. Build and Test
+### Step 3: Test WITH PR Fix
 
 **🚨 CRITICAL**: ALWAYS use the BuildAndRunSandbox.ps1 script:
 
@@ -122,36 +85,23 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 ```
 
-**Never do manually**:
-- ❌ `dotnet build` + `adb install`
-- ❌ Manual `adb logcat`
-- ❌ Separate Appium script execution
+**What to validate:**
+- ✅ App launches successfully
+- ✅ Test scenario completes without crashes/hangs
+- ✅ Appium test finds expected elements
+- ✅ Behavior matches expected fix
 
-### 5. Test Both States
+**Document:**
+- What test scenario you're running
+- What behavior you observe
+- Whether the fix appears to work
+- Any errors or unexpected behavior
 
-**WITHOUT PR fix** (if possible):
-```bash
-# Revert the fix
-git checkout main -- <files>
+**Note to user**: If you want to verify the bug reproduction without the fix, you can manually revert the PR changes and rerun the test.
 
-# Test
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+---
 
-# Document behavior (should show bug)
-```
-
-**WITH PR fix**:
-```bash
-# Restore PR changes
-git checkout HEAD -- <files>
-
-# Test
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
-
-# Document behavior (should be fixed)
-```
-
-### 6. Clean Up
+### Step 4: Clean Up
 
 ```bash
 # Always revert Sandbox changes before committing
@@ -184,55 +134,129 @@ Provide a concise test summary:
 **Platform Tested**: Android/iOS
 **Issue**: [Brief description]
 
-### Test Results
+---
 
-**WITHOUT PR Fix**:
-- [Observed behavior]
-- [Logs/measurements]
+### Test Scenario Setup
+**Source**: [From issue reproduction / From PR UITest / Custom scenario]
 
-**WITH PR Fix**:
-- [Observed behavior]  
-- [Logs/measurements]
+**What was tested**:
+- [Specific actions taken]
+- [UI elements involved]
+- [Expected behavior]
+
+---
+
+### Test Results WITH PR Fix
+
+**Observed Behavior**:
+- [What happened when running the test]
+- [Appium test results]
+- [Relevant log excerpts]
+
+**Screenshots**: [Reference if taken, but not for validation]
+
+---
 
 ### Verdict
 
-✅ **APPROVED** - Fix works as expected
+✅ **FIX VALIDATED** - Test scenario completes successfully, expected behavior observed
 OR
-❌ **NEEDS WORK** - [Issues found]
+⚠️ **PARTIAL** - Fix appears to work but [note any concerns]
+OR
+❌ **ISSUES FOUND** - [Specific problems encountered]
+OR
+🚫 **CANNOT TEST** - [Build failures, setup issues, etc.]
+
+---
+
+### Notes for User
+- Test scenario is set up in Sandbox and ready for manual verification if needed
+- To verify bug reproduction without fix, revert PR changes: `git checkout main -- [fix files]`
+- Then rerun: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]`
 ```
 
 ## Best Practices
 
-1. **Always test visually** - Don't rely only on logs
-2. **Use colored backgrounds** - Makes layout issues visible
-3. **Add console markers** - Easy to grep logs
-4. **Test multiple iterations** - Race conditions need multiple runs
-5. **Clean up after testing** - Revert Sandbox changes
-6. **Document what you tested** - Be specific about scenarios
+1. **Use issue reproduction when available** - Most reliable test scenario
+2. **Adapt PR's UITests if no repro** - They're already designed to test the fix
+3. **Test visually AND programmatically** - Use Appium to validate, screenshots for reference only
+4. **Use colored backgrounds** - Makes layout issues visible
+5. **Add console markers** - Easy to grep logs  
+6. **Test multiple iterations** - Race conditions need multiple runs (3-5 times)
+7. **Clean up after testing** - Always revert Sandbox changes
+8. **Document your test scenario** - Be specific so user can verify reproduction if needed
 
 ## Common Mistakes to Avoid
 
-- ❌ Testing WITHOUT the PR fix and claiming "it works" (always test both states if possible)
-- ❌ Using TestCases.HostApp for manual PR validation
+- ❌ Using TestCases.HostApp for manual PR validation (use Sandbox)
 - ❌ Manual build/deploy commands instead of BuildAndRunSandbox.ps1
 - ❌ Not cleaning up Sandbox after testing
 - ❌ Committing test code to the repository
 - ❌ Testing only one platform when PR affects multiple
+- ❌ Using screenshots for validation (use Appium element queries)
+- ❌ Creating test scenario without checking issue for reproduction steps
+- ❌ Ignoring PR's existing UITests when available
 
 ## Troubleshooting
 
-**Build Fails**:
-- Check error message
-- Don't run `dotnet clean` (report error and pause)
-- Verify .NET SDK version matches `global.json`
+### Build Fails
+**Action**: Stop and report to user
 
-**App Crashes**:
-- Check device logs for exception
-- Look for Fast Deployment errors
-- Verify assemblies are embedded (`EmbedAssembliesIntoApk=True`)
+```markdown
+❌ Build failed
 
-**Can't Reproduce Issue**:
-- Try multiple iterations
-- Check if timing-dependent
-- Verify test scenario matches issue report
-- Document that bug didn't manifest
+**Error**: [Full error message]
+
+**Common Causes**:
+- .NET SDK version mismatch (check global.json)
+- Missing dependencies
+- Corrupted build cache
+
+**Recommended Actions**:
+1. Verify .NET SDK version: `dotnet --version`
+2. Should match value in global.json
+3. Run: `dotnet tool restore`
+
+Unable to proceed with validation. Please advise.
+```
+
+### App Crashes
+**Action**: Analyze crash logs and report
+
+```markdown
+❌ App crashed during testing
+
+**When**: [Specific action that caused crash]
+
+**Error from logs**: [Exception/crash details]
+
+**Analysis**: [Your interpretation - does this seem related to the PR changes?]
+
+**Recommendation**: [Does this indicate the fix doesn't work, or is it an unrelated issue?]
+```
+
+### Cannot Find Reproduction Steps
+**Action**: Try alternative approaches
+
+1. Check linked issue for "Reproduction" section
+2. Look for PR's UITest files in `TestCases.HostApp/Issues/`
+3. Examine PR code changes to understand what's being fixed
+4. Create minimal test scenario based on code analysis
+5. Report to user if reproduction scenario is unclear
+
+### Test Shows Unexpected Behavior
+**Action**: Document and report
+
+```markdown
+⚠️ Unexpected behavior during testing
+
+**What I expected**: [Based on issue description]
+
+**What I observed**: [Actual behavior]
+
+**Test scenario**: [What was tested]
+
+**Logs**: [Relevant excerpts]
+
+**Question for user**: Is this expected behavior, or does this indicate an issue?
+```
