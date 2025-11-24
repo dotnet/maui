@@ -59,7 +59,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			{
 				var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
 				var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.MultipleChildrenInContentProperty, location, propertyDisplayName));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
 			}
 		}
 	}

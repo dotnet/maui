@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				// Property is being set multiple times
 				Context.LoggingHelper.LogWarningOrError(
-					MultipleChildrenInContentProperty,
+					DuplicatePropertyAssignment,
 					Context.XamlFilePath,
 					lineInfo.LineNumber,
 					lineInfo.LinePosition,
