@@ -541,8 +541,8 @@ static class NodeSGExtensions
 			return true;
 		}
 
-		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, writer, context, getNodeValue, out returnType0, out value))
+		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
+			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
