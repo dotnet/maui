@@ -59,9 +59,25 @@ namespace Microsoft.Maui.Controls
 			var newElement = (Element)newValue;
 			if (self.ControlTemplate == null)
 			{
-				// For SwipeView, skip child removal to preserve SwipeItems
-				if (bindable is not SwipeView)
+				// Preserve the SwipeItems in logical tree during content changes
+				if (bindable is SwipeView swipeView)
 				{
+					// Remove all children except SwipeItems
+					for (int i = self.InternalChildren.Count - 1; i >= 0; i--)
+					{
+						var child = self.InternalChildren[i];
+						bool isSwipeItems = child == swipeView.RightItems ||
+										   child == swipeView.LeftItems ||
+										   child == swipeView.TopItems ||
+										   child == swipeView.BottomItems;
+
+						if (!isSwipeItems)
+							self.RemoveAt(i);
+					}
+				}
+				else
+				{
+					// For other controls, remove all children
 					while (self.InternalChildren.Count > 0)
 					{
 						self.RemoveAt(self.InternalChildren.Count - 1);
