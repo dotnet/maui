@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
@@ -31,15 +32,15 @@ public class TestClass<T>
 	{
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
-		var context = new object();
+		var context = SourceGenContext.CreateNewForTests();
 		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!));
 		Assert.Equal("testClass1", NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!));
 
-		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass`1")!));
-		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass`1")!.Construct(compilation.GetTypeByMetadataName("Test.TestClass")!)));
+		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.GetTypeByMetadataName("Test.TestClass`1")!));
+		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.GetTypeByMetadataName("Test.TestClass`1")!.Construct(compilation.GetTypeByMetadataName("Test.TestClass")!)));
 
-		Assert.Equal("testClassArray", NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.CreateArrayTypeSymbol(compilation.GetTypeByMetadataName("Test.TestClass")!)!));
+		Assert.Equal("testClassArray", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.CreateArrayTypeSymbol(compilation.GetTypeByMetadataName("Test.TestClass")!)!));
 
-		Assert.Equal("nested", NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass+Nested")!));
+		Assert.Equal("nested", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.GetTypeByMetadataName("Test.TestClass+Nested")!));
 	}
 }

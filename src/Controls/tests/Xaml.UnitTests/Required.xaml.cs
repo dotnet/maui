@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using NUnit.Framework;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -52,7 +53,7 @@ public class RequiredPerson
 """)
 					.RunMauiSourceGenerator(typeof(Required));
 
-				Assert.That(result.Diagnostics, Is.Empty, "No diagnostics expected");
+				Assert.That(result.Diagnostics.Length, Is.EqualTo(1), "warning expected");
 			}
 
 			var layout = new Required(inflator);
@@ -76,8 +77,6 @@ public class RequiredRandomSelector : DataTemplateSelector
 public class RequiredPerson
 {
 	public required string Name { get; set; }
-
-
 	public override string ToString()
 		=> Name;
 }

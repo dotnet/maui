@@ -86,13 +86,14 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 			}
 		});
 
-	[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+	[Theory]
 	[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
 #endif
 #endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+	[Theory(Skip = "Failing on Helix https://github.com/dotnet/maui/issues/32400")]
 	[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
 #endif
 	public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase, string function) =>
@@ -142,13 +143,14 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 			Assert.Equal("Hello Matthew (param1=value1, param2=value2)", responseObject.message);
 		});
 
-	[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+	[Theory]
 	[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
 #endif
 #endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+	[Theory(Skip = "Failing on Helix https://github.com/dotnet/maui/issues/32400")]
 	[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
 #endif
 	public Task RequestsCanBeInterceptedAndHeadersAddedForDifferentHosts(string uriBase, string function) =>
@@ -311,13 +313,14 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 		});
 
 
-	[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+	[Theory]
 	[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
 #endif
 #endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+	[Theory(Skip = "Failing on Helix https://github.com/dotnet/maui/issues/32400")]
 	[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
 #endif
 	public Task RequestsCanBeInterceptedAndCaseInsensitiveHeadersRead(string uriBase, string function) =>

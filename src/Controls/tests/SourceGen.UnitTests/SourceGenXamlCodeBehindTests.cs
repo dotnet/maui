@@ -29,7 +29,7 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 </ContentPage>
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
 
@@ -52,7 +52,7 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
 
@@ -82,7 +82,7 @@ using Microsoft.Maui.Controls;
 """;
 		var compilation = CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
-		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
 
@@ -112,7 +112,7 @@ using Microsoft.Maui.Controls;
 """;
 		var compilation = CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
-		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
 
@@ -164,7 +164,7 @@ public class TestControl : ContentView
 		if (resolvedType)
 			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		if (resolvedType)
 		{
@@ -195,7 +195,7 @@ public class TestControl : ContentView
 """;
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, xamlFile);
+		var result = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
@@ -238,7 +238,7 @@ public class TestControl : ContentView
 """;
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, xamlFile);
+		var result = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
@@ -292,7 +292,7 @@ public class TestControl : ContentView
 """;
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, xamlFile);
+		var result = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
@@ -338,7 +338,7 @@ public class TestControl : ContentView
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 		Assert.True(result.Diagnostics.Any() || string.IsNullOrWhiteSpace(generated));
@@ -379,7 +379,7 @@ namespace Ns2
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.True(result.Diagnostics.Any());
 
@@ -473,7 +473,7 @@ internal class InternalWithSuffix : Button { }
 				SourceGeneratorDriver.CreateMauiCompilation("external2.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externaltwo)).ToMetadataReference(),
 				SourceGeneratorDriver.CreateMauiCompilation("external3.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalthree)).ToMetadataReference());
 
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
 
@@ -539,12 +539,50 @@ internal class InternalButVisible : Label { }
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code)).AddReferences(externalCompilation.ToMetadataReference());
 
 
-		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
 		Assert.True(generated.Contains("External.InternalButVisible internalButVisible", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public void TestCodeBehindGenerator_OnPlatform_Android()
+	{
+		// Issue #32521: Named controls under OnPlatform should only generate fields for the target platform
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<OnPlatform x:TypeArguments="ScrollView">
+		<On Platform="Android">
+			<ScrollView>
+				<Button x:Name="CounterBtnAndroid" Text="Click me Android" />
+			</ScrollView>
+		</On>
+		<On Platform="iOS">
+			<ScrollView>
+				<Button x:Name="CounterBtnIOS" Text="Click me iOS" />
+			</ScrollView>
+		</On>
+	</OnPlatform>
+</ContentPage>
+""";
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml, TargetFramework: "net10.0-android"));
+
+		Assert.False(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+
+		// Should contain Android button field
+		Assert.Contains("CounterBtnAndroid", generated, StringComparison.Ordinal);
+		// Should NOT contain iOS button field
+		Assert.DoesNotContain("CounterBtnIOS", generated, StringComparison.Ordinal);
 	}
 }

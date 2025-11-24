@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -8,11 +9,11 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class FlexBasisConverter : ISGTypeConverter
+class FlexBasisConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "FlexBasis", "Microsoft.Maui.Layouts.FlexBasis" };
+	public IEnumerable<string> SupportedTypes => ["FlexBasis", "Microsoft.Maui.Layouts.FlexBasis"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -29,13 +30,13 @@ internal class FlexBasisConverter : ISGTypeConverter
 				&& float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 			{
 				var flexBasisRelType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!;
-				return $"new {flexBasisRelType.ToFQDisplayString()}({FormatInvariant(relflex / 100)}, true)";
+				return $"new {flexBasisRelType.ToFQDisplayString()}({FormatInvariant(relflex / 100)}f, true)";
 			}
 
 			if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 			{
 				var flexBasisAbsType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!;
-				return $"new {flexBasisAbsType.ToFQDisplayString()}({FormatInvariant(flex)}, false)";
+				return $"new {flexBasisAbsType.ToFQDisplayString()}({FormatInvariant(flex)}f, false)";
 			}
 		}
 

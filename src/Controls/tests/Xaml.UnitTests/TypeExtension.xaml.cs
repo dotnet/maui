@@ -1,11 +1,13 @@
 using System;
+using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public enum NavigationOperation
 {
 	Forward,
@@ -58,6 +60,52 @@ public partial class TypeExtension : ContentPage
 			var page = new TypeExtension(inflator);
 			var button = page.button0;
 			Assert.That(button.CommandParameter, Is.EqualTo(typeof(TypeExtension)));
+		}
+
+		[Test]
+		public void ExtensionsAreReplaced([Values(XamlInflator.SourceGen)] XamlInflator inflator)
+		{
+			var result = CreateMauiCompilation()
+				.WithAdditionalSource(
+"""
+using System;
+using System.Windows.Input;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
+using NUnit.Framework;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+public enum NavigationOperation
+{
+	Forward,
+	Back,
+	Replace,
+}
+
+[ContentProperty(nameof(Operation))]
+[AcceptEmptyServiceProvider]
+public class NavigateExtension : IMarkupExtension<ICommand>
+{
+	public NavigationOperation Operation { get; set; }
+
+	public Type Type { get; set; }
+
+	public ICommand ProvideValue(IServiceProvider serviceProvider) => new Command(() => { });
+
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
+}
+
+public partial class TypeExtension : ContentPage
+{
+	public TypeExtension() => InitializeComponent();
+}
+""")
+				.RunMauiSourceGenerator(typeof(TypeExtension));
+			Assert.IsFalse(result.Diagnostics.Any());
+			var initComp = result.GeneratedInitializeComponent();
+			Assert.That(initComp.Contains("typeof(global::Microsoft.Maui.Controls.Xaml.UnitTests.TypeExtension)", StringComparison.InvariantCulture));
 		}
 	}
 }

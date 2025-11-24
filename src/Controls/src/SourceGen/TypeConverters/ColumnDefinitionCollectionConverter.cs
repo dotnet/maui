@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -5,13 +6,14 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class ColumnDefinitionCollectionConverter : ISGTypeConverter
+class ColumnDefinitionCollectionConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "ColumnDefinitionCollection", "Microsoft.Maui.Controls.ColumnDefinitionCollection" };
+	public IEnumerable<string> SupportedTypes => ["ColumnDefinitionCollection", "Microsoft.Maui.Controls.ColumnDefinitionCollection"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
+		var columnDefinitionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinition")!;
 		if (!string.IsNullOrEmpty(value))
 		{
 			var lengths = value.Split([',']);
@@ -20,8 +22,8 @@ internal class ColumnDefinitionCollectionConverter : ISGTypeConverter
 			var columnDefinitions = new List<string>();
 			foreach (var length in lengths)
 			{
-				var gridLength = gridLengthConverter.Convert(length, node, toType, context);
-				columnDefinitions.Add($"new ColumnDefinition({gridLength})");
+				var gridLength = gridLengthConverter.Convert(length, node, toType, writer, context);
+				columnDefinitions.Add($"new {columnDefinitionType.ToFQDisplayString()}({gridLength})");
 			}
 
 			var columnDefinitionCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollection")!;

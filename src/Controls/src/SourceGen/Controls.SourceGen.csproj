@@ -45,7 +45,6 @@
     <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
     <Compile Include="..\Xaml\XmlType.cs" Link="XmlType.cs" />
     <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
-    <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
     <Compile Include="..\..\..\Core\src\Services\Crc64.cs">
       <Link>Crc64.cs</Link>
     </Compile>

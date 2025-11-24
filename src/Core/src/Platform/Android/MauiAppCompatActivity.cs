@@ -1,5 +1,7 @@
+using System;
 using Android.OS;
 using Android.Views;
+using Android.Window;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content.Resources;
@@ -11,16 +13,6 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
-
-		GlobalWindowInsetListener? _globalWindowInsetListener;
-
-		/// <summary>
-		/// Gets the shared GlobalWindowInsetListener instance for this activity.
-		/// This ensures all views use the same listener instance for coordinated inset management.
-		/// </summary>
-		internal GlobalWindowInsetListener GlobalWindowInsetListener =>
-			_globalWindowInsetListener ??= new GlobalWindowInsetListener();
-
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
 
@@ -40,12 +32,28 @@ namespace Microsoft.Maui
 			{
 				this.CreatePlatformWindow(IPlatformApplication.Current.Application, savedInstanceState);
 			}
+
+			// Register predictive back callback (Android 13+/API 33+) if available.
+			// This integrates MAUI lifecycle OnBackPressed events with the system back gesture animation.
+			// Guidance: route custom back handling through AndroidX OnBackPressedDispatcher so
+			// predictive back works correctly:
+			// https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture#update-custom
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is null)
+			{
+				_predictiveBackCallback = new PredictiveBackCallback(this);
+				// Priority 0 = PRIORITY_DEFAULT: callback invoked only when no higher-priority callback handles the event
+				OnBackInvokedDispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
+			}
 		}
 
 		protected override void OnDestroy()
 		{
-			_globalWindowInsetListener?.Dispose();
-			_globalWindowInsetListener = null;
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is not null)
+			{
+				OnBackInvokedDispatcher?.UnregisterOnBackInvokedCallback(_predictiveBackCallback);
+				_predictiveBackCallback.Dispose();
+				_predictiveBackCallback = null;
+			}
 			base.OnDestroy();
 		}
 
@@ -63,6 +71,23 @@ namespace Microsoft.Maui
 				(this.GetWindow() as IPlatformEventsListener)?.DispatchTouchEvent(e) == true;
 
 			return handled || implHandled;
+		}
+
+		PredictiveBackCallback? _predictiveBackCallback;
+
+		sealed class PredictiveBackCallback : Java.Lang.Object, IOnBackInvokedCallback
+		{
+			readonly MauiAppCompatActivity _activity;
+			public PredictiveBackCallback(MauiAppCompatActivity activity)
+			{
+				_activity = activity;
+			}
+
+			public void OnBackInvoked()
+			{
+				// Reuse unified handling (will invoke lifecycle events and conditionally propagate).
+				_activity.HandleBackNavigation();
+			}
 		}
 	}
 }

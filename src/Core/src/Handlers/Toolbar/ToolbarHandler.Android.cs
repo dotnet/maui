@@ -42,14 +42,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (sender is MaterialToolbar mt && mt.IsAlive() && mt.Context is not null)
 			{
-				GlobalWindowInsetListenerExtensions.RemoveGlobalWindowInsetListener(mt, mt.Context);
+				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(mt, mt.Context);
 			}
 		}
 		
 		void OnViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
 		{
 			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
-            GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(PlatformView, context);
+            MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(PlatformView, context);
         }
 
 		private protected override void OnDisconnectHandler(object platformView)

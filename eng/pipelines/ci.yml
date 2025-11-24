@@ -121,7 +121,7 @@ stages:
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
         skipProvisioning: true
-        skipXcode: true
+        skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
@@ -164,7 +164,7 @@ stages:
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
         skipProvisioning: true
-        skipXcode: true
+        skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:
@@ -179,11 +179,13 @@ stages:
         runAsPublic: false
       timeout: 90
       testOS: Windows
+      buildscript: $(_buildScript)
     - name: mac_unit_tests
       displayName: macOS Unit Tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 90
       testOS: macOS
+      buildscript: $(_buildScriptMacOS)
     publishTaskPrefix: ''
 
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
@@ -202,7 +204,7 @@ stages:
       testCategory: Samples
     - name: mac_sample_tests
       pool: ${{ parameters.MacOSPool }}
-      timeout: 120
+      timeout: 240
       testCategory: Samples
 
     - name: win_wintemplate_tests
@@ -245,7 +247,7 @@ stages:
       testCategory: Blazor
     - name: mac_blazortemplate_tests
       pool: ${{ parameters.MacOSPool }}
-      timeout: 120
+      timeout: 240
       testCategory: Blazor
 
     - name: win_multitemplate_tests
@@ -266,10 +268,10 @@ stages:
 
     - name: mac_runandroid_tests
       pool: ${{ parameters.MacOSPool }}
-      timeout: 180
+      timeout: 240
       testCategory: RunOnAndroid
 
     - name: mac_runios_tests
       pool: ${{ parameters.MacOSPool }}
-      timeout: 180
+      timeout: 240
       testCategory: RunOniOS

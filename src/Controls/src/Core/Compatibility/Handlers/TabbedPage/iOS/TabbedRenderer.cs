@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return (TabbedPage)Element; }
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault();
+		public VisualElement Element => _viewHandlerWrapper?.Element ?? _element?.GetTargetOrDefault();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -132,6 +132,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
+			// On iPadOS 26.1+, ViewDidLayoutSubviews can be called during UITabBarController construction
+			// in narrow viewports (< 667 points) before Element is set. Guard against this.
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
 		}

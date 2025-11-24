@@ -71,7 +71,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		if (expression.StartsWith("{}", StringComparison.Ordinal))
 			return new ValueNode(expression.Substring(2), null, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 
-		if (expression[expression.Length - 1] != '}')
+		if (expression.Length == 0 || expression[expression.Length - 1] != '}')
 		{
 			//FIXME fix location
 			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
@@ -196,7 +196,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 			var xmltype = new XmlType(namespaceuri, name + "Extension", typeArguments);
 
-			if (!xmltype.TryResolveTypeSymbol(null, contextProvider!.Context.Compilation, contextProvider!.Context.XmlnsCache, out _))
+			if (!xmltype.TryResolveTypeSymbol(null, contextProvider!.Context.Compilation, contextProvider!.Context.XmlnsCache, contextProvider!.Context.TypeCache, out _))
 				xmltype = new XmlType(namespaceuri, name, typeArguments);
 
 			if (xmltype == null)

@@ -122,7 +122,7 @@
     <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>Fehler bei der XAML-Analyse</value>
+    <value>Fehler bei der XAML-Analyse.</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
     <value>Der Ausdruck muss mit „}“ enden.</value>
@@ -189,12 +189,18 @@
   </data>
   <data name="DuplicateKeyInRD" xml:space="preserve">
     <value>Doppelter Schlüssel im Ressourcenwörterbuch</value>
-    <comment>
-</comment>
   </data>
   <data name="ConversionFailedTitle" xml:space="preserve">
     <value>Fehler bei der Konvertierung</value>
     <comment>
 </comment>
+  </data>
+  <data name="RequiredPropertyTitle" xml:space="preserve">
+    <value>Verwendung von „erforderlich“</value>
+    <comment>/</comment>
+  </data>
+  <data name="RequiredPropertyMessage" xml:space="preserve">
+    <value>{0} hat das Schlüsselwort „erforderlich“. Die Unterstützung dafür in XAML ist derzeit begrenzt, und sie sollte nicht verwendet werden. Wir bemühen uns weiterhin, einen Mehrwert zu schaffen.</value>
+    <comment>0 is a property identifier</comment>
   </data>
 </root>
