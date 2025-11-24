@@ -13,6 +13,7 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyScaleAndShadow()
 	{
+		App.Tap("ResetButton");
 		App.WaitForElement("ScaleButton");
 		App.Tap("ScaleButton");
 		App.Tap("ToggleShadowButton");
@@ -23,6 +24,7 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyRotationAndShadow()
 	{
+		App.Tap("ResetButton");
 		App.Tap("RotationButton");
 		App.Tap("ToggleShadowButton");
 		VerifyScreenshot();
@@ -32,6 +34,7 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyRotationXAndShadow()
 	{
+		App.Tap("ResetButton");
 		App.Tap("RotationXButton");
 		App.Tap("ToggleShadowButton");
 		VerifyScreenshot();
@@ -41,6 +44,7 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyRotationYAndShadow()
 	{
+		App.Tap("ResetButton");
 		App.Tap("RotationYButton");
 		App.Tap("ToggleShadowButton");
 		VerifyScreenshot();
@@ -50,6 +54,7 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyAnchorXAndShadow()
 	{
+		App.Tap("ResetButton");
 		App.Tap("AnchorXButton");
 		App.Tap("RotationButton");
 		App.Tap("ToggleShadowButton");
@@ -59,7 +64,8 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyAnchorYAndShadow()
     {
-        App.Tap("AnchorYButton");
+        App.Tap("ResetButton");
+		App.Tap("AnchorYButton");
 		App.Tap("RotationButton");
 		App.Tap("ToggleShadowButton");
 		VerifyScreenshot();
@@ -69,6 +75,7 @@ public class Issue32724 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void VerifyAnchorXAndAnchorYShadow()
 	{
+		App.Tap("ResetButton");
 		App.Tap("AnchorXButton");
 		App.Tap("AnchorYButton");
 		App.Tap("RotationButton");
