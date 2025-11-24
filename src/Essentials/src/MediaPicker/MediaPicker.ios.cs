@@ -520,6 +520,7 @@ namespace Microsoft.Maui.Media
 	{
 		readonly string _identifier;
 		readonly NSItemProvider _provider;
+		readonly object _loadLock = new object();
 		bool _isFileLoaded;
 
 		internal PHPickerFileResult(NSItemProvider provider)
@@ -560,18 +561,53 @@ namespace Microsoft.Maui.Media
 
 		async Task EnsureFileLoadedAsync()
 		{
-			if (_isFileLoaded || string.IsNullOrWhiteSpace(FullPath))
-				return;
-
-			// Load the data from the provider
-			var data = await _provider?.LoadDataRepresentationAsync(_identifier);
-			if (data != null)
+			bool shouldLoad = false;
+			
+			lock (_loadLock)
 			{
-				// Write the data to the temporary file
-				using var stream = data.AsStream();
-				using var fileStream = File.Create(FullPath);
-				await stream.CopyToAsync(fileStream);
-				_isFileLoaded = true;
+				if (!_isFileLoaded && !string.IsNullOrWhiteSpace(FullPath))
+				{
+					// Check if another thread is already loading or has loaded the file
+					if (!File.Exists(FullPath))
+					{
+						shouldLoad = true;
+						_isFileLoaded = true; // Set early to prevent other threads from also loading
+					}
+					else
+					{
+						_isFileLoaded = true;
+						return;
+					}
+				}
+				else
+				{
+					return;
+				}
+			}
+
+			if (shouldLoad)
+			{
+				try
+				{
+					// Load the data from the provider
+					var data = await _provider?.LoadDataRepresentationAsync(_identifier);
+					if (data != null)
+					{
+						// Write the data to the temporary file
+						using var stream = data.AsStream();
+						using var fileStream = File.Create(FullPath);
+						await stream.CopyToAsync(fileStream);
+					}
+				}
+				catch
+				{
+					// If loading fails, reset the flag so it can be retried
+					lock (_loadLock)
+					{
+						_isFileLoaded = false;
+					}
+					throw;
+				}
 			}
 		}
 
