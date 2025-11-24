@@ -453,11 +453,39 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					// delete the AVD first, if it exists
 					Information("Deleting AVD if exists: {0}...", avdName);
 					try { AndroidAvdDelete(avdName, avdSettings); }
-					catch { }
+					catch (Exception ex) { Warning("Failed to delete AVD: {0}", ex.Message); }
 
 					// create the new AVD
 					Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 					AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+				}
+
+				// Pre-authorize ADB keys before starting emulator to avoid "device unauthorized" errors
+				Information("Pre-authorizing ADB keys for emulator...");
+				try
+				{
+					// Ensure ADB keys exist
+					EnsureAdbKeys(adbSettings);
+
+					// Copy the public key to the AVD directory so it's trusted from boot
+					var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+					var adbKeyPubSource = System.IO.Path.Combine(homeDir, ".android", "adbkey.pub");
+					var avdPath = System.IO.Path.Combine(homeDir, ".android", "avd", $"{avdName}.avd");
+					var avdAdbKeysDest = System.IO.Path.Combine(avdPath, "adbkey.pub");
+
+					if (System.IO.File.Exists(adbKeyPubSource) && System.IO.Directory.Exists(avdPath))
+					{
+						System.IO.File.Copy(adbKeyPubSource, avdAdbKeysDest, overwrite: true);
+						Information($"Pre-authorized ADB key copied to: {avdAdbKeysDest}");
+					}
+					else
+					{
+						Warning($"Could not pre-authorize ADB key. Source exists: {System.IO.File.Exists(adbKeyPubSource)}, AVD path exists: {System.IO.Directory.Exists(avdPath)}");
+					}
+				}
+				catch (Exception ex)
+				{
+					Warning($"Failed to pre-authorize ADB keys (will retry during boot): {ex.Message}");
 				}
 
 				// start the emulator
@@ -538,7 +566,7 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 		Information("AndroidAvdDelete");
 		// delete the AVD
 		try { AndroidAvdDelete(androidAvd, avdSettings); }
-		catch { }
+		catch (Exception ex) { Warning("Failed to delete AVD during cleanup: {0}", ex.Message); }
 	}
 }
 

@@ -43,8 +43,6 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
-  - name: AgentPoolAccessToken
-    value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
 parameters:
 
@@ -74,7 +72,6 @@ parameters:
       demands:
         - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 15.6
   
   - name: androidPoolLinux
     type: object
@@ -92,7 +89,6 @@ parameters:
       demands:
         - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 15.6
   
   - name: windowsBuildPool
     type: object

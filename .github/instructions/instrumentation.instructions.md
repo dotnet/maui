@@ -1,155 +1,458 @@
 ---
-description: "Guidelines for instrumenting .NET MAUI source code for debugging, testing, and validating changes"
+description: "Comprehensive guide for instrumenting .NET MAUI apps for debugging, testing, and validation"
 ---
 
 # .NET MAUI Instrumentation Guide
 
-This guide provides patterns and techniques for adding instrumentation to .NET MAUI source code to debug issues, validate PR changes, and understand runtime behavior.
+This guide provides comprehensive patterns and techniques for adding instrumentation to .NET MAUI apps to debug issues, validate changes, and understand runtime behavior.
 
-**Guiding Principle: Use cross-platform MAUI APIs for all instrumentation.**
+**Target App**: Use the Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox/`) for all testing and instrumentation.
+
+**Common Commands**: For build, deploy, and error handling patterns, see [Common Testing Patterns](common-testing-patterns.md).
+
+---
+
+## Table of Contents
+
+1. [When to Use Instrumentation](#when-to-use-instrumentation)
+2. [Quick Start: Basic Pattern](#quick-start-basic-pattern)
+3. [Key Instrumentation Techniques](#key-instrumentation-techniques)
+4. [Common Instrumentation Patterns](#common-instrumentation-patterns)
+5. [Advanced Techniques](#advanced-techniques)
+6. [Platform-Specific Positioning](#platform-specific-positioning)
+7. [Best Practices](#best-practices)
+8. [Capturing Output](#capturing-output)
+9. [Troubleshooting](#troubleshooting)
+10. [Quick Reference](#quick-reference)
+
+---
 
 ## When to Use Instrumentation
 
-- **Validating PR changes**: Measure actual behavior before/after changes
-- **Debugging layout issues**: Capture frame positions, sizes, margins
-- **Testing behavior**: Verify view properties and state
-- **Performance analysis**: Measure timing, allocations, render cycles
-- **Understanding code flow**: Trace execution paths and state changes
+**✅ Use instrumentation for:**
+- Reproducing reported issues
+- Validating PR changes and fixes
+- Debugging layout and positioning issues
+- Testing control behavior and properties
+- Performance analysis and timing measurements
+- Understanding code execution flow
 
-## Quick Start: Sandbox App Instrumentation
+**✅ Use Sandbox app for:**
+- Manual testing and reproduction
+- Quick experimentation
+- PR validation
+- Issue investigation
 
-The recommended approach is to use the Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox`) for instrumentation:
+**❌ Don't use Sandbox app for:**
+- Writing automated UI tests (use TestCases.HostApp instead)
+- Running automated test suites
+- CI/CD validation
 
-1. Modify `MainPage.xaml` to reproduce the scenario
-2. Add instrumentation code to `MainPage.xaml.cs`
-3. Build and deploy to simulator/device
-4. Capture console output
-5. Revert changes when done
+---
 
-## Cross-Platform Instrumentation (Preferred Method)
+## Quick Start: Basic Pattern
 
-### Measuring Size
+### Step 1: Create Visual Test Scenario (XAML)
 
-**Use `SizeChanged` events for size measurements:**
+Edit `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage"
+             Title="Issue #XXXXX Test">
+
+    <!-- Use colored backgrounds for visual debugging -->
+    <Grid x:Name="RootGrid" BackgroundColor="Red">
+
+        <!-- The element you're testing -->
+        <ContentView x:Name="TestElement"
+                     BackgroundColor="Yellow"
+                     Loaded="OnLoaded">
+            <Label Text="Test Content"
+                   x:Name="ContentLabel"/>
+        </ContentView>
+    </Grid>
+</ContentPage>
+```
+
+**Key XAML patterns:**
+- Use `x:Name` on elements you'll reference in code
+- Use contrasting `BackgroundColor` values for visual debugging (red parent, yellow child)
+- Hook into `Loaded` event for measurement timing
+- Keep layout simple and focused on the issue
+
+### Step 2: Add Instrumentation (Code-Behind)
+
+Edit `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs`:
+
+```csharp
+using Microsoft.Maui.Controls;
+using System;
+
+namespace Maui.Controls.Sample
+{
+    public partial class MainPage : ContentPage
+    {
+        public MainPage()
+        {
+            InitializeComponent();
+        }
+
+        private void OnLoaded(object sender, EventArgs e)
+        {
+            // Wait for layout to complete
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+            {
+                CaptureState("OnLoaded");
+            });
+        }
+
+        private void CaptureState(string context)
+        {
+            Console.WriteLine($"=== TEST OUTPUT: {context} ===");
+
+            // Basic measurements
+            Console.WriteLine($"Element Bounds: {TestElement.Bounds}");
+            Console.WriteLine($"Element Width: {TestElement.Width}, Height: {TestElement.Height}");
+
+            // Child content measurements
+            if (ContentLabel != null)
+            {
+                Console.WriteLine($"Content Bounds: {ContentLabel.Bounds}");
+                Console.WriteLine($"Content Position: X={ContentLabel.X}, Y={ContentLabel.Y}");
+            }
+
+            // Screen dimensions
+            var screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+            var screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
+            Console.WriteLine($"Screen Size: {screenWidth}x{screenHeight}");
+
+            Console.WriteLine("=== END TEST OUTPUT ===\n");
+        }
+    }
+}
+```
+
+### Step 3: Build, Deploy, and Capture
+
+See [Common Testing Patterns](common-testing-patterns.md) for detailed build and deploy commands:
+
+**iOS**: [Sandbox App Build (iOS)](common-testing-patterns.md#sandbox-app-build-ios)
+**Android**: [Sandbox App Build (Android)](common-testing-patterns.md#sandbox-app-build-android)
+
+**Quick iOS workflow:**
+```bash
+# Get UDID, boot, build, install, launch
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+xcrun simctl boot $UDID 2>/dev/null || true
+dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
+xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
+xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/output.log 2>&1 &
+sleep 8 && cat /tmp/output.log
+```
+
+**Quick Android workflow:**
+```bash
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+adb logcat | grep "TEST OUTPUT"
+```
+
+### Step 4: Clean Up
+
+```bash
+# Always revert Sandbox changes when done
+git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
+```
+
+---
+
+## Key Instrumentation Techniques
+
+### 1. Console Output with Markers
+
+**Why**: Output is captured in device logs and easy to search
+
+```csharp
+Console.WriteLine("=== TEST OUTPUT ===");  // Marker for easy searching
+Console.WriteLine($"Value: {someValue}");
+Console.WriteLine("=== END TEST OUTPUT ===");
+```
+
+**With unique markers for filtering:**
+```csharp
+Console.WriteLine($"[ISSUE-12345] FlowDirection changed to {value}");
+Console.WriteLine($"[ISSUE-12345] Measurements: {width}x{height}");
+
+// Later, filter logs:
+// iOS: xcrun simctl spawn booted log stream | grep "ISSUE-12345"
+// Android: adb logcat | grep "ISSUE-12345"
+```
+
+### 2. Timing: When to Measure
+
+Two approaches depending on your scenario:
+
+#### Approach A: Loaded Event (Simple, One-Time Measurements)
+
+**Best for**: Initial state capture, one-time measurements, Sandbox app testing
+
+```csharp
+private void OnLoaded(object sender, EventArgs e)
+{
+    // Wait for layout pass to complete
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        // Now measure - layout is guaranteed complete
+        CaptureState("AfterLoad");
+    });
+}
+```
+
+**Why this works:**
+- ✅ Simpler code for one-time measurements
+- ✅ Reliable for initial state capture
+- ✅ No async complexity needed
+- ✅ Works consistently across platforms
+
+#### Approach B: SizeChanged Event (Dynamic, Event-Driven)
+
+**Best for**: Dynamic scenarios, property changes, animations, responsive layouts
 
 ```csharp
 public MainPage()
 {
     InitializeComponent();
-    
+
     // Subscribe to size changes
     if (Content is View view)
     {
         view.SizeChanged += async (s, e) =>
         {
-            // Wait for layout pass to complete
+            // Wait for platform arrange to complete
             await Task.Delay(1);
-            
+
             Console.WriteLine("========== VIEW INFO ==========");
             Console.WriteLine($"Size: W={view.Width}, H={view.Height}");
             Console.WriteLine($"Bounds: {view.Bounds}");
-            Console.WriteLine($"Margin: {view.Margin}");
-            
-            if (view is Layout layout)
-            {
-                Console.WriteLine($"Padding: {layout.Padding}");
-            }
-            
             Console.WriteLine("================================");
         };
     }
 }
 ```
 
-### Getting Absolute Screen Position
+**Why this works:**
+- ✅ Fires on actual size changes
+- ✅ Precise timing (1ms wait for platform arrange)
+- ✅ Captures dynamic property changes
+- ✅ Event-driven, not arbitrary delays
 
-To get the absolute position of an element on the screen, you need to access the platform view and use platform-specific APIs.
+**When to use which:**
+- **Loaded + 500ms**: Sandbox app testing, issue reproduction, PR validation
+- **SizeChanged + 1ms**: Dynamic behavior testing, animation debugging, property change testing
 
-**iOS/MacCatalyst:**
+### 3. Measure Child Elements (Critical for SafeArea)
+
+**CRITICAL**: For SafeArea and padding tests, measure CHILD content position, not parent container size
 
 ```csharp
-view.SizeChanged += async (s, e) =>
+// ❌ WRONG: Measuring parent (size stays constant)
+Console.WriteLine($"Container size: {RootGrid.Width}x{RootGrid.Height}");
+
+// ✅ CORRECT: Measuring child position (shows padding effect)
+Console.WriteLine($"Child Y: {ContentLabel.Y}");
+Console.WriteLine($"Gap from top: {ContentLabel.Y}");
+```
+
+See [SafeArea Testing Instructions](safearea-testing.instructions.md) for detailed SafeArea testing patterns.
+
+### 4. Calculate Gaps from Screen Edges
+
+**Why**: Essential for SafeArea and positioning validation
+
+```csharp
+private void CapturePositionData()
 {
-    await Task.Delay(1); // Wait for arrange
-    
-    #if IOS || MACCATALYST
-    if (view.Handler?.PlatformView is UIKit.UIView platformView)
+    var element = ContentLabel;
+
+    // Get screen dimensions
+    var screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+    var screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
+
+    // Calculate gaps from edges
+    double topGap = element.Y;
+    double bottomGap = screenHeight - (element.Y + element.Height);
+    double leftGap = element.X;
+    double rightGap = screenWidth - (element.X + element.Width);
+
+    Console.WriteLine($"Top Gap: {topGap}");
+    Console.WriteLine($"Bottom Gap: {bottomGap}");
+    Console.WriteLine($"Left Gap: {leftGap}");
+    Console.WriteLine($"Right Gap: {rightGap}");
+}
+```
+
+### 5. Color Code Elements for Visual Debugging
+
+**Why**: Makes visual inspection easier, especially for SafeArea issues
+
+```xml
+<!-- Visual hierarchy with colors -->
+<Grid BackgroundColor="Red">               <!-- Parent -->
+    <ContentView BackgroundColor="Yellow">  <!-- Middle -->
+        <Label BackgroundColor="Green"/>    <!-- Child -->
+    </ContentView>
+</Grid>
+```
+
+When SafeArea padding is applied, you'll see the red background where gaps appear.
+
+---
+
+## Common Instrumentation Patterns
+
+### Pattern 1: Property Change Testing
+
+Test property toggles multiple times to catch timing/race conditions:
+
+```csharp
+private async void OnLoaded(object sender, EventArgs e)
+{
+    Console.WriteLine("=== TEST: Property Toggle ===");
+
+    for (int i = 0; i < 5; i++)
     {
-        // Find the root superview
-        var superview = platformView;
-        while (superview.Superview != null)
-        {
-            superview = superview.Superview;
-        }
-        
-        // Convert the view's bounds to the root coordinate system
-        var convertedRect = platformView.ConvertRectToView(platformView.Bounds, superview);
-        
-        Console.WriteLine($"Screen Position: X={convertedRect.X}, Y={convertedRect.Y}");
-        Console.WriteLine($"Screen Size: W={convertedRect.Width}, H={convertedRect.Height}");
+        TestElement.FlowDirection = FlowDirection.RightToLeft;
+        await Task.Delay(500);
+        Console.WriteLine($"Iteration {i}: RTL Bounds = {TestElement.Bounds}");
+
+        TestElement.FlowDirection = FlowDirection.LeftToRight;
+        await Task.Delay(500);
+        Console.WriteLine($"Iteration {i}: LTR Bounds = {TestElement.Bounds}");
     }
-    #endif
-};
+
+    Console.WriteLine("=== END TEST ===");
+}
 ```
 
-**Android:**
+### Pattern 2: Nested Content Measurement
+
+Measure parent-child relationships:
 
 ```csharp
-view.SizeChanged += async (s, e) =>
+private void OnLoaded(object sender, EventArgs e)
 {
-    await Task.Delay(1); // Wait for arrange
-    
-    #if ANDROID
-    if (view.Handler?.PlatformView is Android.Views.View platformView)
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
     {
-        int[] location = new int[2];
-        platformView.GetLocationOnScreen(location);
-        
-        Console.WriteLine($"Screen Position: X={location[0]}, Y={location[1]}");
-        Console.WriteLine($"Screen Size: W={platformView.Width}, H={platformView.Height}");
-    }
-    #endif
-};
+        Console.WriteLine("=== TEST: Parent and Child ===");
+        Console.WriteLine($"Parent Bounds: {RootGrid.Bounds}");
+        Console.WriteLine($"Parent Position: X={RootGrid.X}, Y={RootGrid.Y}");
+
+        Console.WriteLine($"Child Bounds: {ContentLabel.Bounds}");
+        Console.WriteLine($"Child Position: X={ContentLabel.X}, Y={ContentLabel.Y}");
+
+        // Calculate child position relative to parent
+        var relativeX = ContentLabel.X - RootGrid.X;
+        var relativeY = ContentLabel.Y - RootGrid.Y;
+        Console.WriteLine($"Child relative to parent: X={relativeX}, Y={relativeY}");
+        Console.WriteLine("=== END TEST ===");
+    });
+}
 ```
 
-**Windows:**
+### Pattern 3: Collection/List Testing
+
+Add large data sets for scrolling and performance tests:
 
 ```csharp
-view.SizeChanged += async (s, e) =>
+public MainPage()
 {
-    await Task.Delay(1); // Wait for arrange
-    
-    #if WINDOWS
-    if (view.Handler?.PlatformView is Microsoft.UI.Xaml.FrameworkElement platformElement)
+    InitializeComponent();
+
+    // Large data set for performance/scrolling test
+    var items = Enumerable.Range(1, 100).Select(i => $"Item {i}").ToList();
+    TestCollectionView.ItemsSource = items;
+}
+
+private void OnLoaded(object sender, EventArgs e)
+{
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
     {
-        var transform = platformElement.TransformToVisual(null);
-        var point = transform.TransformPoint(new Windows.Foundation.Point(0, 0));
-        
-        Console.WriteLine($"Screen Position: X={point.X}, Y={point.Y}");
-        Console.WriteLine($"Screen Size: W={platformElement.ActualWidth}, H={platformElement.ActualHeight}");
-    }
-    #endif
-};
+        var collection = TestCollectionView;
+        var count = collection.ItemsSource?.Cast<object>().Count() ?? 0;
+        Console.WriteLine($"=== TEST: {count} items loaded ===");
+        Console.WriteLine($"Collection Bounds: {collection.Bounds}");
+    });
+}
 ```
 
-**Monitoring Specific Named Elements:**
+### Pattern 4: Event Sequence Tracking
+
+Track when events fire and in what order:
 
 ```csharp
-// In XAML: <Label x:Name="MyLabel" Text="Test" />
-// In code-behind:
-MyLabel.SizeChanged += async (s, e) =>
+private int _eventCount = 0;
+
+private void OnSomeEvent(object sender, EventArgs e)
 {
-    // Wait for layout pass to complete
-    await Task.Delay(1);
-    
-    Console.WriteLine($"Label: W={MyLabel.Width}, H={MyLabel.Height}");
-    Console.WriteLine($"Label Bounds: {MyLabel.Bounds}");
-};
+    _eventCount++;
+    Console.WriteLine($"=== Event #{_eventCount} at {DateTime.Now:HH:mm:ss.fff} ===");
+    Console.WriteLine($"Sender: {sender?.GetType().Name}");
+
+    // Capture state at event time
+    CaptureState($"Event{_eventCount}");
+}
 ```
 
-### Traversing the Visual Tree
+### Pattern 5: Timing Measurements
 
-**Use `IVisualTreeElement` to walk the MAUI element hierarchy:**
+Measure how long operations take:
+
+```csharp
+private async void OnButtonClicked(object sender, EventArgs e)
+{
+    var sw = System.Diagnostics.Stopwatch.StartNew();
+
+    // Operation being measured
+    await SomeAsyncOperation();
+
+    sw.Stop();
+    Console.WriteLine($"Operation took: {sw.ElapsedMilliseconds}ms");
+}
+```
+
+### Pattern 6: Before/After Comparison
+
+Compare behavior before and after your changes:
+
+```csharp
+private void TestScenario()
+{
+    Console.WriteLine("=== BEFORE STATE ===");
+    CaptureState("Before");
+
+    // Make change
+    TestElement.SomeProperty = newValue;
+
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        Console.WriteLine("=== AFTER STATE ===");
+        CaptureState("After");
+    });
+}
+```
+
+---
+
+## Advanced Techniques
+
+### Visual Tree Traversal
+
+Use `IVisualTreeElement` to walk the MAUI element hierarchy:
+
+#### Walking Down the Tree
 
 ```csharp
 using Microsoft.Maui.Controls;
@@ -159,13 +462,13 @@ void LogVisualChildren(IVisualTreeElement element, int depth = 0)
 {
     var indent = new string(' ', depth * 2);
     Console.WriteLine($"{indent}{element.GetType().Name}");
-    
+
     if (element is View view)
     {
         Console.WriteLine($"{indent}  Size: W={view.Width}, H={view.Height}");
         Console.WriteLine($"{indent}  Margin: {view.Margin}");
     }
-    
+
     // Recurse into children
     foreach (var child in element.GetVisualChildren())
     {
@@ -174,14 +477,16 @@ void LogVisualChildren(IVisualTreeElement element, int depth = 0)
 }
 
 // Usage - call after layout completes
-async void OnSizeChanged(object sender, EventArgs e)
+private void OnLoaded(object sender, EventArgs e)
 {
-    await Task.Delay(1); // Wait for layout pass
-    LogVisualChildren(this);
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        LogVisualChildren(this);
+    });
 }
 ```
 
-**Walking Up the Tree:**
+#### Walking Up the Tree
 
 ```csharp
 // Get parent elements
@@ -189,17 +494,17 @@ var current = myView as IVisualTreeElement;
 while (current != null)
 {
     Console.WriteLine($"Parent: {current.GetType().Name}");
-    
+
     if (current is View view)
     {
         Console.WriteLine($"  Size: W={view.Width}, H={view.Height}");
     }
-    
+
     current = current.GetVisualParent();
 }
 ```
 
-**Finding Specific Elements:**
+#### Finding Specific Elements
 
 ```csharp
 // Find all Labels in the visual tree
@@ -209,7 +514,7 @@ void FindAllLabels(IVisualTreeElement element)
     {
         Console.WriteLine($"Found Label: '{label.Text}' at W={label.Width}, H={label.Height}");
     }
-    
+
     foreach (var child in element.GetVisualChildren())
     {
         FindAllLabels(child);
@@ -220,9 +525,9 @@ void FindAllLabels(IVisualTreeElement element)
 FindAllLabels(this);
 ```
 
-## Performance Instrumentation
+### Performance Instrumentation
 
-### Timing Measurements
+#### Timing Measurements
 
 ```csharp
 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -233,7 +538,7 @@ stopwatch.Stop();
 Console.WriteLine($"Operation took: {stopwatch.ElapsedMilliseconds}ms");
 ```
 
-### Layout Performance
+#### Layout Performance
 
 ```csharp
 private int _layoutCount = 0;
@@ -246,136 +551,102 @@ protected override void OnSizeAllocated(double width, double height)
 }
 ```
 
-## Testing Workflow with Instrumentation
-
-### Step 1: Add Instrumentation to Sandbox App
-
-Edit `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs`:
+### Property Change Monitoring
 
 ```csharp
-public MainPage()
+view.PropertyChanged += (s, e) =>
 {
-    InitializeComponent();
-    
-    // Monitor content size changes
-    if (Content is View view)
+    if (e.PropertyName == "Bounds")
     {
-        view.SizeChanged += LogLayoutInfo;
+        Console.WriteLine($"Bounds changed: {view.Bounds}");
     }
-}
+};
+```
 
-private async void LogLayoutInfo(object? sender, EventArgs e)
+---
+
+## Platform-Specific Positioning
+
+Sometimes you need the absolute screen position, not just relative bounds. Use platform-specific APIs:
+
+### iOS/MacCatalyst
+
+```csharp
+#if IOS || MACCATALYST
+if (TestElement.Handler?.PlatformView is UIKit.UIView platformView)
 {
-    if (sender is View view)
+    // Find the root superview (window)
+    var rootView = platformView;
+    while (rootView.Superview != null)
     {
-        // Wait for layout pass to complete
-        await Task.Delay(1);
-        
-        Console.WriteLine("========== LAYOUT INFO ==========");
-        Console.WriteLine($"Size: W={view.Width}, H={view.Height}");
-        Console.WriteLine($"Bounds: {view.Bounds}");
-        Console.WriteLine($"Margin: {view.Margin}");
-        Console.WriteLine("=================================");
+        rootView = rootView.Superview;
     }
+
+    // Convert view bounds to root coordinate system
+    var screenRect = platformView.ConvertRectToView(platformView.Bounds, rootView);
+
+    Console.WriteLine($"Screen Position: X={screenRect.X}, Y={screenRect.Y}");
+    Console.WriteLine($"Screen Size: W={screenRect.Width}, H={screenRect.Height}");
 }
+#endif
 ```
 
-### Step 2: Build and Deploy
+### Android
 
-**iOS:**
-```bash
-# Build
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
+```csharp
+#if ANDROID
+if (TestElement.Handler?.PlatformView is Android.Views.View platformView)
+{
+    int[] location = new int[2];
+    platformView.GetLocationOnScreen(location);
 
-# Find simulator
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-26-0"] | first | .udid')
-
-# Boot and install
-xcrun simctl boot $UDID
-xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-
-# Launch with console capture
-xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_output.log 2>&1 &
-sleep 5
-cat /tmp/ios_output.log
+    Console.WriteLine($"Screen Position: X={location[0]}, Y={location[1]}");
+    Console.WriteLine($"Screen Size: W={platformView.Width}, H={platformView.Height}");
+}
+#endif
 ```
 
-**Android:**
-```bash
-# Build and deploy
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
+### Windows
 
-# Monitor logcat
-adb logcat | grep "LAYOUT INFO"
+```csharp
+#if WINDOWS
+if (TestElement.Handler?.PlatformView is Microsoft.UI.Xaml.FrameworkElement platformElement)
+{
+    var transform = platformElement.TransformToVisual(null);
+    var point = transform.TransformPoint(new Windows.Foundation.Point(0, 0));
+
+    Console.WriteLine($"Screen Position: X={point.X}, Y={point.Y}");
+    Console.WriteLine($"Screen Size: W={platformElement.ActualWidth}, H={platformElement.ActualHeight}");
+}
+#endif
 ```
 
-### Step 3: Compare Before/After
-
-1. Test WITHOUT PR changes (checkout main branch for changed file)
-2. Capture baseline output
-3. Test WITH PR changes
-4. Capture new output
-5. Compare the results
-
-### Step 4: Clean Up
-
-```bash
-# Revert all Sandbox changes
-git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
-```
+---
 
 ## Best Practices
 
-### Wait for Layout to Complete
+### ✅ DO
 
-✅ **Do**: Use `await Task.Delay(1)` in SizeChanged for accurate measurements
-```csharp
-view.SizeChanged += async (s, e) =>
-{
-    await Task.Delay(1); // Wait for platform arrange to complete
-    Console.WriteLine($"Size: {view.Width}x{view.Height}");
-    // Now platform view positions are also accurate
-};
-```
+- **Use descriptive markers** in console output for easy filtering
+- **Wait for layout completion** using `Loaded` event + `Dispatcher.DispatchDelayed` (simple scenarios)
+- **Use SizeChanged + Task.Delay(1)** for dynamic property testing
+- **Measure child elements** for SafeArea and padding tests (not parent size)
+- **Calculate gaps from edges** for positioning validation
+- **Use colored backgrounds** for visual debugging (red parent, yellow child)
+- **Log at decision points** to understand execution flow
+- **Test multiple iterations** for timing/race condition issues
+- **Include timestamps** when timing matters
+- **Clean up after testing** - always revert Sandbox changes
 
-❌ **Don't**: Read measurements immediately in SizeChanged
-```csharp
-view.SizeChanged += (s, e) =>
-{
-    // Platform arrange hasn't completed yet!
-    Console.WriteLine($"Size: {view.Width}x{view.Height}");
-};
-```
+### ❌ DON'T
 
-**Why:** `SizeChanged` fires before the platform's arrange call completes. Wait for the layout pass to finish to get accurate measurements.
-
-### Use Visual Tree APIs for Hierarchy Inspection
-
-✅ **Do**: Use `IVisualTreeElement` methods
-```csharp
-foreach (var child in element.GetVisualChildren()) { ... }
-var parent = element.GetVisualParent();
-```
-
-### Use SizeChanged Events (Not Arbitrary Delays)
-
-✅ **Do**: Use `SizeChanged` with `Task.Delay(1)` for layout completion
-```csharp
-view.SizeChanged += async (s, e) =>
-{
-    await Task.Delay(1); // Wait for arrange
-    // Now measurements are accurate
-};
-```
-
-❌ **Don't**: Use arbitrary delays without SizeChanged
-```csharp
-// Bad: Guessing when layout completes
-await Task.Delay(500); // Unreliable: may not match actual layout timing
-// Measure here (may be inaccurate)
-```
-
-**Why use SizeChanged:** It fires when the view changes, ensuring you measure at the right time. The `Task.Delay(1)` ensures the platform arrange completes.
+- **Don't measure immediately** in Loaded event without delay (layout not complete)
+- **Don't use arbitrary delays** without event hooks (use Loaded or SizeChanged)
+- **Don't measure parent size** when testing SafeArea (measure child position instead)
+- **Don't clutter output** with unnecessary logging
+- **Don't forget to clean up** after testing (revert Sandbox changes)
+- **Don't commit instrumentation code** to the repository
+- **Don't use platform-specific code** unless absolutely necessary (prefer cross-platform APIs)
 
 ### Console Output Formatting
 
@@ -389,46 +660,63 @@ Console.WriteLine("==================");
 Console.WriteLine(view.ToString());
 ```
 
-### Avoid Common Mistakes
+---
 
-❌ **Don't** read position immediately in SizeChanged
-✅ **Do** use `await Task.Delay(1)` to wait for arrange
+## Capturing Output
 
-❌ **Don't** use arbitrary delays without SizeChanged
-✅ **Do** subscribe to `SizeChanged` with proper delay
+### iOS
 
-❌ **Don't** instrument directly in MAUI source code (unless debugging MAUI itself)
-✅ **Do** use Sandbox app for testing
+```bash
+# Launch with console capture
+xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/ios_output.log 2>&1 &
 
-❌ **Don't** commit instrumentation code
-✅ **Do** revert changes after testing
+# Wait for output
+sleep 5
 
-## Advanced Techniques
+# View logs
+cat /tmp/ios_output.log
 
-### Capturing Screenshots (iOS)
+# Filter for specific marker
+cat /tmp/ios_output.log | grep "TEST OUTPUT"
 
+# Or stream live
+xcrun simctl spawn booted log stream --predicate 'eventMessage contains "TEST OUTPUT"'
+```
+
+### Android
+
+```bash
+# Monitor logcat in real-time
+adb logcat | grep "TEST OUTPUT"
+
+# Or capture to file
+adb logcat > /tmp/android_output.log &
+# ... run test ...
+kill %1  # Stop logcat
+cat /tmp/android_output.log | grep "TEST OUTPUT"
+```
+
+### Taking Screenshots
+
+**iOS:**
 ```bash
 # After launching app
 xcrun simctl io $UDID screenshot /tmp/screenshot.png
 ```
 
-### Monitoring Property Changes
-
-```csharp
-view.PropertyChanged += (s, e) =>
-{
-    if (e.PropertyName == "Bounds")
-    {
-        Console.WriteLine($"Bounds changed: {view.Bounds}");
-    }
-};
+**Android:**
+```bash
+adb exec-out screencap -p > /tmp/screenshot.png
 ```
+
+---
 
 ## Troubleshooting
 
 ### "SizeChanged not firing"
 
 Ensure the view is actually changing size or trigger it manually:
+
 ```csharp
 // Force a layout
 view.InvalidateMeasure();
@@ -442,35 +730,63 @@ if (view.Width > 0 && view.Height > 0)
 
 ### "Console.WriteLine not showing"
 
-**iOS:** Use `xcrun simctl launch --console-pty` to capture output
-**Android:** Use `adb logcat` to view logs
-**Windows:** Output appears in Visual Studio Output window
+**iOS**: Use `xcrun simctl launch --console-pty` to capture output
+**Android**: Use `adb logcat` to view logs
+**Windows**: Output appears in Visual Studio Output window
 
 ### "Width/Height are -1"
 
-Subscribe to SizeChanged with proper delay:
+Subscribe to layout completion event:
+
 ```csharp
 // Wrong - might be -1 if layout hasn't run
 Console.WriteLine($"Width: {view.Width}"); // Could be -1
 
-// Right - wait for size and layout
+// Right - wait for layout with Loaded event
+private void OnLoaded(object sender, EventArgs e)
+{
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        Console.WriteLine($"Width: {view.Width}"); // Actual value after layout
+    });
+}
+
+// OR use SizeChanged for dynamic scenarios
 view.SizeChanged += async (s, e) =>
 {
     await Task.Delay(1); // Wait for arrange
-    Console.WriteLine($"Width: {view.Width}"); // Actual value after layout
+    Console.WriteLine($"Width: {view.Width}"); // Actual value
 };
 ```
 
-## Related Documentation
+### "Measurements don't match visual appearance"
 
-- `.github/instructions/safearea-testing.instructions.md` - **Specialized guide for SafeArea testing** (measure children, not parents)
-- `docs/DevelopmentTips.md` - General development tips including Sandbox usage
-- `docs/UITesting-Guide.md` - UI testing patterns
-- `.github/instructions/uitests.instructions.md` - UI test creation guidelines
+1. **Check you're measuring the right element** - Child position, not parent size (especially for SafeArea)
+2. **Ensure layout is complete** - Use proper timing (Loaded + 500ms or SizeChanged + 1ms)
+3. **Verify screen density** - Divide by `DeviceDisplay.MainDisplayInfo.Density` for logical pixels
+4. **Check for transforms** - Element might have scale, rotation, or translation applied
+
+---
 
 ## Quick Reference
 
-**Measure size:**
+### Basic Measurement Pattern
+
+```csharp
+private void OnLoaded(object sender, EventArgs e)
+{
+    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+    {
+        Console.WriteLine("=== TEST OUTPUT ===");
+        Console.WriteLine($"Bounds: {TestElement.Bounds}");
+        Console.WriteLine($"Size: {TestElement.Width}x{TestElement.Height}");
+        Console.WriteLine("=== END TEST OUTPUT ===");
+    });
+}
+```
+
+### SizeChanged for Dynamic Scenarios
+
 ```csharp
 view.SizeChanged += async (s, e) =>
 {
@@ -480,7 +796,8 @@ view.SizeChanged += async (s, e) =>
 };
 ```
 
-**Get screen position (platform-specific):**
+### Screen Position (Platform-Specific)
+
 ```csharp
 #if IOS || MACCATALYST
 var platformView = view.Handler?.PlatformView as UIKit.UIView;
@@ -501,17 +818,38 @@ Console.WriteLine($"Position: X={point.X}, Y={point.Y}");
 #endif
 ```
 
-**Walk visual tree:**
+### Visual Tree Traversal
+
 ```csharp
 foreach (var child in element.GetVisualChildren()) { /* ... */ }
 var parent = element.GetVisualParent();
 ```
 
-**Capture output:**
-- iOS: `xcrun simctl launch --console-pty ... > /tmp/output.log 2>&1`
-- Android: `adb logcat | grep "YOUR MARKER"`
+### Capture Output
 
-**Clean up:**
+```bash
+# iOS
+xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/output.log 2>&1 &
+sleep 5 && cat /tmp/output.log | grep "TEST OUTPUT"
+
+# Android
+adb logcat | grep "TEST OUTPUT"
+```
+
+### Clean Up
+
 ```bash
 git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 ```
+
+---
+
+## Related Documentation
+
+- [Common Testing Patterns](common-testing-patterns.md) - Build, deploy, error handling commands
+- [SafeArea Testing Instructions](safearea-testing.instructions.md) - **Specialized guide for SafeArea testing** (measure children, not parents)
+- [Edge Case Testing](edge-case-testing.md) - Comprehensive test scenario checklist
+- [UI Tests Instructions](uitests.instructions.md) - Creating automated UI tests
+- [Appium Control Scripts](appium-control.instructions.md) - UI automation patterns
+- `docs/DevelopmentTips.md` - General development tips
+- `docs/UITesting-Guide.md` - UI testing patterns
