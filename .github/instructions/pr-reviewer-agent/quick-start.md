@@ -32,6 +32,12 @@ Read these in order:
    
    **Decision**: If user says "review PR" or "test this fix" → Use Sandbox
    
+   **⚠️ CRITICAL CONFUSION TO AVOID:**
+   - **PR has test files in TestCases.HostApp?** → Still use Sandbox!
+   - Those test files are for AUTOMATED testing (CI runs them)
+   - You are doing MANUAL validation → Use Sandbox
+   - Rule: "Test files in PR" ≠ "What you test with"
+   
    See [testing-guidelines.md](testing-guidelines.md#app-selection) for details.
 
 2. **Workflow Overview** (2 minutes)
@@ -60,6 +66,22 @@ Read these in order:
    **Decision**: If you need to interact with app UI → Use Appium script
    
    See [appium-control.instructions.md](../appium-control.instructions.md) for complete guide.
+
+---
+
+---
+
+## 🛑 Stop and Ask Yourself
+
+**Before proceeding, answer this question:**
+
+**Q: Which app am I using for this PR validation?**
+
+- ✅ If you answered "Sandbox" → Correct! Proceed.
+- ❌ If you answered "HostApp" or "Both" → WRONG! Re-read App Selection Rule above.
+- ❓ If you're unsure → Default to Sandbox
+
+**Even if the PR adds test files to TestCases.HostApp**, you still use Sandbox for validation.
 
 ---
 

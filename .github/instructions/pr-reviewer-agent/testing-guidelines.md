@@ -13,10 +13,22 @@ Use `src/Controls/samples/Controls.Sample.Sandbox/` for PR validation **UNLESS**
 ### Quick Decision Tree:
 
 ```
-Are you writing/debugging UI tests? 
-├─ YES → Use TestCases.HostApp
-└─ NO  → Use Sandbox app ✅ (99% of PR reviews)
+What is the user asking you to do?
+│
+├─ "Review this PR" ────────────────────────────────────────────────────┐
+├─ "Test this fix" ─────────────────────────────────────────────────────┤
+├─ "Validate PR #XXXXX" ────────────────────────────────────────────────┤
+├─ "Check if this works" ───────────────────────────────────────────────┼──→ Use Sandbox ✅
+├─ "Does this PR fix the issue?" ───────────────────────────────────────┤
+├─ [PR has test files in TestCases.HostApp] ────────────────────────────┤
+└─ [Any other PR validation request] ───────────────────────────────────┘
+│
+├─ "Write a UI test for this issue" ────────────────────────────────────┐
+├─ "Create automated UI tests" ─────────────────────────────────────────┼──→ Use HostApp ✅
+└─ "Debug the UI test for Issue32310" ──────────────────────────────────┘
 ```
+
+**Key Insight**: Presence of test files in the PR does NOT determine which app you use.
 
 ### ⚠️ Common Confusion: "But the PR has test files!"
 
@@ -26,9 +38,19 @@ Are you writing/debugging UI tests?
 ✅ **RIGHT THINKING**: "The PR adds automated test files. I use Sandbox to manually validate the fix."
 
 **Why**: 
-- Those test files are for the AUTOMATED UI testing framework
+- Those test files are for the AUTOMATED UI testing framework (run by CI)
 - You are doing MANUAL validation with real testing
 - HostApp is only needed when writing/debugging those automated tests
+- The presence of test files tells you the PR author wrote tests (good!), not which app you use
+
+**Self-Check Questions**:
+1. ❓ "Did the user explicitly ask me to write or validate UI tests?"
+   - NO → Use Sandbox
+   - YES → Use HostApp
+2. ❓ "Am I validating if the PR fix works?"
+   - YES → Use Sandbox (even if PR has test files!)
+3. ❓ "Am I writing new automated UI test code?"
+   - YES → Use HostApp
 
 ### 💰 Cost of Wrong App Choice
 
