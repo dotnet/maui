@@ -205,8 +205,8 @@ OR
 4. **Use colored backgrounds** - Makes layout issues visible
 5. **Add console markers** - Easy to grep logs  
 6. **Test multiple iterations** - Race conditions need multiple runs (3-5 times)
-7. **Clean up after testing** - Always revert Sandbox changes
-8. **Document your test scenario** - Be specific so user can verify reproduction if needed
+7. **Leave Sandbox as-is** - User will iterate on it after your testing
+8. **Document your test scenario thoroughly** - Include source (issue/UITest/custom), specific actions, and expected behavior so user can verify
 
 ## When to Report vs. When to Escalate
 
@@ -238,8 +238,8 @@ OR
 - SDK version mismatch with no resolution
 - Build failures persist after troubleshooting attempts
 - App crashes that appear unrelated to test code or fix
-Document your test scenario** - Be specific so user can verify reproduction if needed
-8. **Leave Sandbox as-is** - User will iterate on it after your testing
+
+## Common Mistakes to Avoid
 
 - ❌ Using TestCases.HostApp for manual PR validation (use Sandbox)
 - ❌ Manual build/deploy commands instead of BuildAndRunSandbox.ps1
