@@ -602,9 +602,7 @@ namespace Microsoft.Maui.Platform
 			UpdateKeyboardSubscription();
 
 			// If nothing changed, we don't need to do anything
-			// Also check if a parent is already handling safe area adjustments
-			// If so, don't apply safe area adjustments
-			if (!_safeAreaInvalidated || IsParentHandlingSafeArea())
+			if (!_safeAreaInvalidated)
 			{
 				return true;
 			}
@@ -622,7 +620,10 @@ namespace Microsoft.Maui.Platform
 			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+
+			// Check if parent is already handling safe area - if so, don't apply adjustments here
+			var parentHandlingSafeArea = IsParentHandlingSafeArea();
+			_appliesSafeAreaAdjustments = !parentHandlingSafeArea && RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
