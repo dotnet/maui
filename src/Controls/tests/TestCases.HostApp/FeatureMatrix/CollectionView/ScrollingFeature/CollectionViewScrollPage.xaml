@@ -25,13 +25,18 @@
                 <Label Text="RemainingItemsThresholdReached Event: "/>
                 <Label x:Name="remainingItemsThresholdLabel" AutomationId="RemainingItemsThresholdLabel"/>
             </HorizontalStackLayout>
-            <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked"/>
+            <HorizontalStackLayout>
+                <Label Text="ReorderCompleted Event: "/>
+                <Label x:Name="reorderCompletedLabel" AutomationId="ReorderCompletedLabel"/>
+            </HorizontalStackLayout>
+            <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked" WidthRequest="150"/>
             <Button Text="Add" Command="{Binding AddItemCommand}" IsVisible="{Binding ShowAddRemoveButtons}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
         </StackLayout>
         
         <!-- Scrollable CollectionView Row -->
             <local:CollectionView2 Grid.Row="1"
                 x:Name="collectionView"
+                CanReorderItems="{Binding CanReorderItems}"
                 ItemsSource="{Binding ItemsSource}"
                 ItemSizingStrategy="{Binding ItemSizingStrategy}"
                 ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode}"
@@ -43,6 +48,7 @@
                 ScrollToRequested="OnCollectionViewScrollToRequested"
                 RemainingItemsThreshold="5"
                 RemainingItemsThresholdReached="OnRemainingItemsThresholdReached"
+                ReorderCompleted="OnReorderCompleted"
                 AutomationId="CollectionViewControl">  
             </local:CollectionView2>
     </Grid>
