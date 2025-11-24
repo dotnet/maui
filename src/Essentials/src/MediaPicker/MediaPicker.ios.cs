@@ -520,6 +520,7 @@ namespace Microsoft.Maui.Media
 	{
 		readonly string _identifier;
 		readonly NSItemProvider _provider;
+		bool _isFileLoaded;
 
 		internal PHPickerFileResult(NSItemProvider provider)
 		{
@@ -536,12 +537,43 @@ namespace Microsoft.Maui.Media
 				return;
 			}
 
-			FileName = FullPath
-				= $"{provider?.SuggestedName}.{GetTag(_identifier, UTType.TagClassFilenameExtension)}";
+			// Set the original filename
+			var extension = GetTag(_identifier, UTType.TagClassFilenameExtension);
+			FileName = $"{provider?.SuggestedName}.{extension}";
+
+			// Create a temporary file path for the actual file
+			var tempFileName = $"{Guid.NewGuid()}.{extension}";
+			FullPath = Path.Combine(Path.GetTempPath(), tempFileName);
 		}
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
-			=> (await _provider?.LoadDataRepresentationAsync(_identifier))?.AsStream();
+		{
+			// Ensure the file is loaded to disk on first access
+			if (!_isFileLoaded)
+			{
+				await EnsureFileLoadedAsync();
+			}
+
+			// Return a stream to the file
+			return File.OpenRead(FullPath);
+		}
+
+		async Task EnsureFileLoadedAsync()
+		{
+			if (_isFileLoaded || string.IsNullOrWhiteSpace(FullPath))
+				return;
+
+			// Load the data from the provider
+			var data = await _provider?.LoadDataRepresentationAsync(_identifier);
+			if (data != null)
+			{
+				// Write the data to the temporary file
+				using var stream = data.AsStream();
+				using var fileStream = File.Create(FullPath);
+				await stream.CopyToAsync(fileStream);
+				_isFileLoaded = true;
+			}
+		}
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
