@@ -516,12 +516,13 @@ namespace Microsoft.Maui.Media
 		}
 	}
 
-	class PHPickerFileResult : FileResult
+	class PHPickerFileResult : FileResult, IDisposable
 	{
 		readonly string _identifier;
 		readonly NSItemProvider _provider;
 		readonly object _loadLock = new object();
 		bool _isFileLoaded;
+		bool _disposed;
 
 		internal PHPickerFileResult(NSItemProvider provider)
 		{
@@ -571,7 +572,7 @@ namespace Microsoft.Maui.Media
 					if (!File.Exists(FullPath))
 					{
 						shouldLoad = true;
-						_isFileLoaded = true; // Set early to prevent other threads from also loading
+						// Don't set _isFileLoaded here - wait for successful completion
 					}
 					else
 					{
@@ -591,21 +592,33 @@ namespace Microsoft.Maui.Media
 				{
 					// Load the data from the provider
 					var data = await _provider?.LoadDataRepresentationAsync(_identifier);
-					if (data != null)
+					if (data == null)
 					{
-						// Write the data to the temporary file
-						using var stream = data.AsStream();
-						using var fileStream = File.Create(FullPath);
-						await stream.CopyToAsync(fileStream);
+						throw new InvalidOperationException("Failed to load data from provider");
+					}
+
+					// Write the data to the temporary file
+					using var stream = data.AsStream();
+					
+					// Ensure we're not overwriting an existing file (though unlikely with GUID)
+					if (File.Exists(FullPath))
+					{
+						throw new IOException($"Temporary file already exists: {FullPath}");
+					}
+					
+					using var fileStream = File.Create(FullPath);
+					await stream.CopyToAsync(fileStream);
+					
+					// Only mark as loaded after successful write
+					lock (_loadLock)
+					{
+						_isFileLoaded = true;
 					}
 				}
 				catch
 				{
-					// If loading fails, reset the flag so it can be retried
-					lock (_loadLock)
-					{
-						_isFileLoaded = false;
-					}
+					// If loading fails, don't mark as loaded so it can be retried
+					// Note: _isFileLoaded is still false, so no need to reset it
 					throw;
 				}
 			}
@@ -613,6 +626,36 @@ namespace Microsoft.Maui.Media
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			if (disposing)
+			{
+				// Clean up the temporary file if it was created
+				try
+				{
+					if (_isFileLoaded && !string.IsNullOrWhiteSpace(FullPath) && File.Exists(FullPath))
+					{
+						File.Delete(FullPath);
+					}
+				}
+				catch
+				{
+					// Ignore errors during cleanup
+				}
+			}
+
+			_disposed = true;
+		}
 	}
 
 	class CompressedUIImageFileResult : FileResult
