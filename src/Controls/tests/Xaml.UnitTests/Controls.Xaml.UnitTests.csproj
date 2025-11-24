@@ -87,6 +87,7 @@
     <!-- Suppress XC0067/MAUIX2006 (property set multiple times) for test files that intentionally test this scenario -->
     <MauiXaml Update="Issues\Bz40906.xaml" NoWarn="67;2006" />
     <MauiXaml Update="Issues\Issue3059b.xaml" NoWarn="67;2006" />
+    <MauiXaml Update="Issues\Maui3059.xaml" NoWarn="67;2006" />
     <MauiXaml Update="Issues\Maui20616.xaml" NoWarn="67;2006" />
     <MauiXaml Update="Issues\Maui20818.xaml" NoWarn="67;2006" />
     <MauiXaml Update="TestSharedResourceDictionary.xaml" NoWarn="67;2006" />
