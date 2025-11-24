@@ -4,7 +4,7 @@
 ![NuGet](https://img.shields.io/nuget/v/Microsoft.Maui.Controls?style=flat-square&label=NuGet)
 ![License](https://img.shields.io/github/license/dotnet/maui?style=flat-square&label=License)
 
-[.NET Multi-platform App UI (.NET MAUI)](https://dotnet.microsoft.com/en-us/apps/maui) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
+[.NET Multi-platform App UI (.NET MAUI)](https://dotnet.microsoft.com/apps/maui) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ## ✨ What is .NET MAUI Controls?
 
