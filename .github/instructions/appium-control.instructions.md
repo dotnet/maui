@@ -31,101 +31,30 @@ This repository uses **.NET 10's built-in scripting features** with the `#:packa
 
 ## Quick Start with Sandbox App
 
-The fastest way to experiment with Appium is using the Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox`):
+**Use BuildAndRunSandbox.ps1 Script**
 
-1. **Modify `MainPage.xaml`** to add controls with `AutomationId` attributes
+The script handles all building, deployment, Appium management, and log capture:
 
-2. **Build and deploy**:
+```powershell
+# 1. Copy Appium template
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
 
-   **iOS:**
-   ```bash
-   # Build
-   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
+# 2. Edit the template for your test scenario
 
-   # Get device UDID
-   UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-
-   # Verify UDID was found
-   if [ -z "$UDID" ]; then
-       echo "❌ ERROR: No iPhone Xs simulator found"
-       exit 1
-   fi
-   echo "Using iPhone Xs with UDID: $UDID"
-
-   # Boot and install
-   xcrun simctl boot $UDID 2>/dev/null || true
-   xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-
-   # Set environment variable
-   export DEVICE_UDID=$UDID
-   ```
-
-   **Android:**
-   ```bash
-   # Get device UDID
-   UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-   # Verify UDID was found
-   if [ -z "$UDID" ]; then
-       echo "❌ ERROR: No Android device/emulator found"
-       exit 1
-   fi
-   echo "Using Android device: $UDID"
-
-   # Set environment variable
-   export DEVICE_UDID=$UDID
-
-   # Build and deploy (this handles install + launch)
-   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-
-   # Verify app is running
-   sleep 3
-   if adb -s $UDID shell pidof com.microsoft.maui.sandbox > /dev/null; then
-       echo "✅ App is running"
-   else
-       echo "❌ App failed to start"
-       exit 1
-   fi
-   ```
-
-3. **Start Appium and run your control script**:
-   ```bash
-   # Start Appium in background
-   appium --log-level error &
-
-   # Wait for Appium to be ready
-   sleep 3
-
-   # Or verify it's ready (optional):
-   # curl http://localhost:4723/status
-
-   # Run your script (from SandboxAppium/ directory)
-   cd SandboxAppium
-   
-   # Run with .NET 10's native scripting (NOT dotnet-script)
-   dotnet run yourscript.cs
-   ```
-
-**Note**: The Sandbox app and SandboxAppium folder are set up for iterative development. You can modify your script and re-run it multiple times without cleaning up. Only clean up when you're completely done with your debugging session.
-
-## Cleanup (Optional)
-
-When you're finished with your debugging session and ready to clean up:
-
-```bash
-# Revert Sandbox changes
-git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
-
-# Remove SandboxAppium folder (it's gitignored)
-rm -rf SandboxAppium
-
-# Kill Appium server
-lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9
+# 3. Run everything with one command
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 ```
 
-## Prerequisites
+The script automatically:
+- Detects and boots devices
+- Builds and deploys the Sandbox app
+- Starts/stops Appium server
+- Runs your Appium test script
+- Captures all logs to `SandboxAppium/` directory
 
-Ensure Appium server is running on `http://localhost:4723` before running your script.
+See [Common Testing Patterns](common-testing-patterns.md) for details.
+
+
 
 ## Basic Template
 
@@ -248,6 +177,10 @@ catch (Exception ex)
 
 ## Running the Script
 
+**The BuildAndRunSandbox.ps1 script handles all setup and execution.** See [Quick Start with Sandbox App](#quick-start-with-sandbox-app) for the complete workflow.
+
+**For manual/standalone script execution** (advanced scenarios):
+
 **🚨 CRITICAL: .NET 10 Native Scripting (NOT dotnet-script)**
 
 - ✅ **DO**: Use `dotnet run yourscript.cs` (.NET 10 native scripting)
@@ -258,28 +191,7 @@ catch (Exception ex)
 
 **⚠️ Important: Create scripts inside project directory (e.g., `SandboxAppium/`), not in `/tmp` or repository root.**
 
-```bash
-# 1. Create script folder
-mkdir -p SandboxAppium && cd SandboxAppium
-
-# 2. Copy the Basic Template above into a .cs file (or use the Quick Start example)
-
-# 3. Set DEVICE_UDID environment variable
-export DEVICE_UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-
-# 4. Start Appium (separate terminal or background)
-appium --log-level error &
-
-# Wait for Appium to be ready
-sleep 3
-
-# 5. Run your script
-dotnet run yourscript.cs
-```
-
-**For Android:** Replace iOS UDID command with: `adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1`
-
-**Complete workflow:** See [Quick Start with Sandbox App](#quick-start-with-sandbox-app) above for full end-to-end example.
+For manual execution details, see [Common Testing Patterns](common-testing-patterns.md).
 
 ## ❌ Wrong vs ✅ Right Approach
 

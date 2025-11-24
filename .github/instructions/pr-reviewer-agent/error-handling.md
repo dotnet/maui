@@ -150,36 +150,23 @@ fi
 
 **Step 1: ATTEMPT available solutions first**
 
-For Android:
-```bash
-# 1. Check for device
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+**For both Android and iOS**: Use the BuildAndRunSandbox.ps1 script, which handles device detection and emulator startup automatically:
 
-# 2. If no device, START EMULATOR (don't give up!)
-if [ -z "$DEVICE_UDID" ]; then
-    echo "No device found. Starting emulator..."
-    cd $ANDROID_HOME/emulator && (./emulator -avd Pixel_9 -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)
-    adb wait-for-device
-    until [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" = "1" ]; do
-        sleep 2
-    done
-    export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-fi
+```powershell
+# The script will:
+# 1. Auto-detect devices
+# 2. Start emulator/simulator if no device found (Android only - prompts for confirmation)
+# 3. Build and deploy Sandbox app
+# 4. Run your Appium test
 
-# 3. If emulator failed, check logs
-if [ -z "$DEVICE_UDID" ]; then
-    echo "Emulator failed to start. Checking logs..."
-    cat /tmp/emulator.log
-    # Now proceed to Step 2 (checkpoint)
-fi
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+# OR
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 ```
 
-For iOS:
-```bash
-# Check for available simulators
-xcrun simctl list devices | grep iPhone
-# Attempt to boot simulator (see quick-ref.md)
-```
+**If the script fails**, check the log files in `SandboxAppium/`:
+- `appium.log` - Appium server issues
+- `android-device.log` or `ios-device.log` - Device/app issues
 
 **Step 2: If solutions fail, CREATE CHECKPOINT (don't skip testing!)**
 
@@ -226,28 +213,22 @@ After attempting solutions and hitting genuine blocker:
 **How to avoid**:
 1. **Read appium-control.instructions.md FIRST** before attempting UI interaction
 2. Remember: Appium is REQUIRED for reliability (element-based vs coordinate-based)
-3. **Use .cs files with `dotnet run`** (NOT .csx files with dotnet-script)
+3. **Use the Appium template** from `.github/scripts/templates/RunWithAppiumTest.template.cs`
 4. When Appium fails, debug the Appium approach (don't fall back to adb)
 5. **Internalize instructions, don't just skim them**
 
 **Complete sequence**:
 ```bash
-# 1. Create Appium script (.cs file, NOT .csx)
-cat > test_pr_XXXXX.cs << 'EOF'
-#r "nuget: Appium.WebDriver, 8.0.1"
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Android;
+# 1. Copy Appium template to SandboxAppium directory
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
 
-var options = new AppiumOptions();
-options.AddAdditionalAppiumOption("platformName", "Android");
-options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
-options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
-options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
-options.AddAdditionalAppiumOption("noReset", true);
+# 2. Edit the file to customize:
+#    - Set ISSUE_NUMBER constant
+#    - Set PLATFORM constant ("android" or "ios")
+#    - Implement test logic in the "Test Logic" section
 
-var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
-
-// Find and tap button by AutomationId
+# 3. Run with BuildAndRunSandbox.ps1 script
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
 button.Click();
 
