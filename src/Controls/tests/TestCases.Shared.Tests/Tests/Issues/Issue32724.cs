@@ -9,7 +9,7 @@ public class Issue32724 : _IssuesUITest
 	public Issue32724(TestDevice device) : base(device) { }
 
 	public override string Issue => "Applying Shadow property affects the properties in Visual Transform Matrix";
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.Border)]
 	public void VerifyScaleAndShadow()
 	{
@@ -19,7 +19,7 @@ public class Issue32724 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.Border)]
 	public void VerifyRotationAndShadow()
 	{
@@ -28,7 +28,7 @@ public class Issue32724 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(3)]
 	[Category(UITestCategories.Border)]
 	public void VerifyRotationXAndShadow()
 	{
@@ -37,7 +37,7 @@ public class Issue32724 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(4)]
 	[Category(UITestCategories.Border)]
 	public void VerifyRotationYAndShadow()
 	{
@@ -46,7 +46,7 @@ public class Issue32724 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(5)]
 	[Category(UITestCategories.Border)]
 	public void VerifyAnchorXAndShadow()
 	{
@@ -55,7 +55,7 @@ public class Issue32724 : _IssuesUITest
 		App.Tap("ToggleShadowButton");
 		VerifyScreenshot();
 	}
-	[Test]
+	[Test, Order(6)]
 	[Category(UITestCategories.Border)]
 	public void VerifyAnchorYAndShadow()
     {
@@ -65,7 +65,7 @@ public class Issue32724 : _IssuesUITest
 		VerifyScreenshot();
     }
 
-	[Test]
+	[Test, Order(7)]
 	[Category(UITestCategories.Border)]
 	public void VerifyAnchorXAndAnchorYShadow()
 	{
