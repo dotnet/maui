@@ -129,43 +129,56 @@ namespace Maui.Controls.Sample
 
 **See [Common Testing Patterns](../common-testing-patterns.md) for detailed build and deploy commands with error checking.**
 
-### iOS Workflow
+### Recommended: Use BuildAndRunSandbox.ps1
 
-**Complete workflow** (follow these links for detailed commands):
-1. [UDID Extraction](../common-testing-patterns.md#ios-simulator-udid-iphone-xs-highest-ios-version) - Find iPhone Xs with highest iOS version
-2. [Device Boot](../common-testing-patterns.md#ios-simulator-boot-with-error-checking) - Boot simulator with verification
-3. [Build Sandbox](../common-testing-patterns.md#sandbox-app-build-ios) - Build the Sandbox app
-4. [Install App](../common-testing-patterns.md#ios-app-install-with-error-checking) - Install to simulator
-5. [Launch with Logs](../common-testing-patterns.md#ios-app-launch-with-console-capture) - Launch and capture console output
+**Automated workflow** - Handles build, deploy, Appium, and logging:
 
-**Quick reference** (experienced users):
 ```bash
-# Get UDID, boot, build, install, launch
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl boot $UDID 2>/dev/null || true
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/issue_reproduction.log 2>&1 &
-sleep 8 && cat /tmp/issue_reproduction.log
+# 1. Create Appium test script
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+
+# 2. Edit SandboxAppium/RunWithAppiumTest.cs:
+#    - Set ISSUE_NUMBER (replace 00000)
+#    - Set PLATFORM ("android" or "ios")
+#    - CUSTOMIZE test logic to match your Sandbox app UI:
+#      * Use AutomationId values from your XAML
+#      * Interact with your specific controls
+#      * Template is just a starting point - modify completely!
+
+# 3. Modify Sandbox app if needed
+#    Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+#    Add AutomationId attributes for Appium interaction
+
+# 4. Run complete test
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 ```
 
-See [Common Testing Patterns](../common-testing-patterns.md) for commands with complete error checking at each step.
+**What it does**:
+- ✅ Builds Sandbox app
+- ✅ Auto-detects devices
+- ✅ Manages Appium (starts/stops automatically)
+- ✅ Captures all logs (`SandboxAppium/appium.log`, `SandboxAppium/logcat.log`)
+- ✅ Runs your Appium test
 
-### Android Workflow
+**When to use**: Issue reproduction with UI interaction (taps, swipes, etc.)
 
-**Complete workflow**:
-1. [UDID Extraction](../common-testing-patterns.md#android-device-udid) - Get device/emulator ID
-2. [Build and Deploy](../common-testing-patterns.md#android-build-and-deploy-combined) - Build, install, and launch in one command
-3. [Monitor Logs](../common-testing-patterns.md#android-logcat-monitoring) - Capture logcat output
+### Manual Workflows (For non-UI reproduction)
 
-**Quick reference**:
+**iOS Manual** (when you need console logging without Appium):
 ```bash
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-adb logcat | grep -E "(Issue|Console|ERROR)"
+# Follow detailed patterns in Common Testing Patterns
+# 1. Get UDID, 2. Boot device, 3. Build, 4. Install, 5. Launch
 ```
+See [Common Testing Patterns - iOS](../../common-testing-patterns.md#complete-ios-reproduction-workflow)
 
-See [Common Testing Patterns](../common-testing-patterns.md) for commands with complete error checking.
+**Manual Workflows are rarely needed** - The BuildAndRunSandbox.ps1 script handles all common scenarios.
+
+**Only use manual workflows for**:
+- Advanced debugging scenarios
+- Non-UI reproduction without Appium
+- When script doesn't support your use case
+
+See [Common Testing Patterns](../../common-testing-patterns.md) for manual command patterns.
 
 ### Troubleshooting
 

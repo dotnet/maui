@@ -346,11 +346,12 @@ public static void MapFlowDirection(ICollectionViewHandler handler, ICollectionV
 
 **Check logs:**
 ```bash
-# iOS
-xcrun simctl spawn booted log stream --predicate 'eventMessage contains "[DEBUG]"'
+# Run BuildAndRunSandbox.ps1 and check generated logs
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 
-# Android
-adb logcat | grep "\[DEBUG\]"
+# Then read the logs
+cat SandboxAppium/logcat.log | grep "\[DEBUG\]"  # Android
+cat SandboxAppium/appium.log | grep "\[DEBUG\]"   # iOS
 ```
 
 **If logging doesn't appear:**
@@ -571,8 +572,8 @@ Console.WriteLine($"[REPRO-12345] FlowDirection changed to {value}");
 Console.WriteLine($"[REPRO-12345] Layout updated: {layout.Configuration}");
 Console.WriteLine($"[REPRO-12345] Measurements: {width}x{height}");
 
-// Grep for your specific issue
-// adb logcat | grep "REPRO-12345"
+// After running BuildAndRunSandbox.ps1, filter logs:
+// cat SandboxAppium/logcat.log | grep "REPRO-12345"
 ```
 
 **Log at key decision points:**

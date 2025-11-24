@@ -106,14 +106,35 @@ Any concerns about this approach?
 
 **⚠️ WAIT for user response before continuing.**
 
-### Step 3: Reference Quick Commands (30 seconds)
+### Step 3: Set Up Reproduction Test
 
-See [quick-ref.md](quick-ref.md) for:
-- Complete iOS/Android reproduction workflows
-- Test code templates
-- Instrumentation patterns
-- **Appium guidance** (for UI tests - use Appium, not adb/xcrun)
-- PR description template
+**Use BuildAndRunSandbox.ps1** for automated testing:
+
+```bash
+# 1. Copy Appium test template
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+
+# 2. Edit the file:
+# - Set ISSUE_NUMBER (replace 00000)
+# - Set PLATFORM ("android" or "ios")
+# - COMPLETELY CUSTOMIZE the "Test Logic" section for your Sandbox app:
+#   * The template just shows basic structure
+#   * Replace placeholder AutomationIds with YOUR actual IDs from XAML
+#   * Add YOUR specific interactions: tap buttons, enter text, scroll, etc.
+#   * Add YOUR assertions to verify the issue or expected behavior
+#   * Think of it as writing a fresh Appium test that matches your Sandbox app
+
+# 3. Modify Sandbox app if needed
+# Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+# Add AutomationId attributes for Appium
+
+# 4. Run the test
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+```
+
+**Logs saved to**: `SandboxAppium/appium.log` and `SandboxAppium/logcat.log`
+
+📖 **Full details**: [quick-ref.md](quick-ref.md#reproduction-workflows)
 
 ---
 

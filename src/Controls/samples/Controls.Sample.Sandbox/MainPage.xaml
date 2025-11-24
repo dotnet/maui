@@ -2,4 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+    
+    <VerticalStackLayout Spacing="20" Padding="40" VerticalOptions="Center">
+        <Label 
+            Text="iOS Crash Test"
+            FontSize="24"
+            HorizontalOptions="Center" />
+        
+        <Button 
+            x:Name="CrashButton"
+            AutomationId="CrashButton"
+            Text="Click to Crash App"
+            Clicked="OnCrashClicked"
+            BackgroundColor="Red"
+            TextColor="White"
+            HorizontalOptions="Center" />
+        
+        <Label 
+            x:Name="StatusLabel"
+            AutomationId="StatusLabel"
+            Text="Ready to crash"
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+    
 </ContentPage>

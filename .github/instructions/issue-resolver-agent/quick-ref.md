@@ -24,38 +24,64 @@ Copy-paste commands and templates for common operations. Your go-to resource dur
 
 ## Reproduction Workflows
 
-**📚 Complete workflows with error checking**: See [Shared Platform Workflows](../shared/platform-workflows.md)
+### Using BuildAndRunSandbox.ps1 (Recommended)
 
-### iOS Quick Start
+**One script handles everything**: Build, deploy, Appium testing, and log capture.
 
-```bash
-# Get UDID, boot, build, install - see shared doc for full sequence
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl boot $UDID 2>/dev/null || true
-./bin/dotnet/dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-```
-
-📖 **Complete workflow**: [Shared Platform Workflows - iOS](../shared/platform-workflows.md#complete-ios-reproduction-workflow)
-
-### Android Quick Start
+#### Step 1: Create Appium Test Script
 
 ```bash
-# Check device, build/deploy - see shared doc for full sequence
-adb devices
-./bin/dotnet/dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-adb logcat | grep -E "(FATAL|Exception|Crash|ERROR)"
+# Copy template
+cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+
+# Edit SandboxAppium/RunWithAppiumTest.cs:
+# - Set ISSUE_NUMBER (replace 00000)
+# - Set PLATFORM ("android" or "ios")
+# - CUSTOMIZE the "Test Logic" section to match your Sandbox app:
+#   * Find elements by AutomationId from your XAML
+#   * Tap buttons, enter text, etc. to reproduce the issue
+#   * Add assertions to verify expected behavior
+#   * The template is just a starting point - modify it completely as needed!
 ```
 
-📖 **Complete workflow**: [Shared Platform Workflows - Android](../shared/platform-workflows.md#complete-android-reproduction-workflow)
-
-### MacCatalyst Quick Start
+#### Step 2: Modify Sandbox App (if needed)
 
 ```bash
-./bin/dotnet/dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-maccatalyst -t:Run
+# Edit Sandbox XAML
+vim src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+
+# Edit code-behind
+vim src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs
+
+# Add AutomationId attributes for Appium interaction
 ```
 
-📖 **Complete workflow**: [Shared Platform Workflows - MacCatalyst](../shared/platform-workflows.md#complete-maccatalyst-reproduction-workflow)
+#### Step 3: Run Complete Test
+
+```bash
+# Android
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+
+# iOS (when supported)
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+```
+
+**What it does**:
+- ✅ Builds Sandbox app from source
+- ✅ Auto-detects devices
+- ✅ Manages Appium (starts/stops automatically)
+- ✅ Deploys and launches app
+- ✅ Runs your Appium test script
+- ✅ Captures all logs (Appium + device)
+- ✅ Saves logs to `SandboxAppium/appium.log` and `SandboxAppium/logcat.log`
+
+**Logs are in**: `SandboxAppium/` directory (persisted after script finishes)
+
+📖 **Template reference**: `.github/scripts/templates/RunWithAppiumTest.template.cs`
+
+### Manual Workflows (Advanced)
+
+For manual testing without Appium, see [Instrumentation Guide](../instrumentation.instructions.md)
 
 ---
 
@@ -92,48 +118,28 @@ public static void MapProperty(IMyHandler handler, IMyView view)
 
 ---
 
-## UI Automation with Appium (For UI Tests)
+## UI Automation with Appium
+
+### For Issue Reproduction (Sandbox App)
+
+**Use BuildAndRunSandbox.ps1** - See [Reproduction Workflows](#reproduction-workflows) above.
+
+### For UI Tests (TestCases.HostApp)
 
 **CRITICAL: When writing UI tests, use Appium - NOT adb/xcrun commands**
 
-### When Appium is REQUIRED:
+#### When Appium is REQUIRED:
 - ✅ Writing UI tests in TestCases.HostApp
 - ✅ Verifying UI interactions during testing
 - ✅ ANY test that involves tapping, scrolling, or UI gestures
 
-### When ADB/xcrun ARE acceptable:
-- ✅ `adb devices` - Check device connection
-- ✅ `adb logcat` - Monitor logs (read-only)
-- ✅ `xcrun simctl list` - List simulators
-- ✅ Device setup/configuration (not UI interaction)
+#### When ADB/xcrun ARE acceptable:
+- ✅ `adb devices` - Check device connection (for troubleshooting)
+- ✅ `xcrun simctl list` - List simulators (for troubleshooting)
+- ❌ **NEVER manually run** `adb logcat` - The BuildAndRunSandbox.ps1 script captures all logs automatically
 
-### Quick Appium Script Template:
-
-```csharp
-// File: test_issue_XXXXX.cs (use .cs NOT .csx)
-#r "nuget: Appium.WebDriver, 8.0.1"
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Android;
-
-var options = new AppiumOptions();
-options.AddAdditionalAppiumOption("platformName", "Android");
-options.AddAdditionalAppiumOption("automationName", "UIAutomator2");
-options.AddAdditionalAppiumOption("appPackage", "com.microsoft.maui.sandbox");
-options.AddAdditionalAppiumOption("appActivity", "crc64..MainActivity");
-options.AddAdditionalAppiumOption("noReset", true);
-
-var driver = new AndroidDriver(new Uri("http://127.0.0.1:4723"), options);
-
-// Find and tap button by AutomationId
-var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
-button.Click();
-
-driver.Quit();
-```
-
-**Run with**: `dotnet run test_issue_XXXXX.cs` (NOT `dotnet-script`)
-
-📖 **Full Appium guide**: [../appium-control.instructions.md](../appium-control.instructions.md)
+📖 **UI test guide**: [UI Tests Instructions](../uitests.instructions.md)
+📖 **Appium scripting**: [Appium Control Scripts](../appium-control.instructions.md)
 
 ---
 
@@ -420,23 +426,24 @@ Should I proceed with implementation?
 
 📖 **See also**: [Issue-Specific Error Handling](error-handling.md) - Cannot reproduce, fix failures, etc.
 
+**"BuildAndRunSandbox.ps1 fails to find device"**:
 ```bash
-# Check ADB connection
+# Check ADB connection (Android)
 adb devices
 
 # Restart ADB if needed
 adb kill-server
 adb start-server
 adb devices
+
+# Or manually specify device
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android -DeviceUdid <your-device-id>
 ```
 
-**"Build succeeds but app doesn't install"**:
+**"Need to manually install APK for troubleshooting"**:
 ```bash
-# Manually install APK
-adb install -r artifacts/bin/YourApp/Debug/net10.0-android/com.yourapp.apk
-
-# Or uninstall first
-adb uninstall com.yourpackage.name
+# Only if BuildAndRunSandbox.ps1 fails and you need to debug
+adb install -r artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-android/com.microsoft.maui.sandbox-Signed.apk
 ```
 
 ### Test Failures

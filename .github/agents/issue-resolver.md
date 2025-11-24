@@ -26,18 +26,16 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 **If an app crashes on launch, NEVER use `--no-incremental` or `dotnet clean` as a first solution.**
 
 **The correct approach**:
-1. **Read the crash logs** to find the actual exception
-2. **Investigate the root cause** from the stack trace
-3. **Fix the underlying issue** (null reference, missing resource, etc.)
-4. **If you can't determine the fix**, ask for guidance with the full exception details
+1. **Run BuildAndRunSandbox.ps1** - It automatically captures all logs
+2. **Read the crash logs** from `SandboxAppium/logcat.log` (Android) or `SandboxAppium/appium.log` (iOS)
+3. **Find the actual exception** in the logs
+4. **Investigate the root cause** from the stack trace
+5. **Fix the underlying issue** (null reference, missing resource, etc.)
+6. **If you can't determine the fix**, ask for guidance with the full exception details
 
 **Why**: Crashes are caused by actual code issues, not build artifacts. The exception tells you exactly what's wrong.
 
-**Log capture commands**:
-- **iOS**: `xcrun simctl spawn booted log stream --predicate 'processImagePath contains "[AppName]"' --level=debug`
-- **Android**: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception)"`
-
-See [common-testing-patterns.md](../instructions/common-testing-patterns.md) section "Error: App Crashes on Launch" for complete patterns.
+**All logs are automatically saved to** `SandboxAppium/` directory after running the script.
 
 ## ⚡ GETTING STARTED (Progressive Disclosure)
 
