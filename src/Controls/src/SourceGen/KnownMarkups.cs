@@ -772,6 +772,13 @@ internal class KnownMarkups
 			return false;
 		}
 
+		if (variable is ILocalValue localVar && !localVar.Type.Equals(context.Compilation.GetTypeByMetadataName("System.String")!, SymbolEqualityComparer.Default))
+		{
+			returnType = localVar.Type;
+			value = localVar.ValueAccessor;
+			return true;
+		}
+
 		//if the resource is a string, try to convert it
 		if (resource.CollectionItems.Count == 1 && resource.CollectionItems[0] is ValueNode vn && vn.Value is string)
 		{
