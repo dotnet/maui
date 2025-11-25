@@ -56,7 +56,6 @@
 			  ConsoleToMSBuild="True"
 			  IgnoreExitCode="True"
 			  StandardErrorImportance="High">
-			<Output TaskParameter="ExitCode" PropertyName="_SdkInstallExitCode_%(AndroidSdkCommonPackages.Identity)" />
 			<Output TaskParameter="ConsoleOutput" ItemName="_SdkInstallOutputLines_Common" />
 		</Exec>
 
@@ -91,7 +90,6 @@
 			  ConsoleToMSBuild="True"
 			  IgnoreExitCode="True"
 			  StandardErrorImportance="High">
-			<Output TaskParameter="ExitCode" PropertyName="_SdkInstallExitCode_%(AndroidSdkPlatformApiPackages.Identity)" />
 			<Output TaskParameter="ConsoleOutput" ItemName="_SdkInstallOutputLines_Platform" />
 		</Exec>
 
@@ -129,7 +127,6 @@
 			  ConsoleToMSBuild="True"
 			  IgnoreExitCode="True"
 			  StandardErrorImportance="High">
-			<Output TaskParameter="ExitCode" PropertyName="_SdkInstallExitCode_%(AndroidSdkEmulatorImagePackages.Identity)" />
 			<Output TaskParameter="ConsoleOutput" ItemName="_SdkInstallOutputLines_Emulator" />
 		</Exec>
 
@@ -164,7 +161,6 @@
 			  ConsoleToMSBuild="True"
 			  IgnoreExitCode="True"
 			  StandardErrorImportance="High">
-			<Output TaskParameter="ExitCode" PropertyName="_AvdCreateExitCode_%(AndroidSdkAvdPackages.Identity)" />
 			<Output TaskParameter="ConsoleOutput" ItemName="_AvdCreateOutputLines" />
 		</Exec>
 
@@ -174,7 +170,7 @@
 			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('exited with an error status'))">True</_AvdCreateHasError>
 			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('Package path is not valid'))">True</_AvdCreateHasError>
 			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('SdkToolFailedExitException'))">True</_AvdCreateHasError>
-			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('Error:'))">True</_AvdCreateHasError>
+			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('Valid system image paths are'))">True</_AvdCreateHasError>
 		</PropertyGroup>
 
 		<!-- Fail the build if errors were detected -->
