@@ -51,8 +51,8 @@
 			<AndroidSdkCommonPackages Include="@(AndroidSdkPackages)" />
 		</ItemGroup>
 
-		<!-- Install SDK Common Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
+		<!-- Install SDK Common Packages with error detection (dotnet android incorrectly returns exit code 0 on failure) -->
+		<Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/android-sdk-install.ps1&quot; -Package &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -66,8 +66,8 @@
 			<AndroidSdkPlatformApiPackages Include="platforms%3Bandroid-%(AndroidSdkApiLevels.Identity)" Condition=" '$(AndroidSdkProvisionDefaultApiLevelsOnly)' != 'True' Or '%(AndroidSdkApiLevels.IsDefault)' == 'True' " />
 		</ItemGroup>
 
-		<!-- Install SDK Platform API Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
+		<!-- Install SDK Platform API Packages with error detection (dotnet android incorrectly returns exit code 0 on failure) -->
+		<Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/android-sdk-install.ps1&quot; -Package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -83,8 +83,8 @@
 				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
 		</ItemGroup>
 
-		<!-- Install SDK Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
+		<!-- Install SDK Packages with error detection (dotnet android incorrectly returns exit code 0 on failure) -->
+		<Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/android-sdk-install.ps1&quot; -Package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
 		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
@@ -98,8 +98,8 @@
 				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
 		</ItemGroup>
 
-		<!-- Create all the AVD's we need based on the api levels specified -->
-		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
+		<!-- Create all the AVD's we need based on the api levels specified with error detection (dotnet android incorrectly returns exit code 0 on failure) -->
+		<Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/android-avd-create.ps1&quot; -Name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; -Sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; -Device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot;" 
 			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
 
 		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
