@@ -272,7 +272,19 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateDisplay()
 		{
-			SetImage(GetCheckBoxImage(), UIControlState.Normal);
+			var image = GetCheckBoxImage();
+			SetImage(image, UIControlState.Normal);
+			// When disabled with a tint color, we need to set the image for the disabled state as well
+			// to prevent iOS from applying a grey tint to the normal image
+			if (!Enabled && CheckBoxTintColor != null)
+			{
+				SetImage(image, UIControlState.Disabled);
+			}
+			else
+			{
+				// Clear the disabled state image when enabled or when there's no tint color
+				SetImage(null, UIControlState.Disabled);
+			}
 			SetNeedsDisplay();
 		}
 

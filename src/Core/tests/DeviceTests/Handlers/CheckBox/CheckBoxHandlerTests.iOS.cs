@@ -47,6 +47,56 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(traits.HasFlag(UIAccessibilityTrait.Header));
 		}
 
+		[Fact(DisplayName = "Disabled CheckBox With Color Sets Disabled State Image")]
+		public async Task DisabledCheckBoxWithColorSetsDisabledStateImage()
+		{
+			var checkboxStub = new CheckBoxStub()
+			{
+				Foreground = new SolidPaint(Colors.Purple),
+				IsEnabled = false,
+				IsChecked = true
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(checkboxStub);
+				await Task.Yield();
+
+				var nativeCheckBox = GetNativeCheckBox(handler);
+				
+				// Verify that the checkbox has an image set for the disabled state
+				var disabledImage = nativeCheckBox.ImageForState(UIControlState.Disabled);
+				Assert.NotNull(disabledImage);
+
+				// Verify that the tint color is preserved
+				Assert.NotNull(nativeCheckBox.CheckBoxTintColor);
+				Assert.Equal(Colors.Purple, nativeCheckBox.CheckBoxTintColor);
+			});
+		}
+
+		[Fact(DisplayName = "Enabled CheckBox Does Not Set Disabled State Image")]
+		public async Task EnabledCheckBoxDoesNotSetDisabledStateImage()
+		{
+			var checkboxStub = new CheckBoxStub()
+			{
+				Foreground = new SolidPaint(Colors.Purple),
+				IsEnabled = true,
+				IsChecked = true
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(checkboxStub);
+				await Task.Yield();
+
+				var nativeCheckBox = GetNativeCheckBox(handler);
+				
+				// Verify that the enabled checkbox does not have an image set for the disabled state
+				var disabledImage = nativeCheckBox.ImageForState(UIControlState.Disabled);
+				Assert.Null(disabledImage);
+			});
+		}
+
 
 		MauiCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			(MauiCheckBox)checkBoxHandler.PlatformView;
