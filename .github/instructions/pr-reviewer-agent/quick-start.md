@@ -50,22 +50,17 @@ Read these in order:
    ```
 
 3. **UI Interaction Rule** (10 seconds)
-   - For ANY device UI interaction, use **Appium** (Appium.WebDriver@8.0.1)
-   - NEVER use `adb shell input` or `xcrun simctl ui` commands
-   - See [core-guidelines.md](core-guidelines.md#ui-automation-always-use-appium)
-
-4. **Special Cases** (30 seconds - read if applicable)
-   - CollectionView/CarouselView PR? → Read [collectionview-handler-detection.md](collectionview-handler-detection.md)
-   - SafeArea PR? → Read [safearea-testing.md](../safearea-testing.md)
-   - UI test files in PR? → Read [uitests.instructions.md](../uitests.instructions.md)
-
-4. **UI Interaction Rule** (10 seconds)
    - ✅ **Appium** = ALL user interactions (tapping, scrolling, gestures)
    - ❌ **ADB/xcrun** = Only for device setup and log monitoring
    
    **Decision**: If you need to interact with app UI → Use Appium script
    
    See [appium-control.instructions.md](../appium-control.instructions.md) for complete guide.
+
+4. **Special Cases** (30 seconds - read if applicable)
+   - CollectionView/CarouselView PR? → Read [collectionview-handler-detection.md](collectionview-handler-detection.md)
+   - SafeArea PR? → Read [safearea-testing.md](../safearea-testing.md)
+   - UI test files in PR? → Read [uitests.instructions.md](../uitests.instructions.md)
 
 ---
 
@@ -251,11 +246,11 @@ After reverting:
 
 ---
 
-## 📋 Common Commands (Copy-Paste)
+## 📋 Testing Command (Copy-Paste)
 
-**🚨 MANDATORY: Always Use BuildAndRunSandbox.ps1**
+**🚨 MANDATORY: Always Use BuildAndRunSandbox.ps1 for PR Validation**
 
-**There is ONLY ONE way to test Sandbox app - use the script:**
+**There is ONLY ONE way to validate PRs - use the Sandbox script:**
 
 ```powershell
 # Android
@@ -281,16 +276,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 
 **✅ YOUR ONLY JOB**: Edit `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` with your test logic
 
----
-
-**HostApp UI Testing** (only when writing/validating UI tests):
-```powershell
-# iOS
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
-
-# Android
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
-```
+**Note**: This guide is for PR validation (using Sandbox). If you need to write/validate UI tests, you should be using `uitest-coding-agent` or `uitest-pr-validator` instead.
 
 See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing-patterns.md) for more details.
 
@@ -358,18 +344,19 @@ try {
 }
 ```
 
-### Screenshot Storage Location
+### Screenshot Storage Location (If Needed for Your Test)
 
-**Screenshots are managed by the Appium test script**:
+**Only if you need to capture screenshots as part of testing** (rare - screenshots should NOT be used for validation):
 
 When creating your Appium test in `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`:
 - ✅ **Save screenshots to**: `CustomAgentLogsTmp/Sandbox/` directory
 - ❌ **Never save to**: `/tmp/` or any other location
 - 📝 **Purpose**: Documentation/debugging only - never for validation
+- 🚨 **Remember**: Use Appium element queries for validation, not screenshots
 
-**Example**:
+**Example** (only if needed):
 ```csharp
-// In your Appium test script
+// In your Appium test script - for documentation purposes only
 var screenshot = driver.GetScreenshot();
 screenshot.SaveAsFile("CustomAgentLogsTmp/Sandbox/test_before.png");  // ✅ Correct
 // NOT: screenshot.SaveAsFile("/tmp/test_before.png");   // ❌ Wrong

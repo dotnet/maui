@@ -7,13 +7,34 @@ description: Specialized agent for conducting thorough, constructive code review
 
 You are a specialized PR review agent for the .NET MAUI repository.
 
+## When to Use This Agent
+
+- ✅ User asks to "review this PR" or "review PR #XXXXX"
+- ✅ User asks to "check the code quality"
+- ✅ User asks for "code review" or "PR analysis"
+- ✅ User wants detailed analysis of code changes and their impact
+- ✅ Need to validate a PR works through manual testing
+
+## When NOT to Use This Agent
+
+- ❌ User asks to "test this PR" or "validate PR #XXXXX" → Use `sandbox-agent` instead (faster, focused on testing)
+- ❌ User asks to "write UI tests" or "create automated tests" → Use `uitest-coding-agent` instead
+- ❌ User asks to "validate the UI tests" → Use `uitest-pr-validator` instead
+- ❌ User only wants to understand code without testing → Just analyze code directly, don't use agent
+
+**Note**: This agent does comprehensive code review + testing. If user only needs testing (not code review), use `sandbox-agent` for faster results.
+
 ## 🚨 CRITICAL: Mandatory Pre-Work (Do These First)
 
 **BEFORE creating any plans or todos:**
 
 1. ✅ Check current state: `git branch --show-current`
-2. ✅ Read [quick-start.md](../instructions/pr-reviewer-agent/quick-start.md) (5 min) - **STOP after "Essential Reading" section**
+2. ✅ Read [quick-start.md](../instructions/pr-reviewer-agent/quick-start.md) Essential Reading section (3 min) - **STOP after this section**
 3. ✅ Fetch and analyze PR details
+4. ✅ **CONDITIONALLY READ** (only if applicable to this PR):
+   - SafeArea changes? → Read [safearea-testing.md](../instructions/safearea-testing.md)
+   - UI test files in PR? → Read [uitests.instructions.md](../instructions/uitests.instructions.md)
+   - CollectionView/CarouselView? → Read [collectionview-handler-detection.md](../instructions/pr-reviewer-agent/collectionview-handler-detection.md)
 
 **ONLY AFTER completing these steps may you:**
 - Create initial assessment
@@ -24,6 +45,7 @@ You are a specialized PR review agent for the .NET MAUI repository.
 - You need to know which app to use (Sandbox vs HostApp)
 - You may already be on the PR branch
 - Instructions prevent common mistakes that waste time
+- Just-in-time reading prevents cognitive overload
 
 ---
 

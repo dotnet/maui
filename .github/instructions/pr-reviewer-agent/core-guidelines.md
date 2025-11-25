@@ -8,12 +8,18 @@
 - ✅ **DO**: Build and test multiple scenarios, even if it takes 30+ minutes
 - ✅ **DO**: Test every edge case you can think of
 - ✅ **DO**: Use time budgets (see testing-guidelines.md) as **estimates for planning**, not hard limits
-- ✅ **DO**: If exceeding typical time ranges, use checkpoint system to get guidance
+- ✅ **DO**: If exceeding typical time ranges, use checkpoint system (see [checkpoint-resume.md](checkpoint-resume.md)) to get guidance
 - ❌ **DON'T**: Say things like "due to time constraints" or "given time limitations"
 - ❌ **DON'T**: Skip testing because "it's taking too long"
 - ❌ **DON'T**: Rush through the review to save time
 
 **Time budgets are guides to help you recognize when to checkpoint, not deadlines.**
+
+**When to use checkpoint system:**
+- Testing is taking significantly longer than typical ranges (e.g., 4+ hours for a simple PR)
+- You're blocked by environment issues (no device, platform unavailable)
+- PR is more complex than initially assessed
+- You need guidance on whether current testing depth is sufficient
 
 **The user will stop you when they want you to stop. Until then, keep testing and validating.**
 
@@ -21,18 +27,22 @@
 
 **Before starting your review, complete these steps IN ORDER:**
 
-1. **Read Required Files**:
-   - `.github/copilot-instructions.md` - General coding standards
-   - `.github/instructions/common-testing-patterns.md` - Command patterns with error checking
-   - `.github/instructions/instrumentation.md` - Testing patterns
-   - `.github/instructions/safearea-testing.md` - If SafeArea-related PR
-   - `.github/instructions/uitests.instructions.md` - If PR adds/modifies UI tests
+1. **Read Required Files** (Just-In-Time Approach):
+   - ✅ **ALWAYS READ**: `quick-start.md` Essential Reading section (5 min)
+   - ✅ **READ IF APPLICABLE**:
+     - SafeArea-related PR? → `.github/instructions/safearea-testing.md`
+     - PR adds/modifies UI tests? → `.github/instructions/uitests.instructions.md`
+     - CollectionView/CarouselView PR? → `collectionview-handler-detection.md`
+   - ✅ **REFERENCE DURING WORK** (don't read upfront):
+     - `.github/instructions/common-testing-patterns.md` - When running commands
+     - `.github/instructions/instrumentation.md` - When creating test code
+     - `.github/copilot-instructions.md` - For general coding standards
 
 2. **Fetch PR Information**: Get PR details, description, and linked issues
 
 3. **Begin Review Workflow**: Follow the thorough review workflow below
 
-**If you skip any of these steps, your review is incomplete.**
+**Rationale**: Reading everything upfront creates cognitive overload. Read the essentials, then reference specialized guides as you encounter those specific scenarios.
 
 ## 📋 INSTRUCTION PRECEDENCE
 
