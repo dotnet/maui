@@ -15,6 +15,7 @@
 #>
 param(
     [Parameter(Mandatory=$true)]
+    [ValidatePattern('^[a-zA-Z0-9;_\-\.]+$')]
     [string]$Package,
     
     [string[]]$ErrorPatterns = @(

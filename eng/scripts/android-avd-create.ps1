@@ -21,12 +21,15 @@
 #>
 param(
     [Parameter(Mandatory=$true)]
+    [ValidatePattern('^[a-zA-Z0-9_\-]+$')]
     [string]$Name,
     
     [Parameter(Mandatory=$true)]
+    [ValidatePattern('^[a-zA-Z0-9;_\-\.]+$')]
     [string]$Sdk,
     
     [Parameter(Mandatory=$true)]
+    [ValidatePattern('^[a-zA-Z0-9 _\-\.]+$')]
     [string]$Device,
     
     [string[]]$ErrorPatterns = @(
