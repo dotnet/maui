@@ -86,6 +86,16 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 			INode keyNode = null;
 			bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out keyNode);
 
+			// If no value found for target platform and no Default,
+			// create a default value node if we have x:TypeArguments
+			if (onNode == null && node.XmlType.TypeArguments != null && node.XmlType.TypeArguments.Count > 0)
+			{
+				// Create default value for the type (to match OnPlatform<T> runtime behavior)
+				var typeArg = node.XmlType.TypeArguments[0];
+				var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
+				onNode = elementNode;
+			}
+
 			// If OnPlatform has x:Key but the replacement node is a ValueNode,
 			// check if we have x:TypeArguments to create a proper ElementNode
 			if (hasKey && onNode is ValueNode valueNode)
@@ -123,7 +133,11 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 					parentEnode.Properties[name] = onNode;
 				}
 				else
-					parentEnode.Properties.Remove(name);
+				{
+					// No value and no x:TypeArguments - skip simplification
+					// This maintains consistency with runtime OnPlatform<T> behavior
+					return;
+				}
 				return;
 			}
 
@@ -141,7 +155,11 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 						parentEnode2.CollectionItems[index] = onNode;
 					}
 					else
-						parentEnode2.CollectionItems.RemoveAt(index);
+					{
+						// No value and no x:TypeArguments - skip simplification
+						// This maintains consistency with runtime OnPlatform<T> behavior
+						return;
+					}
 				}
 			}
 		}
