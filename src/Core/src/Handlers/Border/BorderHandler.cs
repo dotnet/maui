@@ -11,12 +11,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 using PlatformView = System.Object;
 #endif
 
-using System;
 using System.Runtime.CompilerServices;
-#if IOS || MACCATALYST
-using CoreAnimation;
-using CoreGraphics;
-#endif
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -32,9 +27,6 @@ namespace Microsoft.Maui.Handlers
 #if __ANDROID__
 			[nameof(IBorderView.Height)] = MapHeight,
 			[nameof(IBorderView.Width)] = MapWidth,
-#endif
-#if IOS || MACCATALYST
-			[nameof(IView.Shadow)] = MapShadow,
 #endif
 			[nameof(IBorderView.Background)] = MapBackground,
 			[nameof(IBorderView.Content)] = MapContent,
@@ -93,68 +85,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(border);
-		}
-
-		/// <summary>
-		/// Maps the abstract <see cref="IView.Shadow"/> property to the platform-specific implementations while preserving existing transforms on iOS/Mac Catalyst.
-		/// </summary>
-		/// <param name="handler">The associated handler.</param>
-		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
-		static void MapShadow(IBorderHandler handler, IBorderView border)
-		{
-#if IOS || MACCATALYST
-			const double epsilon = 0.0001d;
-			CATransform3D existingTransform = CATransform3D.Identity;
-			CGPoint existingAnchorPoint = new CGPoint(0.5f, 0.5f);
-			bool hasCustomTransform = false;
-			bool transformFromWrapper = false;
-
-			if (handler is IPlatformViewHandler prePlatformHandler &&
-				prePlatformHandler.ContainerView is Microsoft.Maui.Platform.WrapperView existingWrapper &&
-				existingWrapper.Layer is CALayer existingWrapperLayer)
-			{
-				existingTransform = existingWrapperLayer.Transform;
-				existingAnchorPoint = existingWrapperLayer.AnchorPoint;
-				hasCustomTransform = !existingTransform.IsIdentity ||
-					Math.Abs(existingAnchorPoint.X - 0.5) > epsilon ||
-					Math.Abs(existingAnchorPoint.Y - 0.5) > epsilon;
-				transformFromWrapper = hasCustomTransform;
-			}
-
-			if (!transformFromWrapper && handler.PlatformView?.Layer is CALayer existingChildLayer)
-			{
-				existingTransform = existingChildLayer.Transform;
-				existingAnchorPoint = existingChildLayer.AnchorPoint;
-				hasCustomTransform = !existingTransform.IsIdentity ||
-					Math.Abs(existingAnchorPoint.X - 0.5) > epsilon ||
-					Math.Abs(existingAnchorPoint.Y - 0.5) > epsilon;
-			}
-
-			ViewHandler.MapShadow((IViewHandler)handler, border);
-
-			if (!hasCustomTransform)
-			{
-				return;
-			}
-
-			if (handler is IPlatformViewHandler platformHandlerAfter &&
-				platformHandlerAfter.ContainerView is Microsoft.Maui.Platform.WrapperView wrapperAfter &&
-				wrapperAfter.Layer is CALayer wrapperLayerAfter &&
-				handler.PlatformView?.Layer is CALayer childLayerAfter)
-			{
-				wrapperLayerAfter.Transform = existingTransform;
-				wrapperLayerAfter.AnchorPoint = existingAnchorPoint;
-
-				childLayerAfter.Transform = CATransform3D.Identity;
-				childLayerAfter.AnchorPoint = new CGPoint(0.5f, 0.5f);
-				handler.PlatformView.Frame = wrapperAfter.Bounds;
-			}
-			else if (handler.PlatformView?.Layer is CALayer childLayerFinal)
-			{
-				childLayerFinal.Transform = existingTransform;
-				childLayerFinal.AnchorPoint = existingAnchorPoint;
-			}
-#endif
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
