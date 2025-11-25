@@ -79,6 +79,12 @@
     <MauiXaml Update="**\*.rtxc.xaml" Inflator="Runtime;XamlC" />
     <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />    
 
+    <!-- Exclude validation tests with intentional XAML errors from SourceGen processing -->
+    <MauiXaml Remove="Validation\XmlnsUndeclared.rt.xaml" />
+    <MauiXaml Remove="Validation\NamescopeDuplicate.rt.xaml" />
+    <EmbeddedResource Include="Validation\XmlnsUndeclared.rt.xaml" />
+    <EmbeddedResource Include="Validation\NamescopeDuplicate.rt.xaml" />
+
     <MauiXaml Update="FontSize.xaml" NoWarn="0612;0618" />
     <MauiXaml Update="Issues\Bz55343.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />

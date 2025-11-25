@@ -156,6 +156,62 @@
     <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
     <comment>{0} is a property name</comment>
   </data>
+  <data name="PropertyResolution" xml:space="preserve">
+    <value>Cannot resolve property "{0}" on type "{1}" (property missing or missing accessors).</value>
+    <comment>{0} is a property name, {1} is a type name</comment>
+  </data>
+  <data name="MissingEventHandler" xml:space="preserve">
+    <value>EventHandler "{0}" with correct signature not found in type "{1}".</value>
+    <comment>{0} is the handler name, {1} is the declaring type</comment>
+  </data>
+  <data name="ConstructorDefaultMissing" xml:space="preserve">
+    <value>Missing default constructor for "{0}".</value>
+    <comment>{0} is type name</comment>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>An element with the name "{0}" already exists in this NameScope.</value>
+    <comment>{0} is the duplicated key</comment>
+  </data>
+  <data name="XmlnsUndeclared" xml:space="preserve">
+    <value>Undeclared xmlns prefix "{0}".</value>
+    <comment>{0} is the xmlns prefix</comment>
+  </data>
+  <data name="ContentPropertyAttributeMissing" xml:space="preserve">
+    <value>Cannot set the content of "{0}" as it doesn't have a [ContentProperty] attribute.</value>
+    <comment>{0} is type name</comment>
+  </data>
+  <data name="ResourceDictMissingKey" xml:space="preserve">
+    <value>Resources in ResourceDictionary require a x:Key attribute.</value>
+  </data>
+  <data name="BindingPerformance" xml:space="preserve">
+    <value>Binding Performance</value>
+  </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Binding could be compiled to improve runtime performance if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
+  <data name="BindingError" xml:space="preserve">
+    <value>Binding Error</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Binding: Indexer did not contain closing bracket.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Binding: Indexer did not contain arguments.</value>
+  </data>
+  <data name="AdderMissing" xml:space="preserve">
+    <value>No Add() method defined on "{0}".</value>
+    <comment>{0} is the collection type name</comment>
+  </data>
+  <data name="XStaticSyntax" xml:space="preserve">
+    <value>Syntax for x:Static is "[Member=][prefix:]typeName.staticMemberName".</value>
+  </data>
+  <data name="XStaticResolution" xml:space="preserve">
+    <value>x:Static: unable to find a public or accessible internal static field, static property, const or enum value named "{0}" in "{1}".</value>
+    <comment>{0} is member name, {1} is type name</comment>
+  </data>
+  <data name="XDataTypeSyntax" xml:space="preserve">
+    <value>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.</value>
+  </data>
   <data name="EasingConversionFailed" xml:space="preserve">
     <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
   </data>

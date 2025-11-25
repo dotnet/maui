@@ -254,5 +254,22 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string AmbiguousTypeMessage => ResourceManager.GetString("AmbiguousTypeMessage", resourceCulture);
 		internal static string RequiredPropertyTitle => ResourceManager.GetString("RequiredPropertyTitle", resourceCulture);
 		internal static string RequiredPropertyMessage => ResourceManager.GetString("RequiredPropertyMessage", resourceCulture);
+		
+		internal static string PropertyResolution => ResourceManager.GetString("PropertyResolution", resourceCulture);
+		internal static string MissingEventHandler => ResourceManager.GetString("MissingEventHandler", resourceCulture);
+		internal static string ConstructorDefaultMissing => ResourceManager.GetString("ConstructorDefaultMissing", resourceCulture);
+		internal static string NamescopeDuplicate => ResourceManager.GetString("NamescopeDuplicate", resourceCulture);
+		internal static string XmlnsUndeclared => ResourceManager.GetString("XmlnsUndeclared", resourceCulture);
+		internal static string ContentPropertyAttributeMissing => ResourceManager.GetString("ContentPropertyAttributeMissing", resourceCulture);
+		internal static string ResourceDictMissingKey => ResourceManager.GetString("ResourceDictMissingKey", resourceCulture);
+		internal static string BindingPerformance => ResourceManager.GetString("BindingPerformance", resourceCulture);
+		internal static string BindingWithoutDataType => ResourceManager.GetString("BindingWithoutDataType", resourceCulture);
+		internal static string BindingError => ResourceManager.GetString("BindingError", resourceCulture);
+		internal static string BindingIndexerNotClosed => ResourceManager.GetString("BindingIndexerNotClosed", resourceCulture);
+		internal static string BindingIndexerEmpty => ResourceManager.GetString("BindingIndexerEmpty", resourceCulture);
+		internal static string AdderMissing => ResourceManager.GetString("AdderMissing", resourceCulture);
+		internal static string XStaticSyntax => ResourceManager.GetString("XStaticSyntax", resourceCulture);
+		internal static string XStaticResolution => ResourceManager.GetString("XStaticResolution", resourceCulture);
+		internal static string XDataTypeSyntax => ResourceManager.GetString("XDataTypeSyntax", resourceCulture);
 	}
 }

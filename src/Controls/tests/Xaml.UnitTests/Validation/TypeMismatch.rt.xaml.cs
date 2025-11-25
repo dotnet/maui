@@ -1,3 +1,5 @@
+using System.Linq;
+
 using System;
 using NUnit.Framework;
 
@@ -9,7 +11,8 @@ public partial class TypeMismatch : ContentPage
 {
 	public TypeMismatch() => InitializeComponent();
 
-	class Tests
+	[TestFixture]
+class Tests
 	{
 		[Test]
 		public void ThrowsOnMismatchingType([Values] XamlInflator inflator)

@@ -1,3 +1,5 @@
+using System.Linq;
+
 using Microsoft.Maui.Controls.Xaml;
 using NUnit.Framework;
 
