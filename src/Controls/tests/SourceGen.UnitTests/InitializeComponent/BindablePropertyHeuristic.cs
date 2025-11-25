@@ -8,11 +8,12 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 public class BindablePropertyHeuristic : SourceGenXamlInitializeComponentTestBase
 {
 	[Theory]
-	[InlineData("BindablePropertyAttribute", "", "BalanceProperty")]
-	[InlineData("BindablePropertyAttribute", "CustomBalance", "CustomBalance")]
-	[InlineData("AutoPropertyAttribute", "", "BalanceProperty")]
-	[InlineData("AutoPropertyAttribute", "CustomBalance", "CustomBalance")]
+	[InlineData("CommunityToolkit.Maui", "BindablePropertyAttribute", "", "BalanceProperty")]
+	[InlineData("CommunityToolkit.Maui", "BindablePropertyAttribute", "CustomBalance", "CustomBalance")]
+	[InlineData("Maui.BindableProperty.Generator.Core", "AutoBindableAttribute", "", "BalanceProperty")]
+	[InlineData("Maui.BindableProperty.Generator.Core", "AutoBindableAttribute", "CustomBalance", "CustomBalance")]
 	public void BindablePropertyHeuristic_WithPropertyAndBinding_ShouldGenerateSetBinding(
+		string attributeNamespace,
 		string attributeName, 
 		string? explicitPropertyName,
 		string expectedPropertyFieldName)
@@ -34,7 +35,7 @@ public class BindablePropertyHeuristic : SourceGenXamlInitializeComponentTestBas
 
 		// Build the attribute usage with optional PropertyName parameter
 		var hasExplicitPropertyName = !string.IsNullOrEmpty(explicitPropertyName);
-		var attributeUsage = hasExplicitPropertyName ? $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
+		var attributeUsage = hasExplicitPropertyName ? $"[{attributeNamespace}.{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeNamespace}.{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
 
 		var code =
 $$"""
@@ -42,13 +43,15 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
+namespace {{attributeNamespace}};
 
 // Simulates an attribute from a third-party library
 public class {{attributeName}} : Attribute
 {
 	public string? PropertyName { get; set; }
 }
+
+namespace Test;
 
 [XamlProcessing(XamlInflator.SourceGen)]
 public partial class TestPage : ContentPage
@@ -78,13 +81,14 @@ public partial class BalanceView : Label
 	}
 
 	[Theory]
-	[InlineData("BindablePropertyAttribute", "_balance", "", "BalanceProperty")]
-	[InlineData("BindablePropertyAttribute", "_balance", "CustomBalance", "CustomBalance")]
-	[InlineData("BindablePropertyAttribute", "balance", "", "BalanceProperty")]
-	[InlineData("AutoPropertyAttribute", "_balance", "", "BalanceProperty")]
-	[InlineData("AutoPropertyAttribute", "_balance", "CustomBalance", "CustomBalance")]
-	[InlineData("AutoPropertyAttribute", "balance", "", "BalanceProperty")]
+	[InlineData("CommunityToolkit.Maui", "BindablePropertyAttribute", "_balance", "", "BalanceProperty")]
+	[InlineData("CommunityToolkit.Maui", "BindablePropertyAttribute", "_balance", "CustomBalance", "CustomBalance")]
+	[InlineData("CommunityToolkit.Maui", "BindablePropertyAttribute", "balance", "", "BalanceProperty")]
+	[InlineData("Maui.BindableProperty.Generator.Core", "AutoBindableAttribute", "_balance", "", "BalanceProperty")]
+	[InlineData("Maui.BindableProperty.Generator.Core", "AutoBindableAttribute", "_balance", "CustomBalance", "CustomBalance")]
+	[InlineData("Maui.BindableProperty.Generator.Core", "AutoBindableAttribute", "balance", "", "BalanceProperty")]
 	public void BindablePropertyHeuristic_WithFieldAndBinding_ShouldGenerateSetBinding(
+		string attributeNamespace,
 		string attributeName,
 		string fieldName,
 		string? explicitPropertyName,
@@ -107,7 +111,7 @@ public partial class BalanceView : Label
 
 		// Build the attribute usage with optional PropertyName parameter
 		var hasExplicitPropertyName = !string.IsNullOrEmpty(explicitPropertyName);
-		var attributeUsage = hasExplicitPropertyName ? $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
+		var attributeUsage = hasExplicitPropertyName ? $"[{attributeNamespace}.{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}(PropertyName = \"{explicitPropertyName}\")]" : $"[{attributeNamespace}.{attributeName.Replace("Attribute", "", StringComparison.Ordinal)}]";
 
 		var code =
 $$"""
@@ -115,13 +119,15 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
+namespace {{attributeNamespace}};
 
 // Simulates an attribute from a third-party library
 public class {{attributeName}} : Attribute
 {
 	public string? PropertyName { get; set; }
 }
+
+namespace Test;
 
 [XamlProcessing(XamlInflator.SourceGen)]
 public partial class TestPage : ContentPage
@@ -223,12 +229,14 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
+namespace CommunityToolkit.Maui;
 
 // Simulates an attribute from a third-party library
 public class BindablePropertyAttribute : Attribute
 {
 }
+
+namespace Test;
 
 [XamlProcessing(XamlInflator.SourceGen)]
 public partial class TestPage : ContentPage
@@ -242,7 +250,7 @@ public partial class TestPage : ContentPage
 public partial class BalanceView : Label
 {
 	// Property with completely different name - should still fail
-	[BindableProperty] 
+	[CommunityToolkit.Maui.BindableProperty] 
 	public partial double Amount { get; set; }
 }
 """;
@@ -275,13 +283,15 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Test;
+namespace CommunityToolkit.Maui;
 
 // Simulates an attribute from a third-party library
 public class BindablePropertyAttribute : Attribute
 {
 	public string? PropertyName { get; set; }
 }
+
+namespace Test;
 
 [XamlProcessing(XamlInflator.SourceGen)]
 public partial class TestPage : ContentPage
@@ -295,7 +305,7 @@ public partial class TestPage : ContentPage
 public partial class BalanceView : Label
 {
 	// Has attribute - literal assignments should use SetValue with the generated BP
-	[BindableProperty] 
+	[CommunityToolkit.Maui.BindableProperty] 
 	public partial double Balance { get; set; }
 }
 """;
