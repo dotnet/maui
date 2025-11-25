@@ -51,8 +51,28 @@
 			<AndroidSdkCommonPackages Include="@(AndroidSdkPackages)" />
 		</ItemGroup>
 
-		<!-- Install SDK Common Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
+		<!-- Install SDK Common Packages - capture output and check for errors -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkCommonPackages.Identity)&quot;"
+			  ConsoleToMSBuild="True"
+			  IgnoreExitCode="True"
+			  StandardErrorImportance="High">
+			<Output TaskParameter="ExitCode" PropertyName="_SdkInstallExitCode_%(AndroidSdkCommonPackages.Identity)" />
+			<Output TaskParameter="ConsoleOutput" ItemName="_SdkInstallOutputLines_Common" />
+		</Exec>
+
+		<!-- Check for error patterns in the output -->
+		<PropertyGroup>
+			<_SdkInstallOutput_Common>@(_SdkInstallOutputLines_Common->'%(Identity)', ' ')</_SdkInstallOutput_Common>
+			<_SdkInstallHasError_Common Condition="$(_SdkInstallOutput_Common.Contains('Failed to find package'))">True</_SdkInstallHasError_Common>
+			<_SdkInstallHasError_Common Condition="$(_SdkInstallOutput_Common.Contains('exited with an error status'))">True</_SdkInstallHasError_Common>
+			<_SdkInstallHasError_Common Condition="$(_SdkInstallOutput_Common.Contains('Package path is not valid'))">True</_SdkInstallHasError_Common>
+			<_SdkInstallHasError_Common Condition="$(_SdkInstallOutput_Common.Contains('SdkToolFailedExitException'))">True</_SdkInstallHasError_Common>
+			<_SdkInstallHasError_Common Condition="$(_SdkInstallOutput_Common.Contains('An error occurred while preparing SDK package'))">True</_SdkInstallHasError_Common>
+		</PropertyGroup>
+
+		<!-- Fail the build if errors were detected -->
+		<Error Condition="'$(_SdkInstallHasError_Common)' == 'True'"
+			   Text="Failed to install Android SDK common packages. Check the logs above for details. Output: $(_SdkInstallOutput_Common)" />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -66,8 +86,28 @@
 			<AndroidSdkPlatformApiPackages Include="platforms%3Bandroid-%(AndroidSdkApiLevels.Identity)" Condition=" '$(AndroidSdkProvisionDefaultApiLevelsOnly)' != 'True' Or '%(AndroidSdkApiLevels.IsDefault)' == 'True' " />
 		</ItemGroup>
 
-		<!-- Install SDK Platform API Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
+		<!-- Install SDK Platform API Packages - capture output and check for errors -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;"
+			  ConsoleToMSBuild="True"
+			  IgnoreExitCode="True"
+			  StandardErrorImportance="High">
+			<Output TaskParameter="ExitCode" PropertyName="_SdkInstallExitCode_%(AndroidSdkPlatformApiPackages.Identity)" />
+			<Output TaskParameter="ConsoleOutput" ItemName="_SdkInstallOutputLines_Platform" />
+		</Exec>
+
+		<!-- Check for error patterns in the output -->
+		<PropertyGroup>
+			<_SdkInstallOutput_Platform>@(_SdkInstallOutputLines_Platform->'%(Identity)', ' ')</_SdkInstallOutput_Platform>
+			<_SdkInstallHasError_Platform Condition="$(_SdkInstallOutput_Platform.Contains('Failed to find package'))">True</_SdkInstallHasError_Platform>
+			<_SdkInstallHasError_Platform Condition="$(_SdkInstallOutput_Platform.Contains('exited with an error status'))">True</_SdkInstallHasError_Platform>
+			<_SdkInstallHasError_Platform Condition="$(_SdkInstallOutput_Platform.Contains('Package path is not valid'))">True</_SdkInstallHasError_Platform>
+			<_SdkInstallHasError_Platform Condition="$(_SdkInstallOutput_Platform.Contains('SdkToolFailedExitException'))">True</_SdkInstallHasError_Platform>
+			<_SdkInstallHasError_Platform Condition="$(_SdkInstallOutput_Platform.Contains('An error occurred while preparing SDK package'))">True</_SdkInstallHasError_Platform>
+		</PropertyGroup>
+
+		<!-- Fail the build if errors were detected -->
+		<Error Condition="'$(_SdkInstallHasError_Platform)' == 'True'"
+			   Text="Failed to install Android SDK platform API packages. Check the logs above for details. Output: $(_SdkInstallOutput_Platform)" />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -83,9 +123,29 @@
 				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
 		</ItemGroup>
 
-		<!-- Install SDK Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
-		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+		<!-- Install SDK Packages - capture output and check for errors -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;"
+			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'"
+			  ConsoleToMSBuild="True"
+			  IgnoreExitCode="True"
+			  StandardErrorImportance="High">
+			<Output TaskParameter="ExitCode" PropertyName="_SdkInstallExitCode_%(AndroidSdkEmulatorImagePackages.Identity)" />
+			<Output TaskParameter="ConsoleOutput" ItemName="_SdkInstallOutputLines_Emulator" />
+		</Exec>
+
+		<!-- Check for error patterns in the output -->
+		<PropertyGroup>
+			<_SdkInstallOutput_Emulator>@(_SdkInstallOutputLines_Emulator->'%(Identity)', ' ')</_SdkInstallOutput_Emulator>
+			<_SdkInstallHasError_Emulator Condition="$(_SdkInstallOutput_Emulator.Contains('Failed to find package'))">True</_SdkInstallHasError_Emulator>
+			<_SdkInstallHasError_Emulator Condition="$(_SdkInstallOutput_Emulator.Contains('exited with an error status'))">True</_SdkInstallHasError_Emulator>
+			<_SdkInstallHasError_Emulator Condition="$(_SdkInstallOutput_Emulator.Contains('Package path is not valid'))">True</_SdkInstallHasError_Emulator>
+			<_SdkInstallHasError_Emulator Condition="$(_SdkInstallOutput_Emulator.Contains('SdkToolFailedExitException'))">True</_SdkInstallHasError_Emulator>
+			<_SdkInstallHasError_Emulator Condition="$(_SdkInstallOutput_Emulator.Contains('An error occurred while preparing SDK package'))">True</_SdkInstallHasError_Emulator>
+		</PropertyGroup>
+
+		<!-- Fail the build if errors were detected -->
+		<Error Condition="'$(_SdkInstallHasError_Emulator)' == 'True'"
+			   Text="Failed to install Android SDK emulator image packages. Check the logs above for details. Output: $(_SdkInstallOutput_Emulator)" />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -98,9 +158,28 @@
 				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
 		</ItemGroup>
 
-		<!-- Create all the AVD's we need based on the api levels specified -->
-		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
-			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+		<!-- Create all the AVD's we need based on the api levels specified - capture output and check for errors -->
+		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force"
+			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'"
+			  ConsoleToMSBuild="True"
+			  IgnoreExitCode="True"
+			  StandardErrorImportance="High">
+			<Output TaskParameter="ExitCode" PropertyName="_AvdCreateExitCode_%(AndroidSdkAvdPackages.Identity)" />
+			<Output TaskParameter="ConsoleOutput" ItemName="_AvdCreateOutputLines" />
+		</Exec>
+
+		<!-- Check for error patterns in the output -->
+		<PropertyGroup>
+			<_AvdCreateOutput>@(_AvdCreateOutputLines->'%(Identity)', ' ')</_AvdCreateOutput>
+			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('exited with an error status'))">True</_AvdCreateHasError>
+			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('Package path is not valid'))">True</_AvdCreateHasError>
+			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('SdkToolFailedExitException'))">True</_AvdCreateHasError>
+			<_AvdCreateHasError Condition="$(_AvdCreateOutput.Contains('Error:'))">True</_AvdCreateHasError>
+		</PropertyGroup>
+
+		<!-- Fail the build if errors were detected -->
+		<Error Condition="'$(_AvdCreateHasError)' == 'True'"
+			   Text="Failed to create Android AVD. Check the logs above for details. Output: $(_AvdCreateOutput)" />
 
 		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
