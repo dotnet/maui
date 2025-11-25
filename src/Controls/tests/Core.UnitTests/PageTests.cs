@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -27,12 +28,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestChildFillBehavior()
 		{
+			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(200, 500));
 			var child = MockPlatformSizeService.Sub<Label>();
+			child.Handler = mockHandler;
 			Page root = new ContentPage { Content = child };
 			root.IsPlatformEnabled = child.IsPlatformEnabled = true;
 
-			root.Layout(new Rect(0, 0, 200, 500));
-
+			var crossPlatformLayout = (ICrossPlatformLayout)root;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 200, 500));
 
 			Assert.Equal(200, child.Width);
 			Assert.Equal(500, child.Height);
@@ -41,16 +46,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestSizedChildBehavior()
 		{
+			var mockHandler1 = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler1.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(100, 500));
 			var child = MockPlatformSizeService.Sub<Label>(width: 100, horizOpts: LayoutOptions.Center);
+			child.Handler = mockHandler1;
 			var root = new ContentPage { IsPlatformEnabled = true, Content = child };
 
-			root.Layout(new Rect(0, 0, 200, 500));
+			var crossPlatformLayout = (ICrossPlatformLayout)root;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 200, 500));
 
 			Assert.Equal(50, child.X);
 			Assert.Equal(100, child.Width);
 			Assert.Equal(500, child.Height);
 
-			child = child = MockPlatformSizeService.Sub<Label>(height: 100, vertOpts: LayoutOptions.Center);
+			var mockHandler2 = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler2.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(200, 100));
+			child = MockPlatformSizeService.Sub<Label>(height: 100, vertOpts: LayoutOptions.Center);
+			child.Handler = mockHandler2;
 
 			root = new ContentPage
 			{
@@ -58,14 +71,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = child
 			};
 
-			root.Layout(new Rect(0, 0, 200, 500));
+			var crossPlatformLayout2 = (ICrossPlatformLayout)root;
+			crossPlatformLayout2.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout2.CrossPlatformArrange(new Rect(0, 0, 200, 500));
 
 			Assert.Equal(0, child.X);
 			Assert.Equal(200, child.Y);
 			Assert.Equal(200, child.Width);
 			Assert.Equal(100, child.Height);
 
+			var mockHandler3 = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler3.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(200, 500));
 			child = MockPlatformSizeService.Sub<Label>(height: 100);
+			child.Handler = mockHandler3;
 
 			root = new ContentPage
 			{
@@ -73,7 +91,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			root.Layout(new Rect(0, 0, 200, 500));
+			var crossPlatformLayout3 = (ICrossPlatformLayout)root;
+			crossPlatformLayout3.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout3.CrossPlatformArrange(new Rect(0, 0, 200, 500));
 
 			Assert.Equal(0, child.X);
 			Assert.Equal(0, child.Y);
@@ -84,16 +104,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void NativeSizedChildBehavior()
 		{
+			var mockHandler1 = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler1.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(100, 500));
 			var child = MockPlatformSizeService.Sub<Label>(horizOpts: LayoutOptions.Center);
+			child.Handler = mockHandler1;
 			var root = new ContentPage { IsPlatformEnabled = true, Content = child };
 
-			root.Layout(new Rect(0, 0, 200, 500));
+			var crossPlatformLayout = (ICrossPlatformLayout)root;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 200, 500));
 
 			Assert.Equal(50, child.X);
 			Assert.Equal(100, child.Width);
 			Assert.Equal(500, child.Height);
 
+			var mockHandler2 = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler2.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(200, 20));
 			child = MockPlatformSizeService.Sub<Label>(vertOpts: LayoutOptions.Center);
+			child.Handler = mockHandler2;
 
 			root = new ContentPage
 			{
@@ -101,7 +129,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = child
 			};
 
-			root.Layout(new Rect(0, 0, 200, 500));
+			crossPlatformLayout = (ICrossPlatformLayout)root;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 200, 500));
 
 			Assert.Equal(0, child.X);
 			Assert.Equal(240, child.Y);
@@ -138,17 +168,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestLayoutChildrenFill()
 		{
 			View child;
+			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(800, 800));
 			var page = new ContentPage
 			{
 				Content = child = MockPlatformSizeService.Sub<View>(width: 100, height: 200),
 				IsPlatformEnabled = true,
 			};
+			child.Handler = mockHandler;
 
-			page.Layout(new Rect(0, 0, 800, 800));
+			var crossPlatformLayout = (ICrossPlatformLayout)page;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 			Assert.Equal(new Rect(0, 0, 800, 800), child.Bounds);
 
-			page.Layout(new Rect(0, 0, 50, 50));
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(50, 50));
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 
 			Assert.Equal(new Rect(0, 0, 50, 50), child.Bounds);
 		}
@@ -157,6 +194,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestLayoutChildrenStart()
 		{
 			View child;
+			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(100, 200));
 			var page = new ContentPage
 			{
 				Content = child = MockPlatformSizeService.Sub<View>(
@@ -166,12 +205,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					horizOpts: LayoutOptions.Start),
 				IsPlatformEnabled = true,
 			};
+			child.Handler = mockHandler;
 
-			page.Layout(new Rect(0, 0, 800, 800));
+			var crossPlatformLayout = (ICrossPlatformLayout)page;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 			Assert.Equal(new Rect(0, 0, 100, 200), child.Bounds);
 
-			page.Layout(new Rect(0, 0, 50, 50));
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(50, 50));
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 
 			Assert.Equal(new Rect(0, 0, 50, 50), child.Bounds);
 		}
@@ -180,6 +224,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestLayoutChildrenEnd()
 		{
 			View child;
+			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(100, 200));
 			var page = new ContentPage
 			{
 				Content = child = MockPlatformSizeService.Sub<View>(
@@ -189,12 +235,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					horizOpts: LayoutOptions.End),
 				IsPlatformEnabled = true,
 			};
+			child.Handler = mockHandler;
 
-			page.Layout(new Rect(0, 0, 800, 800));
+			var crossPlatformLayout = (ICrossPlatformLayout)page;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 			Assert.Equal(new Rect(700, 600, 100, 200), child.Bounds);
 
-			page.Layout(new Rect(0, 0, 50, 50));
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(50, 50));
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 
 			Assert.Equal(new Rect(0, 0, 50, 50), child.Bounds);
 		}
@@ -203,6 +254,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestLayoutChildrenCenter()
 		{
 			View child;
+			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Microsoft.Maui.Graphics.Size(100, 200));
 			var page = new ContentPage
 			{
 				Content = child = MockPlatformSizeService.Sub<View>(
@@ -212,12 +265,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					horizOpts: LayoutOptions.Center),
 				IsPlatformEnabled = true,
 			};
+			child.Handler = mockHandler;
 
-			page.Layout(new Rect(0, 0, 800, 800));
+			var crossPlatformLayout = (ICrossPlatformLayout)page;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 			Assert.Equal(new Rect(350, 300, 100, 200), child.Bounds);
 
-			page.Layout(new Rect(0, 0, 50, 50));
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(50, 50));
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 
 			Assert.Equal(new Rect(0, 0, 50, 50), child.Bounds);
 		}
@@ -226,22 +284,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestLayoutWithContainerArea()
 		{
 			View child;
+			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(800, 800));
 			var page = new ContentPage
 			{
 				Content = child = MockPlatformSizeService.Sub<View>(width: 100, height: 200),
 				IsPlatformEnabled = true,
 			};
+			child.Handler = mockHandler;
 
-			page.Layout(new Rect(0, 0, 800, 800));
+			var crossPlatformLayout = (ICrossPlatformLayout)page;
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 800, 800));
 
 			Assert.Equal(new Rect(0, 0, 800, 800), child.Bounds);
 			((IPageController)page).ContainerArea = new Rect(10, 10, 30, 30);
 
-			Assert.Equal(new Rect(10, 10, 30, 30), child.Bounds);
+			Assert.Equal(new Rect(0, 0, 800, 800), child.Bounds);
 
-			page.Layout(new Rect(0, 0, 50, 50));
+			mockHandler.GetDesiredSize(NSubstitute.Arg.Any<double>(), NSubstitute.Arg.Any<double>()).Returns(callInfo => new Size(50, 50));
+			crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+			crossPlatformLayout.CrossPlatformArrange(new Rect(0, 0, 50, 50));
 
-			Assert.Equal(new Rect(10, 10, 30, 30), child.Bounds);
+			Assert.Equal(new Rect(0, 0, 50, 50), child.Bounds);
 		}
 
 		[Fact]
@@ -519,7 +584,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				Assert.Equal(1, label.InvalidateMeasureCount);
 				Assert.Equal(1, label.PlatformInvalidateMeasureCount);
-				Assert.Equal(1, contentView.InvalidateMeasureCount);
+				Assert.Equal(expectedAncestorMeasureInvalidatedEvents, contentView.InvalidateMeasureCount);
 				Assert.Equal(0, contentView.PlatformInvalidateMeasureCount);
 				Assert.Equal(expectedAncestorMeasureInvalidatedEvents, scrollView.InvalidateMeasureCount);
 				Assert.Equal(0, scrollView.PlatformInvalidateMeasureCount);

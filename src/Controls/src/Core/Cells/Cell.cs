@@ -10,15 +10,21 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
+<<<<<<< HEAD
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs/*" />
 #if WINDOWS || ANDROID || IOS || MACCATALYST
 #pragma warning disable CS0618 // Type or member is obsolete
 	[ElementHandler<Handlers.Compatibility.CellRenderer>]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
+||||||| 3f26a592b2
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs/*" />
+=======
+	/// <summary>Provides base class and capabilities for all Microsoft.Maui.Controls cells. Cells are elements meant to be added to <see cref="Microsoft.Maui.Controls.ListView"/> or <see cref="Microsoft.Maui.Controls.TableView"/>.</summary>
+>>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
 	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IVisualTreeElement
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs/*" />
+		/// <summary>The default height of cells.</summary>
 		public const int DefaultCellHeight = 40;
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
@@ -31,7 +37,8 @@ namespace Microsoft.Maui.Controls
 
 		bool _nextCallToForceUpdateSizeQueued;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the Cell class.</summary>
+		/// <remarks>Cell class is abstract, this constructor is never invoked directly.</remarks>
 		public Cell()
 		{
 			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
@@ -88,7 +95,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ContextActions']/Docs/*" />
+		/// <summary>Gets a list of menu items to display when the user performs the device-specific context gesture on the Cell.</summary>
+		/// <remarks>The context gesture on the iOS platform is a left swipe. For Android and Windows Phone operating systems, the context gesture is a press and hold.</remarks>
 		public IList<MenuItem> ContextActions
 		{
 			get
@@ -103,7 +111,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='HasContextActions']/Docs/*" />
+		/// <summary>Gets a value that indicates whether the cell has at least one menu item in its <see cref="Microsoft.Maui.Controls.Cell.ContextActions"/> list property.</summary>
 		public bool HasContextActions
 		{
 			get { return _contextActions != null && _contextActions.Count > 0 && IsEnabled; }
@@ -112,7 +120,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsContextActionsLegacyModeEnabled']/Docs/*" />
 		public bool IsContextActionsLegacyModeEnabled { get; set; } = false;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='Height']/Docs/*" />
+		/// <summary>Gets or sets the height of the Cell.</summary>
 		public double Height
 		{
 			get { return _height; }
@@ -129,14 +137,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
+		/// <summary>Gets or sets the IsEnabled state of the Cell. This is a bindable property.</summary>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='RenderHeight']/Docs/*" />
+		/// <summary>Gets the height of the rendered cell on the device.</summary>
 		public double RenderHeight
 		{
 			get
@@ -164,7 +172,8 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler ForceUpdateSizeRequested;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ForceUpdateSize']/Docs/*" />
+		/// <summary>Immediately updates the cell's size.</summary>
+		/// <remarks>Developers can call this method to update the cell's size, even if the cell is currently visible. Developers should note that this operation can be expensive.</remarks>
 		public void ForceUpdateSize()
 		{
 			if (_nextCallToForceUpdateSizeQueued)
@@ -230,7 +239,8 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanging(propertyName);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendAppearing']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
@@ -242,7 +252,8 @@ namespace Microsoft.Maui.Controls
 			container?.SendCellAppearing(this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendDisappearing']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDisappearing()
 		{

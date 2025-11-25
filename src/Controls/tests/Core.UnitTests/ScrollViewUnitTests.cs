@@ -48,10 +48,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			scrollView.Content = hLayout;
+			var view = ((ICrossPlatformLayout)scrollView);
 
-			var r = scrollView.Measure(100, 100, MeasureFlags.None);
+			view.CrossPlatformMeasure(100, 100);
+			var r = view.CrossPlatformArrange(new Graphics.Rect(0, 0, 100, 100));
 
-			Assert.Equal(10, r.Request.Height);
+			Assert.Equal(100, r.Height);
 		}
 
 		[Fact]

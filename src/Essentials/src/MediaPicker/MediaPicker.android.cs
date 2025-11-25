@@ -85,6 +85,30 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
+							// Apply rotation if needed for photos
+				if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
+				{
+					using var inputStream = File.OpenRead(captureResult);
+					var fileName = System.IO.Path.GetFileName(captureResult);
+					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+						
+						var rotatedPath = System.IO.Path.Combine(
+							System.IO.Path.GetDirectoryName(captureResult),
+							System.IO.Path.GetFileNameWithoutExtension(captureResult) + "_rotated" + System.IO.Path.GetExtension(captureResult));
+							
+						using var outputStream = File.Create(rotatedPath);
+						rotatedStream.Position = 0;
+						await rotatedStream.CopyToAsync(outputStream);
+						
+						// Use the rotated image and delete the original
+						try 
+						{ 
+							File.Delete(captureResult);
+						}
+						catch { }
+						captureResult = rotatedPath;
+					}
+					
 					// Apply compression/resizing if needed for photos
 					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
@@ -133,11 +157,34 @@ namespace Microsoft.Maui.Media
 
 				if (path is not null)
 				{
-					// Apply compression/resizing if needed for photos
-					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					if (photo)
 					{
-						path = await CompressImageIfNeeded(path, options);
+						// Apply rotation if needed
+						if (ImageProcessor.IsRotationNeeded(options))
+						{
+							using var inputStream = File.OpenRead(path);
+							var fileName = System.IO.Path.GetFileName(path);
+							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+							
+							var rotatedPath = System.IO.Path.Combine(
+								System.IO.Path.GetDirectoryName(path),
+								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
+								
+							using var outputStream = File.Create(rotatedPath);
+							rotatedStream.Position = 0;
+							await rotatedStream.CopyToAsync(outputStream);
+							
+							// Use the rotated image
+							path = rotatedPath;
+						}
+
+						// Apply compression/resizing if needed
+						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+						{
+							path = await CompressImageIfNeeded(path, options);
+						}
 					}
+					
 					return new FileResult(path);
 				}
 
@@ -164,10 +211,32 @@ namespace Microsoft.Maui.Media
 
 			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
 
-			// Apply compression/resizing if needed for photos
-			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			if (photo)
 			{
-				path = await CompressImageIfNeeded(path, options);
+				// Apply rotation if needed
+				if (ImageProcessor.IsRotationNeeded(options))
+				{
+					using var inputStream = File.OpenRead(path);
+					var fileName = System.IO.Path.GetFileName(path);
+					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+					
+					var rotatedPath = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(path),
+						System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
+						
+					using var outputStream = File.Create(rotatedPath);
+					rotatedStream.Position = 0;
+					await rotatedStream.CopyToAsync(outputStream);
+					
+					// Use the rotated image
+					path = rotatedPath;
+				}
+
+				// Apply compression/resizing if needed
+				if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				{
+					path = await CompressImageIfNeeded(path, options);
+				}
 			}
 
 			return new FileResult(path);
@@ -178,7 +247,8 @@ namespace Microsoft.Maui.Media
 			// Android has a limitation that you need to use a different request for single and multiple picks.
 			// If the selection limit is 1, we can use the single pick method,
 			// otherwise we need to use the multiple pick method.
-			if (options.SelectionLimit == 1)
+			int selectionLimit = options?.SelectionLimit ?? 1;
+			if (selectionLimit == 1)
 			{
 				var singleResult = await PickUsingPhotoPicker(options, photo);
 				return singleResult is not null ? [singleResult] : [];
@@ -189,9 +259,9 @@ namespace Microsoft.Maui.Media
 
 			// Only set the limit for 2 and up. For single selection (limit == 1) is handled above,
 			// and limit == 0 should be treated as unlimited.
-			if (options.SelectionLimit >= 2)
+			if (selectionLimit >= 2)
 			{
-				pickVisualMediaRequestBuilder.SetMaxItems(options.SelectionLimit);
+				pickVisualMediaRequestBuilder.SetMaxItems(selectionLimit);
 			}
 
 			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
@@ -211,11 +281,33 @@ namespace Microsoft.Maui.Media
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
-
-					// Apply compression/resizing if needed for photos
-					if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+					
+					if (photo)
 					{
-						path = await CompressImageIfNeeded(path, options);
+						// Apply rotation if needed
+						if (ImageProcessor.IsRotationNeeded(options))
+						{
+							using var inputStream = File.OpenRead(path);
+							var fileName = System.IO.Path.GetFileName(path);
+							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+							
+							var rotatedPath = System.IO.Path.Combine(
+								System.IO.Path.GetDirectoryName(path),
+								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
+								
+							using var outputStream = File.Create(rotatedPath);
+							rotatedStream.Position = 0;
+							await rotatedStream.CopyToAsync(outputStream);
+							
+							// Use the rotated image
+							path = rotatedPath;
+						}
+
+						// Apply compression/resizing if needed
+						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+						{
+							path = await CompressImageIfNeeded(path, options);
+						}
 					}
 
 					resultList.Add(new FileResult(path));
@@ -270,7 +362,9 @@ namespace Microsoft.Maui.Media
 					options?.MaximumWidth,
 					options?.MaximumHeight,
 					options?.CompressionQuality ?? 100,
-					inputFileName);
+					inputFileName,
+					options?.RotateImage ?? false,
+					options?.PreserveMetaData ?? true);
 
 				if (processedStream != null)
 				{
@@ -378,19 +472,43 @@ namespace Microsoft.Maui.Media
 
 				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
-				// Apply compression/resizing if needed for photos
-				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				// Process images if necessary
+				if (photo)
 				{
 					var tempResultList = resultList.Select(fr => fr.FullPath).ToList();
 					resultList.Clear();
 
-					var compressionTasks = tempResultList.Select(async path =>
+					foreach (var path in tempResultList)
 					{
-						return await CompressImageIfNeeded(path, options);
-					});
+						string processedPath = path;
+						
+						// Apply rotation if needed
+						if (ImageProcessor.IsRotationNeeded(options))
+						{
+							using var inputStream = File.OpenRead(processedPath);
+							var fileName = System.IO.Path.GetFileName(processedPath);
+							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+							
+							var rotatedPath = System.IO.Path.Combine(
+								System.IO.Path.GetDirectoryName(processedPath),
+								System.IO.Path.GetFileNameWithoutExtension(processedPath) + "_rotated" + System.IO.Path.GetExtension(processedPath));
+								
+							using var outputStream = File.Create(rotatedPath);
+							rotatedStream.Position = 0;
+							await rotatedStream.CopyToAsync(outputStream);
+							
+							// Use the rotated image
+							processedPath = rotatedPath;
+						}
 
-					var compressedPaths = await Task.WhenAll(compressionTasks);
-					resultList.AddRange(compressedPaths.Select(path => new FileResult(path)));
+						// Apply compression/resizing if needed
+						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+						{
+							processedPath = await CompressImageIfNeeded(processedPath, options);
+						}
+						
+						resultList.Add(new FileResult(processedPath));
+					}
 				}
 
 				return resultList;

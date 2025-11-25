@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,11 @@ namespace Microsoft.Maui.Hosting
 
 		public static MauiAppBuilder ConfigureEnvironmentVariables(this MauiAppBuilder builder)
 		{
+			if (!RuntimeFeature.EnableMauiAspire)
+			{
+				return builder;
+			}
+
 			IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
 			string devTunnelId = environmentVariables["DEVTUNNEL_ID"]?.ToString() ?? string.Empty;

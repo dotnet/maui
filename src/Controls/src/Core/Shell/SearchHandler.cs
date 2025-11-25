@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<EventArgs> Focused;
 		public event EventHandler<EventArgs> Unfocused;
 
+		internal event EventHandler<EventArgs> ShowSoftInputRequested;
+		internal event EventHandler<EventArgs> HideSoftInputRequested;
+
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
 
@@ -82,6 +85,16 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
+		}
+
+		public void ShowSoftInputAsync()
+		{
+			ShowSoftInputRequested?.Invoke(this, new EventArgs());
+		}
+
+		public void HideSoftInputAsync()
+		{
+			HideSoftInputRequested?.Invoke(this, new EventArgs());
 		}
 
 		protected virtual void OnFocused()
@@ -666,16 +679,16 @@ namespace Microsoft.Maui.Controls
 			ClearPlaceholderEnabledCore = ClearPlaceholderCommand.CanExecute(ClearPlaceholderCommandParameter);
 		}
 
+		internal WeakCommandSubscription ClearPlaceholderCommandSubscription { get; set; }
+
 		void OnClearPlaceholderCommandChanged(ICommand oldCommand, ICommand newCommand)
 		{
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= ClearPlaceholderCanExecuteChanged;
-			}
+			ClearPlaceholderCommandSubscription?.Dispose();
+			ClearPlaceholderCommandSubscription = null;
 
 			if (newCommand != null)
 			{
-				newCommand.CanExecuteChanged += ClearPlaceholderCanExecuteChanged;
+				ClearPlaceholderCommandSubscription = new WeakCommandSubscription(this, newCommand, ClearPlaceholderCanExecuteChanged);
 				ClearPlaceholderEnabledCore = ClearPlaceholderCommand.CanExecute(ClearPlaceholderCommandParameter);
 			}
 			else
@@ -690,16 +703,16 @@ namespace Microsoft.Maui.Controls
 				ClearPlaceholderEnabledCore = ClearPlaceholderCommand.CanExecute(CommandParameter);
 		}
 
+		internal WeakCommandSubscription CommandSubscription { get; set; }
+
 		void OnCommandChanged(ICommand oldCommand, ICommand newCommand)
 		{
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= CanExecuteChanged;
-			}
+			CommandSubscription?.Dispose();
+			CommandSubscription = null;
 
-			if (newCommand != null)
+			if (newCommand is not null)
 			{
-				newCommand.CanExecuteChanged += CanExecuteChanged;
+				CommandSubscription = new WeakCommandSubscription(this, newCommand, CanExecuteChanged);
 				IsSearchEnabledCore = Command.CanExecute(CommandParameter);
 			}
 			else

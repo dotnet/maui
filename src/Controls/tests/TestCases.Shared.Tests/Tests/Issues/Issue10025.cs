@@ -17,7 +17,9 @@ public class Issue10025 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifySelectedItemClearsOnNullAssignment()
 	{
+		App.WaitForElement("Item1");
 		App.Tap("Item1");
+		App.WaitForElement("DescriptionLabel");
 		App.Tap("DescriptionLabel");
 		VerifyScreenshot();
 	}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ImageButtonControlMainPage"
+             x:DataType="local:ImageButtonViewModel"
+             Title="ImageButtonControlPage">
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Options"
+                             Clicked="NavigateToOptionsPage_Clicked"
+                             AutomationId="Options"/>
+        </ContentPage.ToolbarItems>
+
+        <Grid RowDefinitions="*,Auto,Auto,Auto,Auto"
+              ColumnDefinitions="*" >
+
+                <ImageButton x:Name="TestImageButton"
+                             Source="{Binding Source}"
+                             Aspect="{Binding Aspect}"
+                             BorderColor="{Binding BorderColor}"
+                             BorderWidth="{Binding BorderWidth}"
+                             CornerRadius="{Binding CornerRadius}"
+                             IsEnabled="{Binding IsEnabled}"
+                             Command="{Binding ImageCommand}"
+                             CommandParameter="{Binding CommandParameter}"
+                             Clicked="OnImageButtonClicked"
+                             Pressed="OnImageButtonPressed"
+                             Released="OnImageButtonReleased"
+                             Padding="{Binding Padding}"
+                             IsVisible="{Binding IsVisible}"
+                             Shadow="{Binding Shadow}"
+                             FlowDirection="{Binding FlowDirection}"
+                             WidthRequest="350"
+                             HeightRequest="450"
+                             AutomationId="ImageButtonControl"/>
+                <Label Grid.Row="1"
+                       Text="{Binding ClickTotal, StringFormat='ImageButton Clicked: {0}'}"
+                       HorizontalOptions="Center"
+                       FontSize="12"
+                       IsVisible="{Binding IsButtonClicked}"/>
+                <Label Grid.Row="2"
+                       Text="{Binding PressedTotal, StringFormat='ImageButton Pressed: {0}'}"
+                       HorizontalOptions="Center"
+                       FontSize="12"
+                       IsVisible="{Binding IsButtonClicked}"/>
+                <Label Grid.Row="3"
+                       Text="{Binding ReleasedTotal, StringFormat='ImageButton Released: {0}'}"
+                       HorizontalOptions="Center"
+                       FontSize="12"
+                       IsVisible="{Binding IsButtonClicked}"/>
+                <Label Grid.Row="4"
+                       Text="{Binding CommandResult}"
+                       HorizontalOptions="Center"
+                       FontSize="12"
+                       IsVisible="{Binding IsButtonClicked}"/>
+        </Grid>
+
+</ContentPage>

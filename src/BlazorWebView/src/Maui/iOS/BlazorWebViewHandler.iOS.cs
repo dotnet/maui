@@ -112,6 +112,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				WebView = webview
 			});
 
+			// Disable bounce scrolling to make Blazor apps feel more native
+			if (webview.ScrollView != null)
+			{
+				webview.ScrollView.Bounces = false;
+				webview.ScrollView.AlwaysBounceVertical = false;
+				webview.ScrollView.AlwaysBounceHorizontal = false;
+			}
+
 			Logger.CreatedWebKitWKWebView();
 
 			return webview;

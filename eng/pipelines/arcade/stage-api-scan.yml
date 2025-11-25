@@ -1,0 +1,79 @@
+# Template for APIScan stage
+
+parameters:
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
+- name: pool
+  type: object
+- name: dependsOnStage
+  type: object
+  default: []
+- name: softwareName
+  type: string
+  default: 'MAUI'
+- name: softwareVersion
+  type: string
+  default: '9.0'
+- name: softwareBuildNum
+  type: string
+  default: '$(Build.BuildId)'
+- name: softwareFolder
+  type: string
+  default: '$(Agent.TempDirectory)/APIScanFiles'
+- name: AppId
+  type: string
+  default: $(ApiScanAppId)
+- name: TenantId
+  type: string
+  default: $(ApiScanTenantId)
+- name: ServiceConnectionId
+  type: string
+  default: $(ApiScanServiceConnectionId)
+
+stages:
+- stage: APIScan
+  displayName: Run APIScan
+  dependsOn: ${{ parameters.dependsOnStage }}
+  jobs:
+  - job: api_scan
+    displayName: APIScan Job
+    pool: ${{ parameters.pool }}
+    templateContext:
+      type: releaseJob
+      isProduction: true
+      inputs:
+      - input: pipelineArtifact
+        artifactName: APIScanFiles
+        targetPath: ${{ parameters.softwareFolder }}
+    steps:
+    - ${{ each step in parameters.prepareSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
+
+    - task: APIScan@2
+      displayName: Run APIScan
+      inputs:
+        softwareFolder: ${{ parameters.softwareFolder }}
+        softwareName: ${{ parameters.softwareName }}
+        softwareVersionNum: ${{ parameters.softwareVersion }}
+        softwareBuildNum: ${{ parameters.softwareBuildNum }}
+        azureSubscription: 'dotnet-apiscan'
+      env:
+        AzureServicesAuthConnectionString: RunAs=App;AppId=${{ parameters.AppId }};TenantId=${{ parameters.TenantId }};ServiceConnectionId=${{ parameters.ServiceConnectionId }};
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+    - task: PublishSecurityAnalysisLogs@3
+      displayName: Publishing analysis artifacts
+      inputs:
+        ArtifactName: 'CodeAnalysisLogs'
+        ArtifactType: 'Container'
+        AllTools: true
+        ToolLogsNotFoundAction: 'Standard'
+
+    - ${{ each step in parameters.postSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}

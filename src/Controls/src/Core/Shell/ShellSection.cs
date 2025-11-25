@@ -114,6 +114,43 @@ namespace Microsoft.Maui.Controls
 			_lastTabThickness = tabThickness;
 		}
 
+		internal void SyncStackDownTo(Page page)
+		{
+			if (_navStack.Count <= 1)
+			{
+				throw new Exception("Nav Stack consistency error");
+			}
+
+			var oldStack = _navStack;
+
+			int index = oldStack.IndexOf(page);
+			_navStack = new List<Page>();
+
+			// Rebuild the stack up to the page that was passed in
+			// Since this now represents the current accurate stack
+			for (int i = 0; i <= index; i++)
+			{
+				_navStack.Add(oldStack[i]);
+			}
+
+			// Send Disappearing for all pages that are no longer in the stack
+			// This will really only SendDisappearing on the top page
+			// but we just call it on all of them to be sure
+			for (int i = oldStack.Count - 1; i > index; i--)
+			{
+				oldStack[i].SendDisappearing();
+			}
+
+			UpdateDisplayedPage();
+
+			for (int i = index + 1; i < oldStack.Count; i++)
+			{
+				RemovePage(oldStack[i]);
+			}
+
+			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.Pop);
+		}
+
 		async void IShellSectionController.SendPopping(Task poppingCompleted)
 		{
 			if (_navStack.Count <= 1)

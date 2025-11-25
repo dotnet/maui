@@ -65,19 +65,19 @@
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.zh-Hant.resx" Link="Resources\ErrorMessages.zh-Hant.resx" />
 
     <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.resx" Link="Resources\MauiGResources.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.cs.resx" Link="Resources\MauiGResources.cs.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.de.resx" Link="Resources\MauiGResources.de.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.es.resx" Link="Resources\MauiGResources.es.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.fr.resx" Link="Resources\MauiGResources.fr.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.it.resx" Link="Resources\MauiGResources.it.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.ja.resx" Link="Resources\MauiGResources.ja.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.ko.resx" Link="Resources\MauiGResources.ko.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.pl.resx" Link="Resources\MauiGResources.pl.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.pt-BR.resx" Link="Resources\MauiGResources.pt-BR.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.ru.resx" Link="Resources\MauiGResources.ru.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.tr.resx" Link="Resources\MauiGResources.tr.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.zh-Hans.resx" Link="Resources\MauiGResources.zh-Hans.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.zh-Hant.resx" Link="Resources\MauiGResources.zh-Hant.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.cs.resx" Link="Resources\xlf\MauiGResources.cs.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.de.resx" Link="Resources\xlf\MauiGResources.de.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.es.resx" Link="Resources\xlf\MauiGResources.es.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.fr.resx" Link="Resources\xlf\MauiGResources.fr.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.it.resx" Link="Resources\xlf\MauiGResources.it.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ja.resx" Link="Resources\xlf\MauiGResources.ja.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ko.resx" Link="Resources\xlf\MauiGResources.ko.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.pl.resx" Link="Resources\xlf\MauiGResources.pl.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.pt-BR.resx" Link="Resources\xlf\MauiGResources.pt-BR.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ru.resx" Link="Resources\xlf\MauiGResources.ru.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.tr.resx" Link="Resources\xlf\MauiGResources.tr.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.zh-Hans.resx" Link="Resources\xlf\MauiGResources.zh-Hans.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.zh-Hant.resx" Link="Resources\xlf\MauiGResources.zh-Hant.resx" />
 
   </ItemGroup>
 

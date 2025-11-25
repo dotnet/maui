@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public UI.Xaml.Window PlatformView { get; }
 
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET11.
 			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
@@ -51,6 +52,11 @@ namespace Microsoft.Maui.Controls.Platform
 					Title = title,
 					VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto
 				};
+
+				if (PlatformView.Content is FrameworkElement windowContent)
+				{
+					alertDialog.RequestedTheme = windowContent.RequestedTheme;
+				}
 
 				if (arguments.FlowDirection == FlowDirection.RightToLeft)
 				{
@@ -105,8 +111,14 @@ namespace Microsoft.Maui.Controls.Platform
 					Input = arguments.InitialValue ?? string.Empty,
 					Placeholder = arguments.Placeholder ?? string.Empty,
 					MaxLength = arguments.MaxLength >= 0 ? arguments.MaxLength : 0,
-					InputScope = arguments.Keyboard.ToInputScope()
+					InputScope = arguments.Keyboard.ToInputScope(),
+					DefaultButton = ContentDialogButton.Primary
 				};
+
+				if (PlatformView.Content is FrameworkElement windowContent)
+				{
+					promptDialog.RequestedTheme = windowContent.RequestedTheme;
+				}
 
 				if (arguments.Cancel != null)
 					promptDialog.SecondaryButtonText = arguments.Cancel;

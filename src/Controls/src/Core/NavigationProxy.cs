@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='Inner']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -67,19 +68,24 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='InsertPageBefore']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
+		/// <param name="before">Internal parameter for platform use.</param>
 		public void InsertPageBefore(Page page, Page before)
 		{
 			OnInsertPageBefore(page, before);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='ModalStack']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='NavigationStack']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
@@ -149,7 +155,9 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushModal(modal, animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='RemovePage']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
 		public void RemovePage(Page page)
 		{
 			OnRemovePage(page);
@@ -244,6 +252,7 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				currentInner.RemovePage(page);
 			}
+			page?.DisconnectHandlers();
 		}
 
 		Page Pop()

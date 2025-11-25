@@ -7,6 +7,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
@@ -53,6 +54,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureWindowEvents();
 				this.ConfigureDispatching();
 				this.ConfigureEnvironmentVariables();
+				this.ConfigureMauiDiagnostics();
 
 				this.UseEssentials();
 

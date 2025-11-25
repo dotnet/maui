@@ -14,8 +14,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <IsAotCompatible>true</IsAotCompatible>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
+
+    <!-- This project implements generic WinRT interfaces which requires generated code using unsafe for trimming and AOT compatibility if passed across the WinRT ABI. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
@@ -48,7 +52,7 @@
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" />
-    <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
+    <PackageReference Include="Xamarin.Android.Glide" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" />
@@ -78,6 +82,7 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
     <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
     <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptCompileBlocked Condition=" '$(TypeScriptCompileBlocked)' == '' and '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
@@ -95,7 +100,7 @@
       <_CopyItems Include="nuget\buildTransitive\net-windows\**" SubFolder="net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" />
       <_CopyItems Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" SubFolder="" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(SubFolder)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(SubFolder)%(RecursiveDir)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

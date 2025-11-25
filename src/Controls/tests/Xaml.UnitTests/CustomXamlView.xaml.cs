@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+public partial class CustomXamlView : ContentView
 {
-	public partial class CustomXamlView : ContentView
-	{
-		public CustomXamlView()
-		{
-			InitializeComponent();
-		}
-	}
+	public CustomXamlView() => InitializeComponent();
 }

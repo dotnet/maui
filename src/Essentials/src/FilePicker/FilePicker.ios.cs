@@ -63,15 +63,15 @@ namespace Microsoft.Maui.Storage
 				{
 					PickHandler = urls => GetFileResults(urls, tcs)
 				};
+			}
 
 #if !MACCATALYST
-				if (documentPicker.PresentationController != null && !(OperatingSystem.IsIOSVersionAtLeast(14, 0) && NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac))
-				{
-					documentPicker.PresentationController.Delegate =
-						new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
-				}
-#endif
+			if (documentPicker.PresentationController != null && !(OperatingSystem.IsIOSVersionAtLeast(14, 0) && NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac))
+			{
+				documentPicker.PresentationController.Delegate =
+					new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
 			}
+#endif
 
 			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
 			parentController.PresentViewController(documentPicker, true, null);

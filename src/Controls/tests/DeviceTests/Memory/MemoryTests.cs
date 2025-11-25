@@ -17,6 +17,7 @@ using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.DeviceTests.Memory;
 
@@ -37,6 +38,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
+				handlers.AddHandler<Button, ButtonHandler>();
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #if IOS || MACCATALYST
@@ -58,6 +60,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<Polygon, PolygonHandler>();
 				handlers.AddHandler<Polyline, PolylineHandler>();
+				handlers.AddHandler<ProgressBar, ProgressBarHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
@@ -101,7 +104,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//https://github.com/dotnet/maui/issues/27411
 #endif
 	[InlineData(typeof(TabbedPage))]
-	public async Task PagesDoNotLeak(Type type)
+	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -151,6 +154,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(BoxView))]
+	[InlineData(typeof(Button))]
 	[InlineData(typeof(CarouselView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
@@ -176,6 +180,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
+	[InlineData(typeof(ProgressBar))]
 	[InlineData(typeof(RadioButton))]
 	[InlineData(typeof(Rectangle))]
 	[InlineData(typeof(RefreshView))]
@@ -196,7 +201,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
 	[InlineData(typeof(CarouselView2))]
 #endif
-	public async Task HandlerDoesNotLeak(Type type)
+	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -550,27 +555,26 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		var references = new List<WeakReference>();
 
+
+		var page = new ContentPage();
+		var window = new Window(page);
+		await CreateHandlerAndAddToWindow(window, async () =>
 		{
-			var page = new ContentPage();
-			var window = new Window(page);
-			await CreateHandlerAndAddToWindow(window, async () =>
+			await OnLoadedAsync(page);
+			references.Add(new(window));
+			references.Add(new(window.Handler));
+
+			// NOTE: the PlatformView in this case remains alive in the test application:
+			// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
+			//references.Add(new(window.Handler.PlatformView));
+
+			if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
 			{
-				await OnLoadedAsync(page);
-				references.Add(new(window));
-				references.Add(new(window.Handler));
+				app.SetWindow(null);
+			}
+		});
 
-				// NOTE: the PlatformView in this case remains alive in the test application:
-				// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
-				//references.Add(new(window.Handler.PlatformView));
-
-				if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
-				{
-					app.SetWindow(null);
-				}
-			});
-		}
-
-		await AssertionExtensions.WaitForGC(references.ToArray());
+		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
 	[Fact("VisualDiagnosticsOverlay Does Not Leak"
@@ -586,22 +590,20 @@ public class MemoryTests : ControlsHandlerTestBase
 		var overlay = new VisualDiagnosticsOverlay(window);
 		var references = new List<WeakReference>();
 
+		await InvokeOnMainThreadAsync(async () =>
 		{
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var page = new ContentPage();
-				window.Content = page;
-				await CreateHandlerAsync(page);
-				overlay.Initialize();
-				references.Add(new(page));
-				references.Add(new(page.Handler));
-				references.Add(new(page.Handler.PlatformView));
+			var page = new ContentPage();
+			window.Content = page;
+			await CreateHandlerAsync(page);
+			overlay.Initialize();
+			references.Add(new(page));
+			references.Add(new(page.Handler));
+			references.Add(new(page.Handler.PlatformView));
 
-				window.Content = null;
-			});
-		}
+			window.Content = null;
+		});
 
-		await AssertionExtensions.WaitForGC(references.ToArray());
+		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
 #if IOS

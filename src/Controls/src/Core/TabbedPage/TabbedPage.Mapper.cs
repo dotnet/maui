@@ -25,6 +25,11 @@ namespace Microsoft.Maui.Controls
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(CurrentPage), MapCurrentPage);
 #if ANDROID
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.AndroidSpecific.TabbedPage.IsSwipePagingEnabledProperty.PropertyName, MapIsSwipePagingEnabled);
+
+#pragma warning disable CS0612, CS0618 // Type or member is obsolete
+			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.AndroidSpecific.TabbedPage.OffscreenPageLimitProperty.PropertyName, MapOffscreenPageLimit);
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
+
 #endif
 
 #if WINDOWS || ANDROID || TIZEN

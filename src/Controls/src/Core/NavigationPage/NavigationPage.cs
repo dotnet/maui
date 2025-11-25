@@ -11,12 +11,18 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+<<<<<<< HEAD
 	/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 #if IOS || MACCATALYST
 	[ElementHandler<Handlers.Compatibility.NavigationRenderer>]
 #elif WINDOWS || ANDROID || TIZEN
 	[ElementHandler<NavigationViewHandler>]
 #endif
+||||||| 3f26a592b2
+	/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
+=======
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
+>>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>, IStackNavigationView, IToolbarElement
 	{
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
@@ -59,15 +65,17 @@ namespace Microsoft.Maui.Controls
 
 		INavigationPageController NavigationPageController => this;
 
+
 		partial void Init();
 
-#if WINDOWS || ANDROID || TIZEN
-		const bool UseMauiHandler = true;
-#else
+#if IOS || MACCATALYST
 		const bool UseMauiHandler = false;
+#else
+		const bool UseMauiHandler = true;
 #endif
 
 		bool _setForMaui;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
@@ -94,7 +102,7 @@ namespace Microsoft.Maui.Controls
 				PushPage(root);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackgroundColor']/Docs/*" />
+		/// <summary>Gets or sets the background color for the bar at the top of the NavigationPage. This is a bindable property.</summary>
 		public Color BarBackgroundColor
 		{
 			get => (Color)GetValue(BarElement.BarBackgroundColorProperty);
@@ -108,7 +116,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BarElement.BarBackgroundProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarTextColor']/Docs/*" />
+		/// <summary>Gets or sets the text that appears on the bar at the top of the NavigationPage. This is a bindable property.</summary>
 		public Color BarTextColor
 		{
 			get => (Color)GetValue(BarElement.BarTextColorProperty);
@@ -117,7 +125,11 @@ namespace Microsoft.Maui.Controls
 
 		internal Task CurrentNavigationTask { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='Peek']/Docs/*" />
+		internal NavigationType NavigationType { get; set; }
+
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="depth">The depth parameter.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Page Peek(int depth)
 		{
@@ -141,14 +153,14 @@ namespace Microsoft.Maui.Controls
 			get { return InternalChildren.Count; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
+		/// <summary>The <see cref="Microsoft.Maui.Controls.Page"/> that is currently top-most on the navigation stack.</summary>
 		public Page CurrentPage
 		{
 			get { return (Page)GetValue(CurrentPageProperty); }
 			private set { SetValue(CurrentPagePropertyKey, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='RootPage']/Docs/*" />
+		/// <summary>The <see cref="Microsoft.Maui.Controls.Page"/> that is the root of the navigation stack.</summary>
 		public Page RootPage
 		{
 			get { return (Page)GetValue(RootPageProperty); }
@@ -166,13 +178,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonTitle']/Docs/*" />
+		/// <summary>The title of the back button for the specified <paramref name="page"/>.</summary>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> whose back-button's title is being requested.</param>
+		/// <returns>The title of the back button that would be shown if the specified <paramref name="page"/> were the <see cref="Microsoft.Maui.Controls.NavigationPage.CurrentPage"/>.</returns>
 		public static string GetBackButtonTitle(BindableObject page)
 		{
 			return (string)page.GetValue(BackButtonTitleProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetHasBackButton']/Docs/*" />
+		/// <summary>Returns a value that indicates whether <paramref name="page"/> has a back button.</summary>
+		/// <param name="page">The page parameter.</param>
 		public static bool GetHasBackButton(Page page)
 		{
 			if (page == null)
@@ -180,25 +195,29 @@ namespace Microsoft.Maui.Controls
 			return (bool)page.GetValue(HasBackButtonProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetHasNavigationBar']/Docs/*" />
+		/// <summary>Returns a value that indicates whether the <paramref name="page"/> has a navigation bar.</summary>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> being queried.</param>
+		/// <returns><see langword="true"/> if <paramref name="page"/> would display a navigation bar were it the <see cref="Microsoft.Maui.Controls.NavigationPage.CurrentPage"/>.</returns>
 		public static bool GetHasNavigationBar(BindableObject page)
 		{
 			return (bool)page.GetValue(HasNavigationBarProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetTitleIconImageSource']/Docs/*" />
+		/// <param name="bindable">The bindable parameter.</param>
 		public static ImageSource GetTitleIconImageSource(BindableObject bindable)
 		{
 			return (ImageSource)bindable.GetValue(TitleIconImageSourceProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetTitleView']/Docs/*" />
+		/// <summary>Returns the view to use as a title for the navigation page.</summary>
+		/// <param name="bindable">The bindable object whose title view to get.</param>
+		/// <returns>The view to use as a title for the navigation page.</returns>
 		public static View GetTitleView(BindableObject bindable)
 		{
 			return (View)bindable.GetValue(TitleViewProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetIconColor']/Docs/*" />
+		/// <param name="bindable">The bindable parameter.</param>
 		public static Color GetIconColor(BindableObject bindable)
 		{
 			if (bindable == null)
@@ -327,13 +346,17 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<NavigationEventArgs> Pushed;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonTitle']/Docs/*" />
+		/// <summary>Sets the title that appears on the back button for <paramref name="page"/>.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetBackButtonTitle(BindableObject page, string value)
 		{
 			page.SetValue(BackButtonTitleProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetHasBackButton']/Docs/*" />
+		/// <summary>Adds or removes a back button to <paramref name="page"/>, with optional animation.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetHasBackButton(Page page, bool value)
 		{
 			if (page == null)
@@ -341,25 +364,31 @@ namespace Microsoft.Maui.Controls
 			page.SetValue(HasBackButtonProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetHasNavigationBar']/Docs/*" />
+		/// <summary>Sets a value that indicates whether or not this <see cref="Microsoft.Maui.Controls.NavigationPage"/> element has a navigation bar.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
 			page.SetValue(HasNavigationBarProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetTitleIconImageSource']/Docs/*" />
+		/// <param name="bindable">The bindable parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetTitleIconImageSource(BindableObject bindable, ImageSource value)
 		{
 			bindable.SetValue(TitleIconImageSourceProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetTitleView']/Docs/*" />
+		/// <summary>Sets the view to use as the title for the navigation page.</summary>
+		/// <param name="bindable">The bindable object whose title to set.</param>
+		/// <param name="value">The view to use.</param>
 		public static void SetTitleView(BindableObject bindable, View value)
 		{
 			bindable.SetValue(TitleViewProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='SetIconColor']/Docs/*" />
+		/// <param name="bindable">The bindable parameter.</param>
+		/// <param name="value">The value to set.</param>
 		public static void SetIconColor(BindableObject bindable, Color value)
 		{
 			bindable.SetValue(IconColorProperty, value);
@@ -382,12 +411,12 @@ namespace Microsoft.Maui.Controls
 		void SendNavigated(Page previousPage, NavigationType navigationType)
 		{
 			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
-		void SendNavigating(Page navigatingFrom = null)
+		void SendNavigating(NavigationType navigationType, Page navigatingFrom = null)
 		{
-			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 		}
 
 
@@ -697,6 +726,8 @@ namespace Microsoft.Maui.Controls
 				RootPage = navStack[0];
 				CurrentPage = visiblePage;
 
+				var navigationType = DetermineNavigationType();
+
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
@@ -704,8 +735,7 @@ namespace Microsoft.Maui.Controls
 				},
 				() =>
 				{
-					// TODO this is the wrong navigation type
-					SendNavigated(null, NavigationType.Initialize);
+					SendNavigated(null, navigationType);
 				})
 				.FireAndForget(Handler);
 			}
@@ -716,6 +746,20 @@ namespace Microsoft.Maui.Controls
 			{
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
 			}
+		}
+
+		NavigationType DetermineNavigationType()
+		{
+			var parentPages = this.GetParentPages();
+
+			bool hasTabOrFlyout = parentPages.Any(page => page is FlyoutPage or TabbedPage);
+
+			if (hasTabOrFlyout)
+			{
+				return NavigationType.Replace;
+			}
+
+			return NavigationType.Push;
 		}
 
 		// Once we get all platforms over to the new APIs
@@ -755,6 +799,7 @@ namespace Microsoft.Maui.Controls
 				Owner.SendHandlerUpdateAsync(false,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Insert;
 						int index = Owner.InternalChildren.IndexOf(before);
 						Owner.InternalChildren.Insert(index, page);
 
@@ -788,6 +833,9 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.SendNavigating(NavigationType.Pop, currentPage);
+						Owner.FireDisappearing(currentPage);
+						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
 						Owner.RemoveFromInnerChildren(currentPage);
 						if (currentPage.TitleView != null)
@@ -797,8 +845,6 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(currentPage);
-						Owner.FireDisappearing(currentPage);
 						Owner.FireAppearing(newCurrentPage);
 					},
 					() =>
@@ -822,6 +868,8 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.SendNavigating(NavigationType.PopToRoot, previousPage);
+						Owner.FireDisappearing(previousPage);
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
 						{
@@ -834,8 +882,6 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
-						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(newPage);
 					},
 					() =>
@@ -850,22 +896,26 @@ namespace Microsoft.Maui.Controls
 				if (Owner.InternalChildren.Contains(root))
 					return Task.CompletedTask;
 
+				var navigationType = Owner.DetermineNavigationType();
 				var previousPage = Owner.CurrentPage;
 
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = navigationType;
+						// Move the SendNavigating here so that it's fired prior to the stack being modified
+						// This ensures consistent event ordering across all platforms (iOS, Catalyst, Android, Windows)
+						Owner.SendNavigating(navigationType, previousPage);
 						Owner.PushPage(root);
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage, NavigationType.Push);
+						Owner.SendNavigated(previousPage, navigationType);
 						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
 					});
 			}
@@ -891,6 +941,7 @@ namespace Microsoft.Maui.Controls
 				Owner.SendHandlerUpdateAsync(false,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Remove;
 						Owner.RemoveFromInnerChildren(page);
 
 						if (Owner.RootPage == page)

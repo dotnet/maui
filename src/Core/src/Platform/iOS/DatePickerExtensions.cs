@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Foundation;
 using UIKit;
 
@@ -52,39 +53,54 @@ public static class DatePickerExtensions
 
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
-		if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 	}
 
 	public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 	{
-		if (picker is not null && picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != datePicker.Date)
+		if (picker is not null)
 		{
-			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			var targetDate = datePicker.Date ?? DateTime.Today;
+			if (picker.Date.ToDateTime() != targetDate)
+			{
+				picker.SetDate(targetDate.ToNSDate(), false);
+			}
 		}
 
 		string format = datePicker.Format ?? string.Empty;
 
-		// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
-		if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
+		if (datePicker.Date is null)
+		{
+			platformDatePicker.Text = string.Empty;
+		}
+		else if (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase))
 		{
 			NSDateFormatter dateFormatter = new NSDateFormatter
 			{
 				TimeZone = NSTimeZone.FromGMT(0)
 			};
 
+			// Use datePicker.Date (the source date) for formatting
+			// This ensures consistent formatting whether picker is initialized or not
+			var nsDate = datePicker.Date.Value.ToNSDate();
+
 			if (format.Equals("D", StringComparison.Ordinal) == true)
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Long;
-				var strDate = dateFormatter.StringFor(picker.Date);
+				dateFormatter.DateStyle = NSDateFormatterStyle.Full;
+				var strDate = dateFormatter.StringFor(nsDate);
 				platformDatePicker.Text = strDate;
 			}
 			else
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Short;
-				var strDate = dateFormatter.StringFor(picker.Date);
+				dateFormatter.SetLocalizedDateFormatFromTemplate("yMd"); // Forces 4-digit year
+				var strDate = dateFormatter.StringFor(nsDate);
 				platformDatePicker.Text = strDate;
 			}
 		}
@@ -139,5 +155,13 @@ public static class DatePickerExtensions
 	public static void UpdateTextAlignment(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 	{
 		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
+	}
+
+	internal static void UpdateIsOpen(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
+	{
+		if (datePicker.IsOpen)
+			platformDatePicker.BecomeFirstResponder();
+		else
+			platformDatePicker.ResignFirstResponder();
 	}
 }

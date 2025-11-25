@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -7,7 +8,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.DatePicker']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that allows date picking.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	[ElementHandler<DatePickerHandler>]
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
@@ -47,22 +48,28 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
+		public static readonly BindableProperty IsOpenProperty =
+			BindableProperty.Create(nameof(IDatePicker.IsOpen), typeof(bool), typeof(DatePicker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
+
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the DatePicker class.</summary>
 		public DatePicker()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<DatePicker>>(() => new PlatformConfigurationRegistry<DatePicker>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='Date']/Docs/*" />
+		/// <summary>Gets or sets the displayed date. This is a bindable property.</summary>
 		public DateTime? Date
 		{
 			get { return (DateTime?)GetValue(DateProperty); }
 			set { SetValue(DateProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='Format']/Docs/*" />
+		/// <summary>The format of the date to display to the user. This is a dependency property.</summary>
+		/// <remarks>Format string is the same is passed to DateTime.ToString (string format).</remarks>
 		public string Format
 		{
 			get { return (string)GetValue(FormatProperty); }
@@ -75,21 +82,21 @@ namespace Microsoft.Maui.Controls
 			set { }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='MaximumDate']/Docs/*" />
+		/// <summary>The highest date selectable for this DatePicker. This is a bindable property.</summary>
 		public DateTime? MaximumDate
 		{
 			get { return (DateTime?)GetValue(MaximumDateProperty); }
 			set { SetValue(MaximumDateProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='MinimumDate']/Docs/*" />
+		/// <summary>The lowest date selectable for this DatePicker. This is a bindable property.</summary>
 		public DateTime? MinimumDate
 		{
 			get { return (DateTime?)GetValue(MinimumDateProperty); }
 			set { SetValue(MinimumDateProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the text color for the date picker. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
@@ -103,21 +110,21 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>Gets a value that indicates whether the font for the date picker text is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>Gets or sets the font family for the picker text. This is a bindable property.</summary>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>Gets or sets the size of the font for the text in the picker.</summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -133,6 +140,17 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
+		}
+
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((DatePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
@@ -160,11 +178,51 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is DatePicker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler?.VirtualView is not DatePicker datePicker)
+				return;
+
+			if (datePicker.IsOpen)
+				datePicker.Opened?.Invoke(datePicker, DatePickerOpenedEventArgs.Empty);
+			else
+				datePicker.Closed?.Invoke(datePicker, DatePickerClosedEventArgs.Empty);
+		}
+
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
+		public event EventHandler<DatePickerOpenedEventArgs> Opened;
+		public event EventHandler<DatePickerClosedEventArgs> Closed;
 
 		static object CoerceDate(BindableObject bindable, object value)
 		{

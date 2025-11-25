@@ -104,6 +104,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled.
 		/// <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+		[Obsolete("Use Translation to animate layout changes.")]
 		public static Task<bool> LayoutToAsync(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
 			if (view is null)

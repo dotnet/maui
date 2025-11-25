@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -152,6 +151,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool ValidateOnly { get; set; }
 
 		internal bool GenerateFullILInValidateOnlyMode { get; set; }
+		public bool MockCompile { get; internal set; }
 
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
@@ -159,6 +159,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			LoggingHelper.SetContext(WarningLevel, TreatWarningsAsErrors, NoWarn, WarningsAsErrors, WarningsNotAsErrors, GenerateFullPaths ? FullPathPrefix : null);
 			LoggingHelper.LogMessage(Normal, $"{new string(' ', 0)}Compiling Xaml, assembly: {Assembly}");
 			var skipassembly = !DefaultCompile;
+			(bool, XamlInflator)? assemblyInflatorOptions = null;
+
 			bool success = true;
 
 			if (!File.Exists(Assembly))
@@ -191,7 +193,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Ignoring dependency and reference paths due to an unsupported resolver");
 
 				var debug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none");
-
 				var readerParameters = new ReaderParameters
 				{
 					AssemblyResolver = resolver,
@@ -201,7 +202,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(IOPath.GetFullPath(Assembly), readerParameters))
 				{
-					CustomAttribute xamlcAttr;
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+					CustomAttribute xamlcAttr = null;
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =
 							assemblyDefinition.CustomAttributes.FirstOrDefault(
@@ -214,9 +216,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							skipassembly = false;
 					}
 
+					xamlcAttr = null;
+#endif
+
 					foreach (var module in assemblyDefinition.Modules)
 					{
 						var skipmodule = skipassembly;
+						(bool, XamlInflator)? moduleInflatorOptions = assemblyInflatorOptions;
+
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 						if (module.HasCustomAttributes &&
 							(xamlcAttr =
 								module.CustomAttributes.FirstOrDefault(
@@ -228,11 +236,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
 								skipmodule = false;
 						}
+						xamlcAttr = null;
+#endif
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Module: {module.Name}");
 						var resourcesToPrune = new List<EmbeddedResource>();
 						foreach (var resource in module.Resources.OfType<EmbeddedResource>())
 						{
+							var generateInflatorSwitch = module.Assembly.Name.Name == "Microsoft.Maui.Controls.Xaml.UnitTests";
+							var initCompName = generateInflatorSwitch ? "InitializeComponentXamlC" : "InitializeComponent";
+
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 4)}Resource: {resource.Name}");
 							string classname;
 							if (!resource.IsXaml(cache, module, out classname))
@@ -247,6 +260,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								continue;
 							}
 							var skiptype = skipmodule;
+							(bool, XamlInflator)? typeInflatorOptions = moduleInflatorOptions;
+
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 							if (typeDef.HasCustomAttributes &&
 								(xamlcAttr =
 									typeDef.CustomAttributes.FirstOrDefault(
@@ -258,20 +274,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
 									skiptype = false;
 							}
+							xamlcAttr = null;
+#endif
 
 							if (Type != null)
 								skiptype = !(Type == classname);
 
 							if (skiptype && !ForceCompile)
 							{
-								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}has XamlCompilationAttribute set to Skip and not Compile... skipped.");
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}has XamlCompilation  disabling XamlC... skipped.");
 								continue;
 							}
 
-							var initComp = typeDef.Methods.FirstOrDefault(md => md.Name == "InitializeComponent");
+							if (MockCompile)
+								initCompName = "InitializeComponent"; //not important it's not going to be replaced
+
+							var initComp = typeDef.Methods.FirstOrDefault(md => md.Name == initCompName);
 							if (initComp == null)
 							{
-								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}no InitializeComponent found... skipped.");
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}no {initCompName} found... skipped.");
 								continue;
 							}
 

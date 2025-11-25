@@ -239,8 +239,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Cell cell = null;
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			Performance.Start(out string reference);
-
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
 			if (cachingStrategy == ListViewCachingStrategy.RetainElement || convertView == null)
@@ -267,8 +265,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (cell == null)
 					{
-						Performance.Stop(reference);
-
 						return new AView(_context);
 					}
 				}
@@ -353,13 +349,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					UnsetSelectedBackground(layout);
 
-				Performance.Stop(reference);
 				return layout;
 			}
 
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
-
-			Performance.Start(reference, "AddView");
 
 			if (cellIsBeingReused)
 			{
@@ -376,8 +369,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					layout.AddView(view, 0);
 				}
 			}
-
-			Performance.Stop(reference, "AddView");
 
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -406,8 +397,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UnsetSelectedBackground(layout);
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
-
-			Performance.Stop(reference);
 
 			return layout;
 		}
@@ -533,11 +522,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				_listView.ItemSelected -= OnItemSelected;
 
-				if (_lastSelected != null)
-				{
-					_lastSelected.Dispose();
-					_lastSelected = null;
-				}
+				_lastSelected?.Dispose();
+				_lastSelected = null;
 
 				DisposeCells();
 			}

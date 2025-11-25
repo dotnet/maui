@@ -461,9 +461,26 @@ namespace Microsoft.Maui.Platform
 			return new Rect(
 				location[0],
 				location[1],
-				(int)platformView.Context.ToPixels(platformView.Width),
-				(int)platformView.Context.ToPixels(platformView.Height));
+				platformView.MeasuredWidth,
+				platformView.MeasuredHeight);
 		}
+
+		internal static Rect GetViewBounds(this View platformView)
+		{
+			if (platformView?.Context is not Context context)
+				return new Rect();
+
+			var location = new int[2];
+			platformView.GetLocationOnScreen(location);
+
+			return new Rect(
+				platformView.FromPixels(location[0]),
+				platformView.FromPixels(location[1]),
+				platformView.FromPixels(platformView.MeasuredWidth),
+				platformView.FromPixels(platformView.MeasuredHeight));
+		}
+
+		internal static Rect GetViewBounds(this IView view) => view.ToPlatform().GetViewBounds();
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
@@ -556,8 +573,10 @@ namespace Microsoft.Maui.Platform
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
-				if (routedEventHandler != null)
+				if (routedEventHandler is not null && view.IsAlive())
+				{
 					view.ViewAttachedToWindow -= routedEventHandler;
+				}
 			});
 
 			routedEventHandler = (_, __) =>
@@ -596,16 +615,29 @@ namespace Microsoft.Maui.Platform
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
-				if (routedEventHandler != null)
+				if (routedEventHandler is not null)
 					view.ViewDetachedFromWindow -= routedEventHandler;
 			});
 
-			routedEventHandler = (_, __) =>
+			routedEventHandler = (sender, args) =>
 			{
 				// This event seems to fire prior to the view actually being
 				// detached from the window
 				if (view.IsLoaded() && Looper.MyLooper() is Looper q)
 				{
+					// We unsubscribe here because if we wait for the looper
+					// to schedule the work the view might get disposed by the time
+					// the unsubscribe code runs
+					if (disposable is not null)
+					{
+						if (args.DetachedView.IsAlive())
+						{
+							args.DetachedView.ViewDetachedFromWindow -= routedEventHandler;
+						}
+
+						routedEventHandler = null;
+					}
+
 					new Handler(q).Post(() =>
 					{
 						if (disposable is not null)
@@ -790,6 +822,20 @@ namespace Microsoft.Maui.Platform
 			;
 
 			view.Post(ShowSoftInput);
+		}
+
+		internal static bool IsConfirmKey(this Keycode keyCode)
+		{
+			switch (keyCode)
+			{
+				case Keycode.DpadCenter:
+				case Keycode.Enter:
+				case Keycode.Space:
+				case Keycode.NumpadEnter:
+					return true;
+				default:
+					return false;
+			}
 		}
 	}
 }

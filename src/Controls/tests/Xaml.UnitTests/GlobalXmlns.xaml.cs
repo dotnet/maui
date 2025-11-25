@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
@@ -10,13 +11,8 @@ public partial class GlobalXmlns
 {
 	public GlobalXmlns() => InitializeComponent();
 
-	public GlobalXmlns(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	[TestFixture]
-	class Test
+	class Tests
 	{
 		[SetUp]
 		public void Setup()
@@ -28,11 +24,9 @@ public partial class GlobalXmlns
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void WorksWithoutXDeclaration([Values] bool useCompiledXaml)
+		public void WorksWithoutXDeclaration([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(GlobalXmlns));
-			var page = new GlobalXmlns(useCompiledXaml);
+			var page = new GlobalXmlns(inflator);
 			Assert.That(page.label, Is.Not.Null);
 			Assert.That(page.label.Text, Is.EqualTo("No xmlns:x declaration, but x: usage anyway"));
 		}

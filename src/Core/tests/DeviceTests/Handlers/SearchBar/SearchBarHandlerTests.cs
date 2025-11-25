@@ -102,6 +102,24 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
 		}
 
+		[Theory(DisplayName = "IsTextPredictionEnabled Initializes Correctly for SearchBar")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task SearchBarIsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
+		{
+			var searchBar = new Microsoft.Maui.Controls.SearchBar()
+			{
+				IsTextPredictionEnabled = isEnabled
+			};
+
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
+			});
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
+		}
+
 		[Theory(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]

@@ -7,13 +7,16 @@ Param(
   [switch] $restore,
   [switch] $prepareMachine,
   [switch][Alias('nobl')]$excludeCIBinaryLog,
+  [switch]$noWarnAsError,
   [switch] $help,
+  [string] $runtimeSourceFeed = '',
+  [string] $runtimeSourceFeedKey = '',
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
 $ci = $true
 $binaryLog = if ($excludeCIBinaryLog) { $false } else { $true }
-$warnAsError = $true
+$warnAsError = if ($noWarnAsError) { $false } else { $true }
 
 . $PSScriptRoot\tools.ps1
 

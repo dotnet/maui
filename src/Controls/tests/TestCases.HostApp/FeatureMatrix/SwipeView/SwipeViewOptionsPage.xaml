@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.SwipeViewOptionsPage"
+             x:DataType="local:SwipeViewViewModel"
+             Title="SwipeViewOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
+    </ContentPage.ToolbarItems>
+    <VerticalStackLayout Spacing="5" Padding="8">
+        <!-- Content selection -->
+        <Label Text="Content" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton x:Name="TextContent" IsChecked="True" GroupName="SwipeViewContent" Content="Label" FontSize="11" CheckedChanged="OnContentChanged" AutomationId="LabelContent"/>
+            <RadioButton x:Name="ImageContent" GroupName="SwipeViewContent" Content="Image" FontSize="11" CheckedChanged="OnContentChanged" AutomationId="ImageContent"/>
+            <RadioButton x:Name="CollectionContent" GroupName="SwipeViewContent" Content="CollectionView" FontSize="11" CheckedChanged="OnContentChanged" AutomationId="CollectionViewContent"/>
+        </HorizontalStackLayout>
+        <!-- Swipe Mode selection -->
+        <Label Text="SwipeMode" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton GroupName="SwipeMode" FontSize="11" Content="Reveal" IsChecked="True" CheckedChanged="OnSwipeModeChanged" AutomationId="RevealSwipeMode"/>
+            <RadioButton GroupName="SwipeMode" FontSize="11" Content="Execute" CheckedChanged="OnSwipeModeChanged" AutomationId="ExecuteSwipeMode"/>
+        </HorizontalStackLayout>
+        <!-- Swipe Behavior on Invoked selection -->
+        <Label Text="SwipeBehaviorOnInvoked" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton GroupName="SwipeBehavior" FontSize="11" Content="Auto" IsChecked="True" CheckedChanged="OnSwipeBehaviorChanged" AutomationId="AutoSwipeBehavior"/>
+            <RadioButton GroupName="SwipeBehavior" FontSize="11" Content="Close" CheckedChanged="OnSwipeBehaviorChanged" AutomationId="CloseSwipeBehavior"/>
+            <RadioButton GroupName="SwipeBehavior" FontSize="11" Content="RemainOpen" CheckedChanged="OnSwipeBehaviorChanged" AutomationId="RemainOpenSwipeBehavior"/>
+        </HorizontalStackLayout>
+        <!-- Threshold entry -->
+        <HorizontalStackLayout Spacing="3">
+            <Label Text="Threshold" VerticalTextAlignment="Center" FontSize="11" FontAttributes="Bold"/>
+            <Entry x:Name="ThresholdEntry" Text="{Binding Threshold}" FontSize="11" TextChanged="OnThresholdTextChanged" AutomationId="ThresholdEntry" WidthRequest="80"/>
+        </HorizontalStackLayout>
+        <!-- Background color selection -->
+        <Label Text="Background Color" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <Button Text="LightGreen" TextColor="Black" BackgroundColor="LightGreen" Clicked="OnBackgroundColorClicked" FontSize="11" AutomationId="LightGreenBackground"/>
+            <Button Text="SkyBlue" TextColor="Black" BackgroundColor="SkyBlue" FontSize="11" Clicked="OnBackgroundColorClicked" AutomationId="SkyBlueBackground"/>
+            <Button Text="LightPink" TextColor="Black" BackgroundColor="LightPink" FontSize="11" Clicked="OnBackgroundColorClicked" AutomationId="LightPinkBackground" />
+        </HorizontalStackLayout>
+        <!-- SwipeItem Background Color selection -->
+        <Label Text="SwipeItem Background Color" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <Button Text="Blue" TextColor="Black" BackgroundColor="DeepSkyBlue" Clicked="OnSwipeItemBackgroundColorClicked" FontSize="11" AutomationId="BlueSwipeItemBackground"/>
+            <Button Text="Pink" TextColor="Black" BackgroundColor="PaleVioletRed" FontSize="11" Clicked="OnSwipeItemBackgroundColorClicked" AutomationId="PinkSwipeItemBackground"/>
+            <Button Text="Yellow" TextColor="Black" BackgroundColor="LemonChiffon" FontSize="11" Clicked="OnSwipeItemBackgroundColorClicked" AutomationId="YellowSwipeItemBackground"/>
+        </HorizontalStackLayout>
+        <!-- IsVisible selection -->
+        <Label Text="IsVisible" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton x:Name="IsVisibleTrue" GroupName="IsVisible" Content="True" IsChecked="True" FontSize="11" CheckedChanged="OnIsVisibleChanged" AutomationId="IsVisibleTrue"/>
+            <RadioButton x:Name="IsVisibleFalse" GroupName="IsVisible" Content="False" FontSize="11" CheckedChanged="OnIsVisibleChanged" AutomationId="IsVisibleFalse"/>
+        </HorizontalStackLayout>
+        <!-- IsEnabled selection -->
+        <Label Text="Is Enabled" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton x:Name="IsEnabledTrue" GroupName="IsEnabled" Content="True" IsChecked="True" FontSize="11" CheckedChanged="OnIsEnabledChanged" AutomationId="IsEnabledTrue"/>
+            <RadioButton x:Name="IsEnabledFalse" GroupName="IsEnabled" Content="False" FontSize="11" CheckedChanged="OnIsEnabledChanged" AutomationId="IsEnabledFalse"/>
+        </HorizontalStackLayout>
+        <!-- Flow Direction selection -->
+        <Label Text="Flow Direction" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton x:Name="FlowDirectionLeftToRight" GroupName="FlowDirection" Content="LTR" IsChecked="True" FontSize="11" CheckedChanged="OnFlowDirectionChanged" AutomationId="FlowDirectionLeftToRight"/>
+            <RadioButton x:Name="FlowDirectionRightToLeft" GroupName="FlowDirection" Content="RTL" FontSize="11" CheckedChanged="OnFlowDirectionChanged" AutomationId="FlowDirectionRightToLeft"/>
+        </HorizontalStackLayout>
+        <!-- Swipe Items selection -->
+        <Label Text ="SwipeItems" FontSize="11" FontAttributes="Bold"/>
+        <HorizontalStackLayout Spacing="3">
+            <RadioButton x:Name="LabelSwipeItem" GroupName="SwipeItems" Content="Label" IsChecked="True" FontSize="11" CheckedChanged="OnSwipeItemsChanged" AutomationId="LabelSwipeItem"/>
+            <RadioButton x:Name="IconImageSourceSwipeItem" GroupName="SwipeItems" Content="IconImageSource" FontSize="11" CheckedChanged="OnSwipeItemsChanged" AutomationId="IconImageSourceSwipeItem"/>
+            <RadioButton x:Name="ButtonSwipeItem" GroupName="SwipeItems" Content="Button" FontSize="11" CheckedChanged="OnSwipeItemsChanged" AutomationId="ButtonSwipeItem"/>
+        </HorizontalStackLayout>
+        <!-- Shadow -->
+        <HorizontalStackLayout Spacing="10">
+            <CheckBox IsChecked="{Binding HasShadow}" AutomationId="ShadowCheckBox"/>
+            <Label Text="Has Shadow" VerticalOptions="Center"/>
+         </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>

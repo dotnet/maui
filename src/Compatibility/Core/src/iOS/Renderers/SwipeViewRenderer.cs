@@ -178,8 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Brush.IsNullOrEmpty(background))
 				return;
 
-			if (Control != null)
-				Control.UpdateBackground(background);
+			Control?.UpdateBackground(background);
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
@@ -251,23 +250,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_panGestureRecognizer = null;
 				}
 
-				if (_contentView != null)
-				{
-					_contentView.Dispose();
-					_contentView = null;
-				}
+				_contentView?.Dispose();
+				_contentView = null;
 
-				if (_actionView != null)
-				{
-					_actionView.Dispose();
-					_actionView = null;
-				}
+				_actionView?.Dispose();
+				_actionView = null;
 
-				if (_swipeItemsRect != null)
-				{
-					_swipeItemsRect.Clear();
-					_swipeItemsRect = null;
-				}
+				_swipeItemsRect?.Clear();
+				_swipeItemsRect = null;
 			}
 
 			_isDisposed = true;
@@ -1036,11 +1026,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_actionView = null;
 			}
 
-			if (_swipeItemsRect != null)
-			{
-				_swipeItemsRect.Clear();
-				_swipeItemsRect = null;
-			}
+			_swipeItemsRect?.Clear();
+			_swipeItemsRect = null;
 
 			UpdateIsOpen(false);
 		}

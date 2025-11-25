@@ -30,6 +30,22 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			IsOpenPicker.Opened += IsOpenPickerOpened;
+			IsOpenPicker.Closed += IsOpenPickerClosed;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+
+			IsOpenPicker.Opened -= IsOpenPickerOpened;
+			IsOpenPicker.Closed -= IsOpenPickerClosed;
+		}
+
 		void OnSelectedIndexChanged(object sender, EventArgs e)
 		{
 			string selectedCountry = (string)((Picker)sender).SelectedItem;
@@ -151,6 +167,26 @@ namespace Maui.Controls.Sample.Pages
 				case 3:
 					return LayoutOptions.Fill;
 			}
+		}
+
+		void OnOpenClicked(object sender, EventArgs e)
+		{
+			IsOpenPicker.IsOpen = true;
+		}
+
+		void OnCloseClicked(object sender, EventArgs e)
+		{
+			IsOpenPicker.IsOpen = false;
+		}
+
+		void IsOpenPickerOpened(object? sender, PickerOpenedEventArgs e)
+		{
+			Console.WriteLine("IsOpenPicker Opened");
+		}
+
+		void IsOpenPickerClosed(object? sender, PickerClosedEventArgs e)
+		{
+			Console.WriteLine("IsOpenPicker Closed");
 		}
 	}
 

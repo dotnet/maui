@@ -100,6 +100,12 @@ namespace Microsoft.Maui.Handlers
 			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
+		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
+		{
+			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
+			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
+		}
+
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			var url = eventArgs.Request.Uri;
@@ -123,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 				using var deferral = eventArgs.GetDeferral();
 
 				// 2.b. Check if the request is for a local resource
-				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri, logger);
+				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(url, eventArgs.Request, logger);
 
 				// 2.c. Create the response header
 				var headers = "";
@@ -155,7 +161,7 @@ namespace Microsoft.Maui.Handlers
 			logger?.LogDebug("Request for {Url} was not handled.", url);
 		}
 
-		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url, ILogger? logger)
+		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url, CoreWebView2WebResourceRequest request, ILogger? logger)
 		{
 			var requestUri = WebUtils.RemovePossibleQueryString(url);
 
@@ -180,9 +186,34 @@ namespace Microsoft.Maui.Handlers
 				{
 					logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
-					var fullUri = new Uri(url);
-					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-					var contentBytes = await InvokeDotNetAsync(invokeQueryString);
+					// Only accept requests that have the expected headers
+					if (!HasExpectedHeaders(request.Headers))
+					{
+						logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+						return (Stream: null, ContentType: null, StatusCode: 400, Reason: "Bad Request");
+					}
+
+					// Only accept POST requests
+					if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+					{
+						logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.Method);
+						return (Stream: null, ContentType: null, StatusCode: 405, Reason: "Method Not Allowed");
+					}
+
+					// Read the request body
+					Stream requestBody;
+					if (request.Content is { } bodyStream && bodyStream.Size > 0)
+					{
+						requestBody = bodyStream.AsStreamForRead();
+					}
+					else
+					{
+						logger?.LogError("InvokeDotNet request body is empty");
+						return (Stream: null, ContentType: null, StatusCode: 400, Reason: "Bad Request");
+					}
+
+					// Invoke the method
+					var contentBytes = await InvokeDotNetAsync(streamBody: requestBody);
 					if (contentBytes is not null)
 					{
 						var ras = await CopyContentToRandomAccessStreamAsync(contentBytes.AsBuffer());
@@ -255,6 +286,7 @@ namespace Microsoft.Maui.Handlers
 
 			private Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+			private IHybridWebView? VirtualView => Handler?.VirtualView;
 
 			public void Connect(HybridWebViewHandler handler, WebView2 platformView)
 			{
@@ -265,11 +297,30 @@ namespace Microsoft.Maui.Handlers
 
 			private async Task<bool> TryInitializeWebView2(WebView2 webView)
 			{
-				await webView.EnsureCoreWebView2Async();
+				// Invoke the WebViewInitializing event to allow custom configuration of the web view
+				var initializingArgs = new WebViewInitializationStartedEventArgs();
+				VirtualView?.WebViewInitializationStarted(initializingArgs);
+
+				var env = await CoreWebView2Environment.CreateWithOptionsAsync(
+					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
+					userDataFolder: initializingArgs.UserDataFolder,
+					options: initializingArgs.EnvironmentOptions);
+
+				var options = env.CreateCoreWebView2ControllerOptions();
+				options.ScriptLocale = initializingArgs.ScriptLocale;
+				options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
+				options.ProfileName = initializingArgs.ProfileName;
+
+				await webView.EnsureCoreWebView2Async(env, options);
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
-				webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+
+				webView.CoreWebView2.AddWebResourceRequestedFilter($"*", CoreWebView2WebResourceContext.All);
+
+				// Invoke the WebViewInitialized event to signal that the web view has been initialized
+				var initializedArgs = new WebViewInitializationCompletedEventArgs(webView.CoreWebView2, webView.CoreWebView2.Settings);
+				VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;

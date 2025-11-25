@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
@@ -101,7 +100,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static bool TryGetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension, out TypeReference typeReference)
 		{
-			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = cache.GetXmlsDefinitions(module, GatherXmlnsDefinitionAttributes);
+			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = cache.GetXmlnsDefinitions(module, GatherXmlnsDefinitionAttributes);
 
 			var typeArguments = xmlType.TypeArguments;
 

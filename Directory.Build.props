@@ -3,6 +3,16 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
   <PropertyGroup>
+    <!-- 
+      Keep backward compatibility with XamlC, XamlCompilationAttribute, and xaml-comp processing instruction
+      When we're ready to turn this off, we can remove all code depending on this condition, and drop this property group
+      -->
+
+    <_MauiXamlSourceGenBackCompat>true</_MauiXamlSourceGenBackCompat>
+    <DefineConstants Condition=" '$(_MauiXamlSourceGenBackCompat)' == 'true' ">$(DefineConstants);_MAUIXAML_SOURCEGEN_BACKCOMPAT</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Detailed trimmer warnings, if present -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
@@ -42,8 +52,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NuGetAuditMode>all</NuGetAuditMode>
-    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
     <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
   </PropertyGroup>
 
@@ -147,16 +157,16 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>18.5</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>18.5</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>18.5</MacCatalystTargetFrameworkVersionSdkDefault>
-    <MacosTargetFrameworkVersionSdkDefault>15.5</MacosTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>26.0</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>26.0</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>26.0</MacCatalystTargetFrameworkVersionSdkDefault>
+    <MacosTargetFrameworkVersionSdkDefault>26.0</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
-    <IosTargetFrameworkVersion>18.5</IosTargetFrameworkVersion>
-    <TvosTargetFrameworkVersion>18.5</TvosTargetFrameworkVersion>
-    <MacCatalystTargetFrameworkVersion>18.5</MacCatalystTargetFrameworkVersion>
-    <MacosTargetFrameworkVersion>15.5</MacosTargetFrameworkVersion>
+    <IosTargetFrameworkVersion>26.0</IosTargetFrameworkVersion>
+    <TvosTargetFrameworkVersion>26.0</TvosTargetFrameworkVersion>
+    <MacCatalystTargetFrameworkVersion>26.0</MacCatalystTargetFrameworkVersion>
+    <MacosTargetFrameworkVersion>26.0</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>36.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
@@ -219,6 +229,17 @@
     <MauiEmbeddingPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiEmbeddingPlatforms)</MauiEmbeddingPlatforms>
     <MauiEmbeddingPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiEmbeddingPlatforms)</MauiEmbeddingPlatforms>
     <MauiEmbeddingPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiEmbeddingPlatforms)</MauiEmbeddingPlatforms>
+
+    <!-- App: Manual Test Sample TFMs (no Tizen yet) -->
+    <MauiManualTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPreviousPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-tizen;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
+    <MauiManualTestsPreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
+    <MauiManualTestsPreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-android;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
+    <MauiManualTestsPreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-maccatalyst;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
+    <MauiManualTestsPreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-ios;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
 
     <!-- Library: Graphics TFMs -->
     <MauiGraphicsPlatforms>$(MauiPlatforms)</MauiGraphicsPlatforms>

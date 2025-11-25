@@ -519,20 +519,23 @@ namespace Microsoft.Maui.Controls.Internals
 			Effects[resolutionName + "." + id] = new(effectType);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs/*" />
+		/// <summary>Registers all specified attribute types with an optional font registrar.</summary>
+		/// <param name="attrTypes">Array of attribute types to register.</param>
+		/// <param name="fontRegistrar">Optional font registrar for handling font registration during the process.</param>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[Obsolete]
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][2]/Docs/*" />
+		/// <summary>Registers all specified attribute types with initialization flags and an optional font registrar.</summary>
+		/// <param name="attrTypes">Array of attribute types to register.</param>
+		/// <param name="flags">Initialization flags to control the registration process.</param>
+		/// <param name="fontRegistrar">Optional font registrar for handling font registration during the process.</param>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[Obsolete]
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			RegisterAll(
 				AppDomain.CurrentDomain.GetAssemblies(),

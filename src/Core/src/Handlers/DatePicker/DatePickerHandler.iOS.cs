@@ -86,6 +86,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextAlignment(datePicker);
 		}
 
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView?.UpdateIsOpen(datePicker);
+		}
+
 		static void OnValueChanged(object? sender)
 		{
 			if (sender is DatePickerHandler datePickerHandler)
@@ -101,13 +106,13 @@ namespace Microsoft.Maui.Handlers
 		static void OnStarted(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
-				datePickerHandler.VirtualView.IsFocused = true;
+				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = true;
 		}
 
 		static void OnEnded(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
-				datePickerHandler.VirtualView.IsFocused = false;
+				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = false;
 		}
 
 		static void OnDoneClicked(object? sender)

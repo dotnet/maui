@@ -1,6 +1,11 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI.ViewManagement.Core;
 
 namespace Microsoft.Maui.Platform;
 
@@ -84,4 +89,49 @@ public static class TimePickerExtensions
 		"TimePickerButtonBackgroundDisabled",
 		"TimePickerButtonBackgroundFocused",
 	};
+
+	internal static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+		if (!platformTimePicker.IsLoaded)
+		{
+			RoutedEventHandler? onLoaded = null;
+			onLoaded = (s, e) =>
+			{
+				platformTimePicker.Loaded -= onLoaded;
+				UpdateIsOpen(platformTimePicker, timePicker);
+			};
+			platformTimePicker.Loaded += onLoaded;
+			return;
+		}
+
+		if (timePicker.IsOpen)
+		{
+			platformTimePicker.Focus(FocusState.Programmatic);
+
+			// Create automation peer for the TimePicker to invoke a click
+			var peer = FrameworkElementAutomationPeer.CreatePeerForElement(platformTimePicker) ?? new TimePickerAutomationPeer(platformTimePicker);
+
+			// Look for button inside and invoke it
+			var children = peer.GetChildren();
+
+			if (children is null)
+				return;
+
+			foreach (var child in children)
+			{
+				if (child.GetClassName().Contains("Button", StringComparison.OrdinalIgnoreCase) &&
+					child.GetPattern(PatternInterface.Invoke) is IInvokeProvider childInvoke)
+				{
+					childInvoke.Invoke();
+					return;
+				}
+			}
+		}
+		else
+		{
+			// Lost the WinUI TimePicker focus.
+			var parent = VisualTreeHelper.GetParent(platformTimePicker) as UIElement;
+			parent?.Focus(FocusState.Programmatic);
+		}
+	}
 }

@@ -5,6 +5,7 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
+using Google.Android.Material.Dialog;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
 
@@ -19,7 +20,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
@@ -27,8 +27,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
+
+			if (_dialog != null)
+			{
+				_dialog.ShowEvent -= OnDialogShown;
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Dismiss();
+				_dialog = null;
+			}
 
 			base.DisconnectHandler(platformView);
 		}
@@ -86,30 +93,53 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
-		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
-			if (PlatformView == null)
-				return;
-
-			if (e.HasFocus)
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
-				if (PlatformView.Clickable)
-					PlatformView.CallOnClick();
+				if (picker.IsOpen)
+					pickerHandler.ShowDialog();
 				else
-					OnClick(PlatformView, EventArgs.Empty);
+					pickerHandler.DismissDialog();
 			}
-			else if (_dialog != null)
+		}
+
+		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
 			{
-				_dialog.Hide();
-				_dialog = null;
+				ViewHandler.MapFocus(handler, picker, args);
+				pickerHandler.ShowDialog();
 			}
+		}
+
+		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
+			{
+				pickerHandler.DismissDialog();
+				ViewHandler.MapUnfocus(handler, picker, args);
+			}
+		}
+
+		void ShowDialog()
+		{
+			if (PlatformView.Clickable)
+				PlatformView.CallOnClick();
+			else
+				OnClick(PlatformView, EventArgs.Empty);
+		}
+
+		void DismissDialog()
+		{
+			_dialog?.Dismiss();
 		}
 
 		void OnClick(object? sender, EventArgs e)
 		{
 			if (_dialog == null && VirtualView != null)
 			{
-				using (var builder = new AppCompatAlertDialog.Builder(Context))
+				using (var builder = new MaterialAlertDialogBuilder(Context))
 				{
 					if (VirtualView.TitleColor == null)
 					{
@@ -133,11 +163,13 @@ namespace Microsoft.Maui.Handlers
 							items[i] = String.Empty;
 					}
 
-					builder.SetItems(items, (s, e) =>
+					builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (s, e) =>
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
 						base.PlatformView?.UpdatePicker(VirtualView);
+
+						_dialog?.Dismiss();
 					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
@@ -152,13 +184,37 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.SetCanceledOnTouchOutside(true);
 
-				_dialog.DismissEvent += (sender, args) =>
-				{
-					_dialog = null;
-				};
+				_dialog.ShowEvent += OnDialogShown;
+
+				_dialog.DismissEvent += OnDialogDismiss;
 
 				_dialog.Show();
+
+				VirtualView.IsOpen = true;
 			}
+		}
+
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			if (_dialog is null)
+			{
+				return;
+			}
+
+			_dialog.DismissEvent -= OnDialogDismiss;
+			VirtualView.IsFocused = false;
+			_dialog = null;
+		}
+
+		void OnDialogShown(object? sender, EventArgs e)
+		{
+			if (_dialog is null)
+			{
+				return;
+			}
+
+			_dialog.ShowEvent -= OnDialogShown;
+			VirtualView.IsFocused = true;
 		}
 
 		static void Reload(IPickerHandler handler)

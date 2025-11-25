@@ -43,6 +43,10 @@ namespace Microsoft.Maui.Handlers
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
+			VirtualView?.WebViewInitializationStarted(initializingArgs);
+
 			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
@@ -60,6 +64,10 @@ namespace Microsoft.Maui.Handlers
 					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
 				}
 			}
+
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview, config);
+			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return webview;
 		}
@@ -173,7 +181,7 @@ namespace Microsoft.Maui.Handlers
 					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
 
 					// 2.a. Check if the request is for a local resource
-					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, logger);
+					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
 
 					// 2.b. Return the response header
 					using var dic = new NSMutableDictionary<NSString, NSString>();
@@ -208,14 +216,13 @@ namespace Microsoft.Maui.Handlers
 				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, ILogger? logger)
+			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
 			{
 				if (Handler is null)
 				{
 					return (null, ContentType: null, StatusCode: 404);
 				}
 
-				var fullUrl = url;
 				url = WebUtils.RemovePossibleQueryString(url);
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
@@ -240,9 +247,34 @@ namespace Microsoft.Maui.Handlers
 					{
 						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
-						var fullUri = new Uri(fullUrl!);
-						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-						var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
+						// Only accept requests that have the expected headers
+						if (!HasExpectedHeaders(request.Headers))
+						{
+							logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+							return (null, null, StatusCode: 400);
+						}
+
+						// Only accept POST requests
+						if (!string.Equals(request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase))
+						{
+							logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.HttpMethod);
+							return (null, null, StatusCode: 405);
+						}
+
+						// Read the request body
+						Stream requestBody;
+						if (request.Body is NSData bodyData && bodyData.Length > 0)
+						{
+							requestBody = bodyData.AsStream();
+						}
+						else
+						{
+							logger?.LogError("InvokeDotNet request body is empty");
+							return (null, null, StatusCode: 400);
+						}
+
+						// Invoke the method
+						var contentBytes = await Handler.InvokeDotNetAsync(streamBody: requestBody);
 						if (contentBytes is not null)
 						{
 							return (NSData.FromArray(contentBytes), "application/json", StatusCode: 200);

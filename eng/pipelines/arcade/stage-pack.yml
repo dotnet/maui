@@ -17,6 +17,12 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
 - name: runAsPublic
   type: boolean
   default: true
@@ -26,22 +32,32 @@ stages:
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
-  - template: /eng/common/templates-official/jobs/jobs.yml
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
-      enableMicrobuild: true
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}
       sourceIndexParams: ${{ parameters.sourceIndexParams }}
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
+      enablePublishTestResults: false
+      templateContext:
+        outputs:
+        - output: pipelineArtifact
+          artifact: APIScanFiles
+          path: $(Agent.TempDirectory)/APIScanFiles
+        - output: pipelineArtifact
+          artifact: Metadata
+          path: $(Agent.TempDirectory)/metadata
+
       workspace:
         clean: all
+
       jobs:
       - job: pack_net_Windows
         displayName: Pack Windows
@@ -56,26 +72,37 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        # - script: $(_buildScript)
-        #           -restore -build
-        #           -configuration $(_BuildConfig)
-        #           /p:ArchiveTests=true
-        #           /p:TreatWarningsAsErrors=false
-        #           /p:_SkipUpdateBuildNumber=true
-        #           /bl:$(Build.Arcade.LogsPath)build.binlog
-        #           $(_OfficialBuildIdArgs)
-        #   displayName: 🛠️ Build
-
         # Run on public pipeline
-        - ${{ if parameters.runAsPublic }}:
-          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)pack.binlog $(_OfficialBuildIdArgs)
+        - ${{ if not(parameters.enableMicrobuild) }}:
+          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if and(not(parameters.runAsPublic) , notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)pack.binlog $(_OfficialBuildIdArgs)
+        - ${{ if and(not(parameters.runAsPublic) , parameters.enableMicrobuild) }}:
+          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack, Sign
 
           # only for workloads
-          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
             displayName: Build Workloads, Sign & Publish
+
+        - task: CopyFiles@2
+          displayName: Copy assemblies for APIScan
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin\Controls.Core'
+            Contents: |
+              **/*.dll
+              **/*.pdb
+            TargetFolder: '$(Agent.TempDirectory)\APIScanFiles'
+
+        - task: CopyFiles@2
+          displayName: Copy Metadata
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping\metadata'
+            Contents: |
+              **/*.json
+            TargetFolder: '$(Agent.TempDirectory)\metadata'
+
+        - ${{ each step in parameters.postSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}

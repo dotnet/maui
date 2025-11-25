@@ -5,8 +5,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "11.1.1",
-          "name": "CommunityToolkit.Maui"
+          "name": "CommunityToolkit.Maui",
+          "version": "11.1.1"
         }
       }
     },
@@ -14,8 +14,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "9.1.0",
-          "name": "CommunityToolkit.Maui"
+          "name": "CommunityToolkit.Maui",
+          "version": "9.1.0"
         }
       }
     },
@@ -23,8 +23,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "2.8.2",
-          "name": "xunit.runner.visualstudio"
+          "name": "CommunityToolkit.Mvvm",
+          "version": "8.3.2"
         }
       }
     },
@@ -32,8 +32,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "10.0.22621.756",
-          "name": "Microsoft.Windows.SDK.BuildTools"
+          "name": "coverlet.collector",
+          "version": "6.0.0"
         }
       }
     },
@@ -41,8 +41,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "2.9.0",
-          "name": "xunit"
+          "name": "Microsoft.Data.Sqlite.Core",
+          "version": "8.0.8"
         }
       }
     },
@@ -50,8 +50,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "8.0.8",
-          "name": "Microsoft.Data.Sqlite.Core"
+          "name": "Microsoft.Extensions.Configuration",
+          "version": "10.0.0"
         }
       }
     },
@@ -59,8 +59,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "1.0.4",
-          "name": "Syncfusion.Maui.Toolkit"
+          "name": "Microsoft.Extensions.DependencyInjection",
+          "version": "10.0.0"
         }
       }
     },
@@ -68,8 +68,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "9.0.5",
-          "name": "Microsoft.Extensions.Logging.Debug"
+          "name": "Microsoft.Extensions.Logging.Debug",
+          "version": "10.0.0"
         }
       }
     },
@@ -77,8 +77,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "17.6.0",
-          "name": "Microsoft.NET.Test.Sdk"
+          "name": "Microsoft.Graphics.Win2D",
+          "version": "1.3.2"
         }
       }
     },
@@ -86,8 +86,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "1.7.250513003",
-          "name": "Microsoft.WindowsAppSDK"
+          "name": "Microsoft.NET.Test.Sdk",
+          "version": "17.6.0"
         }
       }
     },
@@ -95,8 +95,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "1.3.2",
-          "name": "Microsoft.Graphics.Win2D"
+          "name": "Microsoft.Windows.SDK.BuildTools",
+          "version": "10.0.22621.756"
         }
       }
     },
@@ -104,8 +104,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "2.1.10",
-          "name": "SQLitePCLRaw.bundle_green"
+          "name": "Microsoft.WindowsAppSDK",
+          "version": "1.7.250909003"
         }
       }
     },
@@ -113,8 +113,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "8.3.2",
-          "name": "CommunityToolkit.Mvvm"
+          "name": "SQLitePCLRaw.bundle_green",
+          "version": "2.1.10"
         }
       }
     },
@@ -122,8 +122,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "9.0.5",
-          "name": "Microsoft.Extensions.Configuration"
+          "name": "Syncfusion.Maui.Toolkit",
+          "version": "1.0.4"
         }
       }
     },
@@ -131,8 +131,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "6.0.0",
-          "name": "coverlet.collector"
+          "name": "xunit",
+          "version": "2.9.0"
         }
       }
     },
@@ -140,8 +140,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "1.15.0",
-          "name": "xunit.analyzer"
+          "name": "xunit.analyzer",
+          "version": "1.15.0"
         }
       }
     },
@@ -149,8 +149,8 @@
       "component": {
         "type": "nuget",
         "nuget": {
-          "version": "9.0.5",
-          "name": "Microsoft.Extensions.DependencyInjection"
+          "name": "xunit.runner.visualstudio",
+          "version": "2.8.2"
         }
       }
     }

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.StackLayoutOptionsPage"
+             x:DataType="local:StackLayoutViewModel"
+             Title="StackLayoutOptionsPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+
+       <VerticalStackLayout Padding="10"
+                            Spacing="5">
+              <Label Text="Choose Layout Orientation:"
+                     FontAttributes="Bold"
+                     FontSize="16"/>
+              <HorizontalStackLayout>
+                     <RadioButton Content="Horizontal"
+                                  IsChecked="{Binding IsHorizontal, Mode=TwoWay}"
+                                  GroupName="OrientationGroup"
+                                  AutomationId="RadioHorizontal"/>
+                     <RadioButton Content="Vertical"
+                                  IsChecked="{Binding IsVertical, Mode=TwoWay}"
+                                  GroupName="OrientationGroup"
+                                  Margin="20,0,0,0"
+                                  AutomationId="RadioVertical"/>
+              </HorizontalStackLayout>
+
+              <!-- IsVisible Option -->
+              <HorizontalStackLayout Spacing="10"
+                                     VerticalOptions="Center">
+                     <Label Text="IsVisible"
+                            VerticalOptions="Center"/>
+                     <CheckBox IsChecked="{Binding IsVisible, Mode=TwoWay}"
+                                   AutomationId="CheckBoxIsVisible"/>
+              </HorizontalStackLayout>
+
+              <!-- RTL FlowDirection Option -->
+              <HorizontalStackLayout Spacing="10"
+                                     VerticalOptions="Center">
+                     <Label Text="RTL"
+                            VerticalOptions="Center"/>
+                     <CheckBox IsChecked="{Binding IsRtl, Mode=TwoWay}"
+                                   AutomationId="CheckBoxIsRtl"/>
+              </HorizontalStackLayout>
+
+              <!-- Spacing Option -->
+              <HorizontalStackLayout Spacing="10"
+                                     VerticalOptions="Center">
+                     <Label Text="Spacing"
+                            VerticalOptions="Center"/>
+                     <Entry Text="{Binding Spacing, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            WidthRequest="80"
+                            AutomationId="EntrySpacing"/>
+              </HorizontalStackLayout>
+
+              <!-- Rectangle Height Option -->
+              <HorizontalStackLayout Spacing="10"
+                                     VerticalOptions="Center">
+                     <Label Text="Height"
+                            VerticalOptions="Center"/>
+                     <Entry Text="{Binding RectHeight, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            WidthRequest="80"
+                            AutomationId="EntryHeight"/>
+              </HorizontalStackLayout>
+
+              <!-- Rectangle Width Option -->
+              <HorizontalStackLayout Spacing="10"
+                                     VerticalOptions="Center">
+                     <Label Text="Width"
+                            VerticalOptions="Center"/>
+                     <Entry Text="{Binding RectWidth, Mode=TwoWay}"
+                            Keyboard="Numeric"
+                            WidthRequest="80"
+                            AutomationId="EntryWidth"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
+</ContentPage>

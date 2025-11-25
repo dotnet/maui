@@ -1,31 +1,17 @@
-using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Mono.Cecil.Cil;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui25819 : ContentPage
 {
-	public Maui25819()
-	{
-		InitializeComponent();
-	}
+	public Maui25819() => InitializeComponent();
 
-	public Maui25819(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -43,7 +29,7 @@ public partial class Maui25819 : ContentPage
 
 
 		[Test]
-		public void DoesntThrow([Values] bool inflator)
+		public void DoesntThrow([Values] XamlInflator inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);

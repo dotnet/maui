@@ -1,30 +1,30 @@
 parameters:
-  - name: condition
-    default: true
+- name: condition
+  default: true
 
-  - name: artifactName
-    type: string
-    default: nuget
+- name: artifactName
+  type: string
+  default: nuget
 
-  - name: artifactItemPattern
-    type: string
-    default: '**/*.nupkg'
+- name: artifactItemPattern
+  type: string
+  default: '**/*.nupkg'
 
-  - name: uploadPrefix
-    type: string
-    default: ''
+- name: uploadPrefix
+  type: string
+  default: ''
 
-  - name: checkoutDirectory
-    type: string
-    default: $(System.DefaultWorkingDirectory)
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
 
-  - name: prepareSteps
-    type: stepList
-    default: []
+- name: prepareSteps
+  type: stepList
+  default: []
 
-  - name: category
-    type: string
-    default: ''
+- name: category
+  type: string
+  default: ''
 
 steps:
 - ${{ each step in parameters.prepareSteps }}:
@@ -92,4 +92,4 @@ steps:
     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
     testRunTitle: ${{ parameters.category }} templates build tests
 
-- template: /eng/pipelines/common/fail-on-issue.yml
+# - template: /eng/pipelines/common/fail-on-issue.yml

@@ -11,6 +11,7 @@ namespace Microsoft.Maui
 	{
 		readonly WrappedServiceProvider _services;
 		readonly Lazy<IMauiHandlersFactory> _handlers;
+		IServiceScope? _windowScope;
 
 #if ANDROID
 		readonly Lazy<Context?> _context;
@@ -51,6 +52,17 @@ namespace Microsoft.Maui
 			where TService : class
 		{
 			_services.AddSpecific(typeof(TService), static state => ((WeakReference)state).Target, new WeakReference(instance));
+		}
+
+		internal void SetWindowScope(IServiceScope scope)
+		{
+			_windowScope = scope;
+		}
+
+		internal void DisposeWindowScope()
+		{
+			_windowScope?.Dispose();
+			_windowScope = null;
 		}
 
 		class WrappedServiceProvider : IServiceProvider

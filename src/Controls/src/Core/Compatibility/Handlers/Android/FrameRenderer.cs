@@ -125,11 +125,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					Element.PropertyChanged -= OnElementPropertyChanged;
 				}
 
-				if (_backgroundDrawable != null)
-				{
-					_backgroundDrawable.Dispose();
-					_backgroundDrawable = null;
-				}
+				_backgroundDrawable?.Dispose();
+				_backgroundDrawable = null;
 
 				while (ChildCount > 0)
 				{

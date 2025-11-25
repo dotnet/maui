@@ -150,11 +150,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					Control.SetOnScrollListener(null);
 				}
 
-				if (_adapter != null)
-				{
-					_adapter.Dispose();
-					_adapter = null;
-				}
+				_adapter?.Dispose();
+				_adapter = null;
 			}
 
 			if (e.NewElement != null)

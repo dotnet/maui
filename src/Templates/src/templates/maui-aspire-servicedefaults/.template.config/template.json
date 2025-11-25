@@ -3,18 +3,18 @@
     "author": "Microsoft",
     "classifications": [
       "MAUI",
-      ".NET Aspire",
+      "Aspire",
       "Cloud",
       "Web",
       "Web API",
       "API",
       "Service"
     ],
-    "name": ".NET MAUI for .NET Aspire Service Defaults",
-    "defaultName": "MauiAspire.ServiceDefaults",
-    "description": "A project template for creating a .NET Aspire service defaults project for .NET MAUI.",
+    "name": ".NET MAUI for Aspire Service Defaults",
+    "defaultName": "MauiAspire1.ServiceDefaults",
+    "description": "A project template for creating an Aspire service defaults project for .NET MAUI.",
     "shortName": "maui-aspire-servicedefaults",
-    "sourceName": "MauiAspire.ServiceDefaults",
+    "sourceName": "MauiAspire.1.ServiceDefaults",
     "preferNameDirectory": true,
     "tags": {
       "language": "C#",
@@ -51,7 +51,7 @@
     },
     "primaryOutputs": [
       {
-        "path": "Maui.ServiceDefaults1.csproj"
+        "path": "MauiAspire.1.ServiceDefaults.csproj"
       }
     ],
     "postActions": [

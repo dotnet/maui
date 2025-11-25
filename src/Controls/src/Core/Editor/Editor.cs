@@ -9,11 +9,17 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls
 {
+<<<<<<< HEAD
 	/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs/*" />
 	[ElementHandler<EditorHandler>]
+||||||| 3f26a592b2
+	/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs/*" />
+=======
+	/// <summary>A control that can edit multiple lines of text.</summary>
+>>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Identifies the Text bindable property.</summary>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
 		/// <inheritdoc cref="InputView.FontFamilyProperty"/>
@@ -28,16 +34,16 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="InputView.FontAutoScalingEnabledProperty"/>
 		public new static readonly BindableProperty FontAutoScalingEnabledProperty = InputView.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.TextColor"/> property.</summary>
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
+		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.Placeholder"/> property.</summary>
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
+		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.PlaceholderColor"/> property.</summary>
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
 		/// <inheritdoc cref="InputView.IsTextPredictionEnabledProperty"/>
@@ -61,7 +67,8 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='AutoSize']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether the editor will change size to accommodate input as the user enters it.</summary>
+		/// <remarks>Automatic resizing is turned off by default.</remarks>
 		public EditorAutoSizeOption AutoSize
 		{
 			get { return (EditorAutoSizeOption)GetValue(AutoSizeProperty); }
@@ -96,7 +103,8 @@ namespace Microsoft.Maui.Controls
 
 		Rect _previousBounds;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the Editor class.</summary>
+		/// <remarks>The following example creates a Editor with a Chat keyboard that fills the available space.</remarks>
 		public Editor()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Editor>>(() => new PlatformConfigurationRegistry<Editor>(this));
@@ -108,7 +116,8 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='SendCompleted']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
 			=> Completed?.Invoke(this, EventArgs.Empty);

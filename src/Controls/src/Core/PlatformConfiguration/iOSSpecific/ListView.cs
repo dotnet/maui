@@ -3,8 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
 	using FormsElement = Maui.Controls.ListView;
-
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView']/Docs/*" />
+	/// <summary>Provides access to the separator style for list views on the iOS platform.</summary>
 	[Obsolete("With the deprecation of ListView, this class is obsolete. Please use CollectionView instead.")]
 	public static class ListView
 	{
@@ -94,7 +93,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static readonly BindableProperty RowAnimationsEnabledProperty = BindableProperty.Create(nameof(RowAnimationsEnabled), typeof(bool), typeof(ListView), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetRowAnimationsEnabled']/Docs/*" />
+		/// <param name="element">The element parameter.</param>	
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static bool GetRowAnimationsEnabled(BindableObject element)
 		{
@@ -120,10 +119,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='RowAnimationsEnabled']/Docs/*" />
+		/// <param name="config">The config parameter.</param>
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
-		public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
+				public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return GetRowAnimationsEnabled(config.Element);

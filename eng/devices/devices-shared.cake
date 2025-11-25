@@ -214,19 +214,19 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         if (FileExists(resultsFile))
         {
             Information($"Test results found on {resultsDir}");
-            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}.xml"));
+            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"testResults{suffix}.xml"));
             var logFiles = GetFiles($"{resultsDir}/*.log");
 
             foreach (var logFile in logFiles)
             {
-                if (logFile.GetFilename().ToString().StartsWith("TestResults"))
+                if (logFile.GetFilename().ToString().StartsWith("testResults"))
                 {
                     // These are log files that have already been renamed
                     continue;
                 }
 
                 Information($"Log file found: {logFile.GetFilename().ToString()}");
-                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}-{logFile.GetFilename()}"));
+                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"testResults{suffix}-{logFile.GetFilename()}"));
             }
         }
     }
@@ -249,9 +249,9 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         CopyFiles($"{resultsDir}/{searchQuery}", failurePath);
 
         // We don't want these to upload
-        MoveFile($"{failurePath}/TestResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
+        MoveFile($"{failurePath}/testResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
     }
-    FailRunOnOnlyInconclusiveTests($"{resultsDir}/TestResults{suffix}.xml");
+    FailRunOnOnlyInconclusiveTests($"{resultsDir}/testResults{suffix}.xml");
 }
 
 DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
@@ -299,6 +299,13 @@ void RunMacAndiOSTests(
 				catch (Exception ex)
 				{
 					Information($"Test attempt {i} failed: {ex.Message}");
+					bool isLaunchFailure = IsSimulatorLaunchFailure(ex);
+					
+					if (isLaunchFailure)
+					{
+						Information("Detected simulator launch failure (exit code 4). This may be a transient issue.");
+					}
+					
 					if (i == 1)
                     {
 						throw;
@@ -312,6 +319,13 @@ void RunMacAndiOSTests(
                         foreach (var logFile in logFiles)
                         {
                             DeleteFile(logFile);
+                        }
+                        
+                        // For launch failures, add a small delay to let the simulator settle
+                        if (isLaunchFailure)
+                        {
+                            Information("Adding delay before retry due to launch failure...");
+                            System.Threading.Thread.Sleep(5000); // 5 second delay
                         }
                     }
 				}
@@ -375,4 +389,15 @@ string SanitizeTestResultsFilename(string input)
     string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
 
     return resultFilename;
+}
+
+bool IsSimulatorLaunchFailure(Exception ex)
+{
+    // Check if the exception message contains indicators of simulator launch failures
+    var message = ex.Message;
+    return message.Contains("simctl returned exit code 4") || 
+           message.Contains("HE0042") ||
+           message.Contains("Could not launch the app") ||
+           message.Contains("FBSOpenApplicationServiceErrorDomain") ||
+           message.Contains("Simulator device failed to launch");
 }

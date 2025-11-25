@@ -3,49 +3,45 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+public class Issue8870 : _IssuesUITest
 {
-	public class Issue8870 : _IssuesUITest
+	const string Success = "Success";
+	const string CheckResult = "Check";
+
+	public Issue8870(TestDevice testDevice) : base(testDevice)
 	{
-		const string Success = "Success";
-		const string CheckResult = "Check";
+	}
 
-		public Issue8870(TestDevice testDevice) : base(testDevice)
-		{
-		}
+	public override string Issue => "[Bug] CollectionView with HTML Labels Freeze the Screen on Rotation";
 
-		public override string Issue => "[Bug] CollectionView with HTML Labels Freeze the Screen on Rotation";
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
+	public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
+	{
+		App.WaitForElement(CheckResult);
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
-		public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
-		{
-			int delay = 1000;
+		App.SetOrientationPortrait();
+		App.WaitForElement(CheckResult);
 
-			App.WaitForElement(CheckResult);
+		App.SetOrientationLandscape();
+		App.WaitForElement(CheckResult);
 
-			App.SetOrientationPortrait();
-			Thread.Sleep(delay);
+		App.SetOrientationPortrait();
+		App.WaitForElement(CheckResult);
 
-			App.SetOrientationLandscape();
-			Thread.Sleep(delay);
+		App.SetOrientationLandscape();
+		App.WaitForElement(CheckResult);
 
-			App.SetOrientationPortrait();
-			Thread.Sleep(delay);
+		App.SetOrientationPortrait();
+		App.WaitForElement(CheckResult);
 
-			App.SetOrientationLandscape();
-			Thread.Sleep(delay);
+		App.TapWithRetriesUntilElementReady(CheckResult, Success, maxRetries: 10);
 
-			App.SetOrientationPortrait();
-			Thread.Sleep(delay);
-
-			App.WaitForElement(CheckResult);
-			App.Tap(CheckResult);
-
-			App.WaitForElement(Success);
-		}
+		App.WaitForElement(Success);
 	}
 }
 #endif

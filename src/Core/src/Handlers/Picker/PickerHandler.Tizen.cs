@@ -74,6 +74,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateCharacterSpacing(picker);
 		}
 
+		[MissingMapper]
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
+
+
 		static void Reload(IPickerHandler handler)
 		{
 			if (handler.VirtualView == null || handler.PlatformView == null)

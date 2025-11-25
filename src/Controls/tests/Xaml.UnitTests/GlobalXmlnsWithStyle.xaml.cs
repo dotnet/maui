@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -9,18 +10,26 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 	{
 		InitializeComponent();
 	}
-	public GlobalXmlnsWithStyle(bool useCompiledXaml)
+
+	[TestFixture]
+	class Tests
 	{
-		// this stub will be replaced at compile time
-	}
+		[Test]
+		public void GlobalXmlnsWithStyleTest([Values] XamlInflator inflator)
+		{
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var compilation = MockSourceGenerator.CreateMauiCompilation();
+				compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
+	"""
+[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]
+"""));
+				compilation.RunMauiSourceGenerator(typeof(GlobalXmlnsWithStyle));
+			}
 
-	[Test]
-	public void GlobalXmlnsWithStyleTest([Values] bool useCompiledXaml)
-	{
-
-		var page = new GlobalXmlnsWithStyle(useCompiledXaml);
-		Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
-		Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));
-
+			var page = new GlobalXmlnsWithStyle(inflator);
+			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.Red));
+			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Blue));
+		}
 	}
 }

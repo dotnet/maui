@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 namespace Microsoft.Maui.Controls.Xaml;
 
-interface IXamlDataTypeProvider
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IXamlDataTypeProvider
 {
 	string BindingDataType { get; }
 }

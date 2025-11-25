@@ -46,11 +46,8 @@ namespace Microsoft.Maui.Devices
 				}
 				else
 				{
-					if (displayRequest != null)
-					{
-						displayRequest.RequestRelease();
-						displayRequest = null;
-					}
+					displayRequest?.RequestRelease();
+					displayRequest = null;
 				}
 			}
 		}

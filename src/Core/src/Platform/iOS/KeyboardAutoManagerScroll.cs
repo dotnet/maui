@@ -305,19 +305,28 @@ public static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
+		// If View is inside a MauiView that implements ISafeAreaView2
+		// and has SafeAreaEdges.SoftInput set, do not perform auto-scrolling
+		// since SafeAreaEdges.SoftInput will handle the adjustments
+		if (View is not null && MauiView.IsSoftInputHandledByParent(View))
+		{
+			return;
+		}
+
 		if (IsKeyboardShowing)
 		{
-			// If we are going to a new view that has an InputAccessoryView
-			// while we have the keyboard up, we need a delay to recalculate
-			// the height of the InputAccessoryView
-			if (View?.InputAccessoryView is not null)
-			{
-				await Task.Delay(30);
-			}
+			// Universal 30ms delay for all input controls to ensure proper timing coordination
+			// between keyboard auto-scroll and safe area adjustments. 
+			// This delay allows the InputAccessoryView setup completion for input controls.
+			// Safe area system to process keyboard notifications first
+			// Conflict resolution between auto-scroll and SafeAreaEdges.SoftInput settings
+			// Without this delay, timing conflicts can cause double padding or incorrect positioning
+			await Task.Delay(30);
+
 			AdjustPosition();
 
 			// See if the layout requests to scroll again after our initial scroll
-			await Task.Delay(5);
+			await Task.Delay(30);
 			if (ShouldScrollAgain)
 			{
 				AdjustPosition();
@@ -368,7 +377,10 @@ public static class KeyboardAutoManagerScroll
 		}
 		else
 		{
-			statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
+				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			else
+				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 
 			navigationBarAreaHeight = statusBarHeight;
 		}

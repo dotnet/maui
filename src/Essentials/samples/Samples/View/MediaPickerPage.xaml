@@ -89,6 +89,28 @@
                      HorizontalOptions="Center"
                      FontAttributes="Bold" />
             </Grid>
+            
+            <!-- Auto-rotate Image -->
+            <Grid ColumnDefinitions="2*,Auto">
+              <Label Grid.Column="0" 
+                     Text="Auto-rotate from EXIF" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Switch Grid.Column="1" 
+                      IsToggled="{Binding PickerRotateImage, Mode=TwoWay}"
+                      OnColor="{AppThemeBinding Light=#007BFF, Dark=#0D6EFD}" />
+            </Grid>
+            
+            <!-- Preserve Metadata -->
+            <Grid ColumnDefinitions="2*,Auto">
+              <Label Grid.Column="0" 
+                     Text="Preserve Metadata" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Switch Grid.Column="1" 
+                      IsToggled="{Binding PickerPreserveMetaData, Mode=TwoWay}"
+                      OnColor="{AppThemeBinding Light=#007BFF, Dark=#0D6EFD}" />
+            </Grid>
           </VerticalStackLayout>
         </Border>
 

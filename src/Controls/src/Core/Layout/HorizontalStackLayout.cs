@@ -8,15 +8,15 @@ namespace Microsoft.Maui.Controls
 	{
 		protected override ILayoutManager CreateLayoutManager() => new HorizontalStackLayoutManager(this);
 
-		protected override void ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			if ((Constraint & LayoutConstraint.VerticallyFixed) != 0 && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
 			{
-				view.ComputedConstraint = LayoutConstraint.VerticallyFixed;
+				return LayoutConstraint.VerticallyFixed;
 			}
 			else
 			{
-				view.ComputedConstraint = LayoutConstraint.None;
+				return LayoutConstraint.None;
 			}
 		}
 	}

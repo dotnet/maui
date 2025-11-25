@@ -35,7 +35,7 @@
 
   <!-- A small task to make sure everything depends on the same version of SkiaSharp -->
   <ItemGroup>
-    <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.3.0" PrivateAssets="all" />
+    <PackageReference Include="Mono.ApiTools.MSBuildTasks" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
     <_AdjustmentsAssembly>$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll</_AdjustmentsAssembly>
@@ -81,10 +81,13 @@
       <_CopyItems Include="nuget\buildTransitive\**" />
       <_CopyItems Include="@(_ResizetizerFiles)" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
     <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
-    <AdjustReferencedAssemblyVersion Assembly="$(_AdjustmentsAssembly)" ReferencedAssembly="$(_AdjustmentsReferencedAssembly)" OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
-    <Copy SourceFiles="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" DestinationFiles="$(_MauiBuildTasksLocation)Svg.Skia.dll" ContinueOnError="true" Retries="0" />
+    <AdjustReferencedAssemblyVersion
+      Assembly="$(_AdjustmentsAssembly)"
+      ReferencedAssembly="$(_AdjustmentsReferencedAssembly)"
+      OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    <Copy SourceFiles="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" DestinationFiles="$(_MauiBuildTasksLocation)Svg.Skia.dll" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
     <ItemGroup>
       <FileWrites Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
     </ItemGroup>

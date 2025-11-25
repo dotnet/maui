@@ -16,27 +16,37 @@ public partial class Maui17222 : ContentPage
 
 	public Maui17222() => InitializeComponent();
 
-	public Maui17222(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 
 	[TestFixture]
 	class Test
 	{
 #if DEBUG
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		bool enableDiagnosticsInitialState;
+
+		[SetUp]
+		public void Setup()
+		{
+			AppInfo.SetCurrent(new MockAppInfo());
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			AppInfo.SetCurrent(null);
+		}
 
 		[Test]
-		public void GetsourceInfo([Values(false)] bool useCompiledXaml)
+		public void GetsourceInfo([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
 		{
 			var app = new MockApplication();
-			app.Resources.Add(new Maui17222BaseStyle(useCompiledXaml));
-			app.Resources.Add(new Maui17222Style(useCompiledXaml));
+			app.Resources.Add(new Maui17222BaseStyle(inflator));
+			app.Resources.Add(new Maui17222Style(inflator));
 			Application.SetCurrentApplication(app);
 
-			var page = new Maui17222(useCompiledXaml);
+			var page = new Maui17222(inflator);
 			SourceInfo info = VisualDiagnostics.GetSourceInfo(page);
 			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(2, info.LineNumber);
@@ -61,7 +71,6 @@ public partial class Maui17222 : ContentPage
 			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(6, info.LineNumber);
 			Assert.AreEqual(10, info.LinePosition);
-
 
 			style = style.BasedOn;
 			info = VisualDiagnostics.GetSourceInfo(style);

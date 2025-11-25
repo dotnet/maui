@@ -1,3 +1,7 @@
+---
+description: "Guidance for GitHub Copilot when working on the .NET MAUI repository."
+---
+
 # GitHub Copilot Development Environment Instructions
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
@@ -7,14 +11,25 @@ This document provides specific guidance for GitHub Copilot when working on the 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ### Key Technologies
-- **.NET SDK** - Version depends on the branch:
-  - **main branch**: Use the latest stable version of .NET to build
+
+- **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
+  - **main branch**: Use the latest stable version of .NET to build (currently .NET 10)
   - **net10.0 branch**: Use the latest .NET 10 SDK
-  - **etc.**: Each feature branch correlates to its respective .NET version
+  - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
 - **C#** and **XAML** for application development
 - **Cake build system** for compilation and packaging
 - **MSBuild** with custom build tasks
-- **xUnit** for testing
+- **xUnit + NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
+- **Appium WebDriver** for UI test automation
+
+**🚨 CRITICAL**: Before any build operation, verify .NET SDK version:
+```bash
+# Check required version
+cat global.json | grep -A 1 '"dotnet"'
+
+# Verify installed version matches
+dotnet --version
+```
 
 ## Development Environment Setup
 
@@ -31,6 +46,8 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 
 ### Initial Repository Setup
 
+**🚀 Mandatory Setup Sequence** - Run these in exact order:
+
 1. **Clone and navigate to repository:**
    ```bash
    git clone https://github.com/dotnet/maui.git
@@ -42,6 +59,15 @@ For .NET installation on Linux, follow the official Microsoft documentation:
    dotnet tool restore
    dotnet build ./Microsoft.Maui.BuildTasks.slnf
    ```
+
+**⚠️ FAILURE RECOVERY**: If restore or build fails:
+```bash
+# Clean and retry
+dotnet clean
+rm -rf bin/ obj/
+dotnet tool restore --force
+dotnet build ./Microsoft.Maui.BuildTasks.slnf --verbosity normal
+```
 
 ## Project Structure
 
@@ -61,21 +87,29 @@ For .NET installation on Linux, follow the official Microsoft documentation:
 - **Windows** specific code is inside folders named `Windows`
 
 ### Platform-Specific File Extensions
-- Files with `.windows.cs` will only compile for the Windows TFM
-- Files with `.android.cs` will only compile for the Android TFM
-- Files with `.ios.cs` will only compile for the iOS and MacCatalyst TFM
-- Files with `MacCatalyst.cs` will only compile for the MacCatalyst TFM
+
+Platform-specific files use naming conventions to control compilation:
+
+**File extension patterns**:
+- `.windows.cs` - Windows TFM only
+- `.android.cs` - Android TFM only
+- `.ios.cs` - iOS and MacCatalyst TFMs (both)
+- `.maccatalyst.cs` - MacCatalyst TFM only (does NOT compile for iOS)
+
+**Important**: Both `.ios.cs` and `.maccatalyst.cs` files compile for MacCatalyst. There is no precedence mechanism that excludes one when the other exists.
+
+**Example**: If you have both `CollectionView.ios.cs` and `CollectionView.maccatalyst.cs`, both will compile for MacCatalyst builds. The `.maccatalyst.cs` file won't compile for iOS, but the `.ios.cs` file will compile for both iOS and MacCatalyst.
 
 ### Sample Projects
 ```
-├── Controls 
+├── Controls
 │   ├── samples
 │   │   ├── Maui.Controls.Sample
 │   │   ├── Maui.Controls.Sample.Sandbox
-├── Essentials 
+├── Essentials
 │   ├── samples
 │   │   ├── Essentials.Sample
-├── BlazorWebView 
+├── BlazorWebView
 │   ├── samples
 │   │   ├── BlazorWinFormsApp
 │   │   ├── BlazorWpfApp
@@ -103,12 +137,30 @@ dotnet cake --target=dotnet-pack
 
 #### Testing Guidelines
 - Add tests for new functionality
-- Ensure existing tests pass:
-  - `src/Core/tests/UnitTests/Core.UnitTests.csproj`
-  - `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
-  - `src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj`
-  - `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
-  - `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
+- Ensure existing tests pass for modified areas (major test projects):
+  - **Core tests**: `src/Core/tests/UnitTests/Core.UnitTests.csproj`
+  - **Essentials tests**: `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
+  - **Controls tests**: `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
+  - **XAML tests**: `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
+  - **To find other test projects**: `find . -name "*.UnitTests.csproj"` or check the solution file
+
+#### UI Testing
+
+UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesting-Guide.md) for comprehensive documentation.
+
+### Code Formatting
+
+Before committing any changes, format the codebase using the following command to ensure consistent code style:
+
+```bash
+dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+```
+
+This command:
+- Formats all code files according to the repository's `.editorconfig` settings
+- Excludes the Templates/src directory from formatting
+- Excludes the CA1822 diagnostic (member can be marked as static)
+- Uses `--no-restore` for faster execution when dependencies are already restored
 
 ### Local Development with Branch-Specific .NET
 
@@ -138,6 +190,27 @@ For compatibility with specific branches:
 
 ## Contribution Guidelines
 
+### Handling Existing PRs for Assigned Issues
+
+**🚨 CRITICAL REQUIREMENT: Always develop your own solution first, then compare with existing PRs.**
+
+When working on an issue:
+
+1. **FIRST: Develop your own solution** - Come up with your own implementation approach without looking at existing PRs. Analyze the issue, understand the requirements, and design your solution independently
+2. **THEN: Search for existing PRs** - After you have developed your solution approach, search for open PRs that address the same issue using GitHub search or issue links
+3. **Compare solutions thoroughly** - Examine the existing PR's proposed changes, implementation approach, and any discussion in comments. Compare this to your own solution
+4. **Evaluate and choose the best approach** - Decide which solution (yours or the existing PR's) better addresses the issue and follows best practices
+5. **Always document your decision** - In your PR description, always include a summary comparing your solution to any other open PRs for the issue you are working on, and explain why you chose your approach over the alternatives
+6. **Report on why you didn't choose other solutions** - Always make sure to explain the specific reasons why you didn't go with other existing solutions, including any concerns or issues you identified
+7. **It's OK to abandon existing PRs** - If you're not confident enough in the existing PR's approach, it's completely acceptable to abandon it and implement your own solution
+8. **Pull existing changes when you prefer them** - If you determine the existing solution is better than your approach, pull those changes into your PR as the foundation for your work, then find areas to improve and add tests
+9. **Identify improvement opportunities** - Whether you use your solution or an existing one, look for areas where you can enhance it, such as:
+   - Adding comprehensive test coverage
+   - Improving code quality, performance, or maintainability
+   - Enhancing error handling or edge case coverage
+   - Better documentation or code comments
+   - More robust implementation patterns
+
 ### Files to Never Commit
 - **Never** check in changes to `cgmanifest.json` files
 - **Never** check in changes to `templatestrings.json` files
@@ -148,6 +221,17 @@ Since coding agents function as both CI and pair programmers, they need to handl
 
 - **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
 - **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
+
+### PublicAPI.Unshipped.txt File Management
+When working with public API changes, proper handling of PublicAPI.Unshipped.txt files is critical:
+
+- **Never turn off analyzers or set no warn** to fix PublicAPI.Unshipped.txt file issues
+- **Always work to fix the PublicAPI.Unshipped.txt files properly** by adding the correct API entries
+- **Use `dotnet format analyzers`** if having trouble fixing PublicAPI.Unshipped.txt file issues
+- **Revert and re-add approach when files are incorrect:**
+  1. First, revert all changes to PublicAPI.Unshipped.txt files to their original state
+  2. Then, make only the necessary additions required for your new public APIs
+  3. This ensures clean, minimal changes that accurately reflect the new APIs being introduced
 
 ### Branching
 - `main` - For bug fixes without API changes
@@ -160,14 +244,106 @@ Since coding agents function as both CI and pair programmers, they need to handl
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
 
+### Opening PRs
+
+All PRs are required to have this at the top of the description:
+
+```
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+```
+
+Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
+
+## Troubleshooting
+
+### Common Build Issues
+
+**Issue: "Build tasks not found"**
+```bash
+# Solution: Rebuild build tasks
+dotnet clean ./Microsoft.Maui.BuildTasks.slnf
+dotnet build ./Microsoft.Maui.BuildTasks.slnf
+```
+
+**Issue: "Dependency version conflicts"**
+```bash
+# Solution: Full clean and restore
+dotnet clean Microsoft.Maui.sln
+rm -rf bin/ obj/
+dotnet restore Microsoft.Maui.sln --force
+```
+
+**Issue: "Android SDK not found"**
+```bash
+# Solution: Check and install Android components
+android # Opens Android SDK Manager
+# Or set environment variable: export ANDROID_HOME=/path/to/android-sdk
+```
+
+**Issue: "PublicAPI analyzer failures"**
+```bash
+# Solution: Use format analyzers first
+dotnet format analyzers Microsoft.Maui.sln
+# If still failing, check build output for required API entries
+```
+
+### Platform-Specific Troubleshooting
+
+**iOS/Mac Build Issues:**
+- Verify Xcode command line tools: `xcode-select --install`
+- Check Xcode version compatibility with .NET MAUI version
+- Ensure provisioning profiles are current (for device testing)
+
+**Android Build Issues:**
+- Verify OpenJDK 17 installation: `java -version`
+- Check ANDROID_HOME environment variable
+- Update Android SDK components via Android SDK Manager
+
+**Windows Build Issues:**
+- Ensure Windows SDK is installed
+- Verify Visual Studio workloads include .NET MAUI development
+- Check for missing NuGet packages: `dotnet restore --force`
+
+## Custom Agents
+
+The repository includes specialized custom agents for specific tasks. These agents are available to GitHub Copilot and can be invoked for their respective specializations:
+
+### Available Custom Agents
+
+1. **issue-resolver** - Specialized agent for investigating and resolving community-reported .NET MAUI issues through hands-on testing and implementation
+   - Use when: Working on bug fixes from GitHub issues
+   - Capabilities: Issue reproduction, root cause analysis, fix implementation, testing
+
+2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
+   - Use when: Reviewing PRs or validating your own changes
+   - Capabilities: Code quality analysis, best practices validation, test coverage review
+
+3. **sandbox-agent** - Specialized agent for working with the .NET MAUI Sandbox app for testing, validation, and experimentation
+   - Use when: Need to test changes in isolation or create reproduction cases
+   - Capabilities: Sandbox app setup, test case creation, behavior validation
+
+4. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
+   - Use when: Creating new UI tests or updating existing ones
+   - Capabilities: UI test authoring, Appium WebDriver usage, NUnit test patterns
+
+### Using Custom Agents
+
+Custom agents can be invoked by GitHub Copilot when appropriate for the task at hand. They have deep knowledge of their specific domains and follow all repository conventions and best practices.
+
 ## Additional Resources
 
-- [Development Guide](.github/DEVELOPMENT.md)
-- [Development Tips](docs/DevelopmentTips.md)
-- [Contributing Guidelines](.github/CONTRIBUTING.md)
+- [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
+- [UI Testing Guide](../docs/UITesting-Guide.md)
+- [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
+- [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
+- [SafeArea Testing Guide](/.github/instructions/safearea-testing.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
+- [Instrumentation Guide](/.github/instructions/instrumentation.md) - Patterns for instrumenting MAUI code for debugging and testing
+- [Appium Control Scripts](/.github/instructions/appium-control.md) - Create standalone scripts for manual Appium-based debugging and exploration
+- [Development Guide](/.github/DEVELOPMENT.md)
+- [Development Tips](/docs/DevelopmentTips.md)
+- [Contributing Guidelines](/.github/CONTRIBUTING.md)
 - [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
 - [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)
-
----
-
-**Note for Future Updates:** This document should be expanded as new development patterns, tools, or workflows are discovered. Add sections for specific scenarios, debugging techniques, or tooling as they become relevant to the development process.
