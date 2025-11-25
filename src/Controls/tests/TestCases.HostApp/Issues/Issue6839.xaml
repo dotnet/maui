@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue6839"
+             Title="Issue 6839">
+    <VerticalStackLayout Padding="20" Spacing="20">
+        <Label Text="Disabled CheckBox with color should not be grey on iOS"
+               AutomationId="InstructionLabel" />
+        
+        <Label Text="Enabled CheckBox (Purple):" />
+        <CheckBox Color="Purple" 
+                  IsChecked="True" 
+                  IsEnabled="True"
+                  AutomationId="EnabledCheckBox" />
+        
+        <Label Text="Disabled CheckBox (Purple) - should still be purple, not grey:" />
+        <CheckBox Color="Purple" 
+                  IsChecked="True" 
+                  IsEnabled="False"
+                  AutomationId="DisabledCheckBox" />
+        
+        <Label Text="Disabled Unchecked CheckBox (Purple):" />
+        <CheckBox Color="Purple" 
+                  IsChecked="False" 
+                  IsEnabled="False"
+                  AutomationId="DisabledUncheckedCheckBox" />
+    </VerticalStackLayout>
+</ContentPage>
