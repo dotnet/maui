@@ -98,14 +98,16 @@ namespace Microsoft.Maui.DeviceTests
 					await OnUnloadedAsync(modalPage);
 
 					// Verify sizes are consistent (within tolerance for floating point)
+					const double tolerance = 1.0; // Allow small floating point differences
+					
 					Assert.True(firstWidth > 0, "First width should be greater than 0");
 					Assert.True(firstHeight > 0, "First height should be greater than 0");
 
 					// The widths and heights should be approximately equal across all pushes
-					Assert.True(Math.Abs(firstWidth - secondWidth) < 1, $"Second push width ({secondWidth}) differs from first ({firstWidth})");
-					Assert.True(Math.Abs(firstHeight - secondHeight) < 1, $"Second push height ({secondHeight}) differs from first ({firstHeight})");
-					Assert.True(Math.Abs(firstWidth - thirdWidth) < 1, $"Third push width ({thirdWidth}) differs from first ({firstWidth})");
-					Assert.True(Math.Abs(firstHeight - thirdHeight) < 1, $"Third push height ({thirdHeight}) differs from first ({firstHeight})");
+					Assert.True(Math.Abs(firstWidth - secondWidth) < tolerance, $"Second push width ({secondWidth}) differs from first ({firstWidth})");
+					Assert.True(Math.Abs(firstHeight - secondHeight) < tolerance, $"Second push height ({secondHeight}) differs from first ({firstHeight})");
+					Assert.True(Math.Abs(firstWidth - thirdWidth) < tolerance, $"Third push width ({thirdWidth}) differs from first ({firstWidth})");
+					Assert.True(Math.Abs(firstHeight - thirdHeight) < tolerance, $"Third push height ({thirdHeight}) differs from first ({firstHeight})");
 				});
 		}
 	}
