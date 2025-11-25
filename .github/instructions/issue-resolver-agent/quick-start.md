@@ -115,18 +115,16 @@ Any concerns about this approach?
 # Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
 # Add controls and AutomationId attributes for testing
 
-# 2. Copy and customize Appium test template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
-
-# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs:
+# 2. The script will automatically create RunWithAppiumTest.cs from template
+# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs and customize:
 # - Set ISSUE_NUMBER (replace 00000)
 # - Set PLATFORM ("android" or "ios")
-# - COMPLETELY CUSTOMIZE the "Test Logic" section for your Sandbox app:
-#   * The template just shows basic structure
-#   * Replace placeholder AutomationIds with YOUR actual IDs from XAML
-#   * Add YOUR specific interactions: tap buttons, enter text, scroll, etc.
-#   * Add YOUR assertions to verify the issue or expected behavior
-#   * Think of it as writing a fresh Appium test that matches your Sandbox app
+# - COMPLETELY REWRITE the "Test Logic" section for your specific scenario:
+#   * Template is just a starting structure - don't use its placeholder code
+#   * Replace ALL AutomationIds with your actual IDs from MainPage.xaml
+#   * Add YOUR specific test interactions (tap, scroll, enter text, etc.)
+#   * Add YOUR assertions to verify the bug or expected behavior
+#   * Treat this as writing a brand new Appium test from scratch
 
 # 3. Run the script - it handles everything:
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
