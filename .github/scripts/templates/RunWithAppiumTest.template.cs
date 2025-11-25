@@ -34,7 +34,6 @@ using OpenQA.Selenium.Appium.Enums;
 // ========== CONFIGURATION ==========
 
 const int ISSUE_NUMBER = 00000; // TODO: Replace with actual issue number
-const string PLATFORM = "android"; // TODO: Set to "android" or "ios"
 
 // ========== DEVICE SETUP ==========
 
@@ -45,6 +44,11 @@ if (string.IsNullOrEmpty(udid))
     Console.WriteLine("This should be set automatically by BuildAndRunSandbox.ps1 script.");
     Environment.Exit(1);
 }
+
+// Auto-detect platform from UDID format
+// iOS UDIDs contain hyphens and are longer (e.g., AC8BCB28-A72D-4A2D-90E7-E78FF0BA07EE)
+// Android UDIDs are shorter (e.g., emulator-5554, 192.168.1.100:5555)
+string PLATFORM = udid.Contains("-") && udid.Length > 20 ? "ios" : "android";
 
 Console.WriteLine($"═══════════════════════════════════════════════════════");
 Console.WriteLine($"  Testing Issue #{ISSUE_NUMBER} on {PLATFORM.ToUpper(System.Globalization.CultureInfo.InvariantCulture)}");

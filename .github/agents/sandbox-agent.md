@@ -58,6 +58,8 @@ if (PLATFORM == "android")
 - Template: `.github/scripts/templates/RunWithAppiumTest.template.cs` (line ~68, Android section only)
 - Active test: `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` (Android section only)
 
+**Platform detection is automatic** - The template automatically detects Android vs iOS from the UDID format, so you don't need to manually set the platform. The `if (PLATFORM == "android")` block will execute automatically when testing on Android.
+
 **⚠️ NEVER REMOVE THIS CAPABILITY FROM ANDROID** - All Android tests depend on it
 
 ---
