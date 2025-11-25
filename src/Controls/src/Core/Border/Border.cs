@@ -11,7 +11,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	[ElementHandler<BorderHandler>]
+	[ElementHandler(typeof(BorderHandler))]
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;

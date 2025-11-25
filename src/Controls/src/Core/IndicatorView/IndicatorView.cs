@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="Type[@FullName='Microsoft.Maui.Controls.IndicatorView']/Docs/*" />
 	[ContentProperty(nameof(IndicatorLayout))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<IndicatorViewHandler>]
+	[ElementHandler(typeof(IndicatorViewHandler))]
 	public partial class IndicatorView : TemplatedView, ITemplatedIndicatorView
 	{
 		const int DefaultPadding = 4;

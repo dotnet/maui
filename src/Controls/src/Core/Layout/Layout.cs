@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<LayoutHandler>]
+	[ElementHandler(typeof(LayoutHandler))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElement
 	{
 		protected ILayoutManager _layoutManager;

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
 #if WINDOWS || IOS || MACCATALYST || TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<Handlers.Compatibility.ListViewRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.ListViewRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 #if ANDROID

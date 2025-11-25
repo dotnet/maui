@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	[ElementHandler<SwipeViewHandler>]
+	[ElementHandler(typeof(SwipeViewHandler))]
 	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;

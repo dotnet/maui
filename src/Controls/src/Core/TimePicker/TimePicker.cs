@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.TimePicker']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<TimePickerHandler>]
+	[ElementHandler(typeof(TimePickerHandler))]
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>

@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.ItemsView"/> whose scrollable child views 'snap' into place.</summary>
 #if IOS || MACCATALYST
-	[ElementHandler<Handlers.Items2.CarouselViewHandler2>]
+	[ElementHandler(typeof(Handlers.Items2.CarouselViewHandler2))]
 #else
-	[ElementHandler<Handlers.Items.CarouselViewHandler>]
+	[ElementHandler(typeof(Handlers.Items.CarouselViewHandler))]
 #endif
 	public class CarouselView : ItemsView
 	{

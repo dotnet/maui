@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="Type[@FullName='Microsoft.Maui.Controls.CheckBox']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<CheckBoxHandler>]
+	[ElementHandler(typeof(CheckBoxHandler))]
 	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;

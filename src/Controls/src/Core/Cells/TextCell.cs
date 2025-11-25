@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("The controls which use TextCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 #if WINDOWS || ANDROID || IOS || MACCATALYST
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<Handlers.Compatibility.TextCellRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.TextCellRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public class TextCell : Cell, ICommandElement

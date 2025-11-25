@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stepper']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<StepperHandler>]
+	[ElementHandler(typeof(StepperHandler))]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>

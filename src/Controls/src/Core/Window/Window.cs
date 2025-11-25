@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	[ElementHandler<WindowHandler>]
+	[ElementHandler(typeof(WindowHandler))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
 		static readonly BindablePropertyKey IsActivatedPropertyKey = 

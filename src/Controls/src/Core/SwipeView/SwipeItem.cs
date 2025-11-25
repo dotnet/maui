@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeItem']/Docs/*" />
-	[ElementHandler<SwipeItemMenuItemHandler>]
+	[ElementHandler(typeof(SwipeItemMenuItemHandler))]
 	public partial class SwipeItem : MenuItem, Controls.ISwipeItem, Maui.ISwipeItemMenuItem
 	{
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>

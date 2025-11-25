@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Handlers;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs/*" />
-	[ElementHandler<LineHandler>]
+	[ElementHandler(typeof(LineHandler))]
 	public sealed partial class Line : Shape, IShape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
