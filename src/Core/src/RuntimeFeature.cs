@@ -14,24 +14,6 @@ namespace Microsoft.Maui
 	/// </remarks>
 	static class RuntimeFeature
 	{
-<<<<<<< HEAD
-		private const bool IsIVisualAssemblyScanningEnabledByDefault = false;
-		private const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
-		private const bool IsQueryPropertyAttributeSupportedByDefault = true;
-		private const bool IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault = true;
-		private const bool AreBindingInterceptorsSupportedByDefault = true;
-		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
-		private const bool IsHybridWebViewSupportedByDefault = true;
-		private const bool IsCssEnabledByDefault = true;
-||||||| 3f26a592b2
-		private const bool IsIVisualAssemblyScanningEnabledByDefault = false;
-		private const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
-		private const bool IsQueryPropertyAttributeSupportedByDefault = true;
-		private const bool IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault = true;
-		private const bool AreBindingInterceptorsSupportedByDefault = true;
-		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
-		private const bool IsHybridWebViewSupportedByDefault = true;
-=======
 		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature";
 
 		const bool IsIVisualAssemblyScanningEnabledByDefault = false;
@@ -45,7 +27,7 @@ namespace Microsoft.Maui
 		const bool EnableDiagnosticsByDefault = false;
 		const bool IsMeterSupportedByDefault = true;
 		const bool EnableAspireByDefault = true;
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
+		const bool IsCssEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -175,6 +157,5 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
-#pragma warning restore IL4000
 	}
 }

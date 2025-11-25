@@ -7,16 +7,10 @@ using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-<<<<<<< HEAD
-	/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoxView']/Docs/*" />
-	[ElementHandler<BoxViewHandler>]
-||||||| 3f26a592b2
-	/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoxView']/Docs/*" />
-=======
 	/// <summary>
 	/// A <see cref="View" /> used to draw a solid colored rectangle.
 	/// </summary>
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
+	[ElementHandler<BoxViewHandler>]
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>, IShapeView, IShape
 	{
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
