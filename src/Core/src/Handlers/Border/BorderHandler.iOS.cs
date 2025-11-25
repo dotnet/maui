@@ -1,4 +1,6 @@
 ﻿using System;
+using CoreAnimation;
+using CoreGraphics;
 using UIKit;
 using PlatformView = UIKit.UIView;
 
@@ -6,6 +8,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class BorderHandler : ViewHandler<IBorderView, ContentView>
 	{
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// When a WrapperView is created, the child (PlatformView) is moved inside it.
+			// Reset the child's transform to identity to prevent transform compounding,
+			// since the WrapperView will handle the transform for the entire container.
+			if (ContainerView is WrapperView && PlatformView?.Layer is CALayer childLayer)
+			{
+				childLayer.Transform = CATransform3D.Identity;
+				childLayer.AnchorPoint = new CGPoint(0.5, 0.5);
+			}
+		}
+
 		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
