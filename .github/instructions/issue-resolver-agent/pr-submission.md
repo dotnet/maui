@@ -73,20 +73,18 @@ Fixes #XXXXX
 
 ## Summary
 
-[Brief description of what the issue was and what this PR fixes]
+[Brief 2-3 sentence description of what the issue was and what this PR fixes]
 
 Example: 
 "CollectionView was not applying correct padding in RTL mode on iOS. This PR fixes the issue by configuring the UICollectionViewCompositionalLayout to respect the FlowDirection property."
 
 **Quick verification:**
-- ✅ Tested on iOS 18.0 - RTL padding now correct
-- ✅ All edge cases pass (rapid toggling, nested containers, etc.)
+- ✅ Tested on [Platform(s)] - Issue resolved
+- ✅ Edge cases tested (list key ones briefly)
 - ✅ UI tests added and passing
 
----
-
 <details>
-<summary><b>📋 For full PR details, expand here</b></summary>
+<summary><b>📋 Click to expand full PR details</b></summary>
 
 ## Root Cause
 

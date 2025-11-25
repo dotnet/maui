@@ -106,7 +106,7 @@ cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sa
 
 **Run with**: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform <android|ios>`
 
-📖 **Full Appium guide**: [../appium-control.instructions.md](../appium-control.instructions.md)
+📖 **Full Appium guide**: [../appium-control.md](../appium-control.md)
 
 ---
 

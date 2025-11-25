@@ -18,12 +18,14 @@
 - ✅ **DO**: Investigate root causes deeply, don't just patch symptoms
 - ✅ **DO**: Continue working until the issue is fully resolved with proper tests
 - ❌ **DON'T**: Rush to implementation without proper reproduction
-- ❌ **DON'T**: Skip writing tests because "it works in the Sandbox"
+- ❌ **DON'T**: Skip writing tests because "it works manually"
 - ❌ **DON'T**: Submit incomplete solutions
 
 **If exceeding time budget**: Use mandatory checkpoints to validate your approach and ask for help.
 
 ## ⚡ MANDATORY FIRST STEPS
+
+**🚨 CRITICAL**: All issue resolution work MUST be done in TestCases.HostApp. NEVER use Sandbox app.
 
 **Before starting issue resolution, complete these steps IN ORDER:**
 
@@ -50,7 +52,7 @@
 
 **Your Workflow**:
 1. 📖 **Analyze the issue report** - Understand what's broken and why it matters
-2. 🔍 **Reproduce the issue** - Create test case in Sandbox app that demonstrates the problem
+2. 🔍 **Reproduce the issue** - Create test page in TestCases.HostApp that demonstrates the problem
 3. 🛑 **CHECKPOINT 1** - Show reproduction to user, get approval before investigating
 4. 🧪 **Investigate root cause** - Use instrumentation and debugging to understand WHY it fails
 5. 💡 **Design solution** - Plan the fix, considering edge cases and platform differences
@@ -90,7 +92,7 @@
 
 **Critical**: You MUST reproduce the issue before attempting to fix it.
 
-1. **Create test case in Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox/`)
+1. **Create test page in TestCases.HostApp** (`src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`)
 2. **Follow reporter's reproduction steps** exactly as described
 3. **Add instrumentation** to capture measurements and behavior
 4. **Verify the bug exists** - confirm you see the same broken behavior
@@ -184,7 +186,7 @@ After completing root cause analysis and designing your fix approach, you MUST s
 
 **Verify your fix works:**
 
-1. **Test in Sandbox app** - Original issue scenario works correctly
+1. **Test with HostApp test page** - Original issue scenario works correctly
 2. **Test WITH and WITHOUT the fix** - Confirm fix actually solves the problem
 3. **Test edge cases systematically** - See below
 4. **Test on all affected platforms** - iOS, Android, Windows, Mac
@@ -222,8 +224,8 @@ After completing root cause analysis and designing your fix approach, you MUST s
 - 🟡 MEDIUM: 1000 item collection - PASS
 ```
 
-**Use same testing approach as pr-reviewer:**
-- Modify Sandbox app with instrumentation (see [Instrumentation Guide](../instrumentation.md))
+**Use HostApp test page with instrumentation:**
+- Add instrumentation to your test page (see [Instrumentation Guide](../instrumentation.md))
 - Capture measurements before and after fix
 - Document test results with actual data
 

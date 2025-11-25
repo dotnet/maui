@@ -6,10 +6,6 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
-**🔄 IMPORTANT: Synchronization with AGENTS.md**
-
-When updating this file, you MUST also update `AGENTS.md` (in repository root) to ensure both instruction files remain synchronized. AGENTS.md provides universal guidance for all AI coding assistants, while this file is specifically for GitHub Copilot.
-
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
@@ -311,6 +307,32 @@ dotnet format analyzers Microsoft.Maui.sln
 - Verify Visual Studio workloads include .NET MAUI development
 - Check for missing NuGet packages: `dotnet restore --force`
 
+## Custom Agents
+
+The repository includes specialized custom agents for specific tasks. These agents are available to GitHub Copilot and can be invoked for their respective specializations:
+
+### Available Custom Agents
+
+1. **issue-resolver** - Specialized agent for investigating and resolving community-reported .NET MAUI issues through hands-on testing and implementation
+   - Use when: Working on bug fixes from GitHub issues
+   - Capabilities: Issue reproduction, root cause analysis, fix implementation, testing
+
+2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
+   - Use when: Reviewing PRs or validating your own changes
+   - Capabilities: Code quality analysis, best practices validation, test coverage review
+
+3. **sandbox-agent** - Specialized agent for working with the .NET MAUI Sandbox app for testing, validation, and experimentation
+   - Use when: Need to test changes in isolation or create reproduction cases
+   - Capabilities: Sandbox app setup, test case creation, behavior validation
+
+4. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
+   - Use when: Creating new UI tests or updating existing ones
+   - Capabilities: UI test authoring, Appium WebDriver usage, NUnit test patterns
+
+### Using Custom Agents
+
+Custom agents can be invoked by GitHub Copilot when appropriate for the task at hand. They have deep knowledge of their specific domains and follow all repository conventions and best practices.
+
 ## Additional Resources
 
 - [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
@@ -319,7 +341,7 @@ dotnet format analyzers Microsoft.Maui.sln
 - [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
 - [SafeArea Testing Guide](/.github/instructions/safearea-testing.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
 - [Instrumentation Guide](/.github/instructions/instrumentation.md) - Patterns for instrumenting MAUI code for debugging and testing
-- [Appium Control Scripts](/.github/instructions/appium-control.instructions.md) - Create standalone scripts for manual Appium-based debugging and exploration
+- [Appium Control Scripts](/.github/instructions/appium-control.md) - Create standalone scripts for manual Appium-based debugging and exploration
 - [Development Guide](/.github/DEVELOPMENT.md)
 - [Development Tips](/docs/DevelopmentTips.md)
 - [Contributing Guidelines](/.github/CONTRIBUTING.md)

@@ -35,35 +35,11 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 
 **The issue number is required to fetch the correct issue details from GitHub.**
 
-## 🚨 CRITICAL: Using PowerShell Scripts for Testing
+## 🚨 CRITICAL: Using TestCases.HostApp for All Issue Resolution
 
-**All app testing is automated through PowerShell scripts. NEVER use manual build/deploy/log commands.**
+**All issue reproduction and testing MUST be done in TestCases.HostApp. NEVER use Sandbox app for issue resolution.**
 
-### For Issue Reproduction (Sandbox App):
-```powershell
-# Android
-.github/scripts/BuildAndRunSandbox.ps1 -Platform Android
-
-# iOS
-.github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
-```
-
-**What it does**:
-- Builds the Sandbox app
-- Manages Appium server (starts if needed, stops when done)
-- Deploys and launches app via Appium
-- Captures all logs automatically to `CustomAgentLogsTmp/Sandbox/` directory:
-  - `appium.log` - Appium server logs (both platforms)
-  - `android-device.log` - Android device logs (filtered to app PID)
-  - `ios-device.log` - iOS simulator logs (filtered to app bundle)
-  - `RunWithAppiumTest.cs` - The Appium test script that ran
-
-**How to use**:
-1. Modify `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml` and `.xaml.cs` to reproduce the issue
-2. Run the script for your target platform
-3. Read the generated log files in `CustomAgentLogsTmp/Sandbox/` to see results
-
-### For UI Test Execution (HostApp):
+### For Issue Reproduction and UI Tests (TestCases.HostApp):
 ```powershell
 # Run specific test by name
 .github/scripts/BuildAndRunHostApp.ps1 -Platform Android -TestFilter "FullyQualifiedName~IssueXXXXX"
@@ -75,11 +51,13 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 **What it does**:
 - Builds TestCases.HostApp for the platform
 - Manages Appium server automatically
-- Runs `dotnet test` with your filters
+- Runs `dotnet test` with your filters (or all tests if no filter provided)
 - Captures all logs to `CustomAgentLogsTmp/UITests/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` / `ios-device.log` - Device logs (filtered to app PID)
   - `test-output.log` - Test execution results
+
+**For reproduction**: Create test page in HostApp/Issues/IssueXXXXX.xaml and matching NUnit test, then run with BuildAndRunHostApp.ps1.
 
 **If tests fail or app crashes**: All logs are already captured in the directory. Read them to find the root cause.
 
@@ -94,7 +72,7 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
    - **STOP after Essential Reading section**
 
 2. **Keep [quick-ref.md](../instructions/issue-resolver-agent/quick-ref.md) nearby** (reference during work)
-   - PowerShell script commands for iOS/Android testing
+   - BuildAndRunHostApp.ps1 commands for iOS/Android testing
    - Instrumentation templates
    - UI test checklist and templates
    - Checkpoint templates (MANDATORY before certain steps)

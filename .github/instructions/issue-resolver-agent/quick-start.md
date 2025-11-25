@@ -29,29 +29,24 @@ git branch --show-current
 **Standard workflow**:
 ```
 1. Analyze issue → Read issue + ALL comments
-2. Reproduce → Create test in Sandbox app
+2. Reproduce → Create test page in TestCases.HostApp/Issues/IssueXXXXX.xaml
 3. 🛑 CHECKPOINT 1: Show reproduction before investigating
-4. Investigate → Root cause analysis
+4. Investigate → Root cause analysis with instrumentation
 5. 🛑 CHECKPOINT 2: Show fix design before implementing
-6. Implement → Write the fix
-7. Test → Verify fix + edge cases
-8. Write UI tests → TestCases.HostApp + Shared.Tests
+6. Implement → Write the fix in framework code
+7. Test → Verify fix works with reproduction page
+8. Write UI tests → See [uitests.instructions.md](../uitests.instructions.md)
 9. Submit PR → [Issue-Resolver] Fix #XXXXX
 ```
 
 **Key principle**: Reproduce first, understand deeply, fix correctly, test thoroughly.
-
-### App Selection (30 seconds)
-
-**For reproduction**: ✅ Use Sandbox app (`src/Controls/samples/Controls.Sample.Sandbox/`)
-**For UI tests**: ✅ Use TestCases.HostApp (`src/Controls/tests/TestCases.HostApp/`)
 
 ### UI Interaction Rule (10 seconds)
 
 **For ANY device UI interaction**: Use **Appium** (Appium.WebDriver@8.0.1)
 - ✅ Use Appium for taps, swipes, text entry
 - ❌ NEVER use `adb shell input` or `xcrun simctl ui` commands
-- See [../appium-control.instructions.md](../appium-control.instructions.md) for templates
+- See [../appium-control.md](../appium-control.md) for templates
 
 ### Mandatory Checkpoints (30 seconds)
 
@@ -95,11 +90,11 @@ Post this to user:
 **Affected Platforms**: [iOS/Android/Windows/Mac/All]
 
 **Reproduction Plan**:
-- Using Sandbox app
+- Creating test page in TestCases.HostApp/Issues/IssueXXXXX.xaml
 - Will test: [scenario description]
 - Platforms to test: [list]
 
-**Next Step**: Creating reproduction in Sandbox app, will show before investigating.
+**Next Step**: Creating reproduction test page in HostApp, will show before investigating.
 
 Any concerns about this approach?
 ```
@@ -108,37 +103,34 @@ Any concerns about this approach?
 
 ### Step 3: Set Up Reproduction Test
 
-**Use BuildAndRunSandbox.ps1** for automated testing:
+**Use TestCases.HostApp for ALL work (reproduction AND tests)**:
 
 ```bash
-# 1. Modify Sandbox app to reproduce the issue
-# Edit: src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
-# Add controls and AutomationId attributes for testing
+# 1. Create test page for reproduction
+# File: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml
+# - Add XAML markup to reproduce the issue scenario
+# - Include AutomationId attributes on all testable elements
+# - Create code-behind: IssueXXXXX.xaml.cs with [Issue()] attribute
 
-# 2. The script will automatically create RunWithAppiumTest.cs from template
-# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs and customize:
-# - Set ISSUE_NUMBER (replace 00000)
-# - Set PLATFORM ("android" or "ios")
-# - COMPLETELY REWRITE the "Test Logic" section for your specific scenario:
-#   * Template is just a starting structure - don't use its placeholder code
-#   * Replace ALL AutomationIds with your actual IDs from MainPage.xaml
-#   * Add YOUR specific test interactions (tap, scroll, enter text, etc.)
-#   * Add YOUR assertions to verify the bug or expected behavior
-#   * Treat this as writing a brand new Appium test from scratch
+# 2. Write UI test to verify reproduction
+# File: src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+# - Inherit from _IssuesUITest
+# - Add test method that reproduces the bug
+# - Use Appium to interact with UI (WaitForElement, Tap, etc.)
+# - Add assertions to verify the bug exists (test should fail without fix)
 
-# 3. Run the script - it handles everything:
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+# 3. Run the test - BuildAndRunHostApp.ps1 handles EVERYTHING:
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 ```
 
-**What the script does**:
-- ✅ Builds Sandbox app
-- ✅ Auto-detects device/emulator
+**What BuildAndRunHostApp.ps1 does**:
+- ✅ Builds TestCases.HostApp for target platform
+- ✅ Auto-detects device/emulator/simulator
 - ✅ Manages Appium server (starts/stops automatically)
-- ✅ Deploys and launches app via Appium
-- ✅ Runs your test script
-- ✅ Captures all logs automatically
+- ✅ Runs dotnet test with your filter (or all tests if no filter)
+- ✅ Captures all logs automatically to `CustomAgentLogsTmp/UITests/`
 
-**Logs saved to**: `CustomAgentLogsTmp/Sandbox/appium.log`, `CustomAgentLogsTmp/Sandbox/android-device.log` (or `ios-device.log`)
+**Logs include**: `appium.log`, `android-device.log` (or `ios-device.log`), `test-output.log`
 
 📖 **Full details**: [quick-ref.md](quick-ref.md#reproduction-workflows)
 
@@ -265,7 +257,7 @@ Should I proceed with implementation?
 
 You now know:
 - ✅ Standard workflow with mandatory checkpoints
-- ✅ Which apps to use (Sandbox for repro, HostApp for tests)
+- ✅ Use TestCases.HostApp for ALL work (reproduction AND UI tests)
 - ✅ Where to find commands and templates
 - ✅ Time expectations and when to ask for help
 

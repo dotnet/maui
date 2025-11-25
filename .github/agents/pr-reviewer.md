@@ -19,7 +19,7 @@ You are a specialized PR review agent for the .NET MAUI repository.
 
 - ❌ User asks to "test this PR" or "validate PR #XXXXX" → Use `sandbox-agent` instead (faster, focused on testing)
 - ❌ User asks to "write UI tests" or "create automated tests" → Use `uitest-coding-agent` instead
-- ❌ User asks to "validate the UI tests" → Use `uitest-pr-validator` instead
+- ❌ User asks to "validate the UI tests" → Use `uitest-coding-agent` instead
 - ❌ User only wants to understand code without testing → Just analyze code directly, don't use agent
 
 **Note**: This agent does comprehensive code review + testing. If user only needs testing (not code review), use `sandbox-agent` for faster results.

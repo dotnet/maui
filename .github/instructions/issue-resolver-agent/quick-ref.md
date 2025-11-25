@@ -24,64 +24,67 @@ Copy-paste commands and templates for common operations. Your go-to resource dur
 
 ## Reproduction Workflows
 
-### Using BuildAndRunSandbox.ps1 (Recommended)
+### 🚨 CRITICAL: Use TestCases.HostApp ONLY
 
-**One script handles everything**: Build, deploy, Appium testing, and log capture.
+**All issue resolution work MUST be done in TestCases.HostApp**:
+- ✅ Create test pages in HostApp/Issues/IssueXXXXX.xaml
+- ✅ Write UI tests in TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+- ✅ Run with BuildAndRunHostApp.ps1
+- ❌ NEVER use Sandbox app for issue resolution
 
-#### Step 1: Create Appium Test Script
-
-```bash
-# Copy template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
-
-# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs:
-# - Set ISSUE_NUMBER (replace 00000)
-# - Set PLATFORM ("android" or "ios")
-# - CUSTOMIZE the "Test Logic" section to match your Sandbox app:
-#   * Find elements by AutomationId from your XAML
-#   * Tap buttons, enter text, etc. to reproduce the issue
-#   * Add assertions to verify expected behavior
-#   * The template is just a starting point - modify it completely as needed!
-```
-
-#### Step 2: Modify Sandbox App (if needed)
+#### Step 1: Create Test Page in HostApp
 
 ```bash
-# Edit Sandbox XAML
-vim src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+# Create XAML test page
+# File: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml
+# - Add XAML markup that reproduces the issue scenario
+# - Include AutomationId attributes on all interactive elements
+# - Follow the pattern of existing Issue*.xaml files
 
-# Edit code-behind
-vim src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs
-
-# Add AutomationId attributes for Appium interaction
+# Create code-behind
+# File: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs
+# - Add [Issue(IssueTracker.Github, XXXXX, "Description", PlatformAffected.All)] attribute
+# - Implement the reproduction logic
+# - Add instrumentation with Console.WriteLine for debugging
 ```
 
-#### Step 3: Run Complete Test
+#### Step 2: Create UI Test
+
+```bash
+# Create NUnit test
+# File: src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+# - Inherit from _IssuesUITest
+# - Add test method with [Test] and [Category] attributes
+# - Use Appium to interact with the test page (WaitForElement, Tap, etc.)
+# - Add assertions to verify the issue reproduces (test should fail before fix)
+```
+
+#### Step 3: Run Test to Verify Reproduction
 
 ```bash
 # Android
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 
-# iOS (when supported)
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+# iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
 
 **What it does**:
-- ✅ Builds Sandbox app from source
-- ✅ Auto-detects devices
+- ✅ Builds TestCases.HostApp for target platform
+- ✅ Auto-detects devices/simulators
 - ✅ Manages Appium (starts/stops automatically)
-- ✅ Deploys and launches app
-- ✅ Runs your Appium test script
-- ✅ Captures all logs (Appium + device)
-- ✅ Saves logs to `CustomAgentLogsTmp/Sandbox/appium.log` and `CustomAgentLogsTmp/Sandbox/logcat.log`
+- ✅ Runs dotnet test with your filter
+- ✅ Captures all logs (Appium + device + test output)
+- ✅ Saves logs to `CustomAgentLogsTmp/UITests/` directory
 
-**Logs are in**: `CustomAgentLogsTmp/Sandbox/` directory (persisted after script finishes)
+**Logs are in**: `CustomAgentLogsTmp/UITests/` directory
+- `appium.log` - Appium server logs
+- `android-device.log` / `ios-device.log` - Device logs (filtered to app PID)
+- `test-output.log` - Test execution results
 
-📖 **Template reference**: `.github/scripts/templates/RunWithAppiumTest.template.cs`
-
-### Manual Workflows (Advanced)
-
-For manual testing without Appium, see [Instrumentation Guide](../instrumentation.md)
+**Test behavior**: 
+- ❌ Test FAILS without fix (proves you've reproduced the bug)
+- ✅ Test PASSES with fix (proves the fix works)
 
 ---
 
@@ -120,11 +123,7 @@ public static void MapProperty(IMyHandler handler, IMyView view)
 
 ## UI Automation with Appium
 
-### For Issue Reproduction (Sandbox App)
-
-**Use BuildAndRunSandbox.ps1** - See [Reproduction Workflows](#reproduction-workflows) above.
-
-### For UI Tests (TestCases.HostApp)
+### For ALL Issue Resolution Work (TestCases.HostApp)
 
 **CRITICAL: When writing UI tests, use Appium - NOT adb/xcrun commands**
 
@@ -136,10 +135,10 @@ public static void MapProperty(IMyHandler handler, IMyView view)
 #### When ADB/xcrun ARE acceptable:
 - ✅ `adb devices` - Check device connection (for troubleshooting)
 - ✅ `xcrun simctl list` - List simulators (for troubleshooting)
-- ❌ **NEVER manually run** `adb logcat` - The BuildAndRunSandbox.ps1 script captures all logs automatically
+- ❌ **NEVER manually run** `adb logcat` - The BuildAndRunHostApp.ps1 script captures all logs automatically
 
 📖 **UI test guide**: [UI Tests Instructions](../uitests.instructions.md)
-📖 **Appium scripting**: [Appium Control Scripts](../appium-control.instructions.md)
+📖 **Appium scripting**: [Appium Control Scripts](../appium-control.md)
 
 ---
 
@@ -179,121 +178,39 @@ protected override void DisconnectHandler(PlatformView platformView)
 
 ## UI Test Checklist
 
-Every fix MUST include UI tests. Use this checklist:
+Every fix MUST include UI tests.
 
-### 1. Create HostApp Test Page
+**📚 For complete UI test writing guidance, see**: [UI Tests Instructions](../uitests.instructions.md)
 
-**File**: `src/Controls/tests/TestCases.HostApp/Issues/Issue{XXXXX}.xaml`
+### Quick Checklist
 
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             Title="Issue XXXXX - [Brief Description]">
+**Before writing UI tests, read the uitests.instructions.md file.** It covers:
+- Two-project requirement (HostApp page + Shared.Tests test)
+- File naming conventions (IssueXXXXX pattern)
+- AutomationId requirements
+- Test structure and patterns
+- Running tests locally
+- Platform coverage rules
 
-    <VerticalStackLayout Padding="20" Spacing="10">
-        <!-- Every testable element needs AutomationId -->
-        
-        <Label Text="Test description or instructions"
-               AutomationId="InstructionLabel"/>
-        
-        <Button Text="Trigger Bug"
-                AutomationId="TriggerButton"
-                Clicked="OnTriggerClicked"/>
-        
-        <Label Text="Result will appear here"
-               AutomationId="ResultLabel"
-               IsVisible="False"/>
-    </VerticalStackLayout>
-</ContentPage>
-```
+### Minimal Quick Reference
 
-**Code-behind**: `src/Controls/tests/TestCases.HostApp/Issues/Issue{XXXXX}.xaml.cs`
+1. **Create HostApp Test Page**: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml` + `.xaml.cs`
+   - Add `[Issue()]` attribute in code-behind
+   - Include `AutomationId` on all interactive elements
 
-```csharp
-namespace Maui.Controls.Sample.Issues;
+2. **Create NUnit Test**: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+   - Inherit from `_IssuesUITest`
+   - Add `[Test]` and ONE `[Category]` attribute
+   - Use Appium: `App.WaitForElement()`, `App.Tap()`, etc.
 
-[Issue(IssueTracker.Github, XXXXX, "Issue description", PlatformAffected.All)]
-public partial class IssueXXXXX : ContentPage
-{
-    public IssueXXXXX()
-    {
-        InitializeComponent();
-    }
+3. **Run Test**: 
+   ```bash
+   pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+   ```
 
-    private void OnTriggerClicked(object sender, EventArgs e)
-    {
-        // Reproduce the bug scenario
-        ResultLabel.IsVisible = true;
-        ResultLabel.Text = "Expected behavior verified";
-    }
-}
-```
+4. **Verify**: Test fails without fix, passes with fix
 
-### 2. Create NUnit Test
-
-**File**: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue{XXXXX}.cs`
-
-```csharp
-using NUnit.Framework;
-using UITest.Appium;
-using UITest.Core;
-
-namespace Microsoft.Maui.TestCases.Tests.Issues;
-
-public class IssueXXXXX : _IssuesUITest
-{
-    public IssueXXXXX(TestDevice device) : base(device)
-    {
-    }
-
-    public override string Issue => "Clear description of what this tests";
-    
-    [Test]
-    [Category(UITestCategories.YourCategory)]  // Button, Label, Layout, etc.
-    public void IssueXXXXX_TestDescription()
-    {
-        // Arrange - Wait for initial state
-        App.WaitForElement("TriggerButton");
-    
-        // Act - Trigger the bug scenario
-        App.Tap("TriggerButton");
-    
-        // Assert - Verify fix
-        App.WaitForElement("ResultLabel");
-        
-        // Visual verification
-        VerifyScreenshot();
-    }
-}
-```
-
-### 3. Run Test Locally
-
-Use the BuildAndRunHostApp.ps1 script to build, deploy, and run your UI test:
-
-**iOS**:
-```bash
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
-```
-
-**Android**:
-```bash
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
-```
-
-**All logs saved to**: `CustomAgentLogsTmp/UITests/`
-- `appium.log` - Appium server logs
-- `ios-device.log` / `android-device.log` - Device logs
-- `test-output.log` - Test execution output
-
-### 4. Verify Test Quality
-
-- ✅ Test fails WITHOUT your fix
-- ✅ Test passes WITH your fix
-- ✅ AutomationIds are unique and descriptive
-- ✅ Uses `VerifyScreenshot()` for visual validation
-- ✅ Only ONE `[Category]` attribute
+📖 **See [uitests.instructions.md](../uitests.instructions.md) for complete details, examples, and patterns**
 
 ---
 
@@ -423,7 +340,7 @@ Should I proceed with implementation?
 
 📖 **See also**: [Issue-Specific Error Handling](error-handling.md) - Cannot reproduce, fix failures, etc.
 
-**"BuildAndRunSandbox.ps1 fails to find device"**:
+**"BuildAndRunHostApp.ps1 fails to find device"**:
 ```bash
 # Check ADB connection (Android)
 adb devices
@@ -434,13 +351,13 @@ adb start-server
 adb devices
 
 # Or manually specify device
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android -DeviceUdid <your-device-id>
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -DeviceUdid <your-device-id> -TestFilter "IssueXXXXX"
 ```
 
 **"Need to manually install APK for troubleshooting"**:
 ```bash
-# Only if BuildAndRunSandbox.ps1 fails and you need to debug
-adb install -r artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-android/com.microsoft.maui.sandbox-Signed.apk
+# Only if BuildAndRunHostApp.ps1 fails and you need to debug
+adb install -r artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-android/com.microsoft.maui.uitests-Signed.apk
 ```
 
 ### Test Failures

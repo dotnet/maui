@@ -864,6 +864,6 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 - [SafeArea Testing Instructions](safearea-testing.md) - **Specialized guide for SafeArea testing** (measure children, not parents)
 - [Edge Case Testing](edge-case-testing.md) - Comprehensive test scenario checklist
 - [UI Tests Instructions](uitests.instructions.md) - Creating automated UI tests
-- [Appium Control Scripts](appium-control.instructions.md) - UI automation patterns
+- [Appium Control Scripts](appium-control.md) - UI automation patterns
 - `docs/DevelopmentTips.md` - General development tips
 - `docs/UITesting-Guide.md` - UI testing patterns

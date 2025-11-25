@@ -385,7 +385,7 @@ git diff main -- path/to/file.cs  # Should show NOTHING
 - Appium works across different screen sizes/orientations
 - Coordinate-based taps are brittle and unreliable
 
-**Reference**: See [Appium Control Scripts Instructions](../appium-control.instructions.md) for creating Appium test scripts
+**Reference**: See [Appium Control Scripts Instructions](../appium-control.md) for creating Appium test scripts
 
 **Why this matters**: Code review alone is insufficient. Many issues only surface when running actual code on real platforms with real scenarios. Your testing often reveals edge cases and issues the PR author didn't consider.
 

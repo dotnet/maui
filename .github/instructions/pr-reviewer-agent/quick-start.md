@@ -55,7 +55,7 @@ Read these in order:
    
    **Decision**: If you need to interact with app UI → Use Appium script
    
-   See [appium-control.instructions.md](../appium-control.instructions.md) for complete guide.
+   See [appium-control.md](../appium-control.md) for complete guide.
 
 4. **Special Cases** (30 seconds - read if applicable)
    - CollectionView/CarouselView PR? → Read [collectionview-handler-detection.md](collectionview-handler-detection.md)
@@ -276,7 +276,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 
 **✅ YOUR ONLY JOB**: Edit `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` with your test logic
 
-**Note**: This guide is for PR validation (using Sandbox). If you need to write/validate UI tests, you should be using `uitest-coding-agent` or `uitest-pr-validator` instead.
+**Note**: This guide is for PR validation (using Sandbox). If you need to write/validate UI tests, you should be using `uitest-coding-agent` instead.
 
 See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing-patterns.md) for more details.
 

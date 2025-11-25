@@ -24,7 +24,7 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 ## When NOT to Use This Agent
 
 - ❌ User asks to "write UI tests" or "create automated tests" → Use `uitest-coding-agent` instead
-- ❌ User asks to "validate the UI tests" or "verify test quality" → Use `uitest-pr-validator` instead
+- ❌ User asks to "validate the UI tests" or "verify test quality" → Use `uitest-coding-agent` instead
 - ❌ User asks to "review the code" or "check PR quality" → Use `pr-reviewer-agent` instead
 - ❌ PR only adds documentation (no code changes to test)
 - ❌ PR only modifies build scripts (no functional changes)

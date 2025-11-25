@@ -43,13 +43,30 @@ This document covers issue resolver-specific errors: reproduction failures, fix 
 - Cannot verify element state or wait for elements
 - Tests become brittle and unreliable
 
-**Correct approach**: Use Appium for UI tests
+**Correct approach**: Use Appium with TestCases.HostApp
 - Element-based interaction (finds by AutomationId)
 - Waits for elements to be ready
 - Verifies actions succeeded
 - Works across different screen sizes
+- All handled automatically by BuildAndRunHostApp.ps1
 
 **See**: [quick-ref.md#ui-automation-with-appium](quick-ref.md#ui-automation-with-appium) for templates and guidance
+
+### Using Sandbox App for Issue Resolution
+
+**Issue**: Creating reproduction in Sandbox app instead of TestCases.HostApp
+
+**Why this fails**:
+- Sandbox tests cannot be automated with UI tests
+- No integration with CI/CD pipeline
+- Cannot verify fix prevents regressions
+- Requires manual testing instead of automated validation
+
+**Correct approach**: Always use TestCases.HostApp
+- Create test page in HostApp/Issues/IssueXXXXX.xaml
+- Write NUnit test in TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+- Run with BuildAndRunHostApp.ps1
+- Test fails without fix, passes with fix (proves the fix works)
 
 ---
 
@@ -345,12 +362,12 @@ public static void MapFlowDirection(ICollectionViewHandler handler, ICollectionV
 
 **Check logs:**
 ```bash
-# Run BuildAndRunSandbox.ps1 to test your fix
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+# Run BuildAndRunHostApp.ps1 to test your fix
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 
 # Then read the generated logs
-cat CustomAgentLogsTmp/Sandbox/android-device.log | grep "\[DEBUG\]"  # Android
-cat CustomAgentLogsTmp/Sandbox/ios-device.log | grep "\[DEBUG\]"      # iOS
+cat CustomAgentLogsTmp/UITests/android-device.log | grep "\[DEBUG\]"  # Android
+cat CustomAgentLogsTmp/UITests/ios-device.log | grep "\[DEBUG\]"      # iOS
 ```
 
 **If logging doesn't appear:**
@@ -573,8 +590,8 @@ Console.WriteLine($"[REPRO-12345] FlowDirection changed to {value}");
 Console.WriteLine($"[REPRO-12345] Layout updated: {layout.Configuration}");
 Console.WriteLine($"[REPRO-12345] Measurements: {width}x{height}");
 
-// After running BuildAndRunSandbox.ps1, filter logs:
-// cat CustomAgentLogsTmp/Sandbox/logcat.log | grep "REPRO-12345"
+// After running BuildAndRunHostApp.ps1, filter logs:
+// cat CustomAgentLogsTmp/UITests/android-device.log | grep "REPRO-12345"
 ```
 
 **Log at key decision points:**
