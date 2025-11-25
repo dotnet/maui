@@ -29,11 +29,12 @@ public partial class Maui3059rt : ContentPage
 		}
 
 		[Test]
-		public void BorderWithMultipleChildren_OnlyLastChildIsUsed([Values] XamlInflator inflator)
+		public void BorderWithMultipleChildren_OnlyLastChildIsUsed()
 		{
 			// This test verifies the behavior that only the last child is actually used
 			// when multiple children are specified in a single-child content property
-			var page = new Maui3059rt(inflator);
+			// Note: .rt.xaml files only support Runtime inflator
+			var page = new Maui3059rt(XamlInflator.Runtime);
 			
 			Assert.IsNotNull(page.Content);
 			Assert.IsInstanceOf<Microsoft.Maui.Controls.Border>(page.Content);
