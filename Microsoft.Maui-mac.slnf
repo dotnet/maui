@@ -59,9 +59,9 @@
       "src\\TestUtils\\src\\UITest.Core\\UITest.Core.csproj",
       "src\\TestUtils\\src\\UITest.Appium\\UITest.Appium.csproj",
       "src\\TestUtils\\src\\UITest.NUnit\\UITest.NUnit.csproj",
-      "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
-      "src\\TestUtils\\src\\VisualTestUtils.MagickNet\\VisualTestUtils.MagickNet.csproj",
       "src\\TestUtils\\src\\VisualTestUtils\\VisualTestUtils.csproj",
+      "src\\TestUtils\\src\\VisualTestUtils.MagickNet\\VisualTestUtils.MagickNet.csproj",
+      "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
       "src\\Workload\\Microsoft.NET.Sdk.Maui.Manifest\\Microsoft.NET.Sdk.Maui.Manifest.csproj"
     ]
