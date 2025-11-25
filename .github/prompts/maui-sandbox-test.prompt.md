@@ -1,6 +1,6 @@
 ---
 description: "Validate a PR by testing it in the .NET MAUI Sandbox app for manual verification"
-name: sandbox-test
+name: maui-sandbox-test
 agent: sandbox-agent
 ---
 
@@ -11,8 +11,8 @@ Test a pull request using the .NET MAUI Sandbox app for manual validation and is
 ## Usage
 
 ```
-@workspace /sandbox-test <PR_NUMBER>
-@workspace /sandbox-test <PR_NUMBER> <platform>
+@workspace /maui-sandbox-test <PR_NUMBER>
+@workspace /maui-sandbox-test <PR_NUMBER> <platform>
 ```
 
 ## What This Does
@@ -35,8 +35,8 @@ Test a pull request using the .NET MAUI Sandbox app for manual validation and is
 - Experiment with features
 
 ❌ **DON'T use this prompt when:**
-- Write UI tests → Use `@workspace /uitest-write` instead
-- Review code quality → Use `@workspace /pr-review` instead
+- Write UI tests → Use `@workspace /maui-uitest-write` instead
+- Review code quality → Use `@workspace /maui-pr-reviewer` instead
 - Documentation-only changes → No testing needed
 
 ## Platform Selection
@@ -48,9 +48,9 @@ Test a pull request using the .NET MAUI Sandbox app for manual validation and is
 ## Examples
 
 ```
-@workspace /sandbox-test 23456
-@workspace /sandbox-test 23456 android
-@workspace /sandbox-test 23456 ios
+@workspace /maui-sandbox-test 23456
+@workspace /maui-sandbox-test 23456 android
+@workspace /maui-sandbox-test 23456 ios
 ```
 
 ## Test Scenario Sources

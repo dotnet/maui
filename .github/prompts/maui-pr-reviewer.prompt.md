@@ -1,6 +1,6 @@
 ---
 description: "Conduct thorough PR reviews with hands-on testing using Sandbox app"
-name: pr-reviewer
+name: maui-pr-reviewer
 agent: pr-reviewer
 ---
 
@@ -33,19 +33,19 @@ Reviews .NET MAUI pull requests through code analysis AND hands-on Sandbox testi
 - Testing layout, navigation, or UI changes
 
 ❌ **DON'T use this prompt when:**
-- "Write UI tests" → Use `@workspace /uitest-write` instead
-- "Test this PR" (no review needed) → Use `@workspace /sandbox-test` instead
+- "Write UI tests" → Use `@workspace /maui-uitest-write` instead
+- "Test this PR" (no review needed) → Use `@workspace /maui-sandbox-test` instead
 - Documentation-only changes → No testing needed
 
 ## Usage Examples
 
 ```
-@pr-reviewer Please review PR #32479
-@pr-reviewer Test PR #32205 on iOS
-@pr-reviewer Validate PR #12345 on both iOS and Android
-@pr-reviewer Review PR #32275 and test Shell flyout in landscape
-@pr-reviewer Test PR #32205 with RTL layout and capture measurements
-@pr-reviewer Compare behavior WITH and WITHOUT PR #12345 changes
+@workspace /maui-pr-reviewer Please review PR #32479
+@workspace /maui-pr-reviewer Test PR #32205 on iOS
+@workspace /maui-pr-reviewer Validate PR #12345 on both iOS and Android
+@workspace /maui-pr-reviewer Review PR #32275 and test Shell flyout in landscape
+@workspace /maui-pr-reviewer Test PR #32205 with RTL layout and capture measurements
+@workspace /maui-pr-reviewer Compare behavior WITH and WITHOUT PR #12345 changes
 ```
 
 ## What You'll Get

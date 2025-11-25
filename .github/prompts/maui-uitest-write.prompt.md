@@ -1,6 +1,6 @@
 ---
 description: "Write new UI tests for .NET MAUI with proper conventions and best practices"
-name: uitest-write
+name: maui-uitest-write
 agent: uitest-coding-agent
 ---
 
@@ -17,18 +17,18 @@ Writes high-quality UI tests for .NET MAUI following established conventions.
 - Need to write NEW test files
 
 ❌ **DON'T use this prompt when:**
-- "Test this PR" → Use `@workspace /sandbox-test` instead
-- "Review this PR" → Use `@workspace /pr-reviewer` instead
+- "Test this PR" → Use `@workspace /maui-sandbox-test` instead
+- "Review this PR" → Use `@workspace /maui-pr-reviewer` instead
 - "Investigate issue #12345" → Use `@issue-resolver` instead
-- Only need manual verification → Use `@workspace /sandbox-test` instead
+- Only need manual verification → Use `@workspace /maui-sandbox-test` instead
 
 ## Usage Examples
 
 ```
-@workspace /uitest-write Create UI test for issue #12345
-@workspace /uitest-write Add test for Button click updating Label text
-@workspace /uitest-write Write Android SafeArea keyboard test
-@workspace /uitest-write Write test for issue #32479 using the reproduction steps
+@workspace /maui-uitest-write Create UI test for issue #12345
+@workspace /maui-uitest-write Add test for Button click updating Label text
+@workspace /maui-uitest-write Write Android SafeArea keyboard test
+@workspace /maui-uitest-write Write test for issue #32479 using the reproduction steps
 ```
 
 ## What This Does
