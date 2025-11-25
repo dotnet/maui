@@ -4,39 +4,32 @@
        x:Class="Maui.Controls.Sample.Issues.Issue25599"
        xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
     <TabBar>
-        <Tab Title="Home"
-                x:Name="FirstTab"
-                AutomationId="Tab1">
+        <Tab Title="Home" x:Name="FirstTab" AutomationId="Tab1">
             <ShellContent
-                Title="Home">
-                <ShellContent.ContentTemplate>
-                    <DataTemplate>
-                        <ContentPage x:Name="firstPage">
-                            <StackLayout>
-                                <Button Text="Click"
-                                        Clicked="Button_Clicked"
-                                        AutomationId="HomePageButton"/>
-                                <Label Text="Home Page"
-                                        AutomationId="HomePageLabel"/>
-                            </StackLayout>
-                        </ContentPage>
-                    </DataTemplate>
-                </ShellContent.ContentTemplate>
+            Title="Home" >
+            <ShellContent.ContentTemplate>
+                <DataTemplate>
+                    <ContentPage x:Name="firstPage">
+                        <StackLayout>
+                            <Button Text="Click" Clicked="Button_Clicked" AutomationId="HomePageButton"/>
+                            <Label Text="Home Page" AutomationId="HomePageLabel"/>
+                        </StackLayout>
+                    </ContentPage>
+                </DataTemplate>
+            </ShellContent.ContentTemplate>
             </ShellContent>
         </Tab>
-        <Tab Title="Settings"
-                x:Name="SecondTab">
+        <Tab Title="Settings" x:Name="SecondTab">
             <ShellContent>
-                <ShellContent.ContentTemplate>
-                    <DataTemplate>
-                        <ContentPage x:Name="secondPage">
-                            <StackLayout>
-                                <Label x:Name="settingsPageLabel"
-                                        Text="SettingsPage"/>
-                            </StackLayout>
-                        </ContentPage>
-                    </DataTemplate>
-                </ShellContent.ContentTemplate>
+            <ShellContent.ContentTemplate>
+                <DataTemplate>
+                    <ContentPage x:Name="secondPage">
+                        <StackLayout>
+                            <Label x:Name="settingsPageLabel" Text="SettingsPage" />
+                        </StackLayout>
+                    </ContentPage>
+                </DataTemplate>
+            </ShellContent.ContentTemplate>
             </ShellContent>
         </Tab>
     </TabBar>
