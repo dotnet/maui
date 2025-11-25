@@ -219,6 +219,7 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
+			bool _presentationCompleted = false;
 
 			internal event EventHandler? AnimationEnded;
 			internal event EventHandler? PresentationCompleted;
@@ -367,14 +368,18 @@ namespace Microsoft.Maui.Controls.Platform
 				var dialog = Dialog;
 
 				if (dialog is null || dialog.Window is null || View is null)
+				{
+					// SAFETY: Fire event even on early return to prevent deadlock
+					FirePresentationCompleted();
 					return;
+				}
 
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
 
 				// Signal that the modal is fully presented and ready
-				PresentationCompleted?.Invoke(this, EventArgs.Empty);
+				FirePresentationCompleted();
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
@@ -399,6 +404,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnDestroy();
 				FireAnimationEnded();
+
+				// SAFETY: If destroyed before OnStart completed, fire PresentationCompleted to prevent deadlock
+				FirePresentationCompleted();
 			}
 
 			void FireAnimationEnded()
@@ -410,6 +418,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_pendingAnimation = false;
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
+			}
+
+			void FirePresentationCompleted()
+			{
+				if (_presentationCompleted)
+					return;
+
+				_presentationCompleted = true;
+				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 
 
