@@ -431,7 +431,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		ListProxy _proxyForWeakToWeakTest;
 #pragma warning restore 0414
 
-		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
+		[Fact]
 		public void WeakToWeak()
 		{
 			WeakCollectionChangedList list = new WeakCollectionChangedList();
