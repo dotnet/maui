@@ -166,8 +166,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			var selectedItem = (NavigationViewItemViewModel)args.SelectedItem;
 
-			if (selectedItem.Data is ShellSection shellSection)
+			if (selectedItem.Data is ShellSection shellSection && VirtualView.Parent is Shell shell)
 			{
+				NavigationViewItemViewModel? currentItem = null;
+				foreach (var item in _mainLevelTabs)
+				{
+					if (shell.CurrentItem?.CurrentItem is not null && item.Data == shell.CurrentItem.CurrentItem)
+					{
+						currentItem = item;
+						break;
+					}
+				}
+				if (PlatformView is NavigationView navView && navView?.SelectedItem is not null && navView.SelectedItem != currentItem)
+				{
+					((IShellItemController)shell.CurrentItem!).ProposeSection(shellSection);
+				}
+
 				((Shell)VirtualView.Parent).CurrentItem = shellSection;
 			}
 			else if (selectedItem.Data is ShellContent shellContent && VirtualView.Parent is Shell parentShell)
