@@ -26,14 +26,14 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 - App building (always fresh build)
 - App installation and deployment
 - Appium server management (auto-start/stop)
-- Running Appium test (`SandboxAppium/RunWithAppiumTest.cs`)
-- Complete log capture to `SandboxAppium/` directory:
+- Running Appium test (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
+- Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
   - `RunWithAppiumTest.cs` - Your test script (preserved after run)
 
 **Requirements**:
-- Must have `SandboxAppium/RunWithAppiumTest.cs` file (use `.github/scripts/templates/RunWithAppiumTest.template.cs` as starting point)
+- Must have `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` file (use `.github/scripts/templates/RunWithAppiumTest.template.cs` as starting point)
 
 **When to use**:
 - ✅ Issue reproduction with Sandbox app
@@ -53,7 +53,7 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 ### Sandbox Test Files Cleanup
 ```bash
 # Remove Appium test directory (gitignored)
-rm -rf SandboxAppium/
+rm -rf CustomAgentLogsTmp/Sandbox/
 ```
 
 ---
@@ -62,25 +62,25 @@ rm -rf SandboxAppium/
 
 ### Where Logs Are Saved
 
-After running BuildAndRunSandbox.ps1, all logs are in `SandboxAppium/`:
+After running BuildAndRunSandbox.ps1, all logs are in `CustomAgentLogsTmp/Sandbox/`:
 
-1. **Android**: `SandboxAppium/android-device.log`
-2. **iOS**: `SandboxAppium/ios-device.log`
-3. **Appium**: `SandboxAppium/appium.log`
+1. **Android**: `CustomAgentLogsTmp/Sandbox/android-device.log`
+2. **iOS**: `CustomAgentLogsTmp/Sandbox/ios-device.log`
+3. **Appium**: `CustomAgentLogsTmp/Sandbox/appium.log`
 
 ### Viewing Logs
 
 ```bash
 # View device logs
-cat SandboxAppium/android-device.log
+cat CustomAgentLogsTmp/Sandbox/android-device.log
 # or
-cat SandboxAppium/ios-device.log
+cat CustomAgentLogsTmp/Sandbox/ios-device.log
 
 # Search for specific output
-grep "TEST OUTPUT" SandboxAppium/android-device.log
+grep "TEST OUTPUT" CustomAgentLogsTmp/Sandbox/android-device.log
 
 # View Appium logs
-cat SandboxAppium/appium.log
+cat CustomAgentLogsTmp/Sandbox/appium.log
 ```
 
 ---
@@ -92,7 +92,7 @@ cat SandboxAppium/appium.log
 **Android**:
 ```bash
 # Check crash logs
-grep -E "(FATAL|AndroidRuntime|Exception)" SandboxAppium/android-device.log
+grep -E "(FATAL|AndroidRuntime|Exception)" CustomAgentLogsTmp/Sandbox/android-device.log
 
 # Look for the actual exception
 adb logcat | grep -A 20 "FATAL"
@@ -137,7 +137,7 @@ lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9
 lsof -i :4723
 ```
 
-**If you see Appium errors**: Check the `appium.log` file in `SandboxAppium/` directory.
+**If you see Appium errors**: Check the `appium.log` file in `CustomAgentLogsTmp/Sandbox/` directory.
 
 ---
 

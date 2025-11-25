@@ -37,7 +37,7 @@ The script handles all building, deployment, Appium management, and log capture:
 
 ```powershell
 # 1. Copy Appium template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
 
 # 2. Edit the template for your test scenario
 
@@ -50,7 +50,7 @@ The script automatically:
 - Builds and deploys the Sandbox app
 - Starts/stops Appium server
 - Runs your Appium test script
-- Captures all logs to `SandboxAppium/` directory
+- Captures all logs to `CustomAgentLogsTmp/Sandbox/` directory
 
 See [Common Testing Patterns](common-testing-patterns.md) for details.
 
@@ -60,10 +60,10 @@ See [Common Testing Patterns](common-testing-patterns.md) for details.
 
 When you run `BuildAndRunSandbox.ps1`:
 
-1. **Creates test script from template**: The script copies `.github/scripts/RunWithAppiumTest.template.cs` to `SandboxAppium/RunWithAppiumTest.cs`
+1. **Creates test script from template**: The script copies `.github/scripts/RunWithAppiumTest.template.cs` to `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
 2. **You customize the test**: Modify `RunWithAppiumTest.cs` to interact with your Sandbox app UI
 3. **Script handles everything**: Builds app, manages Appium, runs test, captures logs
-4. **Review results**: All output in `SandboxAppium/` directory
+4. **Review results**: All output in `CustomAgentLogsTmp/Sandbox/` directory
 
 ## Customizing the Appium Test
 

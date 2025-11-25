@@ -135,9 +135,9 @@ namespace Maui.Controls.Sample
 #    Add controls and AutomationId attributes for testing
 
 # 2. Copy and customize Appium test template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
 
-# Edit SandboxAppium/RunWithAppiumTest.cs:
+# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs:
 #    - Set ISSUE_NUMBER (replace 00000)
 #    - Set PLATFORM ("android" or "ios")
 #    - CUSTOMIZE test logic to match your Sandbox app UI:
@@ -157,7 +157,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 - ✅ Manages Appium server (starts if needed, stops when done)
 - ✅ Deploys and launches app via Appium
 - ✅ Runs your customized test script
-- ✅ Captures all logs automatically to `SandboxAppium/` directory:
+- ✅ Captures all logs automatically to `CustomAgentLogsTmp/Sandbox/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` or `ios-device.log` - Device logs (filtered to app)
   - `RunWithAppiumTest.cs` - Your test script
@@ -168,7 +168,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 
 If the script fails, see:
 - [Error Handling: Build Errors](error-handling.md#build-errors-during-reproduction)
-- Generated log files in `SandboxAppium/` directory
+- Generated log files in `CustomAgentLogsTmp/Sandbox/` directory
 
 ## Verification Points
 

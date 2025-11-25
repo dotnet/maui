@@ -107,8 +107,8 @@ try {
 
 **Screenshots are managed by your Appium test script**:
 
-When writing `SandboxAppium/RunWithAppiumTest.cs`:
-- ✅ **ALWAYS save to**: `SandboxAppium/` directory
+When writing `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`:
+- ✅ **ALWAYS save to**: `CustomAgentLogsTmp/Sandbox/` directory
 - ❌ **NEVER save to**: `/tmp/`, repository root, or any other location
 - 📝 **Purpose**: Documentation/debugging only - never for validation
 
@@ -116,7 +116,7 @@ When writing `SandboxAppium/RunWithAppiumTest.cs`:
 ```csharp
 // In your Appium test script
 var screenshot = driver.GetScreenshot();
-screenshot.SaveAsFile("SandboxAppium/test_state_before.png");  // ✅ Correct
+screenshot.SaveAsFile("CustomAgentLogsTmp/Sandbox/test_state_before.png");  // ✅ Correct
 ```
 
 **Wrong patterns**:

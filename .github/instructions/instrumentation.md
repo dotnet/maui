@@ -143,7 +143,7 @@ When using with Appium for UI interaction:
 
 ```powershell
 # 1. Create Appium test script with your instrumentation logic
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
 # Edit RunWithAppiumTest.cs to add your test logic
 
 # 2. Run everything with one command

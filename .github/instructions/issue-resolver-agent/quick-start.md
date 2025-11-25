@@ -116,9 +116,9 @@ Any concerns about this approach?
 # Add controls and AutomationId attributes for testing
 
 # 2. Copy and customize Appium test template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
 
-# Edit SandboxAppium/RunWithAppiumTest.cs:
+# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs:
 # - Set ISSUE_NUMBER (replace 00000)
 # - Set PLATFORM ("android" or "ios")
 # - COMPLETELY CUSTOMIZE the "Test Logic" section for your Sandbox app:
@@ -140,7 +140,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 - ✅ Runs your test script
 - ✅ Captures all logs automatically
 
-**Logs saved to**: `SandboxAppium/appium.log`, `SandboxAppium/android-device.log` (or `ios-device.log`)
+**Logs saved to**: `CustomAgentLogsTmp/Sandbox/appium.log`, `CustomAgentLogsTmp/Sandbox/android-device.log` (or `ios-device.log`)
 
 📖 **Full details**: [quick-ref.md](quick-ref.md#reproduction-workflows)
 

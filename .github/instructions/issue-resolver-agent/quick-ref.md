@@ -32,9 +32,9 @@ Copy-paste commands and templates for common operations. Your go-to resource dur
 
 ```bash
 # Copy template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
 
-# Edit SandboxAppium/RunWithAppiumTest.cs:
+# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs:
 # - Set ISSUE_NUMBER (replace 00000)
 # - Set PLATFORM ("android" or "ios")
 # - CUSTOMIZE the "Test Logic" section to match your Sandbox app:
@@ -73,9 +73,9 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 - ✅ Deploys and launches app
 - ✅ Runs your Appium test script
 - ✅ Captures all logs (Appium + device)
-- ✅ Saves logs to `SandboxAppium/appium.log` and `SandboxAppium/logcat.log`
+- ✅ Saves logs to `CustomAgentLogsTmp/Sandbox/appium.log` and `CustomAgentLogsTmp/Sandbox/logcat.log`
 
-**Logs are in**: `SandboxAppium/` directory (persisted after script finishes)
+**Logs are in**: `CustomAgentLogsTmp/Sandbox/` directory (persisted after script finishes)
 
 📖 **Template reference**: `.github/scripts/templates/RunWithAppiumTest.template.cs`
 
@@ -282,10 +282,10 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXX
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 ```
 
-**All logs saved to**: `HostAppCustomAgentTmpLogs/`
+**All logs saved to**: `CustomAgentLogsTmp/UITests/`
 - `appium.log` - Appium server logs
 - `ios-device.log` / `android-device.log` - Device logs
-- `test-results.log` - Test execution output
+- `test-output.log` - Test execution output
 
 ### 4. Verify Test Quality
 

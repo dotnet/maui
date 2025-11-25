@@ -271,7 +271,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 - ✅ Deploys to device
 - ✅ Starts/stops Appium server
 - ✅ Runs your Appium test script
-- ✅ Captures all logs to `SandboxAppium/` directory
+- ✅ Captures all logs to `CustomAgentLogsTmp/Sandbox/` directory
 
 **❌ DO NOT do any of these manually**:
 - ❌ `dotnet build ... -t:Run` - Script handles this
@@ -279,7 +279,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
 - ❌ Manually create/run Appium scripts - Script does this
 - ❌ `xcrun simctl launch` - Script handles this
 
-**✅ YOUR ONLY JOB**: Edit `SandboxAppium/RunWithAppiumTest.cs` with your test logic
+**✅ YOUR ONLY JOB**: Edit `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` with your test logic
 
 ---
 
@@ -362,8 +362,8 @@ try {
 
 **Screenshots are managed by the Appium test script**:
 
-When creating your Appium test in `SandboxAppium/RunWithAppiumTest.cs`:
-- ✅ **Save screenshots to**: `SandboxAppium/` directory
+When creating your Appium test in `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`:
+- ✅ **Save screenshots to**: `CustomAgentLogsTmp/Sandbox/` directory
 - ❌ **Never save to**: `/tmp/` or any other location
 - 📝 **Purpose**: Documentation/debugging only - never for validation
 
@@ -371,11 +371,11 @@ When creating your Appium test in `SandboxAppium/RunWithAppiumTest.cs`:
 ```csharp
 // In your Appium test script
 var screenshot = driver.GetScreenshot();
-screenshot.SaveAsFile("SandboxAppium/test_before.png");  // ✅ Correct
+screenshot.SaveAsFile("CustomAgentLogsTmp/Sandbox/test_before.png");  // ✅ Correct
 // NOT: screenshot.SaveAsFile("/tmp/test_before.png");   // ❌ Wrong
 ```
 
-**Automatic cleanup**: BuildAndRunSandbox.ps1 removes all old `*.png` files from `SandboxAppium/` before each test run.
+**Automatic cleanup**: BuildAndRunSandbox.ps1 removes all old `*.png` files from `CustomAgentLogsTmp/Sandbox/` before each test run.
 
 ---
 

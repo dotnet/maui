@@ -45,16 +45,16 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 - ✅ Building Sandbox app (always fresh build)
 - ✅ App installation and deployment
 - ✅ Appium server management (auto-start/stop)
-- ✅ Running your Appium test script (`SandboxAppium/RunWithAppiumTest.cs`)
-- ✅ Complete log capture to `SandboxAppium/` directory:
+- ✅ Running your Appium test script (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
+- ✅ Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
   - Console output from your test script
 
 **Prerequisites**:
-1. Create `SandboxAppium/RunWithAppiumTest.cs` using template:
+1. Create `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` using template:
    ```bash
-   cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+   cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
    ```
 2. Modify the template for your test scenario
 
@@ -86,8 +86,8 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 **CRITICAL**: Use the template file provided in the repository:
 
 ```bash
-# Copy template to SandboxAppium directory
-cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+# Copy template to CustomAgentLogsTmp/Sandbox directory
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
 
 # Edit the file to customize for your test scenario:
 # 1. Set ISSUE_NUMBER constant

@@ -62,17 +62,17 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 - Builds TestCases.HostApp for the platform
 - Manages Appium server automatically
 - Runs `dotnet test` with your filters
-- Captures all logs to `HostAppCustomAgentTmpLogs/` directory:
+- Captures all logs to `CustomAgentLogsTmp/UITests/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` / `ios-device.log` - Device logs (filtered to app PID)
-  - `test-results.log` - Test execution results
+  - `test-output.log` - Test execution results
 
 ### Handling App Crashes:
 
 **If an app crashes on launch, NEVER use `--no-incremental` or `dotnet clean` as a first solution.**
 
 **The correct approach**:
-1. **The PS1 script already captured all logs** - They're in `CustomAgentLogsTmp/Sandbox/` or `HostAppCustomAgentTmpLogs/`
+1. **The PS1 script already captured all logs** - They're in `CustomAgentLogsTmp/Sandbox/` or `CustomAgentLogsTmp/UITests/`
 2. **Read the device logs** (`android-device.log` or `ios-device.log`)
 3. **Find the actual exception** in the logs
 4. **Investigate the root cause** from the stack trace

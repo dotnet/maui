@@ -349,8 +349,8 @@ public static void MapFlowDirection(ICollectionViewHandler handler, ICollectionV
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 
 # Then read the generated logs
-cat SandboxAppium/android-device.log | grep "\[DEBUG\]"  # Android
-cat SandboxAppium/ios-device.log | grep "\[DEBUG\]"      # iOS
+cat CustomAgentLogsTmp/Sandbox/android-device.log | grep "\[DEBUG\]"  # Android
+cat CustomAgentLogsTmp/Sandbox/ios-device.log | grep "\[DEBUG\]"      # iOS
 ```
 
 **If logging doesn't appear:**
@@ -426,7 +426,7 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "Collect
 # Or on iOS
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -Category "CollectionView"
 
-# Check test results and logs in HostAppCustomAgentTmpLogs/
+# Check test results and logs in CustomAgentLogsTmp/UITests/
 ```
 
 **Review your changes:**
@@ -574,7 +574,7 @@ Console.WriteLine($"[REPRO-12345] Layout updated: {layout.Configuration}");
 Console.WriteLine($"[REPRO-12345] Measurements: {width}x{height}");
 
 // After running BuildAndRunSandbox.ps1, filter logs:
-// cat SandboxAppium/logcat.log | grep "REPRO-12345"
+// cat CustomAgentLogsTmp/Sandbox/logcat.log | grep "REPRO-12345"
 ```
 
 **Log at key decision points:**

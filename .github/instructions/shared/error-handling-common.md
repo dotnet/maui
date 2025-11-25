@@ -74,17 +74,17 @@ dotnet format analyzers Microsoft.Maui.sln
 #### Sandbox App Crashes
 
 **Log locations** (after running BuildAndRunSandbox.ps1):
-- `SandboxAppium/appium.log` - Appium server logs
-- `SandboxAppium/android-device.log` - Android crash logs (filtered to app PID)
-- `SandboxAppium/ios-device.log` - iOS crash logs (filtered to app bundle)
+- `CustomAgentLogsTmp/Sandbox/appium.log` - Appium server logs
+- `CustomAgentLogsTmp/Sandbox/android-device.log` - Android crash logs (filtered to app PID)
+- `CustomAgentLogsTmp/Sandbox/ios-device.log` - iOS crash logs (filtered to app bundle)
 
 #### HostApp Test Crashes
 
 **Log locations** (after running BuildAndRunHostApp.ps1):
-- `HostAppCustomAgentTmpLogs/appium.log` - Appium server logs
-- `HostAppCustomAgentTmpLogs/android-device.log` - Android crash logs
-- `HostAppCustomAgentTmpLogs/ios-device.log` - iOS crash logs
-- `HostAppCustomAgentTmpLogs/test-results.log` - Test execution output
+- `CustomAgentLogsTmp/UITests/appium.log` - Appium server logs
+- `CustomAgentLogsTmp/UITests/android-device.log` - Android crash logs
+- `CustomAgentLogsTmp/UITests/ios-device.log` - iOS crash logs
+- `CustomAgentLogsTmp/UITests/test-output.log` - Test execution output
 
 ### Common Crash Causes
 
@@ -138,7 +138,7 @@ dotnet format analyzers Microsoft.Maui.sln
 3. [Third attempt] - [result]
 
 **Log files**:
-- Checked [SandboxAppium/android-device.log or other log file]
+- Checked [CustomAgentLogsTmp/Sandbox/android-device.log or other log file]
 - Key exception: [paste exception if found]
 
 **Environment**:

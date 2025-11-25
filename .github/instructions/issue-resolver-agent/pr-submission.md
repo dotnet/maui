@@ -345,7 +345,7 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
 
-**All logs saved to**: `HostAppCustomAgentTmpLogs/` (check these if tests fail)
+**All logs saved to**: `CustomAgentLogsTmp/UITests/` (check these if tests fail)
 
 See [UI Tests Instructions](../uitests.instructions.md) for:
 - Complete test creation workflow

@@ -24,8 +24,8 @@ Write new UI tests that:
 
 ## When NOT to Use This Agent
 
-- ❌ User asks to "test this PR" (use `sandbox-pr-tester`)
-- ❌ Only need manual verification (use `sandbox-pr-tester`)
+- ❌ User asks to "test this PR" (use `sandbox-agent`)
+- ❌ Only need manual verification (use `sandbox-agent`)
 
 ---
 

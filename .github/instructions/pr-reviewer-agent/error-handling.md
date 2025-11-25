@@ -25,7 +25,7 @@ This document covers PR reviewer-specific errors and common mistakes.
    .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
    ```
 2. ✅ The script automatically detects devices and starts emulator/simulator if needed
-3. ✅ If script fails, read the log files in `SandboxAppium/` to understand why
+3. ✅ If script fails, read the log files in `CustomAgentLogsTmp/Sandbox/` to understand why
 4. ✅ If genuine blocker (unavailable platform, environment issue), CREATE CHECKPOINT
 5. ✅ Provide user with manual test steps in checkpoint
 
@@ -149,7 +149,7 @@ The script handles device detection, emulator/simulator startup, building, deplo
 
 **Step 2: If script fails, READ THE LOG FILES**
 
-Check the log files in `SandboxAppium/`:
+Check the log files in `CustomAgentLogsTmp/Sandbox/`:
 - `appium.log` - Appium server issues
 - `android-device.log` or `ios-device.log` - Device/app issues (includes crashes, exceptions)
 
@@ -188,10 +188,10 @@ After attempting to fix and hitting genuine blocker:
 
 **How to avoid**:
 1. **ALWAYS use BuildAndRunSandbox.ps1** - it handles all testing automatically
-2. **Customize RunWithAppiumTest.cs** in `SandboxAppium/` for your test scenario:
+2. **Customize RunWithAppiumTest.cs** in `CustomAgentLogsTmp/Sandbox/` for your test scenario:
    ```csharp
    // Copy from template
-   cp .github/scripts/templates/RunWithAppiumTest.template.cs SandboxAppium/RunWithAppiumTest.cs
+   cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
    
    // Edit the test logic section:
    var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));

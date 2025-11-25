@@ -26,14 +26,14 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 - App building (always fresh build)
 - App installation and deployment
 - Appium server management (auto-start/stop)
-- Running Appium test (`SandboxAppium/RunWithAppiumTest.cs`)
-- Complete log capture to `SandboxAppium/` directory:
+- Running Appium test (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
+- Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
   - `RunWithAppiumTest.cs` - Your test script (preserved after run)
 
 **Requirements**:
-- Must have `SandboxAppium/RunWithAppiumTest.cs` file (use `.github/scripts/RunWithAppiumTest.template.cs` as starting point)
+- Must have `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` file (use `.github/scripts/RunWithAppiumTest.template.cs` as starting point)
 
 **When to use**:
 - ✅ Issue reproduction with Sandbox app
@@ -64,10 +64,10 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -TestFilter "Category=
 - App installation
 - Appium server management (auto-start/stop)
 - Running `dotnet test` with specified filter
-- Complete log capture to `HostAppCustomAgentTmpLogs/` directory:
+- Complete log capture to `CustomAgentLogsTmp/UITests/` directory:
   - `appium.log` - Appium server logs
   - `android-device.log` or `ios-device.log` - Device logs filtered to HostApp
-  - `test-results.log` - Test execution results
+  - `test-output.log` - Test execution results
 
 **When to use**:
 - ✅ Running automated UI tests
@@ -87,13 +87,13 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 ### Sandbox Test Files Cleanup
 ```bash
 # Remove Appium test directory (gitignored)
-rm -rf SandboxAppium/
+rm -rf CustomAgentLogsTmp/Sandbox/
 ```
 
 ### HostApp Test Logs Cleanup
 ```bash
 # Remove test logs directory (gitignored)
-rm -rf HostAppCustomAgentTmpLogs/
+rm -rf CustomAgentLogsTmp/UITests/
 ```
 
 ---
@@ -108,8 +108,8 @@ rm -rf HostAppCustomAgentTmpLogs/
 1. Run BuildAndRunSandbox.ps1 or BuildAndRunHostApp.ps1
 2. Script will capture crash in device logs
 3. Read the crash logs:
-   - **Android**: `SandboxAppium/android-device.log` or `HostAppCustomAgentTmpLogs/android-device.log`
-   - **iOS**: `SandboxAppium/ios-device.log` or `HostAppCustomAgentTmpLogs/ios-device.log`
+   - **Android**: `CustomAgentLogsTmp/Sandbox/android-device.log` or `CustomAgentLogsTmp/UITests/android-device.log`
+   - **iOS**: `CustomAgentLogsTmp/Sandbox/ios-device.log` or `CustomAgentLogsTmp/UITests/ios-device.log`
 4. Find the exception stack trace in the logs
 5. Investigate root cause from the exception
 6. Fix the underlying issue (null reference, missing resource, etc.)
@@ -143,7 +143,7 @@ dotnet format analyzers Microsoft.Maui.sln
 
 **Note**: The PowerShell scripts automatically manage Appium (start if needed, stop if we started it).
 
-**If you see Appium errors**: Check the `appium.log` file in `SandboxAppium/` or `HostAppCustomAgentTmpLogs/` directories.
+**If you see Appium errors**: Check the `appium.log` file in `CustomAgentLogsTmp/Sandbox/` or `CustomAgentLogsTmp/UITests/` directories.
 
 ---
 

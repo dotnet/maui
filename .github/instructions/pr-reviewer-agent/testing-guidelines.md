@@ -633,12 +633,12 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 - ✅ Detects and boots devices
 - ✅ Builds and deploys Sandbox app
 - ✅ Manages Appium server
-- ✅ Runs your test script (`SandboxAppium/RunWithAppiumTest.cs`)
+- ✅ Runs your test script (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
 - ✅ Captures all logs
 
 **To verify this PR works, you'll need to**:
 
-1. **Edit your Appium test script**: `SandboxAppium/RunWithAppiumTest.cs`
+1. **Edit your Appium test script**: `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
    - Add test logic (tap buttons, verify behavior)
    
 2. **Run the automated script**:
