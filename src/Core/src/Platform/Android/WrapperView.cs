@@ -178,6 +178,10 @@ namespace Microsoft.Maui.Platform
 			containerView ??= new WrapperView(context);
 			setWrapperView.Invoke(containerView);
 
+			// Transfer any existing transforms from the inner view to the wrapper
+			// This handles the case where transforms were set before Shadow was added
+			TransferTransformsToContainer(platformView, containerView);
+
 			((ViewGroup)containerView).AddView(platformView);
 
 			if (oldIndex is int idx && idx >= 0)
@@ -212,6 +216,51 @@ namespace Microsoft.Maui.Platform
 					vg.RemoveAllViews();
 
 				clearWrapperView.Invoke();
+			}
+		}
+
+		static void TransferTransformsToContainer(AView innerView, AView wrapperView)
+		{
+			if (innerView.ScaleX != 1.0f || innerView.ScaleY != 1.0f)
+			{
+				wrapperView.ScaleX = innerView.ScaleX;
+				wrapperView.ScaleY = innerView.ScaleY;
+				innerView.ScaleX = 1.0f;
+				innerView.ScaleY = 1.0f;
+			}
+
+			if (innerView.Rotation != 0.0f)
+			{
+				wrapperView.Rotation = innerView.Rotation;
+				innerView.Rotation = 0.0f;
+			}
+
+			if (innerView.RotationX != 0.0f)
+			{
+				wrapperView.RotationX = innerView.RotationX;
+				innerView.RotationX = 0.0f;
+			}
+
+			if (innerView.RotationY != 0.0f)
+			{
+				wrapperView.RotationY = innerView.RotationY;
+				innerView.RotationY = 0.0f;
+			}
+
+			if (innerView.TranslationX != 0.0f || innerView.TranslationY != 0.0f)
+			{
+				wrapperView.TranslationX = innerView.TranslationX;
+				wrapperView.TranslationY = innerView.TranslationY;
+				innerView.TranslationX = 0.0f;
+				innerView.TranslationY = 0.0f;
+			}
+
+			if (innerView.PivotX != (innerView.Width / 2.0f) || innerView.PivotY != (innerView.Height / 2.0f))
+			{
+				wrapperView.PivotX = innerView.PivotX;
+				wrapperView.PivotY = innerView.PivotY;
+				innerView.PivotX = innerView.Width / 2.0f;
+				innerView.PivotY = innerView.Height / 2.0f;
 			}
 		}
 	}
