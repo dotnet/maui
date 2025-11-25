@@ -71,7 +71,7 @@
 
 		<!-- Fail the build if errors were detected -->
 		<Error Condition="'$(_SdkInstallHasError_Common)' == 'True'"
-			   Text="Failed to install Android SDK common packages. Check the logs above for details. Output: $(_SdkInstallOutput_Common)" />
+			   Text="Failed to install Android SDK common packages. Check the logs above for details." />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -105,7 +105,7 @@
 
 		<!-- Fail the build if errors were detected -->
 		<Error Condition="'$(_SdkInstallHasError_Platform)' == 'True'"
-			   Text="Failed to install Android SDK platform API packages. Check the logs above for details. Output: $(_SdkInstallOutput_Platform)" />
+			   Text="Failed to install Android SDK platform API packages. Check the logs above for details." />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -142,7 +142,7 @@
 
 		<!-- Fail the build if errors were detected -->
 		<Error Condition="'$(_SdkInstallHasError_Emulator)' == 'True'"
-			   Text="Failed to install Android SDK emulator image packages. Check the logs above for details. Output: $(_SdkInstallOutput_Emulator)" />
+			   Text="Failed to install Android SDK emulator image packages. Check the logs above for details." />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -175,7 +175,7 @@
 
 		<!-- Fail the build if errors were detected -->
 		<Error Condition="'$(_AvdCreateHasError)' == 'True'"
-			   Text="Failed to create Android AVD. Check the logs above for details. Output: $(_AvdCreateOutput)" />
+			   Text="Failed to create Android AVD. Check the logs above for details." />
 
 		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
