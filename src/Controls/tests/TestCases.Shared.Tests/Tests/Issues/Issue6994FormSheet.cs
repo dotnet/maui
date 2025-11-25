@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("OpenFormSheetButton");
 			App.WaitForElement("ModalDimensionsLabel");
 
-			// Wait for dimensions to be displayed (format: "540 x 620")
+			// Wait for dimensions to be displayed (format: "Width x Height", e.g., "540 x 620")
 			App.WaitForTextToBePresentInElement("ModalDimensionsLabel", " x ");
 
 			// Get the first dimensions
