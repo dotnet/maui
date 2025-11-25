@@ -265,7 +265,10 @@ All agent logs are consolidated under `CustomAgentLogsTmp/`:
 - **`copilot-instructions.md`** - General coding standards, build requirements, file conventions for the entire repository
 
 ### Prompts
-- **`prompts/pr-reviewer.prompt.md`** - Ready-to-use prompt templates for PR reviews
+- **`prompts/maui-pr-reviewer.prompt.md`** - Prompt for comprehensive PR reviews with testing
+- **`prompts/maui-sandbox-test.prompt.md`** - Prompt for testing PRs in Sandbox app
+- **`prompts/maui-uitest-write.prompt.md`** - Prompt for writing new UI tests
+- **`prompts/maui-release-notes.prompt.md`** - Prompt for generating release notes
 
 ## For GitHub Copilot (General Development)
 
