@@ -88,10 +88,6 @@ public partial class TestPage
 			return;
 		}
 
-		var setter = new global::Microsoft.Maui.Controls.Setter();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
-		var setter1 = new global::Microsoft.Maui.Controls.Setter();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 		var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 10);
 		var __root = this;
@@ -108,29 +104,17 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
+		var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
 #line 8 "{{testXamlFilePath}}"
-		setter.Property = global::Microsoft.Maui.Controls.Label.TextColorProperty;
+		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
-#line 8 "{{testXamlFilePath}}"
-		setter.Value = "Pink ";
-#line default
-		var setter2 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter2!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter2!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
-#line 8 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter2);
-#line default
+		var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 #line 9 "{{testXamlFilePath}}"
-		setter1.Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty;
-#line default
-#line 9 "{{testXamlFilePath}}"
-		setter1.Value = "True";
-#line default
-		var setter3 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter3!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter3!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
-#line 9 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter3);
+		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
 #line default
 		__root.Resources["style"] = style1;
 	}

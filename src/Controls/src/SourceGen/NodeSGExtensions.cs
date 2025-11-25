@@ -80,10 +80,10 @@ static class NodeSGExtensions
 			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Shape"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 		};
 
-	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
+	public static Dictionary<ITypeSymbol, IKnownMarkupValueProvider> GetKnownValueProviders(SourceGenContext context)
 		=> context.knownSGValueProviders ??= new(SymbolEqualityComparer.Default)
 	{
-		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
 	};
 
 
@@ -541,8 +541,8 @@ static class NodeSGExtensions
 			return true;
 		}
 
-		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, writer, context, getNodeValue, out returnType0, out value))
+		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
+			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
