@@ -1,149 +1,83 @@
 ---
-description: "Conduct thorough PR reviews with hands-on testing on real devices/simulators"
+description: "Conduct thorough PR reviews with hands-on testing using Sandbox app"
 name: pr-reviewer
 agent: pr-reviewer
 ---
 
 # PR Reviewer
 
-Reviews .NET MAUI pull requests through code analysis AND hands-on device testing with instrumentation.
+Reviews .NET MAUI pull requests through code analysis AND hands-on Sandbox testing.
 
-## What It Does
+## What This Does
 
-**Thorough Testing-Based Reviews:**
 1. 📖 Fetches and analyzes PR changes
-2. 🏗️ Builds Sandbox app with PR modifications
-3. 📱 Deploys to iOS/Android simulators
-4. 🔬 Uses **Appium** for reliable UI interaction (never manual ADB commands)
-5. 📊 Instruments code to capture actual measurements
-6. ⚖️ Compares WITH/WITHOUT PR changes
-7. 🧪 Tests edge cases PR author may have missed
-8. 📝 Documents findings with real data
+2. 🏗️ Creates test scenario in Sandbox app
+3. 🧪 Runs automated Appium tests via BuildAndRunSandbox.ps1
+4. ⚖️ Compares behavior WITH/WITHOUT PR changes
+5. 📝 Provides comprehensive review with evidence
 
-**Key Principles:**
-- ✅ Uses **Sandbox app** for validation (not TestCases.HostApp)
-- ✅ Uses **Appium** for ALL UI interactions (taps, swipes, rotations)
-- ✅ Uses **background daemon pattern** for Android emulators (survives sessions)
-- ✅ Never kills ADB server unnecessarily
-- ✅ Pauses and asks for help if stuck (never gives up and switches to code-only review)
+**Key Points:**
+- Uses Sandbox app for PR validation (NOT HostApp)
+- All testing automated via single script command
+- Captures logs, screenshots, and test results
+- Tests on real devices/simulators with Appium
+
+**Timeline:** First build 60-90s, subsequent tests 20-30s, full review 10-20 min
+
+## When to Use
+
+✅ **Use this prompt when:**
+- Need comprehensive PR review with testing
+- Want to validate fixes work as expected
+- Need before/after behavior comparison
+- Testing layout, navigation, or UI changes
+
+❌ **DON'T use this prompt when:**
+- "Write UI tests" → Use `@workspace /uitest-write` instead
+- "Test this PR" (no review needed) → Use `@workspace /sandbox-test` instead
+- Documentation-only changes → No testing needed
 
 ## Usage Examples
 
-**Basic review:**
 ```
-/pr-reviewer Please review PR #32372
-```
-
-**Platform-specific:**
-```
-/pr-reviewer Test PR #32205 on iOS 26.0
-```
-
-**Cross-platform validation:**
-```
-/pr-reviewer Validate PR #12345 on both iOS and Android
-```
-
-**Layout/SafeArea issues:**
-```
-/pr-reviewer Review PR #32275 and test Shell flyout in landscape with display notch
-```
-
-**Specific scenario:**
-```
-/pr-reviewer Test PR #32205 with RTL layout and capture frame measurements
-```
-
-**Before/after comparison:**
-```
-/pr-reviewer Compare behavior WITH and WITHOUT PR #12345 changes
+@pr-reviewer Please review PR #32479
+@pr-reviewer Test PR #32205 on iOS
+@pr-reviewer Validate PR #12345 on both iOS and Android
+@pr-reviewer Review PR #32275 and test Shell flyout in landscape
+@pr-reviewer Test PR #32205 with RTL layout and capture measurements
+@pr-reviewer Compare behavior WITH and WITHOUT PR #12345 changes
 ```
 
 ## What You'll Get
 
-**Comprehensive Review Document** (`Review_Feedback_Issue_XXXXX.md`) including:
-
-- ✅ **Code Analysis** - Style, correctness, best practices review
-- ✅ **Test Environment** - Platform/version/device used
-- ✅ **Actual Measurements** - Console output, frame positions, inset values
+- ✅ **Code Analysis** - Changes reviewed for correctness and style
+- ✅ **Test Execution** - Real device testing with Appium
+- ✅ **Captured Logs** - Device logs, Appium logs, test scripts, screenshots
 - ✅ **Before/After Comparison** - Behavior with and without PR
-- ✅ **Edge Cases** - Additional scenarios tested beyond PR description
-- ✅ **Screenshots** - Visual evidence when relevant
 - ✅ **Issues Found** - Problems discovered through testing
-- ✅ **Recommendations** - Accept/reject/modify based on evidence
+- ✅ **Recommendation** - Accept/modify/reject based on evidence
 
-## Expectations
-
-**Timeline:**
-- ⏱️ Reviews take 15-45 minutes (building, deploying, testing multiple scenarios)
-- ✅ Agent has **unlimited time** - will not rush or skip testing
-- ✅ You'll see progress updates as testing proceeds
-
-**Testing Approach:**
-- 🤖 **Appium-based** - All UI automation through Appium (reliable, verifiable)
-- 📱 **Real devices** - Tests on actual iOS simulators or Android emulators
-- 📏 **Instrumented** - Adds logging to capture measurements
-- 🔄 **Comparative** - Tests both with and without PR changes
-
-**If Issues Occur:**
-- Build fails → Agent attempts 1-2 fixes, then **pauses** for your input
-- Emulator crashes → Agent reports issue and asks for guidance
-- Unexpected behavior → Agent documents and asks for validation
-- **Never silently falls back to code-only review**
-
-## Common Scenarios
-
-**SafeArea/Layout PRs:**
-- Agent instruments views to capture padding, margins, frame positions
-- Tests in portrait and landscape orientations
-- Verifies safe area insets are applied correctly
-- Measures child vs parent view positions
-
-**UI Component PRs:**
-- Opens Sandbox app with test scenario
-- Uses Appium to interact with controls (taps, swipes, text entry)
-- Captures screenshots and measurements
-- Tests on target platform (iOS, Android, or both)
-
-**Shell/Navigation PRs:**
-- Sets up Shell in Sandbox with flyout items
-- Uses Appium to open menus, navigate, test gestures
-- Verifies behavior in different orientations
-- Tests with and without headers/footers
-
-**Cross-Platform PRs:**
-- Tests same scenario on iOS AND Android
-- Compares platform-specific behavior
-- Verifies consistent user experience
-- Notes any platform differences
+All logs and artifacts saved to `CustomAgentLogsTmp/Sandbox/`
 
 ## Tips for Best Results
 
-✅ **Be specific** about what to test:
-```
-/pr-reviewer Test PR #12345 focusing on RTL layout behavior
-```
+- **Be specific** about what to test (e.g., "focusing on RTL layout behavior")
+- **Mention platform** if it matters (iOS, Android, or both)
+- **Request measurements** for layout issues (padding values, positions)
+- **Ask for edge cases** (rotation, RTL, light/dark mode)
+- Testing is thorough - first build takes 60-90 seconds
 
-✅ **Mention platform** if it matters:
-```
-/pr-reviewer Test PR #32275 on Android with display notch
-```
+## Documentation
 
-✅ **Request measurements** for layout issues:
-```
-/pr-reviewer Capture actual frame positions and padding values for PR #32205
-```
+**Complete agent instructions:**
+- [pr-reviewer agent](../agents/pr-reviewer.md) - Full agent definition with complete workflow
+- [Quick Start](../instructions/pr-reviewer-agent/quick-start.md) - Essential reading (5 min)
 
-✅ **Ask for edge cases**:
-```
-/pr-reviewer Test PR #12345 including rotation, RTL, and empty state scenarios
-```
+**Specialized guides:**
+- [Sandbox Setup](../instructions/pr-reviewer-agent/sandbox-setup.md) - Test scenario examples
+- [SafeArea Testing](../instructions/safearea-testing.md) - SafeArea-specific guidance
+- [Error Handling](../instructions/pr-reviewer-agent/error-handling.md) - Troubleshooting
 
-❌ **Don't rush the agent** - Testing takes time, and thoroughness prevents bugs
-
-## Related Resources
-
-- [Core Guidelines](../instructions/pr-reviewer-agent/core-guidelines.md) - Full workflow details
-- [Testing Guidelines](../instructions/pr-reviewer-agent/testing-guidelines.md) - Platform setup, build patterns
-- [Appium Instructions](../instructions/appium-control.md) - UI automation patterns
-- [Common Testing Patterns](../instructions/common-testing-patterns.md) - Device setup, error checking
+**Quick references:**
+- [Common Commands](../instructions/pr-reviewer-agent/quick-ref.md) - Build and test commands
+- [Instrumentation Guide](../instructions/instrumentation.md) - Adding debug logging
