@@ -48,7 +48,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			// Property is being set multiple times - check if this warning should be suppressed via NoWarn
 			var noWarn = Context.ProjectItem.NoWarn;
 			bool shouldSuppress = !string.IsNullOrEmpty(noWarn) &&
-				(noWarn.Contains("2015") || noWarn.Contains("MAUIX2015"));
+				noWarn.Split(new[] { ',', ';', ' ' })
+					.Select(code => code.Trim())
+					.Any(code => code == "2015" || code == "MAUIX2015");
 
 			if (!shouldSuppress)
 			{
@@ -86,10 +88,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
-
-		// Check for duplicate property assignment
-		if (parentNode is ElementNode elementParent)
-			CheckForDuplicateProperty(elementParent, propertyName, node);
 
 		SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 	}
@@ -161,10 +159,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			// if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
 			//     return;
 
-			// Check for duplicate property assignment
-			if (parentNode is ElementNode elementParent)
-				CheckForDuplicateProperty(elementParent, propertyName, node);
-
 			SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ElementNode)
@@ -179,11 +173,23 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var name = new XmlName(node.NamespaceURI, contentProperty);
 				if (skips.Contains(name))
 					return;
-				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
+				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(name))
 					return;
 
-				// Check for duplicate property assignment (including implicit content property)
-				CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+				// Only check for duplicate property assignment if the property is not a collection
+				// Get the property type and check if it supports Add() for collection behavior
+				bool attached = false;
+				var localName = name.LocalName;
+				var bpFieldSymbol = parentVar.Type.GetBindableProperty(name.NamespaceURI, ref localName, out attached, context, node);
+				ITypeSymbol? propertyType = null;
+				
+				// Try to get the property type
+				bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+					|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+				
+				// Only warn if the property exists and is NOT a collection (doesn't support Add)
+				if (hasProperty && propertyType != null && !propertyType.CanAdd(context))
+					CheckForDuplicateProperty((ElementNode)parentNode, name, node);
 
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
