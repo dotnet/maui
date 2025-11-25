@@ -1,3 +1,6 @@
 #nullable enable
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 override Microsoft.Maui.Handlers.BorderHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.ContentViewHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.LayoutHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.SwipeViewHandler.SetupContainer() -> void
