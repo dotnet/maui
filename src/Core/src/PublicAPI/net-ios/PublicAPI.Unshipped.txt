@@ -7,3 +7,6 @@ override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.Handlers.DatePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 override Microsoft.Maui.Handlers.BorderHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.ContentViewHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.LayoutHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.SwipeViewHandler.SetupContainer() -> void

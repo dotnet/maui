@@ -1,6 +1,4 @@
 ﻿using System;
-using CoreAnimation;
-using CoreGraphics;
 using UIKit;
 using PlatformView = UIKit.UIView;
 
@@ -15,10 +13,9 @@ namespace Microsoft.Maui.Handlers
 			// When a WrapperView is created, the child (PlatformView) is moved inside it.
 			// Reset the child's transform to identity to prevent transform compounding,
 			// since the WrapperView will handle the transform for the entire container.
-			if (ContainerView is WrapperView && PlatformView?.Layer is CALayer childLayer)
+			if (ContainerView is WrapperView)
 			{
-				childLayer.Transform = CATransform3D.Identity;
-				childLayer.AnchorPoint = new CGPoint(0.5, 0.5);
+				PlatformView.ResetLayerTransform();
 			}
 		}
 

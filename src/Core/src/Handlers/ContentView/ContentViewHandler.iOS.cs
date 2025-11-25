@@ -5,6 +5,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ContentViewHandler : ViewHandler<IContentView, ContentView>
 	{
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// When a WrapperView is created, the child (PlatformView) is moved inside it.
+			// Reset the child's transform to identity to prevent transform compounding,
+			// since the WrapperView will handle the transform for the entire container.
+			if (ContainerView is WrapperView)
+			{
+				PlatformView.ResetLayerTransform();
+			}
+		}
+
 		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
