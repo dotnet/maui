@@ -381,6 +381,13 @@ The BuildAndRunSandbox.ps1 script handles build, deploy, and log capture:
 - `dotnet run` - Script runs the Appium test
 - `xcrun simctl boot` - Script handles iOS simulator
 - `xcrun simctl install` - Script deploys to simulator
+- `xcrun simctl spawn booted log stream` - Script captures iOS logs
+
+**Why this matters:**
+- Running `adb logcat` manually captures DIFFERENT logs than what the script captured
+- Manual logcat shows CURRENT state, not what happened during the test
+- Script filters logs to Sandbox app only and includes PID
+- You'll miss the actual crash/error if you run logcat after the fact
 
 **✅ DO RUN THE SCRIPT TO BUILD/DEPLOY/TEST:**
 ```bash
@@ -393,26 +400,55 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 # The script ALREADY captured logs. Now analyze them:
 grep -i "error" CustomAgentLogsTmp/Sandbox/android-device.log
 grep -i "exception" CustomAgentLogsTmp/Sandbox/android-device.log
+grep -i "FATAL" CustomAgentLogsTmp/Sandbox/android-device.log
 tail -50 CustomAgentLogsTmp/Sandbox/android-device.log
 cat CustomAgentLogsTmp/Sandbox/appium.log
 
+# Search for your console markers:
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/android-device.log
+
 # These commands READ existing files. They don't capture new logs.
 ```
+
+**Expected files after BuildAndRunSandbox.ps1:**
+```
+CustomAgentLogsTmp/Sandbox/
+├── RunWithAppiumTest.cs           # Your Appium test script
+├── android-device.log             # Android device logs (filtered to Sandbox app)
+│   OR ios-device.log              # iOS simulator logs (filtered to Sandbox app)
+├── appium.log                     # Appium server logs
+├── issue_XXXXX_before.png         # Screenshot before test (if test captures it)
+└── issue_XXXXX_after.png          # Screenshot after test (if test captures it)
+```
+
+**If logs are missing or empty:**
+
+This indicates a bug in BuildAndRunSandbox.ps1 that MUST be fixed:
+
+1. **Check script output** - Look for "Logcat dumped to:" or "iOS logs saved to:" messages
+2. **Verify variable is defined** - Script must set `$deviceLogFile` before using it:
+   ```powershell
+   $deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
+   ```
+3. **Check file permissions** - Ensure `CustomAgentLogsTmp/Sandbox/` directory is writable
+4. **Report the bug** - If script doesn't generate logs, this is a script bug that blocks testing
 
 **How to debug:**
 
 1. **Run BuildAndRunSandbox.ps1** - It builds, deploys, captures logs, and runs tests
 2. **Read script output** - Shows build errors, deployment status, test results
-3. **Analyze captured logs** - Use `grep`, `cat`, `tail` to read log files in `CustomAgentLogsTmp/Sandbox/`:
+3. **Verify log files exist** - Check `ls -lh CustomAgentLogsTmp/Sandbox/` for log files
+4. **Analyze captured logs** - Use `grep`, `cat`, `tail` to read log files in `CustomAgentLogsTmp/Sandbox/`:
    - `android-device.log` or `ios-device.log` - Device logs
    - `appium.log` - Appium server logs
-4. **Fix issues** - Update test code, MainPage, or report if blocked
-5. **Rerun script** - It will rebuild, redeploy, recapture logs, and retest
+5. **Fix issues** - Update test code, MainPage, or report if blocked
+6. **Rerun script** - It will rebuild, redeploy, recapture logs, and retest
 
 **Summary:**
 - ❌ Don't run commands that BUILD, DEPLOY, or CAPTURE logs
 - ✅ DO run commands that ANALYZE already-captured logs
 - ✅ Always use BuildAndRunSandbox.ps1 for build/deploy/test cycle
+- ✅ If log files are missing, this is a script bug - fix or report it
 
 **What to fix:**
 - **Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry

@@ -192,7 +192,14 @@ Console.WriteLine("✅ Test completed successfully!");
 - **Automation**: `AutomationName = "UIAutomator2"`
 - **App Path**: `.apk` file with `-Signed` suffix
 - **Device Name**: Get from `adb devices` command
-- **Element Locator**: `MobileBy.Id("AutomationId")` - AutomationIds map to `resource-id` attributes
+- **Element Locator**: `MobileBy.XPath("//*[@resource-id='PACKAGE:id/AutomationId']")` - AutomationIds are PREFIXED with package name
+  - **🚨 CRITICAL**: Android resource IDs include package prefix
+  - **Format**: `{packageId}:id/{AutomationId}`
+  - **Example**: If XAML has `AutomationId="TestButton"` and package is `com.microsoft.maui.sandbox`, use:
+    ```csharp
+    driver.FindElement(MobileBy.XPath("//*[@resource-id='com.microsoft.maui.sandbox:id/TestButton']"))
+    ```
+  - **Wrong**: `MobileBy.Id("TestButton")` or `MobileBy.XPath("//*[@resource-id='TestButton']")`
 - **App Options**: Use `appium:appPackage` and `appium:appActivity` (format: `{packageId}.MainActivity`)
 
 ## Running the Script

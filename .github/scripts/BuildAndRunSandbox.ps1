@@ -256,6 +256,9 @@ try {
 
 Write-Step "Running Appium test..."
 
+# Define device log file path based on platform
+$deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
+
 # Clear logs before test
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
