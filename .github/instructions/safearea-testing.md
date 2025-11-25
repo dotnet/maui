@@ -283,5 +283,5 @@ Bottom gap from screen edge: 34   ← Expected padding
 
 ## Related Documentation
 
-- `.github/instructions/instrumentation.instructions.md` - General instrumentation patterns
+- `.github/instructions/instrumentation.md` - General instrumentation patterns
 - `.github/copilot-instructions.md` - Build and deployment guidelines

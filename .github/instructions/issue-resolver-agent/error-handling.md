@@ -43,13 +43,30 @@ This document covers issue resolver-specific errors: reproduction failures, fix 
 - Cannot verify element state or wait for elements
 - Tests become brittle and unreliable
 
-**Correct approach**: Use Appium for UI tests
+**Correct approach**: Use Appium with TestCases.HostApp
 - Element-based interaction (finds by AutomationId)
 - Waits for elements to be ready
 - Verifies actions succeeded
 - Works across different screen sizes
+- All handled automatically by BuildAndRunHostApp.ps1
 
 **See**: [quick-ref.md#ui-automation-with-appium](quick-ref.md#ui-automation-with-appium) for templates and guidance
+
+### Using Sandbox App for Issue Resolution
+
+**Issue**: Creating reproduction in Sandbox app instead of TestCases.HostApp
+
+**Why this fails**:
+- Sandbox tests cannot be automated with UI tests
+- No integration with CI/CD pipeline
+- Cannot verify fix prevents regressions
+- Requires manual testing instead of automated validation
+
+**Correct approach**: Always use TestCases.HostApp
+- Create test page in HostApp/Issues/IssueXXXXX.xaml
+- Write NUnit test in TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+- Run with BuildAndRunHostApp.ps1
+- Test fails without fix, passes with fix (proves the fix works)
 
 ---
 
@@ -233,8 +250,7 @@ When a build error occurs during fix development:
 
 **Common build errors** (see [Shared Error Handling](../shared/error-handling-common.md#build-errors) for details):
 - Build tasks not found → `dotnet build ./Microsoft.Maui.BuildTasks.slnf`
-- Dependency conflicts → `rm -rf bin/ obj/ && dotnet restore --force`
-- PublicAPI errors → `dotnet format analyzers Microsoft.Maui.sln` (NEVER disable the analyzer)
+- PublicAPI errors → `dotnet format analyzers Microsoft.Maui.slnx` (NEVER disable the analyzer)
 
 #### Step 2: Issue-Specific Build Errors
 
@@ -346,11 +362,12 @@ public static void MapFlowDirection(ICollectionViewHandler handler, ICollectionV
 
 **Check logs:**
 ```bash
-# iOS
-xcrun simctl spawn booted log stream --predicate 'eventMessage contains "[DEBUG]"'
+# Run BuildAndRunHostApp.ps1 to test your fix
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 
-# Android
-adb logcat | grep "\[DEBUG\]"
+# Then read the generated logs
+cat CustomAgentLogsTmp/UITests/android-device.log | grep "\[DEBUG\]"  # Android
+cat CustomAgentLogsTmp/UITests/ios-device.log | grep "\[DEBUG\]"      # iOS
 ```
 
 **If logging doesn't appear:**
@@ -419,12 +436,14 @@ var listView = new ListView { FlowDirection = FlowDirection.RightToLeft };
 ```
 
 **Run existing tests:**
-```bash
-# Run all CollectionView tests
-dotnet test src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj \
-  --filter "Category=CollectionView"
+```powershell
+# Run all CollectionView tests on Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "CollectionView"
 
-# Check for failures
+# Or on iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -Category "CollectionView"
+
+# Check test results and logs in CustomAgentLogsTmp/UITests/
 ```
 
 **Review your changes:**
@@ -571,8 +590,8 @@ Console.WriteLine($"[REPRO-12345] FlowDirection changed to {value}");
 Console.WriteLine($"[REPRO-12345] Layout updated: {layout.Configuration}");
 Console.WriteLine($"[REPRO-12345] Measurements: {width}x{height}");
 
-// Grep for your specific issue
-// adb logcat | grep "REPRO-12345"
+// After running BuildAndRunHostApp.ps1, filter logs:
+// cat CustomAgentLogsTmp/UITests/android-device.log | grep "REPRO-12345"
 ```
 
 **Log at key decision points:**

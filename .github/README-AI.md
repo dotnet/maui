@@ -4,26 +4,46 @@ This folder contains instructions and configurations for AI coding assistants wo
 
 ## Available Agents
 
-### PR Reviewer Agent
-The PR reviewer agent conducts thorough, constructive code reviews of .NET MAUI pull requests with hands-on testing and validation.
+### Sandbox Agent
+The sandbox agent is your general-purpose tool for working with the .NET MAUI Sandbox app. Use it for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
+
+### UI Test Coding Agent
+The UI test coding agent writes and runs automated UI tests following .NET MAUI conventions. Use it for creating new test coverage, running existing tests from PRs, and validating UI test correctness.
 
 ### Issue Resolver Agent
 The issue resolver agent investigates, reproduces, and fixes reported issues in the .NET MAUI repository with comprehensive testing and validation.
+
+### PR Reviewer Agent (Inline)
+The PR reviewer agent conducts thorough, constructive code reviews of .NET MAUI pull requests with hands-on testing and validation. This agent uses inline instructions rather than a separate file.
 
 ## How to Use
 
 ### Option 1: GitHub Copilot CLI (Local)
 
-**PR Reviewer Agent:**
+**Sandbox Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
 copilot --allow-all-tools --allow-all-paths
 
-# Invoke the pr-reviewer agent
-/agent pr-reviewer
+# Invoke the sandbox-agent
+/agent sandbox-agent
 
-# Request a review
-please review https://github.com/dotnet/maui/pull/XXXXX
+# Test a PR or reproduce an issue
+please test PR #32479
+please reproduce issue #12345
+```
+
+**UI Test Coding Agent:**
+```bash
+# Start GitHub Copilot CLI with agent support
+copilot --allow-all-tools --allow-all-paths
+
+# Invoke the uitest-coding-agent
+/agent uitest-coding-agent
+
+# Write or run UI tests
+please write UI tests for issue #12345
+please run the UI tests from PR #32479
 ```
 
 **Issue Resolver Agent:**
@@ -38,6 +58,18 @@ copilot --allow-all-tools --allow-all-paths
 please investigate and fix https://github.com/dotnet/maui/issues/XXXXX
 ```
 
+**PR Reviewer Agent:**
+```bash
+# Start GitHub Copilot CLI with agent support
+copilot --allow-all-tools --allow-all-paths
+
+# Invoke the pr-reviewer agent
+/agent pr-reviewer
+
+# Request a review
+please review https://github.com/dotnet/maui/pull/XXXXX
+```
+
 ### Option 2: GitHub Copilot Agents (Web)
 
 1. **Navigate to the agents tab** at https://github.com/copilot/agents
@@ -45,12 +77,16 @@ please investigate and fix https://github.com/dotnet/maui/issues/XXXXX
 2. **Select your repository and branch** using the dropdown menus in the text box
 
 3. **Choose your agent** from the dropdown:
-   - `pr-reviewer` for PR reviews
+   - `sandbox-agent` for manual testing and experimentation
+   - `uitest-coding-agent` for writing and running UI tests
    - `issue-resolver` for investigating and fixing issues
+   - `pr-reviewer` for PR reviews
 
 4. **Enter a task** in the text box:
-   - For PR reviews: `Please review this PR: https://github.com/dotnet/maui/pull/XXXXX`
+   - For sandbox testing: `Please test PR #32479`
+   - For UI tests: `Please write UI tests for issue #12345`
    - For issue resolution: `Please investigate and fix: https://github.com/dotnet/maui/issues/XXXXX`
+   - For PR reviews: `Please review this PR: https://github.com/dotnet/maui/pull/XXXXX`
 
 5. **Click Start task** or press Return
 
@@ -58,20 +94,29 @@ please investigate and fix https://github.com/dotnet/maui/issues/XXXXX
 
 ## What the Agents Do
 
-### PR Reviewer Agent
+### Sandbox Agent
 
-Every PR review includes:
+Your go-to agent for hands-on work with the Sandbox app:
 
-1. **Code Analysis** - Reviews code for correctness, style, and best practices
-2. **Build & Deploy** - Builds the Sandbox app and deploys to simulator/emulator
-3. **Real Testing** - Tests PR changes on actual devices with measurements
-4. **Before/After Comparison** - Compares behavior with and without PR changes  
-5. **Edge Case Testing** - Tests scenarios not mentioned by the PR author
-6. **Documented Results** - Provides review with actual test data and evidence
+1. **PR Testing** - Manually validates PRs by running them in the Sandbox app
+2. **Issue Reproduction** - Creates minimal reproduction cases for reported issues
+3. **Feature Experimentation** - Try out MAUI features in a clean environment
+4. **Quick Validation** - Fast manual testing without writing automated tests
+5. **Automated Logging** - Uses `BuildAndRunSandbox.ps1` to capture all logs to `CustomAgentLogsTmp/Sandbox/`
+
+### UI Test Coding Agent
+
+Automated testing specialist for the .NET MAUI test suite:
+
+1. **Test Creation** - Writes new UI tests following .NET MAUI conventions
+2. **Test Execution** - Runs existing UI tests from PRs or repository
+3. **Test Validation** - Verifies tests are correct and follow best practices
+4. **Cross-Platform** - Tests on iOS, Android, Windows, and MacCatalyst
+5. **Automated Workflow** - Uses `BuildAndRunHostApp.ps1` to handle building, deployment, and logging to `CustomAgentLogsTmp/UITests/`
 
 ### Issue Resolver Agent
 
-Every issue resolution includes:
+Comprehensive issue investigation and resolution:
 
 1. **Issue Investigation** - Analyzes the reported issue and gathers context
 2. **Reproduction** - Creates minimal reproduction case in Sandbox app
@@ -80,6 +125,17 @@ Every issue resolution includes:
 5. **Validation** - Tests both with and without the fix to prove it works
 6. **UI Test Creation** - Adds automated UI test to prevent regression
 7. **Documentation** - Provides detailed explanation of the issue and fix
+
+### PR Reviewer Agent
+
+Thorough PR review with hands-on testing:
+
+1. **Code Analysis** - Reviews code for correctness, style, and best practices
+2. **Build & Deploy** - Builds the Sandbox app and deploys to simulator/emulator
+3. **Real Testing** - Tests PR changes on actual devices with measurements
+4. **Before/After Comparison** - Compares behavior with and without PR changes  
+5. **Edge Case Testing** - Tests scenarios not mentioned by the PR author
+6. **Documented Results** - Provides review with actual test data and evidence
 
 ### When Agents Pause
 
@@ -126,8 +182,11 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 ## File Structure
 
 ### Agent Definitions
-- **`agents/pr-reviewer.md`** - PR reviewer agent entry point (72 lines)
-- **`agents/issue-resolver.md`** - Issue resolver agent entry point (77 lines)
+- **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
+- **`agents/uitest-coding-agent.md`** - UI test agent for writing and running tests
+- **`agents/issue-resolver.md`** - Issue resolver agent for investigating and fixing issues
+- **`agents/pr-reviewer.md`** - PR reviewer agent (inline instructions)
+- **`agents/README.md`** - Agent selection guide and quick reference
 
 ### Agent Instruction Packages
 
@@ -153,23 +212,52 @@ Each agent has a progressive disclosure structure for optimal learning:
 - `issue-resolver-agent/platforms/` - Platform-specific guides
 - `issue-resolver-agent/output-format.md` - PR description formatting
 
-### Shared Instruction Files (4 files, 2,224 lines)
+### Shared Instruction Files
 
-These provide specialized guidance for specific scenarios used by both agents:
+These provide specialized guidance for specific scenarios used by all agents:
 
 - **`instructions/common-testing-patterns.md`** - Command sequences (UDID extraction, builds, deploys, error checking)
 - **`instructions/uitests.instructions.md`** - UI testing guidelines (when to use HostApp vs Sandbox)
-- **`instructions/safearea-testing.instructions.md`** - SafeArea testing patterns (measure children, not parents)
-- **`instructions/instrumentation.instructions.md`** - Code instrumentation for debugging and testing
-- **`instructions/appium-control.instructions.md`** - Standalone Appium scripts for manual debugging
+- **`instructions/safearea-testing.md`** - SafeArea testing patterns (measure children, not parents)
+- **`instructions/instrumentation.md`** - Code instrumentation for debugging and testing
+- **`instructions/appium-control.md`** - Standalone Appium scripts for manual debugging
 - **`instructions/templates.instructions.md`** - Template modification rules
+- **`instructions/sandbox-testing-patterns.md`** - Sandbox app testing patterns
+- **`instructions/edge-case-testing.md`** - Edge case testing strategies
 
-### Recent Improvements (Phase 1 - November 2025)
+### Shared Scripts
 
-**PR Reviewer Agent enhancements:**
+Automated PowerShell scripts for testing workflows:
+
+- **`scripts/BuildAndRunSandbox.ps1`** - Build, deploy, and test Sandbox app (Android/iOS)
+- **`scripts/BuildAndRunHostApp.ps1`** - Build, deploy, and run UI tests (Android/iOS)
+- **`scripts/shared/Start-Emulator.ps1`** - Detect and start Android emulators or iOS simulators
+- **`scripts/shared/Build-AndDeploy.ps1`** - Build and deploy apps to devices
+- **`scripts/shared/shared-utils.ps1`** - Common output formatting functions
+- **`scripts/templates/RunWithAppiumTest.template.cs`** - Template for Appium test scripts
+
+### Log Directories
+
+All agent logs are consolidated under `CustomAgentLogsTmp/`:
+
+- **`CustomAgentLogsTmp/Sandbox/`** - Sandbox agent logs (appium.log, android-device.log, ios-device.log, RunWithAppiumTest.cs)
+- **`CustomAgentLogsTmp/UITests/`** - UI test agent logs (appium.log, android-device.log, ios-device.log, test-output.log)
+
+### Recent Improvements (Phase 2 - November 2025)
+
+**Infrastructure Consolidation:**
+1. **Unified Log Structure** - All logs now under `CustomAgentLogsTmp/` with subdirectories for Sandbox and UITests
+2. **Shared Script Library** - Created reusable PowerShell scripts for device startup, build, and deployment
+3. **Agent Simplification** - Consolidated `uitest-pr-validator` into `uitest-coding-agent` for clarity
+4. **Agent Rename** - `sandbox-pr-tester` → `sandbox-agent` to reflect broader purpose (testing, validation, experimentation)
+5. **Automated Testing Scripts** - All agents now use PowerShell scripts instead of manual commands
+6. **noReset Capability Added** - Android Appium tests now include `noReset: true` to prevent app reinstalls
+7. **Complete Link Validation** - All 53 markdown files validated and updated with correct paths
+
+**Phase 1 Improvements (November 2025):**
 1. **Mandatory pre-work moved to top** - Critical requirements now at line 6 instead of line 43
 2. **Reading order & stopping points** - Explicit "STOP after Essential Reading" to prevent reading loop
-3. **Most critical mistake elevated** - "Don't Skip Testing" moved from Mistake #6 to Mistake #1 with complete Android emulator startup sequence
+3. **Most critical mistake elevated** - "Don't Skip Testing" moved from Mistake #6 to Mistake #1
 4. **Time messaging reconciled** - Clarified that time budgets are guides for planning, not hard deadlines
 5. **Appium version updated** - All references updated to Appium.WebDriver 8.0.1 (latest stable)
 
@@ -177,7 +265,10 @@ These provide specialized guidance for specific scenarios used by both agents:
 - **`copilot-instructions.md`** - General coding standards, build requirements, file conventions for the entire repository
 
 ### Prompts
-- **`prompts/pr-reviewer.prompt.md`** - Ready-to-use prompt templates for PR reviews
+- **`prompts/maui-pr-reviewer.prompt.md`** - Prompt for comprehensive PR reviews with testing
+- **`prompts/maui-sandbox-test.prompt.md`** - Prompt for testing PRs in Sandbox app
+- **`prompts/maui-uitest-write.prompt.md`** - Prompt for writing new UI tests
+- **`prompts/maui-release-notes.prompt.md`** - Prompt for generating release notes
 
 ## For GitHub Copilot (General Development)
 
@@ -271,19 +362,24 @@ For issues or questions about the AI agent instructions:
 
 ## Metrics
 
-**Total instruction content**:
-- PR Reviewer: 11 files, 3,463 lines
-- Issue Resolver: 8 files, 3,479 lines  
-- Shared instructions: 4 files, 2,224 lines
-- Total: 23 unique files, ~9,166 lines
+**Agent Files**:
+- 4 agent definition files (sandbox-agent, uitest-coding-agent, issue-resolver, pr-reviewer)
+- 53 total markdown files in `.github/` directory
+- All validated and consistent with consolidated structure
+
+**Automation**:
+- 2 main PowerShell testing scripts (BuildAndRunSandbox.ps1, BuildAndRunHostApp.ps1)
+- 3 shared utility scripts (Start-Emulator.ps1, Build-AndDeploy.ps1, shared-utils.ps1)
+- 1 Appium test template (RunWithAppiumTest.template.cs)
+- Automated log capture to `CustomAgentLogsTmp/` subdirectories
 
 **Progressive disclosure effectiveness**:
-- Entry point: 72-77 lines (< 2 minutes)
-- Essential reading: ~500 lines (< 10 minutes)
+- Entry point: Quick agent overview (< 2 minutes)
+- Essential reading: Quick-start guides (< 10 minutes)
 - Just-in-time references: Read only when specific need arises
 
 ---
 
-**Last Updated**: 2025-11-23
+**Last Updated**: 2025-11-25
 
-**Note**: These instructions are actively being refined based on real-world usage. Phase 1 improvements completed November 2025. Feedback and improvements are welcome!
+**Note**: These instructions are actively being refined based on real-world usage. Phase 2 infrastructure consolidation completed November 2025. All markdown files validated and paths updated to consolidated structure. Feedback and improvements are welcome!

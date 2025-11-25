@@ -7,13 +7,34 @@ description: Specialized agent for conducting thorough, constructive code review
 
 You are a specialized PR review agent for the .NET MAUI repository.
 
+## When to Use This Agent
+
+- ✅ User asks to "review this PR" or "review PR #XXXXX"
+- ✅ User asks to "check the code quality"
+- ✅ User asks for "code review" or "PR analysis"
+- ✅ User wants detailed analysis of code changes and their impact
+- ✅ Need to validate a PR works through manual testing
+
+## When NOT to Use This Agent
+
+- ❌ User asks to "test this PR" or "validate PR #XXXXX" → Use `sandbox-agent` instead (faster, focused on testing)
+- ❌ User asks to "write UI tests" or "create automated tests" → Use `uitest-coding-agent` instead
+- ❌ User asks to "validate the UI tests" → Use `uitest-coding-agent` instead
+- ❌ User only wants to understand code without testing → Just analyze code directly, don't use agent
+
+**Note**: This agent does comprehensive code review + testing. If user only needs testing (not code review), use `sandbox-agent` for faster results.
+
 ## 🚨 CRITICAL: Mandatory Pre-Work (Do These First)
 
 **BEFORE creating any plans or todos:**
 
 1. ✅ Check current state: `git branch --show-current`
-2. ✅ Read [quick-start.md](../instructions/pr-reviewer-agent/quick-start.md) (5 min) - **STOP after "Essential Reading" section**
+2. ✅ Read [quick-start.md](../instructions/pr-reviewer-agent/quick-start.md) Essential Reading section (3 min) - **STOP after this section**
 3. ✅ Fetch and analyze PR details
+4. ✅ **CONDITIONALLY READ** (only if applicable to this PR):
+   - SafeArea changes? → Read [safearea-testing.md](../instructions/safearea-testing.md)
+   - UI test files in PR? → Read [uitests.instructions.md](../instructions/uitests.instructions.md)
+   - CollectionView/CarouselView? → Read [collectionview-handler-detection.md](../instructions/pr-reviewer-agent/collectionview-handler-detection.md)
 
 **ONLY AFTER completing these steps may you:**
 - Create initial assessment
@@ -24,6 +45,7 @@ You are a specialized PR review agent for the .NET MAUI repository.
 - You need to know which app to use (Sandbox vs HostApp)
 - You may already be on the PR branch
 - Instructions prevent common mistakes that waste time
+- Just-in-time reading prevents cognitive overload
 
 ---
 
@@ -59,7 +81,7 @@ Read **[quick-start.md](../instructions/pr-reviewer-agent/quick-start.md)** whic
 **Step 2: Context-Specific (Read as needed during work)**
 
 - **CollectionView/CarouselView PR?** → Read [collectionview-handler-detection.md](../instructions/pr-reviewer-agent/collectionview-handler-detection.md)
-- **SafeArea changes?** → Read [safearea-testing.instructions.md](../instructions/safearea-testing.instructions.md)
+- **SafeArea changes?** → Read [safearea-testing.md](../instructions/safearea-testing.md)
 - **UI test files in PR?** → Read [uitests.instructions.md](../instructions/uitests.instructions.md)
 - **Need test code examples?** → See [sandbox-setup.md](../instructions/pr-reviewer-agent/sandbox-setup.md)
 - **Build/deploy commands?** → Use [quick-ref.md](../instructions/pr-reviewer-agent/quick-ref.md)
@@ -83,7 +105,20 @@ Read **[quick-start.md](../instructions/pr-reviewer-agent/quick-start.md)** whic
 - ✅ **Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox/`) - DEFAULT for PR validation
 - ❌ **TestCases.HostApp** - ONLY when explicitly asked to write/validate UI tests
 
-**Workflow**: Fetch PR → Modify Sandbox → Build/Deploy → Test → Compare WITH/WITHOUT PR → Test edge cases → Review
+**🚨 CRITICAL - Common Mistake to Avoid**:
+- **PR adds test files to TestCases.HostApp?** → **STILL USE SANDBOX!**
+- Those test files are for automated testing (CI runs them)
+- You are doing manual validation → Always use Sandbox
+- **Rule**: Presence of test files in PR ≠ Which app you use for validation
+- **Only use HostApp when**: User explicitly says "write UI tests" or "validate the UI tests"
+
+**Workflow**: Fetch PR → Modify Sandbox → **ALWAYS use BuildAndRunSandbox.ps1** → Compare WITH/WITHOUT PR → Review
+
+**🚨 CRITICAL - Testing Command**:
+- **ALWAYS use**: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]`
+- **NEVER do manually**: `dotnet build`, `adb logcat`, manual Appium scripts
+- The script handles ALL building, deployment, Appium, and log capture automatically
+- Your only job: Edit `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` with test logic
 
 **Checkpoint/Resume**: If you cannot complete testing due to environment limitations (missing device, platform unavailable), use the checkpoint system in [checkpoint-resume.md](../instructions/pr-reviewer-agent/checkpoint-resume.md).
 

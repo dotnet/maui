@@ -13,10 +13,22 @@ Use `src/Controls/samples/Controls.Sample.Sandbox/` for PR validation **UNLESS**
 ### Quick Decision Tree:
 
 ```
-Are you writing/debugging UI tests? 
-├─ YES → Use TestCases.HostApp
-└─ NO  → Use Sandbox app ✅ (99% of PR reviews)
+What is the user asking you to do?
+│
+├─ "Review this PR" ────────────────────────────────────────────────────┐
+├─ "Test this fix" ─────────────────────────────────────────────────────┤
+├─ "Validate PR #XXXXX" ────────────────────────────────────────────────┤
+├─ "Check if this works" ───────────────────────────────────────────────┼──→ Use Sandbox ✅
+├─ "Does this PR fix the issue?" ───────────────────────────────────────┤
+├─ [PR has test files in TestCases.HostApp] ────────────────────────────┤
+└─ [Any other PR validation request] ───────────────────────────────────┘
+│
+├─ "Write a UI test for this issue" ────────────────────────────────────┐
+├─ "Create automated UI tests" ─────────────────────────────────────────┼──→ Use HostApp ✅
+└─ "Debug the UI test for Issue32310" ──────────────────────────────────┘
 ```
+
+**Key Insight**: Presence of test files in the PR does NOT determine which app you use.
 
 ### ⚠️ Common Confusion: "But the PR has test files!"
 
@@ -26,9 +38,19 @@ Are you writing/debugging UI tests?
 ✅ **RIGHT THINKING**: "The PR adds automated test files. I use Sandbox to manually validate the fix."
 
 **Why**: 
-- Those test files are for the AUTOMATED UI testing framework
+- Those test files are for the AUTOMATED UI testing framework (run by CI)
 - You are doing MANUAL validation with real testing
 - HostApp is only needed when writing/debugging those automated tests
+- The presence of test files tells you the PR author wrote tests (good!), not which app you use
+
+**Self-Check Questions**:
+1. ❓ "Did the user explicitly ask me to write or validate UI tests?"
+   - NO → Use Sandbox
+   - YES → Use HostApp
+2. ❓ "Am I validating if the PR fix works?"
+   - YES → Use Sandbox (even if PR has test files!)
+3. ❓ "Am I writing new automated UI test code?"
+   - YES → Use HostApp
 
 ### 💰 Cost of Wrong App Choice
 
@@ -593,11 +615,35 @@ Create a checkpoint when:
 
 **Platform**: [Android/iOS/Windows/Mac]
 
+**🚨 MANDATORY: Use BuildAndRunSandbox.ps1 Script**
+
+There is **ONLY ONE WAY** to test Sandbox app changes:
+
+```powershell
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+```
+
+**Do NOT do these manually**:
+- ❌ `dotnet build` commands
+- ❌ `adb logcat` or `xcrun simctl launch` commands  
+- ❌ Manually run Appium
+- ❌ Any build/deploy steps by hand
+
+**The script does EVERYTHING**:
+- ✅ Detects and boots devices
+- ✅ Builds and deploys Sandbox app
+- ✅ Manages Appium server
+- ✅ Runs your test script (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
+- ✅ Captures all logs
+
 **To verify this PR works, you'll need to**:
 
-1. **Build sandbox app with PR changes**:
-   ```bash
-   dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-[platform] -t:Run
+1. **Edit your Appium test script**: `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
+   - Add test logic (tap buttons, verify behavior)
+   
+2. **Run the automated script**:
+   ```powershell
+   pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
    ```
 
 2. **Reproduce the original issue** (verify bug exists):
@@ -661,14 +707,14 @@ I've created a comprehensive test plan for you to verify manually."
 
 **If the PR modifies SafeAreaEdges, SafeAreaRegions, or related safe area handling code:**
 
-1. **CRITICAL: Read `.github/instructions/safearea-testing.instructions.md` FIRST** before setting up your test
+1. **CRITICAL: Read `.github/instructions/safearea-testing.md` FIRST** before setting up your test
 2. **Measure CHILD content position**, not the parent container with SafeAreaEdges
 3. **Calculate gaps from screen edges** to detect padding
 4. **Use colored backgrounds** (red parent, yellow child) for visual validation
 
 **Why this is critical**: SafeArea bugs are subtle. The parent container size stays constant - only the child content position changes. Measuring the wrong element will show no difference even when the bug exists.
 
-See `.github/instructions/safearea-testing.instructions.md` for comprehensive guidance including:
+See `.github/instructions/safearea-testing.md` for comprehensive guidance including:
 - The "measure children, not parents" principle with visual diagrams
 - Complete XAML and instrumentation code examples
 - How to interpret gap measurements

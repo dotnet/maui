@@ -1,38 +1,39 @@
 # Issue Reproduction Guidelines
 
 **Quick Links**:
-- Complete iOS reproduction workflow: [quick-ref.md#complete-ios-reproduction-workflow](quick-ref.md#complete-ios-reproduction-workflow)
-- Complete Android reproduction workflow: [quick-ref.md#complete-android-reproduction-workflow](quick-ref.md#complete-android-reproduction-workflow)
+- Reproduction workflow: [quick-ref.md#reproduction-workflows](quick-ref.md#reproduction-workflows)
 - Instrumentation templates: [quick-ref.md#instrumentation-templates](quick-ref.md#instrumentation-templates)
 - Checkpoint 1 template: [quick-ref.md#checkpoint-1](quick-ref.md#checkpoint-1-after-reproduction)
 
-## Sandbox App Setup for Reproduction
+## TestCases.HostApp for Issue Reproduction
 
-**Default app for issue reproduction**: `src/Controls/samples/Controls.Sample.Sandbox/`
+**All issue reproduction is done in**: `src/Controls/tests/TestCases.HostApp/`
 
-**Why use Sandbox app:**
-- Fast build times (~2 minutes)
-- Simple, empty app you can modify freely
-- Easy to add instrumentation
-- Perfect for quick reproduction and testing
+**Why use TestCases.HostApp:**
+- Consistent with UI test infrastructure
+- Same app used for reproduction and final tests
+- Organized structure with Issues/ folder
+- Built-in support for Appium testing
+- All fixes include tests in the same workflow
 
-**See [quick-ref.md](quick-ref.md) for complete copy-paste commands to build and run Sandbox app on iOS and Android.**
+**See [quick-ref.md](quick-ref.md) for complete copy-paste commands to build and run HostApp tests on iOS and Android.**
 
 ### Creating Reproduction Test Case
 
 **File Locations:**
-- `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml` (UI layout)
-- `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs` (code-behind)
+- `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml` (UI layout)
+- `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs` (code-behind)
+- `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs` (UI test)
 
 **General Pattern:**
 
-**MainPage.xaml** - Reproduce the user's scenario:
+**IssueXXXXX.xaml** - Reproduce the user's scenario:
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.MainPage"
-             Title="Issue #XXXXX Reproduction">
+             x:Class="Maui.Controls.Sample.Issues.IssueXXXXX"
+             Title="Issue XXXXX - Brief Description">
     
     <!-- Recreate the exact scenario from the issue report -->
     <VerticalStackLayout Padding="20" Spacing="10">
@@ -57,16 +58,17 @@
 </ContentPage>
 ```
 
-**MainPage.xaml.cs** - Add instrumentation:
+**IssueXXXXX.xaml.cs** - Add instrumentation:
 ```csharp
 using Microsoft.Maui.Controls;
 using System;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample.Issues
 {
-    public partial class MainPage : ContentPage
+    [Issue(IssueTracker.Github, XXXXX, "Brief description of the issue", PlatformAffected.All)]
+    public partial class IssueXXXXX : ContentPage
     {
-        public MainPage()
+        public IssueXXXXX()
         {
             InitializeComponent();
             
@@ -127,51 +129,44 @@ namespace Maui.Controls.Sample
 
 ## Build and Deploy for Reproduction
 
-**See [Common Testing Patterns](../common-testing-patterns.md) for detailed build and deploy commands with error checking.**
+**ALWAYS use BuildAndRunHostApp.ps1 for reproduction testing:**
 
-### iOS Workflow
-
-**Complete workflow** (follow these links for detailed commands):
-1. [UDID Extraction](../common-testing-patterns.md#ios-simulator-udid-iphone-xs-highest-ios-version) - Find iPhone Xs with highest iOS version
-2. [Device Boot](../common-testing-patterns.md#ios-simulator-boot-with-error-checking) - Boot simulator with verification
-3. [Build Sandbox](../common-testing-patterns.md#sandbox-app-build-ios) - Build the Sandbox app
-4. [Install App](../common-testing-patterns.md#ios-app-install-with-error-checking) - Install to simulator
-5. [Launch with Logs](../common-testing-patterns.md#ios-app-launch-with-console-capture) - Launch and capture console output
-
-**Quick reference** (experienced users):
 ```bash
-# Get UDID, boot, build, install, launch
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl boot $UDID 2>/dev/null || true
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-xcrun simctl install $UDID artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app
-xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/issue_reproduction.log 2>&1 &
-sleep 8 && cat /tmp/issue_reproduction.log
+# 1. Create test page in HostApp to reproduce the issue
+#    Files: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml
+#           src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs
+#    Add controls and AutomationId attributes for testing
+
+# 2. Create UI test to interact with the test page
+#    File: src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+#    - Inherit from _IssuesUITest
+#    - Add test method that reproduces the bug
+#    - Use Appium to interact with UI
+#    - Add assertions to verify the bug exists
+
+# 3. Run the test (handles everything):
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+# OR for iOS:
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
 
-See [Common Testing Patterns](../common-testing-patterns.md) for commands with complete error checking at each step.
+**What the script does**:
+- ✅ Builds TestCases.HostApp for target platform
+- ✅ Auto-detects device/emulator
+- ✅ Manages Appium server (starts if needed, stops when done)
+- ✅ Runs dotnet test with your filter
+- ✅ Captures all logs automatically to `CustomAgentLogsTmp/UITests/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` or `ios-device.log` - Device logs (filtered to app)
+  - `test-output.log` - Test execution results
 
-### Android Workflow
-
-**Complete workflow**:
-1. [UDID Extraction](../common-testing-patterns.md#android-device-udid) - Get device/emulator ID
-2. [Build and Deploy](../common-testing-patterns.md#android-build-and-deploy-combined) - Build, install, and launch in one command
-3. [Monitor Logs](../common-testing-patterns.md#android-logcat-monitoring) - Capture logcat output
-
-**Quick reference**:
-```bash
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-adb logcat | grep -E "(Issue|Console|ERROR)"
-```
-
-See [Common Testing Patterns](../common-testing-patterns.md) for commands with complete error checking.
+**This is the ONLY way to run reproduction tests.** No manual build/deploy commands.
 
 ### Troubleshooting
 
-If builds or deployments fail, see:
-- [Common Testing Patterns: Error Handling](../common-testing-patterns.md#common-error-handling-patterns)
+If the script fails, see:
 - [Error Handling: Build Errors](error-handling.md#build-errors-during-reproduction)
+- Generated log files in `CustomAgentLogsTmp/UITests/` directory
 
 ## Verification Points
 
@@ -261,7 +256,7 @@ Expected value: 393, Actual value: 0  ❌ BUG CONFIRMED
 
 ## Instrumentation Patterns
 
-See `.github/instructions/instrumentation.instructions.md` for comprehensive patterns.
+See `.github/instructions/instrumentation.md` for comprehensive patterns.
 
 **Quick patterns for common scenarios:**
 

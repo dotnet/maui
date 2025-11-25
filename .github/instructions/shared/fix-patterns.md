@@ -690,7 +690,7 @@ public static void MapScrollTo(MyControlHandler handler, IMyControl view, object
 
 ## Related Documentation
 
-- [Instrumentation Guide](../instrumentation.instructions.md) - Adding debug logging to patterns
+- [Instrumentation Guide](../instrumentation.md) - Adding debug logging to patterns
 - [Solution Development](../issue-resolver-agent/solution-development.md) - Applying patterns to fixes
 - [Platform Workflows](platform-workflows.md) - Testing your fixes
 

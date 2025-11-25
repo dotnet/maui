@@ -73,20 +73,18 @@ Fixes #XXXXX
 
 ## Summary
 
-[Brief description of what the issue was and what this PR fixes]
+[Brief 2-3 sentence description of what the issue was and what this PR fixes]
 
 Example: 
 "CollectionView was not applying correct padding in RTL mode on iOS. This PR fixes the issue by configuring the UICollectionViewCompositionalLayout to respect the FlowDirection property."
 
 **Quick verification:**
-- ✅ Tested on iOS 18.0 - RTL padding now correct
-- ✅ All edge cases pass (rapid toggling, nested containers, etc.)
+- ✅ Tested on [Platform(s)] - Issue resolved
+- ✅ Edge cases tested (list key ones briefly)
 - ✅ UI tests added and passing
 
----
-
 <details>
-<summary><b>📋 For full PR details, expand here</b></summary>
+<summary><b>📋 Click to expand full PR details</b></summary>
 
 ## Root Cause
 
@@ -335,17 +333,17 @@ public class IssueXXXXX : _IssuesUITest
 
 #### Running Your Tests Locally
 
-**Before committing**, verify your tests work:
+**Before committing**, verify your tests work using BuildAndRunHostApp.ps1:
 
 ```bash
 # Android
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
 
 # iOS
-# ... (see uitests.instructions.md for complete iOS workflow)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
+
+**All logs saved to**: `CustomAgentLogsTmp/UITests/` (check these if tests fail)
 
 See [UI Tests Instructions](../uitests.instructions.md) for:
 - Complete test creation workflow

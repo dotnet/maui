@@ -16,7 +16,7 @@ This README helps you find the right guidance quickly. Files are organized by wh
 
 ### Core Workflow
 - **[core-workflow.md](core-workflow.md)** - Complete workflow details, quality standards, common pitfalls
-- **[reproduction.md](reproduction.md)** - Sandbox setup, build/deploy patterns, verification
+- **[reproduction.md](reproduction.md)** - HostApp test page setup, build/deploy patterns, verification
 - **[solution-development.md](solution-development.md)** - Root cause analysis, fix implementation, testing
 - **[pr-submission.md](pr-submission.md)** - PR requirements, description template, checklist
 
@@ -60,7 +60,7 @@ This README helps you find the right guidance quickly. Files are organized by wh
 ### "I need to reproduce the issue"
 1. Open [quick-ref.md](quick-ref.md#reproduction-workflows)
 2. Copy iOS or Android workflow
-3. Create test in Sandbox app
+3. Create test page in TestCases.HostApp
 4. If stuck: [reproduction.md](reproduction.md)
 
 ### "I'm investigating root cause"
@@ -99,14 +99,13 @@ This README helps you find the right guidance quickly. Files are organized by wh
 │  What are you doing?                │
 └─────────────────────────────────────┘
            │
-           ├─→ Reproducing issue?
-           │   └─→ ✅ Sandbox app (src/Controls/samples/Controls.Sample.Sandbox/)
-           │
-           ├─→ Writing UI tests?
-           │   └─→ ✅ TestCases.HostApp (src/Controls/tests/TestCases.HostApp/)
-           │
-           └─→ Quick manual test?
-               └─→ ✅ Either works, Sandbox is faster
+           └─→ Issue resolution (reproduction AND UI tests)
+               └─→ ✅ ALWAYS use TestCases.HostApp
+                   - Create test page: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml
+                   - Write UI test: src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+                   - Run with: BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "IssueXXXXX"
+                   
+⚠️  NEVER use Sandbox app for issue resolution
 ```
 
 ### When should I stop and ask for approval?
@@ -183,9 +182,10 @@ This README helps you find the right guidance quickly. Files are organized by wh
 - [ ] Create initial assessment for user
 
 ### Phase 2: Reproduction
-- [ ] Use Sandbox app
-- [ ] Add instrumentation
-- [ ] Verify issue reproduces
+- [ ] Create test page in TestCases.HostApp/Issues/IssueXXXXX.xaml
+- [ ] Write UI test that reproduces the bug
+- [ ] Add instrumentation to capture state
+- [ ] Verify issue reproduces (test should fail)
 - [ ] 🛑 Show Checkpoint 1 to user
 - [ ] Wait for approval before investigating
 

@@ -207,13 +207,13 @@ public static void MapProperty(Handler handler, IView view)
 
 ## Testing the Fix
 
-### Test in Sandbox App
+### Test with HostApp Test Page
 
 **Verify the fix resolves the original issue:**
 
-1. **Keep your reproduction test case** in Sandbox app
-2. **Build with the fix** applied
-3. **Run and observe** - issue should be resolved
+1. **Use your reproduction test page** in TestCases.HostApp
+2. **Build with the fix** applied  
+3. **Run the UI test** - it should now pass
 4. **Capture measurements** - document the fix works
 
 **Before fix (from reproduction):**

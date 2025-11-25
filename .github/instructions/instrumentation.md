@@ -137,12 +137,26 @@ namespace Maui.Controls.Sample
 
 ### Step 3: Build, Deploy, and Capture
 
-See [Common Testing Patterns](common-testing-patterns.md) for detailed build and deploy commands:
+**⚡ Option A: Use BuildAndRunSandbox.ps1 Script (Recommended)**
 
-**iOS**: [Sandbox App Build (iOS)](common-testing-patterns.md#sandbox-app-build-ios)
-**Android**: [Sandbox App Build (Android)](common-testing-patterns.md#sandbox-app-build-android)
+When using with Appium for UI interaction:
 
-**Quick iOS workflow:**
+```powershell
+# 1. Create Appium test script with your instrumentation logic
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
+# Edit RunWithAppiumTest.cs to add your test logic
+
+# 2. Run everything with one command
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+```
+
+The script handles device detection, building, deployment, Appium management, and log capture. See [Common Testing Patterns](common-testing-patterns.md) for details.
+
+---
+
+**Option B: Manual Build and Capture** (for console-only instrumentation without Appium):
+
+**iOS**:
 ```bash
 # Get UDID, boot, build, install, launch
 UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
@@ -153,7 +167,7 @@ xcrun simctl launch --console-pty $UDID com.microsoft.maui.sandbox > /tmp/output
 sleep 8 && cat /tmp/output.log
 ```
 
-**Quick Android workflow:**
+**Android**:
 ```bash
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
 dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
@@ -266,7 +280,7 @@ Console.WriteLine($"Child Y: {ContentLabel.Y}");
 Console.WriteLine($"Gap from top: {ContentLabel.Y}");
 ```
 
-See [SafeArea Testing Instructions](safearea-testing.instructions.md) for detailed SafeArea testing patterns.
+See [SafeArea Testing Instructions](safearea-testing.md) for detailed SafeArea testing patterns.
 
 ### 4. Calculate Gaps from Screen Edges
 
@@ -847,9 +861,9 @@ git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 ## Related Documentation
 
 - [Common Testing Patterns](common-testing-patterns.md) - Build, deploy, error handling commands
-- [SafeArea Testing Instructions](safearea-testing.instructions.md) - **Specialized guide for SafeArea testing** (measure children, not parents)
+- [SafeArea Testing Instructions](safearea-testing.md) - **Specialized guide for SafeArea testing** (measure children, not parents)
 - [Edge Case Testing](edge-case-testing.md) - Comprehensive test scenario checklist
 - [UI Tests Instructions](uitests.instructions.md) - Creating automated UI tests
-- [Appium Control Scripts](appium-control.instructions.md) - UI automation patterns
+- [Appium Control Scripts](appium-control.md) - UI automation patterns
 - `docs/DevelopmentTips.md` - General development tips
 - `docs/UITesting-Guide.md` - UI testing patterns
