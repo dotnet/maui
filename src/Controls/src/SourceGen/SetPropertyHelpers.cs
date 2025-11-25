@@ -308,35 +308,30 @@ static class SetPropertyHelpers
 				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
 				var cast = string.Empty;
 				
-				if (bpFieldSymbol != null && HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
-					cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+				if (bpFieldSymbol != null)
+				{
+					// BP case: check for double implicit conversion first
+					if (HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
+					{
+						cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
+					}
+					else if (pType != null && !context.Compilation.HasImplicitConversion(localVar.Type, pType) && HasExplicitConversion(localVar.Type, pType, context))
+					{
+						// Only add cast if the source type is not object (object can be cast to anything at runtime)
+						if (!localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+						{
+							cast = $"({pType.ToFQDisplayString()})";
+						}
+					}
+				}
 				else if (property != null && !context.Compilation.HasImplicitConversion(localVar.Type, property.Type))
+				{
 					cast = $"({property.Type.ToFQDisplayString()})";
+				}
 				
 				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {cast}{localVar.ValueAccessor});");
 			}
 		}
-		else if (node is ElementNode elementNode)
-			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-			{
-				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
-				string cast = string.Empty;
-				
-				if (HasDoubleImplicitConversion(localVar.Type, pType, context, out var conv))
-				{
-					cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
-				}
-				else if (pType != null && !context.Compilation.HasImplicitConversion(localVar.Type, pType) && HasExplicitConversion(localVar.Type, pType, context))
-				{
-					// Only add cast if the source type is not object (object can be cast to anything at runtime)
-					if (!localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
-					{
-						cast = $"({pType.ToFQDisplayString()})";
-					}
-				}
-				
-				writer.WriteLine($"{parentVar.ValueAccessor}.SetValue({bpName}, {cast}{localVar.ValueAccessor});");
-			}
 	}
 
 	static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
