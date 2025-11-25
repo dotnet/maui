@@ -42,16 +42,12 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
 $SandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
-$SandboxAppiumDir = Join-Path $RepoRoot "SandboxAppium"
+$SandboxAppiumDir = Join-Path $RepoRoot "CustomAgentLogsTmp/Sandbox"
 $AppiumTestScript = Join-Path $SandboxAppiumDir "RunWithAppiumTest.cs"
 $AppiumPort = 4723
 
-# Color output helpers
-function Write-Success { param($Message) Write-Host "✅ $Message" -ForegroundColor Green }
-function Write-Error { param($Message) Write-Host "❌ $Message" -ForegroundColor Red }
-function Write-Info { param($Message) Write-Host "ℹ️  $Message" -ForegroundColor Cyan }
-function Write-Warning { param($Message) Write-Host "⚠️  $Message" -ForegroundColor Yellow }
-function Write-Step { param($Message) Write-Host "`n🔹 $Message" -ForegroundColor Blue }
+# Import shared utilities
+. "$PSScriptRoot/shared/shared-utils.ps1"
 
 # Banner
 Write-Host @"
@@ -67,11 +63,10 @@ Write-Host @"
 
 Write-Step "Validating prerequisites..."
 
-# Check if SandboxAppium directory exists
+# Create CustomAgentLogsTmp/Sandbox directory if it doesn't exist
 if (-not (Test-Path $SandboxAppiumDir)) {
-    Write-Error "SandboxAppium directory not found at: $SandboxAppiumDir"
-    Write-Info "The agent must create this directory with an Appium test script first."
-    exit 1
+    New-Item -Path $SandboxAppiumDir -ItemType Directory -Force | Out-Null
+    Write-Info "Created CustomAgentLogsTmp/Sandbox directory"
 }
 
 # Clean up old log files and screenshots from previous runs
@@ -113,7 +108,7 @@ if (-not (Test-Path $AppiumTestScript)) {
 Required file missing: $AppiumTestScript
 
 The agent must create an Appium test script named 'RunWithAppiumTest.cs' 
-in the SandboxAppium directory before running this test script.
+in the CustomAgentLogsTmp/Sandbox directory before running this test script.
 
 This file should:
 1. Use the #:package directive for Appium.WebDriver
@@ -147,144 +142,54 @@ Write-Success "Prerequisites validated"
 
 #region Platform-Specific Configuration
 
-Write-Step "Configuring platform-specific settings..."
-
+# Set target framework and app identifiers
 if ($Platform -eq "android") {
     $TargetFramework = "net10.0-android"
     $AppPackage = "com.microsoft.maui.sandbox"
     $AppActivity = "com.microsoft.maui.sandbox.MainActivity"
-    
-    # Check adb
-    if (-not (Get-Command "adb" -ErrorAction SilentlyContinue)) {
-        Write-Error "Android SDK (adb) not found. Please install Android SDK and ensure 'adb' is in PATH."
-        exit 1
-    }
-    
-    # Get device UDID if not provided
-    if (-not $DeviceUdid) {
-        Write-Info "Auto-detecting Android device..."
-        $devices = adb devices | Select-String "device$"
-        if ($devices.Count -eq 0) {
-            Write-Error "No Android devices found. Please start an emulator or connect a device."
-            exit 1
-        }
-        $DeviceUdid = ($devices[0] -split '\s+')[0]
-    }
-    
-    Write-Success "Android device: $DeviceUdid"
-    
 } elseif ($Platform -eq "ios") {
     $TargetFramework = "net10.0-ios"
     $AppBundleId = "com.microsoft.maui.sandbox"
-    
-    # Check xcrun (iOS tools)
-    if (-not (Get-Command "xcrun" -ErrorAction SilentlyContinue)) {
-        Write-Error "Xcode command line tools not found. This script requires macOS with Xcode installed."
-        exit 1
-    }
-    
-    # Get device UDID if not provided
-    if (-not $DeviceUdid) {
-        Write-Info "Auto-detecting iOS simulator..."
-        $simList = xcrun simctl list devices available --json | ConvertFrom-Json
-        
-        # Find iPhone Xs with highest iOS version
-        $iPhoneXs = $simList.devices.PSObject.Properties | 
-            Where-Object { $_.Name -match "iOS" } |
-            ForEach-Object { 
-                $_.Value | Where-Object { $_.name -eq "iPhone Xs" }
-            } | 
-            Select-Object -First 1
-        
-        if (-not $iPhoneXs) {
-            Write-Error "No iPhone Xs simulator found. Please create one in Xcode."
-            exit 1
-        }
-        
-        $DeviceUdid = $iPhoneXs.udid
-    }
-    
-    Write-Success "iOS simulator: $DeviceUdid"
 }
 
-# Set DEVICE_UDID environment variable for Appium
-$env:DEVICE_UDID = $DeviceUdid
-Write-Info "DEVICE_UDID environment variable set: $DeviceUdid"
-
-#endregion
-
-#region Build
-
-Write-Step "Building Sandbox app for $Platform..."
-
-$buildArgs = @(
-    "build"
-    $SandboxProject
-    "-f", $TargetFramework
-    "-c", $Configuration
-)
-
-# Add Run target for Android to install the app
-if ($Platform -eq "android") {
-    $buildArgs += "-t:Run"
+# Use shared Start-Emulator script to detect and start device
+$startEmulatorParams = @{
+    Platform = $Platform
 }
 
-Write-Info "Build command: dotnet $($buildArgs -join ' ')"
+if ($DeviceUdid) {
+    $startEmulatorParams.DeviceUdid = $DeviceUdid
+}
 
-$buildStart = Get-Date
-& dotnet @buildArgs
+$DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Build failed with exit code $LASTEXITCODE"
+    Write-Error "Failed to start or detect device"
     exit 1
 }
 
-$buildDuration = (Get-Date) - $buildStart
-Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
-
 #endregion
 
-#region iOS Deployment
+#region Build and Deploy
+
+# Use shared Build-AndDeploy script
+$buildDeployParams = @{
+    Platform = $Platform
+    ProjectPath = $SandboxProject
+    TargetFramework = $TargetFramework
+    Configuration = $Configuration
+    DeviceUdid = $DeviceUdid
+}
 
 if ($Platform -eq "ios") {
-    Write-Step "Deploying to iOS simulator..."
-    
-    # Boot simulator if not already booted
-    Write-Info "Booting simulator (if not already running)..."
-    xcrun simctl boot $DeviceUdid 2>$null
-    
-    # Wait for boot
-    Start-Sleep -Seconds 2
-    
-    # Verify simulator is booted
-    $simState = (xcrun simctl list devices --json | ConvertFrom-Json).devices.PSObject.Properties.Value | 
-        Where-Object { $_.udid -eq $DeviceUdid } | 
-        Select-Object -First 1
-    
-    if ($simState.state -ne "Booted") {
-        Write-Error "Simulator failed to boot. Current state: $($simState.state)"
-        exit 1
-    }
-    
-    Write-Success "Simulator is booted"
-    
-    # Install app
-    $appPath = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app"
-    
-    if (-not (Test-Path $appPath)) {
-        Write-Error "App bundle not found at: $appPath"
-        exit 1
-    }
-    
-    Write-Info "Installing app: $appPath"
-    xcrun simctl install $DeviceUdid $appPath
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "App installation failed"
-        exit 1
-    }
-    
-    Write-Success "App installed successfully"
+    $buildDeployParams.BundleId = $AppBundleId
+}
+
+& "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Build or deployment failed"
+    exit 1
 }
 
 #endregion

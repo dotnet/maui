@@ -14,25 +14,19 @@ This directory contains specialized agents for different workflows in the .NET M
 
 **Example**: `@sandbox-pr-tester please test PR #32479`
 
-#### 2. uitest-pr-validator
-**File**: `uitest-pr-validator.md`  
-**Purpose**: Validate existing UI tests in a PR  
-**Use when**:
-- PR contains test files
-- Need to verify tests are correct
-- Want to run tests and check they pass
-
-**Example**: `@uitest-pr-validator please validate the tests in this PR`
-
-#### 3. uitest-coding-agent
+#### 2. uitest-coding-agent
 **File**: `uitest-coding-agent.md`  
-**Purpose**: Write new UI tests following .NET MAUI conventions  
+**Purpose**: Write and run UI tests following .NET MAUI conventions  
 **Use when**:
-- Need to create automated tests
+- Need to create new automated tests
 - Adding test coverage
+- Running existing UI tests from a PR
+- Validating UI tests work correctly
 - Writing tests for a fix
 
-**Example**: `@uitest-coding-agent please write UI tests for issue #12345`
+**Example**: 
+- `@uitest-coding-agent please write UI tests for issue #12345`
+- `@uitest-coding-agent please run the UI tests from PR #32479`
 
 ## Quick Decision Guide
 
@@ -40,14 +34,14 @@ This directory contains specialized agents for different workflows in the .NET M
 
 | What do you want to do? | Use this agent |
 |------------------------|----------------|
-| Test a PR manually | `sandbox-pr-tester` |
-| Reproduce an issue | `sandbox-pr-tester` |
-| Validate a fix works | `sandbox-pr-tester` |
-| Check if tests are correct | `uitest-pr-validator` |
-| Run existing tests | `uitest-pr-validator` |
-| Review test code quality | `uitest-pr-validator` |
+| Test a PR manually with Sandbox | `sandbox-pr-tester` |
+| Reproduce an issue manually | `sandbox-pr-tester` |
+| Validate a fix works manually | `sandbox-pr-tester` |
 | Write new UI tests | `uitest-coding-agent` |
+| Run existing UI tests | `uitest-coding-agent` |
+| Validate UI tests from a PR | `uitest-coding-agent` |
 | Add test coverage | `uitest-coding-agent` |
+| Review test code quality | `uitest-coding-agent` |
 | Investigate an issue | `issue-resolver` |
 
 ## Other Agents
@@ -64,7 +58,7 @@ This directory contains specialized agents for different workflows in the .NET M
 | Aspect | Sandbox | TestCases.HostApp |
 |--------|---------|-------------------|
 | **Purpose** | Manual PR testing | Automated UI tests |
-| **Used by** | sandbox-pr-tester | uitest-pr-validator<br>uitest-coding-agent |
+| **Used by** | sandbox-pr-tester | uitest-coding-agent |
 | **Location** | `src/Controls/samples/Controls.Sample.Sandbox/` | `src/Controls/tests/TestCases.HostApp/` |
 | **Test Type** | Manual validation | Automated NUnit tests |
 | **Clean up** | Revert changes after testing | Commit test files to repo |
@@ -87,19 +81,19 @@ This directory contains specialized agents for different workflows in the .NET M
 
 ## Usage Examples
 
-### Example 1: Testing a PR
+### Example 1: Testing a PR manually
 ```
 @sandbox-pr-tester please test PR #32479
 ```
 
-### Example 2: Validating tests in a PR
-```
-@uitest-pr-validator please validate the tests in this PR
-```
-
-### Example 3: Writing new tests
+### Example 2: Writing new UI tests
 ```
 @uitest-coding-agent please write UI tests for issue #12345 about button clicks
+```
+
+### Example 3: Running existing UI tests
+```
+@uitest-coding-agent please run the UI tests from PR #32479
 ```
 
 ### Example 4: Investigating an issue
@@ -116,8 +110,7 @@ All agent files are in `.github/agents/`:
 ├── README.md (this file)
 ├── issue-resolver.md (issue investigation)
 ├── sandbox-pr-tester.md (manual testing)
-├── uitest-coding-agent.md (write tests)
-└── uitest-pr-validator.md (validate tests)
+└── uitest-coding-agent.md (write and run UI tests)
 ```
 
 ## Related Documentation

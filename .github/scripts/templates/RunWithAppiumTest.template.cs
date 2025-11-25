@@ -5,7 +5,7 @@
  * Template: Appium Test Script for .NET MAUI Issue Reproduction
  * 
  * INSTRUCTIONS FOR AGENT:
- * 1. Copy this file to: SandboxAppium/RunWithAppiumTest.cs
+ * 1. Copy this file to: CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
  * 2. Replace XXXXX with actual issue number (const ISSUE_NUMBER)
  * 3. Set PLATFORM to "android" or "ios"
  * 4. Implement test logic in the "Test Logic" section
@@ -181,8 +181,8 @@ try
         // Take screenshot before test (for debugging/documentation only)
         // NOTE: NEVER use screenshots for validation - always use Appium element queries
         var screenshotBefore = driver.GetScreenshot();
-        screenshotBefore.SaveAsFile("SandboxAppium/issue_XXXXX_before.png");
-        Console.WriteLine("📸 Screenshot saved: SandboxAppium/issue_XXXXX_before.png");
+        screenshotBefore.SaveAsFile("CustomAgentLogsTmp/Sandbox/issue_XXXXX_before.png");
+        Console.WriteLine("📸 Screenshot saved: CustomAgentLogsTmp/Sandbox/issue_XXXXX_before.png");
         
         // Perform action
         Console.WriteLine("\n🔘 Tapping button...");
@@ -221,8 +221,8 @@ try
         // Take screenshot after test (for debugging/documentation only)
         // NOTE: NEVER use screenshots for validation - always use Appium element queries
         var screenshotAfter = driver.GetScreenshot();
-        screenshotAfter.SaveAsFile("SandboxAppium/issue_XXXXX_after.png");
-        Console.WriteLine("📸 Screenshot saved: SandboxAppium/issue_XXXXX_after.png");
+        screenshotAfter.SaveAsFile("CustomAgentLogsTmp/Sandbox/issue_XXXXX_after.png");
+        Console.WriteLine("📸 Screenshot saved: CustomAgentLogsTmp/Sandbox/issue_XXXXX_after.png");
         
         // Check if UI is visible (not blank)
         var pageSource = driver.PageSource;

@@ -25,8 +25,43 @@ Write new UI tests that:
 ## When NOT to Use This Agent
 
 - ❌ User asks to "test this PR" (use `sandbox-pr-tester`)
-- ❌ User asks to "validate the tests" (use `uitest-pr-validator`)
 - ❌ Only need manual verification (use `sandbox-pr-tester`)
+
+---
+
+## 🚨 CRITICAL RULES: Never Run Manual Commands
+
+**The BuildAndRunHostApp.ps1 script handles ALL building, deployment, testing, and log capture.**
+
+**❌ NEVER RUN THESE COMMANDS:**
+- `dotnet test` - Script runs tests
+- `dotnet build` - Script builds the app  
+- `adb` commands - Script handles Android
+- `xcrun simctl` commands - Script handles iOS
+- Manual log capture - Script captures logs automatically
+
+**✅ ONLY DO THIS:**
+```bash
+# Run your test
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "IssueXXXXX"
+
+# If test fails, read the captured logs (script shows location)
+# Logs include: device logs, test output, build errors
+```
+
+**Why this matters:**
+- Script handles device selection, boot, and cleanup
+- Script captures ALL logs automatically  
+- Manual commands can interfere with test execution
+- Logs are filtered and organized by the script
+
+**If test fails:**
+1. ✅ Read script output - it shows what went wrong
+2. ✅ Check captured logs - script tells you where they are
+3. ✅ Verify AutomationIds in XAML match test code
+4. ❌ DON'T run `adb logcat` or other manual commands
+
+---
 
 ## Two-Project Requirement
 
@@ -350,34 +385,237 @@ Thread.Sleep(5000);
 - [ ] Compiled both HostApp and test projects
 - [ ] Ran test locally and verified it passes
 
+## 🚨 CRITICAL: Running Tests - Use BuildAndRunHostApp.ps1 ONLY
+
+**NEVER run manual commands** - The BuildAndRunHostApp.ps1 script handles EVERYTHING:
+- ✅ Building HostApp
+- ✅ Deploying to device/simulator
+- ✅ Running specific test by issue number
+- ✅ Capturing all logs
+- ✅ Managing device/simulator selection
+
+**❌ NEVER RUN THESE COMMANDS:**
+- `dotnet test` - Script runs tests for you
+- `dotnet build` - Script builds the app
+- `adb shell`, `adb devices`, `adb logcat` - Script handles Android devices
+- `xcrun simctl` - Script handles iOS simulators
+- Any other manual device/build commands
+
 ## Running Tests Locally
 
-### Android
+**✅ ONLY USE THIS:**
+
+### Run Specific Test by Class or Method Name
+
+**Filter by class name** (runs ALL tests in the class):
 ```bash
-# 1. Deploy HostApp
-./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+# Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue530"
 
-# 2. Set device UDID
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# 3. Run test
-dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+# iOS (uses default iOS 18.5 iPhone Xs)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue530"
 ```
 
-### iOS
+**Filter by specific test method name** (runs ONLY that test):
 ```bash
-# 1. Find and boot simulator
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl boot $UDID 2>/dev/null || true
+# Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue530TestsLoadAsync"
 
-# 2. Build and install
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
-
-# 3. Run test
-export DEVICE_UDID=$UDID
-dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+# iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue530TestsLoadAsync"
 ```
+
+**Filter by full qualified name** (most precise):
+```bash
+# Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue530.Issue530TestsLoadAsync"
+
+# iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue530.Issue530TestsLoadAsync"
+```
+
+**How to choose**:
+- **Class name** (e.g., "Issue530"): Use when you want to run all tests in a test class
+- **Method name** (e.g., "Issue530TestsLoadAsync"): Use when you want to run one specific test method
+- **Full qualified name**: Use for maximum precision, especially if multiple classes have similar names
+
+**The script automatically:**
+1. Detects and boots device/simulator (iOS: defaults to iPhone Xs with iOS 18.5)
+2. Builds TestCases.HostApp
+3. Deploys to device
+4. Runs tests matching your filter
+5. Captures all logs to a directory (shown in output)
+
+### Run Test on Specific iOS Device/Version
+
+**When user requests a specific iOS version or device:**
+
+1. **Find the UDID for that device/version combination**:
+   ```bash
+   # Example: Find iPhone Xs with iOS 18.5
+   UDID=$(xcrun simctl list devices available --json | jq -r '
+     .devices 
+     | to_entries 
+     | map(select(.key | contains("iOS-18-5"))) 
+     | map(.value) 
+     | flatten 
+     | map(select(.name == "iPhone Xs")) 
+     | first 
+     | .udid
+   ')
+   
+   echo "Found UDID: $UDID"
+   ```
+
+2. **Pass the UDID to the script**:
+   ```bash
+   pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX" -DeviceUdid "$UDID"
+   ```
+
+**Examples of user requests:**
+
+- **"Run on iOS 18.5"** → Find iPhone Xs with iOS 18.5, get UDID, pass to script
+- **"Run on iPhone 15"** → Find iPhone 15 (any iOS), get UDID, pass to script
+- **"Run on iPhone 16 Pro with iOS 18.0"** → Find iPhone 16 Pro with iOS 18.0, get UDID, pass to script
+
+**Complete example:**
+```bash
+# User says: "Run Issue12345 test on iOS 18.5"
+
+# Step 1: Find the UDID
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices 
+  | to_entries 
+  | map(select(.key | contains("iOS-18-5"))) 
+  | map(.value) 
+  | flatten 
+  | map(select(.name == "iPhone Xs")) 
+  | first 
+  | .udid
+')
+
+# Step 2: Verify UDID was found
+if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+    echo "❌ ERROR: No iPhone Xs simulator found with iOS 18.5"
+    exit 1
+fi
+
+echo "✅ Found iPhone Xs with iOS 18.5: $UDID"
+
+# Step 3: Run test with specific device
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue12345" -DeviceUdid "$UDID"
+```
+
+**Finding different device/version combinations:**
+```bash
+# iPhone 16 Pro with any iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices[][] | select(.name == "iPhone 16 Pro") | .udid' | head -1)
+
+# Any device with iOS 18.0
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices | to_entries 
+  | map(select(.key | contains("iOS-18-0"))) 
+  | map(.value) | flatten | .[0].udid')
+
+# Specific device with specific iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices | to_entries 
+  | map(select(.key | contains("iOS-18-5"))) 
+  | map(.value) | flatten 
+  | map(select(.name == "iPhone 15")) | first | .udid')
+```
+
+### Run Multiple Tests by Category
+
+```bash
+# Run all Button tests on Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "Button"
+
+# Run all Layout tests on iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -Category "Layout"
+```
+
+### Verify Test Results
+
+After the script completes:
+
+1. **Check exit code** - Script exits 0 on success, non-zero on failure
+2. **Read captured logs** - Script output shows log directory location
+3. **Review test output** - All NUnit output is captured and displayed
+
+### If Test Fails - Element Not Found
+
+**🚨 CRITICAL**: If your test can't find an element, DO NOT assume the test is wrong!
+
+**The app may have crashed or not loaded correctly.**
+
+**IMMEDIATELY CHECK**:
+
+1. **Check device logs for crashes**:
+   ```bash
+   # Script shows log location - look for these patterns
+   # Android: grep -i "FATAL\|crash\|exception" <log-directory>/android-device.log
+   # iOS: grep -i "terminating\|exception\|crash" <log-directory>/ios-device.log
+   ```
+
+2. **Verify app actually loaded**:
+   - Check logs for HostApp initialization messages
+   - Look for "Issue XXXXX" page creation
+   - If app crashed: Fix the crash before fixing the test
+
+3. **Common root causes**:
+   - **App crashed on launch** - Exception in XAML/code-behind
+   - **XAML parse error** - Missing event handler method
+   - **AutomationId mismatch** - XAML name doesn't match test
+   - **Wrong page displayed** - Navigation went elsewhere
+
+**Debugging steps**:
+1. Check logs for crashes/exceptions (script captures these)
+2. If crashed: Fix exception in XAML/code-behind
+3. If XAML error: Verify event handler exists (e.g., `OnButtonClicked`)
+4. If no crash: Verify AutomationIds match exactly between XAML and test
+
+**DO NOT**:
+- ❌ Try different AutomationIds without checking logs
+- ❌ Add delays/sleeps hoping element appears
+- ❌ Run manual adb/xcrun commands to investigate
+- ❌ Assume app is "just loading slowly"
+
+### If Test Fails - Other Reasons
+
+**🚨 DO NOT debug with manual commands!**
+
+Instead:
+
+1. **Read the captured logs** - Script tells you where they are
+2. **Check test output** - Script shows NUnit results
+3. **Verify assertions** - Are you testing the right thing?
+4. **If unclear** - Ask for help with the log output
+
+### Common Issues and Solutions
+
+**"Element not found" errors:**
+```bash
+# 1. Verify AutomationId exists in XAML
+grep "AutomationId" src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml
+
+# 2. Check test is using correct AutomationId
+grep "WaitForElement\|FindElement" src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+
+# 3. Re-run test - script will show if element is missing
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+```
+
+**Test builds but fails:**
+- Check device logs (script captures these automatically)
+- Verify XAML event handlers exist in code-behind
+- Ensure [Issue] attribute is present on HostApp page
+
+**Can't find test:**
+- Verify test class name matches: `IssueXXXXX`
+- Check test inherits from `_IssuesUITest`
+- Ensure test has `[Test]` attribute
 
 ## Common Mistakes to Avoid
 
@@ -427,17 +665,29 @@ public partial class IssueXXXXX : ContentPage { }
 - Check namespace: `Microsoft.Maui.TestCases.Tests.Issues`
 - Verify base class: `_IssuesUITest`
 - Ensure constructor: `public IssueXXXXX(TestDevice device) : base(device) { }`
+- Run: `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"`
+- Build errors will be shown in script output
 
-**Element Not Found**:
-- Add `AutomationId` to XAML element
-- Use `App.WaitForElement()` with timeout
-- Verify app is actually showing the element
+**Element Not Found - CRITICAL**:
+🚨 **DO NOT assume test is wrong - check logs first!**
+1. Run test with script: `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"`
+2. Check device logs (script shows location) for crashes
+3. If app crashed: Fix the crash before fixing the test
+4. If no crash: Verify AutomationId exists in XAML and matches test code
+5. See detailed section: [If Test Fails - Element Not Found](#if-test-fails---element-not-found)
 
 **Test Flaky**:
-- Add appropriate waits
-- Don't rely on fixed sleeps
-- Check for race conditions
-- Test multiple times
+- Add appropriate waits with `App.WaitForElement()`
+- Don't rely on fixed sleeps (`Thread.Sleep`)
+- Check for race conditions in test code
+- Re-run multiple times: `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"`
+- Review captured logs for timing issues
+
+**Script Reports Test Failure**:
+1. ✅ Read the script output - shows what failed
+2. ✅ Check log directory (script shows path)
+3. ✅ Look for device logs with crash info
+4. ❌ DON'T run manual commands to investigate
 
 ## Key Resources
 

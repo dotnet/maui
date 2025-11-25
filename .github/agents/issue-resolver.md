@@ -38,7 +38,7 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 - Builds the Sandbox app
 - Manages Appium server (starts if needed, stops when done)
 - Deploys and launches app via Appium
-- Captures all logs automatically to `SandboxAppium/` directory:
+- Captures all logs automatically to `CustomAgentLogsTmp/Sandbox/` directory:
   - `appium.log` - Appium server logs (both platforms)
   - `android-device.log` - Android device logs (filtered to app PID)
   - `ios-device.log` - iOS simulator logs (filtered to app bundle)
@@ -47,7 +47,7 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 **How to use**:
 1. Modify `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml` and `.xaml.cs` to reproduce the issue
 2. Run the script for your target platform
-3. Read the generated log files in `SandboxAppium/` to see results
+3. Read the generated log files in `CustomAgentLogsTmp/Sandbox/` to see results
 
 ### For UI Test Execution (HostApp):
 ```powershell
@@ -72,7 +72,7 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 **If an app crashes on launch, NEVER use `--no-incremental` or `dotnet clean` as a first solution.**
 
 **The correct approach**:
-1. **The PS1 script already captured all logs** - They're in `SandboxAppium/` or `HostAppCustomAgentTmpLogs/`
+1. **The PS1 script already captured all logs** - They're in `CustomAgentLogsTmp/Sandbox/` or `HostAppCustomAgentTmpLogs/`
 2. **Read the device logs** (`android-device.log` or `ios-device.log`)
 3. **Find the actual exception** in the logs
 4. **Investigate the root cause** from the stack trace

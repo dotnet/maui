@@ -52,7 +52,7 @@ if (PLATFORM == "android")
 
 **Where to set it:**
 - Template: `.github/scripts/templates/RunWithAppiumTest.template.cs` (line ~68, Android section only)
-- Active test: `SandboxAppium/RunWithAppiumTest.cs` (Android section only)
+- Active test: `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` (Android section only)
 
 **⚠️ NEVER REMOVE THIS CAPABILITY FROM ANDROID** - All Android tests depend on it
 
@@ -97,7 +97,7 @@ gh pr checkout <PR_NUMBER>
 
 **Files to modify**:
 - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml[.cs]` - UI and code for reproduction
-- `SandboxAppium/RunWithAppiumTest.cs` - Appium test script
+- `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` - Appium test script
 
 **Implementation**:
 - Copy reproduction code from issue or UITest
@@ -272,7 +272,7 @@ The BuildAndRunSandbox.ps1 script handles EVERYTHING:
 - ✅ Cleaning logcat before tests
 
 **❌ NEVER RUN THESE COMMANDS:**
-- `adb logcat` - Script captures logs to `SandboxAppium/android-device.log`
+- `adb logcat` - Script captures logs to `CustomAgentLogsTmp/Sandbox/android-device.log`
 - `adb logcat -c` - Script clears logcat automatically before test
 - `adb shell` - Script handles device interactions
 - `dotnet build` - Script builds the app
@@ -286,11 +286,11 @@ The BuildAndRunSandbox.ps1 script handles EVERYTHING:
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 
 # If it fails, analyze the OUTPUT and captured LOGS
-# Logs are in: SandboxAppium/android-device.log or SandboxAppium/ios-device.log
+# Logs are in: CustomAgentLogsTmp/Sandbox/android-device.log or CustomAgentLogsTmp/Sandbox/ios-device.log
 ```
 
 **How to debug:**
-- **BuildAndRunSandbox.ps1 generates all logs** - Read from `SandboxAppium/` directory:
+- **BuildAndRunSandbox.ps1 generates all logs** - Read from `CustomAgentLogsTmp/Sandbox/` directory:
   - `android-device.log` or `ios-device.log` - **ALL device logs are here**
   - `appium.log` - Appium server logs
 - **Read the script output** - Build errors, deployment status shown in output
@@ -299,7 +299,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 
 **What to fix:**
 - **Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry
-- **App crashes** - Read device log from `SandboxAppium/`, check stack trace, fix test code or reproduction scenario
+- **App crashes** - Read device log from `CustomAgentLogsTmp/Sandbox/`, check stack trace, fix test code or reproduction scenario
 - **Fast Deployment errors** - Ensure `appium:noReset` is set to `true` in Appium options
 - Cannot find reproduction scenario - Try alternative approaches (UITests, code analysis)
 - Test code errors - Fix Appium script or MainPage code based on error messages
@@ -360,19 +360,19 @@ Unable to proceed with validation. Please advise.
 1. **Check device logs for crashes**:
    ```bash
    # Android - Look for "FATAL", "crash", or "Exception"
-   grep -i "FATAL\|crash\|exception" SandboxAppium/android-device.log | tail -20
+   grep -i "FATAL\|crash\|exception" CustomAgentLogsTmp/Sandbox/android-device.log | tail -20
    
    # iOS - Look for "Terminating app" or "exception"
-   grep -i "terminating\|exception\|crash" SandboxAppium/ios-device.log | tail -20
+   grep -i "terminating\|exception\|crash" CustomAgentLogsTmp/Sandbox/ios-device.log | tail -20
    ```
 
 2. **Verify app actually launched**:
    ```bash
    # Android - Check if MainPage initialized
-   grep "SANDBOX.*MainPage" SandboxAppium/android-device.log
+   grep "SANDBOX.*MainPage" CustomAgentLogsTmp/Sandbox/android-device.log
    
    # iOS - Check if app process is present
-   grep "Maui.Controls.Sample.Sandbox" SandboxAppium/ios-device.log | head -5
+   grep "Maui.Controls.Sample.Sandbox" CustomAgentLogsTmp/Sandbox/ios-device.log | head -5
    ```
 
 3. **Common Root Causes**:
@@ -397,9 +397,9 @@ Unable to proceed with validation. Please advise.
 
 ```bash
 # Search device log for Fast Deployment error
-grep "No assemblies found" SandboxAppium/android-device.log
+grep "No assemblies found" CustomAgentLogsTmp/Sandbox/android-device.log
 # OR
-grep "Abort message" SandboxAppium/android-device.log
+grep "Abort message" CustomAgentLogsTmp/Sandbox/android-device.log
 ```
 
 **If you see: "No assemblies found in '.../__override__/...' ... Fast Deployment"**
@@ -407,7 +407,7 @@ grep "Abort message" SandboxAppium/android-device.log
 **Root Cause**: Missing `appium:noReset` capability in Appium options (ANDROID ONLY)
 
 **Fix**:
-1. Open `SandboxAppium/RunWithAppiumTest.cs`
+1. Open `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
 2. Find the Android options section (inside `if (PLATFORM == "android")` block)
 3. Verify this line exists:
    ```csharp
