@@ -15,51 +15,51 @@ Write new UI tests that:
 - Run reliably across platforms
 - Actually test the stated behavior
 
-## When to Use This Agent
+## Quick Decision: Should You Use This Agent?
 
-- ✅ User asks to "write a UI test for..."
-- ✅ User asks to "create an automated test for issue #XXXXX"
-- ✅ User asks to "add test coverage for..."
-- ✅ Need to create test files in TestCases.HostApp and TestCases.Shared.Tests
+**YES, use this agent if:**
+- User says "write a UI test for issue #XXXXX"
+- User says "add test coverage for..."
+- User says "create automated test for..."
+- Need to write NEW test files
 
-## When NOT to Use This Agent
-
-- ❌ User asks to "test this PR" (use `sandbox-agent`)
-- ❌ Only need manual verification (use `sandbox-agent`)
+**NO, use different agent if:**
+- "Test this PR" → use `sandbox-agent`
+- "Review this PR" → use `pr-reviewer`
+- "Investigate issue #XXXXX" → use `issue-resolver`
+- Only need manual verification → use `sandbox-agent`
 
 ---
 
-## 🚨 CRITICAL RULES: Never Run Manual Commands
+## 🚨 CRITICAL: Always Use BuildAndRunHostApp.ps1 Script
 
-**The BuildAndRunHostApp.ps1 script handles ALL building, deployment, testing, and log capture.**
-
-**❌ NEVER RUN THESE COMMANDS:**
-- `dotnet test` - Script runs tests
-- `dotnet build` - Script builds the app  
-- `adb` commands - Script handles Android
-- `xcrun simctl` commands - Script handles iOS
-- Manual log capture - Script captures logs automatically
+**The script handles EVERYTHING - never run manual commands.**
 
 **✅ ONLY DO THIS:**
 ```bash
-# Run your test
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "IssueXXXXX"
-
-# If test fails, read the captured logs (script shows location)
-# Logs include: device logs, test output, build errors
 ```
 
-**Why this matters:**
-- Script handles device selection, boot, and cleanup
-- Script captures ALL logs automatically  
-- Manual commands can interfere with test execution
-- Logs are filtered and organized by the script
+**❌ NEVER RUN:**
+- `dotnet test` / `dotnet build`
+- `adb` commands (logcat, devices, shell, etc.)
+- `xcrun simctl` commands
+- Manual log capture
+
+**Why:**
+- Script handles device detection, boot, deployment
+- Script captures ALL logs automatically to organized directory
+- Manual commands interfere with test execution
+- All logs are filtered and ready for analysis
 
 **If test fails:**
-1. ✅ Read script output - it shows what went wrong
-2. ✅ Check captured logs - script tells you where they are
-3. ✅ Verify AutomationIds in XAML match test code
-4. ❌ DON'T run `adb logcat` or other manual commands
+1. ✅ Read script output and captured logs (script shows location)
+2. ✅ Check for app crashes in device logs
+3. ❌ DON'T run manual debugging commands
+
+---
+
+*See "Running Tests Locally" section below for detailed usage examples.*
 
 ---
 
@@ -385,25 +385,60 @@ Thread.Sleep(5000);
 - [ ] Compiled both HostApp and test projects
 - [ ] Ran test locally and verified it passes
 
-## 🚨 CRITICAL: Running Tests - Use BuildAndRunHostApp.ps1 ONLY
+---
 
-**NEVER run manual commands** - The BuildAndRunHostApp.ps1 script handles EVERYTHING:
-- ✅ Building HostApp
-- ✅ Deploying to device/simulator
-- ✅ Running specific test by issue number
-- ✅ Capturing all logs
-- ✅ Managing device/simulator selection
+## After Creating Test Files
 
-**❌ NEVER RUN THESE COMMANDS:**
-- `dotnet test` - Script runs tests for you
-- `dotnet build` - Script builds the app
-- `adb shell`, `adb devices`, `adb logcat` - Script handles Android devices
-- `xcrun simctl` - Script handles iOS simulators
-- Any other manual device/build commands
+### Step 1: Verify Files Are Correct
+
+**Before running:**
+- [ ] HostApp XAML file: `TestCases.HostApp/Issues/IssueXXXXX.xaml`
+- [ ] HostApp code-behind: `TestCases.HostApp/Issues/IssueXXXXX.xaml.cs`
+- [ ] NUnit test: `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+- [ ] All `AutomationId` values match between XAML and test
+- [ ] `[Issue()]` attribute present with all parameters
+- [ ] ONE `[Category()]` attribute
+
+### Step 2: Run the Test
+
+```bash
+# Default: Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+
+# Or iOS (default: iPhone Xs, iOS 18.5)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
+```
+
+### Step 3: If Test Passes ✅
+
+**Report to user:**
+```markdown
+✅ **Test Created and Validated**
+
+**Files created:**
+- `TestCases.HostApp/Issues/IssueXXXXX.xaml[.cs]`
+- `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+
+**Test result:** PASS on [Android/iOS]
+
+**What the test validates:**
+- [Describe what behavior is tested]
+
+**Ready to commit.**
+```
+
+### Step 4: If Test Fails ❌
+
+**See "Troubleshooting" section** - check for:
+1. App crashes (check device logs)
+2. Element not found (verify AutomationIds)
+3. Build errors (check script output)
+
+---
 
 ## Running Tests Locally
 
-**✅ ONLY USE THIS:**
+**✅ Remember: Always use BuildAndRunHostApp.ps1 script (see CRITICAL section above)**
 
 ### Run Specific Test by Class or Method Name
 
