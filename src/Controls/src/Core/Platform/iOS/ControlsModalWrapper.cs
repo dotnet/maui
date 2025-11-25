@@ -149,6 +149,15 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+
+			// When a page is reused for a modal (e.g., FormSheet), the ViewController.View
+			// may retain its previous frame. We need to reset it to the wrapper's bounds
+			// before calling PlatformArrange to ensure proper layout.
+			if (_modal?.ViewController?.View is UIView modalView)
+			{
+				modalView.Frame = View!.Bounds;
+			}
+
 			_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
 		}
 
