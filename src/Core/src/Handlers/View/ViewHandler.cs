@@ -199,7 +199,11 @@ namespace Microsoft.Maui.Handlers
 		static void MapInitializeBatchedProperties(IViewHandler handler, IView view)
 		{
 			if (handler.PlatformView is PlatformView pv)
-				pv.Initialize(view);
+			{
+				// If the view is wrapped in a WrapperView (for Shadow/Clip), apply batched properties to the wrapper instead.
+				PlatformView viewToInitialize = pv.Parent is WrapperView ? (PlatformView)pv.Parent : pv;
+				viewToInitialize.Initialize(view);
+			}
 		}
 #endif
 
