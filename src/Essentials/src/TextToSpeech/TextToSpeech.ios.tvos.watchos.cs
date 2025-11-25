@@ -87,25 +87,12 @@ namespace Microsoft.Maui.Media
 			float iosMax = AVSpeechUtterance.MaximumSpeechRate;
 			float iosNormal = AVSpeechUtterance.DefaultSpeechRate;
 
+			const float min = 0.1f, normal = 1f, max = 2f;
 
-			if (rate == 0.1f)
-			{
-				return iosMin; // Minimum - exact mapping
-			}
-
-			if (rate == 1.0f)
-			{
-				return iosNormal; // "Normal" - exact mapping
-			}
-
-			if (rate == 2.0f)
-			{
-				return iosMax; // Maximum - exact mapping
-			}
-
-			// Linear interpolation (lerp) from MAUI range [0.1, 2.0] to iOS range [iosMin, iosMax]
-			// Formula: targetMin + (input - inputMin) / (inputMax - inputMin) * (targetMax - targetMin)
-			return iosMin + ((rate - 0.1f) / (2.0f - 0.1f)) * (iosMax - iosMin);
+			return rate <= min ? iosMin :
+				   rate == normal ? iosNormal :
+				   rate >= max ? iosMax :
+				   iosMin + ((rate - min) / (max - min)) * (iosMax - iosMin); // Linear interpolation (lerp) from MAUI range [0.1, 2.0] to iOS range [iosMin, iosMax]
 		}
 #pragma warning restore CA1416
 	}

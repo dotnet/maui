@@ -102,24 +102,19 @@ namespace Microsoft.Maui.Media
 			{
 				return "x-slow";
 			}
-			else if (rate > 0.25f && rate <= 0.75f)
+			if (rate <= 0.75f)
 			{
 				return "slow";
 			}
-			else if (rate > 0.75f && rate <= 1.25f)
+			if (rate <= 1.25f)
 			{
 				return "medium";
 			}
-			else if (rate > 1.25f && rate <= 1.75f)
+			if (rate <= 1.75f)
 			{
 				return "fast";
 			}
-			else if (rate > 1.75f)
-			{
-				return "x-fast";
-			}
-
-			return "medium"; // Default fallback
+			return "x-fast";
 		}
 
 		static string ProsodyPitch(float? pitch)
