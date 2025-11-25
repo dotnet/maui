@@ -96,7 +96,17 @@ internal static partial class HybridWebViewHelper
 		if (result == null)
 			return null;
 
-		var jsResult = JsonSerializer.Deserialize<JSInvokeResult>(result);
+		// Android's WebView automatically JSON-encodes the return value, so we need to unwrap it
+		// Check if the result is a JSON-encoded string (starts and ends with quotes)
+		if (OperatingSystem.IsAndroid())
+		{
+			// Deserialize once to unwrap the JSON string
+			result = JsonSerializer.Deserialize<string>(result);
+			if (result == null)
+				return null;
+		}
+
+		var jsResult = JsonSerializer.Deserialize(result, HybridWebViewHelperJsonContext.Default.JSInvokeResult);
 		if (jsResult?.IsError == true)
 		{
 			var jsException = new HybridWebViewInvokeJavaScriptException(jsResult?.Message, jsResult?.Name, jsResult?.StackTrace);
@@ -213,7 +223,7 @@ internal static partial class HybridWebViewHelper
 
 			var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
 			var invokeResult = CreateInvokeResult(invokeResultRaw);
-			var json = JsonSerializer.Serialize(invokeResult, HybridWebViewHelperJsonContext.Default.DotNetInvokeResult);
+			var json = JsonSerializer.Serialize(invokeResult);
 			var contentBytes = Encoding.UTF8.GetBytes(json);
 
 			return contentBytes;
@@ -461,6 +471,7 @@ internal static partial class HybridWebViewHelper
 	}
 
 	[JsonSourceGenerationOptions()]
+	[JsonSerializable(typeof(JSInvokeResult))]
 	[JsonSerializable(typeof(JSInvokeMethodData))]
 	[JsonSerializable(typeof(JSInvokeError))]
 	[JsonSerializable(typeof(DotNetInvokeResult))]
