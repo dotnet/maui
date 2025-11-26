@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Root))]
 #if WINDOWS || IOS || MACCATALYST || TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<Handlers.Compatibility.TableViewRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.TableViewRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #elif ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete

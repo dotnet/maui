@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[TypeConverter(typeof(ShellContentConverter))]
 #if WINDOWS
-	[ElementHandler<Handlers.ShellContentHandler>]
+	[ElementHandler(typeof(Handlers.ShellContentHandler))]
 #endif
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{

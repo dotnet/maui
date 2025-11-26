@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="Type[@FullName='Microsoft.Maui.Controls.Switch']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<SwitchHandler>]
+	[ElementHandler(typeof(SwitchHandler))]
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='SwitchOnVisualState']/Docs/*" />

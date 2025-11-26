@@ -9,14 +9,8 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls
 {
-<<<<<<< HEAD
-	/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs/*" />
-	[ElementHandler<EditorHandler>]
-||||||| 3f26a592b2
-	/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs/*" />
-=======
 	/// <summary>A control that can edit multiple lines of text.</summary>
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
+	[ElementHandler(typeof(EditorHandler))]
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
 		/// <summary>Identifies the Text bindable property.</summary>

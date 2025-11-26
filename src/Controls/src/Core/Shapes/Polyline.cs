@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Handlers;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polyline']/Docs/*" />
-	[ElementHandler<PolylineHandler>]
+	[ElementHandler(typeof(PolylineHandler))]
 	public sealed partial class Polyline : Shape, IShape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />

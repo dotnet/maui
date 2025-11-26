@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="Type[@FullName='Microsoft.Maui.Controls.Slider']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<SliderHandler>]
+	[ElementHandler(typeof(SliderHandler))]
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
 		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>

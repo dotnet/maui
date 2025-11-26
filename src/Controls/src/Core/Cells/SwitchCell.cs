@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("The controls which use SwitchCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<Handlers.Compatibility.SwitchCellRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.SwitchCellRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public class SwitchCell : Cell

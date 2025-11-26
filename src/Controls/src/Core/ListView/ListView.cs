@@ -15,24 +15,18 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-<<<<<<< HEAD
-	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
-	[Obsolete("Please use CollectionView instead.")]
-#if WINDOWS || IOS || MACCATALYST || TIZEN
-#pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<Handlers.Compatibility.ListViewRenderer>]
-#pragma warning restore CS0618 // Type or member is obsolete
-#if ANDROID
-	[ElementHandlerWithAndroidContext<Handlers.Compatibility.ListViewRenderer>]
-#endif
-#endif
-||||||| 3f26a592b2
-	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
-	[Obsolete("Please use CollectionView instead.")]
-=======
 	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
 	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
+#if WINDOWS || IOS || MACCATALYST || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler(typeof(Handlers.Compatibility.ListViewRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
+#if ANDROID
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandlerWithAndroidContext<Handlers.Compatibility.ListViewRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// The WebView supports navigation events and JavaScript evaluation.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<WebViewHandler>]
+	[ElementHandler(typeof(WebViewHandler))]
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>

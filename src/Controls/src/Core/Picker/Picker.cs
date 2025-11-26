@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> control for picking an element in a list.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<PickerHandler>]
+	[ElementHandler(typeof(PickerHandler))]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>

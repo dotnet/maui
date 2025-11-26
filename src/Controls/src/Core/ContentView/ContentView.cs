@@ -10,14 +10,8 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs/*" />
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-<<<<<<< HEAD
-	[ElementHandler<ContentViewHandler>]
-	public partial class ContentView : TemplatedView, IContentView
-||||||| 3f26a592b2
-	public partial class ContentView : TemplatedView, IContentView
-=======
+	[ElementHandler(typeof(ContentViewHandler))]
 	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);

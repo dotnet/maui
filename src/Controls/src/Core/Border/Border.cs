@@ -11,14 +11,8 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-<<<<<<< HEAD
-	[ElementHandler<BorderHandler>]
-	public class Border : View, IContentView, IBorderView, IPaddingElement
-||||||| 3f26a592b2
-	public class Border : View, IContentView, IBorderView, IPaddingElement
-=======
+	[ElementHandler(typeof(BorderHandler))]
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
 	{
 		float[]? _strokeDashPattern;
 

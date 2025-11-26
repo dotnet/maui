@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that allows date picking.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<DatePickerHandler>]
+	[ElementHandler(typeof(DatePickerHandler))]
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>

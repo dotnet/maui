@@ -11,18 +11,12 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-<<<<<<< HEAD
-	/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="Type[@FullName='Microsoft.Maui.Controls.CarouselView']/Docs/*" />
-#if IOS || MACCATALYST
-	[ElementHandler<Handlers.Items2.CarouselViewHandler2>]
-#else
-	[ElementHandler<Handlers.Items.CarouselViewHandler>]
-#endif
-||||||| 3f26a592b2
-	/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="Type[@FullName='Microsoft.Maui.Controls.CarouselView']/Docs/*" />
-=======
 	/// <summary>A <see cref="Microsoft.Maui.Controls.ItemsView"/> whose scrollable child views 'snap' into place.</summary>
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
+#if IOS || MACCATALYST
+	[ElementHandler(typeof(Handlers.Items2.CarouselViewHandler2))]
+#else
+	[ElementHandler(typeof(Handlers.Items.CarouselViewHandler))]
+#endif
 	public class CarouselView : ItemsView
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemVisualState']/Docs/*" />

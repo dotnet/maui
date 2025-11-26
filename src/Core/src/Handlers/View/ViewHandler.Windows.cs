@@ -190,36 +190,7 @@ public partial class ViewHandler
 		}
 	}
 
-<<<<<<< HEAD
-		internal virtual bool PreventGestureBubbling => false;
-||||||| 3f26a592b2
-		internal virtual bool PreventGestureBubbling
-			=> this switch
-			{
-				ButtonHandler => true,
-				DatePickerHandler => true,
-				StepperHandler => true,
-				SliderHandler => true,
-				SwitchHandler => true,
-				TimePickerHandler => true,
-				ImageButtonHandler => true,
-				RadioButtonHandler => true,
-				_ => false,
-			};
-=======
-	internal virtual bool PreventGestureBubbling
-		=> this switch
-		{
-			ButtonHandler => true,
-			DatePickerHandler => true,
-			StepperHandler => true,
-			SliderHandler => true,
-			SwitchHandler => true,
-			TimePickerHandler => true,
-			ImageButtonHandler => true,
-			RadioButtonHandler => true,
-			_ => false,
-		};
+	internal virtual bool PreventGestureBubbling => false;
 
 	static void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
 	{
@@ -250,6 +221,5 @@ public partial class ViewHandler
 		{
 			virtualView.IsFocused = isFocused;
 		}
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
 	}
 }
