@@ -1,6 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Microsoft.Maui.ApplicationModel;
 using ObjCRuntime;
 using UIKit;
 
@@ -25,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 					var color = imageSource.Color.ToPlatform();
 
-					return CreateImage(scale, color);
+					return CreateImageAsync(scale, color);
 				}).ConfigureAwait(false);
 
 				return new Result(image, imageSource.IsResolutionDependent);
@@ -36,21 +39,27 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 		}
 
-		static UIImage CreateImage(float scale, UIColor color)
+
+		static async Task<UIImage> CreateImageAsync(float scale, UIColor color)
 		{
 			var rect = new CGRect(0, 0, 100, 100);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, scale);
-			var context = UIGraphics.GetCurrentContext();
+			return await MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
+				{
+					Opaque = false,
+					Scale = scale,
+				});
 
-			color.SetFill();
-			context.FillRect(rect);
+				var image = renderer.CreateImage((context) =>
+				{
+					color.SetFill();
+					context.FillRect(rect);
+				}).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
-
-			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				return image;
+			});
 		}
 
 		class Result : ImageSourceServiceResult

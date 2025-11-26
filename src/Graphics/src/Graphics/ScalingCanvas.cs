@@ -6,6 +6,9 @@ using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// A canvas implementation that applies scaling to drawing operations before delegating to a wrapped canvas.
+	/// </summary>
 	public class ScalingCanvas : ICanvas, IBlurrableCanvas
 	{
 		private readonly ICanvas _canvas;
@@ -15,87 +18,113 @@ namespace Microsoft.Maui.Graphics
 		private float _scaleX = 1f;
 		private float _scaleY = 1f;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ScalingCanvas"/> class.
+		/// </summary>
+		/// <param name="wrapped">The canvas to wrap and apply scaling to.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="wrapped"/> is null.</exception>
 		public ScalingCanvas(ICanvas wrapped)
 		{
 			_canvas = wrapped;
 			_blurrableCanvas = _canvas as IBlurrableCanvas;
 		}
 
+		/// <inheritdoc/>
 		public float DisplayScale
 		{
 			get => _canvas.DisplayScale;
 			set => _canvas.DisplayScale = value;
 		}
 
+		/// <summary>
+		/// Gets the wrapped canvas instance.
+		/// </summary>
 		public object Wrapped => _canvas;
 
+		/// <summary>
+		/// Gets the parent canvas.
+		/// </summary>
 		public ICanvas ParentCanvas => _canvas;
 
+		/// <inheritdoc/>
 		public float StrokeSize
 		{
 			set => _canvas.StrokeSize = value;
 		}
 
+		/// <inheritdoc/>
 		public float MiterLimit
 		{
 			set => _canvas.MiterLimit = value;
 		}
 
+		/// <inheritdoc/>
 		public Color StrokeColor
 		{
 			set => _canvas.StrokeColor = value;
 		}
 
+		/// <inheritdoc/>
 		public LineCap StrokeLineCap
 		{
 			set => _canvas.StrokeLineCap = value;
 		}
 
+		/// <inheritdoc/>
 		public float Alpha
 		{
 			set => _canvas.Alpha = value;
 		}
 
+		/// <inheritdoc/>
 		public LineJoin StrokeLineJoin
 		{
 			set => _canvas.StrokeLineJoin = value;
 		}
 
+		/// <inheritdoc/>
 		public float[] StrokeDashPattern
 		{
 			set => _canvas.StrokeDashPattern = value;
 		}
 
+		/// <inheritdoc/>
 		public float StrokeDashOffset
 		{
 			set => _canvas.StrokeDashOffset = value;
 		}
 
+		/// <inheritdoc/>
 		public Color FillColor
 		{
 			set => _canvas.FillColor = value;
 		}
 
+		/// <inheritdoc/>
 		public Color FontColor
 		{
 			set => _canvas.FontColor = value;
 		}
 
+		/// <inheritdoc/>
 		public IFont Font
 		{
 			set => _canvas.Font = value;
 		}
 
+		/// <inheritdoc/>
 		public float FontSize
 		{
 			set => _canvas.FontSize = value;
 		}
 
+		/// <inheritdoc/>
 		public BlendMode BlendMode
 		{
 			set => _canvas.BlendMode = value;
 		}
 
+		/// <inheritdoc/>
 		public bool Antialias
 		{
 			set => _canvas.Antialias = value;

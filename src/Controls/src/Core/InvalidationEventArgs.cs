@@ -10,15 +10,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Trigger = trigger;
 		}
-		public InvalidationEventArgs(InvalidationTrigger trigger, int depth) : this(trigger)
-		{
-			CurrentInvalidationDepth = depth;
-		}
-
 
 		public InvalidationTrigger Trigger { get; private set; }
-
-
-		public int CurrentInvalidationDepth { set; get; }
 	}
 }

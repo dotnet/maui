@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
@@ -18,17 +10,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui21774
 {
-	public Maui21774()
-	{
-		InitializeComponent();
-	}
+	public Maui21774() => InitializeComponent();
 
-	public Maui21774(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -41,11 +24,11 @@ public partial class Maui21774
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void AppThemeChangeOnUnparentedPage([Values(false, true)] bool useCompiledXaml)
+		public void AppThemeChangeOnUnparentedPage([Values] XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.LimeGreen);
 			Application.Current.UserAppTheme = AppTheme.Light;
-			var page = new Maui21774(useCompiledXaml);
+			var page = new Maui21774(inflator);
 			Application.Current.MainPage = page;
 
 			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.LimeGreen));

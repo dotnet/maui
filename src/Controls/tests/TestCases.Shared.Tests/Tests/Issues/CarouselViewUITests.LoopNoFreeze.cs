@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // related issue: https://github.com/dotnet/maui/issues/24482
+﻿#if TEST_FAILS_ON_WINDOWS // Related issue for windows: https://github.com/dotnet/maui/issues/24482
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -10,6 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		readonly string _carouselAutomationId = "carouselView";
 		readonly string _btnRemoveAutomationId = "btnRemove";
 		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
+		readonly string _btnSwipeAutomationId = "btnSwipe";
 
 		protected override bool ResetAfterEachTest => true;
 		public CarouselViewLoopNoFreeze(TestDevice device)
@@ -28,10 +29,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("0 item");
 
 			App.WaitForElement(_carouselAutomationId);
-			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
+			App.WaitForElement(_btnSwipeAutomationId);
+			App.Tap(_btnSwipeAutomationId);
 
 			App.WaitForElement("1 item");
-			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
+			App.Tap(_btnSwipeAutomationId);
 
 
 			App.WaitForElement("2 item");
@@ -40,7 +42,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("1 item");
 
-			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
+			App.Tap(_btnSwipeAutomationId);
 
 			App.WaitForElement("0 item");
 		}

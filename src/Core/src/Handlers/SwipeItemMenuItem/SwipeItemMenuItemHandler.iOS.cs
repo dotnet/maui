@@ -88,8 +88,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			if (swipeView != null)
-				swipeView.UpdateIsVisibleSwipeItem(view);
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 
 			handler.PlatformView.UpdateVisibility(view.Visibility);
 		}
@@ -138,19 +137,12 @@ namespace Microsoft.Maui.Handlers
 				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
 				if (maxResizeFactor > 1)
+				{
 					return sourceImage;
+				}
 
 				var width = maxResizeFactor * sourceSize.Width;
 				var height = maxResizeFactor * sourceSize.Height;
-				if (!OperatingSystem.IsIOSVersionAtLeast(17))
-				{
-					UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-					sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
-					var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-					UIGraphics.EndImageContext();
-
-					return resultImage;
-				}
 
 				var format = new UIGraphicsImageRendererFormat
 				{

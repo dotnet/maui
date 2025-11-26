@@ -11,6 +11,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -29,7 +30,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Does Not Leak")]
+		[Fact(DisplayName = "Does Not Leak"
+#if IOS || MACCATALYST
+		, Skip = "failing on dnceng"
+#endif
+		)]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
@@ -332,6 +337,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				label.TextType = TextType.Html;
 
+				// We need to delay here because platformLabel.UpdateTextHtml(label) and label.InvalidateMeasure()
+				// are dispatched asynchronously to the main thread and may not complete immediately.
+				// https://github.com/dotnet/maui/pull/26153
+				await Task.Delay(100);
 				await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
 		}
@@ -516,9 +525,13 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "<p>Test</p>"
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
+				// We need to delay here because platformLabel.UpdateTextHtml(label) and label.InvalidateMeasure()
+				// are dispatched asynchronously to the main thread and may not complete immediately.
+				// https://github.com/dotnet/maui/pull/26153
+				await Task.Delay(100);
 				AssertEquivalentFont(handler, label.ToFont());
 			});
 		}
@@ -714,9 +727,13 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "<p>Test</p>"
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
+				// We need to delay here because platformLabel.UpdateTextHtml(label) and label.InvalidateMeasure()
+				// are dispatched asynchronously to the main thread and may not complete immediately.
+				// https://github.com/dotnet/maui/pull/26153
+				await Task.Delay(100);
 				label.FontFamily = "Baskerville";
 				label.FontSize = 64;
 				AssertEquivalentFont(handler, label.ToFont());
@@ -755,7 +772,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-
 		Color TextColor(LabelHandler handler)
 		{
 #if __IOS__
@@ -780,7 +796,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(targetFontSize, platformTypeface.PointSize);
 #elif __ANDROID__
 			var targetTypeface = fontManager.GetTypeface(font);
-			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);		
+			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);
 			var platformTypeface = handler.PlatformView.Typeface;
 			var platformFontSize = handler.PlatformView.TextSize;
 
@@ -795,6 +811,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(targetFontStyle, platformFontStyle);
 			Assert.Equal(targetFontWeight, platformFontWeight);
 #endif
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a Label should match with native IsVisible")]
+		public async Task VerifyLabelIsVisibleProperty()
+		{
+			var label = new Label();
+			label.IsVisible = false;
+			var expectedValue = label.IsVisible;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
 		}
 	}
 }

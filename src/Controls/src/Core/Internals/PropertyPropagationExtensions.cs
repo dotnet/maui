@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,15 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
 	public static class PropertyPropagationExtensions
 	{
+		[Obsolete]
+		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
+		{
+			if (children == null)
+				return;
+
+			PropagatePropertyChanged(propertyName, element, children.OfType<IVisualTreeElement>().ToList());
+		}
+
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IReadOnlyList<IVisualTreeElement> children)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -28,6 +38,12 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
+			if (propertyName == null || propertyName == Shell.NavBarVisibilityAnimationEnabledProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.NavBarVisibilityAnimationEnabledProperty, element);
+				
+			if (propertyName == null || propertyName == Shell.BackButtonBehaviorProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.BackButtonBehaviorProperty, element);
+
 			foreach (var child in children.ToArray())
 			{
 				if (child is IPropertyPropagationController view)
@@ -37,7 +53,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="//Member[@MemberName='PropagatePropertyChanged']/Docs/*" />
+		/// <param name="propertyName">The propertyName parameter.</param>
+		/// <param name="target">The target parameter.</param>
+		/// <param name="source">The source parameter.</param>
 		public static void PropagatePropertyChanged(string propertyName, Element target, Element source)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)

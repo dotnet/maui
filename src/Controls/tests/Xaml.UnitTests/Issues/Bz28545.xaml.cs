@@ -16,19 +16,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz28545(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void TypeConverterAreAppliedForSettersToAttachedBP(bool useCompiledXaml)
+			[Test]
+			public void TypeConverterAreAppliedForSettersToAttachedBP([Values] XamlInflator inflator)
 			{
-				var layout = new Bz28545(useCompiledXaml);
+				var layout = new Bz28545(inflator);
 				Assert.AreEqual(Colors.Pink, layout.label.TextColor);
 				Assert.AreEqual(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label));
 				Assert.AreEqual(new Rect(1, 1, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayout.GetLayoutBounds(layout.label));

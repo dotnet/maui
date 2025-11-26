@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class TemplatedCell2 : ItemsViewCell2
+	public class TemplatedCell2 : ItemsViewCell2, IPlatformMeasureInvalidationController
 	{
 		internal const string ReuseId = "Microsoft.Maui.Controls.TemplatedCell2";
 
@@ -33,6 +33,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected nfloat ConstrainedDimension;
 
 		WeakReference<DataTemplate> _currentTemplate;
+
+		bool _bound;
+		bool _measureInvalidated;
+		bool _needsArrange;
+		Size _measuredSize;
+		Size _cachedConstraints;
+
+		internal bool MeasureInvalidated => _measureInvalidated;
+
+		// Flags changes confined to the header/footer, preventing unnecessary recycling and revalidation of templated cells.
+		internal bool isHeaderOrFooterChanged = false;
 
 		public DataTemplate CurrentTemplate
 		{
@@ -61,6 +72,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void Unbind()
 		{
+			_bound = false;
+
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				//view.MeasureInvalidated -= MeasureInvalidated;
@@ -74,31 +87,65 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
-			if (PlatformHandler?.VirtualView is not null)
+			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
-				{
-					var measure =
-						PlatformHandler.VirtualView.Measure(preferredAttributes.Size.Width, double.PositiveInfinity);
+				var constraints = GetMeasureConstraints(preferredAttributes);
 
-					preferredAttributes.Frame =
-						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
-							preferredAttributes.Frame.Width, measure.Height);
-				}
-				else
+				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure =
-						PlatformHandler.VirtualView.Measure(double.PositiveInfinity, preferredAttributes.Size.Height);
-
-					preferredAttributes.Frame =
-						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
-							measure.Width, preferredAttributes.Frame.Height);
+					var measure = virtualView.Measure(constraints.Width, constraints.Height);
+					_cachedConstraints = constraints;
+					_measuredSize = measure;
+					_needsArrange = true;
 				}
 
+				var preferredSize = preferredAttributes.Size;
+				// Use measured size only when unconstrained
+				var size = new Size(
+					double.IsPositiveInfinity(constraints.Width) ? _measuredSize.Width : preferredSize.Width,
+					double.IsPositiveInfinity(constraints.Height) ? _measuredSize.Height : preferredSize.Height
+				);
+
+				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
+
+				_measureInvalidated = false;
 			}
 
 			return preferredAttributes;
+		}
+
+		private protected virtual Size GetMeasureConstraints(UICollectionViewLayoutAttributes preferredAttributes)
+		{
+			var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
+				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
+				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+			return constraints;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (PlatformHandler?.VirtualView is { } virtualView)
+			{
+				var boundsSize = Bounds.Size.ToSize();
+				if (!_needsArrange)
+				{
+					// While rotating the device, and under other circumstances,
+					// a layout pass is being triggered without going through PreferredLayoutAttributesFittingAttributes first.
+					// In this case we should not trigger an Arrange pass because
+					// the last measurement does not match the new bounds size.
+					return;
+				}
+
+				_needsArrange = false;
+
+				// We now have to apply the new bounds size to the virtual view
+				// which will automatically set the frame on the platform view too.
+				var frame = new Rect(Point.Zero, boundsSize);
+				virtualView.Arrange(frame);
+			}
 		}
 
 		public override void PrepareForReuse()
@@ -109,7 +156,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			var virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			View virtualView = null;
+			if (CurrentTemplate != template)
+			{
+				CurrentTemplate = template;
+				virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			}
+			else if (PlatformHandler?.VirtualView is View existingView)
+			{
+				virtualView = existingView;
+			}
+
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
 
@@ -120,6 +177,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
+			var oldElement = PlatformHandler?.VirtualView as View;
+
+			if (oldElement is not null && oldElement != virtualView && isHeaderOrFooterChanged)
+			{
+				oldElement.BindingContext = null;
+				itemsView.RemoveLogicalChild(oldElement);
+				PlatformHandler = null;
+				PlatformView?.RemoveFromSuperview();
+			}
+
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;
@@ -135,7 +202,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
-				InitializeContentConstraints(PlatformView);
+				SetupPlatformView(PlatformView, needsContainer);
+				ContentView.MarkAsCrossPlatformLayoutBacking();
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
@@ -144,8 +212,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
+				if (view.Parent is null)
+				{
+					itemsView.AddLogicalChild(view);
+				}
 			}
 
+			_bound = true;
+			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 			this.UpdateAccessibilityTraits(itemsView);
 		}
 
@@ -259,6 +333,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				SelectedBackgroundView.BackgroundColor = UIColor.Clear;
 			}
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			// This is a no-op
+		}
+
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			// If the cell is not bound (or getting unbounded), we don't want to measure it
+			// and cause a useless and harming InvalidateLayout on the collection view layout
+			if (!_measureInvalidated && _bound)
+			{
+				_measureInvalidated = true;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

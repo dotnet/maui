@@ -78,8 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
-			if (element != null)
-				element.SendViewInitialized(NativeView);
+			element?.SendViewInitialized(NativeView);
 
 			//disable edit/reorder of tabs
 			CustomizableViewControllers = null;

@@ -5,7 +5,7 @@ using Maui.Controls.Sample.Issues;
 
 namespace Maui.Controls.Sample
 {
-	public static class MauiProgram
+	public static partial class MauiProgram
 	{
 		public static MauiApp CreateMauiApp()
 		{
@@ -29,6 +29,7 @@ namespace Maui.Controls.Sample
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
 				.Issue18720TimePickerAddMappers()
+				.Issue28945AddMappers()
 				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
@@ -51,11 +52,23 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
 				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
 #endif
+#if IOS
+				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
+#endif
 			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();
 			return appBuilder.Build();
+		}
+
+		static partial void OverrideMainPage(ref Page mainPage);
+
+		public static Page CreateDefaultMainPage()
+		{
+			Page mainPage = null;
+			OverrideMainPage(ref mainPage);
+			return mainPage ?? new CoreNavigationPage();
 		}
 	}
 
@@ -70,11 +83,6 @@ namespace Maui.Controls.Sample
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
 
-		public Page CreateDefaultMainPage()
-		{
-			return new CoreNavigationPage();
-		}
-
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
 			base.OnAppLinkRequestReceived(uri);
@@ -82,7 +90,7 @@ namespace Maui.Controls.Sample
 
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			var window = new Window(CreateDefaultMainPage());
+			var window = new Window(MauiProgram.CreateDefaultMainPage());
 #if WINDOWS || MACCATALYST
 
 			// For desktop use a fixed window size, so that screenshots are deterministic,

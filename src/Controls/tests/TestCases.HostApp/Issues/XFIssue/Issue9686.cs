@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues;
@@ -59,13 +61,35 @@ public class Issue9686 : TestContentPage
 		public string Name { get; set; }
 	}
 
-	public class _9686Group : List<_9686Item>
+	public class _9686Group : List<_9686Item>, INotifyPropertyChanged
 	{
-		public string GroupName { get; set; }
+		string _groupName;
+
+		public string GroupName
+		{
+			get => _groupName;
+			set => SetField(ref _groupName, value);
+		}
 
 		public _9686Group(string groupName, ObservableCollection<_9686Item> items) : base(items)
 		{
 			GroupName = groupName;
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+		{
+			if (EqualityComparer<T>.Default.Equals(field, value))
+				return false;
+			field = value;
+			OnPropertyChanged(propertyName);
+			return true;
 		}
 	}
 

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -84,6 +86,102 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(header.Height > 0, "Header should be arranged");
 					Assert.True(footer.Height > 0, "Footer should be arranged");
 				});
+		}
+
+		//src/Compatibility/Core/tests/Android/RendererTests.cs
+		[Fact(DisplayName = "EmptySource should have a count of zero")]
+		[Trait("Category", "CollectionView")]
+		public void EmptySourceCountIsZero()
+		{
+			var emptySource = new EmptySource();
+			var count = emptySource.Count;
+			Assert.Equal(0, count);
+		}
+
+		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
+		[Fact(DisplayName = "CollectionView with SnapPointsType set should not crash")]
+		public async Task SnapPointsDoNotCrashOnOlderAPIs()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView();
+
+			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+			{
+				SnapPointsType = SnapPointsType.Mandatory
+			};
+			collectionView.ItemsLayout = itemsLayout;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+
+				var platformView = handler.PlatformView;
+
+				collectionView.Handler = null;
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
+		[Fact(DisplayName = "ObservableCollection modifications are reflected after UI thread processes them")]
+		public async Task ObservableSourceItemsCountConsistent()
+		{
+			SetupBuilder();
+
+			var source = new ObservableCollection<string>();
+			source.Add("Item 1");
+			source.Add("Item 2");
+			var ois = ItemsSourceFactory.Create(source, Application.Current, new MockCollectionChangedNotifier());
+
+			Assert.Equal(2, ois.Count);
+
+			source.Add("Item 3");
+			var count = 0;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				count = ois.Count;
+				Assert.Equal(3, ois.Count);
+			});
+		}
+
+		class MockCollectionChangedNotifier : ICollectionChangedNotifier
+		{
+			public int InsertCount;
+			public int RemoveCount;
+
+			public void NotifyDataSetChanged()
+			{
+			}
+
+			public void NotifyItemChanged(IItemsViewSource source, int startIndex)
+			{
+			}
+
+			public void NotifyItemInserted(IItemsViewSource source, int startIndex)
+			{
+				InsertCount += 1;
+			}
+
+			public void NotifyItemMoved(IItemsViewSource source, int fromPosition, int toPosition)
+			{
+			}
+
+			public void NotifyItemRangeChanged(IItemsViewSource source, int start, int end)
+			{
+			}
+
+			public void NotifyItemRangeInserted(IItemsViewSource source, int startIndex, int count)
+			{
+			}
+
+			public void NotifyItemRangeRemoved(IItemsViewSource source, int startIndex, int count)
+			{
+			}
+
+			public void NotifyItemRemoved(IItemsViewSource source, int startIndex)
+			{
+				RemoveCount += 1;
+			}
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)

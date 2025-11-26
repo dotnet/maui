@@ -1,0 +1,115 @@
+name: 'Apply Labels and Comment'
+description: 'Merge label JSON files, summarize, comment on the issue, and apply labels.'
+
+inputs:
+  token:
+    description: 'GitHub token to use for authentication'
+    required: false
+    default: ${{ github.token }}
+  issue:
+    description: 'The issue number to update'
+    required: true
+  input-files:
+    description: 'Comma-separated or newline-separated list of JSON files with results to merge'
+    required: false
+  footer:
+    description: 'Footer text to append to the AI response comment'
+    required: false
+    default: '_This entire triage process was automated by AI and mistakes may have been made. Please let us know so we can continue to improve._'
+
+outputs:
+  merged-file:
+    description: 'The merged JSON file with all labels and summary.'
+    value: ${{ steps.merge-labels.outputs.merged-file }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Setup working directory
+      id: setup
+      uses: ./.github/actions/triage-setup
+      with:
+        token: ${{ inputs.token }}
+
+    - name: Merge response JSON files
+      id: merge
+      shell: pwsh
+      run: |
+        "Merge response JSON files"
+        echo "::group::Merge response JSON files"
+        $out = "${{ steps.setup.outputs.work-dir }}/merged.json"
+        ${{ github.action_path }}/merge-responses.ps1 `
+          -InputFiles "${{ inputs.input-files }}" `
+          -InputDir "${{ runner.temp }}/triage-action-responses" `
+          -Output "$out"
+        "merged-file=$out" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Create System prompt file
+      id: create-system-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        template: ${{ github.action_path }}/system-prompt.md
+        output: ${{ steps.setup.outputs.work-dir }}/system-prompt.md
+
+    - name: Create User prompt file
+      id: create-user-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        template: ${{ github.action_path }}/user-prompt.md
+        output: ${{ steps.setup.outputs.work-dir }}/user-prompt.md
+
+    - name: Run Triage AI Action
+      id: triage-ai
+      uses: ./.github/actions/triage-ai
+      with:
+        system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
+        prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
+        token: ${{ inputs.token }}
+        response-file: "${{ steps.setup.outputs.work-dir }}/response.md"
+        max-tokens: 500
+
+    - name: Comment on the issue with summary
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('${{ steps.triage-ai.outputs.response }}', 'utf8');
+
+          const issueNumber = parseInt('${{ inputs.issue }}', 10);
+          const footer = '${{ inputs.footer }}';
+
+          const commentBody = `${summary}\n\n${footer}`;
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issueNumber,
+            body: commentBody
+          });
+
+    - name: Apply labels to the issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const mergedJson = fs.readFileSync('${{ steps.merge.outputs.merged-file }}', 'utf8');
+          const merged = JSON.parse(mergedJson);
+
+          const issueNumber = parseInt('${{ inputs.issue }}', 10);
+
+          const labels = merged.labels
+            .map(l => l.label)
+            .filter(Boolean);
+
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels
+            });
+          }

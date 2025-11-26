@@ -161,6 +161,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
+			// Add an additional drag and drop to avoid the flakiness in CI.
+			App.DragAndDrop("LabelDragElement", "DragTarget");
+
 			App.WaitForElement("DragStartEventsLabel");
 			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
@@ -359,6 +362,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
+
+			// Wait for all UI elements to confirm drag and drop operation completion
+			App.WaitForElement("DropRelativeLayout");
+			App.WaitForElement("DropRelativeScreen");
+			App.WaitForElement("DropRelativeLabel");
+			App.WaitForElement("DragStartRelativeScreen");
 
 			var dropRelativeToLayout = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
 			var dropRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DropRelativeScreen").GetText());

@@ -12,8 +12,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiCALayer : CALayer, IAutoSizableCALayer
 	{
 		CGRect _bounds;
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IShape is a non-NSObject in MAUI.")]
-		IShape? _shape;
+		WeakReference<IShape?> _shape;
 
 		UIColor? _backgroundColor;
 		Paint? _background;
@@ -36,6 +35,7 @@ namespace Microsoft.Maui.Platform
 		public MauiCALayer()
 		{
 			_bounds = new CGRect();
+			_shape = new WeakReference<IShape?>(null);
 			ContentsScale = UIScreen.MainScreen.Scale;
 		}
 
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Platform
 
 		public void SetBorderShape(IShape? shape)
 		{
-			_shape = shape;
+			_shape = new WeakReference<IShape?>(shape);
 
 			SetNeedsDisplay();
 		}
@@ -306,10 +306,10 @@ namespace Microsoft.Maui.Platform
 
 		CGPath? GetClipPath()
 		{
-			if (_shape != null)
+			if (_shape.TryGetTarget(out var shape))
 			{
 				var bounds = _bounds.ToRectangle();
-				var path = _shape.PathForBounds(bounds);
+				var path = shape.PathForBounds(bounds);
 				return path?.AsCGPath();
 			}
 
@@ -386,7 +386,8 @@ namespace Microsoft.Maui.Platform
 					for (int index = 0; index < gradientPaint.GradientStops.Length; index++)
 					{
 						Graphics.Color color = gradientPaint.GradientStops[index].Color;
-						colors[index] = new CGColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						var uiColor = new UIColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						colors[index] = uiColor.CGColor;
 						locations[index] = new nfloat(gradientPaint.GradientStops[index].Offset);
 					}
 
@@ -417,7 +418,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsBorderDashed()
 		{
-			return _strokeDash != null && _strokeDashOffset > 0;
+			return _strokeDash != null;
 		}
 	}
 }

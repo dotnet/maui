@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -48,7 +51,16 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(editorHandler);
-				return (float)nativeView.Alpha; 
+				return (float)nativeView.Alpha;
+			});
+		}
+
+		Task<bool> GetPlatformIsVisible(EditorHandler editorHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(editorHandler);
+				return !nativeView.Hidden;
 			});
 		}
 
@@ -93,6 +105,36 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(expectedFontFamily, placeholderLabel?.Font?.FamilyName);
 				});
 			}
+		}
+
+		//src/Compatibility/Core/tests/iOS/FlowDirectionTests.cs
+		[Theory]
+		[InlineData(true, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[InlineData(true, FlowDirection.RightToLeft, UITextAlignment.Right)]
+		[InlineData(false, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[Description("The Editor's text alignment should match the expected alignment when FlowDirection is applied explicitly or implicitly")]
+		public async Task EditorAlignmentMatchesFlowDirection(bool isExplicit, FlowDirection flowDirection, UITextAlignment expectedAlignment)
+		{
+			var editor = new Editor { Text = "Checking flow direction" };
+			var contentPage = new ContentPage { Title = "Flow Direction", Content = editor };
+
+			if (isExplicit)
+			{
+				editor.FlowDirection = flowDirection;
+			}
+			else
+			{
+				contentPage.FlowDirection = flowDirection;
+			}
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
+			{
+				var textField = GetPlatformControl(handler);
+				return textField.TextAlignment;
+			});
+
+			Assert.Equal(expectedAlignment, nativeAlignment);
 		}
 	}
 }

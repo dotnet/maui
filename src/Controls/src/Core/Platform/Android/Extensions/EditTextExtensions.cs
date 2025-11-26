@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text,
+			var newText = TextTransformUtilities.GetTransformedText(inputView?.Text,
 					isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
 
 			return (oldText, newText);

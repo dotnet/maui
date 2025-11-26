@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateIsVisible(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			platformToolbar.Visibility = (toolbar.IsVisible) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
+			UpdateBackButtonVisibility(platformToolbar, toolbar);
 		}
 
 		public static void UpdateTitleIcon(this MauiToolbar platformToolbar, Toolbar toolbar)
@@ -35,8 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 			platformToolbar.IsBackEnabled =
 				toolbar.BackButtonEnabled && toolbar.BackButtonVisible;
 
-			platformToolbar
-				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
+			UpdateBackButtonVisibility(platformToolbar, toolbar);
 
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
@@ -83,6 +83,14 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			platformToolbar.CommandBar.IsDynamicOverflowEnabled = toolbar.DynamicOverflowEnabled;
+		}
+
+		private static void UpdateBackButtonVisibility(MauiToolbar platformToolbar, Toolbar toolbar)
+		{
+			platformToolbar.IsBackButtonVisible =
+				toolbar.BackButtonVisible
+					? NavigationViewBackButtonVisible.Visible
+					: NavigationViewBackButtonVisible.Collapsed;
 		}
 	}
 }

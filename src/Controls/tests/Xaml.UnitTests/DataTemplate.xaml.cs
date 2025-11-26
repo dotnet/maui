@@ -11,22 +11,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public DataTemplate(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
-		public class Tests
+		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void EmptyTextCell(bool useCompiledXaml)
+			[Test]
+			public void EmptyTextCell([Values] XamlInflator inflator)
 			{
-				var layout = new DataTemplate(useCompiledXaml);
+				var layout = new DataTemplate(inflator);
 
 				var cell0 = layout.emptyTextCell.ItemTemplate.CreateContent();
 				Assert.NotNull(cell0);
@@ -39,11 +33,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TextCell(bool useCompiledXaml)
+			[Test]
+			public void TextCell([Values] XamlInflator inflator)
 			{
-				var layout = new DataTemplate(useCompiledXaml);
+				var layout = new DataTemplate(inflator);
 				var cell0 = layout.textCell.ItemTemplate.CreateContent();
 				Assert.NotNull(cell0);
 				Assert.That(cell0, Is.TypeOf<TextCell>());
@@ -59,11 +52,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void FromResource(bool useCompiledXaml)
+			[Test]
+			public void FromResource([Values] XamlInflator inflator)
 			{
-				var layout = new DataTemplate(useCompiledXaml);
+				var layout = new DataTemplate(inflator);
 				var cell0 = layout.fromResource.ItemTemplate.CreateContent();
 				Assert.NotNull(cell0);
 				Assert.That(cell0, Is.TypeOf<TextCell>());
@@ -79,11 +71,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TextCellAccessResources(bool useCompiledXaml)
+			[Test]
+			public void TextCellAccessResources([Values] XamlInflator inflator)
 			{
-				var layout = new DataTemplate(useCompiledXaml);
+				var layout = new DataTemplate(inflator);
 				var cell0 = layout.textCellAccessResource.ItemTemplate.CreateContent();
 				Assert.NotNull(cell0);
 				Assert.That(cell0, Is.TypeOf<TextCell>());
@@ -99,11 +90,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreNotSame(cell0, cell1);
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ViewCellAccessResources(bool useCompiledXaml)
+			[Test]
+			public void ViewCellAccessResources([Values] XamlInflator inflator)
 			{
-				var layout = new DataTemplate(useCompiledXaml);
+				var layout = new DataTemplate(inflator);
 				var cell0 = layout.viewCellAccessResource.ItemTemplate.CreateContent();
 				Assert.NotNull(cell0);
 				Assert.That(cell0, Is.TypeOf<ViewCell>());

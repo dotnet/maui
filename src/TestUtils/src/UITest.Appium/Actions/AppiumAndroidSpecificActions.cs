@@ -14,6 +14,7 @@ namespace UITest.Appium
 		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
 		const string GetSystemBarsCommand = "getSystemBars";
 		const string ToggleSecondaryToolbarItemsCommand = "toggleSecondaryToolbarItems";
+		const string CheckIfGestureNavigationIsEnabledCommand = "checkIfGestureNavigationIsEnabled";
 
 		readonly AppiumApp _appiumApp;
 
@@ -26,6 +27,7 @@ namespace UITest.Appium
 			ToggleSystemAnimationsCommand,
 			GetSystemBarsCommand,
 			ToggleSecondaryToolbarItemsCommand,
+			CheckIfGestureNavigationIsEnabledCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -49,6 +51,7 @@ namespace UITest.Appium
 				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
 				GetSystemBarsCommand => GetSystemBars(parameters),
 				ToggleSecondaryToolbarItemsCommand => ToggleSecondaryToolbarItems(parameters),
+				CheckIfGestureNavigationIsEnabledCommand => CheckIfGestureNavigationIsEnabled(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -58,9 +61,17 @@ namespace UITest.Appium
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
 				// Toggle airplane mode on device.
-				androidDriver.ToggleAirplaneMode();
+				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
 
-				return CommandResponse.SuccessEmptyResponse;
+				if (currentConnectivity is not null && currentConnectivity.TryGetValue("airplaneMode", out var currentState))
+				{
+					bool newState = !(bool)currentState;
+
+					var connectivityParams = new Dictionary<string, object> { { "airplaneMode", newState } };
+					androidDriver.ExecuteScript("mobile:setConnectivity", connectivityParams);
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
 			}
 
 			return CommandResponse.FailedEmptyResponse;
@@ -70,9 +81,18 @@ namespace UITest.Appium
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
-				androidDriver.ToggleData();
+				// Toggle device data.
+				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
 
-				return CommandResponse.SuccessEmptyResponse;
+				if (currentConnectivity is not null && currentConnectivity.TryGetValue("data", out var currentState))
+				{
+					bool newState = !(bool)currentState;
+
+					var connectivityParams = new Dictionary<string, object> { { "data", newState } };
+					androidDriver.ExecuteScript("mobile:setConnectivity", connectivityParams);
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
 			}
 
 			return CommandResponse.FailedEmptyResponse;
@@ -82,10 +102,30 @@ namespace UITest.Appium
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
-				// Switch the state of the wifi service
-				androidDriver.ToggleWifi();
+				// Switch the state of the WiFi service
+				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
 
-				return CommandResponse.SuccessEmptyResponse;
+				if (currentConnectivity is not null && currentConnectivity.TryGetValue("wifi", out var currentState))
+				{
+					bool newState = !(bool)currentState;
+
+					var connectivityParams = new Dictionary<string, object> { { "wifi", newState } };
+					androidDriver.ExecuteScript("mobile:setConnectivity", connectivityParams);
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse CheckIfGestureNavigationIsEnabled(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				var result = ShellHelper.ExecuteShellCommandWithOutput("adb shell cmd overlay list");
+				var isEnabled = result.Contains("[x] com.android.internal.systemui.navbar.gestural", StringComparison.OrdinalIgnoreCase);
+				return new CommandResponse(isEnabled, CommandResponseResult.Success);
 			}
 
 			return CommandResponse.FailedEmptyResponse;

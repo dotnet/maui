@@ -53,6 +53,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as IMauiCarouselRecyclerView).UpdateFromCurrentItem();
 		}
 
+		// TODO: Change the modifier to public in .NET 10.
+		internal static void MapItemsLayout(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			if (handler.PlatformView is IMauiRecyclerView<CarouselView> recyclerView)
+			{
+				recyclerView.UpdateLayoutManager();
+			}
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			_widthConstraint = widthConstraint;
@@ -86,7 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (double.IsInfinity(width))
 					return width;
 
-				itemWidth = (int)(width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+				itemWidth = (int)(width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right));
 			}
 
 			return itemWidth;
@@ -103,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (double.IsInfinity(height))
 					return height;
 
-				itemHeight = (int)(height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+				itemHeight = (int)(height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom));
 			}
 
 			return itemHeight;

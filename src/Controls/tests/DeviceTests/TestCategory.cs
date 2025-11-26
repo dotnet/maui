@@ -13,6 +13,7 @@
 		public const string CollectionView = "CollectionView";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
+		public const string DatePicker = nameof(DatePicker);
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Element = "Element";

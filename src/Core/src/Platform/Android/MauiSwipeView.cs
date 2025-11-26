@@ -76,6 +76,16 @@ namespace Microsoft.Maui.Platform
 				_viewPagerParent = Control.Parent.GetParentOfType<SwipeViewPager>();
 		}
 
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+
+			if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not { Count: > 0 } swipeItems)
+				return;
+
+			LayoutSwipeItems(swipeItems);
+		}
+
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			base.OnTouchEvent(e);
@@ -1310,8 +1320,7 @@ namespace Microsoft.Maui.Platform
 
 		void EnableParentGesture(bool isGestureEnabled)
 		{
-			if (_viewPagerParent != null)
-				_viewPagerParent.EnableGesture = isGestureEnabled;
+			_viewPagerParent?.EnableGesture = isGestureEnabled;
 		}
 
 		internal void OnOpenRequested(SwipeViewOpenRequest e)

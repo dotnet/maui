@@ -17,8 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Alerts Gallery");
 		}
 
-		// TODO: UI testing alert code is not yet implemented on Windows.
-#if !WINDOWS
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		public void AlertCancel()
@@ -147,6 +145,5 @@ namespace Microsoft.Maui.TestCases.Tests
 			var textAfterClick = remote.GetEventLabel().GetText();
 			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
-#endif
 	}
 }

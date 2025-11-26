@@ -10,7 +10,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
 
@@ -32,6 +32,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
+		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
+		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
 		public View? Content
 		{
 			get { return (View?)GetValue(ContentProperty); }
@@ -42,6 +45,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the safe area edges to obey for this border.
+		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the border should obey safe area insets.
+		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.Keyboard for keyboard-aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaEdges
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaEdgesProperty);
+			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="StrokeShape"/>.</summary>
@@ -331,6 +349,30 @@ namespace Microsoft.Maui.Controls
 			{
 				strokeShape.StrokeThickness = StrokeThickness;
 			}
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Use direct property
+			var regionForEdge = SafeAreaEdges.GetEdge(edge);
+
+			if (regionForEdge == SafeAreaRegions.Default)
+			{
+				// If no safe area edges are set, return None
+				return SafeAreaRegions.None;
+			}
+
+			// For Border, return as-is
+			return regionForEdge;
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
+		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for borders
+
+		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		{
+			return SafeAreaEdges.None;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -11,6 +12,7 @@ namespace Maui.Controls.Sample.Pages
 		TitleBarSampleViewModel _viewModel;
 		TitleBar _customTitleBar;
 
+		[RequiresUnreferencedCode("WindowsTitleBarPage uses LoadFromXaml which may require unreferenced code")]
 		public WindowsTitleBarPage()
 		{
 			InitializeComponent();

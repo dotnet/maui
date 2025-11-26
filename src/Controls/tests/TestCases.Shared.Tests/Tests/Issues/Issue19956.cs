@@ -1,4 +1,5 @@
-﻿#if IOS
+﻿#if IOS || (ANDROID && TEST_FAILS_ON_ANDROID)//android related issue: https://github.com/dotnet/maui/issues/27951
+//The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
 using NUnit.Framework;
 using UITest.Appium;

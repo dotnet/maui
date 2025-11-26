@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Getting an OpenQA.Selenium.InvalidSelectorException : XQueryError:6 - "invalid type" in Line: 32. Using timeout also not works.
-// On iOS test consistently crashes on CI, but passes locally. Adding failure for iOS to ensure CI stability.
+﻿#if TEST_FAILS_ON_IOS // On iOS test consistently crashes on CI, but passes locally. Adding failure for iOS to ensure CI stability.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,13 +29,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
-			App.WaitForElement(FinalLabel);
+			App.WaitForElementTillPageNavigationSettled(FinalLabel);
 			App.TapBackArrow(Back);
 			App.WaitForElement("This is the intermediate page");
 			App.TapBackArrow(Tab1);
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
-			App.WaitForElement(FinalLabel);
+			App.WaitForElementTillPageNavigationSettled(FinalLabel);
 			Assert.That(App.WaitForElement(FinalLabel)?.GetText(), Is.EqualTo("Success"));
 		}
 	}

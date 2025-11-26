@@ -10,6 +10,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using CoreGraphics;
 using CoreImage;
 using UIKit;
+using Microsoft.Maui.ApplicationModel;
 #endif
 
 namespace Microsoft.Maui.DeviceTests.ImageAnalysis
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 #if WINDOWS
 			return await CaptureView(platformView as UIElement);
 #elif ANDROID
-			return await CaptureView(platformView as Android.Views.View);
+			return await CaptureView(platformView as global::Android.Views.View);
 #elif IOS
 			return await CaptureView(platformView as UIKit.UIView);
 #else
@@ -76,51 +77,60 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			var scale = UIScreen.MainScreen.Scale;
 			int width = (int)(rect.Width * scale);
 			int height = (int)(rect.Height * scale);
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, UIScreen.MainScreen.Scale);
-			using var context = UIGraphics.GetCurrentContext();
-			using var colorSpace = CGColorSpace.CreateDeviceRGB();
-			view.Layer.RenderInContext(context);
-			using var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-			var cgimage = image.CGImage;
-			var buffer = cgimage.DataProvider.CopyData();
-			var pixelBuffer = buffer.ToArray();
-			var bytesPerPixel = cgimage.BitsPerPixel / 8;
-			if (cgimage.ByteOrderInfo != CGImageByteOrderInfo.ByteOrder32Little)
-				throw new NotImplementedException($"ByteOrderInfo CGImageByteOrderInfo.{cgimage.ByteOrderInfo} not implemented");
 
-			byte[] rawData = new byte[(int)(cgimage.Width * cgimage.Height * 4)];
-			int index = 0;
-			for (int i = 0; i < cgimage.Height; i++)
+			return await MainThread.InvokeOnMainThreadAsync(() =>
 			{
-				var a = i * cgimage.BytesPerRow;
-				for (int j = 0; j < cgimage.Width; j++)
+				var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
 				{
-					rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 0]; //B
-					rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 1]; //G
-					rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 2]; //R
-					rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 3]; //A
+					Opaque = false,
+					Scale = UIScreen.MainScreen.Scale,
+				});
+
+				using var image = renderer.CreateImage((context) =>
+				{
+					using var colorSpace = CGColorSpace.CreateDeviceRGB();
+					view.Layer.RenderInContext(context.CGContext);
+				});
+				var cgimage = image.CGImage;
+				var buffer = cgimage.DataProvider.CopyData();
+				var pixelBuffer = buffer.ToArray();
+				var bytesPerPixel = cgimage.BitsPerPixel / 8;
+				if (cgimage.ByteOrderInfo != CGImageByteOrderInfo.ByteOrder32Little)
+					throw new NotImplementedException($"ByteOrderInfo CGImageByteOrderInfo.{cgimage.ByteOrderInfo} not implemented");
+
+				byte[] rawData = new byte[(int)(cgimage.Width * cgimage.Height * 4)];
+				int index = 0;
+				for (int i = 0; i < cgimage.Height; i++)
+				{
+					var a = i * cgimage.BytesPerRow;
+					for (int j = 0; j < cgimage.Width; j++)
+					{
+						rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 0]; //B
+						rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 1]; //G
+						rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 2]; //R
+						rawData[index++] = pixelBuffer[a + j * bytesPerPixel + 3]; //A
+					}
 				}
-			}
-			return new RawBitmap()
-			{
-				PixelBuffer = rawData,
-				PixelWidth = width,
-				PixelHeight = height,
-				Density = scale
-			};
+				return new RawBitmap()
+				{
+					PixelBuffer = rawData,
+					PixelWidth = width,
+					PixelHeight = height,
+					Density = scale
+				};
+			});
 		}
 #elif ANDROID
-		private static async Task<RawBitmap> CaptureView(Android.Views.View view)
+		private static async Task<RawBitmap> CaptureView(global::Android.Views.View view)
 		{
 #pragma warning disable CS0618 // Obsolete			
 			while (!AndroidX.Core.View.ViewCompat.IsLaidOut(view))
 				await Task.Delay(10); // Wait for Android to render the view
 #pragma warning restore CS0618 // Obsolete				
-			var bitmap = Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, Android.Graphics.Bitmap.Config.Argb8888);
-			Android.Graphics.Canvas canvas = new (bitmap);
+			var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, global::Android.Graphics.Bitmap.Config.Argb8888);
+			global::Android.Graphics.Canvas canvas = new (bitmap);
 			view.Draw(canvas);
-			int[] pixels = new int[bitmap.Width * bitmap.Height];        
+			int[] pixels = new int[bitmap.Width * bitmap.Height];
 			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
 			return new RawBitmap
 			{

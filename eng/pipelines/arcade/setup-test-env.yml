@@ -11,16 +11,18 @@ steps:
   fetchDepth: 1
   clean: true
 
-- script: |
-    sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
-    xcrun xcode-select --print-path
-    xcodebuild -version
-    sudo xcodebuild -license accept
-    sudo xcodebuild -downloadPlatform iOS
-    sudo xcodebuild -runFirstLaunch
-  displayName: Select Xcode Version
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-  timeoutInMinutes: 30
+- template: /eng/pipelines/common/provision.yml@self
+  parameters:
+    checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+    skipJdk: false
+    skipAndroidCommonSdks: false
+    skipAndroidPlatformApis: false
+    onlyAndroidPlatformDefaultApis: true
+    skipAndroidEmulatorImages: true
+    skipAndroidCreateAvds: true
+    skipProvisioning: true
+    skipXcode: false
+    skipSimulatorSetup: false
 
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
@@ -68,11 +70,11 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
-- template: /eng/pipelines/common/setup-android-dependencies.yml
-  parameters:
-    mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    repoLogPath: ${{ parameters.repoLogPath }}
-    androidSdkRoot: ${{ parameters.androidSdkRoot }}
+# - template: /eng/pipelines/common/setup-android-dependencies.yml
+#   parameters:
+#     mauiSourcePath: ${{ parameters.mauiSourcePath }}
+#     repoLogPath: ${{ parameters.repoLogPath }}
+#     androidSdkRoot: ${{ parameters.androidSdkRoot }}
 
 - ${{ if eq(parameters.buildMSBuildTasks, true) }}:
   - template: /eng/pipelines/common/run-dotnet-preview.yml

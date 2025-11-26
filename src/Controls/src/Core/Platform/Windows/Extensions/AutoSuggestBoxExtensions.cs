@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this AutoSuggestBox platformControl, InputView inputView)
 		{
-			platformControl.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			platformControl.Text = TextTransformUtilities.GetTransformedText(inputView.Text, inputView.TextTransform);
 		}
 	}
 }

@@ -12,50 +12,45 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz24910(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true), TestCase(false)]
-			public void AllowNullableIntProperties(bool useCompiledXaml)
+			[Test]
+			public void AllowNullableIntProperties([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control0;
 				Assert.AreEqual(1, control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowNullableDoubleProperties(bool useCompiledXaml)
+			[Test]
+			public void AllowNullableDoubleProperties([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control0;
 				Assert.AreEqual(2.2d, control.NullableDouble);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void ConversionForNullable(bool useCompiledXaml)
+			[Test]
+			public void ConversionForNullable([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control1;
 				Assert.AreEqual(2d, control.NullableDouble);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowNull(bool useCompiledXaml)
+			[Test]
+			public void AllowNull([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control2;
 				Assert.Null(control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowBindingToNullable(bool useCompiledXaml)
+			[Test]
+			public void AllowBindingToNullable([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control3;
 				Assert.Null(control.NullableInt);
 
@@ -63,18 +58,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(2, control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void NullableAttachedBPs(bool useCompiledXaml)
+			[Test]
+			public void NullableAttachedBPs([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control4;
 				Assert.AreEqual(3, Bz24910Control.GetAttachedNullableInt(control));
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowNonBindableNullable(bool useCompiledXaml)
+			[Test]
+			public void AllowNonBindableNullable([Values] XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control5;
 
 				Assert.AreEqual(5, control.NullableIntProp);
@@ -85,7 +80,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class Bz24910Control : Button
 	{
 		public static readonly BindableProperty NullableIntProperty =
-			BindableProperty.Create("NullableInt", typeof(int?), typeof(Bz24910Control), default(int?));
+			BindableProperty.Create(nameof(NullableInt), typeof(int?), typeof(Bz24910Control), default(int?));
 
 		public int? NullableInt
 		{
@@ -94,7 +89,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty NullableDoubleProperty =
-			BindableProperty.Create("NullableDouble", typeof(double?), typeof(Bz24910Control), default(double?));
+			BindableProperty.Create(nameof(NullableDouble), typeof(double?), typeof(Bz24910Control), default(double?));
 
 		public double? NullableDouble
 		{

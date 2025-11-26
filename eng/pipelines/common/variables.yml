@@ -6,11 +6,13 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 9.0.100
+  value: 10.0.100
 - name: REQUIRED_XCODE
-  value: 16.0.0
+  value: 26.0.1
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 16.0.0
+  value: 26.0.1
+- name: XCODE
+  value: 26.0.1
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Localization variables
@@ -19,12 +21,7 @@ variables:
 - name: isLocHandoffBranch
   value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main')]
 - name: signingCondition
-  value: $[or(
-            eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main'),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
-            startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
-          )]
+  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
 # Common Agent Pools in use
 - name: HostedMacImage
   value: macOS-15
@@ -36,8 +33,6 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/test-results
 - name: provisionator.xcode
   value: 'eng/provisioning/xcode.csx'
-- name: provisionator.path
-  value: 'eng/provisioning/provisioning.csx'
 - name: internalProvisioning
   value: false
 - name: provisionator.extraArguments
@@ -54,17 +49,22 @@ variables:
   value: true
 - name: _RunAsInternal
   value: false
-- name: _InternalBuildArgs
-  value: ''
+- name: cfsNugetWarnLevel
+  value: warn
+- name: nugetMultiFeedWarnLevel
+  value: none
 
-# Variable groups required for private builds but not prs
-- ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
-  - group: Xamarin-Secrets
+- group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
 
-- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+# Variable groups required for all builds
+- ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui'),  ne(variables['Build.DefinitionName'], 'maui-pr-devicetests'),  ne(variables['Build.DefinitionName'], 'maui-pr-uitests')) }}:
+  - group: maui-provisionator # This is just needed for the provisionator
+
+
+- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   - name: internalProvisioning
     value: true
-  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}: 
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
     - name: PrivateBuild
       value: false
     - name: _RunAsPublic
@@ -73,17 +73,9 @@ variables:
       value: true
     - name: _SignType
       value: real
-    # - name: PostBuildSign
-    #   value: true
 
-    - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats
-    - name: _InternalBuildArgs
-      value: /p:DotNetSignType=$(_SignType)
-        /p:TeamName=$(_TeamName)
-        /p:DotNetPublishUsingPipelines=true
-        /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-
+  
 - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
     # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT

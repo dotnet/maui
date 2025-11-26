@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
-using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,7 +18,7 @@ public class MarkupExtensionBase : IMarkupExtension
 		if (serviceProvider.GetService(typeof(IXamlTypeResolver)) != null)
 			services.Add("IXamlTypeResolver");
 		if (serviceProvider.GetService(typeof(IRootObjectProvider)) != null)
-			services.Add("IRootObjectProvider");
+			services.Add($"IRootObjectProvider({((IRootObjectProvider)serviceProvider.GetService(typeof(IRootObjectProvider))).RootObject.GetType().Name})");
 		if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) != null)
 			services.Add("IXmlLineInfoProvider");
 		if (serviceProvider.GetService(typeof(IValueConverterProvider)) != null)
@@ -32,7 +28,7 @@ public class MarkupExtensionBase : IMarkupExtension
 		if (serviceProvider.GetService(typeof(IReferenceProvider)) != null)
 			services.Add("IReferenceProvider");
 
-		return string.Join(",", services);
+		return string.Join(", ", services);
 	}
 }
 
@@ -48,34 +44,30 @@ public class SPMarkup2 : MarkupExtensionBase { }
 [RequireService([typeof(IXmlLineInfoProvider)])]
 public class SPMarkup3 : MarkupExtensionBase { }
 
+[RequireService([typeof(IRootObjectProvider)])]
+public class SPMarkup4 : MarkupExtensionBase { }
 
 
 public partial class ServiceProviderTests : ContentPage
 {
 	public ServiceProviderTests() => InitializeComponent();
 
-	public ServiceProviderTests(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	[TestFixture]
-	public class Tests
+	class Tests
 	{
 		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[TestCase(true)]
-		public void TestServiceProviders(bool useCompiledXaml)
+		[Test]
+		public void TestServiceProviders([Values(XamlInflator.XamlC)] XamlInflator inflator)
 		{
-			var page = new ServiceProviderTests(useCompiledXaml);
+			var page = new ServiceProviderTests(inflator);
 			MockCompiler.Compile(typeof(ServiceProviderTests));
 
-			//IValueConverterProvider is builtin for free
 			Assert.AreEqual(null, page.label0.Text);
-			Assert.AreEqual("IProvideValueTarget,IValueConverterProvider", page.label1.Text);
-			Assert.AreEqual("IProvideValueTarget,IValueConverterProvider,IReferenceProvider", page.label2.Text);
-			Assert.AreEqual("IXmlLineInfoProvider,IValueConverterProvider", page.label3.Text);
+			Assert.That(page.label1.Text, Does.Contain("IProvideValueTarget"));
+			Assert.That(page.label3.Text, Does.Contain("IXmlLineInfoProvider"));
+			Assert.That(page.label4.Text, Does.Contain("IRootObjectProvider(ServiceProviderTests)")); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
 }

@@ -14,22 +14,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz30684(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void XReferenceFindObjectsInParentNamescopes(bool useCompiledXaml)
+			[Test]
+			public void XReferenceFindObjectsInParentNamescopes([Values] XamlInflator inflator)
 			{
-				var layout = new Bz30684(useCompiledXaml);
+				var layout = new Bz30684(inflator);
 				var cell = (TextCell)layout.listView.TemplatedItems.GetOrCreateContent(0, null);
 				Assert.AreEqual("Foo", cell.Text);
 			}

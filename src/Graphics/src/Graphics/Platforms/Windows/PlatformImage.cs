@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.IO;
+using Windows.Foundation;
 using Windows.Storage.Streams;
+using WinRect = Windows.Foundation.Rect;
 
 #if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
@@ -51,26 +53,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (Width > maxWidthOrHeight || Height > maxWidthOrHeight)
 			{
-				using (var memoryStream = new InMemoryRandomAccessStream())
-				{
-					Save(memoryStream.AsStreamForWrite());
-					memoryStream.Seek(0);
-
-					// ReSharper disable once AccessToDisposedClosure
-					var newBitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(_creator, memoryStream, 96));
-					using (var memoryStream2 = new InMemoryRandomAccessStream())
-					{
-						// ReSharper disable once AccessToDisposedClosure
-						AsyncPump.Run(async () => await newBitmap.SaveAsync(memoryStream2, CanvasBitmapFileFormat.Png));
-
-						memoryStream2.Seek(0);
-						var newImage = FromStream(memoryStream2.AsStreamForRead());
-						if (disposeOriginal)
-							_bitmap.Dispose();
-
-						return newImage;
-					}
-				}
+				float factor = Width > Height ? maxWidthOrHeight / Width : maxWidthOrHeight / Height;
+				var targetWidth = factor * Width;
+				var targetHeight = factor * Height;
+				return ResizeInternal(targetWidth, targetHeight, 0, 0, targetWidth, targetHeight, disposeOriginal);
 			}
 
 			return this;
@@ -78,13 +64,94 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			throw new NotImplementedException();
+			return ResizeInternal(maxWidth, maxHeight, 0, 0, maxWidth, maxHeight, disposeOriginal);
+		}
+
+		IImage ResizeInternal(float canvasWidth, float canvasHeight, float drawX, float drawY, float drawWidth, float drawHeight, bool disposeOriginal)
+		{
+			using var renderTarget = new CanvasRenderTarget(_creator, canvasWidth, canvasHeight, _bitmap.Dpi);
+
+			using (var drawingSession = renderTarget.CreateDrawingSession())
+			{
+				drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(drawX, drawY, drawWidth, drawHeight));
+			}
+
+			using (var resizedStream = new InMemoryRandomAccessStream())
+			{
+				var saveCompletedEvent = new ManualResetEventSlim(false);
+				Exception saveException = null;
+
+				// Start the async save operation
+				var saveTask = renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png).AsTask();
+
+				saveTask.ContinueWith(task =>
+				{
+					if (task.Exception is not null)
+					{
+						saveException = task.Exception;
+					}
+					// Signal that the operation is complete
+					saveCompletedEvent.Set();
+				});
+
+				// Wait for the signal
+				saveCompletedEvent.Wait();
+
+				// Check for any exceptions during the async operation
+				if (saveException is not null)
+				{
+					throw saveException;
+				}
+
+				resizedStream.Seek(0);
+
+				var newImage = FromStream(resizedStream.AsStreamForRead());
+
+				if (disposeOriginal)
+				{
+					_bitmap.Dispose();
+				}
+
+				return newImage;
+			}
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit,
 			bool disposeOriginal = false)
 		{
-			throw new NotImplementedException();
+			// Calculate scaling factors
+			float scaleX = width / Width;
+			float scaleY = height / Height;
+
+			float targetWidth = Width;
+			float targetHeight = Height;
+			float offsetX = 0;
+			float offsetY = 0;
+
+			// Adjust dimensions based on the resize mode
+			if (resizeMode == ResizeMode.Fit)
+			{
+				float scale = Math.Min(scaleX, scaleY);
+				targetWidth *= scale;
+				targetHeight *= scale;
+				offsetX = (width - targetWidth) / 2;
+				offsetY = (height - targetHeight) / 2;
+			}
+			else if (resizeMode == ResizeMode.Bleed)
+			{
+				float scale = Math.Max(scaleX, scaleY);
+				targetWidth *= scale;
+				targetHeight *= scale;
+				offsetX = (width - targetWidth) / 2;
+				offsetY = (height - targetHeight) / 2;
+			}
+			else
+			{
+				targetWidth = width;
+				targetHeight = height;
+			}
+
+			return ResizeInternal(width, height, offsetX, offsetY, targetWidth, targetHeight, disposeOriginal);
 		}
 
 		public float Width => (float)_bitmap.Size.Width;

@@ -35,6 +35,16 @@
           Text="Invoke Async JS"
           Clicked="InvokeAsyncJSMethodButton_Clicked" />
 
+        <Button
+          Margin="10"
+          Text="Test JS Exception"
+          Clicked="InvokeJSExceptionButton_Clicked" />
+
+        <Button
+          Margin="10"
+          Text="Test JS Async Exception"
+          Clicked="InvokeJSAsyncExceptionButton_Clicked" />
+
       </VerticalStackLayout>
 
       <HybridWebView

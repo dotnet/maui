@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -20,11 +21,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
 		/// <summary>Bindable property for <see cref="Time"/>.</summary>
-		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
+		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan?), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
 			validateValue: (bindable, value) =>
 			{
-				var time = (TimeSpan)value;
-				return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
+				var time = (TimeSpan?)value;
+				return time is null || (time?.TotalHours < 24 && time?.TotalMilliseconds >= 0);
 			},
 			propertyChanged: TimePropertyChanged);
 
@@ -39,6 +40,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
+		public static readonly BindableProperty IsOpenProperty =
+			BindableProperty.Create(nameof(ITimePicker.IsOpen), typeof(bool), typeof(TimePicker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
 
@@ -70,9 +76,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='Time']/Docs/*" />
-		public TimeSpan Time
+		public TimeSpan? Time
 		{
-			get { return (TimeSpan)GetValue(TimeProperty); }
+			get { return (TimeSpan?)GetValue(TimeProperty); }
 			set { SetValue(TimeProperty, value); }
 		}
 
@@ -104,6 +110,17 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((TimePicker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+
 		TextTransform ITextElement.TextTransform
 		{
 			get => TextTransform.Default;
@@ -111,10 +128,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler<TimeChangedEventArgs> TimeSelected;
+		public event EventHandler<TimePickerOpenedEventArgs> Opened;
+		public event EventHandler<TimePickerClosedEventArgs> Closed;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
@@ -137,6 +156,43 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is TimePicker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler?.VirtualView is not TimePicker timePicker)
+				return;
+
+			if (timePicker.IsOpen)
+				timePicker.Opened?.Invoke(timePicker, TimePickerOpenedEventArgs.Empty);
+			else
+				timePicker.Closed?.Invoke(timePicker, TimePickerClosedEventArgs.Empty);
+		}
+
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
 		{
@@ -157,7 +213,7 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => this.ToFont();
 
-		TimeSpan ITimePicker.Time
+		TimeSpan? ITimePicker.Time
 		{
 			get => Time;
 			set => SetValue(TimeProperty, value, SetterSpecificity.FromHandler);

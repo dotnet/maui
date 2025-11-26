@@ -12,6 +12,7 @@
                     <On Platform="iOS" Value="40"/>
                     <On Platform="Android" Value="30"/>
                     <On Platform="UWP" Value="60"/>
+                    <On Platform="MacCatalyst" Value="50"/>
             </OnPlatform>
 
             <x:Double x:Key="SizeLarge">80</x:Double>
@@ -30,6 +31,7 @@
                         <On Platform="iOS" Value="40"/>
                         <On Platform="Android" Value="30"/>
                         <On Platform="UWP" Value="60"/>
+                        <On Platform="MacCatalyst" Value="50"/>
                     </OnPlatform>
         </BoxView.HeightRequest>
       </BoxView>

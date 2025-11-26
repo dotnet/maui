@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19831">
+
+    <Tab>
+        <ShellContent Title="Page 1">
+            <ContentPage AutomationId="page">
+                <StackLayout>
+                    <ListView>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <ViewCell>
+                                    <ViewCell.ContextActions>
+                                        <MenuItem Text="View"/>
+                                    </ViewCell.ContextActions>
+                                    <Label Text="{Binding .}" AutomationId="{Binding .}"/>
+                                </ViewCell>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>Item1</x:String>
+                                <x:String>Item2</x:String>
+                            </x:Array>
+                        </ListView.ItemsSource>
+                    </ListView>
+                    <Button AutomationId="button" Text="Go to page2" Clicked="Button_Clicked"/>
+                </StackLayout>
+            </ContentPage>
+        </ShellContent>
+
+        <ShellContent Title="Page 2" Route="Page2">
+            <ContentPage/>
+        </ShellContent>
+    </Tab>
+</Shell>

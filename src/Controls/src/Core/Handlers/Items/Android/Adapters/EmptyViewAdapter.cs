@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// No template, Footer is not a Forms View, so just display Footer.ToString
-			return SimpleViewHolder.FromText(content?.ToString(), context, false);
+			return SimpleViewHolder.FromText(content?.ToString(), context, fill: false);
 		}
 
 		protected RecyclerView.ViewHolder CreateEmptyViewHolder(object content, DataTemplate template, ViewGroup parent)
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (content is not View formsView)
 				{
 					// No template, EmptyView is not a Forms View, so just display EmptyView.ToString
-					return SimpleViewHolder.FromText(content?.ToString(), context);
+					return SimpleViewHolder.FromText(content?.ToString(), context, () => GetWidth(parent), () => GetHeight(parent), ItemsView);
 				}
 
 				// EmptyView is a Forms View; display that
@@ -319,12 +319,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				size = content.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			}
 
-			var itemHeight = size.Height;
+			if (item is string text)
+			{
+				Label label = new Label { Text = text };
+				TemplateHelpers.GetHandler(label, ItemsView.FindMauiContext());
 
-			if (isHeader)
-				_headerHeight = itemHeight;
-			else
-				_footerHeight = itemHeight;
+				size = label.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			}
+
+			if (IsVerticalItemsLayout())
+			{
+				var itemHeight = size.Height;
+
+				if (isHeader)
+				{
+					_headerHeight = itemHeight;
+				}
+				else
+				{
+					_footerHeight = itemHeight;
+				}
+			}
+		}
+
+		bool IsVerticalItemsLayout()
+		{
+			if (ItemsView is CollectionView collectionView)
+			{
+				switch (collectionView.ItemsLayout)
+				{
+					case LinearItemsLayout linearLayout:
+						{
+							return linearLayout.Orientation == ItemsLayoutOrientation.Vertical;
+						}
+					case GridItemsLayout gridItemsLayout:
+						{
+							return gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical;
+						}
+				}
+			}
+			// Default
+			return true;
 		}
 	}
 }

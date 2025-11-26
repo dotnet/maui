@@ -1,22 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui25141 : ContentPage
 {
 	public Maui25141()
@@ -27,11 +18,6 @@ public partial class Maui25141 : ContentPage
 			Text = "Hello, Maui!",
 			TriggerFlag = true
 		};
-	}
-
-	public Maui25141(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
 	}
 
 	[TestFixture]

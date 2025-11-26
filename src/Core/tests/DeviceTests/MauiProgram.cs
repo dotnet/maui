@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static class MauiProgram
 	{
 #if ANDROID
-		public static Android.Content.Context DefaultContext => MauiProgramDefaults.DefaultContext;
+		public static global::Android.Content.Context DefaultContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
 		public static UI.Xaml.Window DefaultWindow => MauiProgramDefaults.DefaultWindow;
 #endif
@@ -17,9 +17,18 @@ namespace Microsoft.Maui.DeviceTests
 		public static IApplication DefaultTestApp { get; private set; }
 
 		public static MauiApp CreateMauiApp() =>
-			MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
+			MauiProgramDefaults.CreateMauiApp((sp) =>
 			{
-				typeof(MauiProgram).Assembly
+				var options = new TestOptions
+				{
+					Assemblies = new List<Assembly>()
+					{
+						typeof(MauiProgram).Assembly
+					},
+					SkipCategories = typeof(TestCategory).GetExcludedTestCategories()
+				};
+
+				return options;
 			});
 	}
 }

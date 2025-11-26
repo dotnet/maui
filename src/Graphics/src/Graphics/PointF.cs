@@ -6,16 +6,32 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents a point in 2D space using single-precision floating-point coordinates.
+	/// </summary>
 	[DebuggerDisplay("X={X}, Y={Y}")]
 	[TypeConverter(typeof(Converters.PointFTypeConverter))]
 	public partial struct PointF
 	{
+		/// <summary>
+		/// Gets or sets the X-coordinate of this point.
+		/// </summary>
 		public float X { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Y-coordinate of this point.
+		/// </summary>
 		public float Y { get; set; }
 
+		/// <summary>
+		/// Represents a <see cref="PointF"/> with coordinates (0,0).
+		/// </summary>
 		public static readonly PointF Zero = new PointF();
 
+		/// <summary>
+		/// Returns a string representation of this <see cref="PointF"/>.
+		/// </summary>
+		/// <returns>A string in the format "X=0 Y=0" (values may vary).</returns>
 		public override string ToString()
 		{
 			return $"{{X={X.ToString(CultureInfo.InvariantCulture)} Y={Y.ToString(CultureInfo.InvariantCulture)}}}";

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui20438"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Name="page">
+    <ContentPage.BindingContext>
+        <local:Issue20438ViewModel/>
+    </ContentPage.BindingContext>
+    <StackLayout x:DataType="local:Issue20438ViewModel">
+        <DatePicker x:Name="datePicker"
+                    Date="{Binding SelectedDate}"/>
+        <TimePicker x:Name="timePicker"
+                    Time="{Binding SelectedTime}"/>
+        <local:Issue20438CustomDatePicker x:Name="customDatePicker"
+                                          NonNullableDateTime="{Binding SelectedDate}"/>
+        <local:Issue20438CustomTimePicker x:Name="customTimePicker"
+                                          NonNullableTimeSpan="{Binding SelectedTime}"/>
+    </StackLayout>
+</ContentPage>

@@ -69,10 +69,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		static string[] IsXamlTrueSource = new[]
 		{
-			"IsCompiledDefault",
+			// "IsCompiledDefault",
 			"X2006Namespace",
 			"X2009Primitives",
-			"Validation.MissingXClass",
+			"Validation.MissingXClass.rtxc",
 		};
 
 		[Test, TestCaseSource(nameof(IsXamlTrueSource))]

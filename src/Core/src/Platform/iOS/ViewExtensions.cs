@@ -282,16 +282,26 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
+			InvalidateMeasure(platformView);
+		}
+
+		internal static void InvalidateMeasure(this UIView platformView)
+		{
+			var propagate = true;
+
 			if (platformView is IPlatformMeasureInvalidationController mauiPlatformView)
 			{
-				mauiPlatformView.InvalidateMeasure();
+				propagate = mauiPlatformView.InvalidateMeasure();
 			}
 			else
 			{
 				platformView.SetNeedsLayout();
 			}
 
-			platformView.InvalidateAncestorsMeasures();
+			if (propagate)
+			{
+				platformView.InvalidateAncestorsMeasures();
+			}
 		}
 
 		internal static void InvalidateAncestorsMeasures(this UIView child)
@@ -317,22 +327,20 @@ namespace Microsoft.Maui.Platform
 				}
 
 				// Now invalidate the parent view
+				var propagate = true;
 				var superviewMauiPlatformLayout = superview as IPlatformMeasureInvalidationController;
 				if (superviewMauiPlatformLayout is not null)
 				{
-					superviewMauiPlatformLayout.InvalidateMeasure(isPropagating: true);
+					propagate = superviewMauiPlatformLayout.InvalidateMeasure(isPropagating: true);
 				}
 				else
 				{
 					superview.SetNeedsLayout();
 				}
 
-				// Potential improvement: if the MAUI view (superview here) is constrained to a fixed size, we could stop propagating
-				// when doing this, we must pay attention to a scenario where a non-fixed-size view becomes fixed-size
-				if (superview is ContentView { IsPage: true } or UIScrollView)
+				if (!propagate)
 				{
-					// We reached the root view or a scrollable area (includes collection view), stop propagating
-					// The view will eventually watch its content size and invoke InvalidateAncestorsMeasures when needed
+					// We've been asked to stop propagation, so let's stop here
 					return;
 				}
 
@@ -528,6 +536,10 @@ namespace Microsoft.Maui.Platform
 
 			return (element.ToPlatform())?.GetLocationOnScreen();
 		}
+
+		internal static Rect GetViewBounds(this UIView platformView) => platformView.GetPlatformViewBounds();
+
+		internal static Rect GetViewBounds(this IView view) => view.ToPlatform().GetViewBounds();
 
 		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
@@ -736,7 +748,8 @@ namespace Microsoft.Maui.Platform
 						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 					}
 				}
-			};
+			}
+			;
 
 			return disposable;
 		}
@@ -796,7 +809,8 @@ namespace Microsoft.Maui.Platform
 					disposable = null;
 					action();
 				}
-			};
+			}
+			;
 
 			return disposable;
 		}
@@ -1006,6 +1020,14 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
 
-		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view) => view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null };
+		private const nint NativeViewControlledByCrossPlatformLayout = 0x63D2A1;
+
+		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view)
+			=> view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null } or { Tag: NativeViewControlledByCrossPlatformLayout };
+
+		internal static void MarkAsCrossPlatformLayoutBacking(this UIView view)
+		{
+			view.Tag = NativeViewControlledByCrossPlatformLayout;
+		}
 	}
 }

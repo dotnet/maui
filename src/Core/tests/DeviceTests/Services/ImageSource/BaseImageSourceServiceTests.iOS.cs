@@ -56,17 +56,17 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var rect = new CGRect(0, 0, width, height);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 1);
-			var context = UIGraphics.GetCurrentContext();
+			var renderer = new UIGraphicsImageRenderer(rect, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = 1,
+			});
 
-			color.SetFill();
-			context.FillRect(rect);
-
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
-
-			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			return renderer.CreateImage((context) =>
+			{
+				color.SetFill();
+				context.FillRect(rect);
+			}).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 		}
 	}
 }

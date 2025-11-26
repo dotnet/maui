@@ -29,9 +29,14 @@ namespace Maui.Controls.Sample.Issues
 
 		}
 
+		void OnRefreshViewRefreshing(object sender, EventArgs e)
+		{
+			refreshStatusLabel.Text = "RefreshView Triggered";
+		}
 
 		void Button_Clicked(object sender, EventArgs e)
 		{
+			refreshStatusLabel.Text = "RefreshView Not Triggered";
 			refreshView.IsRefreshing = false;
 		}
 	}

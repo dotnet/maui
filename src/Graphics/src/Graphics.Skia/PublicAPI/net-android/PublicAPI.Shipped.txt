@@ -12,10 +12,13 @@
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.Font.set -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.FontColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.FontColor.set -> void
+~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.FontFont.get -> SkiaSharp.SKFont
+~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.FontFont.set -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.FontPaint.get -> SkiaSharp.SKPaint
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.FontPaint.set -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.GetImagePaint(float sx, float sy) -> SkiaSharp.SKPaint
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.GetShadowPaint(float sx, float sy) -> SkiaSharp.SKPaint
+~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.Reset(SkiaSharp.SKPaint fontPaint, SkiaSharp.SKFont fontFont, SkiaSharp.SKPaint fillPaint, SkiaSharp.SKPaint strokePaint) -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.Reset(SkiaSharp.SKPaint fontPaint, SkiaSharp.SKPaint fillPaint, SkiaSharp.SKPaint strokePaint) -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.SetFillPaintShader(SkiaSharp.SKShader shader) -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaCanvasState.SetStrokeDashPattern(float[] pattern, float strokeDashOffset, float strokeSize) -> void
@@ -39,6 +42,7 @@
 ~Microsoft.Maui.Graphics.Skia.SkiaImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat formatHint = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
 ~Microsoft.Maui.Graphics.Skia.SkiaStringSizeService.GetStringSize(string value, Microsoft.Maui.Graphics.IFont font, float fontSize, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment verticalAlignment) -> Microsoft.Maui.Graphics.SizeF
 ~Microsoft.Maui.Graphics.Skia.SkiaStringSizeService.GetStringSize(string value, Microsoft.Maui.Graphics.IFont font, float fontSize) -> Microsoft.Maui.Graphics.SizeF
+~Microsoft.Maui.Graphics.Skia.SkiaTextLayout.SkiaTextLayout(string value, Microsoft.Maui.Graphics.RectF rect, Microsoft.Maui.Graphics.ITextAttributes textAttributes, Microsoft.Maui.Graphics.LayoutLine callback, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, SkiaSharp.SKFont font = null) -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaTextLayout.SkiaTextLayout(string value, Microsoft.Maui.Graphics.RectF rect, Microsoft.Maui.Graphics.ITextAttributes textAttributes, Microsoft.Maui.Graphics.LayoutLine callback, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, SkiaSharp.SKPaint paint = null) -> void
 ~Microsoft.Maui.Graphics.Skia.TextLine.TextLine(string value, float width) -> void
 ~Microsoft.Maui.Graphics.Skia.TextLine.Value.get -> string
@@ -85,6 +89,7 @@ Microsoft.Maui.Graphics.Skia.FontExtensions
 Microsoft.Maui.Graphics.Skia.PlatformBitmapExportService
 Microsoft.Maui.Graphics.Skia.PlatformBitmapExportService.PlatformBitmapExportService() -> void
 Microsoft.Maui.Graphics.Skia.SKColorExtensions
+Microsoft.Maui.Graphics.Skia.SKFontExtensions
 Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions
 Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext
 Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext.SkiaBitmapExportContext(int width, int height, float displayScale, int dpi = 72, bool disposeBitmap = true, bool transparent = true) -> void
@@ -163,6 +168,7 @@ override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StrokeLineJoin.set -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvasState.Dispose() -> void
 override Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+static Microsoft.Maui.Graphics.Skia.SKFontExtensions.CreateCopy(this SkiaSharp.SKFont? font) -> SkiaSharp.SKFont?
 static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsMatrix(this in System.Numerics.Matrix3x2 transform) -> SkiaSharp.SKMatrix
 static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsPointF(this SkiaSharp.SKPoint target) -> Microsoft.Maui.Graphics.PointF
 static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsRectangleF(this SkiaSharp.SKRect target) -> Microsoft.Maui.Graphics.RectF

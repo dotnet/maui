@@ -17,8 +17,7 @@ namespace Microsoft.Maui.Platform
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
-			if (_handler != null)
-				_handler.CurrentNavigationEvent = WebNavigationEvent.NewPage;
+			_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
 
 			LoadDataWithBaseURL(baseUrl ?? AssetBaseUrl, html ?? string.Empty, "text/html", "UTF-8", null);
 		}
@@ -27,12 +26,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!_handler.NavigatingCanceled(url))
 			{
-				if (_handler != null)
-				{
-					_handler.CurrentNavigationEvent = WebNavigationEvent.NewPage;
-				}
+				_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
 
-				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+				if (url is not null && !url.StartsWith('/') && !Uri.TryCreate(url, UriKind.Absolute, out _))
 				{
 					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
 					url = AssetBaseUrl + url;

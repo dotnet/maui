@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28523">
+    <CarouselView Loop="False">
+        <CarouselView.ItemTemplate>
+            <DataTemplate>
+                <Border StrokeShape="RoundRectangle 20"
+                        BackgroundColor="Red">
+                    <Label HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           AutomationId="{Binding}"
+                           Text="{Binding}"/>
+                </Border>
+            </DataTemplate>
+        </CarouselView.ItemTemplate>
+        <CarouselView.ItemsSource>
+            <x:Array Type="{x:Type x:String}">
+                <x:String>Baboon</x:String>
+                <x:String>Capuchin Monkey</x:String>
+                <x:String>Blue Monkey</x:String>
+                <x:String>Squirrel Monkey</x:String>
+                <x:String>Golden Lion Tamarin</x:String>
+                <x:String>Howler Monkey</x:String>
+            </x:Array>
+        </CarouselView.ItemsSource>
+    </CarouselView>
+</ContentPage>

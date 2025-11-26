@@ -17,10 +17,14 @@ public class Bugzilla34912 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla34912Test()
 	{
+		App.WaitForElement("Allen");
 		App.Tap("Allen");
 		App.WaitForElement("You tapped Allen");
+		App.WaitForElement("OK");
 		App.Tap("OK");
+		App.WaitForElement("Disable ListView");
 		App.Tap("Disable ListView");
+		App.WaitForElement("Allen");
 		App.Tap("Allen");
 		App.WaitForNoElement("You tapped Allen");
 	}
