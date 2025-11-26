@@ -66,6 +66,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		//TODO support Label text as element
 
 		// if it's implicit content property, get the content property name
+		bool isImplicitContentProperty = false;
 		if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (!parentNode.IsCollectionItem(node))
@@ -75,7 +76,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				return;
 			var parentVar = Context.Variables[(ElementNode)parentNode];
 			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
+			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				isImplicitContentProperty = true;
+			}
 			else
 				return;
 		}
@@ -88,6 +92,30 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
+
+		// Check for duplicate property assignment for implicit content properties
+		if (isImplicitContentProperty && parentNode is ElementNode parentElement)
+		{
+			var parentVar = Context.Variables[parentElement];
+			
+			// Only check for duplicate property assignment if the property is not a collection
+			bool attached = false;
+			var localName = propertyName.LocalName;
+			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out attached, context, node);
+			ITypeSymbol? propertyType = null;
+			
+			// Try to get the property type
+			bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+				|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+			
+			// Only warn if:
+			// 1. We can resolve the property and its type
+			// 2. The property type is NOT a collection (doesn't support Add)
+			// 3. The property type is not System.Object (unresolved generic)
+			bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
+			if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+				CheckForDuplicateProperty(parentElement, propertyName, node);
+		}
 
 		SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 	}
