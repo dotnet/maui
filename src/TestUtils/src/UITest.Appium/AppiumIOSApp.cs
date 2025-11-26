@@ -77,6 +77,17 @@ namespace UITest.Appium
 				{ "env", args! }
 			});
 
+			// It can be faster for Appium to deal with the app hierarchy internally as JSON, rather than XML.
+			config.SetProperty("useJSONSource", "true");
+
+			var headless = config.GetProperty<bool>("Headless");
+			if (headless)
+			{
+				// Appium has the ability to start iOS simulators in a "headless" mode.
+				// This means that the devices won't have any graphical user interface; but they will still be running silently, testing the app.
+				options.AddAdditionalAppiumOption("isHeadless", true);
+			}
+
 			// Allows to change the default timeout for Simulator startup.
 			// By default this value is set to 120000ms (2 minutes).
 			options.AddAdditionalAppiumOption("appium:simulatorStartupTimeout", 90000);

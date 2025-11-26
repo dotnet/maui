@@ -35,6 +35,7 @@ var androidAvd = "";
 var androidAvdImage = "";
 var deviceArch = "";
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -127,7 +128,7 @@ Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
-		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation, headless);
 	});
 
 Task("uitest")
@@ -231,7 +232,7 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 	Information("Testing completed.");
 }
 
-void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation, bool headless)
 {
 	string platform = "android";
 	Information("Preparing UI Tests...");
@@ -261,7 +262,7 @@ void ExecutePrepareUITests(string project, string app, string appPackageName, st
 	Information($"Testing App: {testApp}");
 	Information($"Results Directory: {resultsDir}");
 
-	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+	InstallApk(testApp, appPackageName, resultsDir, deviceSkin, headless);
 }
 
 void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
@@ -606,7 +607,7 @@ void WriteLogCat(string filename = null)
 	Information("Logcat written to {0}", location);
 }
 
-void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin)
+void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin, bool headless)
 {
 	PrepareDevice(deviceBootWait);
 
@@ -632,6 +633,9 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 			return args;
 		}
 	};
+
+    Information("Use the Android emulators in a headless mode:");
+    SetEnvironmentVariable("HEADLESS", headless.ToString());
 
 	Information("The platform version to run tests:");
 	SetEnvironmentVariable("DEVICE_SKIN", skin);

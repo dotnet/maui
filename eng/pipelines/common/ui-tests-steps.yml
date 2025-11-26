@@ -9,6 +9,7 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   testFilter: ''
+  headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -143,6 +144,11 @@ steps:
     }
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
+    }
+    
+    $headless = ${{ parameters.headless }}
+    if ($headless) {
+      $command += " --headless ""$headless"""
     }
 
     Write-Host "Running command: $command"
