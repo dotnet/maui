@@ -10,180 +10,117 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-/// <summary>
-/// Represents a button that displays an image and reacts to touch events.
-/// </summary>
-/// <remarks>
-/// <see cref="ImageButton"/> is similar to <see cref="Button"/> but displays an image instead of text.
-/// It supports all standard button features including commands, events, borders, and visual states.
-/// </remarks>
-[ElementHandler<ImageButtonHandler>]
+	/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs/*" />
+	[ElementHandler(typeof(ImageButtonHandler))]
 	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement, IImageButton
 	{
 		const int DefaultCornerRadius = -1;
 
-		/// <summary>Bindable property for <see cref="Command"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = ButtonElement.CommandProperty;
 
-		/// <summary>Bindable property for <see cref="CommandParameter"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = ButtonElement.CommandParameterProperty;
 
-		/// <summary>Bindable property for <see cref="CornerRadius"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		/// <summary>Bindable property for <see cref="BorderWidth"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="BorderWidth"/>.</summary>
 		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
-		/// <summary>Bindable property for <see cref="BorderColor"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <summary>Bindable property for <see cref="Source"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
-		/// <summary>Bindable property for <see cref="Aspect"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="Aspect"/>.</summary>
 		public static readonly BindableProperty AspectProperty = ImageElement.AspectProperty;
 
-		/// <summary>Bindable property for <see cref="IsOpaque"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="IsOpaque"/>.</summary>
 		public static readonly BindableProperty IsOpaqueProperty = ImageElement.IsOpaqueProperty;
 
 		internal static readonly BindablePropertyKey IsLoadingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsLoading), typeof(bool), typeof(ImageButton), default(bool));
 
-		/// <summary>Bindable property for <see cref="IsLoading"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="IsLoading"/>.</summary>
 		public static readonly BindableProperty IsLoadingProperty = IsLoadingPropertyKey.BindableProperty;
 
 		internal static readonly BindablePropertyKey IsPressedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsPressed), typeof(bool), typeof(ImageButton), default(bool));
 
-		/// <summary>Bindable property for <see cref="IsPressed"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="IsPressed"/>.</summary>
 		public static readonly BindableProperty IsPressedProperty = IsPressedPropertyKey.BindableProperty;
 
-		/// <summary>Bindable property for <see cref="Padding"/>. This is a bindable property.</summary>
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <summary>
-		/// Occurs when the <see cref="ImageButton"/> is clicked or tapped.
-		/// </summary>
 		public event EventHandler Clicked;
-
-		/// <summary>
-		/// Occurs when the <see cref="ImageButton"/> is pressed.
-		/// </summary>
 		public event EventHandler Pressed;
-
-		/// <summary>
-		/// Occurs when the <see cref="ImageButton"/> is released.
-		/// </summary>
 		public event EventHandler Released;
 
 		readonly Lazy<PlatformConfigurationRegistry<ImageButton>> _platformConfigurationRegistry;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ImageButton"/> class.
-		/// </summary>
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ImageButton()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ImageButton>>(() => new PlatformConfigurationRegistry<ImageButton>(this));
 		}
 
-		/// <summary>
-		/// Gets or sets the color of the border around the image button.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>The color of the border. The default is <see langword="null"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='BorderColor']/Docs/*" />
 		public Color BorderColor
 		{
 			get { return (Color)GetValue(BorderElement.BorderColorProperty); }
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the corner radius for the image button border, in device-independent units.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>The corner radius of the border. The default is -1, which indicates the platform default.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CornerRadius']/Docs/*" />
 		public int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the width of the border around the image button, in device-independent units.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>The width of the border. The default is 0.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='BorderWidth']/Docs/*" />
 		public double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the scaling mode for the image.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>An <see cref="Microsoft.Maui.Aspect"/> value that determines how the image is scaled. The default is <see cref="Microsoft.Maui.Aspect.AspectFit"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Aspect']/Docs/*" />
 		public Aspect Aspect
 		{
 			get { return (Aspect)GetValue(AspectProperty); }
 			set { SetValue(AspectProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets a value indicating whether the image is currently being loaded.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value><see langword="true"/> if the image is loading; otherwise, <see langword="false"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsLoading']/Docs/*" />
 		public bool IsLoading => (bool)GetValue(IsLoadingProperty);
 
-		/// <summary>
-		/// Gets a value indicating whether the image button is currently pressed.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value><see langword="true"/> if the button is pressed; otherwise, <see langword="false"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsPressed']/Docs/*" />
 		public bool IsPressed => (bool)GetValue(IsPressedProperty);
 
-		/// <summary>
-		/// Gets or sets a value indicating whether the image should be rendered as opaque.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value><see langword="true"/> if the image should be opaque; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsOpaque']/Docs/*" />
 		public bool IsOpaque
 		{
 			get { return (bool)GetValue(IsOpaqueProperty); }
 			set { SetValue(IsOpaqueProperty, value); }
 		}
-
-		/// <summary>
-		/// Gets or sets the command to invoke when the image button is clicked.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>An <see cref="ICommand"/> to execute when the button is clicked. The default is <see langword="null"/>.</value>
-		/// <remarks>
-		/// This property is typically used in MVVM patterns to bind the button to a command in the view model.
-		/// The button's <see cref="VisualElement.IsEnabled"/> property is controlled by <see cref="System.Windows.Input.ICommand.CanExecute(object)"/>.
-		/// </remarks>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Command']/Docs/*" />
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the parameter to pass to the <see cref="Command"/> when it is executed.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>The parameter object. The default is <see langword="null"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the source of the image to display on the button.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>An <see cref="ImageSource"/> that represents the image. The default is <see langword="null"/>.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Source']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{
@@ -234,75 +171,47 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Sets the <see cref="IsLoading"/> property.
-		/// </summary>
-		/// <param name="isLoading">The loading state to set.</param>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SetIsLoading']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsLoading(bool isLoading) => SetValue(IsLoadingPropertyKey, isLoading);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Sets the <see cref="IsPressed"/> property.
-		/// </summary>
-		/// <param name="isPressed">The pressed state to set.</param>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SetIsPressed']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsPressed(bool isPressed) =>
 			SetValue(IsPressedPropertyKey, isPressed);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Triggers the <see cref="Clicked"/> event.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SendClicked']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendClicked() =>
 			ButtonElement.ElementClicked(this, this);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Triggers the <see cref="Pressed"/> event.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SendPressed']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPressed() =>
 			ButtonElement.ElementPressed(this, this);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Triggers the <see cref="Released"/> event.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SendReleased']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendReleased() =>
 			ButtonElement.ElementReleased(this, this);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Propagates the clicked event up the visual tree.
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PropagateUpClicked']/Docs/*" />
 		public void PropagateUpClicked() =>
 			Clicked?.Invoke(this, EventArgs.Empty);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Propagates the pressed event up the visual tree.
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PropagateUpPressed']/Docs/*" />
 		public void PropagateUpPressed() =>
 			Pressed?.Invoke(this, EventArgs.Empty);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Propagates the released event up the visual tree.
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PropagateUpReleased']/Docs/*" />
 		public void PropagateUpReleased() =>
 			Released?.Invoke(this, EventArgs.Empty);
 
-		/// <summary>
-		/// For internal use by the .NET MAUI platform. Raises the property changed event for the image source.
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='RaiseImageSourcePropertyChanged']/Docs/*" />
 		public void RaiseImageSourcePropertyChanged() =>
 			OnPropertyChanged(nameof(Source));
 
-		/// <summary>
-		/// Gets or sets the padding inside the image button.
-		/// This is a bindable property.
-		/// </summary>
-		/// <value>The padding around the image. The default is a <see cref="Thickness"/> with all values set to 0.</value>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Padding']/Docs/*" />
 		public Thickness Padding
 		{
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
@@ -336,7 +245,7 @@ namespace Microsoft.Maui.Controls
 		bool IImageController.GetLoadAsAnimation() => false;
 
 		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
 			RefreshIsEnabledProperty();

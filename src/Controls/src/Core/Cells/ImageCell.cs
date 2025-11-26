@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.TextCell"/> that has an image.</summary>
 	[Obsolete("The controls which use ImageCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 #if WINDOWS || ANDROID || IOS || MACCATALYST
-	[ElementHandler<Handlers.Compatibility.ImageCellRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.ImageCellRenderer))]
 #endif
 	public class ImageCell : TextCell
 	{

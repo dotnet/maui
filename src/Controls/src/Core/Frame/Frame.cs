@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 #if WINDOWS || IOS || MACCATALYST || TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<Handlers.Compatibility.FrameRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.FrameRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #elif ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete

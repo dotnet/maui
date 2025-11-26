@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 #if WINDOWS || ANDROID || TIZEN
-	[ElementHandler<ToolbarHandler>]
+	[ElementHandler(typeof(ToolbarHandler))]
 #endif
 	public partial class Toolbar : Maui.IToolbar, INotifyPropertyChanged
 	{
