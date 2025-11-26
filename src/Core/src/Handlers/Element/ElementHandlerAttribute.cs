@@ -30,18 +30,17 @@ internal class ElementHandlerAttribute : Attribute
 	}
 
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-	public virtual Type HandlerType { get; }
+	public Type HandlerType { get; }
 }
 
 #if ANDROID
-internal sealed class ElementHandlerWithAndroidContextAttribute<THandler> : ElementHandlerAttribute
+internal sealed class ElementHandlerWithAndroidContextAttribute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] THandler>
+	: ElementHandlerAttribute
 	where THandler : IElementHandler, IElementHandlerWithAndroidContext<THandler>
 {
 	public ElementHandlerWithAndroidContextAttribute() : base(typeof(THandler)) { }
 
 	public override IElementHandler CreateHandler(IMauiContext context)
-		=> THandler.CreateHandler(context.Context!); // TODO: revisit nullability
-
-	public override Type HandlerType => typeof(THandler);
+		=> THandler.CreateHandler(context.Context);
 }
 #endif
