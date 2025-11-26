@@ -7,18 +7,18 @@
         <Label Text="MauiImage with LogicalName containing path separator should load correctly"
                FontSize="16"
                FontAttributes="Bold"/>
-        
-        <Label Text="Test image with path in LogicalName (challenges/groceries.png):"
+
+    <Label Text="Test image with path in LogicalName (challenges/grocery.png):"
                Margin="0,20,0,5"/>
         <Image x:Name="TestImage"
                AutomationId="TestImage"
-               Source="challenges/groceries.png"
+               Source="challenges/grocery.png"
                WidthRequest="200"
                HeightRequest="200"
                Aspect="AspectFit"
                BackgroundColor="LightGray"/>
-        
-        <Label Text="If the image loads correctly, you should see a groceries image above."
+
+    <Label Text="If the image loads correctly, you should see a grocery image above."
                FontSize="12"
                TextColor="Gray"
                Margin="0,5,0,0"/>
