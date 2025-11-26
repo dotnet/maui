@@ -1131,11 +1131,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
 					_tracker = null;
 
-					if (NavigationItem.TitleView != null)
-					{
-						NavigationItem.TitleView.Dispose();
-						NavigationItem.TitleView = null;
-					}
+					NavigationItem.TitleView?.Dispose();
+					NavigationItem.TitleView = null;
 
 					if (NavigationItem.RightBarButtonItems != null)
 					{

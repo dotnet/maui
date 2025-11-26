@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="//Member[@MemberName='Alias']/Docs/*" />
 		public string Alias { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <param name="fontFileName">The fontFileName parameter.</param>
 		public ExportFontAttribute(string fontFileName)
 		{
 			FontFileName = fontFileName;

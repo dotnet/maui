@@ -1,29 +1,29 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ButtonStyle']/Docs/*" />
+	/// <summary>Enumerates button styles</summary>
 	public static class ButtonStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates the default button style.</summary>
 		public const string Default = "default";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="//Member[@MemberName='Circle']/Docs/*" />
+		/// <summary>Indicates the circle button style.</summary>
 		public const string Circle = "circle";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="//Member[@MemberName='Bottom']/Docs/*" />
+		/// <summary>Indicates the bottom button style.</summary>
 		public const string Bottom = "bottom";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>Indicates a text button.</summary>
 		public const string Text = "textbutton";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="//Member[@MemberName='SelectMode']/Docs/*" />
+		/// <summary>Indicates a selection button.</summary>
 		public const string SelectMode = "select_mode";
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.SwitchStyle']/Docs/*" />
+	/// <summary>Enumerates visual styles for switches.</summary>
 	public static class SwitchStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="//Member[@MemberName='CheckBox']/Docs/*" />
+		/// <summary>Indicates a checkbox UI.</summary>
 		public const string CheckBox = "default";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="//Member[@MemberName='Toggle']/Docs/*" />
+		/// <summary>Indicates a toggle UI.</summary>
 		public const string Toggle = "toggle";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="//Member[@MemberName='Favorite']/Docs/*" />
+		/// <summary>Indicates a favorite, or star, UI.</summary>
 		public const string Favorite = "favorite";
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="//Member[@MemberName='OnOff']/Docs/*" />
 		public const string OnOff = "on&off";
@@ -31,23 +31,23 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		public const string Small = "small";
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBarStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ProgressBarStyle']/Docs/*" />
+	/// <summary>Enumerates visual styles for progress bars.</summary>
 	public static class ProgressBarStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBarStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates the default progress bar style.</summary>
 		public const string Default = "default";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBarStyle.xml" path="//Member[@MemberName='Pending']/Docs/*" />
+		/// <summary>Indicates the pending style, to communicate that a progress estimate has not yet been made.</summary>
 		public const string Pending = "pending";
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/TabbedPageStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.TabbedPageStyle']/Docs/*" />
+	/// <summary>Enumerates tab bar styles for a tabbed page.</summary>
 	public static class TabbedPageStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/TabbedPageStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates the default tab bar style.</summary>
 		public const string Default = "default";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/TabbedPageStyle.xml" path="//Member[@MemberName='Tabbar']/Docs/*" />
+		/// <summary>Indicates a tab bar with no title.</summary>
 		public const string Tabbar = "tabbar";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/TabbedPageStyle.xml" path="//Member[@MemberName='TabbarWithTitle']/Docs/*" />
+		/// <summary>Indicates a tab bar with a title.</summary>
 		public const string TabbarWithTitle = "tabbar_with_title";
 	}
 }

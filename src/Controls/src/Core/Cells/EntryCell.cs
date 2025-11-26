@@ -5,7 +5,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.EntryCell']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with a label and a single line text entry field.</summary>
+	[Obsolete("The controls which use EntryCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController, ITextAlignment
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the horizontal alignement of the Text property. This is a bindable property.</summary>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextAlignmentElement.VerticalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='Keyboard']/Docs/*" />
+		/// <summary>Gets or sets the Keyboard to display while editing the EntryCell. This is a bindable property.</summary>
 		[System.ComponentModel.TypeConverter(typeof(Converters.KeyboardTypeConverter))]
 		public Keyboard Keyboard
 		{
@@ -51,28 +52,28 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(KeyboardProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='Label']/Docs/*" />
+		/// <summary>Gets or sets the fixed text presented next to the Entry in the EntryCell. This is a bindable property.</summary>
 		public string Label
 		{
 			get { return (string)GetValue(LabelProperty); }
 			set { SetValue(LabelProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='LabelColor']/Docs/*" />
+		/// <summary>Gets or sets the Color used for rendering the Label property. This is a bindable property.</summary>
 		public Color LabelColor
 		{
 			get { return (Color)GetValue(LabelColorProperty); }
 			set { SetValue(LabelColorProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='Placeholder']/Docs/*" />
+		/// <summary>Gets or sets the placeholder text displayed in the Entry when the Text is null or empty. This is a bindable property.</summary>
 		public string Placeholder
 		{
 			get { return (string)GetValue(PlaceholderProperty); }
 			set { SetValue(PlaceholderProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>Gets or sets the content of the Entry of the EntryCell. This is a bindable property.</summary>
 		public string Text
 		{
 			get { return (string)GetValue(TextProperty); }
@@ -81,7 +82,8 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Completed;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='SendCompleted']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
 			=> Completed?.Invoke(this, EventArgs.Empty);

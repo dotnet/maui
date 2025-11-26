@@ -1,8 +1,8 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "./uitests-shared.cake"
 
-const string DefaultVersion = "18.0";
-const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
+const string DefaultVersion = "18.4";
+const string DefaultTestDevice = $"ios-simulator-64";
 
 // Required arguments
 string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj";
@@ -20,6 +20,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -117,7 +118,7 @@ Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
-		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath, headless);
 	});
 
 Task("uitest")
@@ -171,9 +172,11 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
 	}
 
+	// Use longer launch timeout for CI builds to handle problematic conditions
+	var launchTimeout = IsCIBuild() ? "00:10:00" : "00:06:00";
+	Information($"Using launch timeout: {launchTimeout} (CI: {IsCIBuild()})");
+
 	Information($"Testing App: {testApp}");
-
-
 
 	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
 	{
@@ -188,7 +191,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 					$"--targets=\"{device}\" " +
 					$"--output-directory=\"{resultsDir}\" " +
 					$"--timeout=01:15:00 " +
-					$"--launch-timeout=00:06:00 " +
+					$"--launch-timeout={launchTimeout} " +
 					xcode_args +
 					$"--verbosity=\"Debug\" " +
 					$"--set-env=\"TestFilter={category}\" ");
@@ -207,7 +210,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 	});
 }
 
-void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
+void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, bool headless)
 {
 	Information("Preparing UI Tests...");
 	Information($"Testing Device: {device}");
@@ -223,7 +226,7 @@ void ExecutePrepareUITests(string project, string app, string device, string res
 		throw new Exception("UI Test application path not specified.");
 	}
 
-	InstallIpa(testApp, "", device, resultsDir, ver, toolPath);
+	InstallIpa(testApp, "", device, resultsDir, ver, toolPath, headless);
 }
 
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
@@ -378,7 +381,7 @@ string GetDefaultRuntimeIdentifier(string testDeviceIdentifier)
    : $"ios-arm64";
 }
 
-void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath)
+void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath, bool headless)
 {
 	Information("Install with xharness: {0} testDevice:{1}", testApp, testDevice);
 	var settings = new DotNetToolSettings
@@ -449,6 +452,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
+        SetEnvironmentVariable("HEADLESS", headless.ToString());
 	}
 }
 

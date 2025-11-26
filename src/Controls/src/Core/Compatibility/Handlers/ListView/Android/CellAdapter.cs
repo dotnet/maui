@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		readonly Context _context;
 		ActionMode _actionMode;
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell _actionModeContext;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		bool _actionModeNeedsUpdates;
 		AView _contextView;
@@ -33,7 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_context = context;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal Cell ActionModeContext
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			get { return _actionModeContext; }
 			set
@@ -154,7 +158,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return HandleContextMode(view, position);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected abstract Cell GetCellForPosition(int position);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		protected virtual void HandleItemClick(AdapterView parent, AView view, int position, long id)
 		{
@@ -221,7 +227,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (view is EditText || view is TextView || view is SearchView)
 				return false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell cell = GetCellForPosition(position);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (cell == null)
 				return false;

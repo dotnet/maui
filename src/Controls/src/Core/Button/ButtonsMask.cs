@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ButtonsMask.xml" path="Type[@FullName='Microsoft.Maui.Controls.ButtonsMask']/Docs" />
+	/// <summary>Flag values that represent mouse buttons.</summary>
 	[Flags]
 	public enum ButtonsMask
 	{

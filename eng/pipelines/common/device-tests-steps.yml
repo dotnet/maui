@@ -6,7 +6,6 @@ parameters:
   cakeArgs: '' # additional cake args
   deviceTestConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -18,6 +17,7 @@ parameters:
   poolName: 'Azure Pipelines'
   skipDotNet: false
   buildType: 'buildAndTest' # [ buildAndTest, buildOnly, testOnly ]
+  useCoreClr: false # Use CoreCLR for Android builds
 
 steps:
 
@@ -58,7 +58,7 @@ steps:
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if eq(parameters.skipProvisioning, false) }}:
       skipProvisionator: false
-    skipInternalFeeds: ${{ eq(parameters.buildType, 'testOnly') }}
+    skipInternalFeeds: true
 
 ##################################################
 #                Provision .NET                  #
@@ -121,7 +121,7 @@ steps:
   displayName: 'Download Build'
   condition: and(succeeded(), eq('${{ parameters.buildType }}', 'testOnly'))
   inputs:
-    artifactName: ${{ parameters.appArtifactName }}
+    artifactName: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
     targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
 ##################################################
@@ -129,7 +129,7 @@ steps:
 ##################################################
 
 # First run the build if this is a build-only or build-and-test job
-- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
+- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --coreclr="${{ parameters.useCoreClr }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
   displayName: Execute Build
   workingDirectory: ${{ parameters.checkoutDirectory }}
   condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))
@@ -140,7 +140,7 @@ steps:
   displayName: Execute Test Run
   workingDirectory: ${{ parameters.checkoutDirectory }}
   condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
-  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android')) }}:
+  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android'), eq(parameters.platform, 'ios')) }}:
     retryCountOnTaskFailure: 1
 
 ##################################################
@@ -159,11 +159,11 @@ steps:
   - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
     displayName: Publish Succeeded Artifacts Directory
     condition: succeeded()
-    artifact: ${{ parameters.appArtifactName }}
+    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
   - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
     displayName: Publish Failed Artifacts Directory
     condition: not(succeeded())
-    artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
+    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}_failed_$(System.JobAttempt)
 
 # Publish the test results
 - ${{ if ne(parameters.buildType, 'buildOnly') }}:
@@ -172,7 +172,7 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: '$(TestResultsDirectory)/**/TestResults*(-*).xml'
+      testResultsFiles: '$(TestResultsDirectory)/**/*Results*(-*).xml'
       testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
 # Publish the job artifacts

@@ -1,115 +1,120 @@
+using System;
 using System.Linq;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Xaml.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class StyleTests : ContentPage
 {
-	public partial class StyleTests : ContentPage
+	public StyleTests() => InitializeComponent();
+
+	class Tests
 	{
-		public StyleTests()
+		[SetUp] public void SetUp() => Application.Current = new MockApplication();
+
+		[Test]
+		public void TestStyle([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new StyleTests(inflator);
+			Assert.That(layout.style0, Is.InstanceOf<Style>());
+			Assert.AreSame(layout.style0, layout.label0.Style);
+			Assert.AreEqual("FooBar", layout.label0.Text);
 		}
 
-		public StyleTests(bool useCompiledXaml)
+		[Test]
+		public void TestConversionOnSetters([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var layout = new StyleTests(inflator);
+			Style style = layout.style1;
+			Setter setter;
+
+			//Test built-in conversions
+			setter = style.Setters.Single(s => s.Property == HeightProperty);
+			Assert.That(setter.Value, Is.TypeOf<double>());
+			Assert.AreEqual(42d, (double)setter.Value);
+
+			//Test TypeConverters
+			setter = style.Setters.Single(s => s.Property == BackgroundColorProperty);
+			Assert.That(setter.Value, Is.TypeOf<Color>());
+			Assert.AreEqual(Colors.Pink, (Color)setter.Value);
+
+			//Test implicit cast operator
+			setter = style.Setters.Single(s => s.Property == Image.SourceProperty);
+			Assert.That(setter.Value, Is.TypeOf<FileImageSource>());
+			Assert.AreEqual("foo.png", ((FileImageSource)setter.Value).File);
 		}
 
-		[TestFixture]
-		public class Tests
+		[Test]
+		public void ImplicitStyleAreApplied([Values] XamlInflator inflator)
 		{
-			[SetUp]
-			public void SetUp()
-			{
-				Application.Current = new MockApplication();
-			}
+			var layout = new StyleTests(inflator);
+			Assert.AreEqual(Colors.Red, layout.label1.TextColor);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestStyle(bool useCompiledXaml)
-			{
-				var layout = new StyleTests(useCompiledXaml);
-				Assert.That(layout.style0, Is.InstanceOf<Style>());
-				Assert.AreSame(layout.style0, layout.label0.Style);
-				Assert.AreEqual("FooBar", layout.label0.Text);
-			}
+		[Test]
+		public void PropertyDoesNotNeedTypes([Values] XamlInflator inflator)
+		{
+			var layout = new StyleTests(inflator);
+			Style style2 = layout.style2;
+			var s0 = style2.Setters[0];
+			var s1 = style2.Setters[1];
+			Assert.AreEqual(Label.TextProperty, s0.Property);
+			Assert.AreEqual(BackgroundColorProperty, s1.Property);
+			Assert.AreEqual(Colors.Red, s1.Value);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestConversionOnSetters(bool useCompiledXaml)
-			{
-				var layout = new StyleTests(useCompiledXaml);
-				Style style = layout.style1;
-				Setter setter;
+		[Test]
+		//issue #2406
+		public void StylesDerivedFromDynamicStylesThroughStaticResource([Values] XamlInflator inflator)
+		{
+			var layout = new StyleTests(inflator);
+			Application.Current.LoadPage(layout);
 
-				//Test built-in conversions
-				setter = style.Setters.Single(s => s.Property == HeightProperty);
-				Assert.That(setter.Value, Is.TypeOf<double>());
-				Assert.AreEqual(42d, (double)setter.Value);
+			var label = layout.labelWithStyleDerivedFromDynamic_StaticResource;
 
-				//Test TypeConverters
-				setter = style.Setters.Single(s => s.Property == BackgroundColorProperty);
-				Assert.That(setter.Value, Is.TypeOf<Color>());
-				Assert.AreEqual(Colors.Pink, (Color)setter.Value);
+			Assert.AreEqual(50, label.FontSize);
+			Assert.AreEqual(Colors.Red, label.TextColor);
+		}
 
-				//Test implicit cast operator
-				setter = style.Setters.Single(s => s.Property == Image.SourceProperty);
-				Assert.That(setter.Value, Is.TypeOf<FileImageSource>());
-				Assert.AreEqual("foo.png", ((FileImageSource)setter.Value).File);
-			}
+		[Test]
+		//issue #2406
+		public void StylesDerivedFromDynamicStylesThroughDynamicResource([Values] XamlInflator inflator)
+		{
+			var layout = new StyleTests(inflator);
+			Application.Current.LoadPage(layout);
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ImplicitStyleAreApplied(bool useCompiledXaml)
-			{
-				var layout = new StyleTests(useCompiledXaml);
-				Assert.AreEqual(Colors.Red, layout.label1.TextColor);
-			}
+			var label = layout.labelWithStyleDerivedFromDynamic_DynamicResource;
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void PropertyDoesNotNeedTypes(bool useCompiledXaml)
-			{
-				var layout = new StyleTests(useCompiledXaml);
-				Style style2 = layout.style2;
-				var s0 = style2.Setters[0];
-				var s1 = style2.Setters[1];
-				Assert.AreEqual(Label.TextProperty, s0.Property);
-				Assert.AreEqual(BackgroundColorProperty, s1.Property);
-				Assert.AreEqual(Colors.Red, s1.Value);
-			}
+			Assert.AreEqual(50, label.FontSize);
+			Assert.AreEqual(Colors.Red, label.TextColor);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			//issue #2406
-			public void StylesDerivedFromDynamicStylesThroughStaticResource(bool useCompiledXaml)
-			{
-				var layout = new StyleTests(useCompiledXaml);
-				Application.Current.LoadPage(layout);
+				[Test]
+		public void StyleCtorIsInvokedWithType([Values(XamlInflator.SourceGen)] XamlInflator inflator)
+		{
+			var result = CreateMauiCompilation()
+				.WithAdditionalSource(
+"""
+using System.Linq;
+using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 
-				var label = layout.labelWithStyleDerivedFromDynamic_StaticResource;
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-				Assert.AreEqual(50, label.FontSize);
-				Assert.AreEqual(Colors.Red, label.TextColor);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			//issue #2406
-			public void StylesDerivedFromDynamicStylesThroughDynamicResource(bool useCompiledXaml)
-			{
-				var layout = new StyleTests(useCompiledXaml);
-				Application.Current.LoadPage(layout);
-
-				var label = layout.labelWithStyleDerivedFromDynamic_DynamicResource;
-
-				Assert.AreEqual(50, label.FontSize);
-				Assert.AreEqual(Colors.Red, label.TextColor);
-			}
+public partial class StyleTests : ContentPage
+{
+	public StyleTests() => InitializeComponent();
+}
+""")
+				.RunMauiSourceGenerator(typeof(StyleTests));
+			Assert.IsFalse(result.Diagnostics.Any());
+			var initComp = result.GeneratedInitializeComponent();
+			Assert.That(initComp.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", StringComparison.InvariantCulture));
 		}
 	}
 }

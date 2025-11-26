@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+#if ANDROID
+using Android.Content;
+#endif
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -58,14 +61,14 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// The lifecycle event that is triggered when this app is launched.
 		/// </summary>
-		/// <param name="intent">The provided <see cref="Android.Content.Intent"/> to launch this app with.</param>
-		void OnNewIntent(Android.Content.Intent? intent);
+		/// <param name="intent">The provided <see cref="Intent"/> to launch this app with.</param>
+		void OnNewIntent(Intent? intent);
 
 		/// <summary>
 		/// The lifecycle event that is triggered when this app is launched.
 		/// </summary>
-		/// <param name="intent">The provided <see cref="Android.Content.Intent"/> to resume this app with.</param>
-		void OnResume(Android.Content.Intent? intent);
+		/// <param name="intent">The provided <see cref="Intent"/> to resume this app with.</param>
+		void OnResume(Intent? intent);
 #endif
 	}
 
@@ -161,16 +164,16 @@ namespace Microsoft.Maui.ApplicationModel
 		/// The lifecycle event that is triggered when this app is launched.
 		/// </summary>
 		/// <param name="appActions">Instance of the <see cref="IAppActions"/> object this event is invoked on.</param>
-		/// <param name="intent">The provided <see cref="Android.Content.Intent"/> to launch this app with.</param>
-		public static void OnNewIntent(this IAppActions appActions, Android.Content.Intent? intent) =>
+		/// <param name="intent">The provided <see cref="Intent"/> to launch this app with.</param>
+		public static void OnNewIntent(this IAppActions appActions, Intent? intent) =>
 			appActions.AsPlatform().OnNewIntent(intent);
 
 		/// <summary>
 		/// The lifecycle event that is triggered when this app is launched.
 		/// </summary>
 		/// <param name="appActions">Instance of the <see cref="IAppActions"/> object this event is invoked on.</param>
-		/// <param name="intent">The provided <see cref="Android.Content.Intent"/> to resume this app with.</param>
-		public static void OnResume(this IAppActions appActions, Android.Content.Intent? intent) =>
+		/// <param name="intent">The provided <see cref="Intent"/> to resume this app with.</param>
+		public static void OnResume(this IAppActions appActions, Intent? intent) =>
 			appActions.AsPlatform().OnResume(intent);
 #endif
 	}

@@ -1,12 +1,15 @@
 ﻿#nullable enable
 using System;
+#if ANDROID
+using Android.OS;
+#endif
 
 namespace Microsoft.Maui
 {
 	public class ActivationState : IActivationState
 	{
-#if __ANDROID__
-		public ActivationState(IMauiContext context, Android.OS.Bundle? savedInstance)
+#if ANDROID
+		public ActivationState(IMauiContext context, Bundle? savedInstance)
 			: this(context, GetPersistedState(savedInstance))
 		{
 			SavedInstance = savedInstance;
@@ -46,16 +49,16 @@ namespace Microsoft.Maui
 
 		public IPersistedState State { get; }
 
-#if __ANDROID__
-		public Android.OS.Bundle? SavedInstance { get; }
+#if ANDROID
+		public Bundle? SavedInstance { get; }
 #elif WINDOWS
 		public UI.Xaml.LaunchActivatedEventArgs? LaunchActivatedEventArgs { get; }
 #elif TIZEN
 		public Tizen.Applications.Bundle? SavedInstance { get; }
 #endif
 
-#if __ANDROID__
-		static PersistedState GetPersistedState(Android.OS.Bundle? state)
+#if ANDROID
+		static PersistedState GetPersistedState(Bundle? state)
 		{
 			var dict = new PersistedState();
 

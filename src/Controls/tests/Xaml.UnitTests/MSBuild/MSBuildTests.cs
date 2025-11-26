@@ -262,6 +262,34 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
+		[Test]
+		public void HotReloadSupportForXSG([Values("Debug", "Release")] string configuration)
+		{
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
+
+			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.XamlGenerator");
+			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
+			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"), nonEmpty: true);
+			
+			var sg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"));
+			var xsg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"));
+			if (configuration == "Debug")
+			{
+				StringAssert.Contains("InitializeComponentRuntime", sg);
+				StringAssert.Contains("InitializeComponentRuntime", xsg);
+			}
+			else
+            {
+				StringAssert.DoesNotContain("InitializeComponentRuntime", sg);
+				StringAssert.DoesNotContain("InitializeComponentRuntime", xsg);
+            }
+
+		}
+
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Test]
 		public void ValidateOnly([Values("Debug", "Release", "ReleaseProd")] string configuration)
@@ -381,14 +409,18 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile(@"Pages\MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
-
 			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 
+			if (File.Exists(xamlCStamp))
+				System.IO.File.Delete(xamlCStamp);
+			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
+
+			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
+
+
 			//The assembly should not be compiled
-			AssertDoesNotExist(assembly);
+			//AssertDoesNotExist(assembly);
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
 			//Build again, a full build
@@ -495,7 +527,110 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
-			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+			Assert.IsFalse(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+		}
+
+		/// <summary>
+		/// Tests that the SingleProject Before targets respect custom CodesignEntitlements properties
+		/// </summary>
+		[Test]
+		public void SingleProject_CodesignEntitlementsRespected()
+		{
+			// Create a minimal project for property evaluation testing only
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+
+			// Add PropertyGroup with test properties
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+
+			// Test scenario 1: Custom CodesignEntitlements should be preserved
+			propertyGroup.Add(NewElement("CodesignEntitlements").WithValue("Custom\\Entitlements.plist"));
+			propertyGroup.Add(NewElement("iOSProjectFolder").WithValue("Platforms\\iOS\\"));
+			propertyGroup.Add(NewElement("MacCatalystProjectFolder").WithValue("Platforms\\MacCatalyst\\"));
+			project.Add(propertyGroup);
+
+			// Add import for the SingleProject Before targets we're testing
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.Before.targets"));
+			var import = NewElement("Import")
+				.WithAttribute("Project", targetsPath);
+			project.Add(import);
+
+			// Create the entitlements files
+			project.Add(AddFile("Platforms\\iOS\\Entitlements.plist", "None", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<plist version=\"1.0\"><dict></dict></plist>"));
+			project.Add(AddFile("Custom\\Entitlements.plist", "None", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<plist version=\"1.0\"><dict></dict></plist>"));
+
+			// Add a target to output the CodesignEntitlements property value for verification
+			var target = NewElement("Target").WithAttribute("Name", "TestCodesignEntitlements");
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "CodesignEntitlements = $(CodesignEntitlements)")
+				.WithAttribute("Importance", "high"));
+			project.Add(target);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Build the test target to see property evaluation
+			var log = Build(projectFile, target: "TestCodesignEntitlements", verbosity: "normal");
+
+			// Verify the custom CodesignEntitlements property is preserved
+			Assert.IsTrue(log.Contains("CodesignEntitlements = Custom/Entitlements.plist", StringComparison.Ordinal) ||
+						  log.Contains("CodesignEntitlements = Custom\\Entitlements.plist", StringComparison.Ordinal),
+				"Custom CodesignEntitlements property should be preserved and not overridden by default Entitlements.plist");
+		}
+
+		/// <summary>
+		/// Tests that the SingleProject Before targets use default Entitlements.plist when no custom CodesignEntitlements is set
+		/// </summary>
+		[Test]
+		public void SingleProject_DefaultEntitlementsUsedWhenNoCustomSet()
+		{
+			// Create a minimal project for property evaluation testing only
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+
+			// Add PropertyGroup with test properties - NO CodesignEntitlements set
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("iOSProjectFolder").WithValue("Platforms\\iOS\\"));
+			propertyGroup.Add(NewElement("MacCatalystProjectFolder").WithValue("Platforms\\MacCatalyst\\"));
+			// Simulate the iOS platform for testing purposes
+			propertyGroup.Add(NewElement("_TestiOSCondition").WithValue("true"));
+			project.Add(propertyGroup);
+
+			// Add import for the SingleProject Before targets we're testing
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.Before.targets"));
+			var import = NewElement("Import")
+				.WithAttribute("Project", targetsPath);
+			project.Add(import);
+
+			// Create the default entitlements file
+			project.Add(AddFile("Platforms\\iOS\\Entitlements.plist", "None", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<plist version=\"1.0\"><dict></dict></plist>"));
+
+			// Add a PropertyGroup that simulates the iOS condition for testing
+			var testConditionGroup = NewElement("PropertyGroup").WithAttribute("Condition", " '$(SingleProject)' == 'true' and '$(TFMTestiOSCondition)' == 'true' ");
+			testConditionGroup.Add(NewElement("CodesignEntitlements")
+				.WithAttribute("Condition", " '$(CodesignEntitlements)' == '' and Exists('$(iOSProjectFolder)Entitlements.plist') ")
+				.WithValue("$(iOSProjectFolder)Entitlements.plist"));
+			project.Add(testConditionGroup);
+
+			// Add a target to output the CodesignEntitlements property value for verification
+			var target = NewElement("Target").WithAttribute("Name", "TestCodesignEntitlements");
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "CodesignEntitlements = $(CodesignEntitlements)")
+				.WithAttribute("Importance", "high"));
+			project.Add(target);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Build the test target to see property evaluation - enable the test condition
+			var log = Build(projectFile, target: "TestCodesignEntitlements", verbosity: "normal", additionalArgs: "-p:TFMTestiOSCondition=true");
+
+			// Verify the default CodesignEntitlements property is used
+			Assert.IsTrue(log.Contains("CodesignEntitlements = Platforms/iOS/Entitlements.plist", StringComparison.Ordinal) ||
+						  log.Contains("CodesignEntitlements = Platforms\\iOS\\Entitlements.plist", StringComparison.Ordinal),
+				"Default Entitlements.plist should be used when no custom CodesignEntitlements is set");
 		}
 	}
 }

@@ -20,7 +20,11 @@ public class Issue15154 : _IssuesUITest
 		App.WaitForElement("OpenFlyoutButton");
 		App.Tap("OpenFlyoutButton");
 		App.SetOrientationLandscape();
+#if ANDROID
+		VerifyScreenshot(cropLeft: 125);
+#else
 		VerifyScreenshot();
+#endif
 	}
 }
 #endif

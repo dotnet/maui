@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+#if ANDROID
+using Android.App;
+#endif
 
 namespace Microsoft.Maui.Hosting
 {
@@ -26,8 +29,8 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureLifecycleEvents(life =>
 			{
-#if __ANDROID__
-				ApplicationModel.Platform.Init((Android.App.Application)Android.App.Application.Context);
+#if ANDROID
+				ApplicationModel.Platform.Init((Application)Application.Context);
 
 				life.AddAndroid(android => android
 					.OnCreate((activity, savedInstanceState) =>

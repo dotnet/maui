@@ -333,30 +333,39 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
+		Element TryGetRealParent(bool logWarningIfParentHasBeenCollected = true)
+		{
+			var realParent = _realParent;
+			if (realParent is null)
+			{
+				return null;
+			}
+			if (realParent.TryGetTarget(out var parent))
+			{
+				return parent;
+			}
+			else
+			{
+				// Clear the weak reference since the target has been garbage collected
+				// This prevents repeated checks and warnings on subsequent accesses
+				_realParent = null;
+				if (logWarningIfParentHasBeenCollected)
+				{
+					Application.Current?
+										.FindMauiContext()?
+										.CreateLogger<Element>()?
+										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+			}
+
+			return null;
+		}
+
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent
 		{
-			get
-			{
-				if (_realParent is null)
-				{
-					return null;
-				}
-				if (_realParent.TryGetTarget(out var parent))
-				{
-					return parent;
-				}
-				else
-				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
-				}
-
-				return null;
-			}
+			get => TryGetRealParent();
 			private set
 			{
 				if (value is null)
@@ -386,7 +395,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element realParent = RealParent;
+			Element realParent = TryGetRealParent(false);
 
 			if (realParent == value)
 			{
@@ -502,18 +511,39 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		//this is only used by XAMLC, not added to public API
+		//this is only used by Xaml inflators, to avoid crash hen VSM applies before parenting. Not added to the public API
+		//https://github.com/dotnet/maui/issues/16208
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public INameScope transientNamescope;
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
-		/// <returns>The element that has the specified name.</returns>
+		/// <returns>The element that has the specified name, or <see langword="null"/> if no element with the specified name is found.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
+		/// <remarks>
+		/// <para>
+		/// This method searches for named elements within the current namescope. The search scope is determined by
+		/// traversing up the visual tree from the current element until a namescope is found. Typically, each
+		/// page, content view, or data template defines its own namescope.
+		/// </para>
+		/// <para>
+		/// The search is limited to elements that have been registered in the same namescope, which includes:
+		/// </para>
+		/// <list type="bullet">
+		/// <item><description>Elements with x:Name attributes defined in XAML within the same namescope</description></item>
+		/// <item><description>Elements manually registered using <see cref="INameScope.RegisterName(string, object)"/></description></item>
+		/// <item><description>Child elements and their descendants within the same namescope boundary</description></item>
+		/// </list>
+		/// <para>
+		/// Elements in different namescopes (such as different pages or data templates) are not accessible
+		/// from each other through this method.
+		/// </para>
+		/// </remarks>
 		public object FindByName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");
@@ -523,6 +553,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void INameScope.RegisterName(string name, object scopedElement)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.RegisterName(name, scopedElement);
 		}
@@ -530,6 +563,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void INameScope.UnregisterName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.UnregisterName(name);
 		}
@@ -895,6 +931,9 @@ namespace Microsoft.Maui.Controls
 
 		internal INameScope GetNameScope()
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			var element = this;
 			do
 			{
@@ -1070,6 +1109,47 @@ namespace Microsoft.Maui.Controls
 		{
 			get => HandlerProperties.GetDisconnectPolicy(this);
 			set => HandlerProperties.SetDisconnectPolicy(this, value);
+		}
+
+		internal virtual bool TrySetValue(string text)
+		{
+			if (this is Label label)
+			{
+				label.Text = text;
+				return true;
+			}
+			else if (this is Entry entry)
+			{
+				entry.Text = text;
+				return true;
+			}
+			else if (this is Editor editor)
+			{
+				editor.Text = text;
+				return true;
+			}
+			else if (this is Switch sw && bool.TryParse(text, out bool swResult))
+			{
+				sw.IsToggled = swResult;
+				return true;
+			}
+			else if (this is RadioButton rb && bool.TryParse(text, out bool rbResult))
+			{
+				rb.IsChecked = rbResult;
+				return true;
+			}
+			else if (this is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
+			{
+				tp.Time = tpResult;
+				return true;
+			}
+			else if (this is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
+			{
+				dp.Date = dpResult;
+				return true;
+			}
+
+			return false;
 		}
 
 		class TemporaryWrapper : IList<Element>

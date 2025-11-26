@@ -19,6 +19,10 @@ namespace Microsoft.Maui.Controls
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Padding), MapPadding);
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(BorderWidth), MapBorderWidth);
 #endif
+#if ANDROID
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty.PropertyName, MapRippleColor);
+			ButtonHandler.Mapper.AppendToMapping<Button, IButtonHandler>(nameof(Background), MapRippleColor);
+#endif
 #if WINDOWS
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
 #endif
