@@ -55,7 +55,7 @@ static class GeneratorHelpers
 		}
 		try
 		{
-			return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString(), assemblyCaches));
+			return new XamlProjectItemForIC(projectItem!, text.ToString());
 		}
 		catch (Exception e)
 		{
@@ -63,7 +63,7 @@ static class GeneratorHelpers
 		}
 	}
 
-	static SGRootNode? ParseXaml(string xaml, AssemblyAttributes assemblyCaches)
+	public static SGRootNode? ParseXaml(string xaml, AssemblyAttributes assemblyCaches)
 	{
 		List<string> warningDisableList = [];
 		var nsmgr = new XmlNamespaceManager(new NameTable());
