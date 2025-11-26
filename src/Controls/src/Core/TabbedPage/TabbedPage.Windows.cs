@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls
 		NavigationRootManager? _navigationRootManager;
 		WFrame? _navigationFrame;
 		bool _connectedToHandler;
+		bool _isUpdatingSelection;
+		bool _isNavigating;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
@@ -246,6 +248,9 @@ namespace Microsoft.Maui.Controls
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
+			if (_isUpdatingSelection)
+				return;
+
 			if (args.SelectedItem is NavigationViewItemViewModel itemViewModel &&
 				itemViewModel.Data is Page page)
 			{
@@ -255,9 +260,13 @@ namespace Microsoft.Maui.Controls
 
 		void NavigateToPage(Page page)
 		{
+			if (_isNavigating)
+				return;
+
 			FrameNavigationOptions navOptions = new FrameNavigationOptions();
 			CurrentPage = page;
 			navOptions.IsNavigationStackEnabled = false;
+			_isNavigating = true;
 			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
 		}
 
@@ -301,8 +310,15 @@ namespace Microsoft.Maui.Controls
 
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
 		{
-			if (e.Content is WPage page)
-				UpdateCurrentPageContent(page);
+			try
+			{
+				if (e.Content is WPage page)
+					UpdateCurrentPageContent(page);
+			}
+			finally
+			{
+				_isNavigating = false;
+			}
 		}
 
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
@@ -389,12 +405,20 @@ namespace Microsoft.Maui.Controls
 		{
 			if (view._navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> items)
 			{
-				foreach (var item in items)
+				try
 				{
-					if (item.Data == view.CurrentPage)
+					view._isUpdatingSelection = true;
+					foreach (var item in items)
 					{
-						view._navigationView.SelectedItem = item;
+						if (item.Data == view.CurrentPage)
+						{
+							view._navigationView.SelectedItem = item;
+						}
 					}
+				}
+				finally
+				{
+					view._isUpdatingSelection = false;
 				}
 			}
 		}
