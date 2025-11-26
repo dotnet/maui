@@ -207,6 +207,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
+				
+				if(this.Selected)
+				{
+					UpdateVisualStates();
+					UpdateSelectionColor();
+				}
 			}
 
 			if (PlatformHandler?.VirtualView is View view)
@@ -221,11 +227,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_bound = true;
 			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 			this.UpdateAccessibilityTraits(itemsView);
-			if(this.Selected)
-			{
-				UpdateVisualStates();
-				UpdateSelectionColor();
-			}
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)
