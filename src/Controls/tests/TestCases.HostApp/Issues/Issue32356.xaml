@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32356"
+             Title="Issue 32356">
+    <VerticalStackLayout Spacing="10" Padding="20">
+        <Label Text="MauiImage with LogicalName containing path separator should load correctly"
+               FontSize="16"
+               FontAttributes="Bold"/>
+        
+        <Label Text="Test image with path in LogicalName (challenges/groceries.png):"
+               Margin="0,20,0,5"/>
+        <Image x:Name="TestImage"
+               AutomationId="TestImage"
+               Source="challenges/groceries.png"
+               WidthRequest="200"
+               HeightRequest="200"
+               Aspect="AspectFit"
+               BackgroundColor="LightGray"/>
+        
+        <Label Text="If the image loads correctly, you should see a groceries image above."
+               FontSize="12"
+               TextColor="Gray"
+               Margin="0,5,0,0"/>
+    </VerticalStackLayout>
+</ContentPage>

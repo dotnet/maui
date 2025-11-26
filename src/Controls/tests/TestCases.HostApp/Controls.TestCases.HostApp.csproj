@@ -57,6 +57,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\Challenges\*" LogicalName="challenges/%(Filename)%(Extension)" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized.svg" Color="#FFFFFF" BaseSize="20,20" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized2.svg" Color="#FFFFFF" BaseSize="40,40" />
