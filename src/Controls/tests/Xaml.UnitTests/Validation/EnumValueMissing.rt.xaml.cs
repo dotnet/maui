@@ -17,9 +17,9 @@ class Tests
 		public void ThrowsOnInvalidEnumValue([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(5, 17), () => MockCompiler.Compile(typeof(EnumValueMissing)));
+				Assert.Throws(new BuildExceptionConstraint(6, 10), () => MockCompiler.Compile(typeof(EnumValueMissing)));
 			else if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(5, 17), () => new EnumValueMissing(inflator));
+				Assert.Throws(new XamlParseExceptionConstraint(6, 10), () => new EnumValueMissing(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
