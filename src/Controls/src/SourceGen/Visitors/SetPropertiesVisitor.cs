@@ -69,6 +69,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		//TODO support Label text as element
 
 		// if it's implicit content property, get the content property name
+		bool isImplicitContentProperty = false;
 		if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (!parentNode.IsCollectionItem(node))
@@ -76,9 +77,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			string? contentProperty;
 			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
-			var parentVariable = Context.Variables[(ElementNode)parentNode];
-			if ((contentProperty = parentVariable.Type.GetContentPropertyName(context)) != null)
+			var parentVar = Context.Variables[(ElementNode)parentNode];
+			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
+			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				isImplicitContentProperty = true;
+			}
 			else
 				return;
 		}
@@ -92,14 +96,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
 
-		// Check that parent has a variable before accessing
-		var parentElement = (ElementNode)parentNode;
-		if (!Context.Variables.TryGetValue(parentElement, out var parentVar))
-		{
-			var parentKey = parentElement.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode vn ? vn.Value?.ToString() : "(none)";
-			throw new System.InvalidOperationException($"SetPropertiesVisitor.Visit(ValueNode): Parent '{parentElement.XmlType.Name}' x:Key='{parentKey}' not in Variables for propertyName='{propertyName}'");
-		}
-
 		// Try to set runtime name (for x:Name with RuntimeNameProperty attribute)
 		if (TrySetRuntimeName(propertyName, parentVar, node))
 			return;
@@ -107,6 +103,28 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		// Skip x:Name after TrySetRuntimeName has had a chance to process it
 		if (propertyName == XmlName.xName)
 			return;
+
+		// Check for duplicate property assignment for implicit content properties
+		if (isImplicitContentProperty)
+		{
+			// Only check for duplicate property assignment if the property is not a collection
+			bool attached = false;
+			var localName = propertyName.LocalName;
+			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out attached, context, node);
+			ITypeSymbol? propertyType = null;
+			
+			// Try to get the property type
+			bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+				|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+			
+			// Only warn if:
+			// 1. We can resolve the property and its type
+			// 2. The property type is NOT a collection (doesn't support Add)
+			// 3. The property type is not System.Object (unresolved generic)
+			bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
+			if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+				CheckForDuplicateProperty((ElementNode)parentNode, propertyName, node);
+		}
 
 		SetPropertyHelpers.SetPropertyValue(Writer, parentVar, propertyName, node, Context);
 	}
