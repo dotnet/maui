@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="GroupName"/> property or <see cref="RadioButtonGroup"/> to group radio buttons together.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<RadioButtonHandler>]
+	[ElementHandler(typeof(RadioButtonHandler))]
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
 		/// <summary>

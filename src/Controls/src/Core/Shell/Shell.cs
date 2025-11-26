@@ -24,11 +24,11 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Items))]
 	[DebuggerTypeProxy(typeof(ShellDebugView))]
 #if ANDROID || IOS || MACCATALYST
-	[ElementHandler<Handlers.Compatibility.ShellRenderer>]
+	[ElementHandler(typeof(Handlers.Compatibility.ShellRenderer))]
 #elif WINDOWS
-	[ElementHandler<ShellHandler>]
+	[ElementHandler(typeof(ShellHandler))]
 #elif TIZEN
-	[ElementHandler<ShellHandler>]
+	[ElementHandler(typeof(ShellHandler))]
 #endif
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{

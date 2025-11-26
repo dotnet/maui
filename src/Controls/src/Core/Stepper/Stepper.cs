@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// The value is constrained between <see cref="Minimum"/> and <see cref="Maximum"/>.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<StepperHandler>]
+	[ElementHandler(typeof(StepperHandler))]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		// Stores the value that was requested by the user, before clamping

@@ -10,21 +10,17 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>
-	/// Represents a view that is capable of scrolling if its content requires it.
-	/// </summary>
+	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(ScrollViewHandler))]
 #pragma warning disable CS0618 // Type or member is obsolete
-[ElementHandler<ScrollViewHandler>]
-public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
 
-		/// <summary>
-		/// Gets or sets the layout area override for the scroll view.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("This API doesn't do anything", true)]
 		public Rect LayoutAreaOverride
@@ -54,9 +50,7 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 			}
 		}
 
-		/// <summary>
-		/// Gets the scroll position for the specified element.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='GetScrollPositionForElement']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Point GetScrollPositionForElement(VisualElement item, ScrollToPosition pos)
 		{
@@ -97,18 +91,14 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 			return new Point(x, y);
 		}
 
-		/// <summary>
-		/// Sends the scroll finished notification.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='SendScrollFinished']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendScrollFinished()
 		{
 			_scrollCompletionSource?.TrySetResult(true);
 		}
 
-		/// <summary>
-		/// Sets the scrolled position.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='SetScrolledPosition']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetScrolledPosition(double x, double y)
 		{
@@ -157,9 +147,7 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 		Rect _layoutAreaOverride;
 		IReadOnlyList<Element> ILayoutController.Children => LogicalChildrenInternal;
 
-		/// <summary>
-		/// Gets or sets the content of the scroll view.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Content']/Docs/*" />
 		public View Content
 		{
 			get { return _content; }
@@ -235,54 +223,42 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 				frameSize.Height + margin.VerticalThickness);
 		}
 
-		/// <summary>
-		/// Gets the size of the scrollable content.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ContentSize']/Docs/*" />
 		public Size ContentSize
 		{
 			get { return (Size)GetValue(ContentSizeProperty); }
 			private set { SetValue(ContentSizePropertyKey, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the scroll orientation.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Orientation']/Docs/*" />
 		public ScrollOrientation Orientation
 		{
 			get { return (ScrollOrientation)GetValue(OrientationProperty); }
 			set { SetValue(OrientationProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets the current horizontal scroll position.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollX']/Docs/*" />
 		public double ScrollX
 		{
 			get { return (double)GetValue(ScrollXProperty); }
 			private set { SetValue(ScrollXPropertyKey, value); }
 		}
 
-		/// <summary>
-		/// Gets the current vertical scroll position.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollY']/Docs/*" />
 		public double ScrollY
 		{
 			get { return (double)GetValue(ScrollYProperty); }
 			private set { SetValue(ScrollYPropertyKey, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the horizontal scroll bar visibility.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibility']/Docs/*" />
 		public ScrollBarVisibility HorizontalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
 			set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the vertical scroll bar visibility.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='VerticalScrollBarVisibility']/Docs/*" />
 		public ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
@@ -295,8 +271,8 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the scroll view should obey safe area insets.
-		/// Use SafeAreaEdges.None for edge-to-edge content, SafeAreaEdges.All to obey all safe area insets, 
-		/// SafeAreaEdges.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaEdges.SoftInput for keyboard-aware behavior.
+		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{
@@ -304,9 +280,7 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ScrollView"/> class.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ScrollView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ScrollView>>(() => new PlatformConfigurationRegistry<ScrollView>(this));
@@ -320,9 +294,7 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		/// <summary>
-		/// Scrolls to the specified position asynchronously.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][1]/Docs/*" />
 		public Task ScrollToAsync(double x, double y, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
@@ -335,9 +307,7 @@ public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutControll
 			return _scrollCompletionSource.Task;
 		}
 
-		/// <summary>
-		/// Scrolls to the specified element asynchronously.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][2]/Docs/*" />
 		public Task ScrollToAsync(Element element, ScrollToPosition position, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)

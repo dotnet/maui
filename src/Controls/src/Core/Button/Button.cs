@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<ButtonHandler>]
+	[ElementHandler(typeof(ButtonHandler))]
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
 		const double DefaultSpacing = 10;

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// The visual representation is similar to an <see cref="Entry"/>, but displays a time picker interface instead of a keyboard.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<TimePickerHandler>]
+	[ElementHandler(typeof(TimePickerHandler))]
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>

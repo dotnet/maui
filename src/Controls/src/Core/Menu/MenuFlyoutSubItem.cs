@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	[ElementHandler<MenuFlyoutSubItemHandler>]
+	[ElementHandler(typeof(MenuFlyoutSubItemHandler))]
 	public partial class MenuFlyoutSubItem : MenuFlyoutItem, IMenuFlyoutSubItem
 	{
 		readonly List<IMenuElement> _menus = new List<IMenuElement>();

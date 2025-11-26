@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A <see cref="View" /> used to draw a solid colored rectangle.
 	/// </summary>
-	[ElementHandler<BoxViewHandler>]
+	[ElementHandler(typeof(BoxViewHandler))]
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>, IShapeView, IShape
 	{
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
@@ -56,12 +56,6 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		/// <summary>
-		/// Measures the desired size of the BoxView.
-		/// </summary>
-		/// <param name="widthConstraint">The available width.</param>
-		/// <param name="heightConstraint">The available height.</param>
-		/// <returns>A <see cref="SizeRequest"/> with a default size of 40x40.</returns>
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
@@ -69,7 +63,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 #nullable enable
-		/// <inheritdoc/>
+		// Todo these shuold be moved to a mapper
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
@@ -102,11 +96,6 @@ namespace Microsoft.Maui.Controls
 
 		float IStroke.StrokeMiterLimit => 0;
 
-		/// <summary>
-		/// Creates the path for the BoxView based on its bounds and corner radius.
-		/// </summary>
-		/// <param name="bounds">The bounds of the BoxView.</param>
-		/// <returns>A <see cref="PathF"/> representing the shape of the BoxView.</returns>
 		PathF IShape.PathForBounds(Rect bounds)
 		{
 			var path = new PathF();

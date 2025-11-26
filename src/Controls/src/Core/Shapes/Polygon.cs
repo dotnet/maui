@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Handlers;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polygon']/Docs/*" />
-	[ElementHandler<PolygonHandler>]
+	[ElementHandler(typeof(PolygonHandler))]
 	public sealed partial class Polygon : Shape, IShape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />

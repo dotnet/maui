@@ -27,7 +27,6 @@ namespace Microsoft.Maui
 		const bool EnableDiagnosticsByDefault = false;
 		const bool IsMeterSupportedByDefault = true;
 		const bool EnableAspireByDefault = true;
-		const bool IsMaterial3EnabledByDefault = false;
 		const bool IsCssEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
@@ -149,14 +148,6 @@ namespace Microsoft.Maui
 				? isEnabled
 				: EnableAspireByDefault;
 
-#if NET10_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsMaterial3Enabled)}")]
-#endif
-		public static bool IsMaterial3Enabled =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsMaterial3Enabled)}", out bool isEnabled)
-				? isEnabled
-				: IsMaterial3EnabledByDefault;
-
 #pragma warning restore IL4000
 
 #if NET9_0_OR_GREATER
@@ -166,6 +157,5 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
-#pragma warning restore IL4000
 	}
 }
