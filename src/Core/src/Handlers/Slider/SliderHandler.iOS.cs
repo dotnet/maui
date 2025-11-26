@@ -57,7 +57,12 @@ namespace Microsoft.Maui.Handlers
 								slider.Value = val;
 							}
 						}
-					});
+					})
+                    {
+      					CancelsTouchesInView = false,
+      					ShouldRecognizeSimultaneously = (gesture, otherGesture) => true
+                    };
+					
 					PlatformView.AddGestureRecognizer(_sliderTapRecognizer);
 				}
 			}
