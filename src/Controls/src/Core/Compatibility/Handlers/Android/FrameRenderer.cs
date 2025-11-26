@@ -53,8 +53,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		const double LegacyMinimumFrameSize = 20;
 
-		static FrameRenderer IElementHandlerWithAndroidContext<FrameRenderer>.CreateHandler(Context context)
-			=> new FrameRenderer(context);
+		static FrameRenderer IElementHandlerWithAndroidContext<FrameRenderer>.CreateHandler(Context? context)
+			=> new FrameRenderer(context!);
 
 		public FrameRenderer(Context context) : this(context, Mapper)
 		{

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="Source"/> property to specify the image, and the <see cref="Aspect"/> property to control how the image is scaled.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<ImageHandler>]
+	[ElementHandler(typeof(ImageHandler))]
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// A shape that draws a straight line between two points.
 	/// </summary>
 	[ElementHandler<LineHandler>]
+	[ElementHandler(typeof(LineHandler))]
 	public sealed partial class Line : Shape, IShape
 	{
 		/// <summary>

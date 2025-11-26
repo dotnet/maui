@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// A shape that draws a series of connected straight lines. Unlike <see cref="Polygon"/>, a polyline is not automatically closed.
 	/// </summary>
 	[ElementHandler<PolylineHandler>]
+	[ElementHandler(typeof(PolylineHandler))]
 	public sealed partial class Polyline : Shape, IShape
 	{
 		/// <summary>

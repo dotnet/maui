@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// and the <see cref="Value"/> property to get or set the current selection.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<SliderHandler>]
+	[ElementHandler(typeof(SliderHandler))]
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
 		// Stores the value that was requested by the user, before clamping

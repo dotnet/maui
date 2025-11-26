@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// A shape that draws an ellipse or circle.
 	/// </summary>
 	[ElementHandler<ShapeViewHandler>]
+	[ElementHandler(typeof(ShapeViewHandler))]
 	public sealed partial class Ellipse : Shape, IShape
 	{
 		/// <summary>
