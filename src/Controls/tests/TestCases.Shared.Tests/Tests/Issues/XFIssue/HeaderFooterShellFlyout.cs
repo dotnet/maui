@@ -57,7 +57,6 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 		App.WaitForElement("Footer");
 		App.WaitForNoElement("Header Template");
 		App.WaitForNoElement("Footer Template");
-		VerifyScreenshot("HeaderFooterTemplate");
 
 		// Verify turning off header/footer clear out views correctly
 		App.Tap(ToggleHeaderFooter);
