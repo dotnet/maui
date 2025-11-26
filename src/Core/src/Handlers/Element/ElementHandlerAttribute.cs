@@ -8,10 +8,7 @@ internal class ElementHandlerAttribute(
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType)
 	: Attribute
 {
-	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-		Justification = "Handlers are expected to have parameterless constructors and the DynamicallyAccessedMembers annotation ensures the constructor is preserved during trimming.")]
-	[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
-		Justification = "Handlers are expected to have parameterless constructors and the DynamicallyAccessedMembers annotation ensures the constructor is preserved during trimming.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The DynamicallyAccessedMembers annotation ensures constructor availability.")]
 	public virtual IElementHandler CreateHandler(IMauiContext context)
 		=> (IElementHandler)Activator.CreateInstance(handlerType)!;
 

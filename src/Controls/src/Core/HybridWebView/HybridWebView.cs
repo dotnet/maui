@@ -10,8 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-		Justification = "HybridWebViewHandler is designed to handle RequiresUnreferencedCode requirements and support for HybridWebView is conditional on MauiHybridWebViewSupported.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026")]
 	[ElementHandler(typeof(HybridWebViewHandler))]
 	public class HybridWebView : View, IHybridWebView
 	{
