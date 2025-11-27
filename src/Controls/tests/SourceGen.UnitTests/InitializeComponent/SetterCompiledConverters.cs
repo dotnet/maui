@@ -57,6 +57,7 @@ $$"""
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 

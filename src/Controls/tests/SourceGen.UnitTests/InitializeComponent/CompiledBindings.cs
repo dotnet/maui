@@ -26,6 +26,7 @@ public class CompiledBindings : SourceGenXamlInitializeComponentTestBase
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -64,6 +65,7 @@ public struct Bar
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 
@@ -170,6 +172,7 @@ public partial class TestPage
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -203,6 +206,7 @@ public class Product
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 
@@ -297,7 +301,8 @@ public partial class TestPage
 		static IEnumerable<string> SplitCode(string code)
 			=> code.Split(Environment.NewLine)
 				.Select(static line => line.Trim())
-				.Where(static line => !string.IsNullOrWhiteSpace(line));
+				.Where(static line => !string.IsNullOrWhiteSpace(line))
+				.Where(static line => !line.StartsWith("#pragma warning", StringComparison.Ordinal));
 	}
 
 	[Fact]
@@ -319,6 +324,7 @@ public partial class TestPage
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -352,6 +358,7 @@ public class Product
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 
@@ -459,6 +466,7 @@ public partial class TestPage
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -510,6 +518,7 @@ public class Product
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -543,6 +552,7 @@ public class Person
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 
@@ -661,6 +671,7 @@ $$"""
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
