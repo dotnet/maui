@@ -1,1 +1,2 @@
 #nullable enable
+~override Microsoft.Maui.Controls.Handlers.Items.GroupableItemsViewAdapter<TItemsView, TItemsViewSource>.BindTemplatedItemViewHolder(Microsoft.Maui.Controls.Handlers.Items.TemplatedItemViewHolder templatedItemViewHolder, object context) -> void

@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsView : GroupableItemsView
 		where TItemsViewSource : IGroupableItemsViewSource
 	{
+		bool _isBindingGroupHeaderOrFooter;
+
 		protected internal GroupableItemsViewAdapter(TItemsView groupableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(groupableItemsView, createView)
 		{
@@ -59,10 +61,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder &&
 				(ItemsSource.IsGroupFooter(position) || ItemsSource.IsGroupHeader(position)))
 			{
-				BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));
+				// Group headers and footers should always measure themselves,
+				// not participate in the ItemSizingStrategy.MeasureFirstItem logic.
+				// Set flag to bypass MeasureFirstItem in BindTemplatedItemViewHolder.
+				_isBindingGroupHeaderOrFooter = true;
+				try
+				{
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));
+				}
+				finally
+				{
+					_isBindingGroupHeaderOrFooter = false;
+				}
+				return;
 			}
 
 			base.OnBindViewHolder(holder, position);
+		}
+
+		protected override void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
+		{
+			// If binding a group header or footer, skip MeasureFirstItem logic
+			// and use the base implementation which always measures the item
+			if (_isBindingGroupHeaderOrFooter)
+			{
+				// Call the grandparent's implementation (ItemsViewAdapter.BindTemplatedItemViewHolder)
+				// which doesn't apply MeasureFirstItem sizing
+				templatedItemViewHolder.Bind(context, ItemsView);
+				return;
+			}
+
+			// For regular items, use parent's MeasureFirstItem logic
+			base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
 		}
 	}
 }
