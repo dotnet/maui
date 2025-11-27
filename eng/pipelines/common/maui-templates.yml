@@ -161,7 +161,7 @@ jobs:
         displayName: Reset iOS simulators
         # TODO: pass properly device type/version from top-level yml
         env:
-          IOS_TEST_DEVICE: ios-simulator-64_18.0
+          IOS_TEST_DEVICE: ios-simulator-64_18.4
 
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run ${{ RunPlatform.testName }} templates run tests
@@ -169,7 +169,7 @@ jobs:
       # TODO: pass properly device type/version from top-level yml
       ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
         env:
-          IOS_TEST_DEVICE: ios-simulator-64_18.0
+          IOS_TEST_DEVICE: ios-simulator-64_18.4
 
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
       - pwsh: ./build.ps1 --target=Cleanup -Script eng/devices/ios.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}

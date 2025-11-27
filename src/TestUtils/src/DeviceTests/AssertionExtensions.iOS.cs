@@ -243,13 +243,14 @@ namespace Microsoft.Maui.DeviceTests
 				}));
 			}
 
+#pragma warning disable CA1416 // Validate platform compatibility
 			UIGraphics.BeginImageContext(imageRect.Size);
-
 			var context = UIGraphics.GetCurrentContext();
 			view.Layer.RenderInContext(context);
 			var image = UIGraphics.GetImageFromCurrentImageContext();
-
 			UIGraphics.EndImageContext();
+#pragma warning restore CA1416 // Validate platform compatibility
+
 			logger?.LogDebug($"Finish: {image.Size}");
 
 			return Task.FromResult(image);

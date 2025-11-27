@@ -1,28 +1,53 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
+using System;
+using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class DataTemplateExtension : ContentPage
 {
-	public partial class DataTemplateExtension : ContentPage
+	public DataTemplateExtension() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public DataTemplateExtension() => InitializeComponent();
-		public DataTemplateExtension(bool useCompiledXaml)
+		[Test]
+		public void DataTemplateExtension([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(DataTemplateExtension));
+			}
+			var layout = new DataTemplateExtension(inflator);
+			var content = layout.Resources["content"] as ShellContent;
+			var template = content.ContentTemplate;
+			var obj = template.CreateContent();
+			Assert.That(obj, Is.TypeOf<DataTemplateExtension>());
 		}
 
-		[TestFixture]
-		class Tests
+				public void ExtensionsAreReplaced([Values(XamlInflator.SourceGen)] XamlInflator inflator)
 		{
-			[TestCase(true), TestCase(false)]
-			public void DataTemplateExtension(bool useCompiledXaml)
-			{
-				var layout = new DataTemplateExtension(useCompiledXaml);
-				var content = layout.Resources["content"] as ShellContent;
-				var template = content.ContentTemplate;
-				var obj = template.CreateContent();
-				Assert.That(obj, Is.TypeOf<DataTemplateExtension>());
-			}
+			var result = CreateMauiCompilation()
+				.WithAdditionalSource(
+"""
+using NUnit.Framework;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class DataTemplateExtension : ContentPage
+{
+	public DataTemplateExtension() => InitializeComponent();
+		}
+""")
+				.RunMauiSourceGenerator(typeof(DataTemplateExtension));
+			Assert.IsFalse(result.Diagnostics.Any());
+			var initComp = result.GeneratedInitializeComponent();
+			Assert.That(initComp.Contains("typeof(global::Microsoft.Maui.Controls.Xaml.UnitTests.DataTemplateExtension)", StringComparison.InvariantCulture));
+			Assert.That(initComp, Does.Not.Contains("ProvideValue"));
 		}
 	}
 }

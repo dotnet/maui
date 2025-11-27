@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	[AcceptEmptyServiceProvider]
-	public class Bz34037Converter0 : IValueConverter, IMarkupExtension
+	public class Bz34037Converter0 : IValueConverter
 	{
 		public static int Invoked { get; set; }
 		public static object Parameter { get; set; }
@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return new Bz34037Converter0();
 		}
 	}
+
 	[AcceptEmptyServiceProvider]
 	public class Bz34037Converter1 : IValueConverter, IMarkupExtension
 	{
@@ -63,11 +64,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			get { return "FooBar"; }
 		}
 
-		public Bz34037(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
@@ -85,11 +81,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ConverterParameterOrderDoesNotMatters(bool useCompiledXaml)
+			[Test]
+			public void ConverterParameterOrderDoesNotMatters([Values] XamlInflator inflator)
 			{
-				var layout = new Bz34037(useCompiledXaml);
+				var layout = new Bz34037(inflator);
 				Assert.AreEqual(1, Bz34037Converter0.Invoked);
 				Assert.AreEqual(1, Bz34037Converter1.Invoked);
 				Assert.AreEqual(typeof(string), Bz34037Converter0.Parameter);

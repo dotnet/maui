@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage initialPageAppearing = null;
 			ContentPage pageDisappeared = null;
 
-			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
+			var nav = new TestNavigationPage(useMaui, initialPage);
 			_ = new Window(nav);
 			nav.SendAppearing();
 
@@ -153,6 +153,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				=> throw new XunitException("Appearing Fired Incorrectly");
 
 			nav.Navigation.RemovePage(pageToRemove);
+			await nav.NavigatingTask;
 		}
 	}
 }

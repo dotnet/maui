@@ -4,31 +4,24 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz40906 : ContentPage
 {
-	public partial class Bz40906 : ContentPage
+	public Bz40906()
 	{
-		public Bz40906()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz40906(bool useCompiledXaml)
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void ParsingCDATA([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ParsingCDATA(bool useCompiledXaml)
-			{
-				var page = new Bz40906(useCompiledXaml);
-				Assert.AreEqual("Foo", page.label0.Text);
-				Assert.AreEqual("FooBar>><<", page.label1.Text);
-			}
+			var page = new Bz40906(inflator);
+			Assert.AreEqual("Foo", page.label0.Text);
+			Assert.AreEqual("FooBar>><<", page.label1.Text);
 		}
 	}
 }

@@ -1,7 +1,5 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
@@ -11,15 +9,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui16538
 {
-
 	public Maui16538() => InitializeComponent();
 
-	public Maui16538(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -33,11 +24,11 @@ public partial class Maui16538
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
+		public void VSMandAppTheme([Values] XamlInflator inflator)
 		{
 
 			Application.Current.UserAppTheme = AppTheme.Dark;
-			var page = new Maui16538(useCompiledXaml);
+			var page = new Maui16538(inflator);
 			Application.Current.MainPage = page;
 			Button button = page.button0;
 			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("404040")));

@@ -22,11 +22,13 @@ Microsoft.Maui.Maps.Handlers.MapElementHandler
 Microsoft.Maui.Maps.Handlers.MapElementHandler.MapElementHandler() -> void
 Microsoft.Maui.Maps.Handlers.MapElementHandler.MapElementHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
 Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate
+Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.Maps.IMapElement! MapElement) -> void
 Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Index.get -> int
 Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Index.init -> void
 Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.MapElement.get -> Microsoft.Maui.Maps.IMapElement!
 Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.MapElement.init -> void
 Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.MapElementHandlerUpdate(int Index, Microsoft.Maui.Maps.IMapElement! MapElement) -> void
+Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.MapElementHandlerUpdate(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate! original) -> void
 Microsoft.Maui.Maps.Handlers.MapHandler
 Microsoft.Maui.Maps.Handlers.MapHandler.GetNativeCircle(Microsoft.Maui.Maps.ICircleMapElement! circle) -> Android.Gms.Maps.Model.Circle?
 Microsoft.Maui.Maps.Handlers.MapHandler.GetNativePolygon(Microsoft.Maui.Maps.IGeoPathMapElement! polygon) -> Android.Gms.Maps.Model.Polygon?
@@ -84,6 +86,9 @@ Microsoft.Maui.Maps.Platform.MapExtensions
 override Microsoft.Maui.Maps.Distance.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.Distance.GetHashCode() -> int
 override Microsoft.Maui.Maps.Handlers.MapElementHandler.CreatePlatformElement() -> Java.Lang.Object!
+override Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Equals(object? obj) -> bool
+override Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.GetHashCode() -> int
+override Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.ToString() -> string!
 override Microsoft.Maui.Maps.Handlers.MapHandler.ConnectHandler(Android.Gms.Maps.MapView! platformView) -> void
 override Microsoft.Maui.Maps.Handlers.MapHandler.CreatePlatformView() -> Android.Gms.Maps.MapView!
 override Microsoft.Maui.Maps.Handlers.MapHandler.DisconnectHandler(Android.Gms.Maps.MapView! platformView) -> void
@@ -107,6 +112,8 @@ static Microsoft.Maui.Maps.Handlers.MapElementHandler.Mapper -> Microsoft.Maui.I
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapRadius(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapStroke(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapStrokeThickness(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.operator !=(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? left, Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? right) -> bool
+static Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.operator ==(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? left, Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? right) -> bool
 static Microsoft.Maui.Maps.Handlers.MapHandler.Bundle.set -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Maps.IMap!, Microsoft.Maui.Maps.Handlers.IMapHandler!>!
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapElements(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
@@ -131,3 +138,7 @@ static Microsoft.Maui.Maps.Platform.MapExtensions.UpdateIsShowingUser(this Andro
 static Microsoft.Maui.Maps.Platform.MapExtensions.UpdateIsTrafficEnabled(this Android.Gms.Maps.GoogleMap! googleMap, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Platform.MapExtensions.UpdateIsZoomEnabled(this Android.Gms.Maps.GoogleMap! googleMap, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Platform.MapExtensions.UpdateMapType(this Android.Gms.Maps.GoogleMap! googleMap, Microsoft.Maui.Maps.IMap! map) -> void
+virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.<Clone>$() -> Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate!
+virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.Equals(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? other) -> bool
+virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.PrintMembers(System.Text.StringBuilder! builder) -> bool

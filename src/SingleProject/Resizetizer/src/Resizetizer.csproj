@@ -21,7 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\**"
+                      Exclude="Resources\ErrorMessages.resx"
+                      LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,13 +41,9 @@
     <_AdjustmentsAssembly>$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll</_AdjustmentsAssembly>
     <_AdjustmentsReferencedAssembly>$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll</_AdjustmentsReferencedAssembly>
   </PropertyGroup>
-  <Target Name="_AdjustSkiaSharpVersion" BeforeTargets="Build;AssignTargetPaths"
-          Inputs="$(MSBuildProjectFile);$(_AdjustmentsAssembly);$(_AdjustmentsReferencedAssembly)" Outputs="$(IntermediateOutputPath)adjustments\Svg.Skia.dll">
+  <Target Name="_AdjustSkiaSharpVersion" BeforeTargets="Build;AssignTargetPaths" Inputs="$(MSBuildProjectFile);$(_AdjustmentsAssembly);$(_AdjustmentsReferencedAssembly)" Outputs="$(IntermediateOutputPath)adjustments\Svg.Skia.dll">
     <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
-    <AdjustReferencedAssemblyVersion
-      Assembly="$(_AdjustmentsAssembly)"
-      ReferencedAssembly="$(_AdjustmentsReferencedAssembly)"
-      OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    <AdjustReferencedAssemblyVersion Assembly="$(_AdjustmentsAssembly)" ReferencedAssembly="$(_AdjustmentsReferencedAssembly)" OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
     <ItemGroup>
       <None Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
       <FileWrites Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
@@ -64,6 +62,18 @@
     <None Include="nuget\**" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="ErrorMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessages.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="ErrorMessages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+ 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)$(AssemblyName).dll" />

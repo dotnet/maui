@@ -140,6 +140,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateSearchIconColor(searchBar);
+		}
+
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.UpdateValue(nameof(ISearchBar.Text));
@@ -151,6 +156,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is FocusRequest request)
 				handler.QueryEditor?.Focus(request);
+		}
+
+		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateReturnType(searchBar);
 		}
 
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)

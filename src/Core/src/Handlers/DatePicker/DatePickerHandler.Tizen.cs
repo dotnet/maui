@@ -57,6 +57,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateCharacterSpacing(datePicker);
 		}
 
+		[MissingMapper]
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker) { }
+
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{
 			if (e.Touch.GetState(0) != PointStateType.Up)

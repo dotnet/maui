@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content.PM;
+using Android.Runtime;
 using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Platform
@@ -11,6 +12,7 @@ namespace Maui.Controls.Sample.Platform
 	[IntentFilter(
 		new[] { Microsoft.Maui.ApplicationModel.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
+	[Register("com.microsoft.maui.sandbox.MainActivity")]
 	public class MainActivity : MauiAppCompatActivity
 	{
 	}

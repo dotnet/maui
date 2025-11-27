@@ -9,6 +9,7 @@ using Microsoft.Maui.Graphics;
 #if WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif ANDROID
+using Android.Content;
 using PlatformView = Android.Views.View;
 #elif IOS
 using PlatformView = UIKit.UIView;
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected bool AutoPackage { get; set; } = true;
 
 #if ANDROID
-		public VisualElementRenderer(Android.Content.Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
+		public VisualElementRenderer(Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{
 		}
 #else
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 #if ANDROID
-		protected VisualElementRenderer(Android.Content.Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
+		protected VisualElementRenderer(Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #else
 		protected VisualElementRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #endif

@@ -1,40 +1,27 @@
-using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class StyleSheet : ContentPage
 {
-	public partial class StyleSheet : ContentPage
+	public StyleSheet() => InitializeComponent();
+
+	class Tests
 	{
-		public StyleSheet()
+		[Test]
+		public void EmbeddedStyleSheetsAreLoaded([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new StyleSheet(inflator);
+			Assert.That(layout.Resources.StyleSheets[0].Styles.Count, Is.GreaterThanOrEqualTo(1));
 		}
 
-		public StyleSheet(bool useCompiledXaml)
+		[Test]
+		public void StyleSheetsAreApplied([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false), TestCase(true)]
-			public void EmbeddedStyleSheetsAreLoaded(bool useCompiledXaml)
-			{
-				var layout = new StyleSheet(useCompiledXaml);
-				Assert.That(layout.Resources.StyleSheets[0].Styles.Count, Is.GreaterThanOrEqualTo(1));
-			}
-
-			[TestCase(false), TestCase(true)]
-			public void StyleSheetsAreApplied(bool useCompiledXaml)
-			{
-				var layout = new StyleSheet(useCompiledXaml);
-				Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Azure));
-				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Colors.AliceBlue));
-			}
+			var layout = new StyleSheet(inflator);
+			Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Azure));
+			Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Colors.AliceBlue));
 		}
 	}
 }

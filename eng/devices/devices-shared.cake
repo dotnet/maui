@@ -1,6 +1,6 @@
 //This assumes that this is always running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
-string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net9.0");
+string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
 const string TestFramework = "net472";
 
 // Map project types to specific subdirectories under artifacts

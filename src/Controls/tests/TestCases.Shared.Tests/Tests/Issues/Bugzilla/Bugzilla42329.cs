@@ -19,6 +19,9 @@ public class Bugzilla42329 : _IssuesUITest
 	public override string Issue => "ListView in Frame and FormsAppCompatActivity Memory Leak";
 
 	[Test]
+#if ANDROID
+	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
+#endif
 	[Category(UITestCategories.ListView)]
 	public async Task MemoryLeakB42329()
 	{

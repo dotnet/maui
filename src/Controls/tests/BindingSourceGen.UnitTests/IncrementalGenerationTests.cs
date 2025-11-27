@@ -172,7 +172,7 @@ public class IncrementalGenerationTests
 		// Sometimes the binding has more than one run of the same step associated with it. 
 		// In such cases keep the one with Modified reason for safety.
 		return bindingRunPairs
-		.GroupBy(bindingRunPair => bindingRunPair.binding.SimpleLocation.FilePath)
+		.GroupBy(bindingRunPair => bindingRunPair.binding.SimpleLocation!.FilePath)
 		.ToDictionary(
 			x => x.Key,
 			x => x

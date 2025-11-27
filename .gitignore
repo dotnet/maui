@@ -14,6 +14,7 @@ templatesTest/
 *.userosscache
 *.sln.docstates
 /src/Controls/tests/TestCases.HostApp/MauiProgram.user.cs
+CustomAgentLogsTmp/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -44,6 +45,7 @@ bld/
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/
+Generated/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -186,9 +188,6 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# Note: Comment the next line if you want to checkin your web deploy settings,
-# but database connection strings (with potential passwords) will be unencrypted
-*.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to

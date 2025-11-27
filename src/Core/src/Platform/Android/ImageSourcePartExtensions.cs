@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 
 namespace Microsoft.Maui.Platform
 {
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Platform
 			if (context == null)
 				return null;
 
-			var destinationImageView = destinationContext as Android.Widget.ImageView;
+			var destinationImageView = destinationContext as ImageView;
 
 			if (destinationImageView is null && setImage is null)
 				return null;

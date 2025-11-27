@@ -325,11 +325,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (_picker != null)
 				{
-					if (_picker.Model != null)
-					{
-						_picker.Model.Dispose();
-						_picker.Model = null;
-					}
+					_picker.Model?.Dispose();
+					_picker.Model = null;
 
 					_picker.RemoveFromSuperview();
 					_picker.Dispose();

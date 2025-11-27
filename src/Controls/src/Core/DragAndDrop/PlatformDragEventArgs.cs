@@ -1,4 +1,9 @@
 ﻿using System;
+#if ANDROID
+using Android.Views;
+using AView = Android.Views.View;
+#endif
+
 namespace Microsoft.Maui.Controls;
 
 /// <summary>
@@ -49,14 +54,14 @@ public class PlatformDragEventArgs
 	/// <summary>
 	/// Gets the native view attached to the event.
 	/// </summary>
-	public Android.Views.View Sender { get; }
+	public AView Sender { get; }
 
 	/// <summary>
 	/// Gets the event containing information for drag and drop status.
 	/// </summary>
-	public Android.Views.DragEvent DragEvent { get; }
+	public DragEvent DragEvent { get; }
 
-	internal PlatformDragEventArgs(Android.Views.View sender, Android.Views.DragEvent dragEvent)
+	internal PlatformDragEventArgs(AView sender, DragEvent dragEvent)
 	{
 		Sender = sender;
 		DragEvent = dragEvent;

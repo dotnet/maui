@@ -8,7 +8,7 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		public delegate bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler);
 		public delegate void DidEnterBackground(UIApplication application);
-		public delegate bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions);
+		public delegate bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions);
 		public delegate bool FinishedLaunching(UIApplication application, NSDictionary launchOptions);
 		public delegate void OnActivated(UIApplication application);
 		public delegate void OnResignActivation(UIApplication application);

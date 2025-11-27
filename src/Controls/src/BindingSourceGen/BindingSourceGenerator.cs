@@ -42,9 +42,22 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		context.RegisterImplementationSourceOutput(bindings, (spc, binding) =>
 		{
 			var location = binding.SimpleLocation;
+			if (location == null)
+			{
+				throw new InvalidOperationException("Location cannot be null");
+			}
+
 			var fileName = $"{location.FilePath}-GeneratedBindingInterceptors-{location.Line}-{location.Column}.g.cs";
 			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
-			var code = BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(location.GetHashCode()));
+			var methodNamePrefix = binding.MethodType switch
+			{
+				InterceptedMethodType.SetBinding => "SetBinding",
+				InterceptedMethodType.Create => "Create",
+				_ => throw new NotSupportedException()
+			};
+			var uniqueId = (uint)Math.Abs(location.GetHashCode());
+
+			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{uniqueId}");
 			spc.AddSource(sanitizedFileName, code);
 		});
 	}
@@ -152,7 +165,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
 			SetterOptions: DeriveSetterOptions(lambdaResult.Value.ExpressionBody, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable,
-			MethodType: interceptedMethodTypeResult.Value);
+			MethodType: interceptedMethodTypeResult.Value,
+			IsPublic: true);
 		return Result<BindingInvocationDescription>.Success(binding);
 	}
 

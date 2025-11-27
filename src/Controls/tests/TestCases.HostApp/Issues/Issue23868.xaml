@@ -4,7 +4,8 @@
              x:Class="Maui.Controls.Sample.Issues.Issue23868"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page">
+             Title="Main Page"
+             x:DataType="local:Issue23868">
   <StackLayout>
     <Label Text="Pull to refresh twice to replicate the issue"
                HorizontalOptions="Center"
@@ -17,7 +18,7 @@
                 <CollectionView.Header>
                     <Grid ColumnDefinitions="2*,*"
                           HorizontalOptions="CenterAndExpand"
-                          IsVisible="{Binding Source={x:Reference collectionView}, Path=ItemsSource.Count, FallbackValue=False}">
+                          IsVisible="{Binding Items.Count, FallbackValue=False}">
                         <Label Grid.Column="0"
                                Text="Items Count:"
                                VerticalTextAlignment="Center"
@@ -29,7 +30,7 @@
                     </Grid>
                 </CollectionView.Header>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="x:String">
                         <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

@@ -6,6 +6,7 @@
 		ListView ListView => Content as ListView;
 		protected override void Init()
 		{
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = new ListView();
 		}
 

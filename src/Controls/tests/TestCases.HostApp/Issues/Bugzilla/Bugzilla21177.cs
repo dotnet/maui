@@ -23,7 +23,7 @@ public class Bugzilla21177 : TestContentPage
 
 	private void View_ItemSelected(object sender, int e)
 	{
-		DisplayAlert("Success", "Success", "Cancel");
+		DisplayAlertAsync("Success", "Success", "Cancel");
 	}
 }
 #endif

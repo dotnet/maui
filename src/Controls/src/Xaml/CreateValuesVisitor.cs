@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				Values[node] = value;
 			}
 
-			if (value is BindableObject bindableValue && node.NameScopeRef != (parentNode as IElementNode)?.NameScopeRef)
+			if (value is BindableObject bindableValue && node.NameScopeRef != (parentNode as ElementNode)?.NameScopeRef)
 				NameScope.SetNameScope(bindableValue, node.NameScopeRef.NameScope);
 
 			//Workaround for when a VSM is applied before parenting
@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				node.XmlName = name;
 		}
 
-		bool ValidateCtorArguments(Type nodeType, IElementNode node, out string missingArgName)
+		bool ValidateCtorArguments(Type nodeType, ElementNode node, out string missingArgName)
 		{
 			missingArgName = null;
 			var ctorInfo =
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return true;
 		}
 
-		public object CreateFromParameterizedConstructor(Type nodeType, IElementNode node)
+		public object CreateFromParameterizedConstructor(Type nodeType, ElementNode node)
 		{
 			var ctorInfo =
 				nodeType.GetTypeInfo()
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return ctorInfo.Invoke(arguments);
 		}
 
-		public object CreateFromFactory(Type nodeType, IElementNode node)
+		public object CreateFromFactory(Type nodeType, ElementNode node)
 		{
 			object[] arguments = CreateArgumentsArray(node);
 
@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return mi.Invoke(null, arguments);
 		}
 
-		public object[] CreateArgumentsArray(IElementNode enode)
+		public object[] CreateArgumentsArray(ElementNode enode)
 		{
 			if (!enode.Properties.ContainsKey(XmlName.xArguments))
 				return null;
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return null;
 		}
 
-		public object[] CreateArgumentsArray(IElementNode enode, ConstructorInfo ctorInfo)
+		public object[] CreateArgumentsArray(ElementNode enode, ConstructorInfo ctorInfo)
 		{
 			var n = ctorInfo.GetParameters().Length;
 			var array = new object[n];
@@ -330,9 +330,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			return array;
 		}
 
-		static bool IsXaml2009LanguagePrimitive(IElementNode node) => node.NamespaceURI == XamlParser.X2009Uri;
+		static bool IsXaml2009LanguagePrimitive(ElementNode node) => node.NamespaceURI == XamlParser.X2009Uri;
 
-		static object CreateLanguagePrimitive(Type nodeType, IElementNode node)
+		static object CreateLanguagePrimitive(Type nodeType, ElementNode node)
 		{
 			object value;
 			if (nodeType == typeof(string))

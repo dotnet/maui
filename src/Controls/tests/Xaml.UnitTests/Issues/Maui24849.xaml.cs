@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
@@ -17,17 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui24849 : ContentPage
 {
-	public Maui24849()
-	{
-		InitializeComponent();
-	}
+	public Maui24849() => InitializeComponent();
 
-	public Maui24849(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
@@ -40,7 +25,6 @@ public partial class Maui24849 : ContentPage
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-
 		[TearDown]
 		public void TearDown()
 		{
@@ -49,11 +33,11 @@ public partial class Maui24849 : ContentPage
 		}
 
 		[Test]
-		public void VSGReturnsToNormal([Values(false, true)] bool useCompiledXaml)
+		public void VSGReturnsToNormal([Values] XamlInflator inflator)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Style24849());
-			var page = new Maui24849(useCompiledXaml);
+			var page = new Maui24849(inflator);
 
 			app.MainPage = page;
 

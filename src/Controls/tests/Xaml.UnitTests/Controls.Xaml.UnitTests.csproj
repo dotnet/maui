@@ -6,14 +6,23 @@
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
     <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618</NoWarn>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045;MAUID1000;MAUIX2005</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <DefineConstants>$(DefineConstants);MauiAllowImplicitXmlnsDeclaration</DefineConstants>
+    <ReportAnalyzer>true</ReportAnalyzer>
+    <!-- We can't yet disable the namescope generation, ConstraintTypeConverter and ReferenceTypeConverter need to be ported to sourcegen
+    <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
+    -->
+    
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>DEBUG</DefineConstants>
+    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +37,8 @@
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,8 +62,30 @@
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+  <ItemGroup>
+    <!-- by default, generate the code to test the 3 inflators -->
+    <MauiXaml Update="**\*.xaml" Inflator="Runtime;SourceGen;XamlC" />
+
+    <!-- unless an extension is specified -->
+    <MauiXaml Update="**\*.rt.xaml" Inflator="Runtime" />
+    <MauiXaml Update="**\*.sgen.xaml" Inflator="SourceGen" />
+    <MauiXaml Update="**\*.xc.xaml" Inflator="XamlC" />
+    <MauiXaml Update="**\*.rtsg.xaml" Inflator="Runtime;SourceGen" />
+    <MauiXaml Update="**\*.rtxc.xaml" Inflator="Runtime;XamlC" />
+    <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />    
+
+    <MauiXaml Update="FontSize.xaml" NoWarn="0612;0618" />
+    <MauiXaml Update="Issues\Bz55343.xaml" NoWarn="0612" />
+    <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />
+    <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
+    <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
+
+    <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
+  </ItemGroup>
 
 </Project>

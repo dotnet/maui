@@ -11,7 +11,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 	public static class MauiProgram
 	{
 #if ANDROID
-		public static Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
+		public static global::Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
 		public static Microsoft.UI.Xaml.Window CurrentWindow => MauiProgramDefaults.DefaultWindow;
 #endif

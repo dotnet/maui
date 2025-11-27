@@ -652,29 +652,17 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			base.Dispose();
 
-			if (_layer != null)
-			{
-				_layer.Dispose();
-				_layer = null;
-			}
+			_layer?.Dispose();
+			_layer = null;
 
-			if (_layerMask != null)
-			{
-				_layerMask.Dispose();
-				_layerMask = null;
-			}
+			_layerMask?.Dispose();
+			_layerMask = null;
 
-			if (_layerBounds != null)
-			{
-				_layerBounds.Dispose();
-				_layerBounds = null;
-			}
+			_layerBounds?.Dispose();
+			_layerBounds = null;
 
-			if (_layerClipBounds != null)
-			{
-				_layerClipBounds.Dispose();
-				_layerClipBounds = null;
-			}
+			_layerClipBounds?.Dispose();
+			_layerClipBounds = null;
 		}
 	}
 }

@@ -10,8 +10,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public abstract class BaseBuildTest
 	{
-		public const string DotNetCurrent = "net9.0";
-		public const string DotNetPrevious = "net8.0";
+		public const string DotNetCurrent = "net10.0";
+		public const string DotNetPrevious = "net9.0";
 
 		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
 		// different to the defaults in the SDKs such that the tests can test what would happen if the user puts
@@ -21,13 +21,13 @@ namespace Microsoft.Maui.IntegrationTests
 		// MauiVersionCurrent: this should be the current .NET version of MAUI, but the latest released build.
 		// For example, if this branch is for .NET 9, then this must be a 9.0.x number. If the latest MAUI release
 		// is 9.0.100, then this should preferrable be some older build to make sure things work, like 9.0.30.
-		public const string MauiVersionCurrent = "9.0.14";
+		public const string MauiVersionCurrent = "";
 		// MauiVersionPrevious: this should be the previous .NET version of MAUI.
 		// For example, if this branch is for .NET 9, then this must be a 8.0.x number, but should preferrably
 		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 		// as this would result in the tests not testing anything. If the .NET 9 version of MAUI pulls in 8.0.100
 		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
-		public const string MauiVersionPrevious = "8.0.93";
+		public const string MauiVersionPrevious = "9.0.82";
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
@@ -81,6 +81,8 @@ namespace Microsoft.Maui.IntegrationTests
 			$"DisableTransitiveFrameworkReferenceDownloads=true",
 			// Surface warnings as build errors
 			"TreatWarningsAsErrors=true",
+			// Detailed trimmer warnings, if present
+			"TrimmerSingleWarn=false",
 		};
 
 

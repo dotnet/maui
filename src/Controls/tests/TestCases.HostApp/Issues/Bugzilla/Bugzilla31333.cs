@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues;
@@ -118,7 +119,7 @@ public class Bugzilla31333 : TestContentPage
 	}
 
 
-	public class ExtendedCell<T> : ViewCell where T : View, IHaveControlFocusedProperty
+	public class ExtendedCell<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T> : ViewCell where T : View, IHaveControlFocusedProperty
 	{
 		public ExtendedCell(string automationId = null)
 		{

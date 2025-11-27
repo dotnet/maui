@@ -1,37 +1,24 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue1213 : TabbedPage
 {
-	public partial class Issue1213 : TabbedPage
+	public Issue1213() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Issue1213()
-		{
-			InitializeComponent();
-		}
+		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		public Issue1213(bool useCompiledXaml)
+		[Test]
+		public void MultiPageAsContentPropertyAttribute([Values] XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void MultiPageAsContentPropertyAttribute(bool useCompiledXaml)
-			{
-				var page = new Issue1213(useCompiledXaml);
-				Assert.AreEqual(2, page.Children.Count);
-			}
+			var page = new Issue1213(inflator);
+			Assert.AreEqual(2, page.Children.Count);
 		}
 	}
 }
