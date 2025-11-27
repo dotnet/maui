@@ -220,7 +220,7 @@ public class TabbedPageManager
 		}
 	}
 
-	// TODO: Remove this method for .NET 11
+	// TODO: Remove this method for .NET 11 - method was emptied to fix modal navigation tab removal bug
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
 	}
