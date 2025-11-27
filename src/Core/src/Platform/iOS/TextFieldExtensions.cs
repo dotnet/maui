@@ -208,8 +208,7 @@ namespace Microsoft.Maui.Platform
 
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					clearButton.TintColor = null;
 				}
 				else
 				{

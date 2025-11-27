@@ -231,7 +231,23 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				clearButtonDrawable?.ClearColorFilter();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
+				{
+					using var ta = theme.ObtainStyledAttributes([global::Android.Resource.Attribute.TextColorPrimary]);
+					var cs = ta.GetColorStateList(0);
+
+					if (cs is not null)
+					{
+						// Clear button is only visible when enabled, so just use the enabled state
+						int[] EnabledState = [global::Android.Resource.Attribute.StateEnabled];
+						var color = new global::Android.Graphics.Color(cs.GetColorForState(EnabledState, Colors.Black.ToPlatform()));
+						clearButtonDrawable?.SetColorFilter(color, FilterMode.SrcIn);
+					}
+				}
+				else
+				{
+					clearButtonDrawable?.ClearColorFilter();
+				}
 			}
 		}
 
