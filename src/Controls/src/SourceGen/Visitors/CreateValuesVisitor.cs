@@ -292,7 +292,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
 						node.SkipProperties.Add(prop.Key);
 				}
-				
+
 				// Also skip the content property when the value is specified as a collection item.
 				// This handles the content property syntax like:
 				//   <Setter Property="...">10,10,20,20</Setter>
@@ -310,7 +310,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 							node.SkipProperties.Add(contentPropertyXmlName);
 					}
 				}
-				
+
 				// Register placeholder - TryProvideValue will create the actual variable
 				// Use empty string as placeholder name since it will be replaced
 				variables[node] = new LocalVariable(type, string.Empty);
@@ -332,7 +332,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
-			
+
 			return;
 		}
 	}

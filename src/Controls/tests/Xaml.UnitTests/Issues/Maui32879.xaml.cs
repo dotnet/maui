@@ -22,10 +22,10 @@ public partial class Maui32879 : ContentPage
 			// .Value = "10,10,20,20";
 			// var setter90 = new global::Microsoft.Maui.Controls.Setter {...};
 			var page = new Maui32879(inflator);
-			
+
 			Assert.That(page, Is.Not.Null);
 			Assert.That(page.testImage, Is.Not.Null);
-			
+
 			// Verify the style was applied correctly
 			var bounds = AbsoluteLayout.GetLayoutBounds(page.testImage);
 			Assert.That(bounds, Is.EqualTo(new Rect(10, 10, 20, 20)));
