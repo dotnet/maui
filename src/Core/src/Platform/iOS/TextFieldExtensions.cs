@@ -17,8 +17,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle)
 		{
 			var textColor = textStyle.TextColor;
-			if (textColor != null)
+
+			if (textColor is not null)
+			{
 				textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
+			}
+			else
+			{
+				textField.TextColor = ColorExtensions.LabelColor;
+			}
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
