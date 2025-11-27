@@ -30,15 +30,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Wait for Alert 1 to appear - this is the critical test
 			// The alert should appear within a reasonable time (not 750ms+)
 			App.WaitForElement("OK", timeout: System.TimeSpan.FromSeconds(2));
-			App.Tap("OK");
+			App.TapDisplayAlertButton("OK");
 
 			// Wait for Alert 2
 			App.WaitForElement("OK", timeout: System.TimeSpan.FromSeconds(2));
-			App.Tap("OK");
+			App.TapDisplayAlertButton("OK");
 
 			// Wait for Alert 3
 			App.WaitForElement("OK", timeout: System.TimeSpan.FromSeconds(2));
-			App.Tap("OK");
+			App.TapDisplayAlertButton("OK");
 
 			// Verify all alerts were shown successfully
 			var statusText = App.FindElement("StatusLabel").GetText();
