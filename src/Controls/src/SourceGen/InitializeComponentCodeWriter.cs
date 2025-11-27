@@ -33,7 +33,7 @@ static class InitializeComponentCodeWriter
 				codeWriter.WriteLine($"#pragma warning disable {xamlItem.ProjectItem.NoWarn}");
 				codeWriter.WriteLine();
 			}
-			var root = xamlItem.Root!;
+			var root = GeneratorHelpers.ParseXaml(xamlItem.Xaml!, xmlnsCache)!;
 
 			string accessModifier = "public";
 			INamedTypeSymbol? rootType = null;
@@ -89,7 +89,7 @@ static class InitializeComponentCodeWriter
 			{
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
-				xamlItem.Root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
+				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 				using (newblock())
 				{

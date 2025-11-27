@@ -28,10 +28,10 @@ public class XamlGenerator : IIncrementalGenerator
 		// 	System.Diagnostics.Debugger.Launch();
 		// }
 #endif
-		// Only provide a new Compilation when the references change
+		// Only provide a new Compilation when the references or syntax trees change
 		var referenceCompilationProvider = initContext.CompilationProvider
-			.WithComparer(new CompilationReferencesComparer())
-			.WithTrackingName(TrackingNames.ReferenceCompilationProvider);
+			.WithComparer(new CompilationSignaturesComparer())
+			.WithTrackingName(TrackingNames.CompilationProvider);
 
 		var referenceTypeCacheProvider = referenceCompilationProvider
 			.Select(GetTypeCache)
@@ -63,13 +63,13 @@ public class XamlGenerator : IIncrementalGenerator
 			.WithTrackingName(TrackingNames.CssProjectItemProvider);
 
 		var xamlSourceProviderForCB = xamlProjectItemProviderForCB
-			.Combine(xmlnsDefinitionsProvider, referenceTypeCacheProvider, referenceCompilationProvider)
+			.Combine(xmlnsDefinitionsProvider, referenceTypeCacheProvider, initContext.CompilationProvider)
 			.Select(GetSource)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForCB);
 
 		var compilationWithCodeBehindProvider = xamlSourceProviderForCB
 			.Collect()
-			.Combine(referenceCompilationProvider)
+			.Combine(initContext.CompilationProvider)
 			.Select(static (t, ct) =>
 			{
 				var compilation = t.Right;
@@ -515,7 +515,7 @@ internal static class AppThemeBindingHelpers
 		var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
 		if (itemName == null)
 			return false;
-		if (xamlItem.Root == null)
+		if (xamlItem.Xaml == null)
 			return false;
 		return true;
 	}
