@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue32359"
              Title="Issue 32359">
     
@@ -24,13 +25,13 @@
                    VerticalOptions="Center"/>
         </HorizontalStackLayout>
         
-        <CollectionView x:Name="TestCollectionView" 
+        <local:CollectionView2 x:Name="TestCollectionView" 
                         Grid.Row="2"
                         AutomationId="TestCollectionView">
-            <CollectionView.ItemsLayout>
+            <local:CollectionView2.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical" Span="4"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
+            </local:CollectionView2.ItemsLayout>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
                     <Grid BackgroundColor="LightBlue" 
                           Margin="2" 
@@ -43,8 +44,8 @@
                                TextColor="Black"/>
                     </Grid>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
     </Grid>
     
 </ContentPage>
