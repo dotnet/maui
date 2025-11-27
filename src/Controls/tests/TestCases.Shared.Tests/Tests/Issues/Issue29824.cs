@@ -19,7 +19,7 @@ public class Issue29824 : _IssuesUITest
 	{
 		App.WaitForElement("HomePageButton");
 		App.Tap("HomePageButton");
-		App.Click("Settings");
+		App.Tap("Settings");
 		App.Tap("Home");
 		VerifyScreenshot();
 	}
@@ -30,11 +30,9 @@ public class Issue29824 : _IssuesUITest
 	{
 		App.WaitForElement("Settings");
 		App.Tap("Settings");
-		App.Tap("SettingsPageButton");
-		App.Tap("Home");
+		GoToHomeTab();
 		App.Back();
-		App.WaitForElement("HomePageButton");
-		App.Click("Settings");
+		GoToSettingTab();
 		VerifyScreenshot();
 	}
 
@@ -42,16 +40,23 @@ public class Issue29824 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellAppearanceUpdatesWhenChangingBetweenTabs()
 	{
-		App.WaitForElement("SettingsPageLabel");
-		App.Back();
 		App.WaitForElement("SettingsPageButton");
-		App.Click("Home");
-		App.WaitForElement("HomePageLabel");
-		App.Back();
-		App.WaitForElement("HomePageButton");
-		App.Tap("Settings");
+		App.Tap("SettingsPageButton");
+		App.Tap("Home");
+		GoToSettingTab();
 		App.Tap("Home");
 		VerifyScreenshot();
 	}
 
+	void GoToSettingTab()
+	{
+		App.WaitForElement("HomePageButton");
+		App.Tap("Settings");
+	}
+
+	void GoToHomeTab()
+	{
+		App.WaitForElement("SettingsPageButton");
+		App.Tap("Home");
+	}
 }
