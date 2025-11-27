@@ -10,6 +10,9 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	// Note: Map tests are iOS/MacCatalyst only because Android requires an API key
+	// to instantiate the MapView, which is not available in the test environment.
+#if IOS || MACCATALYST
 	[Category(TestCategory.Map)]
 	public partial class MapTests : ControlsHandlerTestBase
 	{
@@ -234,4 +237,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(polygon2.MapElementId);
 		}
 	}
+#endif
 }
