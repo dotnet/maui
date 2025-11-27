@@ -61,11 +61,11 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
-		var rect =App.WaitForElement("MapView").GetRect();
+		var value = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
-		Thread.Sleep(2000); 
+		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
@@ -93,11 +93,11 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
-		var rect =App.WaitForElement("MapView").GetRect();
+		var value = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
 		App.DragCoordinates(rect.CenterX() - 100, rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
-		Thread.Sleep(2000); 
+		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
@@ -122,11 +122,11 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
-		var rect =App.WaitForElement("MapView").GetRect();
+		var value = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
-		Thread.Sleep(2000); 
+		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
@@ -154,11 +154,11 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
-		var rect =App.WaitForElement("MapView").GetRect();
+		var value = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
-		Thread.Sleep(2000); 
+		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
@@ -180,11 +180,11 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
-		var rect =App.WaitForElement("MapView").GetRect();
+		var value = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
 		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
-		Thread.Sleep(2000); 
+		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
 
@@ -236,12 +236,131 @@ public class MapFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		var value =  App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
-		var rect =App.WaitForElement("MapView").GetRect();
+		var value = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
 		App.DragCoordinates(rect.CenterX() - 100, rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
 
 		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
+	}
+
+	[Test]
+	public void Map_IsZoomDisabled_PreventZoom()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		// Ensure zoom is disabled (default state)
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		var initialValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
+		// Try to zoom (should not work when disabled)
+		var rect = App.WaitForElement("MapView").GetRect();
+		App.PinchToZoomIn("MapView");
+
+		Thread.Sleep(1000);
+
+		// Verify zoom level hasn't changed significantly
+		var finalValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		Assert.That(finalValue, Is.EqualTo(initialValue));
+	}
+
+	[Test]
+	public void Map_IsScrollDisabled_PreventScroll()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		// Leave scroll disabled (default state)
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		var initialValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		var rect = App.WaitForElement("MapView").GetRect();
+
+		// Try to scroll (should not work when disabled)
+		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 100);
+
+		Thread.Sleep(2000);
+
+		// Verify region hasn't changed
+		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.EqualTo(initialValue));
+	}
+
+	[Test]
+	public void Map_ZoomIn_ChangesVisibleRegion()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		var initialValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("IsZoomEnabledCheckBox");
+		App.Tap("IsZoomEnabledCheckBox");
+
+		// Zoom in
+		App.WaitForElement("ZoomInButton");
+		App.Tap("ZoomInButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		Thread.Sleep(1000);
+
+		// Verify region changed after zoom in (latitude degrees should be smaller)
+		var finalValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		Assert.That(finalValue, Is.Not.EqualTo(initialValue));
+	}
+
+	[Test]
+	public void Map_ZoomOut_ChangesVisibleRegion()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ResetToInitialButton");
+		App.Tap("ResetToInitialButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		var initialValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("IsZoomEnabledCheckBox");
+		App.Tap("IsZoomEnabledCheckBox");
+
+		// Zoom out
+		App.WaitForElement("ZoomOutButton");
+		App.Tap("ZoomOutButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		Thread.Sleep(1000);
+
+		// Verify region changed after zoom out (latitude degrees should be larger)
+		var finalValue = App.WaitForElement("VisibleRegionLatitudeDegrees").GetText();
+		Assert.That(finalValue, Is.Not.EqualTo(initialValue));
 	}
 }
 #endif
