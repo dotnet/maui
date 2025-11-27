@@ -162,9 +162,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ListNode node2)
 			{
-				//				IL_000d:  ldloc.2 
+				//				IL_000d:  ldloc.2
 				//				IL_000e:  callvirt instance class [mscorlib]System.Collections.Generic.IList`1<!0> class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Layout`1<class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.View>::get_Children()
-				//				IL_0013:  ldloc.0 
+				//				IL_0013:  ldloc.0
 				//				IL_0014:  callvirt instance void class [mscorlib]System.Collections.Generic.ICollection`1<class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.View>::Add(!0)
 
 				var parentList = node2;
@@ -898,7 +898,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
 						var indexTypeDef = indexType.ResolveCached(context.Cache);
-						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) 
+						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String)
 							&& !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)
 							&& indexTypeDef?.IsEnum != true)
 							throw new BuildException(BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);
@@ -1012,19 +1012,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//				.method private static hidebysig default valuetype[mscorlib] System.ValueTuple`2<string, bool> '<Main>m__0' (class ViewModel A_0)  cil managed
 			//				{
 			//					.custom instance void class [mscorlib] System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
-			//					IL_0000:  ldarg.0 
+			//					IL_0000:  ldarg.0
 			//					IL_0001:  dup
 			//					IL_0002:  ldnull
 			//					IL_0003:  ceq
 			//					IL_0005:  brfalse IL_0013
 			//					IL_000a:  pop
 			//					IL_000b:  ldnull
-			//					IL_000c:  ldc.i4.0 
+			//					IL_000c:  ldc.i4.0
 			//					IL_000d:  newobj instance void valuetype[mscorlib]System.ValueTuple`2<string, bool>::'.ctor'(!0, !1)
 			//					IL_0012:  ret
 			//					IL_0013:  nop
 			//					IL_0014:  call instance string class ViewModel::get_Text()
-			//					IL_0019:  ldc.i4.1 
+			//					IL_0019:  ldc.i4.1
 			//					IL_001a:  newobj instance void valuetype[mscorlib]System.ValueTuple`2<string, bool>::'.ctor'(!0, !1)
 			//					IL_001f:  ret
 			//				}
@@ -1113,9 +1113,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//			{
 			//				.custom instance void class [mscorlib]System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
 			//
-			//				IL_0000:  ldarg.0 
+			//				IL_0000:  ldarg.0
 			//				IL_0001:  callvirt instance class ViewModel class ViewModel::get_Model()
-			//				IL_0006:  ldarg.1 
+			//				IL_0006:  ldarg.1
 			//				IL_0007:  callvirt instance void class ViewModel::set_Text(string)
 			//				IL_000c:  ret
 			//			}
@@ -1230,13 +1230,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			//			.method private static hidebysig default object '<Main>m__2'(class ViewModel vm)  cil managed {
 			//				.custom instance void class [mscorlib] System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
-			//				IL_0000:  ldarg.0 
+			//				IL_0000:  ldarg.0
 			//				IL_0001:  ret
 			//			} // end of method Test::<Main>m__2
 
 			//			.method private static hidebysig default object '<Main>m__3' (class ViewModel vm)  cil managed {
 			//				.custom instance void class [mscorlib] System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
-			//				IL_0000:  ldarg.0 
+			//				IL_0000:  ldarg.0
 			//				IL_0001:  callvirt instance class ViewModel class ViewModel::get_Model()
 			//				IL_0006:  ret
 			//			}
@@ -1301,26 +1301,26 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var tupleCtor = module.ImportReference(tupleRef.ResolveCached(context.Cache).GetConstructors().First());
 			tupleCtor = tupleCtor.MakeGeneric(tupleRef, new[] { funcObjRef, module.TypeSystem.String });
 
-			//			IL_003a:  ldc.i4.2 
+			//			IL_003a:  ldc.i4.2
 			//			IL_003b:  newarr class [mscorlib] System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel,object>,string>
 
 			//			IL_0040:  dup
-			//			IL_0041:  ldc.i4.0 
+			//			IL_0041:  ldc.i4.0
 			//			IL_0049:  ldnull
 			//			IL_004a:  ldftn object class Test::'<Main>m__2'(class ViewModel)
 			//			IL_0050:  newobj instance void class [mscorlib]System.Func`2<class ViewModel, object>::'.ctor'(object, native int)
 			//			IL_005f:  ldstr "Model"
 			//			IL_0064:  newobj instance void class [mscorlib]System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel, object>, string>::'.ctor'(!0, !1)
-			//			IL_0069:  stelem.ref 
+			//			IL_0069:  stelem.ref
 
 			//			IL_006a:  dup
-			//			IL_006b:  ldc.i4.1 
+			//			IL_006b:  ldc.i4.1
 			//			IL_0073:  ldnull
 			//			IL_0074:  ldftn object class Test::'<Main>m__3'(class ViewModel)
 			//			IL_007a:  newobj instance void class [mscorlib]System.Func`2<class ViewModel, object>::'.ctor'(object, native int)
 			//			IL_0089:  ldstr "Text"
 			//			IL_008e:  newobj instance void class [mscorlib]System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel, object>, string>::'.ctor'(!0, !1)
-			//			IL_0093:  stelem.ref 
+			//			IL_0093:  stelem.ref
 
 			var handlers = new List<(MethodDefinition PartGetter, string PropertyName)>();
 			for (int i = 0; i < properties.Count; i++)
@@ -1381,6 +1381,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanSet(parent, localName, valueNode, context))
 				return Set(parent, localName, valueNode, iXmlLineInfo, context);
 
+			//If it's a C# 14 extension property, set it
+			if (CanSetExtensionProperty(parent, localName, valueNode, context))
+				return SetExtensionProperty(parent, localName, valueNode, iXmlLineInfo, context);
+
 			//If it's an already initialized property, add to it
 			if (CanAdd(parent, propertyName, valueNode, iXmlLineInfo, context))
 				return Add(parent, propertyName, valueNode, iXmlLineInfo, context);
@@ -1401,6 +1405,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//If it's a property, get it
 			if (CanGet(parent, localName, context, out _))
 				return Get(parent, localName, lineInfo, context, out propertyType);
+
+			//If it's a C# 14 extension property, get it
+			if (CanGetExtensionProperty(parent, localName, context, out _))
+				return GetExtensionProperty(parent, localName, lineInfo, context, out propertyType);
 
 			throw new BuildException(PropertyResolution, lineInfo, null, localName, parent.VariableType.FullName);
 		}
@@ -1442,8 +1450,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var adder = module.ImportReference(eventinfo.AddMethod);
 			adder = adder.ResolveGenericParameters(eventDeclaringTypeRef, module);
 
-			//			IL_0007:  ldloc.0 
-			//			IL_0008:  ldarg.0 
+			//			IL_0007:  ldloc.0
+			//			IL_0008:  ldarg.0
 			//
 			//			IL_0009:  ldftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 			//OR, if the handler is virtual (non-static)
@@ -1672,7 +1680,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var module = context.Body.Method.Module;
 			var bindableObjectType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject");
 
-			//			IL_0007:  ldloc.0 
+			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldsfld class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.BindableProperty [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Label::TextProperty
 			//			IL_000d:  ldstr "foo"
 			//			IL_0012:  callvirt instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.BindableObject::SetValue(class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.BindableProperty, object)
@@ -1880,6 +1888,190 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Create(Ldloc, parent),
 					Create(Callvirt, propertyGetterRef),
 				];
+		}
+
+		/// <summary>
+		/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
+		/// Extension properties are compiled as static get_X/set_X methods in extension container types
+		/// that have nested types marked with ExtensionAttribute.
+		/// </summary>
+		static (MethodDefinition Getter, MethodDefinition Setter, TypeReference DeclaringType) FindExtensionPropertyMethods(
+			TypeReference targetType, string propertyName, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+			var cache = context.Cache;
+			var getterName = $"get_{propertyName}";
+			var setterName = $"set_{propertyName}";
+			var extensionAttributeFullName = "System.Runtime.CompilerServices.ExtensionAttribute";
+
+			// Get all assemblies to search
+			var assembliesToSearch = new List<AssemblyDefinition>();
+
+			// Add the current module's assembly
+			assembliesToSearch.Add(module.Assembly);
+
+			// Add all referenced assemblies
+			foreach (var asmRef in module.AssemblyReferences)
+			{
+				try
+				{
+					var asm = module.AssemblyResolver.Resolve(asmRef);
+					if (asm != null)
+						assembliesToSearch.Add(asm);
+				}
+				catch
+				{
+					// Skip assemblies that can't be resolved
+				}
+			}
+
+			foreach (var assembly in assembliesToSearch)
+			{
+				foreach (var asmModule in assembly.Modules)
+				{
+					foreach (var type in asmModule.Types)
+					{
+						// Extension containers must be static classes (abstract and sealed) with ExtensionAttribute
+						if (!type.IsAbstract || !type.IsSealed)
+							continue;
+
+						if (!type.CustomAttributes.Any(ca => ca.AttributeType.FullName == extensionAttributeFullName))
+							continue;
+
+						// Check if this container has nested types with ExtensionAttribute (C# 14 extension blocks)
+						var hasExtensionNestedTypes = type.NestedTypes.Any(nt =>
+							nt.CustomAttributes.Any(ca => ca.AttributeType.FullName == extensionAttributeFullName));
+
+						if (!hasExtensionNestedTypes)
+							continue;
+
+						// Look for get_PropertyName and set_PropertyName static methods
+						MethodDefinition getter = null;
+						MethodDefinition setter = null;
+
+						foreach (var method in type.Methods)
+						{
+							if (!method.IsStatic || !method.IsPublic)
+								continue;
+
+							if (method.Name == getterName && method.Parameters.Count == 1)
+							{
+								var paramType = method.Parameters[0].ParameterType;
+								if (IsAssignableFrom(paramType, targetType, cache))
+								{
+									getter = method;
+								}
+							}
+							else if (method.Name == setterName && method.Parameters.Count == 2)
+							{
+								var paramType = method.Parameters[0].ParameterType;
+								if (IsAssignableFrom(paramType, targetType, cache))
+								{
+									setter = method;
+								}
+							}
+						}
+
+						if (getter != null || setter != null)
+						{
+							return (getter, setter, module.ImportReference(type));
+						}
+					}
+				}
+			}
+
+			return (null, null, null);
+		}
+
+		static bool IsAssignableFrom(TypeReference baseType, TypeReference derivedType, XamlCache cache)
+		{
+			if (baseType.FullName == derivedType.FullName)
+				return true;
+
+			return derivedType.InheritsFromOrImplements(cache, baseType);
+		}
+
+		static bool CanSetExtensionProperty(VariableDefinition parent, string localName, INode node, ILContext context)
+		{
+			var (getter, setter, _) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+			if (setter == null)
+				return false;
+
+			// Get the property type from the getter's return type or setter's second parameter
+			var propertyType = getter?.ReturnType ?? setter.Parameters[1].ParameterType;
+			var module = context.Body.Method.Module;
+
+			if (node is ValueNode valueNode && valueNode.CanConvertValue(context, propertyType, [propertyType.ResolveCached(context.Cache)]))
+				return true;
+
+			if (node is not ElementNode elementNode)
+				return false;
+
+			var vardef = context.Variables[elementNode];
+			var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(context.Cache, propertyType, module);
+
+			if (vardef.VariableType.InheritsFromOrImplements(context.Cache, propertyType))
+				return true;
+			if (implicitOperator != null)
+				return true;
+			if (propertyType.FullName == "System.Object")
+				return true;
+
+			return false;
+		}
+
+		static bool CanGetExtensionProperty(VariableDefinition parent, string localName, ILContext context, out TypeReference propertyType)
+		{
+			propertyType = null;
+			var (getter, _, _) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+			if (getter == null)
+				return false;
+
+			propertyType = context.Body.Method.Module.ImportReference(getter.ReturnType);
+			return true;
+		}
+
+		static IEnumerable<Instruction> SetExtensionProperty(VariableDefinition parent, string localName, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+			var (getter, setter, declaringType) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+
+			// Get the property type from the getter's return type or setter's second parameter
+			var propertyType = module.ImportReference(getter?.ReturnType ?? setter.Parameters[1].ParameterType);
+
+			var setterRef = module.ImportReference(setter);
+
+			// For static extension method: call ExtensionClass.set_PropertyName(target, value)
+			// Load the target object
+			yield return Create(Ldloc, parent);
+
+			if (node is ValueNode valueNode)
+			{
+				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, [propertyType.ResolveCached(context.Cache)], (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, propertyRef: null), false, true))
+					yield return instruction;
+				yield return Create(Call, setterRef);
+			}
+			else if (node is ElementNode elementNode)
+			{
+				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, propertyType, module))
+					yield return instruction;
+				yield return Create(Call, setterRef);
+			}
+		}
+
+		static IEnumerable<Instruction> GetExtensionProperty(VariableDefinition parent, string localName, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
+		{
+			var module = context.Body.Method.Module;
+			var (getter, _, declaringType) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+
+			var getterRef = module.ImportReference(getter);
+			propertyType = module.ImportReference(getter.ReturnType);
+
+			// For static extension method: call ExtensionClass.get_PropertyName(target)
+			return [
+				Create(Ldloc, parent),
+				Create(Call, getterRef),
+			];
 		}
 
 		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)
