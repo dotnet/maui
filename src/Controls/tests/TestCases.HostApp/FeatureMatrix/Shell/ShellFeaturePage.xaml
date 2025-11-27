@@ -12,5 +12,10 @@
                         HorizontalOptions="Center"
                         AutomationId="ShellFlyoutButton"
                         WidthRequest="400"/>
+                <Button Text="Shell Tabbed"
+                        Clicked="OnShellTabbedButtonClicked"
+                        HorizontalOptions="Center"
+                        AutomationId="ShellTabbedButton"
+                        WidthRequest="400"/>
         </VerticalStackLayout>
 </ContentPage>
