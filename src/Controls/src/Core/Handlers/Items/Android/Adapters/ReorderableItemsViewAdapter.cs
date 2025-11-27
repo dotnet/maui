@@ -10,12 +10,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsView : ReorderableItemsView
 		where TItemsViewSource : IGroupableItemsViewSource
 	{
-		private readonly bool _hasHeader;
-
 		public ReorderableItemsViewAdapter(TItemsView reorderableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(reorderableItemsView, createView)
 		{
-			_hasHeader = reorderableItemsView.Header is not null;
 		}
 
 		public bool OnItemMove(int fromPosition, int toPosition)
@@ -66,8 +63,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (itemsView.ItemsSource is IList list)
 			{
-				var fromPositionInSource = _hasHeader ? fromPosition - 1 : fromPosition;
-				var toPositionInSource = _hasHeader ? toPosition - 1 : toPosition;
+				var hasHeader = itemsSource.HasHeader;
+				var fromPositionInSource = hasHeader ? fromPosition - 1 : fromPosition;
+				var toPositionInSource = hasHeader ? toPosition - 1 : toPosition;
 
 				var fromItem = list[fromPositionInSource];
 				SetObserveChanges(itemsSource, false);
