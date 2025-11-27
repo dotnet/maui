@@ -37,7 +37,6 @@ public class Issue32886 : _IssuesUITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("ThemeButton");
-		App.Tap("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 }
