@@ -92,6 +92,7 @@ static class NodeSGExtensions
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
 		=> context.knownSGEarlyMarkupExtensions ??= new(SymbolEqualityComparer.Default)
 	{
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.NullExtension")!, KnownMarkups.ProvideValueForNullExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
