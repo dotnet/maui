@@ -17,7 +17,7 @@ public class Issue17823 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void ReorderLastItemWithHeaderPlacesItemAtStart()
 	{
-		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("ReorderStatusLabel", "Item 1, Item 2, Item 3, Item 4", TimeSpan.FromSeconds(3)));
+		Assert.That(App.WaitForTextToBePresentInElement("ReorderStatusLabel", "Item 1, Item 2, Item 3, Item 4", TimeSpan.FromSeconds(3)), Is.True);
 
 		App.WaitForElement("HeaderLabel");
 		App.WaitForElement("ReorderItem3");
@@ -25,6 +25,6 @@ public class Issue17823 : _IssuesUITest
 
 		App.DragAndDrop("ReorderItem3", "ReorderItem0");
 
-		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("ReorderStatusLabel", "Item 4, Item 1, Item 2, Item 3", TimeSpan.FromSeconds(5)));
+		Assert.That(App.WaitForTextToBePresentInElement("ReorderStatusLabel", "Item 4, Item 1, Item 2, Item 3", TimeSpan.FromSeconds(5)), Is.True);
 	}
 }
