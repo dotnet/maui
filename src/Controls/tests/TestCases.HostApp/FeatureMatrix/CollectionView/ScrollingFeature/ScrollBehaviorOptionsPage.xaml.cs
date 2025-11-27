@@ -102,13 +102,32 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 			_viewModel.ScrollToPosition = ScrollToPosition.End;
 	}
 
+	private void ScrollToIndexItemChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton radioButton) || !e.Value)
+			return;
+		if (radioButton == ScrollToByIndex)
+		{
+			_viewModel.ScrollToByIndexOrItem = "Index";
+		}
+		else if (radioButton == ScrollToByItem)
+		{
+			_viewModel.ScrollToByIndexOrItem = "Item";
+		}
+	}
+
 	private void ScrollToIndexEntry_TextChanged(object sender, TextChangedEventArgs e)
-    {
+	{
 		if (int.TryParse(ScrollToIndexEntry.Text, out int index))
 		{
 			_viewModel.ScrollToIndex = index;
 		}
-    }
+	}
+
+	private void ScrollToItemEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		_viewModel.ScrollToItem = ScrollToItemEntry.Text;
+	}
 
 	private void OnCanReorderItemsChanged(object sender, CheckedChangedEventArgs e)
 	{
