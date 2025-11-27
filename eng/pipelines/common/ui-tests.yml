@@ -45,14 +45,48 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
+  - stage: determine_categories
+    displayName: Determine UI Test Categories
+    dependsOn: []
+    jobs:
+      - job: select_categories
+        displayName: Select UI test categories via Copilot
+        pool: ${{ parameters.androidLinuxPool }}
+        timeoutInMinutes: 20
+        steps:
+          - task: UseNode@1
+            displayName: Install Node.js 22.x
+            inputs:
+              version: '22.x'
+
+          - script: |
+              npm install -g @github/copilot
+            displayName: Install GitHub Copilot CLI
+
+          - bash: |
+              set -euo pipefail
+              chmod +x ./eng/scripts/select-ui-test-categories.sh
+              ./eng/scripts/select-ui-test-categories.sh
+            env:
+              DEFAULT_CATEGORY_GROUPS: "${{ join(',', parameters.categoryGroupsToTest) }}"
+              GH_TOKEN: $(GitHubCopilotToken)
+              GITHUB_TOKEN: $(GitHubCopilotToken)
+              BUILD_REASON: $(Build.Reason)
+              SYSTEM_PULLREQUEST_TARGETBRANCH: $(System.PullRequest.TargetBranch)
+              SYSTEM_PULLREQUEST_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+              BUILD_ARTIFACTSTAGINGDIRECTORY: $(Build.ArtifactStagingDirectory)
+            name: selectCategories
+
   - stage: build_ui_tests
     displayName: Build UITests Sample App
-    dependsOn: []
+    dependsOn: determine_categories
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
         pool: ${{ parameters.androidPool }}
         variables:
+          SELECTED_CATEGORY_GROUPS: $[ stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'] ]
+          CATEGORY_SELECTION_REASON: $[ stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectionReason'] ]
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
@@ -63,7 +97,7 @@ stages:
 
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
-    dependsOn: []
+    dependsOn: determine_categories
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -81,7 +115,7 @@ stages:
   - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
-      dependsOn: []
+      dependsOn: determine_categories
       jobs:
         - job: build_ui_tests
           displayName: Build Sample App
@@ -98,7 +132,7 @@ stages:
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
-    dependsOn: []
+    dependsOn: determine_categories
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
@@ -130,6 +164,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidLinuxPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], variables['CATEGORYGROUP'])))
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -174,6 +209,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidLinuxPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], variables['CATEGORYGROUP'])))
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -220,6 +256,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], variables['CATEGORYGROUP'])))
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -263,6 +300,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'CollectionView')))
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -307,6 +345,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'CarouselView')))
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -357,6 +396,7 @@ stages:
                     clean: all
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                   pool: ${{ parameters.iosPool }}
+                  condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], variables['CATEGORYGROUP'])))
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -397,6 +437,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.windowsPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], variables['CATEGORYGROUP'])))
                 variables:
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
                 steps:
@@ -434,6 +475,7 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.macosPool }}
+                condition: and(succeeded(), or(eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], ''), eq(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], 'ALL'), contains(stageDependencies.determine_categories.select_categories.outputs['selectCategories.SelectedCategoryGroups'], variables['CATEGORYGROUP'])))
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
