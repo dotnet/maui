@@ -28,7 +28,7 @@ public class Issue32886 : _IssuesUITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshot("LightTheme", cropBottom: CropBottomValue);
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(2)]
@@ -38,6 +38,6 @@ public class Issue32886 : _IssuesUITest
 		App.WaitForElement("TestEntry");
 		App.Tap("ThemeButton");
 		App.Tap("TestEntry");
-		VerifyScreenshot("DarkTheme", cropBottom: CropBottomValue);
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 }
