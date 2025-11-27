@@ -78,23 +78,24 @@ jobs:
             echo "No selection artifact generated." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-            python - <<'PY'
-            import json
-            import os
+                python - <<'PY'
+                if True:
+                  import json
+                  import os
 
-            path = os.environ['SUMMARY_PATH']
-            with open(path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                  path = os.environ['SUMMARY_PATH']
+                  with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
 
-            print('### Selected UI test categories')
-            print()
-            categories = data.get('categories') or ['ALL']
-            print(f"- Categories: {', '.join(categories)}")
-            print(f"- Confidence: {data.get('confidence', 'low')}")
-            print(f"- Fallback: {data.get('fallback', False)}")
-            reason = data.get('reasoning', '')
-            if reason:
-                print(f"- Reasoning: {reason}")
-            PY
+                  print('### Selected UI test categories')
+                  print()
+                  categories = data.get('categories') or ['ALL']
+                  print(f"- Categories: {', '.join(categories)}")
+                  print(f"- Confidence: {data.get('confidence', 'low')}")
+                  print(f"- Fallback: {data.get('fallback', False)}")
+                  reason = data.get('reasoning', '')
+                  if reason:
+                    print(f"- Reasoning: {reason}")
+                PY
         env:
           SUMMARY_PATH: artifacts/copilot/selected-categories.json
