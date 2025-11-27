@@ -50,6 +50,35 @@ fallback_all() {
   exit 0
 }
 
+CI_PROVIDER=""
+PR_BASE_SHA_OVERRIDE=""
+PR_HEAD_SHA_OVERRIDE=""
+CATEGORIES_JSON=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --ci-provider)
+      CI_PROVIDER="$2"
+      shift 2
+      ;;
+    --pr-base-sha)
+      PR_BASE_SHA_OVERRIDE="$2"
+      shift 2
+      ;;
+    --pr-head-sha)
+      PR_HEAD_SHA_OVERRIDE="$2"
+      shift 2
+      ;;
+    --use-categories-json)
+      CATEGORIES_JSON="$2"
+      shift 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
 DEFAULT_CATEGORIES=${DEFAULT_CATEGORY_GROUPS:-""}
 if [[ -z "$DEFAULT_CATEGORIES" ]]; then
   DEFAULT_CATEGORIES="ALL"
@@ -58,9 +87,70 @@ fi
 log "Default category groups: $DEFAULT_CATEGORIES"
 BUILD_REASON_UPPER=$(echo "${BUILD_REASON:-}" | tr '[:lower:]' '[:upper:]')
 
+if [[ -n "$CATEGORIES_JSON" ]]; then
+  if [[ ! -f "$CATEGORIES_JSON" ]]; then
+    fallback_all "Categories file $CATEGORIES_JSON not found"
+  fi
+
+  mapfile -t _parsed < <(CATEGORIES_JSON_PATH="$CATEGORIES_JSON" python - <<'PY'
+import json
+import os
+import sys
+
+path = os.environ['CATEGORIES_JSON_PATH']
+with open(path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+cats = data.get('categories') or []
+if not cats:
+    cats = ['ALL']
+    data['reasoning'] = data.get('reasoning') or 'Categories JSON missing categories'
+    data['confidence'] = data.get('confidence') or 'low'
+    data['fallback'] = True
+
+print(json.dumps(cats))
+print(data.get('reasoning', ''))
+print(data.get('confidence', 'low'))
+print('true' if data.get('fallback', False) else 'false')
+PY
+  )
+
+  if [[ ${#_parsed[@]} -lt 4 ]]; then
+    fallback_all "Categories JSON parse failure"
+  fi
+
+  export COPILOT_CATEGORIES_JSON="${_parsed[0]}"
+  export COPILOT_REASON="${_parsed[1]}"
+  confidence_value="${_parsed[2]}"
+  fallback_value="${_parsed[3]}"
+
+  emit_variables "$COPILOT_CATEGORIES_JSON" "$COPILOT_REASON" "$confidence_value" "$fallback_value"
+  exit 0
+fi
+
 # Determine changed files for PR builds
 changed_files=""
-if [[ "$BUILD_REASON_UPPER" == "PULLREQUEST" || -n "${SYSTEM_PULLREQUEST_PULLREQUESTID:-}" ]]; then
+
+if [[ "${CI_PROVIDER,,}" == "github-actions" || "${GITHUB_ACTIONS:-}" == "true" ]]; then
+  PR_BASE_SHA=${PR_BASE_SHA_OVERRIDE:-${PR_BASE_SHA:-${GITHUB_EVENT_PULL_REQUEST_BASE_SHA:-${GITHUB_BASE_SHA:-}}}}
+  PR_HEAD_SHA=${PR_HEAD_SHA_OVERRIDE:-${PR_HEAD_SHA:-${GITHUB_EVENT_PULL_REQUEST_HEAD_SHA:-${GITHUB_HEAD_SHA:-HEAD}}}}
+  PR_BASE_REF=${GITHUB_BASE_REF:-}
+
+  if [[ -n "$PR_BASE_SHA" && -n "$PR_HEAD_SHA" ]]; then
+    if ! git rev-parse "$PR_BASE_SHA" >/dev/null 2>&1; then
+      if [[ -n "$PR_BASE_REF" ]]; then
+        git fetch --depth=0 origin "$PR_BASE_REF" >/dev/null 2>&1 || git fetch origin "$PR_BASE_REF" || true
+      fi
+    fi
+    changed_files=$(git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" 2>/dev/null || true)
+  fi
+
+  if [[ -z "$changed_files" && -n "$PR_BASE_REF" ]]; then
+    git fetch --depth=0 origin "$PR_BASE_REF" >/dev/null 2>&1 || git fetch origin "$PR_BASE_REF" || true
+    changed_files=$(git diff --name-only "origin/${PR_BASE_REF#refs/heads/}" HEAD 2>/dev/null || true)
+  fi
+
+elif [[ "$BUILD_REASON_UPPER" == "PULLREQUEST" || -n "${SYSTEM_PULLREQUEST_PULLREQUESTID:-}" ]]; then
   BASE_REF=${SYSTEM_PULLREQUEST_TARGETBRANCH:-}
   if [[ -z "$BASE_REF" ]]; then
     fallback_all "Missing System.PullRequest.TargetBranch"

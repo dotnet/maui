@@ -54,27 +54,98 @@ stages:
         pool: ${{ parameters.androidLinuxPool }}
         timeoutInMinutes: 20
         steps:
-          - task: UseNode@1
-            displayName: Install Node.js 22.x
-            inputs:
-              version: '22.x'
+          - checkout: self
+            clean: true
 
-          - script: |
-              npm install -g @github/copilot
-            displayName: Install GitHub Copilot CLI
+          - bash: |
+              set -euo pipefail
+
+              if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+                echo "No GitHub token provided; skipping artifact download."
+                exit 0
+              fi
+
+              python - <<'PY'
+import io
+import json
+import os
+import sys
+import urllib.request
+import zipfile
+from pathlib import Path
+
+token = os.environ.get('GITHUB_TOKEN')
+head_sha = os.environ.get('BUILD_SOURCEVERSION')
+owner = os.environ.get('GITHUB_OWNER', 'dotnet')
+repo = os.environ.get('GITHUB_REPO', 'maui')
+output_dir = Path(os.environ['ARTIFACT_OUTPUT'])
+output_dir.mkdir(parents=True, exist_ok=True)
+
+if not token or not head_sha:
+    sys.exit(0)
+
+headers = {
+    'Authorization': f'Bearer {token}',
+    'Accept': 'application/vnd.github+json',
+}
+
+def gh_get(url: str):
+    request = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(request) as response:
+        return json.load(response)
+
+base_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs"
+query = f"?event=pull_request&head_sha={head_sha}&per_page=20"
+
+try:
+    runs_payload = gh_get(base_url + query)
+except Exception:
+    sys.exit(0)
+
+runs = runs_payload.get('workflow_runs', [])
+run_id = None
+for run in runs:
+    if run.get('name') == 'UI Test Category Selection' and run.get('status') == 'completed':
+        run_id = run.get('id')
+        break
+
+if not run_id:
+    sys.exit(0)
+
+artifacts_payload = gh_get(f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/artifacts")
+artifacts = artifacts_payload.get('artifacts', [])
+
+artifact = next((item for item in artifacts if item.get('name') == 'ui-test-categories'), None)
+if not artifact:
+    sys.exit(0)
+
+download_url = artifact.get('archive_download_url')
+if not download_url:
+    sys.exit(0)
+
+request = urllib.request.Request(download_url, headers=headers)
+with urllib.request.urlopen(request) as response:
+    archive_bytes = response.read()
+
+with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
+    archive.extractall(output_dir)
+PY
+            displayName: Download selection from GitHub Actions
+            env:
+              GITHUB_TOKEN: $(GitHubServiceConnectionToken)
+              BUILD_SOURCEVERSION: $(Build.SourceVersion)
+              ARTIFACT_OUTPUT: $(Build.ArtifactStagingDirectory)/copilot
+              GITHUB_OWNER: dotnet
+              GITHUB_REPO: maui
 
           - bash: |
               set -euo pipefail
               chmod +x ./eng/scripts/select-ui-test-categories.sh
-              ./eng/scripts/select-ui-test-categories.sh
+              SELECTION_PATH="$(Build.ArtifactStagingDirectory)/copilot/selected-categories.json"
+              ./eng/scripts/select-ui-test-categories.sh --use-categories-json "$SELECTION_PATH"
             env:
-              DEFAULT_CATEGORY_GROUPS: "${{ join(',', parameters.categoryGroupsToTest) }}"
-              GH_TOKEN: $(GitHubCopilotToken)
-              GITHUB_TOKEN: $(GitHubCopilotToken)
-              BUILD_REASON: $(Build.Reason)
-              SYSTEM_PULLREQUEST_TARGETBRANCH: $(System.PullRequest.TargetBranch)
-              SYSTEM_PULLREQUEST_PULLREQUESTID: $(System.PullRequest.PullRequestId)
               BUILD_ARTIFACTSTAGINGDIRECTORY: $(Build.ArtifactStagingDirectory)
+            displayName: Publish selection variables
             name: selectCategories
 
   - stage: build_ui_tests

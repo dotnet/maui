@@ -1,0 +1,100 @@
+name: UI Test Category Selection
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+      - net10.0
+
+jobs:
+  select:
+    name: Determine UI test categories
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Select UI test categories
+        run: |
+          set -euo pipefail
+          chmod +x eng/scripts/select-ui-test-categories.sh
+          DEFAULT_CATEGORY_GROUPS="$DEFAULT_CATEGORY_GROUPS" \
+            eng/scripts/select-ui-test-categories.sh \
+            --ci-provider github-actions \
+            --pr-base-sha "$PR_BASE_SHA" \
+            --pr-head-sha "$PR_HEAD_SHA"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DEFAULT_CATEGORY_GROUPS: >-
+            Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks,
+            Border,BoxView,Brush,Button,
+            Cells,CheckBox,ContextActions,CustomRenderers,
+            CarouselView,
+            CollectionView,
+            DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop,
+            Entry,
+            Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView,
+            Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible,
+            Label,Layout,Lifecycle,ListView,
+            ManualReview,Maps,
+            Navigation,
+            Page,Performance,Picker,ProgressBar,
+            RadioButton,RefreshView,
+            SafeAreaEdges,
+            ScrollView,SearchBar,Shape,Slider,SoftInput,Stepper,Switch,SwipeView,
+            Shell,
+            TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,
+            Shadow,ViewBaseTests,Visual,WebView,Window
+
+      - name: Upload selection artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-categories
+          path: artifacts/copilot/selected-categories.json
+          if-no-files-found: warn
+
+      - name: Summarize selection
+        if: always()
+        run: |
+          set -euo pipefail
+          SUMMARY_PATH=artifacts/copilot/selected-categories.json
+          if [[ ! -f "$SUMMARY_PATH" ]]; then
+            echo "No selection artifact generated." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+            python - <<'PY'
+            import json
+            import os
+
+            path = os.environ['SUMMARY_PATH']
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            print('### Selected UI test categories')
+            print()
+            categories = data.get('categories') or ['ALL']
+            print(f"- Categories: {', '.join(categories)}")
+            print(f"- Confidence: {data.get('confidence', 'low')}")
+            print(f"- Fallback: {data.get('fallback', False)}")
+            reason = data.get('reasoning', '')
+            if reason:
+                print(f"- Reasoning: {reason}")
+            PY
+        env:
+          SUMMARY_PATH: artifacts/copilot/selected-categories.json
