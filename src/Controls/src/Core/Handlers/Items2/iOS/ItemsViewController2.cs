@@ -240,7 +240,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				// Standard invalidation path for FlowLayout or older iOS versions
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
