@@ -1174,6 +1174,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanSet(parent, localName, valueNode, context))
 				return Set(parent, localName, valueNode, iXmlLineInfo, context);
 
+			//If it's a C# 14 extension property, set it
+			if (CanSetExtensionProperty(parent, localName, valueNode, context))
+				return SetExtensionProperty(parent, localName, valueNode, iXmlLineInfo, context);
+
 			//If it's an already initialized property, add to it
 			if (CanAdd(parent, propertyName, valueNode, iXmlLineInfo, context))
 				return Add(parent, propertyName, valueNode, iXmlLineInfo, context);
@@ -1194,6 +1198,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//If it's a property, get it
 			if (CanGet(parent, localName, context, out _))
 				return Get(parent, localName, lineInfo, context, out propertyType);
+
+			//If it's a C# 14 extension property, get it
+			if (CanGetExtensionProperty(parent, localName, context, out _))
+				return GetExtensionProperty(parent, localName, lineInfo, context, out propertyType);
 
 			throw new BuildException(PropertyResolution, lineInfo, null, localName, parent.VariableType.FullName);
 		}
@@ -1665,6 +1673,190 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Create(Ldloc, parent),
 					Create(Callvirt, propertyGetterRef),
 				];
+		}
+
+		/// <summary>
+		/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
+		/// Extension properties are compiled as static get_X/set_X methods in extension container types
+		/// that have nested types marked with ExtensionAttribute.
+		/// </summary>
+		static (MethodDefinition Getter, MethodDefinition Setter, TypeReference DeclaringType) FindExtensionPropertyMethods(
+			TypeReference targetType, string propertyName, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+			var cache = context.Cache;
+			var getterName = $"get_{propertyName}";
+			var setterName = $"set_{propertyName}";
+			var extensionAttributeFullName = "System.Runtime.CompilerServices.ExtensionAttribute";
+
+			// Get all assemblies to search
+			var assembliesToSearch = new List<AssemblyDefinition>();
+
+			// Add the current module's assembly
+			assembliesToSearch.Add(module.Assembly);
+
+			// Add all referenced assemblies
+			foreach (var asmRef in module.AssemblyReferences)
+			{
+				try
+				{
+					var asm = module.AssemblyResolver.Resolve(asmRef);
+					if (asm != null)
+						assembliesToSearch.Add(asm);
+				}
+				catch
+				{
+					// Skip assemblies that can't be resolved
+				}
+			}
+
+			foreach (var assembly in assembliesToSearch)
+			{
+				foreach (var asmModule in assembly.Modules)
+				{
+					foreach (var type in asmModule.Types)
+					{
+						// Extension containers must be static classes (abstract and sealed) with ExtensionAttribute
+						if (!type.IsAbstract || !type.IsSealed)
+							continue;
+
+						if (!type.CustomAttributes.Any(ca => ca.AttributeType.FullName == extensionAttributeFullName))
+							continue;
+
+						// Check if this container has nested types with ExtensionAttribute (C# 14 extension blocks)
+						var hasExtensionNestedTypes = type.NestedTypes.Any(nt =>
+							nt.CustomAttributes.Any(ca => ca.AttributeType.FullName == extensionAttributeFullName));
+
+						if (!hasExtensionNestedTypes)
+							continue;
+
+						// Look for get_PropertyName and set_PropertyName static methods
+						MethodDefinition getter = null;
+						MethodDefinition setter = null;
+
+						foreach (var method in type.Methods)
+						{
+							if (!method.IsStatic || !method.IsPublic)
+								continue;
+
+							if (method.Name == getterName && method.Parameters.Count == 1)
+							{
+								var paramType = method.Parameters[0].ParameterType;
+								if (IsAssignableFrom(paramType, targetType, cache))
+								{
+									getter = method;
+								}
+							}
+							else if (method.Name == setterName && method.Parameters.Count == 2)
+							{
+								var paramType = method.Parameters[0].ParameterType;
+								if (IsAssignableFrom(paramType, targetType, cache))
+								{
+									setter = method;
+								}
+							}
+						}
+
+						if (getter != null || setter != null)
+						{
+							return (getter, setter, module.ImportReference(type));
+						}
+					}
+				}
+			}
+
+			return (null, null, null);
+		}
+
+		static bool IsAssignableFrom(TypeReference baseType, TypeReference derivedType, XamlCache cache)
+		{
+			if (baseType.FullName == derivedType.FullName)
+				return true;
+
+			return derivedType.InheritsFromOrImplements(cache, baseType);
+		}
+
+		static bool CanSetExtensionProperty(VariableDefinition parent, string localName, INode node, ILContext context)
+		{
+			var (getter, setter, _) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+			if (setter == null)
+				return false;
+
+			// Get the property type from the getter's return type or setter's second parameter
+			var propertyType = getter?.ReturnType ?? setter.Parameters[1].ParameterType;
+			var module = context.Body.Method.Module;
+
+			if (node is ValueNode valueNode && valueNode.CanConvertValue(context, propertyType, [propertyType.ResolveCached(context.Cache)]))
+				return true;
+
+			if (node is not ElementNode elementNode)
+				return false;
+
+			var vardef = context.Variables[elementNode];
+			var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(context.Cache, propertyType, module);
+
+			if (vardef.VariableType.InheritsFromOrImplements(context.Cache, propertyType))
+				return true;
+			if (implicitOperator != null)
+				return true;
+			if (propertyType.FullName == "System.Object")
+				return true;
+
+			return false;
+		}
+
+		static bool CanGetExtensionProperty(VariableDefinition parent, string localName, ILContext context, out TypeReference propertyType)
+		{
+			propertyType = null;
+			var (getter, _, _) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+			if (getter == null)
+				return false;
+
+			propertyType = context.Body.Method.Module.ImportReference(getter.ReturnType);
+			return true;
+		}
+
+		static IEnumerable<Instruction> SetExtensionProperty(VariableDefinition parent, string localName, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+			var (getter, setter, declaringType) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+
+			// Get the property type from the getter's return type or setter's second parameter
+			var propertyType = module.ImportReference(getter?.ReturnType ?? setter.Parameters[1].ParameterType);
+
+			var setterRef = module.ImportReference(setter);
+
+			// For static extension method: call ExtensionClass.set_PropertyName(target, value)
+			// Load the target object
+			yield return Create(Ldloc, parent);
+
+			if (node is ValueNode valueNode)
+			{
+				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, [propertyType.ResolveCached(context.Cache)], (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, propertyRef: null), false, true))
+					yield return instruction;
+				yield return Create(Call, setterRef);
+			}
+			else if (node is ElementNode elementNode)
+			{
+				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, propertyType, module))
+					yield return instruction;
+				yield return Create(Call, setterRef);
+			}
+		}
+
+		static IEnumerable<Instruction> GetExtensionProperty(VariableDefinition parent, string localName, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
+		{
+			var module = context.Body.Method.Module;
+			var (getter, _, declaringType) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+
+			var getterRef = module.ImportReference(getter);
+			propertyType = module.ImportReference(getter.ReturnType);
+
+			// For static extension method: call ExtensionClass.get_PropertyName(target)
+			return [
+				Create(Ldloc, parent),
+				Create(Call, getterRef),
+			];
 		}
 
 		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)

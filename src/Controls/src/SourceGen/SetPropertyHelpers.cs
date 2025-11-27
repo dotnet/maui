@@ -65,6 +65,13 @@ static class SetPropertyHelpers
 			return;
 		}
 
+		//C# 14 extension property
+		if (!asCollectionItem && CanSetExtensionProperty(parentVar, localName, valueNode, context))
+		{
+			SetExtensionProperty(writer, parentVar, localName, valueNode, context, getNodeValue);
+			return;
+		}
+
 		if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context, getNodeValue))
 		{
 			Add(writer, parentVar, propertyName, valueNode, context, getNodeValue);
@@ -533,5 +540,223 @@ static class SetPropertyHelpers
 
 		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
 			writer.WriteLine($"{parentObj}.Add(({itemType.ToFQDisplayString()}){cast}{getNodeValue(valueNode, context.Compilation.ObjectType).ValueAccessor});");
+	}
+
+	/// <summary>
+	/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
+	/// Extension properties are compiled as static get_X/set_X methods in extension container types
+	/// that have nested types marked with ExtensionAttribute.
+	/// </summary>
+	static (IMethodSymbol? Getter, IMethodSymbol? Setter) FindExtensionPropertyMethods(
+		ITypeSymbol targetType, string propertyName, SourceGenContext context)
+	{
+		var getterName = $"get_{propertyName}";
+		var setterName = $"set_{propertyName}";
+		var extensionAttributeName = "global::System.Runtime.CompilerServices.ExtensionAttribute";
+
+		// Search all referenced assemblies and the current compilation
+		var allTypes = GetAllTypesFromCompilation(context.Compilation);
+
+		foreach (var type in allTypes)
+		{
+			// Extension containers must be static classes (abstract and sealed) with ExtensionAttribute
+			if (!type.IsStatic)
+				continue;
+
+			if (!type.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == extensionAttributeName))
+				continue;
+
+			// Check if this container has nested types with ExtensionAttribute (C# 14 extension blocks)
+			var hasExtensionNestedTypes = type.GetTypeMembers().Any(nt =>
+				nt.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == extensionAttributeName));
+
+			if (!hasExtensionNestedTypes)
+				continue;
+
+			// Look for get_PropertyName and set_PropertyName static methods
+			IMethodSymbol? getter = null;
+			IMethodSymbol? setter = null;
+
+			foreach (var method in type.GetMembers().OfType<IMethodSymbol>())
+			{
+				if (!method.IsStatic || method.DeclaredAccessibility != Accessibility.Public)
+					continue;
+
+				if (method.Name == getterName && method.Parameters.Length == 1)
+				{
+					var paramType = method.Parameters[0].Type;
+					if (IsAssignableFrom(paramType, targetType, context))
+					{
+						getter = method;
+					}
+				}
+				else if (method.Name == setterName && method.Parameters.Length == 2)
+				{
+					var paramType = method.Parameters[0].Type;
+					if (IsAssignableFrom(paramType, targetType, context))
+					{
+						setter = method;
+					}
+				}
+			}
+
+			if (getter != null || setter != null)
+			{
+				return (getter, setter);
+			}
+		}
+
+		return (null, null);
+	}
+
+	static IEnumerable<INamedTypeSymbol> GetAllTypesFromCompilation(Compilation compilation)
+	{
+		// Get types from all referenced assemblies
+		foreach (var reference in compilation.References)
+		{
+			if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+			{
+				foreach (var type in GetAllTypesFromNamespace(assembly.GlobalNamespace))
+				{
+					yield return type;
+				}
+			}
+		}
+
+		// Get types from the current compilation
+		foreach (var type in GetAllTypesFromNamespace(compilation.GlobalNamespace))
+		{
+			yield return type;
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> GetAllTypesFromNamespace(INamespaceSymbol namespaceSymbol)
+	{
+		foreach (var type in namespaceSymbol.GetTypeMembers())
+		{
+			yield return type;
+			foreach (var nested in GetNestedTypes(type))
+			{
+				yield return nested;
+			}
+		}
+
+		foreach (var nestedNs in namespaceSymbol.GetNamespaceMembers())
+		{
+			foreach (var type in GetAllTypesFromNamespace(nestedNs))
+			{
+				yield return type;
+			}
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> GetNestedTypes(INamedTypeSymbol type)
+	{
+		foreach (var nested in type.GetTypeMembers())
+		{
+			yield return nested;
+			foreach (var deepNested in GetNestedTypes(nested))
+			{
+				yield return deepNested;
+			}
+		}
+	}
+
+	static bool IsAssignableFrom(ITypeSymbol baseType, ITypeSymbol derivedType, SourceGenContext context)
+	{
+		if (SymbolEqualityComparer.Default.Equals(baseType, derivedType))
+			return true;
+
+		return derivedType.InheritsFrom(baseType, context) || 
+		       (baseType.TypeKind == TypeKind.Interface && derivedType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, baseType)));
+	}
+
+	static bool CanSetExtensionProperty(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
+	{
+		var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
+		if (setter == null)
+			return false;
+
+		// Get the property type from the getter's return type or setter's second parameter
+		var propertyType = getter?.ReturnType ?? setter.Parameters[1].Type;
+
+		if (node is ValueNode vn && vn.CanConvertTo(propertyType, context))
+			return true;
+
+		if (node is not ElementNode elementNode)
+			return false;
+
+		if (!context.Variables.TryGetValue(elementNode, out var localVar))
+			return false;
+
+		if (localVar.Type.InheritsFrom(propertyType, context))
+			return true;
+
+		if (propertyType.TypeKind == TypeKind.Interface && localVar.Type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, propertyType)))
+			return true;
+
+		if (propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+			return true;
+
+		if (context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
+			return true;
+
+		return false;
+	}
+
+	static bool CanGetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType)
+	{
+		propertyType = null;
+		var (getter, _) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
+		if (getter == null)
+			return false;
+
+		propertyType = getter.ReturnType;
+		return true;
+	}
+
+	static void SetExtensionProperty(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	{
+		var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
+		
+		// Get the property type from the getter's return type or setter's second parameter
+		var propertyType = getter?.ReturnType ?? setter!.Parameters[1].Type;
+
+		// Generate: ExtensionClass.set_PropertyName(target, value)
+		var extensionClassName = setter!.ContainingType.ToFQDisplayString();
+		var setterName = setter.Name;
+
+		if (node is ValueNode valueNode)
+		{
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
+			{
+				var valueString = valueNode.ConvertTo(propertyType, writer, context, parentVar);
+				writer.WriteLine($"{extensionClassName}.{setterName}({parentVar.ValueAccessor}, {valueString});");
+			}
+		}
+		else if (node is ElementNode elementNode)
+		{
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
+			{
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				string cast = string.Empty;
+				if (!context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
+				{
+					cast = $"({propertyType.ToFQDisplayString()})";
+				}
+				writer.WriteLine($"{extensionClassName}.{setterName}({parentVar.ValueAccessor}, {cast}{localVar.ValueAccessor});");
+			}
+		}
+	}
+
+	static string GetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context)
+	{
+		var (getter, _) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
+		
+		// Generate: ExtensionClass.get_PropertyName(target)
+		var extensionClassName = getter!.ContainingType.ToFQDisplayString();
+		var getterName = getter.Name;
+
+		return $"{extensionClassName}.{getterName}({parentVar.ValueAccessor})";
 	}
 }

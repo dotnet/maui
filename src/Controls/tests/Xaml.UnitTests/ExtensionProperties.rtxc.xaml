@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ExtensionProperties"
+			x:DataType="local:ExtensionPropertiesViewModel">
+	<StackLayout>
+		<!-- Test 1: Setting a C# 14 extension property directly from XAML (like a regular property) -->
+		<Label x:Name="labelWithExtProp" MyTag="Hello from extension property" Text="Regular text" />
+		
+		<!-- Test 2: Setting multiple C# 14 extension properties from XAML -->
+		<Label x:Name="labelWithMultipleExtProps" MyTag="Tag value" MyPriority="42" Text="Another label" />
+		
+		<!-- Test 3: Binding to an extension property on the ViewModel (FullName uses C# 14 extension property) -->
+		<Label x:Name="labelWithBinding" Text="{Binding FullName}" />
+		
+		<!-- Test 4: Extension property with computed value (DisplayInfo uses C# 14 extension property) -->
+		<Label x:Name="labelWithComputedBinding" Text="{Binding DisplayInfo}" />
+		
+		<!-- Test 5: Extension property on collection used as binding source (IsEmpty uses C# 14 extension property) -->
+		<Label x:Name="labelWithIsEmptyBinding" Text="{Binding IsCollectionEmpty}" />
+	</StackLayout>
+</ContentPage>
