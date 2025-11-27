@@ -15,6 +15,9 @@ jobs:
       contents: read
       pull-requests: read
       actions: write
+      id-token: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
