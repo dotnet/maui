@@ -19,8 +19,10 @@ namespace Microsoft.Maui.Controls
 		NavigationRootManager? _navigationRootManager;
 		WFrame? _navigationFrame;
 		bool _connectedToHandler;
-		bool _isUpdatingSelection;
-		bool _isNavigating;
+		// Volatile ensures visibility of flag changes across async operations
+		// These flags prevent reentrant calls within the UI thread (not multi-threaded access)
+		volatile bool _isUpdatingSelection;
+		volatile bool _isNavigating;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
