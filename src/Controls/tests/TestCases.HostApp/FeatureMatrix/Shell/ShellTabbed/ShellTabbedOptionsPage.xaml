@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ShellTabbedOptionsPage"
+             x:DataType="local:ShellViewModel"
+             Title="Shell Tabbed Options">
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Apply"
+                             Clicked="ApplyButton_Clicked"
+                             AutomationId="Apply"/>
+        </ContentPage.ToolbarItems>
+
+        <ScrollView>
+                <Grid Padding="16"
+                      RowSpacing="2"
+                      ColumnSpacing="10">
+                        <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0"
+                               Text="TabBarBackgroundColor"
+                               FontAttributes="Bold"
+                               AutomationId="TabBarBackgroundColorLabel"/>
+                        <Grid Grid.Row="1"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="LightYellow"
+                                        BackgroundColor="LightYellow"
+                                        TextColor="Black"
+                                        Clicked="OnTabBarBackgroundColorClicked"
+                                        AutomationId="TabBarBackgroundColorLightYellow"/>
+                                <Button Grid.Column="1"
+                                        Text="LightGreen"
+                                        BackgroundColor="LightGreen"
+                                        TextColor="Black"
+                                        Clicked="OnTabBarBackgroundColorClicked"
+                                        AutomationId="TabBarBackgroundColorLightGreen"/>
+                                <Button Grid.Column="2"
+                                        Text="LightBlue"
+                                        BackgroundColor="LightBlue"
+                                        TextColor="White"
+                                        Clicked="OnTabBarBackgroundColorClicked"
+                                        AutomationId="TabBarBackgroundColorLightBlue"/>
+                        </Grid>
+                        <Label Grid.Row="2"
+                               Text="TabBarDisabledColor"
+                               FontAttributes="Bold"
+                               AutomationId="TabBarDisabledColorLabel"/>
+                        <Grid Grid.Row="3"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="Maroon"
+                                        BackgroundColor="Maroon"
+                                        TextColor="White"
+                                        Clicked="OnTabBarDisabledColorClicked"
+                                        AutomationId="TabBarDisabledColorMaroon"/>
+                                <Button Grid.Column="1"
+                                        Text="Magenta"
+                                        BackgroundColor="Magenta"
+                                        TextColor="Black"
+                                        Clicked="OnTabBarDisabledColorClicked"
+                                        AutomationId="TabBarDisabledColorMagenta"/>
+                                <Button Grid.Column="2"
+                                        Text="Gold"
+                                        BackgroundColor="Gold"
+                                        TextColor="Black"
+                                        Clicked="OnTabBarDisabledColorClicked"
+                                        AutomationId="TabBarDisabledColorGold"/>
+                        </Grid>
+                        <Label Grid.Row="4"
+                               Text="TabBarForegroundColor"
+                               FontAttributes="Bold"
+                               AutomationId="TabBarForegroundColorLabel"/>
+                        <Grid Grid.Row="5"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="Blue"
+                                        BackgroundColor="Blue"
+                                        TextColor="White"
+                                        Clicked="OnTabBarForegroundColorClicked"
+                                        AutomationId="TabBarForegroundColorBlue"/>
+                                <Button Grid.Column="1"
+                                        Text="Red"
+                                        BackgroundColor="Red"
+                                        TextColor="White"
+                                        Clicked="OnTabBarForegroundColorClicked"
+                                        AutomationId="TabBarForegroundColorRed"/>
+                                <Button Grid.Column="2"
+                                        Text="Green"
+                                        BackgroundColor="Green"
+                                        TextColor="White"
+                                        Clicked="OnTabBarForegroundColorClicked"
+                                        AutomationId="TabBarForegroundColorGreen"/>
+                        </Grid>
+                        <Label Grid.Row="6"
+                               Text="TabBarTitleColor"
+                               FontAttributes="Bold"
+                               AutomationId="TabBarTitleColorLabel"/>
+                        <Grid Grid.Row="7"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="Lavender"
+                                        BackgroundColor="Lavender"
+                                        TextColor="White"
+                                        Clicked="OnTabBarTitleColorClicked"
+                                        AutomationId="TabBarTitleColorLavender"/>
+                                <Button Grid.Column="1"
+                                        Text="Orange"
+                                        BackgroundColor="Orange"
+                                        TextColor="White"
+                                        Clicked="OnTabBarTitleColorClicked"
+                                        AutomationId="TabBarTitleColorOrange"/>
+                                <Button Grid.Column="2"
+                                        Text="Purple"
+                                        BackgroundColor="Purple"
+                                        TextColor="White"
+                                        Clicked="OnTabBarTitleColorClicked"
+                                        AutomationId="TabBarTitleColorPurple"/>
+                        </Grid>
+                        <Label Grid.Row="8"
+                               Text="TabBarUnselectedColor"
+                               FontAttributes="Bold"
+                               AutomationId="TabBarUnselectedColorLabel"/>
+                        <Grid Grid.Row="9"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="Blue"
+                                        BackgroundColor="blue"
+                                        TextColor="White"
+                                        Clicked="OnTabBarUnselectedColorClicked"
+                                        AutomationId="TabBarUnselectedColorBlue"/>
+                                <Button Grid.Column="1"
+                                        Text="Brown"
+                                        BackgroundColor="Brown"
+                                        TextColor="White"
+                                        Clicked="OnTabBarUnselectedColorClicked"
+                                        AutomationId="TabBarUnselectedColorBrown"/>
+                                <Button Grid.Column="2"
+                                        Text="PeachPuff"
+                                        BackgroundColor="PeachPuff"
+                                        TextColor="White"
+                                        Clicked="OnTabBarUnselectedColorClicked"
+                                        AutomationId="TabBarUnselectedColorPeachPuff"/>
+                        </Grid>
+                        <Grid Grid.Row="10"
+                              ColumnDefinitions="*,*"
+                              ColumnSpacing="10">
+                                <VerticalStackLayout Grid.Column="0"
+                                                Spacing="5">
+                                        <Label Text="TabBarIsVisible"
+                                               FontAttributes="Bold"
+                                               AutomationId="TabBarIsVisibleLabel"/>
+                                        <HorizontalStackLayout Spacing="10">
+                                                <RadioButton Content="True"
+                                                             IsChecked="True"
+                                                             GroupName="TabBarIsVisible"
+                                                             CheckedChanged="OnTabBarIsVisibleChanged"
+                                                             AutomationId="TabBarIsVisibleTrue"/>
+                                                <RadioButton Content="False"
+                                                             GroupName="TabBarIsVisible"
+                                                             CheckedChanged="OnTabBarIsVisibleChanged"
+                                                             AutomationId="TabBarIsVisibleFalse"/>
+                                        </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1"
+                                                Spacing="5">
+                                        <Label Text="IsEnabled"
+                                               FontAttributes="Bold"
+                                               AutomationId="IsEnabledLabel"/>
+                                        <HorizontalStackLayout Spacing="10">
+                                                <RadioButton Content="True"
+                                                             IsChecked="True"
+                                                             GroupName="IsEnabled"
+                                                             CheckedChanged="OnIsEnabledChanged"
+                                                             AutomationId="IsEnabledTrue"/>
+                                                <RadioButton Content="False"
+                                                             GroupName="IsEnabled"
+                                                             CheckedChanged="OnIsEnabledChanged"
+                                                             AutomationId="IsEnabledFalse"/>
+                                        </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                        </Grid>
+                        <Grid Grid.Row="11"
+                              ColumnDefinitions="*,*"
+                              ColumnSpacing="10">
+                                <VerticalStackLayout Grid.Column="0"
+                                                Spacing="5">
+                                        <Label Text="FlowDirection"
+                                               FontAttributes="Bold"
+                                               AutomationId="FlowDirectionLabel"/>
+                                        <HorizontalStackLayout Spacing="10">
+                                                <RadioButton Content="LTR"
+                                                             IsChecked="True"
+                                                             GroupName="FlowDirection"
+                                                             CheckedChanged="OnFlowDirectionChanged"
+                                                             AutomationId="FlowDirectionLTR"/>
+                                                <RadioButton Content="RTL"
+                                                             GroupName="FlowDirection"
+                                                             CheckedChanged="OnFlowDirectionChanged"
+                                                             AutomationId="FlowDirectionRTL"/>
+                                        </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1"
+                                                Spacing="5">
+                                        <Label Text="IsVisible"
+                                               FontAttributes="Bold"
+                                               AutomationId="IsVisibleLabel"/>
+                                        <HorizontalStackLayout Spacing="10">
+                                                <RadioButton Content="True"
+                                                             IsChecked="True"
+                                                             GroupName="IsVisible"
+                                                             CheckedChanged="OnIsVisibleChanged"
+                                                             AutomationId="IsVisibleTrue"/>
+                                                <RadioButton Content="False"
+                                                             GroupName="IsVisible"
+                                                             CheckedChanged="OnIsVisibleChanged"
+                                                             AutomationId="IsVisibleFalse"/>
+                                        </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                        </Grid>
+                        <Label Grid.Row="12"
+                               Text="CurrentItem Navigation"
+                               FontAttributes="Bold"
+                               AutomationId="CurrentItemLabel"/>
+                        <Grid Grid.Row="13"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="Vegetables"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToVegetables"/>
+                                <Button Grid.Column="1"
+                                        Text="Fruits"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToFruits"/>
+                                <Button Grid.Column="2"
+                                        Text="Tab2"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToTab2"/>
+                        </Grid>
+                        <Grid Grid.Row="14"
+                              ColumnDefinitions="*,*,*,*"
+                              ColumnSpacing="5">
+                                <Button Grid.Column="0"
+                                        Text="Tab3"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToTab3"/>
+                                <Button Grid.Column="1"
+                                        Text="Tab4"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToTab4"/>
+                                <Button Grid.Column="2"
+                                        Text="Tab5"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToTab5"/>
+                                <Button Grid.Column="3"
+                                        Text="Tab6"
+                                        Clicked="OnCurrentItemClicked"
+                                        AutomationId="NavigateToTab6"/>
+                        </Grid>
+                </Grid>
+        </ScrollView>
+</ContentPage>
