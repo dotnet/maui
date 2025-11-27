@@ -87,8 +87,14 @@ if ! command -v copilot >/dev/null 2>&1; then
   fallback_all "Copilot CLI not installed"
 fi
 
-if [[ -z "${GH_TOKEN:-${GITHUB_TOKEN:-}}" ]]; then
+TOKEN_VALUE="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+if [[ -z "$TOKEN_VALUE" ]]; then
   fallback_all "GitHub token not supplied"
+fi
+
+# Detect unresolved Azure DevOps variables like "$(GitHubCopilotToken)"
+if [[ "$TOKEN_VALUE" == '\$('* ]]; then
+  fallback_all "GitHub token placeholder detected"
 fi
 
 CONFIG_ROOT=$(mktemp -d)
