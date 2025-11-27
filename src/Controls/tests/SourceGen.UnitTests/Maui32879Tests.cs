@@ -43,15 +43,7 @@ public class Maui32879Tests : SourceGenTestsBase
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		// This should NOT produce any compilation errors in the generated code
-		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-		
-		// Output diagnostics for debugging
-		foreach (var diag in errors)
-		{
-			System.Console.WriteLine($"Error: {diag.GetMessage()}");
-		}
-		
-		Assert.Empty(errors);
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -82,14 +74,6 @@ public class Maui32879Tests : SourceGenTestsBase
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test2.xaml", xaml));
 
 		// This should NOT produce any compilation errors
-		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-		
-		// Output diagnostics for debugging
-		foreach (var diag in errors)
-		{
-			System.Console.WriteLine($"Error: {diag.GetMessage()}");
-		}
-		
-		Assert.Empty(errors);
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 }
