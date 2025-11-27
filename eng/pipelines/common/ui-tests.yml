@@ -132,7 +132,7 @@ with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
 PY
             displayName: Download selection from GitHub Actions
             env:
-              GITHUB_TOKEN: $(GitHubServiceConnectionToken)
+              GITHUB_TOKEN: $(provisionator--github--pat)
               BUILD_SOURCEVERSION: $(Build.SourceVersion)
               ARTIFACT_OUTPUT: $(Build.ArtifactStagingDirectory)/copilot
               GITHUB_OWNER: dotnet
