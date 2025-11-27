@@ -239,6 +239,37 @@ When working with public API changes, proper handling of PublicAPI.Unshipped.txt
 
 **Note:** The main branch is always pinned to the latest stable release of the .NET SDK, regardless of whether it's a long-term support (LTS) release. Ensure you have that version installed to build the codebase.
 
+### Git Workflow (Copilot CLI Rules)
+
+**🚨 CRITICAL Git Rules for Copilot CLI:**
+
+1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
+
+2. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+
+3. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
+
+**Safe Git Workflow:**
+```bash
+# Create a feature branch (NEVER work directly on main)
+git checkout -b feature/issue-12345
+
+# Make commits normally
+git add .
+git commit -m "Fix: Description of the change"
+
+# Push to remote (for new branches)
+git push -u origin feature/issue-12345
+
+# For subsequent pushes on the same branch
+git push
+```
+
+**When asked to update an existing PR:**
+1. Make the requested changes
+2. Stage and commit the changes
+3. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+
 ### Documentation
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
