@@ -17,9 +17,33 @@
                 <Label Text="Scrolled Event: "/>
                 <Label x:Name="scrolledEventLabel" Text="Not Fired" AutomationId="ScrolledEventLabel"/>
             </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="2">
+                <HorizontalStackLayout>
+                    <Label Text="FirstIndex: "/>
+                    <Label x:Name="firstIndexLabel" Text="0" AutomationId="FirstIndexLabel"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label Text="CenterIndex: "/>
+                    <Label x:Name="centerIndexLabel" Text="0" AutomationId="CenterIndexLabel"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label Text="LastIndex: "/>
+                    <Label x:Name="lastIndexLabel" Text="0" AutomationId="LastIndexLabel"/>
+                </HorizontalStackLayout>
+            </HorizontalStackLayout>
             <HorizontalStackLayout>
                 <Label Text="ScrollToRequested Event: "/>
                 <Label x:Name="scrollToRequestedLabel" Text="Not Fired" AutomationId="ScrollToRequestedLabel"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="2">
+                <HorizontalStackLayout>
+                    <Label Text="Index: "/>
+                    <Label x:Name="ScrollToIndexLabel" Text="0" AutomationId="ScrollToIndexLabel"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label Text="Item: "/>
+                    <Label x:Name="ScrollToItemLabel" Text="null" AutomationId="ScrollToItemLabel"/>
+                </HorizontalStackLayout>
             </HorizontalStackLayout>
             <HorizontalStackLayout>
                 <Label Text="RemainingItemsThresholdReached Event: "/>
@@ -29,8 +53,10 @@
                 <Label Text="ReorderCompleted Event: "/>
                 <Label x:Name="reorderCompletedLabel" Text="Not Fired" AutomationId="ReorderCompletedLabel"/>
             </HorizontalStackLayout>
-            <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked" WidthRequest="150" AutomationId="ScrollTo"/>
-            <Button Text="Add" Command="{Binding AddItemCommand}" IsVisible="{Binding ShowAddRemoveButtons}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+                <Button Text="ScrollTo" Clicked="OnScrollToButtonClicked" WidthRequest="150" AutomationId="ScrollTo"/>
+                <Button Text="Add" Command="{Binding AddItemCommand}" IsVisible="{Binding ShowAddRemoveButtons}" WidthRequest="150" AutomationId="AddButton" VerticalOptions="Center" HorizontalOptions="Center"  />
+            </HorizontalStackLayout>
         </StackLayout>
         
         <!-- Scrollable CollectionView Row -->

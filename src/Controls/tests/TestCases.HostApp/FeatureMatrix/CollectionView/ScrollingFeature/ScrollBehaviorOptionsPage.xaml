@@ -197,18 +197,55 @@
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
 
-                <!-- ScrollToIndex Selection -->
-                <Label Text="ScrollToIndex:"
+                <Label Text="ScrollToBy:"
                        FontAttributes="Bold"
                        FontSize="12"/>
-                <Entry x:Name="ScrollToIndexEntry"
-                       Text="0"
-                       FontSize="11"
-                       Keyboard="Numeric"
-                       HorizontalOptions="Start"
-                       TextChanged="ScrollToIndexEntry_TextChanged"
-                       WidthRequest="100"
-                       AutomationId="ScrollToIndexEntry"/>
+                <HorizontalStackLayout>
+                    <RadioButton x:Name="ScrollToByIndex"
+                                 Content="Index"
+                                 FontSize="11"
+                                 GroupName="ScrollToButton"
+                                 CheckedChanged="ScrollToIndexItemChanged"
+                                 AutomationId="ScrollToByIndex"/>
+                    <RadioButton x:Name="ScrollToByItem"
+                                 Content="Item"
+                                 FontSize="11"
+                                 GroupName="ScrollToButton"
+                                 CheckedChanged="ScrollToIndexItemChanged"
+                                 AutomationId="ScrollToByItem"/>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout>
+                    <VerticalStackLayout>
+                        <!-- ScrollToIndex Selection -->
+                        <Label Text="ScrollToIndex:"
+                               FontAttributes="Bold"
+                               FontSize="12"/>
+                        <Entry x:Name="ScrollToIndexEntry"
+                               Text="0"
+                               FontSize="11"
+                               Keyboard="Numeric"
+                               HorizontalOptions="Start"
+                               TextChanged="ScrollToIndexEntry_TextChanged"
+                               WidthRequest="100"
+                               AutomationId="ScrollToIndexEntry"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <!-- ScrollToItem Selection -->
+                        <Label Text="ScrollToItem:"
+                               FontAttributes="Bold"
+                               FontSize="12"/>
+                        <Entry x:Name="ScrollToItemEntry"
+                               Text="0"
+                               FontSize="11"
+                               Keyboard="Text"
+                               HorizontalOptions="Start"
+                               TextChanged="ScrollToItemEntry_TextChanged"
+                               WidthRequest="100"
+                               AutomationId="ScrollToItemEntry"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
 
                 <!-- Can Reorder Items -->
                 <Label Text="Can Reorder Items:"

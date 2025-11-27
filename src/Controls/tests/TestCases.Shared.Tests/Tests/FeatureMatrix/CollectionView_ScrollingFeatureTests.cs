@@ -1055,6 +1055,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Spinach");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("17"));
 		VerifyScreenshot();
 	}
 
@@ -1079,6 +1080,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Mango");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
 		VerifyScreenshot();
 	}
 
@@ -1103,6 +1105,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
@@ -1127,6 +1130,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Potato");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("18"));
 		VerifyScreenshot();
 	}
 
@@ -1176,7 +1180,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithMakeVisiblePositionAndVerticalGrid_PumpkinAndRadish()
+	public void VerifyScrollToWithMakeVisiblePositionAndVerticalGrid_Pumpkin()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1184,7 +1188,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "27");
+		App.EnterText("ScrollToIndexEntry", "26");
 		App.WaitForElement(ItemsLayoutVerticalGrid);
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
@@ -1196,7 +1200,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Pumpkin");
-		App.WaitForElement("Radish");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("26"));
 		VerifyScreenshot();
 	}
 
@@ -1222,6 +1226,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Spinach");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("17"));
 		VerifyScreenshot();
 	}
 
@@ -1247,12 +1252,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Spinach");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("17"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithStartPositionAndVerticalGrid_MangoAndPineapple()
+	public void VerifyScrollToWithStartPositionAndVerticalGrid_Mango()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1274,7 +1280,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Mango");
-		App.WaitForElement("Pineapple");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
 		VerifyScreenshot();
 	}
 
@@ -1302,12 +1308,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Spinach");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("17"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithStartPositionAndHorizontalGrid_SpinachAndBroccoli()
+	public void VerifyScrollToWithStartPositionAndHorizontalGrid_Spinach()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1329,7 +1336,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Spinach");
-		App.WaitForElement("Broccoli");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("17"));
 		VerifyScreenshot();
 	}
 
@@ -1357,6 +1364,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
@@ -1384,6 +1392,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
@@ -1411,12 +1420,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithEndPositionAndVerticalGrid_PumpkinAndRadish()
+	public void VerifyScrollToWithEndPositionAndVerticalGrid_Pumpkin()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1438,7 +1448,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Pumpkin");
-		App.WaitForElement("Radish");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("26"));
 		VerifyScreenshot();
 	}
 
@@ -1466,12 +1476,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithEndPositionAndHorizontalGrid_KiwiAndPear()
+	public void VerifyScrollToWithEndPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1493,7 +1504,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
 		App.WaitForElement("Kiwi");
-		App.WaitForElement("Pear");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 

@@ -86,6 +86,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private object _selectedItem;
 	private ObservableCollection<object> _selectedItems = new ObservableCollection<object>();
 	private ScrollToPosition _scrollToPosition = ScrollToPosition.MakeVisible;
+	private string _scrollToByIndexOrItem = "Index";
+	private string _scrollToItem;
 	private int _scrollToIndex = 0;
 	private int _selectionChangedEventCount = 0;
 	private string _previousSelectionText;
@@ -274,6 +276,32 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 			if (_scrollToPosition != value)
 			{
 				_scrollToPosition = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string ScrollToByIndexOrItem
+	{
+		get => _scrollToByIndexOrItem;
+		set
+		{
+			if (_scrollToByIndexOrItem != value)
+			{
+				_scrollToByIndexOrItem = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string ScrollToItem
+	{
+		get => _scrollToItem;
+		set
+		{
+			if (_scrollToItem != value)
+			{
+				_scrollToItem = value;
 				OnPropertyChanged();
 			}
 		}
