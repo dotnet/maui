@@ -77,7 +77,6 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Test
 {
-	[XamlProcessing(XamlInflator.SourceGen)]
 	partial class TestPage : ContentPage
 	{
 		public TestPage()
