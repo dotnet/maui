@@ -25,11 +25,7 @@
 			<Label Text="{Binding StructModel.Model.Text, Mode=TwoWay}" x:Name="label10" />
             <Label Text="Text for label12" x:Name="label11" />
             <Label Text="{Binding Text, x:DataType=Label, Source={x:Reference label11}}" x:Name="label12" />
-            <Label
-              BindingContext="{Binding BindingContext, Source={x:Reference page}, x:DataType=ContentPage}" 
-              x:DataType="local:GlobalViewModel"
-              Text="{Binding GlobalText}"
-              x:Name="label13" />
+            <Label Text="{Binding BindingContext.GlobalText, Source={x:Reference page}, x:DataType=ContentPage}" x:Name="label13" />
 
 			<Picker
 				ItemsSource="{Binding Items}"

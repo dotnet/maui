@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerNotClosed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor BindingIndexerEmpty = new DiagnosticDescriptor(
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerEmpty), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor BindingIndexerTypeUnsupported = new DiagnosticDescriptor(
@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerTypeUnsupported), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor BindingPropertyNotFound = new DiagnosticDescriptor(
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingPropertyNotFound), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		// Binding warnings (MAUIG2024 matching XC0024)

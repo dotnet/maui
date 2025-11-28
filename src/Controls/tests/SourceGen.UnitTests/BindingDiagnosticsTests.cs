@@ -47,7 +47,7 @@ public class ViewModel
 		// Should have a diagnostic for property not found
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2045");
 		Assert.NotNull(diagnostic);
-		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
 		var message = diagnostic.GetMessage();
 		Assert.Contains("NonExistentProperty", message, System.StringComparison.Ordinal);
@@ -89,7 +89,7 @@ public class ViewModel
 		// Should have a diagnostic for indexer not closed
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2041");
 		Assert.NotNull(diagnostic);
-		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
 		var message = diagnostic.GetMessage();
 		Assert.Contains("closing bracket", message, System.StringComparison.Ordinal);
@@ -130,7 +130,7 @@ public class ViewModel
 		// Should have a diagnostic for indexer empty
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2042");
 		Assert.NotNull(diagnostic);
-		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
 		var message = diagnostic.GetMessage();
 		Assert.Contains("did not contain arguments", message, System.StringComparison.Ordinal);
@@ -243,6 +243,6 @@ public class ViewModel
 		// Should have a diagnostic for unsupported indexer type
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2043");
 		Assert.NotNull(diagnostic);
-		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 	}
 }
