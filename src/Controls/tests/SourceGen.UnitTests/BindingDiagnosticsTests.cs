@@ -44,12 +44,6 @@ public class ViewModel
 			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
-		// Debug - show all diagnostics
-		foreach (var d in result.Diagnostics)
-		{
-			System.Console.WriteLine($"Diagnostic: {d.Id} - {d.Severity} - {d.GetMessage()}");
-		}
-
 		// Should have a diagnostic for property not found
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2045");
 		Assert.NotNull(diagnostic);

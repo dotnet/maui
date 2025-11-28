@@ -26,8 +26,8 @@ internal struct CompiledBindingMarkup
 		_bindingExtension = bindingExtension;
 	}
 
-	private Location GetLocation(INode node)
-		=> LocationHelpers.LocationCreate(_context.ProjectItem.RelativePath!, (IXmlLineInfo)node, "x:DataType");
+	private Location GetLocation(INode node, string? context = null)
+		=> LocationHelpers.LocationCreate(_context.ProjectItem.RelativePath!, (IXmlLineInfo)node, context ?? "Binding");
 
 	public bool TryCompileBinding(ITypeSymbol sourceType, bool isTemplateBinding, out string? newBindingExpression)
 	{
