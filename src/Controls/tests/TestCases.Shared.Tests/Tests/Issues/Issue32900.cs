@@ -16,9 +16,6 @@ public class Issue32900 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void TabBarShouldBeVisibleOnMacOS()
 	{
-		// Wait for the first tab to be visible
-		App.WaitForElement("Search Recipe");
-
 		// Verify both tabs are present and visible
 		App.WaitForElement("Search Recipe");
 		App.WaitForElement("My Recipe");
