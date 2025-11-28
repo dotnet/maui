@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ExtensionPropertiesBinding"
+			x:DataType="local:OrderViewModel">
+	<StackLayout>
+		<!-- Binding to extension properties exposed through ViewModel -->
+		<Label x:Name="totalLabel" Text="{Binding FormattedTotal}" />
+		<Label x:Name="itemCountLabel" Text="{Binding ItemCountDisplay}" />
+		<Label x:Name="discountLabel" Text="{Binding DiscountedTotalDisplay}" />
+		
+		<!-- Binding to extension property used in a more complex scenario -->
+		<Label x:Name="summaryLabel" Text="{Binding OrderSummary}" />
+	</StackLayout>
+</ContentPage>
