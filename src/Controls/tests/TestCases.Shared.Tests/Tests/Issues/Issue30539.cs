@@ -1,3 +1,4 @@
+#if IOS // This test is iOS-specific as the fix addresses iOS behavior for target="_blank" links
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -56,3 +57,4 @@ public class Issue30539 : _IssuesUITest
 		Assert.That(cancelLabel?.GetText(), Does.Contain("Can cancel: Yes"));
 	}
 }
+#endif
