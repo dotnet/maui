@@ -322,6 +322,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							}
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
 
+							// Log any warnings collected during parsing
+							foreach (var warning in rootnode.Warnings)
+							{
+								xamlFilePath = LoggingHelper.GetXamlFilePath(xamlFilePath);
+								LoggingHelper.LogWarning("XamlC", null, null, xamlFilePath, warning.lineNumber, warning.linePosition, 0, 0, warning.message);
+							}
+
 							hasCompiledXamlResources = true;
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Replacing {0}.InitializeComponent ()");

@@ -164,6 +164,8 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 
 abstract class RootNode(XmlType xmlType, IXmlNamespaceResolver nsResolver, int linenumber = -1, int lineposition = -1) : ElementNode(xmlType, xmlType.NamespaceUri, nsResolver, linenumber: linenumber, lineposition: lineposition)
 {
+	public List<(string message, int lineNumber, int linePosition)> Warnings { get; } = new();
+
 	public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 	{
 		if (visitor.VisitingMode == TreeVisitingMode.TopDown && !SkipVisitNode(visitor, parentNode))
