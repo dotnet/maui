@@ -105,12 +105,9 @@ public class ExtensionPropertiesViewModel : INotifyPropertyChanged
 	}
 }
 
-// Runtime and XamlC now support C# 14 extension properties
-// SourceGen: C# 14 extension members require Roslyn to fully lower the extension blocks
-// before the semantic model exposes get_/set_ accessor methods. Since SourceGen runs
-// during compilation (before full lowering), it cannot yet see the generated accessors.
-// This limitation may be resolved in future Roslyn versions with better C# 14 support.
-// Using .rtxc.xaml extension to restrict to Runtime and XamlC only for now.
+// All XAML inflators (Runtime, XamlC, SourceGen) now support C# 14 extension properties.
+// Extension properties appear as IPropertySymbol on static classes with get_X/set_X accessors
+// that take the target type as the first parameter.
 public partial class ExtensionProperties : ContentPage
 {
 	public ExtensionProperties() => InitializeComponent();
@@ -125,7 +122,7 @@ public partial class ExtensionProperties : ContentPage
 		public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 		[Test]
-		public void ExtensionPropertyCanBeSetFromXaml([Values(XamlInflator.Runtime, XamlInflator.XamlC)] XamlInflator inflator)
+		public void ExtensionPropertyCanBeSetFromXaml([Values] XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
 
@@ -135,7 +132,7 @@ public partial class ExtensionProperties : ContentPage
 		}
 
 		[Test]
-		public void MultipleExtensionPropertiesCanBeSetFromXaml([Values(XamlInflator.Runtime, XamlInflator.XamlC)] XamlInflator inflator)
+		public void MultipleExtensionPropertiesCanBeSetFromXaml([Values] XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
 
@@ -159,7 +156,7 @@ public partial class ExtensionProperties : ContentPage
 		}
 
 		[Test]
-		public void ExtensionPropertyOnViewModelCanBeBoundTo([Values(XamlInflator.Runtime, XamlInflator.XamlC)] XamlInflator inflator)
+		public void ExtensionPropertyOnViewModelCanBeBoundTo([Values] XamlInflator inflator)
 		{
 			var vm = new ExtensionPropertiesViewModel
 			{
@@ -179,7 +176,7 @@ public partial class ExtensionProperties : ContentPage
 		}
 
 		[Test]
-		public void ExtensionPropertyOnCollectionWorks([Values(XamlInflator.Runtime, XamlInflator.XamlC)] XamlInflator inflator)
+		public void ExtensionPropertyOnCollectionWorks([Values] XamlInflator inflator)
 		{
 			var vm = new ExtensionPropertiesViewModel
 			{
@@ -200,7 +197,7 @@ public partial class ExtensionProperties : ContentPage
 		}
 
 		[Test]
-		public void ExtensionPropertyUpdatesProperly([Values(XamlInflator.Runtime, XamlInflator.XamlC)] XamlInflator inflator)
+		public void ExtensionPropertyUpdatesProperly([Values] XamlInflator inflator)
 		{
 			var vm = new ExtensionPropertiesViewModel();
 			var page = new ExtensionProperties(inflator)

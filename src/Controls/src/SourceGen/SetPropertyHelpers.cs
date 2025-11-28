@@ -543,26 +543,66 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
+	/// Finds C# 14 extension property for a given target type and property name.
+	/// In C# 14, extension properties appear directly on static classes with get_X/set_X accessor methods
+	/// that take the target type as the first parameter.
+	/// </summary>
+	static IPropertySymbol? FindExtensionProperty(
+		ITypeSymbol targetType, string propertyName, SourceGenContext context)
+	{
+		// Search all referenced assemblies and the current compilation
+		var allTypes = GetAllTypesFromCompilation(context.Compilation);
+
+		foreach (var type in allTypes)
+		{
+			// Extension containers must be static classes
+			if (!type.IsStatic)
+				continue;
+
+			// Look for the property directly on the static class
+			foreach (var prop in type.GetMembers().OfType<IPropertySymbol>())
+			{
+				if (prop.Name != propertyName)
+					continue;
+
+				// Check if this is an extension property by looking at the accessor parameters
+				var getter = prop.GetMethod;
+				var setter = prop.SetMethod;
+				
+				ITypeSymbol? extendedType = null;
+				if (getter != null && getter.Parameters.Length == 1)
+					extendedType = getter.Parameters[0].Type;
+				else if (setter != null && setter.Parameters.Length == 2)
+					extendedType = setter.Parameters[0].Type;
+
+				if (extendedType != null && IsAssignableFrom(extendedType, targetType, context))
+				{
+					return prop;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
 	/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
-	/// Extension properties are compiled as static get_X/set_X methods in extension container types.
+	/// Extension properties are compiled as static get_X/set_X methods in static classes.
+	/// The getter has 1 parameter (the target) and the setter has 2 parameters (target, value).
 	/// </summary>
 	static (IMethodSymbol? Getter, IMethodSymbol? Setter) FindExtensionPropertyMethods(
 		ITypeSymbol targetType, string propertyName, SourceGenContext context)
 	{
 		var getterName = $"get_{propertyName}";
 		var setterName = $"set_{propertyName}";
-		var extensionAttributeName = "global::System.Runtime.CompilerServices.ExtensionAttribute";
 
 		// Search all referenced assemblies and the current compilation
 		var allTypes = GetAllTypesFromCompilation(context.Compilation);
 
 		foreach (var type in allTypes)
 		{
-			// Extension containers must be static classes (abstract and sealed) with ExtensionAttribute
+			// Extension containers must be static classes
 			if (!type.IsStatic)
-				continue;
-
-			if (!type.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == extensionAttributeName))
 				continue;
 
 			// Look for get_PropertyName and set_PropertyName static methods
@@ -665,12 +705,24 @@ static class SetPropertyHelpers
 
 	static bool CanSetExtensionProperty(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{
-		var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
-		if (setter == null)
-			return false;
+		ITypeSymbol? propertyType = null;
 
-		// Get the property type from the getter's return type or setter's second parameter
-		var propertyType = getter?.ReturnType ?? setter.Parameters[1].Type;
+		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
+		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
+		if (extProp != null && extProp.SetMethod != null)
+		{
+			propertyType = extProp.Type;
+		}
+		else
+		{
+			// Fall back to finding lowered accessor methods
+			var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
+			if (setter == null)
+				return false;
+
+			// Get the property type from the getter's return type or setter's second parameter
+			propertyType = getter?.ReturnType ?? setter.Parameters[1].Type;
+		}
 
 		if (node is ValueNode vn && vn.CanConvertTo(propertyType, context))
 			return true;
@@ -699,6 +751,16 @@ static class SetPropertyHelpers
 	static bool CanGetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType)
 	{
 		propertyType = null;
+		
+		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
+		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
+		if (extProp != null && extProp.GetMethod != null)
+		{
+			propertyType = extProp.Type;
+			return true;
+		}
+
+		// Fall back to finding lowered accessor methods
 		var (getter, _) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
 		if (getter == null)
 			return false;
@@ -709,32 +771,64 @@ static class SetPropertyHelpers
 
 	static void SetExtensionProperty(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
+		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
+		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
+		if (extProp != null)
+		{
+			// Generate code using property access syntax - the compiler will handle it
+			var propertyType = extProp.Type;
+
+			if (node is ValueNode valueNode)
+			{
+				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
+				{
+					var valueString = valueNode.ConvertTo(propertyType, writer, context, parentVar);
+					writer.WriteLine($"{parentVar.ValueAccessor}.{localName} = {valueString};");
+				}
+			}
+			else if (node is ElementNode elementNode)
+			{
+				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
+				{
+					var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+					string cast = string.Empty;
+					if (!context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
+					{
+						cast = $"({propertyType.ToFQDisplayString()})";
+					}
+					writer.WriteLine($"{parentVar.ValueAccessor}.{localName} = {cast}{localVar.ValueAccessor};");
+				}
+			}
+			return;
+		}
+
+		// Fall back to lowered accessor methods
 		var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
 		
 		// Get the property type from the getter's return type or setter's second parameter
-		var propertyType = getter?.ReturnType ?? setter!.Parameters[1].Type;
+		var propType = getter?.ReturnType ?? setter!.Parameters[1].Type;
 
 		// Generate: ExtensionClass.set_PropertyName(target, value)
 		var extensionClassName = setter!.ContainingType.ToFQDisplayString();
 		var setterName = setter.Name;
 
-		if (node is ValueNode valueNode)
+		if (node is ValueNode vn)
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var valueString = valueNode.ConvertTo(propertyType, writer, context, parentVar);
+				var valueString = vn.ConvertTo(propType, writer, context, parentVar);
 				writer.WriteLine($"{extensionClassName}.{setterName}({parentVar.ValueAccessor}, {valueString});");
 			}
 		}
-		else if (node is ElementNode elementNode)
+		else if (node is ElementNode en)
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				var localVar = getNodeValue(en, context.Compilation.ObjectType);
 				string cast = string.Empty;
-				if (!context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
+				if (!context.Compilation.HasImplicitConversion(localVar.Type, propType))
 				{
-					cast = $"({propertyType.ToFQDisplayString()})";
+					cast = $"({propType.ToFQDisplayString()})";
 				}
 				writer.WriteLine($"{extensionClassName}.{setterName}({parentVar.ValueAccessor}, {cast}{localVar.ValueAccessor});");
 			}
@@ -743,6 +837,15 @@ static class SetPropertyHelpers
 
 	static string GetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context)
 	{
+		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
+		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
+		if (extProp != null)
+		{
+			// Generate code using property access syntax - the compiler will handle it
+			return $"{parentVar.ValueAccessor}.{localName}";
+		}
+
+		// Fall back to lowered accessor methods
 		var (getter, _) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
 		
 		// Generate: ExtensionClass.get_PropertyName(target)
