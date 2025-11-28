@@ -45,6 +45,11 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 
 	public Dictionary<string, int> lastIdForName = [];
 
+	// Cache for C# 14 extension property lookups to avoid repeated searches through all types
+	internal Dictionary<(ITypeSymbol, string), IPropertySymbol?>? extensionPropertyCache;
+	internal Dictionary<(ITypeSymbol, string), (IMethodSymbol?, IMethodSymbol?)>? extensionPropertyMethodsCache;
+	internal INamedTypeSymbol[]? allStaticTypesCache;
+
 	public void AddLocalMethod(string code)
 	{
 		if (ParentContext != null)
