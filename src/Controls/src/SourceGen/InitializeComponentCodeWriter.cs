@@ -35,6 +35,13 @@ static class InitializeComponentCodeWriter
 			}
 			var root = GeneratorHelpers.ParseXaml(xamlItem.Xaml!, xmlnsCache)!;
 
+			// Log any warnings collected during parsing
+			foreach (var warning in root.Warnings)
+			{
+				var location = LocationHelpers.LocationCreate(xamlItem.ProjectItem.RelativePath!, warning.lineNumber, warning.linePosition, warning.lineNumber, warning.linePosition);
+				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.PropertyElementWithAttribute, location, warning.message));
+			}
+
 			string accessModifier = "public";
 			INamedTypeSymbol? rootType = null;
 
