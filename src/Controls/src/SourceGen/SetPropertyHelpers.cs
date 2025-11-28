@@ -544,8 +544,7 @@ static class SetPropertyHelpers
 
 	/// <summary>
 	/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
-	/// Extension properties are compiled as static get_X/set_X methods in extension container types
-	/// that have nested types marked with ExtensionAttribute.
+	/// Extension properties are compiled as static get_X/set_X methods in extension container types.
 	/// </summary>
 	static (IMethodSymbol? Getter, IMethodSymbol? Setter) FindExtensionPropertyMethods(
 		ITypeSymbol targetType, string propertyName, SourceGenContext context)
@@ -564,13 +563,6 @@ static class SetPropertyHelpers
 				continue;
 
 			if (!type.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == extensionAttributeName))
-				continue;
-
-			// Check if this container has nested types with ExtensionAttribute (C# 14 extension blocks)
-			var hasExtensionNestedTypes = type.GetTypeMembers().Any(nt =>
-				nt.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == extensionAttributeName));
-
-			if (!hasExtensionNestedTypes)
 				continue;
 
 			// Look for get_PropertyName and set_PropertyName static methods
