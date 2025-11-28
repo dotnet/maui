@@ -165,4 +165,84 @@ public class ViewModel
 		Assert.Contains("MyLabel", message, System.StringComparison.Ordinal);
 		Assert.Contains("already exists", message, System.StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void BindingWithXDataTypeFromOuterScope_ReportsWarning()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<ContentPage.Resources>
+		<DataTemplate x:Key="MyTemplate">
+			<Label Text="{Binding Name}" />
+		</DataTemplate>
+	</ContentPage.Resources>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel 
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// Should have a warning for x:DataType from outer scope
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2024");
+		Assert.NotNull(diagnostic);
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+	}
+
+	[Fact]
+	public void BindingIndexerTypeUnsupported_ReportsCorrectDiagnostic()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<Label Text="{Binding Name[0]}" />
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel 
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// Should have a diagnostic for unsupported indexer type
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2043");
+		Assert.NotNull(diagnostic);
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+	}
 }
