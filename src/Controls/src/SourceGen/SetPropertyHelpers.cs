@@ -1002,19 +1002,24 @@ static class SetPropertyHelpers
 	/// Finds C# 14 extension property for a given target type and property name.
 	/// In C# 14, extension properties appear directly on static classes with get_X/set_X accessor methods
 	/// that take the target type as the first parameter.
+	/// Results are cached per context to avoid repeated searches.
 	/// </summary>
 	static IPropertySymbol? FindExtensionProperty(
 		ITypeSymbol targetType, string propertyName, SourceGenContext context)
 	{
-		// Search all referenced assemblies and the current compilation
-		var allTypes = GetAllTypesFromCompilation(context.Compilation);
+		// Use cache if available
+		context.extensionPropertyCache ??= new Dictionary<(ITypeSymbol, string), IPropertySymbol?>(
+			new ExtensionPropertyKeyComparer());
 
-		foreach (var type in allTypes)
+		var key = (targetType, propertyName);
+		if (context.extensionPropertyCache.TryGetValue(key, out var cachedResult))
+			return cachedResult;
+
+		// Search through all static types
+		var allStaticTypes = GetAllStaticTypes(context);
+
+		foreach (var type in allStaticTypes)
 		{
-			// Extension containers must be static classes
-			if (!type.IsStatic)
-				continue;
-
 			// Look for the property directly on the static class
 			foreach (var prop in type.GetMembers().OfType<IPropertySymbol>())
 			{
@@ -1024,7 +1029,7 @@ static class SetPropertyHelpers
 				// Check if this is an extension property by looking at the accessor parameters
 				var getter = prop.GetMethod;
 				var setter = prop.SetMethod;
-				
+
 				ITypeSymbol? extendedType = null;
 				if (getter != null && getter.Parameters.Length == 1)
 					extendedType = getter.Parameters[0].Type;
@@ -1033,11 +1038,13 @@ static class SetPropertyHelpers
 
 				if (extendedType != null && IsAssignableFrom(extendedType, targetType, context))
 				{
+					context.extensionPropertyCache[key] = prop;
 					return prop;
 				}
 			}
 		}
 
+		context.extensionPropertyCache[key] = null;
 		return null;
 	}
 
@@ -1045,22 +1052,27 @@ static class SetPropertyHelpers
 	/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
 	/// Extension properties are compiled as static get_X/set_X methods in static classes.
 	/// The getter has 1 parameter (the target) and the setter has 2 parameters (target, value).
+	/// Results are cached per context to avoid repeated searches.
 	/// </summary>
 	static (IMethodSymbol? Getter, IMethodSymbol? Setter) FindExtensionPropertyMethods(
 		ITypeSymbol targetType, string propertyName, SourceGenContext context)
 	{
+		// Use cache if available
+		context.extensionPropertyMethodsCache ??= new Dictionary<(ITypeSymbol, string), (IMethodSymbol?, IMethodSymbol?)>(
+			new ExtensionPropertyKeyComparer());
+
+		var key = (targetType, propertyName);
+		if (context.extensionPropertyMethodsCache.TryGetValue(key, out var cachedResult))
+			return cachedResult;
+
 		var getterName = $"get_{propertyName}";
 		var setterName = $"set_{propertyName}";
 
-		// Search all referenced assemblies and the current compilation
-		var allTypes = GetAllTypesFromCompilation(context.Compilation);
+		// Search through all static types
+		var allStaticTypes = GetAllStaticTypes(context);
 
-		foreach (var type in allTypes)
+		foreach (var type in allStaticTypes)
 		{
-			// Extension containers must be static classes
-			if (!type.IsStatic)
-				continue;
-
 			// Look for get_PropertyName and set_PropertyName static methods
 			IMethodSymbol? getter = null;
 			IMethodSymbol? setter = null;
@@ -1090,11 +1102,45 @@ static class SetPropertyHelpers
 
 			if (getter != null || setter != null)
 			{
-				return (getter, setter);
+				var result = (getter, setter);
+				context.extensionPropertyMethodsCache[key] = result;
+				return result;
 			}
 		}
 
+		context.extensionPropertyMethodsCache[key] = (null, null);
 		return (null, null);
+	}
+
+	/// <summary>
+	/// Comparer for extension property cache keys that uses symbol equality.
+	/// </summary>
+	sealed class ExtensionPropertyKeyComparer : IEqualityComparer<(ITypeSymbol, string)>
+	{
+		public bool Equals((ITypeSymbol, string) x, (ITypeSymbol, string) y)
+			=> SymbolEqualityComparer.Default.Equals(x.Item1, y.Item1) && x.Item2 == y.Item2;
+
+		public int GetHashCode((ITypeSymbol, string) obj)
+			=> SymbolEqualityComparer.Default.GetHashCode(obj.Item1) ^ obj.Item2.GetHashCode();
+	}
+
+	/// <summary>
+	/// Gets all static types from the compilation, with caching to avoid repeated enumeration.
+	/// </summary>
+	static INamedTypeSymbol[] GetAllStaticTypes(SourceGenContext context)
+	{
+		if (context.allStaticTypesCache != null)
+			return context.allStaticTypesCache;
+
+		var staticTypes = new List<INamedTypeSymbol>();
+		foreach (var type in GetAllTypesFromCompilation(context.Compilation))
+		{
+			if (type.IsStatic)
+				staticTypes.Add(type);
+		}
+
+		context.allStaticTypesCache = staticTypes.ToArray();
+		return context.allStaticTypesCache;
 	}
 
 	static IEnumerable<INamedTypeSymbol> GetAllTypesFromCompilation(Compilation compilation)
@@ -1207,7 +1253,7 @@ static class SetPropertyHelpers
 	static bool CanGetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType)
 	{
 		propertyType = null;
-		
+
 		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
 		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
 		if (extProp != null && extProp.GetMethod != null)
