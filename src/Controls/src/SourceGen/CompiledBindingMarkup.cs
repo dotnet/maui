@@ -299,11 +299,6 @@ internal struct CompiledBindingMarkup
 				}
 
 				indexArg = p.Substring(lbIndex + 1, argLength);
-				if (indexArg.Length == 0)
-				{
-					_context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingIndexerEmpty, GetLocation(_node)));
-					return false;
-				}
 
 				p = p.Substring(0, lbIndex);
 				p = p.Trim();

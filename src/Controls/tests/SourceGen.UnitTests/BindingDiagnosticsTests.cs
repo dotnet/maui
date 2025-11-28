@@ -45,7 +45,7 @@ public class ViewModel
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for property not found
-		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2045");
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2045");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
@@ -87,7 +87,7 @@ public class ViewModel
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for indexer not closed
-		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2041");
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2041");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
@@ -128,7 +128,7 @@ public class ViewModel
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for indexer empty
-		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2042");
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2042");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
@@ -157,7 +157,7 @@ public class ViewModel
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for duplicate name
-		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2064");
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2064");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		

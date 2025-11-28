@@ -194,9 +194,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true);
 
-		// Binding-related diagnostics (MAUIX2041-MAUIX2045 matching XC0041-XC0045)
+		// Binding-related diagnostics (MAUIG2041-MAUIG2045 matching XC0041-XC0045)
 		public static DiagnosticDescriptor BindingIndexerNotClosed = new DiagnosticDescriptor(
-			id: "MAUIX2041",
+			id: "MAUIG2041",
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerNotClosed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor BindingIndexerEmpty = new DiagnosticDescriptor(
-			id: "MAUIX2042",
+			id: "MAUIG2042",
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerEmpty), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor BindingIndexerTypeUnsupported = new DiagnosticDescriptor(
-			id: "MAUIX2043",
+			id: "MAUIG2043",
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerTypeUnsupported), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
@@ -220,16 +220,16 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor BindingPropertyNotFound = new DiagnosticDescriptor(
-			id: "MAUIX2045",
+			id: "MAUIG2045",
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingPropertyNotFound), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
-		// Binding warnings (MAUIX2024 matching XC0024)
+		// Binding warnings (MAUIG2024 matching XC0024)
 		public static DiagnosticDescriptor BindingWithXDataTypeFromOuterScope = new DiagnosticDescriptor(
-			id: "MAUIX2024",
+			id: "MAUIG2024",
 			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationWarning), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingWithXDataTypeFromOuterScope), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
@@ -237,9 +237,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true,
 			helpLinkUri: "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings");
 
-		// XAML issues (MAUIX2064 matching XC0064)
+		// XAML issues (MAUIG2064 matching XC0064)
 		public static DiagnosticDescriptor NamescopeDuplicate = new DiagnosticDescriptor(
-			id: "MAUIX2064",
+			id: "MAUIG2064",
 			title: new LocalizableResourceString(nameof(MauiGResources.NamescopeError), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.NamescopeDuplicate), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
