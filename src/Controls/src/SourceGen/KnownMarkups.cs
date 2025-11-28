@@ -14,6 +14,13 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 internal class KnownMarkups
 {
+	public static bool ProvideValueForNullExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.ObjectType;
+		value = "(object)null!";
+		return true;
+	}
+
 	public static bool ProvideValueForStaticExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.ObjectType;
