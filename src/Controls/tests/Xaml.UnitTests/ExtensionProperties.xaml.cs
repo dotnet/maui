@@ -106,8 +106,11 @@ public class ExtensionPropertiesViewModel : INotifyPropertyChanged
 }
 
 // Runtime and XamlC now support C# 14 extension properties
-// SourceGen needs separate implementation (TBD: additional work needed)
-// Using .rtxc.xaml extension to restrict to Runtime and XamlC only
+// SourceGen: C# 14 extension members require Roslyn to fully lower the extension blocks
+// before the semantic model exposes get_/set_ accessor methods. Since SourceGen runs
+// during compilation (before full lowering), it cannot yet see the generated accessors.
+// This limitation may be resolved in future Roslyn versions with better C# 14 support.
+// Using .rtxc.xaml extension to restrict to Runtime and XamlC only for now.
 public partial class ExtensionProperties : ContentPage
 {
 	public ExtensionProperties() => InitializeComponent();
