@@ -84,6 +84,19 @@
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
 
+    <!-- Suppress binding diagnostics for tests that intentionally have invalid bindings to test fallback behavior -->
+    <MauiXaml Update="BindingsCompiler.xaml" NoWarn="MAUIG2043;MAUIG2045" />
+    <MauiXaml Update="Issues\Gh2517.xaml" NoWarn="MAUIG2045" />
+    <MauiXaml Update="Issues\Gh3606.xaml" NoWarn="MAUIG2045" />
+    <MauiXaml Update="Issues\Gh5254.xaml" NoWarn="MAUIG2043" />
+    <MauiXaml Update="Issues\Gh5510.xaml" NoWarn="MAUIG2043" />
+    <MauiXaml Update="Issues\Gh7097.xaml" NoWarn="MAUIG2045" />
+    <MauiXaml Update="Issues\Gh7837.xaml" NoWarn="MAUIG2043" />
+    <MauiXaml Update="Issues\Gh8221.xaml" NoWarn="MAUIG2043" />
+    <MauiXaml Update="Issues\Gh8936.xaml" NoWarn="MAUIG2043" />
+    <MauiXaml Update="Issues\Maui20768.xaml" NoWarn="MAUIG2045" />
+    <MauiXaml Update="Issues\Maui25871.xaml" NoWarn="MAUIG2045" />
+
     <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
   </ItemGroup>
 
