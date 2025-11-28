@@ -11,19 +11,19 @@ namespace Microsoft.Maui.Controls
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
 		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
-		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Slider), 0d, coerceValue: (bindable, value) =>
+		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Slider), 0d, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var slider = (Slider)bindable;
-			slider.Value = slider.Value.Clamp((double)value, slider.Maximum);
-			return value;
+			// Re-coerce Value to ensure it stays within valid range
+			slider.Value = slider.Value.Clamp((double)newValue, slider.Maximum);
 		});
 
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
-		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Slider), 1d, coerceValue: (bindable, value) =>
+		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Slider), 1d, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var slider = (Slider)bindable;
-			slider.Value = slider.Value.Clamp(slider.Minimum, (double)value);
-			return value;
+			// Re-coerce Value to ensure it stays within valid range
+			slider.Value = slider.Value.Clamp(slider.Minimum, (double)newValue);
 		});
 
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
