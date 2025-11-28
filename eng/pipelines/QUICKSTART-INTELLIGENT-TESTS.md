@@ -97,10 +97,31 @@ Add this to PR description:
 
 Update the script to detect it (see full docs).
 
+## Running Tests Locally by Category
+
+You can run UI tests for specific categories from the command line:
+
+```bash
+# List all available categories
+./eng/scripts/run-ui-tests-for-category.ps1 -ListCategories
+
+# Run Button tests only
+./eng/scripts/run-ui-tests-for-category.ps1 -Category Button -Platform android
+
+# Run multiple categories
+./eng/scripts/run-ui-tests-for-category.ps1 -CategoryGroup "Button,Label,Entry" -Platform android
+
+# Analyze PR and run affected tests
+./eng/scripts/run-ui-tests-for-category.ps1 -PrNumber 12345 -Platform android
+```
+
+See [CLI Testing Guide](../scripts/README-RUN-CATEGORY-TESTS.md) for details.
+
 ## Full Documentation
 
 - [Complete Guide](README-INTELLIGENT-TESTS.md)
 - [Technical Details](INTELLIGENT-TEST-EXECUTION.md)
+- [CLI Testing Guide](../scripts/README-RUN-CATEGORY-TESTS.md)
 - [Analysis Script](../scripts/analyze-pr-changes.ps1)
 
 ## Cost Savings

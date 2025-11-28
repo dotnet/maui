@@ -153,6 +153,50 @@ Changed Files
                 └─ Conservative: Add broad categories or ALL
 ```
 
+## Running Tests Locally by Category
+
+### CLI Tool
+
+You can run UI tests for specific categories from the command line using the new CLI tool:
+
+```bash
+# List all available categories
+./eng/scripts/run-ui-tests-for-category.ps1 -ListCategories
+
+# Run single category
+./eng/scripts/run-ui-tests-for-category.ps1 -Category Button -Platform android
+
+# Run multiple categories
+./eng/scripts/run-ui-tests-for-category.ps1 -CategoryGroup "Button,Label,Entry" -Platform android
+
+# Analyze PR and run affected tests automatically
+./eng/scripts/run-ui-tests-for-category.ps1 -PrNumber 12345 -Platform android
+```
+
+### Time Savings
+
+| Test Scope | Time |
+|-----------|------|
+| Full suite | ~4 hours |
+| Single category (Button) | ~15 minutes |
+| 3 categories (Entry,Editor,SearchBar) | ~30 minutes |
+| PR-based (typical) | ~15-45 minutes |
+
+### Supported Platforms
+
+- **android** - Requires Android emulator or device
+- **ios** - Requires macOS with Xcode and simulator
+- **windows** - Requires Windows with Windows SDK
+- **catalyst** - Requires macOS with Xcode
+
+### Complete CLI Documentation
+
+See [CLI Testing Guide](../scripts/README-RUN-CATEGORY-TESTS.md) for:
+- Setup instructions per platform
+- Troubleshooting guide
+- Advanced usage examples
+- Integration with development workflow
+
 ## Configuration Details
 
 ### Analysis Script Parameters
