@@ -43,6 +43,31 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		ModuleDefinition Module { get; } = context.Body.Method.Module;
 
+		// Track properties that have been set to detect duplicates
+		readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+		void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+		{
+			if (!setProperties.TryGetValue(parentNode, out var props))
+			{
+				props = new HashSet<XmlName>();
+				setProperties[parentNode] = props;
+			}
+
+			if (!props.Add(propertyName))
+			{
+				// Property is being set multiple times
+				Context.LoggingHelper.LogWarningOrError(
+					DuplicatePropertyAssignment,
+					Context.XamlFilePath,
+					lineInfo.LineNumber,
+					lineInfo.LinePosition,
+					0,
+					0,
+					$"{parentNode.XmlType.Name}.{propertyName.LocalName}");
+			}
+		}
+
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			//TODO support Label text as element
@@ -67,6 +92,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
+
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
 
@@ -138,8 +164,39 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var name = new XmlName(node.NamespaceURI, contentProperty);
 					if (skips.Contains(name))
 						return;
-					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
+					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(name))
 						return;
+
+					// Only check for duplicate property assignment if the property is not a collection
+					// Get the property type to check if it's a collection (has Add method)
+					var propLocalName = name.LocalName;
+					var propBpRef = GetBindablePropertyReference(parentVar, name.NamespaceURI, ref propLocalName, out var attached, Context, node);
+					
+					TypeReference contentPropType = null;
+					bool canResolveProperty = false;
+					
+					if (CanGetValue(parentVar, propBpRef, attached, node, Context, out _))
+					{
+						GetValue(parentVar, propBpRef, node, Context, out contentPropType);
+						canResolveProperty = true;
+					}
+					else if (CanGet(parentVar, propLocalName, Context, out _))
+					{
+						Get(parentVar, propLocalName, node, Context, out contentPropType);
+						canResolveProperty = true;
+					}
+					
+					// Only check for duplicates if we can resolve the property and it's not a collection
+					if (canResolveProperty && contentPropType != null)
+					{
+						bool isCollection = contentPropType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
+							&& contentPropType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
+						
+						if (!isCollection)
+							CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+					}
+					// If we can't resolve the property type, skip the duplicate check to avoid false positives
+
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));
 				}
 				// Collection element, implicit content, or implicit collection element.
@@ -537,7 +594,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// continue compilation
 			}
 
-			if (   dataTypeNode is ElementNode enode
+			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{
