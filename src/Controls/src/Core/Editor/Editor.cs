@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -57,6 +58,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create(nameof(VerticalTextAlignment), typeof(TextAlignment), typeof(Editor), TextAlignment.Start);
 
+		/// <summary>Bindable property for <see cref="ReturnCommand"/>.</summary>
+		public static readonly BindableProperty ReturnCommandProperty = BindableProperty.Create(nameof(ReturnCommand), typeof(ICommand), typeof(Editor), default(ICommand));
+
+		/// <summary>Bindable property for <see cref="ReturnCommandParameter"/>.</summary>
+		public static readonly BindableProperty ReturnCommandParameterProperty = BindableProperty.Create(nameof(ReturnCommandParameter), typeof(object), typeof(Editor), default(object));
+
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
 		/// <summary>Gets or sets a value that controls whether the editor will change size to accommodate input as the user enters it.</summary>
@@ -77,6 +84,26 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
 			set { SetValue(VerticalTextAlignmentProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the command to run when the editor text is completed.
+		/// This is a bindable property.
+		/// </summary>
+		public ICommand ReturnCommand
+		{
+			get => (ICommand)GetValue(ReturnCommandProperty);
+			set => SetValue(ReturnCommandProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the parameter object for the <see cref="ReturnCommand" /> that can be used to provide extra information.
+		/// This is a bindable property.
+		/// </summary>
+		public object ReturnCommandParameter
+		{
+			get => GetValue(ReturnCommandParameterProperty);
+			set => SetValue(ReturnCommandParameterProperty, value);
 		}
 
 
@@ -112,7 +139,17 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
-			=> Completed?.Invoke(this, EventArgs.Empty);
+		{
+			if (IsEnabled)
+			{
+				Completed?.Invoke(this, EventArgs.Empty);
+
+				if (ReturnCommand is not null && ReturnCommand.CanExecute(ReturnCommandParameter))
+				{
+					ReturnCommand.Execute(ReturnCommandParameter);
+				}
+			}
+		}
 
 		protected override void OnTextChanged(string oldValue, string newValue)
 		{

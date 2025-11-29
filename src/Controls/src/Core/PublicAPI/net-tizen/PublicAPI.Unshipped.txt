@@ -1,1 +1,7 @@
 #nullable enable
+~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
+~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
