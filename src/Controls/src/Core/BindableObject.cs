@@ -308,7 +308,13 @@ namespace Microsoft.Maui.Controls
 				var currentValue = context.Values.GetValue();
 
 				context.Values.Remove(currentSpecificity);
-				context.Values.SetValue(SetterSpecificity.FromBinding, currentValue);
+				// Also remove any ManualValueSetter entries that might interfere with binding value comparison
+				// This fixes issue #29459 where switching bindings didn't trigger propertyChanged
+				if (currentSpecificity != SetterSpecificity.ManualValueSetter)
+				{
+					context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				}
+				context.Values[SetterSpecificity.FromBinding] = currentValue;
 			}
 
 			BindingBase oldBinding = null;
