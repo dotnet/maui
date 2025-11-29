@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2
 	{
+		Dictionary<string, object> _layoutPropertyCache = new();
 
 		public CollectionViewHandler2() : base(Mapper)
 		{
@@ -206,18 +207,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				itemsLayout.PropertyChanged += (sender, args) =>
 				{
+					// Handle all layout-affecting property changes with caching
 					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
 						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
 						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
 						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
 						args.PropertyName == nameof(GridItemsLayout.Span) ||
 						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-
 					{
-						UpdateLayout();
+						// Get the current value of the changed property
+						object newValue = GetPropertyValue(itemsLayout, args.PropertyName);
+						
+						// Check if value actually changed by comparing with cached value
+						if (!_layoutPropertyCache.TryGetValue(args.PropertyName, out var cachedValue) ||
+							!Equals(cachedValue, newValue))
+						{
+							// Update cache and trigger layout update
+							_layoutPropertyCache[args.PropertyName] = newValue;
+							UpdateLayout();
+						}
 					}
 				};
 			}
+		}
+
+		object GetPropertyValue(IItemsLayout itemsLayout, string propertyName)
+		{
+			return propertyName switch
+			{
+				nameof(GridItemsLayout.Span) when itemsLayout is GridItemsLayout grid => grid.Span,
+				nameof(GridItemsLayout.HorizontalItemSpacing) when itemsLayout is GridItemsLayout grid => grid.HorizontalItemSpacing,
+				nameof(GridItemsLayout.VerticalItemSpacing) when itemsLayout is GridItemsLayout grid => grid.VerticalItemSpacing,
+				nameof(LinearItemsLayout.ItemSpacing) when itemsLayout is LinearItemsLayout linear => linear.ItemSpacing,
+				nameof(ItemsLayout.SnapPointsAlignment) when itemsLayout is GridItemsLayout grid => grid.SnapPointsAlignment,
+				nameof(ItemsLayout.SnapPointsAlignment) when itemsLayout is LinearItemsLayout linear => linear.SnapPointsAlignment,
+				nameof(ItemsLayout.SnapPointsType) when itemsLayout is GridItemsLayout grid => grid.SnapPointsType,
+				nameof(ItemsLayout.SnapPointsType) when itemsLayout is LinearItemsLayout linear => linear.SnapPointsType,
+				_ => null
+			};
+		}
+
+		protected override void DisconnectHandler(UIView platformView)
+		{
+			_layoutPropertyCache?.Clear();
+			_layoutPropertyCache = null;
+			base.DisconnectHandler(platformView);
 		}
 	}
 }
