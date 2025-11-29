@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 		readonly string _btnSwipeAutomationId = "btnSwipe";
 
 		readonly ViewModelIssue12574 _viewModel;
-		readonly CarouselView2 _carouselView;
+		readonly CarouselView _carouselView;
 		readonly Button _btn;
 		readonly Button _btn2;
 		readonly Button _btn3;
@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample.Issues
 				_carouselView.ScrollTo(_viewModel.CurrentPosition);
 			};
 
-			_carouselView = new CarouselView2
+			_carouselView = new CarouselView
 			{
 				AutomationId = _carouselAutomationId,
 				Margin = new Thickness(30),
