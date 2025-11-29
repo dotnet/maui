@@ -461,6 +461,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
+			// Generate an icon from text
 			if (!string.IsNullOrWhiteSpace(text) && icon == null)
 			{
 				_flyoutIconDrawerDrawable ??= new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, null, text);
@@ -794,7 +795,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (!string.IsNullOrEmpty(Text))
 				{
 					var paint = new Paint { AntiAlias = true };
+					var maxTextWidth = Bounds.Width();
+
+					// Calculate the text size based on the available width
 					paint.TextSize = _defaultSize;
+					while (paint.MeasureText(Text) > maxTextWidth)
+					{
+						paint.TextSize -= 1f; // Decrease text size until it fits within the available width
+					}
+
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
 #pragma warning restore CA1416
