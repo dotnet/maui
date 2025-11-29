@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue31674"
+             Title="Issue 31674">
+    <VerticalStackLayout Spacing="10" Padding="20">
+        <Label Text="Test: HTML Label in Custom Layout with PositiveInfinity Measure" 
+               FontSize="16" 
+               FontAttributes="Bold"/>
+        
+        <Label Text="Expected: 'Hello HTML' text should be visible below" 
+               FontSize="12"/>
+        
+        <local:CustomLayout31674>
+            <local:CustomContentView31674>
+                <Label x:Name="HtmlLabel" 
+                       Text="&lt;b&gt;Hello HTML&lt;/b&gt;" 
+                       TextType="Html"
+                       AutomationId="HtmlLabel"/>
+            </local:CustomContentView31674>
+        </local:CustomLayout31674>
+        
+        <Label Text="For comparison, plain text Label:" 
+               FontSize="12"
+               Margin="0,20,0,0"/>
+        
+        <local:CustomLayout31674>
+            <local:CustomContentView31674>
+                <Label x:Name="PlainLabel" 
+                       Text="Hello Plain Text" 
+                       TextType="Text"
+                       AutomationId="PlainLabel"/>
+            </local:CustomContentView31674>
+        </local:CustomLayout31674>
+    </VerticalStackLayout>
+</ContentPage>
