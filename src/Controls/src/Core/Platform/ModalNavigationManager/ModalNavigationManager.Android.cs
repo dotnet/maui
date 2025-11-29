@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return Task.FromResult(modal);
 			}
 
-			var source = new TaskCompletionSource<Page>();
+			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			if (animated && dialogFragment.View is not null)
 			{
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			TaskCompletionSource<bool> animationCompletionSource = new();
+			TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			var parentView = GetModalParentView();
 
@@ -191,7 +191,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				animationCompletionSource.TrySetResult(true);
+				dialogFragment.Navigated += OnNavigated;
+				await animationCompletionSource.Task;
+			}
+
+			void OnNavigated(object? sender, EventArgs e)
+			{
+				dialogFragment.Navigated -= OnNavigated;
+				animationCompletionSource.SetResult(true);
 			}
 
 			void OnAnimationEnded(object? sender, EventArgs e)
@@ -211,6 +218,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public event EventHandler? AnimationEnded;
 
+			public event EventHandler? Navigated;
 
 			public bool IsAnimated { get; internal set; }
 
@@ -381,6 +389,12 @@ namespace Microsoft.Maui.Controls.Platform
 				base.OnDismiss(dialog);
 			}
 
+			public override void OnResume()
+			{
+				base.OnResume();
+				Navigated?.Invoke(this, EventArgs.Empty);
+			}
+
 			public override void OnDestroy()
 			{
 				base.OnDestroy();
@@ -397,7 +411,6 @@ namespace Microsoft.Maui.Controls.Platform
 				_pendingAnimation = false;
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
-
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
