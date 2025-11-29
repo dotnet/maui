@@ -8,7 +8,6 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
-using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
@@ -215,6 +214,7 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
+			bool _pendingNavigation = true;
 
 			public event EventHandler? AnimationEnded;
 
@@ -392,6 +392,13 @@ namespace Microsoft.Maui.Controls.Platform
 			public override void OnResume()
 			{
 				base.OnResume();
+
+				if (!_pendingNavigation)
+				{
+					return;
+				}
+
+				_pendingNavigation = false;
 				Navigated?.Invoke(this, EventArgs.Empty);
 			}
 
