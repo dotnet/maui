@@ -9,6 +9,11 @@
             FontAttributes="Bold"
             Margin="0,0,0,10"/>
         
+        <Button
+            Text="Click to trigger target=_blank link"
+            AutomationId="TriggerLinkButton"
+            Clicked="OnTriggerLinkClicked"/>
+        
         <Label 
             Text="Navigating event not triggered"
             AutomationId="NavigatingLabel"
@@ -37,19 +42,10 @@
                                 a { display: block; margin: 10px 0; padding: 10px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
                                 a:hover { background: #0056b3; }
                             </style>
-                            <script>
-                                window.onload = function() {
-                                    // Automatically trigger the target="_blank" link after page loads
-                                    setTimeout(function() {
-                                        document.getElementById('testLink').click();
-                                    }, 1000);
-                                };
-                            </script>
                         </head>
                         <body>
                             <h1>Test Target Blank Links</h1>
                             <a href="https://www.microsoft.com" target="_blank" id="testLink">Click me (opens in new window)</a>
-                            <a href="https://www.github.com" target="_blank" id="testLink2">Click me too (opens in new window)</a>
                         </body>
                         </html>
                         ]]>

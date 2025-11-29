@@ -11,6 +11,12 @@ public partial class Issue30539 : ContentPage
 		webView.Navigating += WebView_Navigating;
 	}
 
+	private async void OnTriggerLinkClicked(object? sender, EventArgs e)
+	{
+		// Use JavaScript to programmatically click the target="_blank" link
+		await webView.EvaluateJavaScriptAsync("document.getElementById('testLink').click();");
+	}
+
 	private void WebView_Navigating(object? sender, WebNavigatingEventArgs e)
 	{
 		var navigatingLabel = this.FindByName<Label>("NavigatingLabel");

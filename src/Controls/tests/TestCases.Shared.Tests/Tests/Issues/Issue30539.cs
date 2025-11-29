@@ -1,4 +1,3 @@
-#if IOS // This test is iOS-specific as the fix addresses iOS behavior for target="_blank" links
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,15 +16,15 @@ public class Issue30539 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void TargetBlankLinkShouldTriggerNavigatingEvent()
 	{
-		App.WaitForElement("TestInstructions");
+		// Wait for the page to load
+		App.WaitForElement("TriggerLinkButton");
 
-		// Wait for the WebView to load and the JavaScript to trigger the click
-		// The page will automatically click the target="_blank" link once loaded
-		// We need to wait for the Navigating event to be triggered and the label to update
+		// Click the button to trigger the target="_blank" link via JavaScript
+		App.Tap("TriggerLinkButton");
 
-		// Wait for the NavigatingLabel to change from "not triggered" to "triggered"
-		// Using a polling approach with retries instead of Thread.Sleep
-		var maxAttempts = 30; // 30 attempts * 500ms = 15 seconds max
+		// Wait for the NavigatingLabel to change to "triggered"
+		// Using a polling approach with retries
+		var maxAttempts = 20; // 20 attempts * 500ms = 10 seconds max
 		var navigatingLabel = App.WaitForElement("NavigatingLabel");
 
 		for (int i = 0; i < maxAttempts; i++)
@@ -50,11 +49,10 @@ public class Issue30539 : _IssuesUITest
 		var urlLabel = App.WaitForElement("UrlLabel");
 		var urlText = urlLabel?.GetText();
 		Assert.That(urlText, Does.Contain("URL:"));
-		Assert.That(urlText, Does.Contain("microsoft.com").Or.Contains("github.com"));
+		Assert.That(urlText, Does.Contain("microsoft.com"));
 
 		// Verify that navigation can be cancelled
 		var cancelLabel = App.WaitForElement("CancelLabel");
 		Assert.That(cancelLabel?.GetText(), Does.Contain("Can cancel: Yes"));
 	}
 }
-#endif
