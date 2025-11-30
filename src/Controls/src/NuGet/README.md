@@ -78,7 +78,7 @@ dotnet build -t:Run -f net10.0-ios
 
 Run on Windows:
 ```bash
-dotnet build -t:Run -f net10.0-windows
+dotnet build -t:Run -f net10.0-windows10.0.19041.0
 ```
 
 ## 💡 Quick Start Example
