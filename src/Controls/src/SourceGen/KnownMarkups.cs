@@ -218,13 +218,13 @@ internal class KnownMarkups
 		else if (modeStr == "FindAncestor" || modeStr == "FindAncestorBindingContext")
 		{
 			// These modes require AncestorType
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"FindAncestor and FindAncestorBindingContext require AncestorType"));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"RelativeSource Mode '{modeStr}' requires AncestorType"));
 			value = "default";
 			return false;
 		}
 		else
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Invalid RelativeSource Mode"));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Invalid RelativeSource Mode '{modeStr ?? "(none)"}'"));
 			value = "default";
 			return false;
 		}
