@@ -18,7 +18,7 @@ public class Issue32016 : _IssuesUITest
 
 		// Type characters up to MaxLength
 		App.Tap("TestEntry");
-		App.EnterText("TestEntry", "1234567890"); // MaxLength = 10
+		App.EnterText("TestEntry", "1234567890x");
 
 		var text = App.FindElement("TestEntry").GetText();
 		Assert.That(text!.Length, Is.EqualTo(10), "Text should be exactly 10 characters");
