@@ -829,6 +829,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tracker is ShellPageRendererTracker shellRendererTracker)
 				{
 					shellRendererTracker.UpdateToolbarItemsInternal(false);
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+						// we cannot set the TitleView yet as it would not layout correctly.
+						// So we update it later when the ViewController is added to the NavigationController
+						shellRendererTracker.UpdateTitleViewInternal();
+					}
 				}
 			}
 

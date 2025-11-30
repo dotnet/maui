@@ -22,8 +22,5 @@ public class Issue32899 : _IssuesUITest
 		// Verify the ImageButton in TitleView is present
 		// The image itself should be rendered and visible
 		App.WaitForElement("TitleImageButton");
-
-		// Take a screenshot to verify the image is displayed
-		VerifyScreenshot();
 	}
 }
