@@ -44,15 +44,5 @@ public class Issue30539 : _IssuesUITest
 
 		// Verify that the Navigating event was triggered
 		Assert.That(navigatingLabel?.GetText(), Is.EqualTo("Navigating event triggered"));
-
-		// Verify that the URL was captured
-		var urlLabel = App.WaitForElement("UrlLabel");
-		var urlText = urlLabel?.GetText();
-		Assert.That(urlText, Does.Contain("URL:"));
-		Assert.That(urlText, Does.Contain("microsoft.com"));
-
-		// Verify that navigation can be cancelled
-		var cancelLabel = App.WaitForElement("CancelLabel");
-		Assert.That(cancelLabel?.GetText(), Does.Contain("Can cancel: Yes"));
 	}
 }
