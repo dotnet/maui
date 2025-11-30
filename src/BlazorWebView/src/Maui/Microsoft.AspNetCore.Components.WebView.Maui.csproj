@@ -35,6 +35,10 @@
     <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <EmbeddedResource Include="Android\blazor.webview.es2019.js" LogicalName="blazor.webview.es2019.js" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
