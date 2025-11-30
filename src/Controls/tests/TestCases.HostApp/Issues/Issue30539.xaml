@@ -15,15 +15,18 @@
             Clicked="OnTriggerLinkClicked"/>
         
         <Label 
+            x:Name="navigatingLabel"
             Text="Navigating event not triggered"
             AutomationId="NavigatingLabel"
             TextColor="Red"/>
         
         <Label 
+            x:Name="urlLabel"
             Text="URL: None"
             AutomationId="UrlLabel"/>
         
         <Label 
+            x:Name="cancelLabel"
             Text="Can cancel: Not tested"
             AutomationId="CancelLabel"/>
         

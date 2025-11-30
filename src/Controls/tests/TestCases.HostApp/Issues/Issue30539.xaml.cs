@@ -19,29 +19,16 @@ public partial class Issue30539 : ContentPage
 
 	private void WebView_Navigating(object? sender, WebNavigatingEventArgs e)
 	{
-		var navigatingLabel = this.FindByName<Label>("NavigatingLabel");
-		var urlLabel = this.FindByName<Label>("UrlLabel");
+		navigatingLabel.Text = "Navigating event triggered";
+		navigatingLabel.TextColor = Colors.Green;
 
-		if (navigatingLabel != null)
-		{
-			navigatingLabel.Text = "Navigating event triggered";
-			navigatingLabel.TextColor = Colors.Green;
-		}
-
-		if (urlLabel != null)
-		{
-			urlLabel.Text = $"URL: {e.Url}";
-		}
+		urlLabel.Text = $"URL: {e.Url}";
 
 		// Cancel the navigation to prevent opening external browser
 		// This tests that the developer can control the behavior
 		e.Cancel = true;
 
-		var cancelLabel = this.FindByName<Label>("CancelLabel");
-		if (cancelLabel != null)
-		{
-			cancelLabel.Text = "Can cancel: Yes (navigation cancelled)";
-			cancelLabel.TextColor = Colors.Green;
-		}
+		cancelLabel.Text = "Can cancel: Yes (navigation cancelled)";
+		cancelLabel.TextColor = Colors.Green;
 	}
 }
