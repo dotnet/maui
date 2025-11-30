@@ -13,9 +13,8 @@
 	<ShellContent>
 		<ContentPage>
 			<VerticalStackLayout Padding="20"
-					Spacing="10">
-				<Label Text="The dotnet bot image should be visible in the title bar above."
-					   AutomationId="InstructionLabel"/>
+								 Spacing="10">
+				<Label Text="The dotnet bot image should be visible in the title bar above."/>
 			</VerticalStackLayout>
 		</ContentPage>
 	</ShellContent>
