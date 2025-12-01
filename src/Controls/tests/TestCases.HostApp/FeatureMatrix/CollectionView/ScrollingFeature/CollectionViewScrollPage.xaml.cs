@@ -18,62 +18,123 @@ public partial class CollectionViewScrollPage : ContentPage
 		BindingContext = _viewModel = new CollectionViewViewModel();
 		_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
 		_viewModel.ScrollToPosition = ScrollToPosition.MakeVisible;
+		ResetScrollEventLabels();
+		await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
+	}
+
+	public void ResetScrollEventLabels()
+	{
 		scrolledEventLabel.Text = "Not Fired";
 		scrollToRequestedLabel.Text = "Not Fired";
-		ScrollToIndexLabel.Text = "0";
-		ScrollToItemLabel.Text = "null";
 		remainingItemsThresholdLabel.Text = "Not Fired";
 		reorderCompletedLabel.Text = "Not Fired";
 		firstIndexLabel.Text = "0";
 		centerIndexLabel.Text = "0";
 		lastIndexLabel.Text = "0";
-		await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
+		indexLabel.Text = "0";
+		itemLabel.Text = "None";
+		groupIndexLabel.Text = "-1";
+		groupLabel.Text = "None";
 	}
 
-	private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+	private void OnScrolled(object sender, ItemsViewScrolledEventArgs e)
 	{
-		scrolledEventLabel.Text = "Scrolled Event Fired";
+		scrolledEventLabel.Text = "Fired";
 		firstIndexLabel.Text = e.FirstVisibleItemIndex.ToString();
 		centerIndexLabel.Text = e.CenterItemIndex.ToString();
 		lastIndexLabel.Text = e.LastVisibleItemIndex.ToString();
 	}
 
-	private void OnCollectionViewScrollToRequested(object sender, ScrollToRequestEventArgs e)
+	private void OnScrollToRequested(object sender, ScrollToRequestEventArgs e)
 	{
-		scrollToRequestedLabel.Text = "ScrollToRequested Event Fired";
-		ScrollToIndexLabel.Text = e.Index.ToString();
-		ScrollToItemLabel.Text = e.Item?.ToString();
+		scrollToRequestedLabel.Text = "Fired";
+		indexLabel.Text = e.Index.ToString();
+		itemLabel.Text = (e.Item as CollectionViewViewModel.CollectionViewTestItem)?.Caption ?? "None";
+		groupIndexLabel.Text = e.GroupIndex.ToString();
+		groupLabel.Text = e.Group?.ToString() ?? "None";
 	}
 
 	private void OnScrollToButtonClicked(object sender, EventArgs e)
 	{
-		if (_viewModel.ScrollToByIndexOrItem == "Index")
+		if (_viewModel.IsGrouped)
 		{
-			collectionView.ScrollTo(index: _viewModel.ScrollToIndex, position: _viewModel.ScrollToPosition, animate: true);
-		}
-		else if (_viewModel.ScrollToByIndexOrItem == "Item")
-		{
-			var itemsSource = _viewModel.ItemsSource;
-
-			if (itemsSource is ObservableCollection<CollectionViewViewModel.CollectionViewTestItem> items)
+			if (_viewModel.ScrollToByIndexOrItem == "Index")
 			{
-				var targetItem = items.FirstOrDefault(x => x.Caption == _viewModel.ScrollToItem);
-
-				if (targetItem != null)
-				{
-					collectionView.ScrollTo(targetItem, position: _viewModel.ScrollToPosition, animate: true);
-				}
+				ScrollToGroupedByIndex();
+			}
+			else
+			{
+				ScrollToGroupedByItem();
+			}
+		}
+		else
+		{
+			if (_viewModel.ScrollToByIndexOrItem == "Index")
+			{
+				ScrollToUngroupedByIndex();
+			}
+			else
+			{
+				ScrollToUngroupedByItem();
 			}
 		}
 	}
 
+	private void ScrollToGroupedByIndex()
+	{
+		if (_viewModel.ItemsSource is not List<Grouping<string, CollectionViewViewModel.CollectionViewTestItem>> groupedList)
+			return;
+
+		if (_viewModel.GroupIndex < 0 || _viewModel.GroupIndex >= groupedList.Count
+		|| _viewModel.ScrollToIndex < 0 || _viewModel.ScrollToIndex >= groupedList[_viewModel.GroupIndex].Count)
+			return;
+
+		collectionView.ScrollTo(groupIndex: _viewModel.GroupIndex, index: _viewModel.ScrollToIndex, position: _viewModel.ScrollToPosition, animate: true);
+	}
+
+	private void ScrollToGroupedByItem()
+	{
+		if (_viewModel.ItemsSource is not List<Grouping<string, CollectionViewViewModel.CollectionViewTestItem>> groupedList)
+			return;
+
+		// Find the selected group
+		var selectedGroup = groupedList.FirstOrDefault(g => g.Key == _viewModel.GroupName);
+		if (selectedGroup == null)
+			return;
+
+		// Find the item in the group
+		var targetItem = selectedGroup.FirstOrDefault(item => item.Caption == _viewModel.ScrollToItem);
+		if (targetItem == null)
+			return;
+
+		collectionView.ScrollTo(item: targetItem, group: selectedGroup.Key, position: _viewModel.ScrollToPosition, animate: true);
+	}
+
+	private void ScrollToUngroupedByIndex()
+	{
+		collectionView.ScrollTo(index: _viewModel.ScrollToIndex, position: _viewModel.ScrollToPosition, animate: true);
+	}
+
+	private void ScrollToUngroupedByItem()
+	{
+		if (_viewModel.ItemsSource is not ObservableCollection<CollectionViewViewModel.CollectionViewTestItem> items)
+			return;
+
+		// Find the item by caption
+		var targetItem = items.FirstOrDefault(x => x.Caption == _viewModel.ScrollToItem);
+		if (targetItem == null)
+			return;
+
+		collectionView.ScrollTo(item: targetItem, position: _viewModel.ScrollToPosition, animate: true);
+	}
+
 	private void OnRemainingItemsThresholdReached(object sender, EventArgs e)
 	{
-		remainingItemsThresholdLabel.Text = "RemainingItemsThresholdReached Event Fired";
+		remainingItemsThresholdLabel.Text = "Fired";
 	}
 
 	private void OnReorderCompleted(object sender, EventArgs e)
 	{
-		reorderCompletedLabel.Text = $"ReorderCompleted Event Fired";
+		reorderCompletedLabel.Text = "Fired";
 	}
 }

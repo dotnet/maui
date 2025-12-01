@@ -86,6 +86,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private object _selectedItem;
 	private ObservableCollection<object> _selectedItems = new ObservableCollection<object>();
 	private ScrollToPosition _scrollToPosition = ScrollToPosition.MakeVisible;
+	private string _groupName = "Fruits";
+	private int _groupIndex = 0;
 	private string _scrollToByIndexOrItem = "Index";
 	private string _scrollToItem;
 	private int _scrollToIndex = 0;
@@ -276,6 +278,32 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 			if (_scrollToPosition != value)
 			{
 				_scrollToPosition = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string GroupName
+	{
+		get => _groupName;
+		set
+		{
+			if (_groupName != value)
+			{
+				_groupName = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public int GroupIndex
+	{
+		get => _groupIndex;
+		set
+		{
+			if (_groupIndex != value)
+			{
+				_groupIndex = value;
 				OnPropertyChanged();
 			}
 		}
@@ -641,8 +669,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				new Grouping<string, CollectionViewTestItem>("Fruits", new List<CollectionViewTestItem>()),
 				new Grouping<string, CollectionViewTestItem>("Vegetables", new List<CollectionViewTestItem>())
 			};
-		AddItems(_groupedList[0], 4, "Fruits");
-		AddItems(_groupedList[1], 4, "Vegetables");
+		AddItems(_groupedList[0], 20, "Fruits");
+		AddItems(_groupedList[1], 20, "Vegetables");
 
 		_observableCollection3 = new ObservableCollection<CollectionViewTestItem>();
 		AddItems(_observableCollection3, 15, "Fruits");
