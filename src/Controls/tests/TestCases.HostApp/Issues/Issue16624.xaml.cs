@@ -10,7 +10,6 @@ public partial class Issue16624 : ContentPage
 
 	private void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
 	{
-		var statusLabel = this.FindByName<Label>("StatusLabel");
-		statusLabel.Text = $"Swiped {e.Direction}";
+		StatusLabel.Text = $"Swiped {e.Direction}";
 	}
 }
