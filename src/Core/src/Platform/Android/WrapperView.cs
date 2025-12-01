@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Platform
 
 			// Transfer any existing transforms from the inner view to the wrapper
 			// This handles the case where transforms were set before Shadow was added
-			TransferTransformsToContainer(platformView, containerView);
+			TransferTransformsPropertyValues(platformView, containerView, resetSource: true);
 
 			((ViewGroup)containerView).AddView(platformView);
 
@@ -203,6 +203,7 @@ namespace Microsoft.Maui.Platform
 			var oldIndex = oldParent?.IndexOfChild(containerView);
 			oldParent?.RemoveView(containerView);
 
+			TransferTransformsPropertyValues(containerView, platformView, resetSource: false);
 			CleanupContainerView(containerView, clearWrapperView);
 
 			if (oldIndex is int idx && idx >= 0)
@@ -219,48 +220,22 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static void TransferTransformsToContainer(AView innerView, AView wrapperView)
+		static void TransferTransformsPropertyValues(AView sourceView, AView targetView, bool resetSource)
 		{
-			if (innerView.ScaleX != 1.0f || innerView.ScaleY != 1.0f)
-			{
-				wrapperView.ScaleX = innerView.ScaleX;
-				wrapperView.ScaleY = innerView.ScaleY;
-				innerView.ScaleX = 1.0f;
-				innerView.ScaleY = 1.0f;
-			}
+			targetView.TranslationX = sourceView.TranslationX;
+			targetView.TranslationY = sourceView.TranslationY;
+			targetView.ScaleX = sourceView.ScaleX;
+			targetView.ScaleY = sourceView.ScaleY;
+			targetView.Rotation = sourceView.Rotation;
+			targetView.RotationX = sourceView.RotationX;
+			targetView.RotationY = sourceView.RotationY;
+			targetView.PivotX = sourceView.PivotX;
+			targetView.PivotY = sourceView.PivotY;
 
-			if (innerView.Rotation != 0.0f)
+			// Reset source to defaults if requested (needed when adding container, not when removing)
+			if (resetSource)
 			{
-				wrapperView.Rotation = innerView.Rotation;
-				innerView.Rotation = 0.0f;
-			}
-
-			if (innerView.RotationX != 0.0f)
-			{
-				wrapperView.RotationX = innerView.RotationX;
-				innerView.RotationX = 0.0f;
-			}
-
-			if (innerView.RotationY != 0.0f)
-			{
-				wrapperView.RotationY = innerView.RotationY;
-				innerView.RotationY = 0.0f;
-			}
-
-			if (innerView.TranslationX != 0.0f || innerView.TranslationY != 0.0f)
-			{
-				wrapperView.TranslationX = innerView.TranslationX;
-				wrapperView.TranslationY = innerView.TranslationY;
-				innerView.TranslationX = 0.0f;
-				innerView.TranslationY = 0.0f;
-			}
-
-			if (innerView.PivotX != (innerView.Width / 2.0f) || innerView.PivotY != (innerView.Height / 2.0f))
-			{
-				wrapperView.PivotX = innerView.PivotX;
-				wrapperView.PivotY = innerView.PivotY;
-				innerView.PivotX = innerView.Width / 2.0f;
-				innerView.PivotY = innerView.Height / 2.0f;
+				sourceView.ResetTransform();
 			}
 		}
 	}
