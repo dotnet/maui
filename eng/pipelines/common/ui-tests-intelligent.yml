@@ -39,29 +39,20 @@ stages:
         pool: ${{ parameters.androidPool }}
         steps:
           - checkout: self
-            fetchDepth: 0
+            clean: true
+            fetchDepth: 1
           
-          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
-            displayName: 'Install .NET'
-            retryCountOnTaskFailure: 2
-            env:
-              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-              PRIVATE_BUILD: $(PrivateBuild)
-          
-          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-            displayName: 'Add .NET to PATH'
-          
-          # Run the analysis script
+          # Run the analysis script (it will install GitHub CLI if needed)
           - task: PowerShell@2
             name: AnalyzePR
             displayName: Analyze PR Changes
             env:
               GITHUB_TOKEN: $(GitHubToken)
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
               filePath: '$(System.DefaultWorkingDirectory)/eng/scripts/analyze-pr-changes.ps1'
               arguments: '-OutputFile $(System.DefaultWorkingDirectory)/test-categories.txt'
               pwsh: true
+              errorActionPreference: 'stop'
           
           # Generate JSON matrix for dynamic job generation
           - task: PowerShell@2
@@ -94,30 +85,7 @@ stages:
                 Write-Host "##vso[task.setVariable variable=hasTests;isOutput=true]true"
               pwsh: true
           
-          # Publish analysis results as artifact
-          - task: PublishPipelineArtifact@1
-            displayName: Publish Test Category Analysis
-            inputs:
-              targetPath: '$(System.DefaultWorkingDirectory)/test-categories.txt'
-              artifactName: 'test-category-analysis'
-          
-          # Display results in pipeline logs
-          - task: PowerShell@2
-            displayName: Display Analysis Results
-            inputs:
-              targetType: 'inline'
-              script: |
-                Write-Host "=== Test Categories Selected ===" -ForegroundColor Cyan
-                if (Test-Path "$(System.DefaultWorkingDirectory)/test-categories.txt") {
-                  Get-Content "$(System.DefaultWorkingDirectory)/test-categories.txt" | ForEach-Object {
-                    Write-Host "  Category Group: $_" -ForegroundColor Green
-                  }
-                } else {
-                  Write-Host "  No test categories file found" -ForegroundColor Yellow
-                }
-                Write-Host "Test Strategy: $(TestStrategy)" -ForegroundColor Cyan
-                Write-Host "Should Run Tests: $(ShouldRunTests)" -ForegroundColor Cyan
-              pwsh: true
+
 
   - stage: build_ui_tests
     displayName: Build UITests Sample App
