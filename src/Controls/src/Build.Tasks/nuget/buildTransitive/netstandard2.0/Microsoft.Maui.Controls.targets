@@ -322,17 +322,14 @@
                                       Condition="'$(MauiHybridWebViewSupported)' != ''"
                                       Value="$(MauiHybridWebViewSupported)"
                                       Trim="true" />
-<<<<<<< HEAD
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCssEnabled"
                                       Condition="'$(MauiCssEnabled)' != ''"
                                       Value="$(MauiCssEnabled)"
                                       Trim="true" />
-||||||| 3f26a592b2
-=======
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
                                       Condition="'$(MauiNamescopesSupported)' != ''"
                                       Value="$(MauiNamescopesSupported)"
-                                      Trim="true" />      
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
@@ -341,7 +338,6 @@
                                       Condition="'$(_EnableMauiAspire)' != ''"
                                       Value="$(_EnableMauiAspire)"
                                       Trim="true" />
->>>>>>> 485b400ee4a317af11647f3e64085d7d8d4d5f17
     </ItemGroup>
   </Target>
 

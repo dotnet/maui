@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutItem']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Always)]
 #if WINDOWS || TIZEN
-	[ElementHandler(typeof(ShellItemHandler))]
+	[ElementHandler(typeof(Handlers.ShellItemHandler))]
 #endif
 	public class FlyoutItem : ShellItem
 	{
