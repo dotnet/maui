@@ -110,7 +110,7 @@ parameters:
 
 stages:
 
-  - template: common/ui-tests.yml
+  - template: common/ui-tests-intelligent.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
       androidLinuxPool: ${{ parameters.androidPoolLinux }}
