@@ -343,7 +343,7 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
                                       Condition="'$(MauiNamescopesSupported)' != ''"
                                       Value="$(MauiNamescopesSupported)"
-                                      Trim="true" />      
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
