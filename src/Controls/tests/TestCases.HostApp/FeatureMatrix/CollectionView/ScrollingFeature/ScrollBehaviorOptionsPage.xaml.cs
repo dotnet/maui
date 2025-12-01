@@ -67,6 +67,21 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 		}
 	}
 
+	private void OnGroupNameChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton radioButton) || !e.Value)
+			return;
+
+		if (radioButton == FruitGroup)
+		{
+			_viewModel.GroupName = "Fruits";
+		}
+		else if (radioButton == VegetableGroup)
+		{
+			_viewModel.GroupName = "Vegetables";
+		}
+	}
+
 	private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (ItemsLayoutVerticalList.IsChecked)
@@ -121,6 +136,14 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 		if (int.TryParse(ScrollToIndexEntry.Text, out int index))
 		{
 			_viewModel.ScrollToIndex = index;
+		}
+	}
+
+	private void GroupIndexEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (int.TryParse(GroupIndexEntry.Text, out int groupIndex))
+		{
+			_viewModel.GroupIndex = groupIndex;
 		}
 	}
 

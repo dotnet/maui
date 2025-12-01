@@ -35,16 +35,29 @@
                 <Label Text="ScrollToRequested Event: "/>
                 <Label x:Name="scrollToRequestedLabel" Text="Not Fired" AutomationId="ScrollToRequestedLabel"/>
             </HorizontalStackLayout>
+
             <HorizontalStackLayout Spacing="2">
                 <HorizontalStackLayout>
                     <Label Text="Index: "/>
-                    <Label x:Name="ScrollToIndexLabel" Text="0" AutomationId="ScrollToIndexLabel"/>
+                    <Label x:Name="indexLabel" Text="0" AutomationId="IndexLabel"/>
                 </HorizontalStackLayout>
+
+                <HorizontalStackLayout>
+                    <Label Text="GroupIndex: " />
+                    <Label x:Name="groupIndexLabel" Text="-1" AutomationId="GroupIndexLabel"/>
+                </HorizontalStackLayout>
+
                 <HorizontalStackLayout>
                     <Label Text="Item: "/>
-                    <Label x:Name="ScrollToItemLabel" Text="null" AutomationId="ScrollToItemLabel"/>
+                    <Label x:Name="itemLabel" Text="None" AutomationId="ItemLabel"/>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout>
+                    <Label Text="GroupName: "/>
+                    <Label x:Name="groupLabel" Text="None" AutomationId="GroupLabel"/>
                 </HorizontalStackLayout>
             </HorizontalStackLayout>
+
             <HorizontalStackLayout>
                 <Label Text="RemainingItemsThresholdReached Event: "/>
                 <Label x:Name="remainingItemsThresholdLabel" Text="Not Fired" AutomationId="RemainingItemsThresholdLabel"/>
@@ -70,8 +83,8 @@
                 IsGrouped="{Binding IsGrouped}"
                 GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
                 ItemsLayout="{Binding ItemsLayout}"
-                Scrolled="OnCollectionViewScrolled"
-                ScrollToRequested="OnCollectionViewScrollToRequested"
+                Scrolled="OnScrolled"
+                ScrollToRequested="OnScrollToRequested"
                 RemainingItemsThreshold="5"
                 RemainingItemsThresholdReached="OnRemainingItemsThresholdReached"
                 ReorderCompleted="OnReorderCompleted"

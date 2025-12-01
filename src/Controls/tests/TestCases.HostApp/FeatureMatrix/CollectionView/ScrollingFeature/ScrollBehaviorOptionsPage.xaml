@@ -108,22 +108,47 @@
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
 
-                <Label Text="IsGrouped:"
-                       FontSize="12"
-                       FontAttributes="Bold"/>
-                <StackLayout Orientation="Horizontal">
-                    <RadioButton x:Name="IsGroupedTrue"
-                                 Content="True"
-                                 CheckedChanged="OnIsGroupedChanged"
-                                 FontSize="11"
-                                 AutomationId="IsGroupedTrue"/>
-                    <RadioButton x:Name="IsGroupedFalse"
-                                 Content="False"
-                                 IsChecked="True"
-                                 CheckedChanged="OnIsGroupedChanged"
-                                 FontSize="11"
-                                 AutomationId="IsGroupedFalse"/>
-                </StackLayout>
+                <HorizontalStackLayout>
+                    <VerticalStackLayout>
+                        <Label Text="IsGrouped:"
+                               FontSize="12"
+                               FontAttributes="Bold"/>
+                        <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="IsGroupedTrue"
+                                         Content="True"
+                                         CheckedChanged="OnIsGroupedChanged"
+                                         FontSize="11"
+                                         AutomationId="IsGroupedTrue"/>
+                            <RadioButton x:Name="IsGroupedFalse"
+                                         Content="False"
+                                         IsChecked="True"
+                                         CheckedChanged="OnIsGroupedChanged"
+                                         FontSize="11"
+                                         AutomationId="IsGroupedFalse"/>
+                        </StackLayout>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <!-- Grouped Selection -->
+                        <Label Text="Group Name:"
+                               FontSize="12"
+                               FontAttributes="Bold"/>
+                        <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="FruitGroup"
+                                         Content="Fruit"
+                                         IsChecked="True"
+                                         CheckedChanged="OnGroupNameChanged"
+                                         FontSize="11"
+                                         AutomationId="FruitGroup"/>
+                            <RadioButton x:Name="VegetableGroup"
+                                         Content="Vegetable"
+                                         CheckedChanged="OnGroupNameChanged"
+                                         FontSize="11"
+                                         AutomationId="VegetableGroup"/>
+                        </StackLayout>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
                 <Label Text="ItemsLayout:"
                        FontAttributes="Bold"
                        FontSize="12"/>
@@ -204,6 +229,7 @@
                     <RadioButton x:Name="ScrollToByIndex"
                                  Content="Index"
                                  FontSize="11"
+                                 IsChecked="True"
                                  GroupName="ScrollToButton"
                                  CheckedChanged="ScrollToIndexItemChanged"
                                  AutomationId="ScrollToByIndex"/>
@@ -237,13 +263,26 @@
                                FontAttributes="Bold"
                                FontSize="12"/>
                         <Entry x:Name="ScrollToItemEntry"
-                               Text="0"
                                FontSize="11"
                                Keyboard="Text"
                                HorizontalOptions="Start"
                                TextChanged="ScrollToItemEntry_TextChanged"
                                WidthRequest="100"
                                AutomationId="ScrollToItemEntry"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="GroupIndex:"
+                               FontAttributes="Bold"
+                               FontSize="12"/>
+                        <Entry x:Name="GroupIndexEntry"
+                               Text="-1"
+                               FontSize="11"
+                               Keyboard="Numeric"
+                               HorizontalOptions="Start"
+                               TextChanged="GroupIndexEntry_TextChanged"
+                               WidthRequest="100"
+                               AutomationId="GroupIndexEntry"/>
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
 
