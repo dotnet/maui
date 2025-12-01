@@ -28,8 +28,7 @@ jobs:
             "name": "similar-issues-finder",
             "version": "1.0.0",
             "dependencies": {
-              "@octokit/rest": "^20.0.0",
-              "@azure/openai": "^1.0.0"
+              "@octokit/rest": "^20.0.0"
             }
           }
           PACKAGEJSON
@@ -48,8 +47,8 @@ jobs:
         run: |
           node << 'EOF'
           const { Octokit } = require("@octokit/rest");
-          const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
           const fs = require('fs');
+          const https = require('https');
           
           const octokit = new Octokit({
             auth: process.env.GITHUB_TOKEN
@@ -58,11 +57,7 @@ jobs:
           // GitHub Models endpoint
           const endpoint = "https://models.inference.ai.azure.com";
           const modelName = "gpt-4o-mini";
-          
-          const client = new OpenAIClient(
-            endpoint,
-            new AzureKeyCredential(process.env.GITHUB_TOKEN)
-          );
+          const githubToken = process.env.GITHUB_TOKEN;
           
           const issueNumber = parseInt(process.env.ISSUE_NUMBER);
           const issueTitle = process.env.ISSUE_TITLE;
@@ -269,21 +264,30 @@ jobs:
                 const userPrompt = "Current Issue:" + platformInfo + "\\n" + currentIssue + 
                   "\\n\\n---\\n\\nCompare with:" + candidatePlatformInfo + "\\n" + candidateText;
                 
-                const response = await client.chat.completions.create({
-                  messages: [
-                    {
-                      role: "system",
-                      content: systemPrompt
-                    },
-                    {
-                      role: "user",
-                      content: userPrompt
-                    }
-                  ],
-                  model: modelName,
-                  temperature: 0.3,
-                  max_tokens: 150
+                const apiResponse = await fetch(endpoint + "/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + githubToken
+                  },
+                  body: JSON.stringify({
+                    messages: [
+                      {
+                        role: "system",
+                        content: systemPrompt
+                      },
+                      {
+                        role: "user",
+                        content: userPrompt
+                      }
+                    ],
+                    model: modelName,
+                    temperature: 0.3,
+                    max_tokens: 150
+                  })
                 });
+                
+                const response = await apiResponse.json();
                 
                 const content = response.choices[0].message.content.trim();
                 console.log(`AI Response for #${issue.number}:`, content);
