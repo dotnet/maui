@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // Tab bar does not appear on Catalyst, therefore unable to tab on tab items, this issue has been resolved in the following PR https://github.com/dotnet/maui/pull/32528
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,7 +32,11 @@ public class Issue29824 : _IssuesUITest
 		App.WaitForElement("Settings");
 		App.Tap("Settings");
 		GoToHomeTab();
+#if WINDOWS
+		App.TapBackArrow();
+#else
 		App.Back();
+#endif
 		GoToSettingTab();
 		VerifyScreenshot();
 	}
@@ -60,3 +65,4 @@ public class Issue29824 : _IssuesUITest
 		App.Tap("Home");
 	}
 }
+#endif
