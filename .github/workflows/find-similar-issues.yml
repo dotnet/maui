@@ -140,9 +140,9 @@ jobs:
                   interactionScore
                 };
               })
-              .filter(c => c.quickScore > 0.15) // Only keep reasonable candidates
+              .filter(c => c.quickScore > 0.10) // Only keep reasonable candidates (lowered threshold)
               .sort((a, b) => b.quickScore - a.quickScore)
-              .slice(0, 50); // Top 50 candidates for AI analysis
+              .slice(0, 100); // Top 100 candidates for AI analysis (increased for better coverage)
               
               console.log(`Filtered to ${candidates.length} candidates for AI analysis`);
               
@@ -289,8 +289,17 @@ jobs:
                 
                 const response = await apiResponse.json();
                 
-                const content = response.choices[0].message.content.trim();
+                // Check for API errors
+                if (!response.choices || !response.choices[0]) {
+                  console.error(`Invalid API response for #${issue.number}:`, JSON.stringify(response));
+                  continue;
+                }
+                
+                let content = response.choices[0].message.content.trim();
                 console.log(`AI Response for #${issue.number}:`, content);
+                
+                // Remove markdown code blocks if present
+                content = content.replace(/^```json\s*/gm, '').replace(/^```\s*/gm, '').trim();
                 
                 const result = JSON.parse(content);
                 let aiScore = parseFloat(result.score);
@@ -303,7 +312,7 @@ jobs:
                 // Apply time decay to final score
                 const finalScore = aiScore * (0.85 + (timeDecay * 0.15));
                 
-                if (finalScore >= 0.70) {
+                if (finalScore >= 0.60) { // Lowered from 0.70 to catch more potential matches
                   const ageInDays = Math.floor((Date.now() - new Date(issue.created_at)) / (1000 * 60 * 60 * 24));
                   const isPopular = issue.comments > 5 || (issue.reactions && issue.reactions.total_count > 5);
                   
