@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
+	/// <remarks>
+	/// This change demonstrates intelligent UI test execution - only Button category tests should run.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
