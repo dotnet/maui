@@ -23,6 +23,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	public const string ItemsLayoutHorizontalGrid = "ItemsLayoutHorizontalGrid";
 	public const string ItemsLayoutVerticalList = "ItemsLayoutVerticalList";
 	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
+	public const string ScrollToIndexEntry = "ScrollToIndexEntry";
 	public const string AddButton = "AddButton";
 	public const string FlowDirectionLTR = "FlowDirectionLeftToRight";
 	public const string FlowDirectionRTL = "FlowDirectionRightToLeft";
@@ -772,7 +773,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 
@@ -799,7 +800,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // //CollectionView ItemsLayout does not update Issue Link: https://github.com/dotnet/maui/issues/27946
@@ -824,7 +825,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -848,7 +849,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -872,7 +873,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -900,7 +901,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -928,7 +929,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -956,7 +957,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Dragonfruit");
 		App.Tap(AddButton);
 		App.WaitForElement("Passionfruit");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 #endif
 #endif
@@ -1262,7 +1263,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Passionfruit");
 		App.WaitForElement("Cabbage");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1292,7 +1293,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Mango");
 		App.WaitForElement("Pumpkin");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1352,7 +1353,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Passionfruit");
 		App.WaitForElement("Cabbage");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1381,7 +1382,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Passionfruit");
 		App.WaitForElement("Cabbage");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1409,7 +1410,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Passionfruit");
 		App.WaitForElement("Cabbage");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1440,7 +1441,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Mango");
 		App.WaitForElement("Pumpkin");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1473,7 +1474,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Mango");
 		App.WaitForElement("Pumpkin");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1505,7 +1506,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(AddButton);
 		App.WaitForNoElement("Mango");
 		App.WaitForElement("Pumpkin");
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 #endif
 #endif
@@ -1524,13 +1525,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
-//CollectionView Fails to Preserve Scroll Offset with GridItemsLayout Using KeepScrollOffset Issue Link: https://github.com/dotnet/maui/issues/29202
-//CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
-//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
+	//CollectionView Fails to Preserve Scroll Offset with GridItemsLayout Using KeepScrollOffset Issue Link: https://github.com/dotnet/maui/issues/29202
+	//CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
+	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -1547,7 +1548,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1565,7 +1566,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1583,7 +1584,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Scrolled Event Fired"));
+		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
 #endif
 
@@ -1604,66 +1605,76 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithMakeVisiblePositionAndVerticalList_Spinach()
+	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "17");
+		App.EnterText("ScrollToIndexEntry", "12");
+		App.WaitForElement("ScrollToPositionMakeVisible");
+		App.Tap("ScrollToPositionMakeVisible");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Spinach");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithStartPositionAndVerticalList_Mango()
+	public void VerifyScrollToByIndexWithStartPositionAndVerticalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
 		App.WaitForElement("ScrollToPositionStart");
 		App.Tap("ScrollToPositionStart");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "4");
+		App.EnterText("ScrollToIndexEntry", "12");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Mango");
-		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithCenterPositionAndVerticalList_Kiwi()
+	public void VerifyScrollToByIndexWithCenterPositionAndVerticalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
 		App.WaitForElement("ScrollToPositionCenter");
 		App.Tap("ScrollToPositionCenter");
 		App.WaitForElement("ScrollToIndexEntry");
@@ -1675,34 +1686,434 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithEndPositionAndVerticalList_Potato()
+	public void VerifyScrollToByIndexWithEndPositionAndVerticalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
 		App.WaitForElement("ScrollToPositionEnd");
 		App.Tap("ScrollToPositionEnd");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "18");
+		App.EnterText("ScrollToIndexEntry", "12");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("CollectionViewControl");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
+		VerifyScreenshot();
+	}
+
+	//
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithStartPositionAndVerticalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithCenterPositionAndVerticalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionCenter");
+		App.Tap("ScrollToPositionCenter");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithEndPositionAndVerticalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionEnd");
+		App.Tap("ScrollToPositionEnd");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	// Grouped ScrollTo By Index Tests
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndVerticalList_Papaya()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToIndexEntry");
+		App.ClearText("ScrollToIndexEntry");
+		App.EnterText("ScrollToIndexEntry", "11");
+		App.WaitForElement("GroupIndexEntry");
+		App.ClearText("GroupIndexEntry");
+		App.EnterText("GroupIndexEntry", "0");
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
+		App.WaitForElement("ScrollToPositionMakeVisible");
+		App.Tap("ScrollToPositionMakeVisible");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Papaya");
+		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("0"));
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("11"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndVerticalList_Carrot()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement("ScrollToIndexEntry");
+		App.ClearText("ScrollToIndexEntry");
+		App.EnterText("ScrollToIndexEntry", "0");
+		App.WaitForElement("GroupIndexEntry");
+		App.ClearText("GroupIndexEntry");
+		App.EnterText("GroupIndexEntry", "1");
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Carrot");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("14"));
+		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("0"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndVerticalList_Potato()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToIndexEntry");
+		App.ClearText("ScrollToIndexEntry");
+		App.EnterText("ScrollToIndexEntry", "3");
+		App.WaitForElement("GroupIndexEntry");
+		App.ClearText("GroupIndexEntry");
+		App.EnterText("GroupIndexEntry", "1");
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
+		App.WaitForElement("ScrollToPositionCenter");
+		App.Tap("ScrollToPositionCenter");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Potato");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("18"));
+		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("3"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndVerticalList_Papaya()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToIndexEntry");
+		App.ClearText("ScrollToIndexEntry");
+		App.EnterText("ScrollToIndexEntry", "11");
+		App.WaitForElement("GroupIndexEntry");
+		App.ClearText("GroupIndexEntry");
+		App.EnterText("GroupIndexEntry", "0");
+		App.WaitForElement("ScrollToByIndex");
+		App.Tap("ScrollToByIndex");
+		App.WaitForElement("ScrollToPositionEnd");
+		App.Tap("ScrollToPositionEnd");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Papaya");
+		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("0"));
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("11"));
+		VerifyScreenshot();
+	}
+
+	//Grouped ScrollTo By Item Tests
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupItemScrollToByItemWithMakeVisiblePositionAndVerticalList_Papaya()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Papaya");
+		App.WaitForElement("ScrollToPositionMakeVisible");
+		App.Tap("ScrollToPositionMakeVisible");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Papaya");
+		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Papaya"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupItemScrollToByItemWithStartPositionAndVerticalList_Carrot()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("VegetableGroup");
+		App.Tap("VegetableGroup");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Carrot");
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Carrot");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("14"));
+		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupItemScrollToByItemWithCenterPositionAndVerticalList_Potato()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("VegetableGroup");
+		App.Tap("VegetableGroup");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Potato");
+		App.WaitForElement("ScrollToPositionCenter");
+		App.Tap("ScrollToPositionCenter");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Potato");
+		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Potato"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupItemScrollToByItemWithEndPositionAndVerticalList_Papaya()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Papaya");
+		App.WaitForElement("ScrollToPositionEnd");
+		App.Tap("ScrollToPositionEnd");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Papaya");
+		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Papaya"));
 		VerifyScreenshot();
 	}
 
@@ -1721,7 +2132,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("RemainingItemsThresholdLabel");
-		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("RemainingItemsThresholdReached Event Fired"));
+		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -1742,17 +2153,17 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.DragAndDrop("Banana", "Mango");
 		App.WaitForElement("ReorderCompletedLabel");
-		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("ReorderCompleted Event Fired"));
+		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
-//CollectionView Fails to Preserve Scroll Offset with GridItemsLayout Using KeepScrollOffset Issue Link: https://github.com/dotnet/maui/issues/29202
-//CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
-//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
+	//CollectionView Fails to Preserve Scroll Offset with GridItemsLayout Using KeepScrollOffset Issue Link: https://github.com/dotnet/maui/issues/29202
+	//CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
+	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithMakeVisiblePositionAndVerticalGrid_Pumpkin()
+	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Radish()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1760,7 +2171,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "26");
+		App.EnterText("ScrollToIndexEntry", "27");
 		App.WaitForElement(ItemsLayoutVerticalGrid);
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
@@ -1770,15 +2181,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Pumpkin");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("26"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Radish");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("27"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithMakeVisiblePositionAndHorizontalList_Spinach()
+	public void VerifyScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1786,7 +2198,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "17");
+		App.EnterText("ScrollToIndexEntry", "12");
 		App.WaitForElement(ItemsLayoutHorizontalList);
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
@@ -1796,15 +2208,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Spinach");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithMakeVisiblePositionAndHorizontalGrid_Spinach()
+	public void VerifyScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1812,7 +2225,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "17");
+		App.EnterText("ScrollToIndexEntry", "13");
 		App.WaitForElement(ItemsLayoutHorizontalGrid);
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
@@ -1822,15 +2235,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Spinach");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Pear");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("13"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithStartPositionAndVerticalGrid_Mango()
+	public void VerifyScrollToByIndexWithStartPositionAndVerticalGrid_Mango()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1850,15 +2264,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Mango");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("4"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithStartPositionAndHorizontalList_Spinach()
+	public void VerifyScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1868,7 +2283,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollToPositionStart");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "17");
+		App.EnterText("ScrollToIndexEntry", "12");
 		App.WaitForElement(ItemsLayoutHorizontalList);
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
@@ -1878,15 +2293,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Spinach");
-		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithStartPositionAndHorizontalGrid_Spinach()
+	public void VerifyScrollToByIndexWithStartPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1896,7 +2312,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollToPositionStart");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "17");
+		App.EnterText("ScrollToIndexEntry", "12");
 		App.WaitForElement(ItemsLayoutHorizontalGrid);
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
@@ -1906,15 +2322,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Spinach");
-		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("17"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithCenterPositionAndVerticalGrid_Kiwi()
+	public void VerifyScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1934,15 +2351,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithCenterPositionAndHorizontalList_Kiwi()
+	public void VerifyScrollToByIndexWithCenterPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1962,15 +2380,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithCenterPositionAndHorizontalGrid_Kiwi()
+	public void VerifyScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1990,15 +2409,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithEndPositionAndVerticalGrid_Pumpkin()
+	public void VerifyScrollToByIndexWithEndPositionAndVerticalGrid_Radish()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -2008,7 +2428,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollToPositionEnd");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "26");
+		App.EnterText("ScrollToIndexEntry", "27");
 		App.WaitForElement(ItemsLayoutVerticalGrid);
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
@@ -2018,15 +2438,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
-		App.WaitForElement("Pumpkin");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("26"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Radish");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("27"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithEndPositionAndHorizontalList_Kiwi()
+	public void VerifyScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -2046,15 +2467,16 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToWithEndPositionAndHorizontalGrid_Kiwi()
+	public void VerifyScrollToByIndexWithEndPositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -2064,7 +2486,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollToPositionEnd");
 		App.WaitForElement("ScrollToIndexEntry");
 		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "12");
+		App.EnterText("ScrollToIndexEntry", "13");
 		App.WaitForElement(ItemsLayoutHorizontalGrid);
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
@@ -2074,9 +2496,378 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("ScrollToRequested Event Fired"));
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Pear");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
+		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("13"));
+		VerifyScreenshot();
+	}
+
+
+	// ScrollToByItem Tests
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalGrid_Radish()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Radish");
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Radish");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Radish"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithMakeVisiblePositionAndHorizontalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithMakeVisiblePositionAndHorizontalGrid_Pear()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Pear");
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Pear");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Pear"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithStartPositionAndVerticalGrid_Mango()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Mango");
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Mango");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Mango"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithStartPositionAndHorizontalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithStartPositionAndHorizontalGrid_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionStart");
+		App.Tap("ScrollToPositionStart");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithCenterPositionAndVerticalGrid_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionCenter");
+		App.Tap("ScrollToPositionCenter");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithCenterPositionAndHorizontalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionCenter");
+		App.Tap("ScrollToPositionCenter");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithCenterPositionAndHorizontalGrid_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionCenter");
+		App.Tap("ScrollToPositionCenter");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithEndPositionAndVerticalGrid_Radish()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionEnd");
+		App.Tap("ScrollToPositionEnd");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Radish");
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Radish");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Radish"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithEndPositionAndHorizontalList_Kiwi()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionEnd");
+		App.Tap("ScrollToPositionEnd");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Kiwi");
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Kiwi");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyScrollToByItemWithEndPositionAndHorizontalGrid_Pear()
+	{
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("ScrollToByItem");
+		App.Tap("ScrollToByItem");
+		App.WaitForElement("ScrollToPositionEnd");
+		App.Tap("ScrollToPositionEnd");
+		App.WaitForElement("ScrollToItemEntry");
+		App.ClearText("ScrollToItemEntry");
+		App.EnterText("ScrollToItemEntry", "Pear");
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.WaitForElement("ScrollTo");
+		App.Tap("ScrollTo");
+		App.WaitForElement("ScrollToRequestedLabel");
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		App.WaitForElement("Pear");
+		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
+		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Pear"));
 		VerifyScreenshot();
 	}
 
@@ -2099,7 +2890,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("RemainingItemsThresholdLabel");
-		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("RemainingItemsThresholdReached Event Fired"));
+		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -2120,7 +2911,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 100);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 100);
 		App.WaitForElement("RemainingItemsThresholdLabel");
-		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("RemainingItemsThresholdReached Event Fired"));
+		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -2140,7 +2931,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("RemainingItemsThresholdLabel");
-		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("RemainingItemsThresholdReached Event Fired"));
+		Assert.That(App.WaitForElement("RemainingItemsThresholdLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	//ReorderCompleted Event Tests
@@ -2163,7 +2954,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.DragAndDrop("Banana", "Mango");
 		App.WaitForElement("ReorderCompletedLabel");
-		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("ReorderCompleted Event Fired"));
+		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -2184,7 +2975,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.DragAndDrop("Banana", "Mango");
 		App.WaitForElement("ReorderCompletedLabel");
-		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("ReorderCompleted Event Fired"));
+		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Fired"));
 	}
 
 	[Test]
@@ -2205,7 +2996,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Not Fired"));
 		App.DragAndDrop("Banana", "Mango");
 		App.WaitForElement("ReorderCompletedLabel");
-		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("ReorderCompleted Event Fired"));
+		Assert.That(App.WaitForElement("ReorderCompletedLabel").GetText(), Is.EqualTo("Fired"));
 	}
 #endif
 }
