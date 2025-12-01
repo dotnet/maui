@@ -133,6 +133,7 @@ steps:
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
     # Use environment variable for testFilter to support runtime variables from matrix
+    Write-Host "TEST_FILTER environment variable: $env:TEST_FILTER"
     $testFilterParam = "$env:TEST_FILTER"
     if (-not $testFilterParam) {
       $testFilterParam = "${{ parameters.testFilter }}"
@@ -166,6 +167,7 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    TEST_FILTER: $(TEST_FILTER)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
