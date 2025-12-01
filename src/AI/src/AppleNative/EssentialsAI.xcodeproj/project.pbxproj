@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34276C302EDA5D170032A0FC /* ChatStreamUpdateNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C2F2EDA5D170032A0FC /* ChatStreamUpdateNative.swift */; };
+		34276C322EDA618D0032A0FC /* ToolCallWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C312EDA618D0032A0FC /* ToolCallWatcher.swift */; };
+		34276C342EDA6CF30032A0FC /* ToolNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C332EDA6CF30032A0FC /* ToolNative.swift */; };
+		34276C3A2EDA7D010032A0FC /* ChatTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C392EDA7D010032A0FC /* ChatTool.swift */; };
 		34E825262ECBE58F00E8D536 /* ChatOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E825252ECBE58E00E8D536 /* ChatOptions.swift */; };
 		34E825282ECBE59700E8D536 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E825272ECBE59700E8D536 /* ChatMessage.swift */; };
 		34E8252A2ECBE59F00E8D536 /* ChatMessageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E825292ECBE59F00E8D536 /* ChatMessageContent.swift */; };
@@ -16,6 +20,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		34276C2F2EDA5D170032A0FC /* ChatStreamUpdateNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamUpdateNative.swift; sourceTree = "<group>"; };
+		34276C312EDA618D0032A0FC /* ToolCallWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCallWatcher.swift; sourceTree = "<group>"; };
+		34276C332EDA6CF30032A0FC /* ToolNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolNative.swift; sourceTree = "<group>"; };
+		34276C392EDA7D010032A0FC /* ChatTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTool.swift; sourceTree = "<group>"; };
 		34279C902EC421CC00583050 /* EssentialsAI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EssentialsAI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E825252ECBE58E00E8D536 /* ChatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOptions.swift; sourceTree = "<group>"; };
 		34E825272ECBE59700E8D536 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
@@ -44,7 +52,11 @@
 				34E825272ECBE59700E8D536 /* ChatMessage.swift */,
 				34E825292ECBE59F00E8D536 /* ChatMessageContent.swift */,
 				34E825252ECBE58E00E8D536 /* ChatOptions.swift */,
+				34276C2F2EDA5D170032A0FC /* ChatStreamUpdateNative.swift */,
+				34276C392EDA7D010032A0FC /* ChatTool.swift */,
 				34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */,
+				34276C312EDA618D0032A0FC /* ToolCallWatcher.swift */,
+				34276C332EDA6CF30032A0FC /* ToolNative.swift */,
 				34279C912EC421CC00583050 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -139,11 +151,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34276C3A2EDA7D010032A0FC /* ChatTool.swift in Sources */,
 				34E8252C2ECBE5BE00E8D536 /* Cancellation.swift in Sources */,
 				34E825302ECBE5F400E8D536 /* ChatClient.swift in Sources */,
 				34E8252A2ECBE59F00E8D536 /* ChatMessageContent.swift in Sources */,
+				34276C342EDA6CF30032A0FC /* ToolNative.swift in Sources */,
 				34E825282ECBE59700E8D536 /* ChatMessage.swift in Sources */,
 				34E8256F2ECCE3C100E8D536 /* JsonSchemaDecoder.swift in Sources */,
+				34276C302EDA5D170032A0FC /* ChatStreamUpdateNative.swift in Sources */,
+				34276C322EDA618D0032A0FC /* ToolCallWatcher.swift in Sources */,
 				34E825262ECBE58F00E8D536 /* ChatOptions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

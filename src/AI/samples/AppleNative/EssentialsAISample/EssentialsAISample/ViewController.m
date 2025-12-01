@@ -10,9 +10,40 @@
 #import "EssentialsAI/EssentialsAI-Swift.h"
 
 // Block typedefs for AI callbacks
-typedef void (^AIUpdateBlock)(NSString *_Nullable result);
+typedef void (^AIUpdateBlock)(StreamUpdateNative *_Nullable result);
 typedef void (^AICompletionBlock)(NSString *_Nullable result,
                                   NSError *_Nullable error);
+
+// Simple test tool that returns the current time
+@interface GetCurrentTimeTool : NSObject <AIToolNative>
+@end
+
+@implementation GetCurrentTimeTool
+
+- (NSString *)name {
+    return @"getCurrentTime";
+}
+
+- (NSString *)desc {
+    return @"Gets the current date and time. No parameters needed.";
+}
+
+- (NSString *)argumentsSchema {
+    return @"{\"type\":\"object\",\"properties\":{}}";
+}
+
+- (void)callWithArguments:(NSString *)arguments
+               completion:(void (^)(NSString *))completion {
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss";
+    NSString *currentTime = [formatter stringFromDate:[NSDate date]];
+
+    NSString *result =
+        [NSString stringWithFormat:@"{\"currentTime\":\"%@\"}", currentTime];
+    completion(result);
+}
+
+@end
 
 @interface ViewController ()
 
@@ -29,7 +60,7 @@ typedef void (^AICompletionBlock)(NSString *_Nullable result,
 
     // 2. Create a text content
     TextContentNative *textContent =
-        [[TextContentNative alloc] initWithText:@"Hello, how are you?"];
+        [[TextContentNative alloc] initWithText:@"What time is it right now?"];
 
     // 3. Create the message and attach the content
     ChatMessageNative *message = [[ChatMessageNative alloc] init];
@@ -67,6 +98,10 @@ typedef void (^AICompletionBlock)(NSString *_Nullable result,
         "\"additionalProperties\":false"
     "}";
 
+    // Create a test tool instance
+    GetCurrentTimeTool *timeTool = [[GetCurrentTimeTool alloc] init];
+    options.tools = @[ timeTool ];
+
     // 5. Call getResponse
 
     AICompletionBlock completion =
@@ -79,8 +114,10 @@ typedef void (^AICompletionBlock)(NSString *_Nullable result,
         };
 
     // Define reusable update block
-    AIUpdateBlock update = ^(NSString *_Nullable result) {
-      NSLog(@"Stream update: %@", result);
+    AIUpdateBlock update = ^(StreamUpdateNative *_Nullable result) {
+      NSLog(@"Stream update: text = %@", [result text]);
+      NSLog(@"Stream update: tool = %@", [result toolCallName]);
+      NSLog(@"Stream update: tool result = %@", [result toolCallResult]);
     };
 
     // Use typedef blocks for getResponse

@@ -18,15 +18,12 @@ public class FindPointsOfInterestTool(Landmark landmark)
 
     [DisplayName("findPointsOfInterest")]
     [Description("Finds points of interest for a landmark.")]
-    public string Call(
-        [Description("This is the type of destination to look up for.")]
-        Category pointOfInterest,
-        [Description("The natural language query of what to search for.")]
-        string naturalLanguageQuery)
+    public string Call()
     {
-        var suggestions = GetSuggestions(pointOfInterest);
+        // var suggestions = GetSuggestions(pointOfInterest);
 
-        return $"There are these {pointOfInterest} in {landmark.Name}: {string.Join(", ", suggestions)}";
+        // return $"There are these {pointOfInterest} in {landmark.Name}: {string.Join(", ", suggestions)}";
+        return "Cats Town " + landmark.Name;
     }
 
     private static string[] GetSuggestions(Category category) =>

@@ -15,12 +15,34 @@ public class ChatClientNative: NSObject {
     @objc public func streamResponse(
         messages: [ChatMessageNative],
         options: ChatOptionsNative?,
-        onUpdate: @escaping (NSString) -> Void,
+        onUpdate: @escaping (StreamUpdateNative) -> Void,
         onComplete: @escaping (NSString?, NSError?) -> Void
     ) -> CancellationTokenNative? {
         let cq = OperationQueue.current?.underlyingQueue
 
-        return executeTask(messages, options, onComplete) { session, prompt, schema, genOptions in
+        let toolWatcher =
+            options?.tools == nil
+            ? nil
+            : ToolCallWatcher(
+                onToolCall: { id, name, arguments in
+                    let update = StreamUpdateNative(
+                        toolCallId: id,
+                        toolCallName: name,
+                        toolCallArguments: arguments
+                    )
+                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                },
+                onToolResult: { id, name, result in
+                    let update = StreamUpdateNative(
+                        toolCallId: id,
+                        toolCallName: name,
+                        toolCallResult: result
+                    )
+                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                }
+            )
+
+        return executeTask(messages, options, toolWatcher, onComplete) { session, prompt, schema, genOptions in
             if let jsonSchema = schema {
                 let responseStream = session.streamResponse(
                     to: prompt,
@@ -32,7 +54,8 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content.jsonString
-                    cq?.async { onUpdate(NSString(string: text)) } ?? onUpdate(NSString(string: text))
+                    let update = StreamUpdateNative(text: text)
+                    cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
                 let response = try await responseStream.collect()
@@ -46,7 +69,8 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
-                    cq?.async { onUpdate(NSString(string: text)) } ?? onUpdate(NSString(string: text))
+                    let update = StreamUpdateNative(text: text)
+                    cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
                 let response = try await responseStream.collect()
@@ -61,7 +85,7 @@ public class ChatClientNative: NSObject {
         options: ChatOptionsNative?,
         onComplete: @escaping (NSString?, NSError?) -> Void
     ) -> CancellationTokenNative? {
-        return executeTask(messages, options, onComplete) { session, prompt, schema, genOptions in
+        return executeTask(messages, options, nil, onComplete) { session, prompt, schema, genOptions in
             let response = try await {
                 if let jsonSchema = schema {
                     let inner = try await session.respond(
@@ -149,14 +173,29 @@ public class ChatClientNative: NSObject {
         }
     }
 
-    private func prepareSession(messages: [ChatMessageNative], options: ChatOptionsNative?) async throws -> (
-        session: LanguageModelSession, prompt: Prompt, schema: GenerationSchema?, genOptions: GenerationOptions
+    private func prepareSession(
+        messages: [ChatMessageNative],
+        options: ChatOptionsNative?,
+        toolWatcher: ToolCallWatcher?
+    ) async throws -> (
+        session: LanguageModelSession,
+        prompt: Prompt,
+        schema: GenerationSchema?,
+        genOptions: GenerationOptions
     ) {
         let lastMessage = messages.last!
         let otherMessages = messages.dropLast()
 
         let model = SystemLanguageModel.default
-        let tools: [any Tool] = []
+        let tools =
+            options?.tools?.map {
+                ToolNative(
+                    tool: $0,
+                    onToolCall: toolWatcher?.notifyToolCall,
+                    onToolResult: toolWatcher?.notifyToolResult
+                )
+            } ?? []
+
         let transcript = try Transcript(entries: otherMessages.map(self.toTranscriptEntry))
         let prompt = try self.toPrompt(message: lastMessage)
 
@@ -195,6 +234,7 @@ public class ChatClientNative: NSObject {
     private func executeTask(
         _ messages: [ChatMessageNative],
         _ options: ChatOptionsNative?,
+        _ toolWatcher: ToolCallWatcher?,
         _ onComplete: @escaping (NSString?, NSError?) -> Void,
         operation:
             @escaping (LanguageModelSession, Prompt, GenerationSchema?, GenerationOptions) async throws
@@ -218,7 +258,8 @@ public class ChatClientNative: NSObject {
 
                 let (session, prompt, schema, genOptions) = try await self.prepareSession(
                     messages: messages,
-                    options: options
+                    options: options,
+                    toolWatcher: toolWatcher
                 )
 
                 let result = try await operation(session, prompt, schema, genOptions)

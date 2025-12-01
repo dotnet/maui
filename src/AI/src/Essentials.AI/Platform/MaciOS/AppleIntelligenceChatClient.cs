@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
 using Microsoft.Extensions.AI;
+using System.Text.Json;
 
 namespace Microsoft.Maui.Essentials.AI;
 
@@ -32,31 +34,31 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		CancellationToken cancellationToken = default)
 	{
 		var nativeMessages = chatMessages.Select(ToNative).ToArray();
-
 		var nativeOptions = options is null ? null : ToNative(options);
-
 		var native = new ChatClientNative();
 
 		var tcs = new TaskCompletionSource<ChatResponse>();
 
-		var nativeToken = native.GetResponse(nativeMessages, nativeOptions, (response, error) =>
-		{
-			if (error is not null)
+		var nativeToken = native.GetResponse(
+			nativeMessages, 
+			nativeOptions, 
+			onComplete: (response, error) =>
 			{
-				if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
+				if (error is not null)
 				{
-					tcs.TrySetCanceled();
+					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
+					{
+						tcs.TrySetCanceled();
+					}
+					else
+					{
+						tcs.TrySetException(new NSErrorException(error));
+					}
+					return;
 				}
-				else
-				{
-					tcs.TrySetException(new NSErrorException(error));
-				}
-				
-				return;
-			}
 
-			tcs.TrySetResult(FromNativeChatResponse(response));
-		});
+				tcs.TrySetResult(FromNativeChatResponse(response));
+			});
 
 		cancellationToken.Register(() =>
 		{
@@ -90,7 +92,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 		var nativeMessages = actualMessages.Select(ToNative).ToArray();
 		var nativeOptions = options is null ? null : ToNative(options);
-		nativeOptions?.ResponseJsonSchema = null; // TODO: Handled via system prompt above
+
+		// TODO: Handle ResponseFormat via system prompt
+		// https://github.com/dotnet/maui/issues/32908
+		nativeOptions?.ResponseJsonSchema = null;
+
 		var native = new ChatClientNative();
 
 		var channel = Channel.CreateUnbounded<ChatResponseUpdate>();
@@ -102,24 +108,47 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			nativeOptions,
 			onUpdate: (update) =>
 			{
-				if (update is null)
-					return;
-
-				// Compute the partial update since Apple Intelligence returns the full response each time
-				var newResponse = update.ToString() ?? "";
-				var delta = newResponse.Substring(lastResponse.Length);
-				lastResponse = newResponse;
-
-				var chatUpdate = new ChatResponseUpdate
+				// Handle text updates
+				if (update.Text is not null)
 				{
-					Role = ChatRole.Assistant,
-					Contents =
-                    {
-                        new TextContent(delta)
-                    }
-				};
-				
-				channel.Writer.TryWrite(chatUpdate);
+					// Compute the partial update since Apple Intelligence returns the full response each time
+					var newResponse = update.Text;
+					var delta = newResponse.Substring(lastResponse.Length);
+					lastResponse = newResponse;
+
+					var chatUpdate = new ChatResponseUpdate
+					{
+						Role = ChatRole.Assistant,
+						Contents = { new TextContent(delta) }
+					};
+					channel.Writer.TryWrite(chatUpdate);
+				}
+
+				// Handle tool call notifications
+				if (update.ToolCallName is not null && update.ToolCallId is not null && update.ToolCallArguments is not null)
+				{
+#pragma warning disable IL3050,IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
+					var args = JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
+#pragma warning restore IL3050,IL2026
+
+					var chatUpdate = new ChatResponseUpdate
+					{
+						Role = ChatRole.Assistant,
+						Contents = { new FunctionCallContent(update.ToolCallId, update.ToolCallName, args) }
+					};
+					channel.Writer.TryWrite(chatUpdate);
+				}
+
+				// Handle tool result notifications
+				if (update.ToolCallId is not null && update.ToolCallResult is not null)
+				{
+					var chatUpdate = new ChatResponseUpdate
+					{
+						Role = ChatRole.Assistant,
+						Contents = { new FunctionResultContent(update.ToolCallId, update.ToolCallResult) }
+					};
+					channel.Writer.TryWrite(chatUpdate);
+				}
 			},
 			onComplete: (finalResult, error) =>
 			{
@@ -207,14 +236,33 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	}
 
 	private static ChatOptionsNative ToNative(ChatOptions options) =>
-		new()
+		new ChatOptionsNative
 		{
 			TopK = ToNative(options.TopK),
 			Seed = ToNative(options.Seed),
 			Temperature = ToNative(options.Temperature),
 			MaxOutputTokens = ToNative(options.MaxOutputTokens),
-			ResponseJsonSchema = ToNative(options.ResponseFormat)
+			ResponseJsonSchema = ToNative(options.ResponseFormat),
+			Tools = ToNative(options.Tools)
 		};
+
+	private static AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools)
+	{
+		AIFunctionToolAdapter[]? adapters = null;
+
+		if (tools is { Count: > 0 })
+		{
+			// Note: Only AIFunction tools are supported for Apple Intelligence
+			// Other AITool implementations should be converted to AIFunction using AIFunctionFactory
+
+			adapters = tools
+				.OfType<AIFunction>()
+				.Select(function => new AIFunctionToolAdapter(function))
+				.ToArray();
+		}
+
+		return adapters;
+	}
 
 	private static NSString? ToNative(ChatResponseFormat? format) =>
 		format switch
@@ -238,4 +286,41 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 	private static NSNumber? ToNative(long? value) =>
 		value.HasValue ? NSNumber.FromInt64(value.Value) : null;
+
+	private sealed class AIFunctionToolAdapter(AIFunction function) : AIToolNative
+	{
+		public override string Name => function.Name;
+
+		public override string Desc => function.Description;
+
+		public override string ArgumentsSchema => function.JsonSchema.GetRawText();
+
+#pragma warning disable IL3050,IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
+		[Export("callWithArguments:completion:")]
+		public override async void CallWithArguments(NSString arguments, Action<NSString> completion)
+		{
+			try
+			{
+                var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>(arguments, AIJsonUtilities.DefaultOptions);
+
+				var result = await function.InvokeAsync(aiArgs, cancellationToken: default);
+
+				var resultJson = result is not null
+					? JsonSerializer.Serialize(result)
+					: "{}";
+
+				completion(new NSString(resultJson));
+			}
+			catch (Exception ex)
+			{
+				var errorJson = JsonSerializer.Serialize(new
+				{
+					error = ex.Message,
+					type = ex.GetType().Name
+				});
+				completion(new NSString(errorJson));
+			}
+		}
+#pragma warning restore IL3050,IL2026
+	}
 }

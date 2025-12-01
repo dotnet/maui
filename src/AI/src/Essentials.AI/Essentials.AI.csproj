@@ -41,10 +41,10 @@
 
   <!-- Some helpers for Intellisense -->
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios'">
-    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-ios26.0\iOS\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-ios26.0\iOS\ObjCRuntime\Messaging.g.cs')" />
+    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\iOS\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\iOS\ObjCRuntime\Messaging.g.cs')" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst'">
-    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-maccatalyst26.0\MacCatalyst\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\Debug\net10.0-maccatalyst26.0\MacCatalyst\ObjCRuntime\Messaging.g.cs')" />
+    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\MacCatalyst\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\MacCatalyst\ObjCRuntime\Messaging.g.cs')" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
     <_FilesUsedForIntellisense Include="Platform\MaciOS\StructsAndEnums.cs" />
