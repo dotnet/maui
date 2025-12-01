@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue16624"
+             Title="Issue16624">
+    <VerticalStackLayout Padding="10">
+        <Label AutomationId="StatusLabel" 
+               Text="Swipe left on the CollectionView to trigger the swipe gesture" 
+               FontSize="14"
+               Margin="0,0,0,10" />
+        
+        <CollectionView AutomationId="TestCollectionView"
+                        HeightRequest="300"
+                        BackgroundColor="LightGray">
+            <CollectionView.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Left" Swiped="SwipeGestureRecognizer_Swiped" />
+                <SwipeGestureRecognizer Direction="Right" Swiped="SwipeGestureRecognizer_Swiped" />
+            </CollectionView.GestureRecognizers>
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Item 1</x:String>
+                    <x:String>Item 2</x:String>
+                    <x:String>Item 3</x:String>
+                    <x:String>Item 4</x:String>
+                    <x:String>Item 5</x:String>
+                    <x:String>Item 6</x:String>
+                    <x:String>Item 7</x:String>
+                    <x:String>Item 8</x:String>
+                    <x:String>Item 9</x:String>
+                    <x:String>Item 10</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding}" Padding="10" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
