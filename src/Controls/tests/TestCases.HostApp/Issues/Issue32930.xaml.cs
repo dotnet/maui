@@ -11,49 +11,33 @@ public partial class Issue32930 : Shell
 
 public class Issue32930SearchHandler : SearchHandler
 {
+	static readonly List<string> _allItems = new()
+	{
+		"Apple",
+		"Banana",
+		"Cherry",
+		"Date",
+		"Elderberry",
+		"Fig",
+		"Grape"
+	};
+
 	public Issue32930SearchHandler()
 	{
-		ItemsSource = new List<string>
-		{
-			"Apple",
-			"Banana", 
-			"Cherry",
-			"Date",
-			"Elderberry",
-			"Fig",
-			"Grape"
-		};
+		ItemsSource = _allItems;
 	}
 
 	protected override void OnQueryChanged(string oldValue, string newValue)
 	{
 		base.OnQueryChanged(oldValue, newValue);
-		
+
 		if (string.IsNullOrEmpty(newValue))
 		{
-			ItemsSource = new List<string>
-			{
-				"Apple",
-				"Banana",
-				"Cherry",
-				"Date",
-				"Elderberry",
-				"Fig",
-				"Grape"
-			};
+			ItemsSource = _allItems;
 		}
 		else
 		{
-			ItemsSource = new List<string>
-			{
-				"Apple",
-				"Banana",
-				"Cherry",
-				"Date",
-				"Elderberry",
-				"Fig",
-				"Grape"
-			}.Where(s => s.Contains(newValue, StringComparison.OrdinalIgnoreCase)).ToList();
+			ItemsSource = _allItems.Where(s => s.Contains(newValue, StringComparison.OrdinalIgnoreCase)).ToList();
 		}
 	}
 }
