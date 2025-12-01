@@ -198,7 +198,6 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  TEST_FILTER: $(categoryGroup)
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -211,6 +210,7 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      testFilter: $(categoryGroup)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -253,7 +253,6 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  TEST_FILTER: $(categoryGroup)
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -270,6 +269,7 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
+                      testFilter: $(categoryGroup)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
