@@ -502,6 +502,63 @@ public class Product
 	}
 
 	[Fact]
+	public void CorrectlyHandlesNullableValueTypesWithNonNullableTarget()
+	{
+		// This test covers binding to a non-nullable value type property through a nullable path
+		// Note: In XAML SourceGen, value types accessed through nullable paths remain non-nullable
+		// (using ?? default fallback in getter) rather than becoming Nullable<T>
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Slider Value="{Binding Product.Quantity}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Product? Product { get; set; } = null;
+
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class Product
+{
+	public double Quantity { get; set; } = 0;  // Non-nullable double
+}
+""";
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		// Verify no errors are present - value types through nullable paths don't need null checks
+		// because they use ?? default fallback in the getter and keep the non-nullable type
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+		
+		// The setter for value types should NOT have HasValue check because PropertyType stays as double, not double?
+		// The conditional access is handled by pattern matching (source.Product is {} p0)
+		Assert.Contains("if (source.Product is {} p0)", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void TargetNullValueWithNullablePathGeneratesValidCode()
 	{
 		// This test reproduces the issue from #32606 where TargetNullValue with nullable path
