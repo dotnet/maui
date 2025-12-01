@@ -421,6 +421,10 @@ public partial class TestPage
 		{
 			global::System.Action<global::Test.TestPage, string?>? setter = static (source, value) =>
 			{
+				if (value is null)
+				{
+					return;
+				}
 				if (source.Product is {} p0)
 				{
 					p0.Name = value;
