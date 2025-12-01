@@ -132,11 +132,18 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    # Use environment variable for testFilter to support runtime variables from matrix
+    $testFilterParam = "$env:TEST_FILTER"
+    if (-not $testFilterParam) {
+      $testFilterParam = "${{ parameters.testFilter }}"
     }
-
-    $testFilter = $testFilter.TrimEnd("|")
+    
+    if ($testFilterParam) {
+      $testFilterParam.Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
+      }
+      $testFilter = $testFilter.TrimEnd("|")
+    }
 
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
