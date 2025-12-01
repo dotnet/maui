@@ -34,4 +34,28 @@ public class ShellFlyoutContent : _IssuesUITest
 		App.TapInShellFlyout(ResetButton);
 		App.Tap(FlyoutItem);
 	}
+
+	// https://github.com/dotnet/maui/issues/32883
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutFooterAreaClearedAfterRemoval()
+	{
+		App.WaitForElement("PageLoaded");
+
+		// Open flyout and get the position of the bottom flyout item before adding footer
+		App.TapInShellFlyout("Flyout Item Bottom");
+
+		// Add header and footer
+		App.Tap("ToggleHeaderFooter");
+
+		// Open the flyout and verify footer is visible
+		App.TapInShellFlyout("Footer View");
+
+		// Remove header and footer
+		App.Tap("ToggleHeaderFooter");
+
+		// Open flyout and verify the footer area is cleared by checking "Flyout Item Bottom" is still accessible
+		// If the padding wasn't cleared, the bottom flyout item would be pushed up and inaccessible
+		App.TapInShellFlyout("Flyout Item Bottom");
+	}
 }
