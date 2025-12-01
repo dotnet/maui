@@ -1,1 +1,2 @@
-#nullable enable
+﻿#nullable enable
+override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
