@@ -208,7 +208,7 @@ stages:
                       app: ${{ project.app }}
                       ${{ if eq(api, 27) }}:
                         device: android-emulator-32_${{ api }}
-                      ${{ if not(eq(api, 27) }}:
+                      ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
