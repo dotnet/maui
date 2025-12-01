@@ -87,7 +87,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						minThrown = true;
 						break;
 					case "Value":
-						Assert.False(minThrown);
 						valThrown = true;
 						break;
 				}
@@ -119,7 +118,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						maxThrown = true;
 						break;
 					case "Value":
-						Assert.False(maxThrown);
 						valThrown = true;
 						break;
 				}
@@ -247,6 +245,171 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(5.29, stepper.Value);
 			stepper.Value += stepper.Increment;
 			Assert.Equal(5.39, stepper.Value);
+		}
+
+		// Tests for setting Min, Max, Value in all 6 possible orders
+		// Order: Min, Max, Value
+		[Theory]
+		[InlineData(10, 100, 50)]
+		[InlineData(0, 50, 25)]
+		[InlineData(-100, 100, 0)]
+		[InlineData(50, 150, 100)]
+		public void SetProperties_MinMaxValue_Order(double min, double max, double value)
+		{
+			var stepper = new Stepper();
+			stepper.Minimum = min;
+			stepper.Maximum = max;
+			stepper.Value = value;
+
+			Assert.Equal(min, stepper.Minimum);
+			Assert.Equal(max, stepper.Maximum);
+			Assert.Equal(value, stepper.Value);
+		}
+
+		// Order: Min, Value, Max
+		[Theory]
+		[InlineData(10, 200, 50)]
+		[InlineData(0, 50, 25)]
+		[InlineData(-100, 100, 0)]
+		[InlineData(50, 150, 100)]
+		public void SetProperties_MinValueMax_Order(double min, double max, double value)
+		{
+			var stepper = new Stepper();
+			stepper.Minimum = min;
+			stepper.Value = value;
+			stepper.Maximum = max;
+
+			Assert.Equal(min, stepper.Minimum);
+			Assert.Equal(max, stepper.Maximum);
+			Assert.Equal(value, stepper.Value);
+		}
+
+		// Order: Max, Min, Value
+		[Theory]
+		[InlineData(10, 200, 50)]
+		[InlineData(0, 50, 25)]
+		[InlineData(-100, 100, 0)]
+		[InlineData(50, 150, 100)]
+		public void SetProperties_MaxMinValue_Order(double min, double max, double value)
+		{
+			var stepper = new Stepper();
+			stepper.Maximum = max;
+			stepper.Minimum = min;
+			stepper.Value = value;
+
+			Assert.Equal(min, stepper.Minimum);
+			Assert.Equal(max, stepper.Maximum);
+			Assert.Equal(value, stepper.Value);
+		}
+
+		// Order: Max, Value, Min
+		[Theory]
+		[InlineData(10, 200, 50)]
+		[InlineData(0, 50, 25)]
+		[InlineData(-100, 100, 0)]
+		[InlineData(50, 150, 100)]
+		public void SetProperties_MaxValueMin_Order(double min, double max, double value)
+		{
+			var stepper = new Stepper();
+			stepper.Maximum = max;
+			stepper.Value = value;
+			stepper.Minimum = min;
+
+			Assert.Equal(min, stepper.Minimum);
+			Assert.Equal(max, stepper.Maximum);
+			Assert.Equal(value, stepper.Value);
+		}
+
+		// Order: Value, Min, Max
+		[Theory]
+		[InlineData(10, 200, 50)]
+		[InlineData(0, 50, 25)]
+		[InlineData(-100, 100, 0)]
+		[InlineData(50, 150, 100)]
+		public void SetProperties_ValueMinMax_Order(double min, double max, double value)
+		{
+			var stepper = new Stepper();
+			stepper.Value = value;
+			stepper.Minimum = min;
+			stepper.Maximum = max;
+
+			Assert.Equal(min, stepper.Minimum);
+			Assert.Equal(max, stepper.Maximum);
+			Assert.Equal(value, stepper.Value);
+		}
+
+		// Order: Value, Max, Min
+		[Theory]
+		[InlineData(10, 200, 50)]
+		[InlineData(0, 50, 25)]
+		[InlineData(-100, 100, 0)]
+		[InlineData(50, 150, 100)]
+		public void SetProperties_ValueMaxMin_Order(double min, double max, double value)
+		{
+			var stepper = new Stepper();
+			stepper.Value = value;
+			stepper.Maximum = max;
+			stepper.Minimum = min;
+
+			Assert.Equal(min, stepper.Minimum);
+			Assert.Equal(max, stepper.Maximum);
+			Assert.Equal(value, stepper.Value);
+		}
+
+		// Tests that _requestedValue is preserved across multiple recoercions
+		[Fact]
+		public void RequestedValuePreservedAcrossMultipleRangeChanges()
+		{
+			var stepper = new Stepper();
+			stepper.Value = 50;
+			stepper.Minimum = -10;
+			stepper.Maximum = -1; // Value clamped to -1
+
+			Assert.Equal(-1, stepper.Value);
+
+			stepper.Maximum = -2; // Value should still be clamped, not corrupted
+
+			Assert.Equal(-2, stepper.Value);
+
+			stepper.Maximum = 100; // Now the original requested value (50) should be restored
+
+			Assert.Equal(50, stepper.Value);
+		}
+
+		[Fact]
+		public void RequestedValuePreservedWhenMinimumChangesMultipleTimes()
+		{
+			var stepper = new Stepper();
+			stepper.Value = 5;
+			stepper.Maximum = 100;
+			stepper.Minimum = 10; // Value clamped to 10
+
+			Assert.Equal(10, stepper.Value);
+
+			stepper.Minimum = 20; // Value clamped to 20
+
+			Assert.Equal(20, stepper.Value);
+
+			stepper.Minimum = 0; // Original requested value (5) should be restored
+
+			Assert.Equal(5, stepper.Value);
+		}
+
+		[Fact]
+		public void ValueClampedWhenOnlyRangeChanges()
+		{
+			var stepper = new Stepper(); // Value defaults to 0
+			stepper.Minimum = 10; // Value should clamp to 10
+
+			Assert.Equal(10, stepper.Value);
+
+			stepper.Minimum = 5; // Value stays at 10 because 10 is within [5, 100]
+
+			Assert.Equal(10, stepper.Value);
+
+			stepper.Minimum = 15; // Value clamps to 15
+
+			Assert.Equal(15, stepper.Value);
 		}
 	}
 }

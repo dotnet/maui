@@ -10,32 +10,63 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
+		// Stores the value that was requested by the user, before clamping
+		double _requestedValue = 0d;
+		// Tracks if the user explicitly set Value (vs it being set by recoercion)
+		bool _userSetValue = false;
+		bool _isRecoercing = false;
+
 		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
-		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Slider), 0d, coerceValue: (bindable, value) =>
-		{
-			var slider = (Slider)bindable;
-			slider.Value = slider.Value.Clamp((double)value, slider.Maximum);
-			return value;
-		});
+		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(
+			nameof(Minimum), typeof(double), typeof(Slider), 0d,
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				var slider = (Slider)bindable;
+				slider.RecoerceValue();
+			});
 
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
-		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Slider), 1d, coerceValue: (bindable, value) =>
-		{
-			var slider = (Slider)bindable;
-			slider.Value = slider.Value.Clamp(slider.Minimum, (double)value);
-			return value;
-		});
+		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(
+			nameof(Maximum), typeof(double), typeof(Slider), 1d,
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				var slider = (Slider)bindable;
+				slider.RecoerceValue();
+			});
 
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Slider), 0d, BindingMode.TwoWay, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
+			// Only store the requested value if the user is setting it (not during recoercion)
+			if (!slider._isRecoercing)
+			{
+				slider._requestedValue = (double)value;
+				slider._userSetValue = true;
+			}
 			return ((double)value).Clamp(slider.Minimum, slider.Maximum);
 		}, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var slider = (Slider)bindable;
 			slider.ValueChanged?.Invoke(slider, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 		});
+
+		void RecoerceValue()
+		{
+			_isRecoercing = true;
+			try
+			{
+				// If the user explicitly set Value, try to restore the requested value within the new range
+				if (_userSetValue)
+					Value = _requestedValue;
+				else
+					Value = Value.Clamp(Minimum, Maximum);
+			}
+			finally
+			{
+				_isRecoercing = false;
+			}
+		}
 
 		/// <summary>Bindable property for <see cref="MinimumTrackColor"/>.</summary>
 		public static readonly BindableProperty MinimumTrackColorProperty = BindableProperty.Create(nameof(MinimumTrackColor), typeof(Color), typeof(Slider), null);
