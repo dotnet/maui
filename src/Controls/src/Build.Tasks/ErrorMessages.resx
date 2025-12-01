@@ -206,7 +206,12 @@
     <comment>0 is the duplicated key</comment>
   </data>
   <data name="ObsoleteProperty" xml:space="preserve">
-    <value>Property, Property setter or BindableProperty "{0}" is deprecated.</value>
+    <value>"{0}" is deprecated: {1}</value>
+    <comment>0 is the member/type name, 1 is the obsolete message from the attribute</comment>
+  </data>
+  <data name="ObsoletePropertyError" xml:space="preserve">
+    <value>"{0}" is obsolete: {1}</value>
+    <comment>0 is the member/type name, 1 is the obsolete message from the attribute</comment>
   </data>  
   <data name="PropertyMissing" xml:space="preserve">
     <value>Missing mandatory property "{0}" on "{1}".</value>
