@@ -26,9 +26,9 @@ namespace Microsoft.Maui.Controls
 #if ANDROID || IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Compatibility.ShellRenderer))]
 #elif WINDOWS
-	[ElementHandler(typeof(ShellHandler))]
+	[ElementHandler(typeof(Handlers.ShellHandler))]
 #elif TIZEN
-	[ElementHandler(typeof(ShellHandler))]
+	[ElementHandler(typeof(Handlers.ShellHandler))]
 #endif
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
