@@ -255,31 +255,29 @@ jobs:
                 : '';
               
               try {
+                const systemPrompt = "You are an expert at analyzing GitHub issues for the .NET MAUI framework. " +
+                  "Determine if two issues describe the same problem, related problems, or duplicates. " +
+                  "Consider: Technical details (controls, APIs, platforms affected), error messages and stack traces, " +
+                  "symptoms and behaviors described, platform specifics (Android, iOS, Windows, macOS). " +
+                  "Give extra weight to platform matches. " +
+                  "Respond with ONLY a JSON object in this exact format: " +
+                  '{"score": 0.0, "reason": "brief explanation"} ' +
+                  "Where score is between 0.0 and 1.0: " +
+                  "1.0 = Exact duplicate, 0.8-0.9 = Very similar likely related, " +
+                  "0.7-0.79 = Possibly related, Below 0.7 = Different issues";
+                
+                const userPrompt = "Current Issue:" + platformInfo + "\\n" + currentIssue + 
+                  "\\n\\n---\\n\\nCompare with:" + candidatePlatformInfo + "\\n" + candidateText;
+                
                 const response = await client.chat.completions.create({
                   messages: [
                     {
                       role: "system",
-                      content: `You are an expert at analyzing GitHub issues for the .NET MAUI framework. 
-Determine if two issues describe the same problem, related problems, or duplicates.
-Consider:
-- Technical details (controls, APIs, platforms affected)
-- Error messages and stack traces
-- Symptoms and behaviors described
-- Platform specifics (Android, iOS, Windows, macOS)
-- Give extra weight to platform matches
-
-Respond with ONLY a JSON object in this exact format:
-{"score": 0.0, "reason": "brief explanation"}
-
-Where score is between 0.0 and 1.0:
-- 1.0 = Exact duplicate
-- 0.8-0.9 = Very similar, likely related
-- 0.7-0.79 = Possibly related
-- Below 0.7 = Different issues`
+                      content: systemPrompt
                     },
                     {
                       role: "user",
-                      content: `Current Issue:${platformInfo}\n${currentIssue}\n\n---\n\nCompare with:${candidatePlatformInfo}\n${candidateText}`
+                      content: userPrompt
                     }
                   ],
                   model: modelName,
