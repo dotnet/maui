@@ -62,7 +62,7 @@ public static class ITypeSymbolExtensions
 			return false;
 
 		// Check if the property name ends with "Command"
-		if (!propertyName.EndsWith("Command", System.StringComparison.Ordinal) || propertyName.Length <= "Command".Length)
+		if (!propertyName.EndsWith("Command", System.StringComparison.Ordinal))
 			return false;
 
 		// Extract the method name (property name without "Command" suffix)
