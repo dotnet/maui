@@ -179,9 +179,6 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
-                dependsOn:
-                  - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-                    - analyze_pr_changes
                 ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
                   # Use dynamic matrix from PR analysis (cross-stage reference uses stageDependencies)
                   strategy:
@@ -237,9 +234,6 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                dependsOn:
-                  - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-                    - analyze_pr_changes
                 ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
                   # Use dynamic matrix from PR analysis (cross-stage reference uses stageDependencies)
                   strategy:
