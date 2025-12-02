@@ -231,10 +231,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						// Use ReconfigureItems (iOS 15+) which is designed for size changes
 						// without full cell recreation - more efficient than ReloadItems
-						if (OperatingSystem.IsIOSVersionAtLeast(15))
-						{
-							collectionView.ReconfigureItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
-						}
+						collectionView.ReconfigureItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 					});
 
 					return;
@@ -248,7 +245,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		static bool ShouldApplyCellReConfiguration()
         {
-            if (!OperatingSystem.IsIOSVersionAtLeast(18))
+            if (!OperatingSystem.IsIOSVersionAtLeast(15))
             {
                 return false;
             }
