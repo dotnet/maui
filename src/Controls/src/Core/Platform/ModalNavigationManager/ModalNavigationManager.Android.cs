@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return Task.FromResult(modal);
 			}
 
-			var source = new TaskCompletionSource<Page>();
+			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			if (animated && dialogFragment.View is not null)
 			{
@@ -183,8 +183,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				TaskCompletionSource<bool> animationCompletionSource = new();
-				
+				TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 				dialogFragment.AnimationEnded += OnAnimationEnded;
 
 				void OnAnimationEnded(object? sender, EventArgs e)
@@ -198,14 +198,14 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				// Non-animated modals need to wait for presentation completion to prevent race conditions
-				TaskCompletionSource<bool> presentationCompletionSource = new();
-				
+				TaskCompletionSource presentationCompletionSource = new();
+
 				dialogFragment.PresentationCompleted += OnPresentationCompleted;
 
 				void OnPresentationCompleted(object? sender, EventArgs e)
 				{
 					dialogFragment.PresentationCompleted -= OnPresentationCompleted;
-					presentationCompletionSource.SetResult(true);
+					presentationCompletionSource.SetResult();
 				}
 
 				await presentationCompletionSource.Task;
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
-			bool _presentationCompleted = false;
+			bool _pendingNavigation = true;
 
 			internal event EventHandler? AnimationEnded;
 			internal event EventHandler? PresentationCompleted;
@@ -422,10 +422,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void FirePresentationCompleted()
 			{
-				if (_presentationCompleted)
+				if (!_pendingNavigation)
 					return;
 
-				_presentationCompleted = true;
+				_pendingNavigation = false;
 				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 
