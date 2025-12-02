@@ -307,7 +307,7 @@ internal struct CompiledBindingMarkup
 			if (p.Length > 0)
 			{
 				// Try to find property or infer from RelayCommand method
-				if (!previousPartType.TryGetPropertyOrRelayCommand(p, _context, out var property, out var currentPropertyType) 
+				if (!previousPartType.TryGetProperty(p, _context, out var property, out var currentPropertyType) 
 					|| currentPropertyType is null)
 				{
 					return false; // TODO report diagnostic
