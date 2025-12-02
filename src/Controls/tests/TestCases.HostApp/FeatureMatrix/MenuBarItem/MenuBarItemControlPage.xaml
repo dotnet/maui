@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.MenuBarItemControlPage"
+             x:DataType="local:MenuBarItemViewModel"
+             Title="MenuBarItem Control">
+
+    <!-- MenuBar Definition -->
+    <ContentPage.MenuBarItems>
+        <MenuBarItem Text="{Binding FileMenuText}"
+                     IsEnabled="{Binding FileMenuEnabled}">
+            <MenuFlyoutItem Text="{Binding ExitText}"
+                            IsEnabled="{Binding ExitEnabled}"
+                            IconImageSource="{Binding ExitIcon}"
+                            Command="{Binding ExitCommand}"/>
+        </MenuBarItem>
+
+        <MenuBarItem Text="{Binding LocationsMenuText}"
+                     IsEnabled="{Binding LocationsMenuEnabled}">
+            <MenuFlyoutSubItem Text="{Binding ChangeLocationText}"
+                               IsEnabled="{Binding ChangeLocationEnabled}">
+                <MenuFlyoutItem Text="Redmond, USA"
+                                Command="{Binding ChangeLocationCommand}"
+                                CommandParameter="Redmond, USA"/>
+                <MenuFlyoutItem Text="London, UK"
+                                Command="{Binding ChangeLocationCommand}"
+                                CommandParameter="London, UK"/>
+                <MenuFlyoutItem Text="Berlin, DE"
+                                Command="{Binding ChangeLocationCommand}"
+                                CommandParameter="Berlin, DE"/>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="{Binding AddLocationText}"
+                            IsEnabled="{Binding AddLocationEnabled}"
+                            Command="{Binding AddLocationCommand}"/>
+            <MenuFlyoutItem Text="{Binding EditLocationText}"
+                            IsEnabled="{Binding EditLocationEnabled}"
+                            Command="{Binding EditLocationCommand}"/>
+            <MenuFlyoutItem Text="{Binding RemoveLocationText}"
+                            IsEnabled="{Binding RemoveLocationEnabled}"
+                            Command="{Binding RemoveLocationCommand}"/>
+        </MenuBarItem>
+
+        <MenuBarItem Text="{Binding ViewMenuText}"
+                     IsEnabled="{Binding ViewMenuEnabled}">
+            <MenuFlyoutItem Text="{Binding RefreshText}"
+                            IsEnabled="{Binding RefreshEnabled}"
+                            IconImageSource="{Binding RefreshIcon}"
+                            Command="{Binding RefreshCommand}"/>
+            <MenuFlyoutItem Text="{Binding ChangeThemeText}"
+                            IsEnabled="{Binding ChangeThemeEnabled}"
+                            IconImageSource="{Binding ChangeThemeIcon}"
+                            Command="{Binding ChangeThemeCommand}"/>
+        </MenuBarItem>
+    </ContentPage.MenuBarItems>
+
+    <!-- Main Content -->
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="25">
+
+            <!-- Current Status Section -->
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Current Status"
+                       FontSize="16"
+                       FontAttributes="Bold"/>
+
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="10">
+                    <Label Text="Location:"
+                           FontSize="14"
+                           FontAttributes="Bold"/>
+                    <Label Grid.Column="1"
+                           Text="{Binding CurrentLocation}"
+                           FontSize="14"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="10">
+                    <Label Text="Status:"
+                           FontSize="14"
+                           FontAttributes="Bold"/>
+                    <Label Grid.Column="1"
+                           Text="{Binding StatusMessage}"
+                           FontSize="14"/>
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Menu Controls Section -->
+            <VerticalStackLayout Spacing="15">
+                <Label Text="Menu Controls"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+
+                <!-- File Menu Controls -->
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="10">
+                    <Label Text="{Binding FileMenuText}"
+                           FontSize="15"
+                           VerticalOptions="Center"/>
+                    <HorizontalStackLayout Grid.Column="1"
+                                           Spacing="8">
+                        <Label Text="{Binding FileMenuEnabled, StringFormat='Enabled: {0}'}"
+                               FontSize="12"
+                               VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding FileMenuEnabled}"
+                                VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- Locations Menu Controls -->
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="10">
+                    <Label Text="{Binding LocationsMenuText}"
+                           FontSize="15"
+                           VerticalOptions="Center"/>
+                    <HorizontalStackLayout Grid.Column="1"
+                                           Spacing="8">
+                        <Label Text="{Binding LocationsMenuEnabled, StringFormat='Enabled: {0}'}"
+                               FontSize="12"
+                               VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding LocationsMenuEnabled}"
+                                VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- View Menu Controls -->
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="10">
+                    <Label Text="{Binding ViewMenuText}"
+                           FontSize="15"
+                           VerticalOptions="Center"/>
+                    <HorizontalStackLayout Grid.Column="1"
+                                           Spacing="8">
+                        <Label Text="{Binding ViewMenuEnabled, StringFormat='Enabled: {0}'}"
+                               FontSize="12"
+                               VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding ViewMenuEnabled}"
+                                VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <Button Text="Update Menu Texts Dynamically"
+                        Command="{Binding UpdateMenuTextsCommand}"
+                        Margin="0,10,0,0"/>
+            </VerticalStackLayout>
+
+            <!-- Available Locations Section -->
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Available Locations"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+
+                <CollectionView ItemsSource="{Binding Locations}"
+                                HeightRequest="200">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Grid Padding="8,4"
+                                  ColumnDefinitions="Auto,*"
+                                  ColumnSpacing="10">
+                                <Ellipse WidthRequest="8"
+                                         HeightRequest="8"
+                                         Fill="Gray"
+                                         VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding .}"
+                                       FontSize="15"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
