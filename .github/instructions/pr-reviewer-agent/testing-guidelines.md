@@ -4,11 +4,11 @@
 
 # Testing Guidelines for PR Review
 
-## 🎯 The #1 Rule: Which App to Use
+## 🎯 The #1 Rule: Testing Approach
 
-### Default Answer: **Sandbox App**
+### Default Answer: **HostApp with UI Tests**
 
-Use `src/Controls/samples/Controls.Sample.Sandbox/` for PR validation **UNLESS** you are explicitly asked to write or validate UI tests.
+Use TestCases.HostApp + TestCases.Shared.Tests for PR validation. Create test pages and NUnit tests to validate the PR.
 
 ### Quick Decision Tree:
 

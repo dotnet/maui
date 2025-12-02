@@ -26,19 +26,18 @@ git branch --show-current
 
 Read these in order:
 
-1. **App Selection Rule** (30 seconds)
-   - ✅ **Sandbox app** = PR validation (DEFAULT, 99% of reviews)
-   - ❌ **HostApp** = Only when explicitly asked to "write UI tests" or "validate UI tests"
+1. **Testing Approach** (30 seconds)
+   - ✅ **HostApp with UI tests** = PR validation (DEFAULT for all reviews)
+   - ✅ Create test page in TestCases.HostApp
+   - ✅ Create NUnit test in TestCases.Shared.Tests
+   - ✅ Run BuildAndRunHostApp.ps1 to build, deploy, and test
    
-   **Decision**: If user says "review PR" or "test this fix" → Use Sandbox
+   **Decision**: If user says "review PR" or "test this fix" → Use HostApp UI testing
    
-   **⚠️ CRITICAL CONFUSION TO AVOID:**
-   - **PR has test files in TestCases.HostApp?** → Still use Sandbox!
-   - Those test files are for AUTOMATED testing (CI runs them)
-   - You are doing MANUAL validation → Use Sandbox
-   - Rule: "Test files in PR" ≠ "What you test with"
+   **If user asks to "write UI tests" or "debug UI tests":**
+   - Delegate to `uitest-coding-agent` (that's their specialty)
    
-   See [testing-guidelines.md](testing-guidelines.md#app-selection) for details.
+   See [testing-guidelines.md](testing-guidelines.md#testing-approach) for details.
 
 2. **Workflow Overview** (2 minutes)
    ```
@@ -70,13 +69,13 @@ Read these in order:
 
 **Before proceeding, answer this question:**
 
-**Q: Which app am I using for this PR validation?**
+**Q: What testing approach am I using for this PR validation?**
 
-- ✅ If you answered "Sandbox" → Correct! Proceed.
-- ❌ If you answered "HostApp" or "Both" → WRONG! Re-read App Selection Rule above.
-- ❓ If you're unsure → Default to Sandbox
+- ✅ If you answered "HostApp with UI tests" → Correct! Proceed.
+- ❌ If you answered "Manual testing" or "Sandbox" → WRONG! Re-read Testing Approach above.
+- ❓ If you're unsure → Default to HostApp UI testing
 
-**Even if the PR adds test files to TestCases.HostApp**, you still use Sandbox for validation.
+**Always use the UI testing infrastructure** for PR validation.
 
 ---
 

@@ -27,9 +27,8 @@ These files contain the complete workflow details. Reference them as needed:
 
 | File | When to Read | What It Covers |
 |------|--------------|----------------|
-| [testing-guidelines.md](testing-guidelines.md) | When unclear about workflow | App selection, fetch PR, checkpoints, test WITH/WITHOUT, time budgets, edge cases |
+| [testing-guidelines.md](testing-guidelines.md) | When unclear about workflow | Fetch PR, checkpoints, test WITH/WITHOUT, time budgets, edge cases |
 | [core-guidelines.md](core-guidelines.md) | For deep analysis guidance | Test vs review philosophy, deep code analysis, checkpoint rationale |
-| [sandbox-setup.md](sandbox-setup.md) | Creating test code | Handler detection, instrumentation templates, validation checkpoint |
 
 ---
 
@@ -104,14 +103,17 @@ Read these when working with specific controls or scenarios:
 
 ## 🎯 Quick Decision Trees
 
-### Which App Should I Use?
+### Which Approach Should I Use?
 
 ```
 User says: "Review PR" or "Test fix"
-→ Use Sandbox app ✅
+→ Use HostApp with UI tests ✅
+  (Create test page in TestCases.HostApp)
+  (Create NUnit test in TestCases.Shared.Tests)
+  (Run BuildAndRunHostApp.ps1)
 
-User says: "Write UI tests" or "Validate UI tests"
-→ Use HostApp ✅
+User says: "Write UI tests only" or "Debug UI test"
+→ Delegate to uitest-coding-agent ✅
 ```
 
 See: quick-start.md or testing-guidelines.md

@@ -61,9 +61,11 @@ When multiple instruction files exist, follow this priority order:
 **Your Workflow**:
 1. 📖 Read the PR description and linked issues
 2. 👀 Analyze the code changes
-3. 🧪 **Build and test in Sandbox app** (MOST IMPORTANT)
-   - **Use Sandbox app** (`src/Controls/samples/Controls.Sample.Sandbox/`) for validation
-   - **Never use TestCases.HostApp** unless explicitly asked to write/validate UI tests
+3. 🧪 **Build and test using UI tests** (MOST IMPORTANT)
+   - **Create test page in TestCases.HostApp** (`src/Controls/tests/TestCases.HostApp/Issues/`) to reproduce the issue
+   - **Create NUnit test in TestCases.Shared.Tests** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`) to validate behavior
+   - **Use BuildAndRunHostApp.ps1** script to build, deploy, and run tests
+   - **Never use Sandbox app** for PR validation - always use the UI testing infrastructure
 4. 🔍 Test edge cases not mentioned by PR author
 5. 📊 Compare behavior WITH and WITHOUT the PR changes
 6. 📝 Document findings with actual measurements and evidence
@@ -113,33 +115,45 @@ try {
 }
 ```
 
-### Rule 2: Screenshot Storage Location
+### Rule 2: Test Output and Logs Location
 
-**Screenshots are managed by your Appium test script**:
+**All test outputs are managed by the BuildAndRunHostApp.ps1 script**:
 
-When writing `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`:
-- ✅ **ALWAYS save to**: `CustomAgentLogsTmp/Sandbox/` directory
-- ❌ **NEVER save to**: `/tmp/`, repository root, or any other location
-- 📝 **Purpose**: Documentation/debugging only - never for validation
+- ✅ **Test logs saved to**: `CustomAgentLogsTmp/UITests/` directory
+- ✅ **Device logs**: `CustomAgentLogsTmp/UITests/android-device.log` or `ios-device.log`
+- ✅ **Test output**: `CustomAgentLogsTmp/UITests/test-output.log`
+- ❌ **NEVER manually save to**: `/tmp/`, repository root, or `CustomAgentLogsTmp/Sandbox/`
 
-**Correct path pattern**:
+**How testing works**:
+1. Create test page in TestCases.HostApp with proper AutomationIds
+2. Create NUnit test in TestCases.Shared.Tests that uses Appium
+3. Run `BuildAndRunHostApp.ps1` which handles:
+   - Building and deploying the HostApp
+   - Running your NUnit test via `dotnet test`
+   - Capturing all device logs automatically
+   - Saving everything to `CustomAgentLogsTmp/UITests/`
+
+**Example test structure**:
 ```csharp
-// In your Appium test script
-var screenshot = driver.GetScreenshot();
-screenshot.SaveAsFile("CustomAgentLogsTmp/Sandbox/test_state_before.png");  // ✅ Correct
-```
-
-**Wrong patterns**:
-```csharp
-screenshot.SaveAsFile("/tmp/test.png");           // ❌ Wrong location
-screenshot.SaveAsFile("test.png");                 // ❌ Wrong location (repo root)
-screenshot.SaveAsFile("../screenshots/test.png");  // ❌ Wrong location
+// In TestCases.Shared.Tests/Tests/Issues/Issue12345.cs
+public class Issue12345 : _IssuesUITest
+{
+    [Test]
+    [Category(UITestCategories.Layout)]
+    public void TestMyBehavior()
+    {
+        App.WaitForElement("TestButton");
+        App.Tap("TestButton");
+        VerifyScreenshot(); // Automatic screenshot comparison
+    }
+}
 ```
 
 **Why**: 
-- Keeps all test artifacts together in one directory
-- BuildAndRunSandbox.ps1 automatically cleans up old screenshots before each run
-- Easy for user to review all test outputs in one place
+- BuildAndRunHostApp.ps1 manages the entire test lifecycle
+- No need for manual Appium scripts - use NUnit tests instead
+- All logs and outputs in one consistent location
+- Easy for user to review all test outputs
    - **Output**: **ALWAYS** create a markdown file named `Review_Feedback_Issue_XXXXX.md` (replace XXXXX with actual issue number)
    - **When**: Create this file at the end of EVERY PR review, without exception
    - **Content**: Include test results, measurements, edge cases tested, and evidence-based recommendations
@@ -299,16 +313,16 @@ git diff main -- path/to/file.cs  # Should show NOTHING
 ```
 1. Revert to main branch version
 2. Verify with: git diff main -- <file>  (should be empty)
-3. Build and test
-4. Document results
+3. Run BuildAndRunHostApp.ps1 with your test
+4. Document results (should show the bug)
 ```
 
 **Phase 2: Test WITH PR (fixed version)**
 ```
 1. Restore PR changes: git checkout HEAD -- <file>
 2. Verify with: git diff main -- <file>  (should show PR changes)
-3. Build and test
-4. Compare to baseline
+3. Run BuildAndRunHostApp.ps1 with your test
+4. Compare to baseline (should show the fix working)
 ```
 
 **Verification checklist**:
@@ -389,6 +403,13 @@ git diff main -- path/to/file.cs  # Should show NOTHING
 
 **Why this matters**: Code review alone is insufficient. Many issues only surface when running actual code on real platforms with real scenarios. Your testing often reveals edge cases and issues the PR author didn't consider.
 
+**Testing Philosophy - Use UI Test Infrastructure**:
+- ✅ **Create test pages** in TestCases.HostApp that reproduce the issue
+- ✅ **Write NUnit tests** in TestCases.Shared.Tests that validate behavior
+- ✅ **Use BuildAndRunHostApp.ps1** to build, deploy, and run tests automatically
+- ❌ **Don't write manual Appium scripts** - the NUnit tests already use Appium
+- ❌ **Don't use Sandbox app** - use the proper UI testing infrastructure
+
 **NEVER GIVE UP Principle**:
 - When validation fails or produces confusing results: **PAUSE and ask for help**
 - Never silently abandon testing and fall back to code-only review
@@ -400,12 +421,12 @@ git diff main -- path/to/file.cs  # Should show NOTHING
 Every PR review follows this workflow:
 
 1. **Code Analysis**: Review the code changes for correctness, style, and best practices
-2. **Build the Sandbox app**: Use `src/Controls/samples/Controls.Sample.Sandbox/` for validation
-3. **Modify and instrument**: Reproduce the PR's scenario with instrumentation to capture measurements
-4. **Deploy and test**: Deploy to iOS/Android simulators and capture actual behavior
+2. **Create test page**: Add a test page in TestCases.HostApp that reproduces the issue
+3. **Write NUnit test**: Create corresponding test in TestCases.Shared.Tests with Appium-based validation
+4. **Run BuildAndRunHostApp.ps1**: Build, deploy, and run tests automatically
 5. **Test with and without PR changes**: Compare behavior before and after the PR
-6. **Test edge cases**: Validate scenarios not mentioned by the PR author
-7. **Document findings**: Include real measurements and evidence in your review
+6. **Test edge cases**: Add additional test methods for scenarios not mentioned by the PR author
+7. **Document findings**: Include real measurements and evidence from test runs in your review
 8. **Validate suggestions**: Test any suggestions before recommending them
 
 ## Core Responsibilities
@@ -524,11 +545,15 @@ Review the code changes for:
 **Why this works**: UICollectionView's compositional layout doesn't automatically 
 inherit semantic attributes from parent views, so it must be set explicitly.
 
-**Edge cases I tested**:
+**Edge cases I tested** (using UI tests in TestCases.HostApp):
 1. Rapid FlowDirection toggling (10x in 1 second) - Works correctly
 2. FlowDirection.MatchParent when parent is RTL - Works correctly  
 3. Setting FlowDirection before CollectionView is rendered - Works correctly
 4. Changing FlowDirection while scrolling - Works correctly
+
+**Test implementation**: Created Issue12345.xaml in TestCases.HostApp with 
+CollectionView and FlowDirection controls. NUnit test validates behavior with 
+Appium. Ran BuildAndRunHostApp.ps1 to verify on iOS simulator.
 
 **Potential concern**: Setting SemanticContentAttribute might conflict with 
 user-set layout direction if they customize the UICollectionView. However, 

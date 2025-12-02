@@ -88,7 +88,7 @@ Read **[uitests.instructions.md](../instructions/uitests.instructions.md)** whic
 
 **Step 4: Deep Understanding (Optional - for complex PRs)**
 
-- **General PR review guidelines?** → [core-guidelines.md](../instructions/pr-reviewer-agent/core-guidelines.md) (Focus on code review principles; ignore any sandbox references)
+- **General PR review guidelines?** → [core-guidelines.md](../instructions/pr-reviewer-agent/core-guidelines.md)
 
 ## Quick Reference
 
