@@ -218,8 +218,56 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
 
-  # Similar pattern for other stages (iOS, Windows, Mac)
-  # For brevity, showing the pattern - actual implementation would include all stages
+  - stage: android_ui_tests_coreclr
+    displayName: Android UITests CoreCLR
+    dependsOn:
+      - build_ui_tests_coreclr
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - analyze_pr_changes
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: android_ui_tests_${{ project.name }}_${{ api }}
+                ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                  strategy:
+                    matrix: $[ stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.matrix'] ]
+                ${{ else }}:
+                  strategy:
+                    matrix:
+                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                        ${{ replace(replace(categoryGroup, ',', '_'), ' ', '') }}:
+                          categoryGroup: ${{ categoryGroup }}
+                timeoutInMinutes: 240
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      testFilter: $(categoryGroup)
+                      runtimeVariant: "CoreCLR"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
   
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -278,5 +326,91 @@ stages:
                       platform: 'iOS'
                       artifactName: 'uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)'
 
-  # Note: Full implementation would include all other stages (CoreCLR, Windows, Mac, NativeAOT)
-  # following the same pattern with intelligent category selection
+  - stage: winui_ui_tests
+    displayName: WinUI UITests
+    dependsOn:
+      - build_ui_tests_windows
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - analyze_pr_changes
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.winui, '') }}:
+          - job: winui_ui_tests_${{ project.name }}
+            ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+              strategy:
+                matrix: $[ stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.matrix'] ]
+            ${{ else }}:
+              strategy:
+                matrix:
+                  ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                    ${{ replace(replace(categoryGroup, ',', '_'), ' ', '') }}:
+                      categoryGroup: ${{ categoryGroup }}
+            timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+            workspace:
+              clean: all
+            displayName: ${{ coalesce(project.desc, project.name) }}
+            pool: ${{ parameters.windowsPool }}
+            variables:
+              APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
+            steps:
+              - template: ui-tests-steps.yml
+                parameters:
+                  platform: windows
+                  version: "10.0.19041.0"
+                  device: windows10
+                  path: ${{ project.winui }}
+                  app: ${{ project.app }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  testFilter: $(categoryGroup)
+                  skipProvisioning: ${{ parameters.skipProvisioning }}
+              
+              - template: ui-tests-collect-snapshot-diffs.yml
+                parameters:
+                  platform: 'Windows'
+                  artifactName: 'uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)'
+
+  - stage: mac_ui_tests
+    displayName: macOS UITests
+    dependsOn:
+      - build_ui_tests
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - analyze_pr_changes
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.mac, '') }}:
+          - job: mac_ui_tests_${{ project.name }}
+            ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+              strategy:
+                matrix: $[ stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.matrix'] ]
+            ${{ else }}:
+              strategy:
+                matrix:
+                  ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                    ${{ replace(replace(categoryGroup, ',', '_'), ' ', '') }}:
+                      categoryGroup: ${{ categoryGroup }}
+            timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+            workspace:
+              clean: all
+            displayName: ${{ coalesce(project.desc, project.name) }}
+            pool: ${{ parameters.macosPool }}
+            variables:
+              REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+              APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+            steps:
+              - template: ui-tests-steps.yml
+                parameters:
+                  platform: catalyst
+                  version: "15.3"
+                  device: mac
+                  path: ${{ project.mac }}
+                  app: ${{ project.app }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  testFilter: $(categoryGroup)
+                  skipProvisioning: ${{ parameters.skipProvisioning }}
+              
+              - template: ui-tests-collect-snapshot-diffs.yml
+                parameters:
+                  platform: 'Mac'
+                  artifactName: 'uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)'
