@@ -99,12 +99,6 @@ namespace Microsoft.Maui.Platform
     {
         if (html != null)
         {
-            // Create a unique data URL to ensure proper navigation history
-            // LoadHtmlString doesn't create entries in the back/forward list
-            // Using LoadRequest with a data URL ensures the HTML content appears in navigation history
-            var base64Html = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(html));
-            var dataUrl = $"data:text/html;charset=utf-8;base64,{base64Html}";
-            
             // If baseUrl is provided, we need to use LoadData to respect it for relative resources
             if (!string.IsNullOrEmpty(baseUrl))
             {
@@ -112,6 +106,12 @@ namespace Microsoft.Maui.Platform
             }
             else
             {
+				// Create a unique data URL to ensure proper navigation history
+				// LoadHtmlString doesn't create entries in the back/forward list
+				// Using LoadRequest with a data URL ensures the HTML content appears in navigation history
+				var base64Html = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(html));
+				var dataUrl = $"data:text/html;charset=utf-8;base64,{base64Html}";
+
                 // Use LoadRequest with data URL for proper navigation history
                 LoadRequest(new NSUrlRequest(new NSUrl(dataUrl)));
             }
