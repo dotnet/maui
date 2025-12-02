@@ -80,8 +80,7 @@ Read **[uitests.instructions.md](../instructions/uitests.instructions.md)** whic
 
 - **CollectionView/CarouselView PR?** → Read [collectionview-handler-detection.md](../instructions/pr-reviewer-agent/collectionview-handler-detection.md)
 - **SafeArea changes?** → Read [safearea-testing.md](../instructions/safearea-testing.md)
-- **Hit an error?** → Check [error-handling.md](../instructions/pr-reviewer-agent/error-handling.md)
-- **Can't complete testing?** → Use [checkpoint-resume.md](../instructions/pr-reviewer-agent/checkpoint-resume.md)
+- **Need to write UI tests?** → Delegate to `uitest-coding-agent`
 
 **Step 3: Before Final Review (Always)**
 
@@ -89,7 +88,7 @@ Read **[uitests.instructions.md](../instructions/uitests.instructions.md)** whic
 
 **Step 4: Deep Understanding (Optional - for complex PRs)**
 
-- **Why test deeply?** → [core-guidelines.md](../instructions/pr-reviewer-agent/core-guidelines.md)
+- **General PR review guidelines?** → [core-guidelines.md](../instructions/pr-reviewer-agent/core-guidelines.md) (Note: Contains some sandbox references; focus on code review principles)
 
 ## Quick Reference
 
@@ -108,6 +107,6 @@ See [uitests.instructions.md](../instructions/uitests.instructions.md) for platf
 - **iOS**: Build HostApp, boot simulator, install app, run tests
 - **MacCatalyst**: Build and deploy HostApp, run tests
 
-**Checkpoint/Resume**: If you cannot complete testing due to environment limitations (missing device, platform unavailable), use the checkpoint system in [checkpoint-resume.md](../instructions/pr-reviewer-agent/checkpoint-resume.md).
+**Environment Limitations**: If you cannot complete testing due to environment limitations (missing device, platform unavailable), document the limitation and provide recommendations for manual validation.
 
 **See instruction files above for complete details.**
