@@ -307,7 +307,16 @@ internal struct CompiledBindingMarkup
 			if (p.Length > 0)
 			{
 				var property = previousPartType.GetAllProperties(p, _context).FirstOrDefault(property => property.GetMethod != null && !property.GetMethod.IsStatic);
-				if (property is null)
+				
+				// If property not found, check if it could be a RelayCommand-generated property
+				ITypeSymbol? currentPropertyType = property?.Type;
+				if (property is null && previousPartType.TryGetRelayCommandPropertyType(p, _context, out var commandType))
+				{
+					// Found a RelayCommand method that would generate this property
+					currentPropertyType = commandType;
+				}
+				
+				if (currentPropertyType is null)
 				{
 					return false; // TODO report diagnostic
 				}
@@ -319,10 +328,10 @@ internal struct CompiledBindingMarkup
 				// 		&& a.ConstructorArguments.Length == 1
 				// 		&& a.ConstructorArguments[0].Value is int nullableContextValue
 				// 		&& nullableContextValue > 0);
-				var memberIsNullable = property.Type.IsTypeNullable(enabledNullable);
+				var memberIsNullable = currentPropertyType.IsTypeNullable(enabledNullable);
 				isNullable |= memberIsNullable;
 
-				IPathPart memberAccess = new MemberAccess(p, property.Type.IsValueType);
+				IPathPart memberAccess = new MemberAccess(p, currentPropertyType.IsValueType);
 				if (previousPartIsNullable)
 				{
 					memberAccess = new ConditionalAccess(memberAccess);
@@ -332,13 +341,13 @@ internal struct CompiledBindingMarkup
 
 				// TODO: do this only if it is the last part?
 				setterOptions = new SetterOptions(
-					IsWritable: property.SetMethod != null
+					IsWritable: property?.SetMethod != null
 						&& property.SetMethod.IsPublic()
 						&& !property.SetMethod.IsInitOnly
 						&& !property.SetMethod.IsStatic,
 					AcceptsNullValue: memberIsNullable);
 
-				previousPartType = property.Type;
+				previousPartType = currentPropertyType;
 				previousPartIsNullable = memberIsNullable;
 			}
 
