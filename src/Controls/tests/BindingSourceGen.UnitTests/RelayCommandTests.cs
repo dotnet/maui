@@ -8,19 +8,15 @@ namespace BindingSourceGen.UnitTests;
 
 public class RelayCommandTests
 {
-	// Note: C# lambda bindings (SetBinding with static lambda expressions) cannot work with
-	// source-generated properties like those from [RelayCommand] because the semantic model
-	// needs to resolve the lambda return type before source generators run.
-	// 
-	// The RelayCommand support is primarily for XAML string-based bindings which use
-	// CompiledBindingMarkup.cs and the TryGetProperty extension method.
-	//
-	// These tests verify the behavior and document the limitation.
+	// Note: Expression-based bindings work with RelayCommand through type inference in
+	// GetLambdaReturnType. The generated interceptor code will be correct. In tests,
+	// we'll see compilation errors because the actual SaveCommand property doesn't exist
+	// (CommunityToolkit.Mvvm's source generator isn't running in the test environment),
+	// but the interceptor code itself is generated correctly.
 
 	[Fact]
-	public void RelayCommandPropertyNotResolvedInLambdaBinding()
+	public void GenerateBindingToRelayCommandProperty()
 	{
-		// This test documents that C# lambda bindings don't work with source-generated properties
 		var source = """
 			using Microsoft.Maui.Controls;
 			using System.Threading.Tasks;
@@ -57,7 +53,6 @@ public class RelayCommandTests
 					public void Test()
 					{
 						var button = new Button();
-						// This won't work because the semantic model can't see SaveCommand
 						button.SetBinding(Button.CommandProperty, static (MyViewModel vm) => vm.SaveCommand);
 					}
 				}
@@ -66,13 +61,16 @@ public class RelayCommandTests
 
 		var result = SourceGenHelpers.Run(source);
 		
-		// The binding cannot be generated because the semantic model can't resolve SaveCommand
-		// before source generators run
-		Assert.Null(result.Binding);
+		// The binding should be generated successfully with RelayCommand inference
+		Assert.NotNull(result.Binding);
 		
-		// Should have the "lambda result type cannot be resolved" error
-		var hasUnresolvableError = result.SourceGeneratorDiagnostics.Any(d => d.Id == "BSG0006");
-		Assert.True(hasUnresolvableError, "Should have BSG0006 error when property is not in semantic model");
+		// Verify the generated interceptor code contains the SaveCommand property access
+		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
+		Assert.Contains("SaveCommand", allGeneratedCode, System.StringComparison.Ordinal);
+		
+		// Note: There will be compilation errors because SaveCommand doesn't actually exist,
+		// but the interceptor code itself is generated correctly. In real usage with
+		// CommunityToolkit.Mvvm, the property would exist and compile successfully.
 	}
 
 	[Fact]
