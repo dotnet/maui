@@ -132,15 +132,10 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    # Get test filter from environment variable (passed from matrix in env block below)
-    $testFilterParam = $env:CATEGORY_GROUP
+    # Get test filter from parameter (matrix variable passed as parameter to template)
+    $testFilterParam = "${{ parameters.testFilter }}"
     
-    # Fallback to parameter for backward compatibility (when not using matrix)
-    if (-not $testFilterParam) {
-      $testFilterParam = "${{ parameters.testFilter }}"
-    }
-    
-    Write-Host "Test filter value: '$testFilterParam'"
+    Write-Host "Test filter parameter received: '$testFilterParam'"
     
     if ($testFilterParam) {
       $testFilterParam.Split(",") | ForEach {
@@ -170,7 +165,6 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
-    CATEGORY_GROUP: $(categoryGroup)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
