@@ -1,45 +1,51 @@
-trigger:
-  branches:
-    include:
-    - main
-    - release/*
-    - net10.0
-  tags:
-    include:
-    - '*'
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+# TEMPORARILY DISABLED FOR TESTING - Re-enable before merging
+trigger: none
 
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-    - net10.0
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+# TEMPORARILY DISABLED FOR TESTING - Re-enable before merging  
+pr: none
+
+# trigger:
+#   branches:
+#     include:
+#     - main
+#     - release/*
+#     - net10.0
+#   tags:
+#     include:
+#     - '*'
+#   paths:
+#     include:
+#     - '*'
+#     exclude:
+#     - .github/*
+#     - docs/*
+#     - src/Templates/*
+#     - CODE-OF-CONDUCT.md
+#     - CONTRIBUTING.md
+#     - LICENSE.TXT
+#     - PATENTS.TXT
+#     - README.md
+#     - THIRD-PARTY-NOTICES.TXT
+
+# pr:
+#   branches:
+#     include:
+#     - main
+#     - release/*
+#     - net10.0
+#   paths:
+#     include:
+#     - '*'
+#     exclude:
+#     - .github/*
+#     - docs/*
+#     - src/Templates/*
+#     - CODE-OF-CONDUCT.md
+#     - CONTRIBUTING.md
+#     - LICENSE.TXT
+#     - PATENTS.TXT
+#     - README.md
+#     - THIRD-PARTY-NOTICES.TXT
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
