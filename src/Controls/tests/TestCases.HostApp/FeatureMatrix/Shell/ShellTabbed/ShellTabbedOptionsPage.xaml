@@ -171,7 +171,7 @@
                               ColumnDefinitions="*,*"
                               ColumnSpacing="10">
                                 <VerticalStackLayout Grid.Column="0"
-                                                Spacing="5">
+                                                     Spacing="5">
                                         <Label Text="TabBarIsVisible"
                                                FontAttributes="Bold"
                                                AutomationId="TabBarIsVisibleLabel"/>
@@ -188,7 +188,7 @@
                                         </HorizontalStackLayout>
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1"
-                                                Spacing="5">
+                                                     Spacing="5">
                                         <Label Text="IsEnabled"
                                                FontAttributes="Bold"
                                                AutomationId="IsEnabledLabel"/>
@@ -209,7 +209,7 @@
                               ColumnDefinitions="*,*"
                               ColumnSpacing="10">
                                 <VerticalStackLayout Grid.Column="0"
-                                                Spacing="5">
+                                                     Spacing="5">
                                         <Label Text="FlowDirection"
                                                FontAttributes="Bold"
                                                AutomationId="FlowDirectionLabel"/>
@@ -226,7 +226,7 @@
                                         </HorizontalStackLayout>
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1"
-                                                Spacing="5">
+                                                     Spacing="5">
                                         <Label Text="IsVisible"
                                                FontAttributes="Bold"
                                                AutomationId="IsVisibleLabel"/>
@@ -259,9 +259,9 @@
                                         Clicked="OnCurrentItemClicked"
                                         AutomationId="NavigateToFruits"/>
                                 <Button Grid.Column="2"
-                                        Text="Tab2"
+                                        Text="Tab1"
                                         Clicked="OnCurrentItemClicked"
-                                        AutomationId="NavigateToTab2"/>
+                                        AutomationId="NavigateToTab1"/>
                         </Grid>
                         <Grid Grid.Row="14"
                               ColumnDefinitions="*,*,*,*"

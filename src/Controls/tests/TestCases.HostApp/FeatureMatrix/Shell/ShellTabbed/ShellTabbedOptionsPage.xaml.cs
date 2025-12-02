@@ -160,8 +160,8 @@ public partial class ShellTabbedOptionsPage : ContentPage
                     case "Fruits":
                         Shell.Current.CurrentItem = shell.FruitsItem;
                         break;
-                    case "Tab2":
-                        Shell.Current.CurrentItem = shell.Tab2Item;
+                    case "Tab1":
+                        Shell.Current.CurrentItem = shell.Tab1Item;
                         break;
                     case "Tab3":
                         Shell.Current.CurrentItem = shell.Tab3Item;

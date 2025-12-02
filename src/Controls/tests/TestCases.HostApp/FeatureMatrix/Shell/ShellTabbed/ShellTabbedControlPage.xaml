@@ -16,21 +16,36 @@
        FlowDirection="{Binding FlowDirection,Mode=TwoWay}">
        <TabBar>
               <Tab Title="Tab1"
-                   Icon="groceries.png">
-                     <ShellContent x:Name="vegetablesItem"
-                                   AutomationId="Vegetables"
-                                   Title="Vegetables">
-                            <ContentPage Title="Vegetables">
+                   AutomationId="Tab1"
+                   Icon="bank.png">
+                     <ShellContent x:Name="tab1Item"
+                                   Title="ShellTab1">
+                            <ContentPage Title="Page1">
                                    <ContentPage.ToolbarItems>
                                           <ToolbarItem Text="Options"
                                                        Clicked="NavigateToOptionsPage_Clicked"
                                                        AutomationId="Options"/>
                                    </ContentPage.ToolbarItems>
-                                   <VerticalStackLayout Padding="20">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Shell Tab 1"
+                                                 FontAttributes="Bold"
+                                                 HorizontalOptions="Center"
+                                                 AutomationId="Tab1Label"/>
                                           <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                                                  FontAttributes="Bold"
-                                                 TextColor="Green"
-                                                 AutomationId="VegetablesCurrentItemLabel"/>
+                                                 TextColor="Maroon"
+                                                 AutomationId="Tab1CurrentItemLabel"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab2"
+                   Icon="groceries.png">
+                     <ShellContent x:Name="vegetablesItem"
+                                   AutomationId="Vegetables"
+                                   Title="Vegetables">
+                            <ContentPage Title="Vegetables">
+                                   <VerticalStackLayout Padding="20">
                                           <Label Text="List of Vegetables:"
                                                  FontAttributes="Bold"/>
                                           <Label Text="Onion"/>
@@ -43,6 +58,13 @@
                                           <Label Text="Cauliflower"/>
                                           <Label Text="Peas"/>
                                           <Label Text="Corn"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="Green"
+                                                 AutomationId="VegetablesCurrentItemLabel"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
                                    </VerticalStackLayout>
                             </ContentPage>
                      </ShellContent>
@@ -51,10 +73,6 @@
                                    Title="Fruits">
                             <ContentPage Title="Fruits">
                                    <VerticalStackLayout Padding="20">
-                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
-                                                 FontAttributes="Bold"
-                                                 TextColor="Orange"
-                                                 AutomationId="FruitsCurrentItemLabel"/>
                                           <Label Text="List of Fruits:"
                                                  FontAttributes="Bold"/>
                                           <Label Text="Apple"/>
@@ -67,24 +85,10 @@
                                           <Label Text="Blueberry"/>
                                           <Label Text="Watermelon"/>
                                           <Label Text="Peach"/>
-                                   </VerticalStackLayout>
-                            </ContentPage>
-                     </ShellContent>
-              </Tab>
-              <Tab Title="Tab2"
-                   AutomationId="Tab2"
-                   Icon="coffee.png">
-                     <ShellContent x:Name="tab2Item"
-                                   Shell.TabBarIsVisible="{Binding TabBarIsVisible, Mode=TwoWay}"
-                                   Title="shellTab2">
-                            <ContentPage Title="Tab2 Content">
-                                   <VerticalStackLayout Padding="10">
                                           <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                                                  FontAttributes="Bold"
-                                                 TextColor="Blue"
-                                                 AutomationId="Tab2CurrentItemLabel"/>
-                                          <Label Text="Welcome to Tab 2"
-                                                 AutomationId="Tab2Label"/>
+                                                 TextColor="Orange"
+                                                 AutomationId="FruitsCurrentItemLabel"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>
@@ -94,18 +98,19 @@
               </Tab>
               <Tab Title="Tab3"
                    AutomationId="Tab3"
-                   IsVisible="{Binding IsVisible}"
-                   Icon="seth.png">
+                   Icon="coffee.png">
                      <ShellContent x:Name="tab3Item"
-                                   Title="ShellTab3">
+                                   Shell.TabBarIsVisible="{Binding TabBarIsVisible, Mode=TwoWay}"
+                                   IsEnabled="{Binding IsEnabled, Mode=TwoWay}"
+                                   Title="shellTab3">
                             <ContentPage Title="Tab3 Content">
                                    <VerticalStackLayout Padding="10">
-                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
-                                                 FontAttributes="Bold"
-                                                 TextColor="Purple"
-                                                 AutomationId="Tab3CurrentItemLabel"/>
                                           <Label Text="Welcome to Tab 3"
                                                  AutomationId="Tab3Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="Blue"
+                                                 AutomationId="Tab3CurrentItemLabel"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>
@@ -115,18 +120,18 @@
               </Tab>
               <Tab Title="Tab4"
                    AutomationId="Tab4"
-                   IsEnabled="{Binding IsEnabled}"
-                   Icon="bank.png">
+                   IsVisible="{Binding IsVisible}"
+                   Icon="seth.png">
                      <ShellContent x:Name="tab4Item"
                                    Title="ShellTab4">
-                            <ContentPage Title="Page1">
+                            <ContentPage Title="Tab4 Content">
                                    <VerticalStackLayout Padding="10">
-                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
-                                                 FontAttributes="Bold"
-                                                 TextColor="Maroon"
-                                                 AutomationId="Tab4CurrentItemLabel"/>
                                           <Label Text="Welcome to Tab 4"
                                                  AutomationId="Tab4Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="Purple"
+                                                 AutomationId="Tab4CurrentItemLabel"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>
@@ -141,12 +146,12 @@
                                    Title="ShellTab5">
                             <ContentPage Title="Page1">
                                    <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 5"
+                                                 AutomationId="Tab5Label"/>
                                           <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                                                  FontAttributes="Bold"
                                                  TextColor="Goldenrod"
                                                  AutomationId="Tab5CurrentItemLabel"/>
-                                          <Label Text="Welcome to Tab 5"
-                                                 AutomationId="Tab5Label"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>
@@ -161,12 +166,132 @@
                                    Title="ShellTab6">
                             <ContentPage Title="Page1">
                                    <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 6"
+                                                 AutomationId="Tab6Label"/>
                                           <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                                                  FontAttributes="Bold"
                                                  TextColor="DarkCyan"
                                                  AutomationId="Tab6CurrentItemLabel"/>
-                                          <Label Text="Welcome to Tab 6"
-                                                 AutomationId="Tab6Label"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab7"
+                   AutomationId="Tab7"
+                   Icon="groceries.png">
+                     <ShellContent x:Name="tab7Item"
+                                   Title="ShellTab7">
+                            <ContentPage Title="Page1">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 7"
+                                                 AutomationId="Tab7Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkCyan"
+                                                 AutomationId="Tab7CurrentItemLabel"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab8"
+                   AutomationId="Tab8"
+                   Icon="seth.png">
+                     <ShellContent x:Name="tab8Item"
+                                   Title="ShellTab8">
+                            <ContentPage Title="Page1">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 8"
+                                                 AutomationId="Tab8Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkCyan"
+                                                 AutomationId="Tab8CurrentItemLabel"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab9"
+                   AutomationId="Tab9"
+                   Icon="bank.png">
+                     <ShellContent x:Name="tab9Item"
+                                   Title="ShellTab9">
+                            <ContentPage Title="Page1">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 9"
+                                                 AutomationId="Tab9Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkCyan"
+                                                 AutomationId="Tab9CurrentItemLabel"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab10"
+                   AutomationId="Tab10"
+                   Icon="groceries.png">
+                     <ShellContent x:Name="tab10Item"
+                                   Title="ShellTab10">
+                            <ContentPage Title="Page1">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 10"
+                                                 AutomationId="Tab10Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkCyan"
+                                                 AutomationId="Tab9CurrentItemLabel"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab11"
+                   AutomationId="Tab11"
+                   Icon="menu_icon.png">
+                     <ShellContent x:Name="tab11Item"
+                                   Title="ShellTab11">
+                            <ContentPage Title="Page1">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 11"
+                                                 AutomationId="Tab11Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkCyan"
+                                                 AutomationId="Tab9CurrentItemLabel"/>
+                                          <Button Text="Go to Tab1"
+                                                  Clicked="OnGoToTab1Clicked"
+                                                  AutomationId="GoToTab1Button"/>
+                                   </VerticalStackLayout>
+                            </ContentPage>
+                     </ShellContent>
+              </Tab>
+              <Tab Title="Tab12"
+                   AutomationId="Tab12"
+                   Icon="seth.png">
+                     <ShellContent x:Name="tab12Item"
+                                   Title="ShellTab12">
+                            <ContentPage Title="Page1">
+                                   <VerticalStackLayout Padding="10">
+                                          <Label Text="Welcome to Tab 12"
+                                                 AutomationId="Tab12Label"/>
+                                          <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                                                 FontAttributes="Bold"
+                                                 TextColor="DarkCyan"
+                                                 AutomationId="Tab12CurrentItemLabel"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>

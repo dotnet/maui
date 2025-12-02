@@ -184,10 +184,10 @@ public class ShellTabbedPageFeatureTests : UITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_CurrentItemTitleBinding()
 	{
-		App.WaitForElement("Tab2");
-		App.Tap("Tab2");
-		var text = App.WaitForElement("Tab2CurrentItemLabel").GetText();
-		Assert.That(text, Is.EqualTo("Current Item: Tab2"));
+		App.WaitForElement("Tab3");
+		App.Tap("Tab3");
+		var text = App.WaitForElement("Tab3CurrentItemLabel").GetText();
+		Assert.That(text, Is.EqualTo("Current Item: Tab3"));
 		App.WaitForElement("GoToTab1Button");
 		App.Tap("GoToTab1Button");
 	}

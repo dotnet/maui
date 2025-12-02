@@ -9,7 +9,7 @@ public partial class ShellTabbedControlPage : Shell
     private ShellViewModel _viewModel;
     public ShellContent VegetablesItem => vegetablesItem;
     public ShellContent FruitsItem => fruitsItem;
-    public ShellContent Tab2Item => tab2Item;
+    public ShellContent Tab1Item => tab1Item;
     public ShellContent Tab3Item => tab3Item;
     public ShellContent Tab4Item => tab4Item;
     public ShellContent Tab5Item => tab5Item;
@@ -31,6 +31,6 @@ public partial class ShellTabbedControlPage : Shell
 
     private void OnGoToTab1Clicked(object sender, EventArgs e)
     {
-        this.CurrentItem = this.VegetablesItem;
+        this.CurrentItem = this.tab1Item;
     }
 }
