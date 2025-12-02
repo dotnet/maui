@@ -3,8 +3,8 @@ trigger:
     include:
     - main
     - release/*
-    - net9.0
     - net10.0
+    - net11.0
     - inflight/*
   tags:
     include:
@@ -28,8 +28,8 @@ pr:
     include:
     - main
     - release/*
-    - net9.0
     - net10.0
+    - net11.0
     - inflight/*
   paths:
     include:

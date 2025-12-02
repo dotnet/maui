@@ -91,8 +91,8 @@ jobs:
       fetchDepth: 3
       clean: true
 
-    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}: 
-      - ${{ if eq(parameters.publishingVersion, 3) }}: 
+    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}:
+      - ${{ if eq(parameters.publishingVersion, 3) }}:
         - task: DownloadPipelineArtifact@2
           displayName: Download Asset Manifests
           inputs:
@@ -122,9 +122,10 @@ jobs:
 
     # Populate internal runtime variables.
     - template: /eng/common/templates/steps/enable-internal-sources.yml
-      parameters:
-        legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-    
+      ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+        parameters:
+            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
     - task: AzureCLI@2
@@ -135,17 +136,16 @@ jobs:
         scriptLocation: scriptPath
         scriptPath: $(System.DefaultWorkingDirectory)/eng/common/sdk-task.ps1
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
-          -runtimeSourceFeed https://ci.dot.net/internal 
-          -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
           /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
           /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:OfficialBuildId=$(OfficialBuildId)
-
+          -runtimeSourceFeed https://ci.dot.net/internal
+          -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
 
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: powershell@2
       displayName: Create ReleaseConfigs Artifact
       inputs:
@@ -173,7 +173,7 @@ jobs:
             artifactName: AssetManifests
             displayName: 'Publish Merged Manifest'
             retryCountOnTaskFailure: 10 # for any logs being locked
-            sbomEnabled: false  # we don't need SBOM for logs
+            sbomEnabled: false # we don't need SBOM for logs
 
     - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
       parameters:
@@ -190,6 +190,11 @@ jobs:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
           is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          
+      # Darc is targeting 8.0, so make sure it's installed
+      - task: UseDotNet@2
+        inputs:
+          version: 8.0.x
 
       - task: AzureCLI@2
         displayName: Publish Using Darc
@@ -213,4 +218,4 @@ jobs:
       - template: /eng/common/core-templates/steps/publish-logs.yml
         parameters:
           is1ESPipeline: ${{ parameters.is1ESPipeline }}
-          JobLabel: 'Publish_Artifacts_Logs'     
+          JobLabel: 'Publish_Artifacts_Logs'
