@@ -1,397 +1,161 @@
 ---
-description: "Common testing patterns for command sequences used across .NET MAUI AI agent instructions"
+description: "Common testing patterns and scripts for .NET MAUI AI agent testing workflows"
 ---
 
 # Common Testing Patterns
 
-This document consolidates recurring command patterns used across multiple instruction files. Reference these patterns instead of duplicating them.
+This document consolidates testing patterns and scripts used across AI agent instructions.
 
-## 1. UDID Extraction Patterns
+## 1. BuildAndRunSandbox.ps1 (Sandbox App Testing)
 
-### iOS Simulator UDID (iPhone Xs, Highest iOS Version)
+**CRITICAL**: For all Sandbox app testing and reproduction work, use this script instead of manual commands.
 
-**Used in**: `pr-reviewer.md`, `uitests.instructions.md`, `instrumentation.instructions.md`, `appium-control.instructions.md`
+**Script Location**: `.github/scripts/BuildAndRunSandbox.ps1`
 
-**Pattern**:
-```bash
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+**Usage**:
+```powershell
+# Android
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
 
-# Check UDID was found
-if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-    echo "❌ ERROR: No iPhone Xs simulator found. Please create one."
-    exit 1
-fi
-
-echo "Using simulator: iPhone Xs (UDID: $UDID)"
+# iOS  
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 ```
 
-**When to use**: Default iOS testing on iPhone Xs with latest iOS version
+**What the script handles**:
+- Device detection, boot, and UDID extraction
+- App building (always fresh build)
+- App installation and deployment
+- Appium server management (auto-start/stop)
+- Running Appium test (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
+- Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
+  - `RunWithAppiumTest.cs` - Your test script (preserved after run)
+
+**Requirements**:
+- Must have `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` file (use `.github/scripts/RunWithAppiumTest.template.cs` as starting point)
+
+**When to use**:
+- ✅ Issue reproduction with Sandbox app
+- ✅ Manual testing and debugging
+- ✅ PR validation with custom UI scenarios
+- ❌ NOT for automated UI tests (use BuildAndRunHostApp.ps1)
 
 ---
 
-### iOS Simulator UDID (Specific iOS Version)
+## 2. BuildAndRunHostApp.ps1 (Automated UI Tests)
 
-**Used in**: `uitests.instructions.md`
+**CRITICAL**: For running automated UI tests from TestCases.HostApp, use this script.
 
-**Pattern**:
-```bash
-# User specifies iOS version (e.g., "26.0") and device name
-IOS_VERSION="${IOS_VERSION:-}"
-DEVICE_NAME="${DEVICE_NAME:-iPhone Xs}"
+**Script Location**: `.github/scripts/BuildAndRunHostApp.ps1`
 
-if [ -z "$IOS_VERSION" ]; then
-    echo "❌ ERROR: IOS_VERSION not set"
-    exit 1
-fi
+**Usage**:
+```powershell
+# Run specific test by name
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform Android -TestFilter "FullyQualifiedName~Issue12345"
 
-IOS_VERSION_FILTER="iOS-${IOS_VERSION//./-}"
-UDID=$(xcrun simctl list devices available --json | jq -r --arg filter "$IOS_VERSION_FILTER" --arg device "$DEVICE_NAME" '.devices | to_entries | map(select(.key | contains($filter))) | map(.value) | flatten | map(select(.name == $device)) | first | .udid')
-
-if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-    echo "❌ ERROR: No $DEVICE_NAME simulator found for iOS $IOS_VERSION"
-    exit 1
-fi
-
-echo "Using simulator: $DEVICE_NAME iOS $IOS_VERSION (UDID: $UDID)"
+# Run tests by category
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -TestFilter "Category=Button"
 ```
 
-**When to use**: Testing on specific iOS version
+**What the script handles**:
+- Device detection, boot, and UDID extraction
+- HostApp building (always fresh build)
+- App installation
+- Appium server management (auto-start/stop)
+- Running `dotnet test` with specified filter
+- Complete log capture to `CustomAgentLogsTmp/UITests/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` or `ios-device.log` - Device logs filtered to HostApp
+  - `test-output.log` - Test execution results
+
+**When to use**:
+- ✅ Running automated UI tests
+- ✅ Validating test changes
+- ✅ PR test validation
 
 ---
 
-### Android Device UDID
-
-**Used in**: `pr-reviewer.md`, `uitests.instructions.md`, `instrumentation.instructions.md`, `appium-control.instructions.md`
-
-**Pattern**:
-```bash
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# Check device was found
-if [ -z "$DEVICE_UDID" ]; then
-    echo "❌ ERROR: No Android device/emulator found. Start an emulator or connect a device."
-    exit 1
-fi
-
-echo "Using Android device: $DEVICE_UDID"
-```
-
-**When to use**: Any Android testing
-
----
-
-## 2. Device Boot Patterns
-
-### iOS Simulator Boot with Error Checking
-
-**Used in**: `pr-reviewer.md`, `uitests.instructions.md`, `instrumentation.instructions.md`
-
-**Pattern**:
-```bash
-# Requires: $UDID already set
-# Boot simulator (error if already booted is OK)
-xcrun simctl boot $UDID 2>/dev/null || true
-
-# Check simulator is booted
-STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
-if [ "$STATE" != "Booted" ]; then
-    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
-    exit 1
-fi
-
-echo "Simulator is booted and ready"
-```
-
-**When to use**: Before installing/launching iOS apps
-
----
-
-## 3. Build Patterns
-
-### Sandbox App Build (iOS)
-
-**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`, `appium-control.instructions.md`
-
-**Pattern**:
-```bash
-# Build (use --no-incremental only if app crashes on launch)
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
-
-# Check build succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build failed"
-    exit 1
-fi
-
-echo "Build successful"
-```
-
-**When to use**: Building Sandbox app for iOS testing
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
-
-### Sandbox App Build and Deploy (Android)
-
-**Used in**: `appium-control.instructions.md`
-
-**Pattern**:
-```bash
-# Requires: $DEVICE_UDID already set
-# Build, install, and launch (the -t:Run target does all three)
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-
-# Check build succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build/deploy failed"
-    exit 1
-fi
-
-echo "Build and deploy successful"
-
-# Verify app is running
-sleep 3
-if adb -s $DEVICE_UDID shell pidof com.microsoft.maui.sandbox > /dev/null; then
-    echo "✅ App is running"
-else
-    echo "❌ App failed to start"
-    exit 1
-fi
-```
-
-**When to use**: Building and deploying Sandbox app for Android testing
-
-**Why `-t:Run`**: On Android, use the `Run` target which builds, installs, and launches the app in one command
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
-
----
-
-### Sandbox App Build (Android)
-
-**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`
-
-**Pattern**:
-```bash
-# Build and deploy (use --no-incremental only if app crashes on launch)
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-android -t:Run
-
-# Check build/deploy succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build or deployment failed"
-    exit 1
-fi
-
-echo "Build successful and deployed"
-```
-
-**When to use**: Building and deploying Sandbox app for Android testing
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
-
----
-
-### TestCases.HostApp Build (iOS)
-
-**Used in**: `uitests.instructions.md`
-
-**Pattern**:
-```bash
-# Use local dotnet if available, otherwise global
-DOTNET_CMD="./bin/dotnet/dotnet"
-if [ ! -f "$DOTNET_CMD" ]; then
-    DOTNET_CMD="dotnet"
-fi
-
-$DOTNET_CMD build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-
-# Check build succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build failed"
-    exit 1
-fi
-
-echo "Build successful"
-```
-
-**When to use**: Building TestCases.HostApp for automated UI tests
-
-**Troubleshooting**: If app crashes on launch, rebuild with `--no-incremental` flag
-
----
-
-### TestCases.HostApp Build (Android)
-
-**Used in**: `uitests.instructions.md`
-
-**Pattern**:
-```bash
-# Use local dotnet if available, otherwise global
-DOTNET_CMD="./bin/dotnet/dotnet"
-if [ ! -f "$DOTNET_CMD" ]; then
-    DOTNET_CMD="dotnet"
-fi
-
-$DOTNET_CMD build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-
-# Check build/deploy succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build or deployment failed"
-    exit 1
-fi
-
-echo "Build successful and deployed"
-```
-
-**When to use**: Building and deploying TestCases.HostApp for Android automated UI tests
-
----
-
-## 4. App Installation Patterns
-
-### iOS App Install with Error Checking
-
-**Used in**: `pr-reviewer.md`, `uitests.instructions.md`, `instrumentation.instructions.md`
-
-**Pattern**:
-```bash
-# Requires: $UDID already set, simulator booted
-APP_PATH="${APP_PATH:-artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app}"
-
-# Install
-xcrun simctl install $UDID "$APP_PATH"
-
-# Check install succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: App installation failed"
-    exit 1
-fi
-
-echo "App installed successfully"
-```
-
-**When to use**: Installing iOS apps to simulator
-
----
-
-## 5. App Launch Patterns
-
-### iOS App Launch with Console Capture
-
-**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`
-
-**Pattern**:
-```bash
-# Requires: $UDID, $BUNDLE_ID set, app already installed
-LOG_FILE="${LOG_FILE:-/tmp/ios_test.log}"
-BUNDLE_ID="${BUNDLE_ID:-com.microsoft.maui.sandbox}"
-
-# Launch with console capture
-xcrun simctl launch --console-pty $UDID "$BUNDLE_ID" > "$LOG_FILE" 2>&1 &
-
-# Check launch didn't immediately fail
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: App launch failed"
-    exit 1
-fi
-
-# Wait for app to start
-sleep 8
-
-# Show output
-cat "$LOG_FILE"
-```
-
-**When to use**: Launching iOS app and capturing console output for instrumentation
-
----
-
-### Android Logcat Monitoring
-
-**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`
-
-**Pattern**:
-```bash
-# Monitor logs for specific markers
-MARKER="${MARKER:-TEST OUTPUT}"
-adb logcat | grep -E "($MARKER|Console|FATAL|AndroidRuntime)"
-```
-
-**When to use**: Monitoring Android console output during testing
-
----
-
-## 6. Cleanup Patterns
+## 3. Cleanup Patterns
 
 ### Sandbox App Cleanup
-
-**Used in**: `pr-reviewer.md`, `instrumentation.instructions.md`
-
-**Pattern**:
 ```bash
 # Revert all changes to Sandbox app
 git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
 ```
 
-**When to use**: After testing with Sandbox app
-
----
-
-### Test Branch Cleanup
-
-**Used in**: `pr-reviewer.md`
-
-**Pattern**:
+### Sandbox Test Files Cleanup
 ```bash
-# Requires: $ORIGINAL_BRANCH set at start of review
-# Return to original branch
-git checkout $ORIGINAL_BRANCH
-
-# Delete test branches
-git branch -D test-pr-* baseline-test pr-*-temp 2>/dev/null || true
+# Remove Appium test directory (gitignored)
+rm -rf CustomAgentLogsTmp/Sandbox/
 ```
 
-**When to use**: After completing PR review testing
-
----
-
-## 7. Error Recovery Patterns
-
-### Build Failure Recovery
-
-**Used in**: `copilot-instructions.md`, `pr-reviewer.md`
-
-**Pattern**:
+### HostApp Test Logs Cleanup
 ```bash
-# Clean and retry build
-dotnet clean [project-path]
-rm -rf bin/ obj/
-dotnet tool restore --force
-dotnet build [project-path] --verbosity normal --no-incremental
-
-# If still failing, check for:
-# - Wrong .NET SDK version (check global.json)
-# - Missing build tasks (build Microsoft.Maui.BuildTasks.slnf first)
-# - Platform SDK issues (check Android SDK, Xcode, etc.)
+# Remove test logs directory (gitignored)
+rm -rf CustomAgentLogsTmp/UITests/
 ```
-
-**When to use**: When initial build fails
 
 ---
 
-## 8. References in Other Files
+## 4. Common Error Handling Patterns
 
-When these patterns are used in instruction files, reference them like this:
+### App Crashes on Launch
 
-```markdown
-**iOS Simulator Setup**: See [Common Testing Patterns: UDID Extraction (iOS)](common-testing-patterns.md#ios-simulator-udid-iphone-xs-highest-ios-version)
+**CRITICAL**: When an app crashes, the PowerShell scripts automatically capture all crash logs.
 
-**Device Boot**: See [Common Testing Patterns: Device Boot](common-testing-patterns.md#ios-simulator-boot-with-error-checking)
-```
+**Workflow**:
+1. Run BuildAndRunSandbox.ps1 or BuildAndRunHostApp.ps1
+2. Script will capture crash in device logs
+3. Read the crash logs:
+   - **Android**: `CustomAgentLogsTmp/Sandbox/android-device.log` or `CustomAgentLogsTmp/UITests/android-device.log`
+   - **iOS**: `CustomAgentLogsTmp/Sandbox/ios-device.log` or `CustomAgentLogsTmp/UITests/ios-device.log`
+4. Find the exception stack trace in the logs
+5. Investigate root cause from the exception
+6. Fix the underlying issue (null reference, missing resource, etc.)
 
-This keeps instructions DRY while maintaining readability.
+**Why**: Crashes are caused by actual code issues, not build artifacts. The exception tells you exactly what's wrong.
+
+**DO NOT**: Use `--no-incremental` or `dotnet clean` as first solution for crashes.
 
 ---
 
-**Last Updated**: 2025-11-12
+### PublicAPI Analyzer Failures
 
-**Note**: These patterns include error checking at every critical step to ensure AI agents can detect and handle failures early.
+**Symptom**:
+```
+error RS0016: Symbol 'X' is not marked as public API
+```
+
+**Solution**:
+```bash
+# Let analyzers fix PublicAPI.Unshipped.txt files
+dotnet format analyzers Microsoft.Maui.sln
+```
+
+**Why**: See `.github/copilot-instructions.md` section "PublicAPI.Unshipped.txt File Management"
+
+**NEVER**: Disable the analyzer or add `#pragma warning disable`
+
+---
+
+### Appium Server Issues
+
+**Note**: The PowerShell scripts automatically manage Appium (start if needed, stop if we started it).
+
+**If you see Appium errors**: Check the `appium.log` file in `CustomAgentLogsTmp/Sandbox/` or `CustomAgentLogsTmp/UITests/` directories.
+
+---
+
+## 5. Related Documentation
+
+- **Issue Resolution**: `.github/instructions/issue-resolver-agent/` - Full workflow and guidelines
+- **UI Tests**: `.github/instructions/uitests.instructions.md` - Writing automated UI tests
+- **Instrumentation**: `.github/instructions/instrumentation.md` - Adding debug instrumentation
+- **Troubleshooting**: `.github/copilot-instructions.md` - General development troubleshooting
+
+---
+
+**Last Updated**: 2025-11-24
+
+**Note**: The PowerShell scripts handle all build, deployment, and log capture. Agents should use these scripts instead of manual commands.

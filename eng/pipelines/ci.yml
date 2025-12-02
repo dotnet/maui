@@ -57,7 +57,7 @@ parameters:
     image: 1es-windows-2022
     os: Windows
     buildScript: $(_buildScript)
-    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.slnx'
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
   - name: Azure Pipelines
     vmImage: $(HostedMacImage)
     os: macOS
@@ -71,7 +71,7 @@ parameters:
     image: 1es-windows-2022
     os: Windows
     buildScript: $(_buildScript)
-    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.slnx'
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
   - name: Azure Pipelines
     vmImage: $(HostedMacImage)
     os: macOS
