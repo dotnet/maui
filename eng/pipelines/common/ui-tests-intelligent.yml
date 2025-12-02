@@ -198,6 +198,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  CATEGORY_GROUP: $(categoryGroup)
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -252,6 +253,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  CATEGORY_GROUP: $(categoryGroup)
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:

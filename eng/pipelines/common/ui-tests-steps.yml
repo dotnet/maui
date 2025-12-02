@@ -171,7 +171,7 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
-    CATEGORYGROUP: $(categoryGroup)
+    CATEGORYGROUP: $(CATEGORY_GROUP)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
