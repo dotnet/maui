@@ -124,6 +124,73 @@ steps:
 
 - pwsh: |
     Get-Content $PSCommandPath
+    
+    Write-Host "========================================="
+    Write-Host "DEBUGGING: Testing ALL possible methods to access matrix variable"
+    Write-Host "========================================="
+    
+    # Method 1: Template parameter (compile-time)
+    $method1 = "${{ parameters.testFilter }}"
+    Write-Host "Method 1 - Template parameter: '$method1'"
+    
+    # Method 2: Environment variable from env block
+    $method2 = $env:CATEGORY_GROUP
+    Write-Host "Method 2 - Env var CATEGORY_GROUP: '$method2'"
+    
+    # Method 3: Environment variable lowercase
+    $method3 = $env:categoryGroup
+    Write-Host "Method 3 - Env var categoryGroup: '$method3'"
+    
+    # Method 4: All environment variables containing 'category' (case insensitive)
+    Write-Host "Method 4 - All env vars with 'category':"
+    Get-ChildItem env: | Where-Object { $_.Name -like '*category*' } | ForEach-Object {
+      Write-Host "  $($_.Name) = $($_.Value)"
+    }
+    
+    # Method 5: Check specific Azure DevOps variable patterns
+    $method5a = $env:BUILD_BUILDID
+    Write-Host "Method 5a - BUILD_BUILDID (sanity check): '$method5a'"
+    
+    # Method 6: Try reading from pipeline variable using inline expansion
+    Write-Host "Method 6 - Inline macro expansion attempt:"
+    $inlineMacro = "$(categoryGroup)"
+    Write-Host "  Inline \$(categoryGroup): '$inlineMacro'"
+    
+    # Method 7: List ALL environment variables (first 50)
+    Write-Host "Method 7 - First 50 environment variables:"
+    Get-ChildItem env: | Select-Object -First 50 | ForEach-Object {
+      Write-Host "  $($_.Name) = $($_.Value)"
+    }
+    
+    Write-Host "========================================="
+    Write-Host "SELECTING BEST METHOD:"
+    
+    # Try methods in order of preference
+    $testFilterParam = ""
+    if ($method1 -and $method1 -ne '${{ parameters.testFilter }}' -and $method1 -ne '$(categoryGroup)') {
+      $testFilterParam = $method1
+      Write-Host "✅ Using Method 1 (template parameter): '$testFilterParam'"
+    }
+    elseif ($method2) {
+      $testFilterParam = $method2
+      Write-Host "✅ Using Method 2 (env CATEGORY_GROUP): '$testFilterParam'"
+    }
+    elseif ($method3) {
+      $testFilterParam = $method3
+      Write-Host "✅ Using Method 3 (env categoryGroup): '$testFilterParam'"
+    }
+    elseif ($inlineMacro -and $inlineMacro -ne '$(categoryGroup)') {
+      $testFilterParam = $inlineMacro
+      Write-Host "✅ Using Method 6 (inline macro): '$testFilterParam'"
+    }
+    else {
+      # Fallback to original parameter
+      $testFilterParam = "${{ parameters.testFilter }}"
+      Write-Host "⚠️ No matrix variable found, using original testFilter parameter: '$testFilterParam'"
+    }
+    
+    Write-Host "========================================="
+    
     $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
     $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
     $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
@@ -131,11 +198,6 @@ steps:
 
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
-
-    # Get test filter from parameter (matrix variable passed as parameter to template)
-    $testFilterParam = "${{ parameters.testFilter }}"
-    
-    Write-Host "Test filter parameter received: '$testFilterParam'"
     
     if ($testFilterParam) {
       $testFilterParam.Split(",") | ForEach {
@@ -165,6 +227,8 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    CATEGORY_GROUP: $(categoryGroup)
+    categoryGroup: $(categoryGroup)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
