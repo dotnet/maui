@@ -132,16 +132,15 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    # Get test filter from environment variable (set from matrix) or parameter (for backward compat)
-    $testFilterParam = ""
-    if ($env:CATEGORYGROUP) {
-      $testFilterParam = $env:CATEGORYGROUP
-      Write-Host "Test filter from environment (matrix): $testFilterParam"
-    }
-    elseif ("${{ parameters.testFilter }}") {
+    # Get test filter - Azure DevOps will expand $(CATEGORY_GROUP) before PowerShell runs
+    $testFilterParam = "$(CATEGORY_GROUP)"
+    
+    # Fallback to parameter for backward compatibility
+    if (-not $testFilterParam -or $testFilterParam -eq '$(CATEGORY_GROUP)') {
       $testFilterParam = "${{ parameters.testFilter }}"
-      Write-Host "Test filter from parameter: $testFilterParam"
     }
+    
+    Write-Host "Test filter value: '$testFilterParam'"
     
     if ($testFilterParam) {
       $testFilterParam.Split(",") | ForEach {
@@ -171,7 +170,6 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
-    CATEGORYGROUP: $(CATEGORY_GROUP)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
