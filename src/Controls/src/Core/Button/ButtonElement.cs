@@ -10,16 +10,27 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// The backing store for the <see cref="ICommandElement.Command" /> bindable property.
 		/// </summary>
-		public static readonly BindableProperty CommandProperty = BindableProperty.Create(
-			nameof(IButtonElement.Command), typeof(ICommand), typeof(IButtonElement), null,
-			propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
+		public static readonly BindableProperty CommandProperty;
 
 		/// <summary>
 		/// The backing store for the <see cref="ICommandElement.CommandParameter" /> bindable property.
 		/// </summary>
-		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(
-			nameof(IButtonElement.CommandParameter), typeof(object), typeof(IButtonElement), null,
-			propertyChanged: CommandElement.OnCommandParameterChanged);
+		public static readonly BindableProperty CommandParameterProperty;
+
+		static ButtonElement()
+		{
+			CommandParameterProperty = BindableProperty.Create(
+				nameof(IButtonElement.CommandParameter), typeof(object), typeof(IButtonElement), null,
+				propertyChanged: CommandElement.OnCommandParameterChanged);
+
+			CommandProperty = BindableProperty.Create(
+				nameof(IButtonElement.Command), typeof(ICommand), typeof(IButtonElement), null,
+				propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
+
+			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
+			// See https://github.com/dotnet/maui/issues/31939
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
 
 		/// <summary>
 		/// The string identifier for the pressed visual state of this control.
