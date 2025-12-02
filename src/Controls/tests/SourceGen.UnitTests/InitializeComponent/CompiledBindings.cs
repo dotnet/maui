@@ -828,7 +828,7 @@ public class Container
 		Assert.DoesNotContain("HasValue", generated, StringComparison.Ordinal);
 		
 		// Getter should have ?? default for value type through nullable path
-		Assert.Contains("?? default", generated, StringComparison.Ordinal);
+		Assert.Contains("getter: source => (source.Container?.Count ?? default, true)", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -934,31 +934,10 @@ public class Container
 		// Check the setter signature accepts nullable
 		Assert.Contains("global::System.Action<global::Test.TestPage, string?>", generated, StringComparison.Ordinal);
 		
-		// The pattern "if (value is null)" followed by "return;" should NOT appear together
+		// Verify the pattern "if (value is null)" followed by "return;" does NOT appear
 		// This would indicate an early return that we don't want for nullable target properties
-		var lines = generated.Split('\n');
-		bool hasEarlyReturn = false;
-		for (int i = 0; i < lines.Length - 1; i++)
-		{
-			if (lines[i].Contains("if (value is null)", StringComparison.Ordinal))
-			{
-				// Check if the next few lines contain a return statement
-				for (int j = i + 1; j < Math.Min(i + 5, lines.Length); j++)
-				{
-					if (lines[j].Trim() == "return;")
-					{
-						hasEarlyReturn = true;
-						break;
-					}
-					// If we hit the closing brace or another statement, stop looking
-					if (lines[j].Contains("}", StringComparison.Ordinal) || lines[j].Contains("if (", StringComparison.Ordinal))
-					{
-						break;
-					}
-				}
-			}
-		}
-		Assert.False(hasEarlyReturn, "Setter should NOT have early return for nullable target property");
+		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
+		Assert.DoesNotMatch(earlyReturnPattern, generated);
 	}
 
 	[Fact]
@@ -1011,28 +990,11 @@ public class Container
 		// Check the setter signature accepts nullable value type
 		Assert.Contains("global::System.Action<global::Test.TestPage, int?>", generated, StringComparison.Ordinal);
 		
-		// Should NOT have early return for null value since OptionalCount accepts null
-		var lines = generated.Split('\n');
-		bool hasEarlyReturn = false;
-		for (int i = 0; i < lines.Length - 1; i++)
-		{
-			if (lines[i].Contains("if (!value.HasValue)", StringComparison.Ordinal) || lines[i].Contains("if (value is null)", StringComparison.Ordinal))
-			{
-				// Check if the next few lines contain a return statement
-				for (int j = i + 1; j < Math.Min(i + 5, lines.Length); j++)
-				{
-					if (lines[j].Trim() == "return;")
-					{
-						hasEarlyReturn = true;
-						break;
-					}
-					if (lines[j].Contains("}", StringComparison.Ordinal) || lines[j].Contains("if (", StringComparison.Ordinal))
-					{
-						break;
-					}
-				}
-			}
-		}
-		Assert.False(hasEarlyReturn, "Setter should NOT have early return for nullable value type target property");
+		// Verify no early return patterns for nullable value types
+		// Should NOT have "if (!value.HasValue) { return;" or "if (value is null) { return;"
+		var hasValueEarlyReturnPattern = @"if\s*\(\s*!\s*value\s*\.\s*HasValue\s*\)\s*\{\s*return\s*;";
+		var isNullEarlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
+		Assert.DoesNotMatch(hasValueEarlyReturnPattern, generated);
+		Assert.DoesNotMatch(isNullEarlyReturnPattern, generated);
 	}
 }
