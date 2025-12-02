@@ -70,6 +70,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal UIView PlatformView { get; set; }
 
+		CollectionViewHandler2 CollectionViewHandler
+		{
+			get
+			{
+				if (PlatformHandler?.VirtualView is View view &&
+					view.Parent is ItemsView itemsView &&
+					itemsView.Handler is CollectionViewHandler2 handler)
+				{
+					return handler;
+				}
+				return null;
+			}
+		}
+
 		internal void Unbind()
 		{
 			_bound = false;
@@ -93,9 +107,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure = virtualView.Measure(constraints.Width, constraints.Height);
+					// Check if we should use the cached first item size for MeasureFirstItem optimization
+					var cachedSize = GetCachedFirstItemSizeFromHandler();
+					if (cachedSize != CGSize.Empty)
+					{
+						_measuredSize = cachedSize.ToSize();
+						// Even when we have a cached measurement, we still need to call Measure
+						// to update the virtual view's internal state and bookkeeping
+						virtualView.Measure(constraints.Width, _measuredSize.Height);
+					}
+					else
+					{
+						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+						// If this is the first item being measured, cache it for MeasureFirstItem strategy
+						SetCachedFirstItemSizeToHandler(_measuredSize.ToCGSize());
+					}
 					_cachedConstraints = constraints;
-					_measuredSize = measure;
 					_needsArrange = true;
 				}
 
@@ -121,6 +148,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
 				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
 			return constraints;
+		}
+
+		/// <summary>
+		/// Gets the cached first item size from the handler for MeasureFirstItem optimization.
+		/// </summary>
+		private CGSize GetCachedFirstItemSizeFromHandler()
+		{
+			return CollectionViewHandler?.GetCachedFirstItemSize() ?? CGSize.Empty;
+		}
+
+		/// <summary>
+		/// Sets the cached first item size to the handler for MeasureFirstItem optimization.
+		/// </summary>
+		private void SetCachedFirstItemSizeToHandler(CGSize size)
+		{
+			CollectionViewHandler?.SetCachedFirstItemSize(size);
 		}
 
 		public override void LayoutSubviews()
