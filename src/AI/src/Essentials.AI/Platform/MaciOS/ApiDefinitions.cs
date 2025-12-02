@@ -71,11 +71,11 @@ interface CancellationTokenNative
 	bool IsCancelled { get; }
 }
 
-[Internal] delegate void OnGetResponseComplete([NullAllowed] NSString response, [NullAllowed] NSError error);
+[Internal] delegate void OnGetResponseComplete([NullAllowed] ChatResponseNative response, [NullAllowed] NSError error);
 
 [Internal] delegate void OnStreamUpdate(StreamUpdateNative update);
 
-[Internal] delegate void OnStreamComplete([NullAllowed] NSString finalResult, [NullAllowed] NSError error);
+[Internal] delegate void OnStreamComplete([NullAllowed] ChatResponseNative finalResult, [NullAllowed] NSError error);
 
 // @interface ChatClientNative : NSObject
 [Introduced(PlatformName.iOS, 26, 0)]
@@ -86,12 +86,12 @@ interface CancellationTokenNative
 [Internal]
 interface ChatClientNative
 {
-	// - (CancellationTokenNative * _Nullable)streamResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onUpdate:(void (^ _Nonnull)(StreamUpdateNative * _Nonnull))onUpdate onComplete:(void (^ _Nonnull)(NSString * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
+	// - (CancellationTokenNative * _Nullable)streamResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onUpdate:(void (^ _Nonnull)(StreamUpdateNative * _Nonnull))onUpdate onComplete:(void (^ _Nonnull)(ChatResponseNative * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
 	[Export("streamResponseWithMessages:options:onUpdate:onComplete:")]
 	[return: NullAllowed]
 	unsafe CancellationTokenNative StreamResponse(ChatMessageNative[] messages, [NullAllowed] ChatOptionsNative options, OnStreamUpdate onUpdate, OnStreamComplete onComplete);
 
-	// - (CancellationTokenNative * _Nullable)getResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onComplete:(void (^ _Nonnull)(NSString * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
+	// - (CancellationTokenNative * _Nullable)getResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onComplete:(void (^ _Nonnull)(ChatResponseNative * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
 	[Export("getResponseWithMessages:options:onComplete:")]
 	[return: NullAllowed]
 	unsafe CancellationTokenNative GetResponse(ChatMessageNative[] messages, [NullAllowed] ChatOptionsNative options, OnGetResponseComplete onComplete);
@@ -147,6 +147,70 @@ interface ChatOptionsNative
 	// @property (nonatomic, copy) NSArray<id <AIToolNative>> * _Nullable tools;
 	[NullAllowed, Export("tools", ArgumentSemantic.Copy)]
 	IAIToolNative[] Tools { get; set; }
+}
+
+// @interface ChatResponseNative : NSObject
+[Introduced(PlatformName.iOS, 26, 0)]
+[Introduced(PlatformName.MacCatalyst, 26, 0)]
+[Introduced(PlatformName.MacOSX, 26, 0)]
+// [Introduced (PlatformName.VisionOS, 26, 0)]
+[BaseType(typeof(NSObject))]
+[DisableDefaultCtor]
+[Internal]
+interface ChatResponseNative
+{
+	// @property (nonatomic, copy) NSArray<ChatMessageNative *> * _Nonnull messages;
+	[Export("messages", ArgumentSemantic.Copy)]
+	ChatMessageNative[] Messages { get; set; }
+
+	// - (nonnull instancetype)initWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages OBJC_DESIGNATED_INITIALIZER;
+	[Export("initWithMessages:")]
+	[DesignatedInitializer]
+	NativeHandle Constructor(ChatMessageNative[] messages);
+}
+
+// @interface FunctionCallContentNative : AIContentNative
+[BaseType(typeof(AIContentNative))]
+[DisableDefaultCtor]
+[Internal]
+interface FunctionCallContentNative
+{
+	// @property (nonatomic, copy) NSString * _Nonnull callId;
+	[Export("callId", ArgumentSemantic.Copy)]
+	string CallId { get; set; }
+
+	// @property (nonatomic, copy) NSString * _Nonnull name;
+	[Export("name", ArgumentSemantic.Copy)]
+	string Name { get; set; }
+
+	// @property (nonatomic, copy) NSString * _Nonnull arguments;
+	[Export("arguments", ArgumentSemantic.Copy)]
+	string Arguments { get; set; }
+
+	// - (nonnull instancetype)initWithCallId:(NSString * _Nonnull)callId name:(NSString * _Nonnull)name arguments:(NSString * _Nonnull)arguments OBJC_DESIGNATED_INITIALIZER;
+	[Export("initWithCallId:name:arguments:")]
+	[DesignatedInitializer]
+	NativeHandle Constructor(string callId, string name, string arguments);
+}
+
+// @interface FunctionResultContentNative : AIContentNative
+[BaseType(typeof(AIContentNative))]
+[DisableDefaultCtor]
+[Internal]
+interface FunctionResultContentNative
+{
+	// @property (nonatomic, copy) NSString * _Nonnull callId;
+	[Export("callId", ArgumentSemantic.Copy)]
+	string CallId { get; set; }
+
+	// @property (nonatomic, copy) NSString * _Nonnull result;
+	[Export("result", ArgumentSemantic.Copy)]
+	string Result { get; set; }
+
+	// - (nonnull instancetype)initWithCallId:(NSString * _Nonnull)callId result:(NSString * _Nonnull)result OBJC_DESIGNATED_INITIALIZER;
+	[Export("initWithCallId:result:")]
+	[DesignatedInitializer]
+	NativeHandle Constructor(string callId, string result);
 }
 
 // @interface TextContentNative : AIContentNative

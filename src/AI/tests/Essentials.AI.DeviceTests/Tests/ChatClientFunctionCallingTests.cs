@@ -347,4 +347,149 @@ public class ChatClientFunctionCallingTests
 		Assert.True(receivedUpdates, "Should receive streaming updates");
 		Assert.True(functionWasCalled, "Function with complex parameters should be called during streaming");
 	}
+
+	[Fact]
+	public async Task GetResponseAsync_ChainedFunctionCalls_TimeAndWeather()
+	{
+		int timeCallCount = 0;
+		int weatherCallCount = 0;
+		string? capturedDate = null;
+
+		var timeTool = AIFunctionFactory.Create(
+			() =>
+			{
+				timeCallCount++;
+				return "2025-12-02 12:00:00";
+			},
+			name: "GetCurrentTime",
+			description: "Gets the current date and time. No parameters needed.");
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string date) =>
+			{
+				weatherCallCount++;
+				capturedDate = date;
+				return $"{{\"date\":\"{date}\",\"condition\":\"sunny\",\"temperature\":72,\"humidity\":45}}";
+			},
+			name: "GetWeather",
+			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
+
+		var client = new PlatformChatClient();
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "What's the weather like today?")
+		};
+		var options = new ChatOptions
+		{
+			Tools = [timeTool, weatherTool]
+		};
+
+		var response = await client.GetResponseAsync(messages, options);
+
+		Assert.NotNull(response);
+		
+		// Verify both functions were called
+		Assert.True(timeCallCount > 0, "GetCurrentTime should have been called");
+		Assert.True(weatherCallCount > 0, "GetWeather should have been called");
+		
+		// Verify the date was passed from time to weather
+		Assert.NotNull(capturedDate);
+		Assert.Contains("2025-12-02", capturedDate, StringComparison.OrdinalIgnoreCase);
+		
+		// Verify transcript entries contain all the messages
+		Assert.NotNull(response.Messages);
+		Assert.True(response.Messages.Count >= 5, 
+			$"Expected at least 5 messages (user, function call, tool result, function call, tool result, assistant), but got {response.Messages.Count}");
+		
+		// Verify we have function call content
+		bool hasFunctionCall = response.Messages
+			.Any(m => m.Contents.Any(c => c is FunctionCallContent));
+		Assert.True(hasFunctionCall, "Response should contain FunctionCallContent");
+		
+		// Verify we have function result content
+		bool hasFunctionResult = response.Messages
+			.Any(m => m.Contents.Any(c => c is FunctionResultContent));
+		Assert.True(hasFunctionResult, "Response should contain FunctionResultContent");
+		
+		// Verify the time tool result contains the static time
+		var timeResults = response.Messages
+			.Where(m => m.Contents.Any(c => 
+				c is FunctionResultContent frc &&
+				frc.Result?.ToString()?.Contains("2025-12-02 12:00:00", StringComparison.OrdinalIgnoreCase) == true))
+			.ToList();
+		Assert.NotEmpty(timeResults);
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_ChainedFunctionCalls_TimeAndWeather()
+	{
+		int timeCallCount = 0;
+		int weatherCallCount = 0;
+		string? capturedDate = null;
+
+		var timeTool = AIFunctionFactory.Create(
+			() =>
+			{
+				timeCallCount++;
+				return "2025-12-02 12:00:00";
+			},
+			name: "GetCurrentTime",
+			description: "Gets the current date and time. No parameters needed.");
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string date) =>
+			{
+				weatherCallCount++;
+				capturedDate = date;
+				return $"{{\"date\":\"{date}\",\"condition\":\"cloudy\",\"temperature\":68,\"humidity\":55}}";
+			},
+			name: "GetWeather",
+			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
+
+		var client = new PlatformChatClient();
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "What's the weather like today?")
+		};
+		var options = new ChatOptions
+		{
+			Tools = [timeTool, weatherTool]
+		};
+
+		bool foundTimeCall = false;
+		bool foundWeatherCall = false;
+		bool foundToolResult = false;
+		bool foundStaticTime = false;
+		var updates = new List<ChatResponseUpdate>();
+
+		await foreach (var update in client.GetStreamingResponseAsync(messages, options))
+		{
+			updates.Add(update);
+
+			foreach (var content in update.Contents)
+			{
+				if (content is FunctionCallContent functionCall)
+				{
+					if (functionCall.Name == "GetCurrentTime")
+						foundTimeCall = true;
+					else if (functionCall.Name == "GetWeather")
+						foundWeatherCall = true;
+				}
+				else if (content is FunctionResultContent functionResult)
+				{
+					foundToolResult = true;
+					if (functionResult.Result?.ToString()?.Contains("2025-12-02 12:00:00", StringComparison.OrdinalIgnoreCase) == true)
+						foundStaticTime = true;
+				}
+			}
+		}
+
+		Assert.True(updates.Count > 0, "Should receive streaming updates");
+		Assert.True(timeCallCount > 0, "GetCurrentTime should have been called");
+		Assert.True(weatherCallCount > 0, "GetWeather should have been called");
+		Assert.True(foundTimeCall, "Should stream FunctionCallContent for GetCurrentTime");
+		Assert.True(foundWeatherCall, "Should stream FunctionCallContent for GetWeather");
+		Assert.True(foundToolResult, "Should stream FunctionResultContent");
+		Assert.True(foundStaticTime, "Should find the static time '2025-12-02 12:00:00' in function results");
+	}
 }

@@ -12,5 +12,6 @@ internal enum ChatRoleNative : long
 {
 	User = 1,
 	Assistant = 2,
-	System = 3
+	System = 3,
+	Tool = 4,
 }

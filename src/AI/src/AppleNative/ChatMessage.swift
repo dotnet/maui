@@ -6,6 +6,7 @@ public enum ChatRoleNative: Int {
     case user = 1
     case assistant = 2
     case system = 3
+    case tool = 4
 }
 
 @objc(ChatMessageNative)

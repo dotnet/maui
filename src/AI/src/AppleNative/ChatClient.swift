@@ -16,7 +16,7 @@ public class ChatClientNative: NSObject {
         messages: [ChatMessageNative],
         options: ChatOptionsNative?,
         onUpdate: @escaping (StreamUpdateNative) -> Void,
-        onComplete: @escaping (NSString?, NSError?) -> Void
+        onComplete: @escaping (ChatResponseNative?, NSError?) -> Void
     ) -> CancellationTokenNative? {
         let cq = OperationQueue.current?.underlyingQueue
 
@@ -83,7 +83,7 @@ public class ChatClientNative: NSObject {
     @objc public func getResponse(
         messages: [ChatMessageNative],
         options: ChatOptionsNative?,
-        onComplete: @escaping (NSString?, NSError?) -> Void
+        onComplete: @escaping (ChatResponseNative?, NSError?) -> Void
     ) -> CancellationTokenNative? {
         return executeTask(messages, options, nil, onComplete) { session, prompt, schema, genOptions in
             let response = try await {
@@ -235,7 +235,7 @@ public class ChatClientNative: NSObject {
         _ messages: [ChatMessageNative],
         _ options: ChatOptionsNative?,
         _ toolWatcher: ToolCallWatcher?,
-        _ onComplete: @escaping (NSString?, NSError?) -> Void,
+        _ onComplete: @escaping (ChatResponseNative?, NSError?) -> Void,
         operation:
             @escaping (LanguageModelSession, Prompt, GenerationSchema?, GenerationOptions) async throws
             -> (String, ArraySlice<Transcript.Entry>)
@@ -266,13 +266,93 @@ public class ChatClientNative: NSObject {
 
                 try Task.checkCancellation()
 
-                cq?.async { onComplete(NSString(string: result.0), nil) } ?? onComplete(NSString(string: result.0), nil)
+                // Convert transcript entries to messages
+                let transcriptMessages = try result.1.compactMap(self.fromTranscriptEntry)
+                
+                // Create response with all transcript messages
+                let response = ChatResponseNative(messages: transcriptMessages)
+
+                cq?.async { onComplete(response, nil) } ?? onComplete(response, nil)
             } catch {
                 cq?.async { onComplete(nil, error.toNSError()) } ?? onComplete(nil, error.toNSError())
             }
         }
 
         return CancellationTokenNative(task: task)
+    }
+    
+    private func fromTranscriptEntry(_ entry: Transcript.Entry) throws -> ChatMessageNative? {
+        switch entry {
+        case .prompt(let prompt):
+            let message = ChatMessageNative()
+            message.role = .user
+            message.contents = prompt.segments.compactMap(fromTranscriptSegment)
+            return message
+        
+        case .response(let response):
+            let message = ChatMessageNative()
+            message.role = .assistant
+            message.contents = response.segments.compactMap(fromTranscriptSegment)
+            return message
+        
+        case .instructions(let instructions):
+            let message = ChatMessageNative()
+            message.role = .system
+            message.contents = instructions.segments.compactMap(fromTranscriptSegment)
+            return message
+        
+        case .toolCalls(let toolCalls):
+            // Multiple tool calls in one message
+            let contents: [AIContentNative] = toolCalls.map { toolCall in
+                let argsJson = toolCall.arguments.jsonString
+                return FunctionCallContentNative(
+                    callId: toolCall.id,
+                    name: toolCall.toolName,
+                    arguments: argsJson
+                )
+            }
+            let message = ChatMessageNative()
+            message.role = .assistant
+            message.contents = contents
+            return message
+        
+        case .toolOutput(let toolOutput):
+            // Tool output becomes a tool role message
+            let resultText = toolOutput.segments
+                .compactMap { segment -> String? in
+                    if case .text(let textSegment) = segment {
+                        return textSegment.content
+                    }
+                    return nil
+                }
+                .joined()
+            
+            let message = ChatMessageNative()
+            message.role = .tool
+            message.contents = [FunctionResultContentNative(
+                callId: toolOutput.id,
+                result: resultText
+            )]
+            return message
+        
+        @unknown default:
+            return nil
+        }
+    }
+
+    private func fromTranscriptSegment(_ segment: Transcript.Segment) -> AIContentNative? {
+        switch segment {
+        case .text(let textSegment):
+            return TextContentNative(text: textSegment.content)
+        
+        case .structure(let structuredSegment):
+            // For now, convert structured content to text
+            let jsonString = structuredSegment.content.jsonString
+            return TextContentNative(text: jsonString)
+        
+        @unknown default:
+            return nil
+        }
     }
 }
 

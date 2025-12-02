@@ -11,7 +11,7 @@
 
 // Block typedefs for AI callbacks
 typedef void (^AIUpdateBlock)(StreamUpdateNative *_Nullable result);
-typedef void (^AICompletionBlock)(NSString *_Nullable result,
+typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
                                   NSError *_Nullable error);
 
 // Simple test tool that returns the current time
@@ -45,6 +45,61 @@ typedef void (^AICompletionBlock)(NSString *_Nullable result,
 
 @end
 
+// Weather tool that returns dummy weather for a specific date
+@interface GetWeatherTool : NSObject <AIToolNative>
+@end
+
+@implementation GetWeatherTool
+
+- (NSString *)name {
+    return @"getWeather";
+}
+
+- (NSString *)desc {
+    return @"Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.";
+}
+
+- (NSString *)argumentsSchema {
+    return @"{"
+        "\"type\":\"object\","
+        "\"properties\":{"
+            "\"date\":{"
+                "\"type\":\"string\","
+                "\"description\":\"The date to get weather for in YYYY-MM-DD format\""
+            "}"
+        "},"
+        "\"required\":[\"date\"]"
+    "}";
+}
+
+- (void)callWithArguments:(NSString *)arguments
+               completion:(void (^)(NSString *))completion {
+    // Parse the arguments to extract the date
+    NSError *error = nil;
+    NSDictionary *argsDict = [NSJSONSerialization JSONObjectWithData:[arguments dataUsingEncoding:NSUTF8StringEncoding]
+                                                             options:0
+                                                               error:&error];
+    
+    NSString *dateString = argsDict[@"date"];
+    if (!dateString) {
+        dateString = @"unknown";
+    }
+    
+    // Generate dummy weather data
+    NSArray *conditions = @[@"sunny", @"cloudy", @"rainy", @"partly cloudy", @"windy"];
+    NSString *condition = conditions[arc4random_uniform((uint32_t)conditions.count)];
+    NSInteger temperature = 60 + (arc4random_uniform(30)); // 60-89°F
+    NSInteger humidity = 30 + (arc4random_uniform(50)); // 30-79%
+    
+    NSString *result = [NSString stringWithFormat:
+        @"{\"date\":\"%@\",\"condition\":\"%@\",\"temperature\":%ld,\"humidity\":%ld}",
+        dateString, condition, (long)temperature, (long)humidity];
+    
+    completion(result);
+}
+
+@end
+
 @interface ViewController ()
 
 @end
@@ -60,7 +115,7 @@ typedef void (^AICompletionBlock)(NSString *_Nullable result,
 
     // 2. Create a text content
     TextContentNative *textContent =
-        [[TextContentNative alloc] initWithText:@"What time is it right now?"];
+        [[TextContentNative alloc] initWithText:@"What's the weather like today?"];
 
     // 3. Create the message and attach the content
     ChatMessageNative *message = [[ChatMessageNative alloc] init];
@@ -70,47 +125,45 @@ typedef void (^AICompletionBlock)(NSString *_Nullable result,
     // 4. (Optional) create options
     ChatOptionsNative *options = [[ChatOptionsNative alloc] init];
     options.temperature = @(0.7);
-    options.maxOutputTokens = @(256);
-    options.responseJsonSchema = @"{"
-        "\"$schema\":\"https://json-schema.org/draft/2020-12/schema\","
-        "\"title\":\"ReplyWithHappiness\","
-        "\"type\":\"object\","
-        "\"properties\":{"
-            "\"reply\":{"
-                "\"type\":\"string\","
-                "\"description\":\"Some string message returned by the system\""
-            "},"
-            "\"happiness\":{"
-                "\"type\":\"number\","
-                "\"description\":\"A numeric happiness score\""
-            "},"
-            "\"alternate-reply\":{"
-                "\"type\":\"string\","
-                "\"description\":\"Some alternate string message returned by the system\""
-            "},"
-            "\"anger\":{"
-                "\"type\":\"number\","
-                "\"description\":\"A numeric anger score\""
-            "}"
-        "},"
-        "\"required\":[\"reply\",\"happiness\",\"alternate-reply\",\"anger\"],"
-        "\"x-order\":[\"anger\",\"reply\",\"happiness\",\"alternate-reply\"],"
-        "\"additionalProperties\":false"
-    "}";
+    options.maxOutputTokens = @(512);
+    // Remove JSON schema to allow natural language responses
+    options.responseJsonSchema = nil;
 
-    // Create a test tool instance
+    // Create tool instances - the AI should call getCurrentTime first, 
+    // then use that date to call getWeather
     GetCurrentTimeTool *timeTool = [[GetCurrentTimeTool alloc] init];
-    options.tools = @[ timeTool ];
+    GetWeatherTool *weatherTool = [[GetWeatherTool alloc] init];
+    options.tools = @[ timeTool, weatherTool ];
 
     // 5. Call getResponse
 
     AICompletionBlock completion =
-        ^(NSString *_Nullable result, NSError *_Nullable error) {
+        ^(ChatResponseNative *_Nullable result, NSError *_Nullable error) {
           if (error) {
               NSLog(@"Error from AI: %@", error);
               return;
           }
-          NSLog(@"AI Response: %@", result);
+          
+          // Log the response with all messages
+          NSLog(@"AI Response received with %lu messages", (unsigned long)result.messages.count);
+          
+          for (ChatMessageNative *message in result.messages) {
+              NSLog(@"Message role: %ld", (long)message.role);
+              
+              for (AIContentNative *content in message.contents) {
+                  if ([content isKindOfClass:[TextContentNative class]]) {
+                      TextContentNative *textContent = (TextContentNative *)content;
+                      NSLog(@"  Text: %@", textContent.text);
+                  } else if ([content isKindOfClass:[FunctionCallContentNative class]]) {
+                      FunctionCallContentNative *funcCall = (FunctionCallContentNative *)content;
+                      NSLog(@"  Function Call: %@ (%@)", funcCall.name, funcCall.callId);
+                      NSLog(@"    Arguments: %@", funcCall.arguments);
+                  } else if ([content isKindOfClass:[FunctionResultContentNative class]]) {
+                      FunctionResultContentNative *funcResult = (FunctionResultContentNative *)content;
+                      NSLog(@"  Function Result (%@): %@", funcResult.callId, funcResult.result);
+                  }
+              }
+          }
         };
 
     // Define reusable update block

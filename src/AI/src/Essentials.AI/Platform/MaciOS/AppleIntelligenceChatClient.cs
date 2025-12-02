@@ -211,10 +211,74 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		// Nothing to dispose. Implementation required for the IChatClient interface.
 	}
 
-	private static ChatResponse FromNativeChatResponse(NSString? response) =>
-		new (new ChatMessage(
-			ChatRole.Assistant,
-			response?.ToString()));
+	private static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
+	{
+		if (response is null || response.Messages is null || response.Messages.Length == 0)
+		{
+			// Fallback: return empty response
+			return new ChatResponse([new ChatMessage(ChatRole.Assistant, "")]);
+		}
+		
+		// Convert all native messages to ChatMessage objects
+		var messages = response.Messages
+			.Select(FromNative)
+			.ToList();
+		
+		// Create ChatResponse with all messages
+		return new ChatResponse(messages);
+	}
+
+	private static ChatMessage FromNative(ChatMessageNative nativeMessage)
+	{
+		var message = new ChatMessage
+		{
+			Role = FromNative(nativeMessage.Role)
+		};
+		
+		if (nativeMessage.Contents is not null)
+		{
+			foreach (var content in nativeMessage.Contents)
+			{
+				message.Contents.Add(FromNative(content));
+			}
+		}
+		
+		return message;
+	}
+
+	private static ChatRole FromNative(ChatRoleNative role) =>
+		role switch
+		{
+			ChatRoleNative.User => ChatRole.User,
+			ChatRoleNative.Assistant => ChatRole.Assistant,
+			ChatRoleNative.System => ChatRole.System,
+			ChatRoleNative.Tool => ChatRole.Tool,
+			_ => throw new ArgumentOutOfRangeException(nameof(role), $"Unknown role: {role}")
+		};
+
+	private static AIContent FromNative(AIContentNative content) =>
+		content switch
+		{
+			TextContentNative textContent => 
+				new TextContent(textContent.Text),
+			
+			FunctionCallContentNative functionCall =>
+#pragma warning disable IL3050,IL2026
+				new FunctionCallContent(
+					functionCall.CallId,
+					functionCall.Name,
+					JsonSerializer.Deserialize<AIFunctionArguments>(
+						functionCall.Arguments, 
+						AIJsonUtilities.DefaultOptions)),
+#pragma warning restore IL3050,IL2026
+			
+			FunctionResultContentNative functionResult => 
+				new FunctionResultContent(
+					functionResult.CallId,
+					functionResult.Result),
+			
+			_ => throw new ArgumentException($"Unsupported content type: {content.GetType().Name}", nameof(content))
+		};
 
 	private static ChatMessageNative ToNative(ChatMessage message) => 
 		new()
@@ -231,6 +295,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			return ChatRoleNative.Assistant;
 		else if (role == ChatRole.System)
 			return ChatRoleNative.System;
+		else if (role == ChatRole.Tool)
+			return ChatRoleNative.Tool;
 		else
 			throw new ArgumentOutOfRangeException(nameof(role), $"The role '{role}' is not supported by Apple Intelligence chat APIs.");
 	}

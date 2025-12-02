@@ -7,30 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		34276C302EDA5D170032A0FC /* ChatStreamUpdateNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C2F2EDA5D170032A0FC /* ChatStreamUpdateNative.swift */; };
-		34276C322EDA618D0032A0FC /* ToolCallWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C312EDA618D0032A0FC /* ToolCallWatcher.swift */; };
-		34276C342EDA6CF30032A0FC /* ToolNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C332EDA6CF30032A0FC /* ToolNative.swift */; };
-		34276C3A2EDA7D010032A0FC /* ChatTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34276C392EDA7D010032A0FC /* ChatTool.swift */; };
-		34E825262ECBE58F00E8D536 /* ChatOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E825252ECBE58E00E8D536 /* ChatOptions.swift */; };
-		34E825282ECBE59700E8D536 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E825272ECBE59700E8D536 /* ChatMessage.swift */; };
-		34E8252A2ECBE59F00E8D536 /* ChatMessageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E825292ECBE59F00E8D536 /* ChatMessageContent.swift */; };
-		34E8252C2ECBE5BE00E8D536 /* Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8252B2ECBE5BE00E8D536 /* Cancellation.swift */; };
-		34E825302ECBE5F400E8D536 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8252F2ECBE5F400E8D536 /* ChatClient.swift */; };
-		34E8256F2ECCE3C100E8D536 /* JsonSchemaDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */; };
+		340019332EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019302EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift */; };
+		340019342EDF4D6800DAB0A3 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019292EDF4D6800DAB0A3 /* ChatMessage.swift */; };
+		340019352EDF4D6800DAB0A3 /* ToolNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019322EDF4D6800DAB0A3 /* ToolNative.swift */; };
+		340019372EDF4D6800DAB0A3 /* ToolCallWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019312EDF4D6800DAB0A3 /* ToolCallWatcher.swift */; };
+		340019382EDF4D6800DAB0A3 /* ChatOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192B2EDF4D6800DAB0A3 /* ChatOptions.swift */; };
+		340019392EDF4D6800DAB0A3 /* ChatMessageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192A2EDF4D6800DAB0A3 /* ChatMessageContent.swift */; };
+		3400193A2EDF4D6800DAB0A3 /* ChatResponseNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192C2EDF4D6800DAB0A3 /* ChatResponseNative.swift */; };
+		3400193B2EDF4D6800DAB0A3 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019282EDF4D6800DAB0A3 /* ChatClient.swift */; };
+		3400193C2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192D2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift */; };
+		3400193D2EDF4D6800DAB0A3 /* Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019272EDF4D6800DAB0A3 /* Cancellation.swift */; };
+		3400193E2EDF4D6800DAB0A3 /* ChatTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		34276C2F2EDA5D170032A0FC /* ChatStreamUpdateNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamUpdateNative.swift; sourceTree = "<group>"; };
-		34276C312EDA618D0032A0FC /* ToolCallWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCallWatcher.swift; sourceTree = "<group>"; };
-		34276C332EDA6CF30032A0FC /* ToolNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolNative.swift; sourceTree = "<group>"; };
-		34276C392EDA7D010032A0FC /* ChatTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTool.swift; sourceTree = "<group>"; };
+		340019272EDF4D6800DAB0A3 /* Cancellation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cancellation.swift; sourceTree = "<group>"; };
+		340019282EDF4D6800DAB0A3 /* ChatClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClient.swift; sourceTree = "<group>"; };
+		340019292EDF4D6800DAB0A3 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
+		3400192A2EDF4D6800DAB0A3 /* ChatMessageContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageContent.swift; sourceTree = "<group>"; };
+		3400192B2EDF4D6800DAB0A3 /* ChatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOptions.swift; sourceTree = "<group>"; };
+		3400192C2EDF4D6800DAB0A3 /* ChatResponseNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatResponseNative.swift; sourceTree = "<group>"; };
+		3400192D2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamUpdateNative.swift; sourceTree = "<group>"; };
+		3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTool.swift; sourceTree = "<group>"; };
+		340019302EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSchemaDecoder.swift; sourceTree = "<group>"; };
+		340019312EDF4D6800DAB0A3 /* ToolCallWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCallWatcher.swift; sourceTree = "<group>"; };
+		340019322EDF4D6800DAB0A3 /* ToolNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolNative.swift; sourceTree = "<group>"; };
 		34279C902EC421CC00583050 /* EssentialsAI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EssentialsAI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		34E825252ECBE58E00E8D536 /* ChatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOptions.swift; sourceTree = "<group>"; };
-		34E825272ECBE59700E8D536 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
-		34E825292ECBE59F00E8D536 /* ChatMessageContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageContent.swift; sourceTree = "<group>"; };
-		34E8252B2ECBE5BE00E8D536 /* Cancellation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cancellation.swift; sourceTree = "<group>"; };
-		34E8252F2ECBE5F400E8D536 /* ChatClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClient.swift; sourceTree = "<group>"; };
-		34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSchemaDecoder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,16 +49,17 @@
 		34279C862EC421CC00583050 = {
 			isa = PBXGroup;
 			children = (
-				34E8252B2ECBE5BE00E8D536 /* Cancellation.swift */,
-				34E8252F2ECBE5F400E8D536 /* ChatClient.swift */,
-				34E825272ECBE59700E8D536 /* ChatMessage.swift */,
-				34E825292ECBE59F00E8D536 /* ChatMessageContent.swift */,
-				34E825252ECBE58E00E8D536 /* ChatOptions.swift */,
-				34276C2F2EDA5D170032A0FC /* ChatStreamUpdateNative.swift */,
-				34276C392EDA7D010032A0FC /* ChatTool.swift */,
-				34E8256E2ECCE3C100E8D536 /* JsonSchemaDecoder.swift */,
-				34276C312EDA618D0032A0FC /* ToolCallWatcher.swift */,
-				34276C332EDA6CF30032A0FC /* ToolNative.swift */,
+				340019272EDF4D6800DAB0A3 /* Cancellation.swift */,
+				340019282EDF4D6800DAB0A3 /* ChatClient.swift */,
+				340019292EDF4D6800DAB0A3 /* ChatMessage.swift */,
+				3400192A2EDF4D6800DAB0A3 /* ChatMessageContent.swift */,
+				3400192B2EDF4D6800DAB0A3 /* ChatOptions.swift */,
+				3400192C2EDF4D6800DAB0A3 /* ChatResponseNative.swift */,
+				3400192D2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift */,
+				3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */,
+				340019302EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift */,
+				340019312EDF4D6800DAB0A3 /* ToolCallWatcher.swift */,
+				340019322EDF4D6800DAB0A3 /* ToolNative.swift */,
 				34279C912EC421CC00583050 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -114,6 +117,7 @@
 				TargetAttributes = {
 					34279C8F2EC421CC00583050 = {
 						CreatedOnToolsVersion = 26.1;
+						LastSwiftMigration = 2610;
 					};
 				};
 			};
@@ -151,16 +155,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				34276C3A2EDA7D010032A0FC /* ChatTool.swift in Sources */,
-				34E8252C2ECBE5BE00E8D536 /* Cancellation.swift in Sources */,
-				34E825302ECBE5F400E8D536 /* ChatClient.swift in Sources */,
-				34E8252A2ECBE59F00E8D536 /* ChatMessageContent.swift in Sources */,
-				34276C342EDA6CF30032A0FC /* ToolNative.swift in Sources */,
-				34E825282ECBE59700E8D536 /* ChatMessage.swift in Sources */,
-				34E8256F2ECCE3C100E8D536 /* JsonSchemaDecoder.swift in Sources */,
-				34276C302EDA5D170032A0FC /* ChatStreamUpdateNative.swift in Sources */,
-				34276C322EDA618D0032A0FC /* ToolCallWatcher.swift in Sources */,
-				34E825262ECBE58F00E8D536 /* ChatOptions.swift in Sources */,
+				340019332EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift in Sources */,
+				340019342EDF4D6800DAB0A3 /* ChatMessage.swift in Sources */,
+				340019352EDF4D6800DAB0A3 /* ToolNative.swift in Sources */,
+				340019372EDF4D6800DAB0A3 /* ToolCallWatcher.swift in Sources */,
+				340019382EDF4D6800DAB0A3 /* ChatOptions.swift in Sources */,
+				340019392EDF4D6800DAB0A3 /* ChatMessageContent.swift in Sources */,
+				3400193A2EDF4D6800DAB0A3 /* ChatResponseNative.swift in Sources */,
+				3400193B2EDF4D6800DAB0A3 /* ChatClient.swift in Sources */,
+				3400193C2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift in Sources */,
+				3400193D2EDF4D6800DAB0A3 /* Cancellation.swift in Sources */,
+				3400193E2EDF4D6800DAB0A3 /* ChatTool.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,8 +297,10 @@
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -325,6 +332,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,7";
@@ -337,8 +345,10 @@
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
