@@ -18,134 +18,107 @@ What is the user asking you to do?
 ├─ "Review this PR" ────────────────────────────────────────────────────┐
 ├─ "Test this fix" ─────────────────────────────────────────────────────┤
 ├─ "Validate PR #XXXXX" ────────────────────────────────────────────────┤
-├─ "Check if this works" ───────────────────────────────────────────────┼──→ Use Sandbox ✅
+├─ "Check if this works" ───────────────────────────────────────────────┼──→ Use HostApp UI tests ✅
 ├─ "Does this PR fix the issue?" ───────────────────────────────────────┤
-├─ [PR has test files in TestCases.HostApp] ────────────────────────────┤
 └─ [Any other PR validation request] ───────────────────────────────────┘
 │
-├─ "Write a UI test for this issue" ────────────────────────────────────┐
-├─ "Create automated UI tests" ─────────────────────────────────────────┼──→ Use HostApp ✅
-└─ "Debug the UI test for Issue32310" ──────────────────────────────────┘
+├─ "Write UI tests" ────────────────────────────────────────────────────┐
+├─ "Debug UI test" ─────────────────────────────────────────────────────┼──→ Delegate to uitest-coding-agent ✅
+└─ "Validate UI test code" ─────────────────────────────────────────────┘
 ```
 
-**Key Insight**: Presence of test files in the PR does NOT determine which app you use.
+**Key Insight**: Always use HostApp with UI tests for PR validation.
 
-### ⚠️ Common Confusion: "But the PR has test files!"
+### Testing Workflow
 
-**Scenario**: PR adds files to `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXX.cs`
+**Standard approach for all PR reviews:**
 
-❌ **WRONG THINKING**: "The PR adds test files to HostApp, so I should use HostApp"
-✅ **RIGHT THINKING**: "The PR adds automated test files. I use Sandbox to manually validate the fix."
+1. **Create test page** in `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`
+2. **Create NUnit test** in `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+3. **Run BuildAndRunHostApp.ps1** to build, deploy, and execute tests
+4. **Compare WITH/WITHOUT PR changes** to validate the fix
 
-**Why**: 
-- Those test files are for the AUTOMATED UI testing framework (run by CI)
-- You are doing MANUAL validation with real testing
-- HostApp is only needed when writing/debugging those automated tests
-- The presence of test files tells you the PR author wrote tests (good!), not which app you use
+**If user asks to "write UI tests" or "debug UI tests":**
+- Delegate to `uitest-coding-agent` (that's their specialty)
 
-**Self-Check Questions**:
-1. ❓ "Did the user explicitly ask me to write or validate UI tests?"
-   - NO → Use Sandbox
-   - YES → Use HostApp
-2. ❓ "Am I validating if the PR fix works?"
-   - YES → Use Sandbox (even if PR has test files!)
-3. ❓ "Am I writing new automated UI test code?"
-   - YES → Use HostApp
+### 💰 Benefits of HostApp UI Testing
 
-### 💰 Cost of Wrong App Choice
+**Using HostApp with UI tests (correct approach):**
+- ✅ **Reusable tests**: Your validation tests can become permanent automated tests
+- ✅ **Consistent with CI**: Same testing infrastructure CI uses
+- ✅ **Professional**: Proper UI testing framework, not ad-hoc scripts
+- ✅ **Comprehensive**: Full Appium-based testing with proper assertions
+- ✅ **Maintainable**: Tests are structured and follow established patterns
 
-**Using HostApp when you should use Sandbox:**
-- ⏱️ Wasted time: 15+ minutes building
-- 📦 Unnecessary complexity: 1000+ tests in project
-- 🐛 Harder debugging: Can't isolate behavior
-- 😞 User frustration: Obvious mistake
+### 📋 Testing Approach Reference
 
-**Using Sandbox (correct choice):**
-- ⏱️ Fast builds: 2-3 minutes
-- 🎯 Focused testing: Only your test code
-- 🔍 Easy debugging: Clear isolation
-- ✅ Professional approach
-
-### 📋 App Selection Reference
-
-| Scenario | Correct App | Why |
-|----------|------------|-----|
-| Validating PR fix | Sandbox ✅ | Quick, isolated, easy to instrument |
-| Testing before/after comparison | Sandbox ✅ | Can modify without affecting tests |
-| User says "review this PR" | Sandbox ✅ | Default for all PR validation |
-| User says "write a UI test" | HostApp ✅ | That's what HostApp is for |
-| User says "validate the UI test" | HostApp ✅ | Testing the test itself |
-| PR adds test files | Sandbox ✅ | Test files ≠ what you test with |
-| Unsure which to use | Sandbox ✅ | When in doubt, default here |
+| Scenario | Approach | Why |
+|----------|----------|-----|
+| Validating PR fix | HostApp UI tests ✅ | Standard testing infrastructure |
+| Testing before/after comparison | HostApp UI tests ✅ | Proper test framework with assertions |
+| User says "review this PR" | HostApp UI tests ✅ | Default for all PR validation |
+| User says "write UI tests" | Delegate to uitest-coding-agent ✅ | Their specialty |
+| User says "debug UI test" | Delegate to uitest-coding-agent ✅ | Their specialty |
+| PR already has test files | Still create your own test ✅ | Validate the fix independently |
+| Unsure what to do | HostApp UI tests ✅ | When in doubt, default here |
 
 ---
 
-## Which App to Use for Testing (Detailed)
+## UI Testing Infrastructure for PR Validation
 
-**CRITICAL DISTINCTION**: There are two testing apps in the repository, and choosing the wrong one wastes significant time (20+ minutes for unnecessary builds).
+**STANDARD APPROACH**: Use TestCases.HostApp + TestCases.Shared.Tests for all PR validation.
 
-**🟢 Sandbox App (`src/Controls/samples/Controls.Sample.Sandbox/`) - USE THIS FOR PR VALIDATION**
+### How It Works
 
-**When to use**:
-- ✅ **DEFAULT**: Validating PR changes and testing scenarios
-- ✅ Reproducing the issue described in the PR
-- ✅ Testing edge cases not covered by the PR author
-- ✅ Comparing behavior WITH and WITHOUT PR changes
-- ✅ Instrumenting code to capture measurements
-- ✅ Any time you're validating if a fix actually works
-- ✅ Manual testing of the PR's scenario
+**Two-part requirement:**
+1. **Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`) - Creates the UI scenario
+2. **NUnit Test** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`) - Validates behavior with Appium
 
-**Why**: 
-- Builds in ~2 minutes (fast iteration)
-- Simple, empty app you can modify freely
-- Easy to instrument and capture measurements
-- Designed for quick testing and validation
+### Running Tests
 
-**🔴 TestCases.HostApp (`src/Controls/tests/TestCases.HostApp/`) - DO NOT USE FOR PR VALIDATION**
+Use the BuildAndRunHostApp.ps1 script:
 
-**When to use**:
-- ❌ **NEVER** for validating PR changes or testing scenarios
-- ✅ **ONLY** when explicitly asked to write UI tests
-- ✅ **ONLY** when explicitly asked to validate UI tests
-- ✅ **ONLY** when running automated Appium tests via `dotnet test`
+```powershell
+# Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~IssueXXXXX"
 
-**Why NOT to use for PR validation**:
-- Takes 20+ minutes to build for iOS (extremely slow)
-- Contains 100+ test pages (complex, hard to modify)
-- Designed for automated UI tests, not manual validation
-- Running automated tests is not part of PR review (that's what CI does)
-
-**Decision Tree**:
-
-```
-User asks to review PR #XXXXX
-    │
-    ├─ User explicitly says "write UI tests" or "validate the UI tests"?
-    │   └─ YES → Use TestCases.HostApp (and TestCases.Shared.Tests)
-    │
-    └─ Otherwise (normal PR review with testing)?
-        └─ Use Sandbox app for validation
+# iOS  
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~IssueXXXXX"
 ```
 
-**Examples**:
+**What the script does:**
+- ✅ Builds TestCases.HostApp
+- ✅ Deploys to device/simulator
+- ✅ Runs your NUnit test via `dotnet test`
+- ✅ Captures all logs to `CustomAgentLogsTmp/UITests/`
 
-✅ **Use Sandbox app**:
-- "Review PR #32372" 
+### When to Delegate
+
+**If user asks "write UI tests" or "debug UI tests":**
+- Delegate to `uitest-coding-agent` (that's their specialty)
+- They handle the test authoring workflow
+
+**For PR validation (default):**
+- You create the test page and NUnit test yourself
+- You run BuildAndRunHostApp.ps1 to validate the PR
+
+### Examples
+
+✅ **You handle (use HostApp UI tests)**:
+- "Review PR #32372"
 - "Validate the RTL CollectionView fix"
 - "Test this SafeArea change on iOS"
-- "Review and test this PR"
 - "Does this fix actually work?"
 - "Compare before/after behavior"
 
-❌ **Use TestCases.HostApp** (only for these explicit requests):
-- "Write UI tests for this PR"
-- "Validate the UI tests in this PR work correctly"
-- "Run the automated UI tests"
-- "Create an Issue32372.xaml test page"
+✅ **Delegate to uitest-coding-agent**:
+- "Write comprehensive UI tests for this PR"
+- "Debug the failing UI test for Issue32310"
+- "Create proper automated test coverage"
 
 **Rule of Thumb**: 
-- **Validating the PR's fix** = Sandbox app (99% of reviews)
-- **Writing/validating automated tests** = TestCases.HostApp (1% of reviews, only when explicitly asked)
+- **Validating the PR's fix** = You create and run UI tests (99% of reviews)
+- **Writing complex UI test suites** = Delegate to uitest-coding-agent (1% of reviews)
 
 ---
 
@@ -169,7 +142,7 @@ git diff <base>..<pr> --name-only | grep "Handlers/Items"
 
 **Why this matters**: iOS/MacCatalyst defaults to CollectionViewHandler2. If a PR fixes a bug in CollectionViewHandler, you MUST explicitly enable it or the bug won't reproduce.
 
-**Configuration**: Edit `src/Controls/samples/Controls.Sample.Sandbox/MauiProgram.cs` - see [Handler Detection Guide](collectionview-handler-detection.md#configuration-examples) for complete code.
+**Configuration**: Edit `src/Controls/tests/TestCases.HostApp/MauiProgram.cs` - see [Handler Detection Guide](collectionview-handler-detection.md#configuration-examples) for complete code.
 
 | Path Pattern | Handler to Enable |
 |--------------|------------------|
@@ -260,31 +233,31 @@ git commit --no-edit
 
 ### 🛑 CHECKPOINT 1: Before Building (MANDATORY)
 
-**After creating test code, STOP and post this to user:**
+**After creating test page and NUnit test, STOP and post this to user:**
 
 ```markdown
 ## Validation Checkpoint - Before Building
 
-**Test code created** (Sandbox app modified):
+**Test created in TestCases.HostApp:**
 
-**XAML**:
+**Test Page XAML** (`Issues/IssueXXXXX.xaml`):
 ```xml
-[Show relevant XAML snippet - what you're testing]
+[Show relevant XAML snippet - UI elements with AutomationIds]
 ```
 
-**Instrumentation**:
+**NUnit Test** (`Tests/Issues/IssueXXXXX.cs`):
 ```csharp
-[Show measurement code - what you'll capture]
+[Show test logic - Appium interactions and assertions]
 ```
 
-**What I'm measuring**: [Clear explanation of data you'll collect]
+**What this test validates**: [Clear explanation of what behavior is being tested]
 
-**Expected WITHOUT PR**: [Baseline behavior/measurements]
-**Expected WITH PR**: [How it should change with the fix]
+**Expected WITHOUT PR**: [Bug should reproduce]
+**Expected WITH PR**: [Bug should be fixed]
 
 **Build time**: ~10-15 minutes
 
-Should I proceed with building?
+Should I proceed with building and running the test?
 ```
 
 **⚠️ DO NOT BUILD without user approval** - Building takes 10-15 minutes. If test design is wrong, this checkpoint saves that wasted time.
@@ -292,8 +265,8 @@ Should I proceed with building?
 **User can correct at this point**:
 - Wrong test approach
 - Missing test cases
-- Measuring wrong thing
-- Wrong app choice
+- Wrong AutomationIds
+- Missing edge cases
 
 ### 🛑 CHECKPOINT 2: Before Final Review (Recommended)
 
@@ -354,17 +327,18 @@ After each major step, verify success before proceeding to the next step:
 - ✅ Verify PR commits are present: `git log --oneline -5`
 - ✅ Check you're on the test branch: `git branch --show-current`
 
-**After Sandbox Modification:**
-- ✅ Files modified: `MainPage.xaml` and `MainPage.xaml.cs`
-- ✅ Instrumentation code includes `Console.WriteLine` statements
+**After Test Creation:**
+- ✅ Test page created: `TestCases.HostApp/Issues/IssueXXXXX.xaml`
+- ✅ NUnit test created: `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+- ✅ AutomationIds set on all interactive elements
 - ✅ Test scenario matches PR description
-- ✅ If uncertain about test approach, consider using validation checkpoint
+- ✅ If uncertain about test approach, use validation checkpoint
 
 **After Build:**
 - ✅ Build succeeded with no errors (warnings are OK)
 - ✅ Artifact exists:
-  - iOS: `artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-ios/iossimulator-arm64/Maui.Controls.Sample.Sandbox.app`
-  - Android: `artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-android/*/com.microsoft.maui.sandbox-Signed.apk`
+  - iOS: `artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app`
+  - Android: `artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-android/*/com.microsoft.maui.uitests-Signed.apk`
 - ✅ No "0 succeeded, 1 failed" in build output
 
 **After Deploy & Run:**
@@ -383,27 +357,31 @@ After each major step, verify success before proceeding to the next step:
 
 1. **First**: Test WITHOUT PR changes
    ```bash
-   # On test-pr-XXXXX branch, temporarily revert the PR commits
-   # Identify how many commits came from the PR
-   NUM_COMMITS=$(git log --oneline pr-reviewer..HEAD | wc -l)
+   # Revert the fix files to main branch state
+   git checkout main -- src/path/to/changed/file.cs
    
-   # Create a temporary branch at the commit before PR changes
-   git checkout -b baseline-test HEAD~$NUM_COMMITS
+   # Verify revert succeeded
+   git diff main -- src/path/to/changed/file.cs  # Should be empty
    
-   # Build and test to capture baseline data
+   # Run test - should fail (bug reproduces)
+   pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~IssueXXXXX"
    ```
 
-2. **Capture baseline data** (build, deploy, run with instrumentation)
+2. **Capture baseline data** (test should fail, showing the bug exists)
 
 3. **Then**: Test WITH PR changes
    ```bash
-   # Switch back to test branch with PR changes
-   git checkout test-pr-XXXXX
+   # Restore PR changes
+   git checkout HEAD -- src/path/to/changed/file.cs
    
-   # Build and test with PR changes
+   # Verify PR changes are back
+   git diff main -- src/path/to/changed/file.cs  # Should show PR changes
+   
+   # Run test - should pass (bug is fixed)
+   pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~IssueXXXXX"
    ```
 
-4. **Capture new data** (build, deploy, run with instrumentation)
+4. **Capture new data** (test should pass, showing the fix works)
 
 5. **Compare results** and include in review
 
@@ -426,19 +404,24 @@ Format test data clearly:
 ## Test Results
 
 **Environment**: iOS 26.0 (iPhone 17 Pro Simulator)
-**Test Scenario**: [Description]
+**Test**: Issue XXXXX - [Description]
+**Command**: `BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~IssueXXXXX"`
 
-**WITHOUT PR (Current Main)**:
+**WITHOUT PR (Baseline)**:
 ```
-[Actual console output or measurements]
+Test outcome: Failed
+[Test output showing bug reproduces]
 ```
-❌ Issue: [What's wrong]
+❌ Issue: [What's wrong - bug confirmed]
 
 **WITH PR Changes**:
 ```
-[Actual console output or measurements]
+Test outcome: Passed
+[Test output showing bug is fixed]
 ```
-✅ Result: [What changed]
+✅ Result: [Bug is fixed]
+
+**Logs**: See `CustomAgentLogsTmp/UITests/` for full device logs and test output
 ```
 
 ## Cleanup
@@ -449,8 +432,9 @@ After testing, clean up all test artifacts:
 # Return to your original branch (use the variable from the beginning)
 git checkout $ORIGINAL_BRANCH  # Or manually specify: main, pr-reviewer, etc.
 
-# Revert any changes to Sandbox app
-git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
+# Revert any changes to test files if you created temporary test pages
+git checkout -- src/Controls/tests/TestCases.HostApp/
+git checkout -- src/Controls/tests/TestCases.Shared.Tests/
 
 # Delete test branches
 git branch -D test-pr-XXXXX baseline-test pr-XXXXX-temp 2>/dev/null || true
@@ -615,48 +599,48 @@ Create a checkpoint when:
 
 **Platform**: [Android/iOS/Windows/Mac]
 
-**🚨 MANDATORY: Use BuildAndRunSandbox.ps1 Script**
+**🚨 MANDATORY: Use BuildAndRunHostApp.ps1 Script**
 
-There is **ONLY ONE WAY** to test Sandbox app changes:
+There is **ONLY ONE WAY** to test HostApp UI tests:
 
 ```powershell
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "FullyQualifiedName~IssueXXXXX"
 ```
 
 **Do NOT do these manually**:
 - ❌ `dotnet build` commands
-- ❌ `adb logcat` or `xcrun simctl launch` commands  
-- ❌ Manually run Appium
+- ❌ `dotnet test` commands manually
+- ❌ Manually start Appium
 - ❌ Any build/deploy steps by hand
 
 **The script does EVERYTHING**:
 - ✅ Detects and boots devices
-- ✅ Builds and deploys Sandbox app
-- ✅ Manages Appium server
-- ✅ Runs your test script (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
-- ✅ Captures all logs
+- ✅ Builds and deploys TestCases.HostApp
+- ✅ Runs your NUnit test via `dotnet test`
+- ✅ Captures all logs to `CustomAgentLogsTmp/UITests/`
 
 **To verify this PR works, you'll need to**:
 
-1. **Edit your Appium test script**: `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
-   - Add test logic (tap buttons, verify behavior)
+1. **Review the test page**: `TestCases.HostApp/Issues/IssueXXXXX.xaml`
+   - Verify it reproduces the issue scenario
    
-2. **Run the automated script**:
+2. **Review the NUnit test**: `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+   - Verify it validates the expected behavior
+
+3. **Run the automated script**:
    ```powershell
-   pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+   pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "FullyQualifiedName~IssueXXXXX"
    ```
 
-2. **Reproduce the original issue** (verify bug exists):
-   - Action: [specific steps]
-   - Expected bug: [what should be wrong]
-   - Confirms: We understand the problem
+4. **Reproduce the original issue** (test WITHOUT PR):
+   - Revert fix files: `git checkout main -- [fix files]`
+   - Run test - should FAIL (confirms bug exists)
 
-3. **Verify the fix works**:
-   - Action: [specific steps]
-   - Expected result: [what should be fixed]
-   - Confirms: PR resolves the issue
+5. **Verify the fix works** (test WITH PR):
+   - Restore PR: `git checkout HEAD -- [fix files]`
+   - Run test - should PASS (confirms fix works)
 
-4. **Test edge cases** (if applicable):
+6. **Test edge cases** (if applicable):
    - [Edge case 1 to test]
    - [Edge case 2 to test]
 

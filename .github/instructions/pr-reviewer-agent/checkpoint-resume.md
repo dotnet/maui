@@ -29,7 +29,7 @@ When creating a checkpoint, output this in your response:
 ### Current State
 - ✅ **Completed**: [List what you've done]
   - Fetched PR #XXXXX
-  - Modified Sandbox app with test case
+  - Created HostApp test page and NUnit test
   - Analyzed code changes
 
 - ⏸️ **Paused At**: [Where you stopped]
@@ -87,7 +87,8 @@ When you receive checkpoint results:
 ### Current State
 - ✅ **Completed**:
   - Fetched PR #25789 - Fix RTL layout on iOS
-  - Modified Sandbox app with RTL CollectionView test
+  - Created test page in TestCases.HostApp with RTL CollectionView
+  - Created NUnit test in TestCases.Shared.Tests
   - Built app successfully for iOS
   - Analyzed code changes in `CollectionViewHandler.iOS.cs`
 
@@ -120,7 +121,8 @@ Provide observations, then tag @copilot to resume.
 ### Current State
 - ✅ **Completed**:
   - Fetched PR #26543 - Fix Entry focus on Android 12
-  - Modified Sandbox with Entry focus test
+  - Created test page in TestCases.HostApp with Entry focus scenario
+  - Created NUnit test in TestCases.Shared.Tests
   - Built app for Android
   - Analyzed handler changes
 
@@ -152,7 +154,8 @@ Provide observations, then tag @copilot to resume.
 ### Current State
 - ✅ **Completed**:
   - Fetched PR #27821 - Fix Window sizing on Windows
-  - Modified Sandbox with Window size test
+  - Created test page in TestCases.HostApp with Window size scenario
+  - Created NUnit test in TestCases.Shared.Tests
   - Built app for Windows (from macOS)
   - Reviewed WinUI changes
 
@@ -229,13 +232,13 @@ Please complete checkpoint 2/2 before I can finalize the review.
 Checkpoints should fit naturally into the review workflow:
 
 1. **Standard Review** (no checkpoint needed):
-   - Fetch PR → Modify Sandbox → Build → Test → Review
+   - Fetch PR → Create UI tests → Build → Test → Review
 
 2. **Review with Checkpoint**:
-   - Fetch PR → Modify Sandbox → Build → **🛑 CHECKPOINT** → [Wait] → Resume with results → Review
+   - Fetch PR → Create UI tests → **🛑 CHECKPOINT** → Build → [Wait for manual testing] → Resume → Review
 
 3. **Review with Multiple Checkpoints**:
-   - Fetch PR → Build → **🛑 CHECKPOINT 1** → [Wait] → Resume → **🛑 CHECKPOINT 2** → [Wait] → Resume → Review
+   - Fetch PR → Create tests → Build → **🛑 CHECKPOINT 1** → [Wait] → Resume → **🛑 CHECKPOINT 2** → [Wait] → Resume → Review
 
 The final review should acknowledge checkpoint assistance:
 

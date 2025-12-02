@@ -10,55 +10,50 @@ Quick reference for common commands, patterns, and decisions during PR reviews.
 
 ---
 
-## 🎯 App Selection Decision (ONE RULE)
+## 🎯 Testing Approach Decision (ONE RULE)
 
 ```
 User says: "Review PR" / "Test this fix" / "Validate changes"
-→ Use Sandbox app ✅
+→ Use HostApp with UI tests ✅
 
-User says: "Write UI tests" / "Validate UI tests"  
-→ Use HostApp ✅
+User says: "Write UI tests" / "Debug UI tests"  
+→ Delegate to uitest-coding-agent ✅
 
-When in doubt → Sandbox app
+When in doubt → HostApp UI tests
 ```
 
 ---
 
-## 📦 Platform Testing - Use BuildAndRunSandbox.ps1
+## 📦 Platform Testing - Use BuildAndRunHostApp.ps1
 
-**CRITICAL**: Use the `BuildAndRunSandbox.ps1` script for all Sandbox app testing. It handles all device detection, building, deployment, Appium management, and log capture automatically.
+**CRITICAL**: Use the `BuildAndRunHostApp.ps1` script for all HostApp UI testing. It handles all device detection, building, deployment, and test execution automatically.
 
 ### Quick Start
 
-**Script location**: `.github/scripts/BuildAndRunSandbox.ps1`
+**Script location**: `.github/scripts/BuildAndRunHostApp.ps1`
 
 ```powershell
 # iOS
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~IssueXXXXX"
 
 # Android
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~IssueXXXXX"
 ```
 
 **What the script handles**:
 - ✅ Automatic device detection and boot (iPhone Xs for iOS, first available for Android)
-- ✅ Building Sandbox app (always fresh build)
+- ✅ Building TestCases.HostApp (always fresh build)
 - ✅ App installation and deployment
-- ✅ Appium server management (auto-start/stop)
-- ✅ Running your Appium test script (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
-- ✅ Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
-  - `appium.log` - Appium server logs
-  - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
-  - Console output from your test script
+- ✅ Running your NUnit test via `dotnet test`
+- ✅ Complete log capture to `CustomAgentLogsTmp/UITests/` directory:
+  - `android-device.log` or `ios-device.log` - Device logs filtered to HostApp
+  - `test-output.log` - Test execution output
 
 **Prerequisites**:
-1. Create `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` using template:
-   ```bash
-   cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
-   ```
-2. Modify the template for your test scenario
+1. Create test page: `TestCases.HostApp/Issues/IssueXXXXX.xaml`
+2. Create NUnit test: `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
 
-📖 **Full documentation**: See [Common Testing Patterns](../common-testing-patterns.md)
+📖 **Full documentation**: See [UITesting-Guide.md](../../../docs/UITesting-Guide.md)
 
 ---
 
@@ -83,30 +78,30 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 
 ### Quick Appium Script Template:
 
-**CRITICAL**: Use the template file provided in the repository:
+**CRITICAL**: Create both test page and NUnit test file:
 
 ```bash
-# Copy template to CustomAgentLogsTmp/Sandbox directory
-cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
+# 1. Create test page (XAML)
+# Location: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml
 
-# Edit the file to customize for your test scenario:
-# 1. Set ISSUE_NUMBER constant
-# 2. Set PLATFORM constant ("android" or "ios")
-# 3. Implement test logic in the "Test Logic" section
+# 2. Create NUnit test
+# Location: src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
+
+# 3. Run the test
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <android|ios> -TestFilter "FullyQualifiedName~IssueXXXXX"
 ```
 
-**The template includes**:
-- ✅ Proper .NET 10 scripting syntax (`#:package` directive)
-- ✅ Platform-specific Appium configuration
-- ✅ Automatic device UDID handling
-- ✅ PID capture for Android logcat filtering
-- ✅ Error handling and troubleshooting guidance
-- ✅ Screenshot capture before/after test
-- ✅ Complete example test logic to customize
+**The NUnit test includes**:
+- ✅ Inherits from `_IssuesUITest` base class
+- ✅ Proper test categorization (`[Category(UITestCategories.Button)]`)
+- ✅ Appium-based element interactions
+- ✅ Screenshot verification via `VerifyScreenshot()`
+- ✅ Automatic cleanup and error handling
+- ✅ Platform-specific test support
 
-**Run with**: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform <android|ios>`
+**Run with**: `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <android|ios> -TestFilter "FullyQualifiedName~IssueXXXXX"`
 
-📖 **Full Appium guide**: [../appium-control.md](../appium-control.md)
+📖 **Full UI testing guide**: [../../../docs/UITesting-Guide.md](../../../docs/UITesting-Guide.md)
 
 ---
 
@@ -212,7 +207,7 @@ git checkout test-pr-XXXXX
 ```markdown
 ## 🛑 Validation Checkpoint - Before Building
 
-**Test code created** (Sandbox app modified):
+**Test code created** (HostApp test files):
 
 ### XAML / Code
 [Show test code]
@@ -308,8 +303,9 @@ Verified on [platform].
 # Return to starting branch
 git checkout $ORIGINAL_BRANCH
 
-# Revert Sandbox changes
-git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
+# Revert test files if needed
+git checkout -- src/Controls/tests/TestCases.HostApp/Issues/
+git checkout -- src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/
 
 # Delete test branches
 git branch -D test-pr-* baseline-test pr-*-temp 2>/dev/null || true
@@ -350,7 +346,7 @@ git branch -D test-pr-* baseline-test pr-*-temp 2>/dev/null || true
 
 ## ✅ Self-Check Before Building
 
-- [ ] Am I using Sandbox app (not HostApp)?
+- [ ] Am I using HostApp with UI tests?
 - [ ] Did I show test code to user?
 - [ ] Did I get approval to proceed?
 - [ ] Will my test capture measurable data?

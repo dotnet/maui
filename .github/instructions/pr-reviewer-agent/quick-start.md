@@ -72,7 +72,7 @@ Read these in order:
 **Q: What testing approach am I using for this PR validation?**
 
 - ✅ If you answered "HostApp with UI tests" → Correct! Proceed.
-- ❌ If you answered "Manual testing" or "Sandbox" → WRONG! Re-read Testing Approach above.
+- ❌ If you answered "Manual testing" or "code-only review" → WRONG! Re-read Testing Approach above.
 - ❓ If you're unsure → Default to HostApp UI testing
 
 **Always use the UI testing infrastructure** for PR validation.
@@ -111,8 +111,9 @@ Post this to user:
 **PR #XXXXX**: [Brief description of what it fixes]
 
 **Testing approach**:
-- Using Sandbox app (not HostApp)
-- Will test scenario: [description]
+- Using HostApp with UI tests
+- Will create test page in TestCases.HostApp
+- Will create NUnit test in TestCases.Shared.Tests
 - Platforms: [iOS/Android/both]
 - Plan to compare WITH/WITHOUT PR changes
 
@@ -136,28 +137,26 @@ After creating test code, **STOP and ask**:
 ```markdown
 ## 🛑 Checkpoint 1: Show Me Your Plan
 
-I've created test code to validate this PR. Before I build (which takes 10-15 minutes), here's my approach:
+I've created UI test code to validate this PR. Before I build (which takes 10-15 minutes), here's my approach:
 
-**Test code**:
-
-XAML:
+**Test Page** (`TestCases.HostApp/Issues/IssueXXXXX.xaml`):
 ```xml
 [Show relevant XAML snippet with AutomationIds]
 ```
 
-Code-behind:
+**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`):
 ```csharp
-[Show instrumentation code that captures measurements]
+[Show test logic with Appium interactions and assertions]
 ```
 
 **Validation approach**:
-- What I'm measuring: [Specific measurements/properties]
-- How I'll validate: [Appium element queries, not screenshots]
+- What the test validates: [Specific behavior being tested]
+- How test verifies: [Appium element queries and assertions]
 - Test sequence: [Steps the test will perform]
 
 **Expected results**:
-- WITHOUT PR fix: [Specific expected behavior/measurements]
-- WITH PR fix: [How behavior should change]
+- WITHOUT PR fix: Test should FAIL (bug reproduces)
+- WITH PR fix: Test should PASS (bug is fixed)
 
 **Should I proceed with building?** (This will take 10-15 minutes)
 ```
@@ -214,7 +213,7 @@ git checkout main -- src/path/to/changed/file.cs
 git diff main -- src/path/to/changed/file.cs  # Should be empty
 
 # Build and test using automated script
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "FullyQualifiedName~IssueXXXXX"
 
 # Document results: "Bug reproduces"
 ```
@@ -228,7 +227,7 @@ git checkout HEAD -- src/path/to/changed/file.cs
 git diff main -- src/path/to/changed/file.cs  # Should show PR changes
 
 # Build and test using automated script
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "FullyQualifiedName~IssueXXXXX"
 
 # Document results: "Bug is fixed"
 ```
@@ -247,35 +246,34 @@ After reverting:
 
 ## 📋 Testing Command (Copy-Paste)
 
-**🚨 MANDATORY: Always Use BuildAndRunSandbox.ps1 for PR Validation**
+**🚨 MANDATORY: Always Use BuildAndRunHostApp.ps1 for PR Validation**
 
-**There is ONLY ONE way to validate PRs - use the Sandbox script:**
+**There is ONLY ONE way to validate PRs - use the HostApp script:**
 
 ```powershell
 # Android
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~IssueXXXXX"
 
 # iOS
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~IssueXXXXX"
 ```
 
 **What the script does for you** (so you don't do these manually):
 - ✅ Detects and boots devices automatically
-- ✅ Builds the Sandbox app
+- ✅ Builds the TestCases.HostApp
 - ✅ Deploys to device
-- ✅ Starts/stops Appium server
-- ✅ Runs your Appium test script
-- ✅ Captures all logs to `CustomAgentLogsTmp/Sandbox/` directory
+- ✅ Runs your NUnit test via `dotnet test`
+- ✅ Captures all logs to `CustomAgentLogsTmp/UITests/` directory
 
 **❌ DO NOT do any of these manually**:
 - ❌ `dotnet build ... -t:Run` - Script handles this
+- ❌ `dotnet test` - Script handles this
 - ❌ `adb logcat` - Script captures logs automatically
-- ❌ Manually create/run Appium scripts - Script does this
 - ❌ `xcrun simctl launch` - Script handles this
 
-**✅ YOUR ONLY JOB**: Edit `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` with your test logic
+**✅ YOUR JOB**: Create test page in TestCases.HostApp and NUnit test in TestCases.Shared.Tests
 
-**Note**: This guide is for PR validation (using Sandbox). If you need to write/validate UI tests, you should be using `uitest-coding-agent` instead.
+**Note**: This guide is for PR validation using HostApp UI tests. If you need help writing complex UI test suites, consider delegating to `uitest-coding-agent`.
 
 See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing-patterns.md) for more details.
 
@@ -283,9 +281,9 @@ See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing
 
 ## ❌ Top 6 Mistakes to Avoid
 
-1. ❌ **Using manual commands instead of BuildAndRunSandbox.ps1** → Script does everything automatically
+1. ❌ **Using manual commands instead of BuildAndRunHostApp.ps1** → Script does everything automatically
 2. ❌ **Building without showing test code first** → Wasted 15+ minutes if wrong
-3. ❌ **Using HostApp for PR validation** → Should use Sandbox
+3. ❌ **Not using HostApp UI tests** → Should always use HostApp infrastructure
 4. ❌ **Only testing WITH fix** → Must test baseline too
 5. ❌ **Not checking current branch first** → Might already be on PR branch
 6. ❌ **Forgetting to eliminate redundancy in review** → Read [output-format.md](output-format.md) before posting
@@ -295,7 +293,7 @@ See [quick-ref.md](quick-ref.md) and [Common Testing Patterns](../common-testing
 ## 📚 When to Read Other Guides
 
 **During work** (reference as needed):
-- Creating test code? → [sandbox-setup.md](sandbox-setup.md)
+- Creating test code? → [uitests.instructions.md](../uitests.instructions.md)
 - Build errors? → [error-handling.md](error-handling.md)
 - Can't complete testing? → [checkpoint-resume.md](checkpoint-resume.md)
 
@@ -343,32 +341,27 @@ try {
 }
 ```
 
-### Screenshot Storage Location (If Needed for Your Test)
+### Test Outputs and Logs
 
-**Only if you need to capture screenshots as part of testing** (rare - screenshots should NOT be used for validation):
+**All test outputs are automatically captured by BuildAndRunHostApp.ps1:**
 
-When creating your Appium test in `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`:
-- ✅ **Save screenshots to**: `CustomAgentLogsTmp/Sandbox/` directory
-- ❌ **Never save to**: `/tmp/` or any other location
-- 📝 **Purpose**: Documentation/debugging only - never for validation
-- 🚨 **Remember**: Use Appium element queries for validation, not screenshots
+- ✅ **Device logs**: `CustomAgentLogsTmp/UITests/android-device.log` or `ios-device.log`
+- ✅ **Test output**: `CustomAgentLogsTmp/UITests/test-output.log`
+- 📝 **Purpose**: Review logs after test runs for debugging
 
-**Example** (only if needed):
-```csharp
-// In your Appium test script - for documentation purposes only
-var screenshot = driver.GetScreenshot();
-screenshot.SaveAsFile("CustomAgentLogsTmp/Sandbox/test_before.png");  // ✅ Correct
-// NOT: screenshot.SaveAsFile("/tmp/test_before.png");   // ❌ Wrong
-```
+**VerifyScreenshot() in NUnit tests**:
+- Automatically captures and compares screenshots
+- No manual screenshot management needed
+- Screenshots stored internally by test framework
 
-**Automatic cleanup**: BuildAndRunSandbox.ps1 removes all old `*.png` files from `CustomAgentLogsTmp/Sandbox/` before each test run.
+**Automatic cleanup**: BuildAndRunHostApp.ps1 removes old logs before each test run.
 
 ---
 
 ## ✅ Ready to Start
 
 You now know:
-- ✅ Which app to use (Sandbox, not HostApp)
+- ✅ Which app to use (HostApp with UI tests)
 - ✅ Workflow with mandatory checkpoints
 - ✅ How to validate (Appium, not screenshots)
 - ✅ Where to find detailed instructions

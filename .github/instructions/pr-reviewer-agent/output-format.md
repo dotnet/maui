@@ -47,10 +47,10 @@ Structure your review in this exact format:
 ---
 
 ## Testing
-[Results from your manual testing with the Sandbox app]
+[Results from your UI testing with the HostApp]
 
-### Manual Testing (if applicable)
-[Your testing results]
+### UI Test Results
+[Test execution results from BuildAndRunHostApp.ps1]
 
 ### Recommended Testing Steps (if checkpoint created)
 [Commands for others to test]

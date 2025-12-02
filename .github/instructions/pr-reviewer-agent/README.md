@@ -83,7 +83,7 @@ Read these when working with specific controls or scenarios:
 
 ### Priority 2: Reference During Work
 3. **testing-guidelines.md** - Complete workflow
-4. **sandbox-setup.md** - Test code creation
+4. [DEPRECATED - file deleted] Test code creation
 5. **error-handling.md** - When problems occur
 
 ### Priority 3: Context-Specific (Read If Applicable)
@@ -154,7 +154,7 @@ See: testing-guidelines.md#mandatory-workflow-with-checkpoints
 ### "I need to test a layout/UI change"
 1. Check if SafeArea-related: [safearea-testing.md](../safearea-testing.md)
 2. Check if CollectionView/CarouselView: [collectionview-handler-detection.md](collectionview-handler-detection.md)
-3. Use Sandbox app: [sandbox-setup.md](sandbox-setup.md)
+3. Create HostApp UI tests: See [UITesting-Guide.md](../../../docs/UITesting-Guide.md)
 4. Create test code with instrumentation
 5. 🛑 Show Checkpoint 1 before building
 
@@ -172,7 +172,7 @@ See: testing-guidelines.md#mandatory-workflow-with-checkpoints
 
 ### "I need to write or validate UI tests"
 1. Follow [uitests.instructions.md](../uitests.instructions.md)
-2. Use HostApp (NOT Sandbox)
+2. Use HostApp with UI tests
 3. Templates in [quick-ref.md](quick-ref.md#ui-test-template)
 4. Verify test FAILS without fix, PASSES with fix
 

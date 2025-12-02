@@ -36,7 +36,7 @@ git diff <base-branch>..<pr-branch> --name-only | grep -i "handlers/items"
 
 ### Step 2: Configure MauiProgram.cs
 
-Edit `src/Controls/samples/Controls.Sample.Sandbox/MauiProgram.cs` to enable the correct handler.
+Edit `src/Controls/tests/TestCases.HostApp/MauiProgram.cs` to enable the correct handler for your test page.
 
 ---
 

@@ -18,14 +18,14 @@ This document covers PR reviewer-specific errors and common mistakes.
 - Skips directly to code-only review
 
 **How to avoid**:
-1. ✅ **Just run the BuildAndRunSandbox.ps1 script** - it handles everything:
+1. ✅ **Just run the BuildAndRunHostApp.ps1 script** - it handles everything:
    ```powershell
-   .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+   .github/scripts/BuildAndRunHostApp.ps1 -Platform Android -TestFilter "FullyQualifiedName~IssueXXXXX"
    # OR
-   .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
+   .github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -TestFilter "FullyQualifiedName~IssueXXXXX"
    ```
 2. ✅ The script automatically detects devices and starts emulator/simulator if needed
-3. ✅ If script fails, read the log files in `CustomAgentLogsTmp/Sandbox/` to understand why
+3. ✅ If script fails, read the log files in `CustomAgentLogsTmp/UITests/` to understand why
 4. ✅ If genuine blocker (unavailable platform, environment issue), CREATE CHECKPOINT
 5. ✅ Provide user with manual test steps in checkpoint
 
@@ -33,19 +33,19 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ---
 
-### Mistake #2: Building the Wrong App ⭐ VERY COMMON
+### Mistake #2: Testing Without Creating Test Files ⭐ VERY COMMON
 
-**Symptom**: Agent tries to build `TestCases.HostApp` for PR validation
+**Symptom**: Agent tries to build HostApp without creating test page or NUnit test first
 
 **Why it happens**:
-- PR includes test files in HostApp directory
-- Agent sees test files and assumes that's what to use
+- Assumes HostApp can be run directly without test files
+- Forgets two-part requirement: test page + NUnit test
 - Instructions not read before planning
 
 **How to avoid**:
 1. Read testing-guidelines.md FIRST
-2. Remember: Sandbox = PR validation (default)
-3. HostApp = writing/debugging UI tests only
+2. Remember: HostApp requires BOTH test page (.xaml) AND NUnit test (.cs)
+3. Create test files BEFORE running BuildAndRunHostApp.ps1
 
 **Cost if not avoided**: 15+ minutes wasted building
 
@@ -89,7 +89,7 @@ This document covers PR reviewer-specific errors and common mistakes.
 
 ### Mistake #5: Building Without User Validation
 
-**Symptom**: Agent modifies Sandbox code and immediately starts building
+**Symptom**: Agent creates test files and immediately starts building
 
 **Why it happens**:
 - Wants to show progress quickly
@@ -97,8 +97,8 @@ This document covers PR reviewer-specific errors and common mistakes.
 - Doesn't realize build cost
 
 **How to avoid**:
-1. Create test code first
-2. Show it to user with explanation
+1. Create test page and NUnit test first
+2. Show both files to user with explanation
 3. Wait for approval before building
 4. Remember: building takes 10-15 minutes
 
@@ -140,17 +140,17 @@ This document covers PR reviewer-specific errors and common mistakes.
 **Step 1: ALWAYS run the PS1 script first**
 
 ```powershell
-.github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+.github/scripts/BuildAndRunHostApp.ps1 -Platform Android -TestFilter "FullyQualifiedName~IssueXXXXX"
 # OR
-.github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
+.github/scripts/BuildAndRunHostApp.ps1 -Platform iOS -TestFilter "FullyQualifiedName~IssueXXXXX"
 ```
 
-The script handles device detection, emulator/simulator startup, building, deploying, and log capture.
+The script handles device detection, emulator/simulator startup, building, deploying, test execution, and log capture.
 
 **Step 2: If script fails, READ THE LOG FILES**
 
-Check the log files in `CustomAgentLogsTmp/Sandbox/`:
-- `appium.log` - Appium server issues
+Check the log files in `CustomAgentLogsTmp/UITests/`:
+- `test-output.log` - NUnit test execution output
 - `android-device.log` or `ios-device.log` - Device/app issues (includes crashes, exceptions)
 
 **Step 3: Investigate the actual problem**
@@ -177,32 +177,35 @@ After attempting to fix and hitting genuine blocker:
 
 ---
 
-### Mistake #8: Using ADB/xcrun Instead of Appium for UI Interaction ⭐ CRITICAL
+### Mistake #8: Using Manual Commands Instead of UI Tests ⭐ CRITICAL
 
 **Symptom**: Agent uses `adb shell input tap` or `xcrun simctl ui` to interact with app
 
 **Why it happens**:
-- Appium seems more complex than direct commands
+- Thinks manual commands are simpler than NUnit tests
 - Didn't realize PS1 script handles everything
 - Fell back to manual commands instead of using the automated workflow
 
 **How to avoid**:
-1. **ALWAYS use BuildAndRunSandbox.ps1** - it handles all testing automatically
-2. **Customize RunWithAppiumTest.cs** in `CustomAgentLogsTmp/Sandbox/` for your test scenario:
+1. **ALWAYS use BuildAndRunHostApp.ps1** - it handles all testing automatically
+2. **Create NUnit test** in `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`:
    ```csharp
-   // Copy from template
-   cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
-   
-   // Edit the test logic section:
-   var button = driver.FindElement(MobileBy.AccessibilityId("TestButton"));
-   button.Click();
+   [Test]
+   [Category(UITestCategories.Button)]
+   public void IssueXXXXX()
+   {
+       App.WaitForElement("TestButton");
+       App.Tap("TestButton");
+       App.WaitForElement("ResultLabel");
+       VerifyScreenshot();
+   }
    ```
-3. **Run the script** - it handles Appium startup, device management, deployment, everything:
+3. **Run the script** - it handles device management, deployment, test execution, everything:
    ```powershell
-   .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+   .github/scripts/BuildAndRunHostApp.ps1 -Platform Android -TestFilter "FullyQualifiedName~IssueXXXXX"
    ```
 
-**When you MUST use Appium** (via RunWithAppiumTest.cs):
+**When you MUST use NUnit tests** (Appium-based):
 - ✅ Tapping buttons, controls, menu items
 - ✅ Opening menus, drawers, flyouts
 - ✅ Scrolling, swiping, gestures
@@ -217,7 +220,7 @@ After attempting to fix and hitting genuine blocker:
 - Coordinate-based taps break with different screen sizes
 - Can't verify element state or wait for elements
 - Brittle and unreliable
-- **PS1 script provides the correct, automated workflow**
+- **PS1 script provides the correct, automated workflow with proper NUnit tests**
 
 **Cost if not avoided**:
 - Unreliable tests that work once then fail
@@ -262,7 +265,7 @@ Before proceeding with each phase, check:
 - [ ] Created plan based on instructions, not assumptions
 
 ### ☑️ Planning Phase:
-- [ ] Using Sandbox app (unless writing UI tests)
+- [ ] Using HostApp with UI tests for validation
 - [ ] Planned to test WITHOUT and WITH fix
 - [ ] Included validation checkpoint before building
 - [ ] Test design will provide measurable data
@@ -315,7 +318,7 @@ See [Shared Error Handling](../shared/error-handling-common.md#build-errors) for
 
 **Command that failed**:
 ```bash
-dotnet build src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj -f net10.0-ios
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~Issue12345"
 ```
 
 **Error message**:

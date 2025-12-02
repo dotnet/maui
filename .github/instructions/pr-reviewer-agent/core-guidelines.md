@@ -122,7 +122,7 @@ try {
 - ✅ **Test logs saved to**: `CustomAgentLogsTmp/UITests/` directory
 - ✅ **Device logs**: `CustomAgentLogsTmp/UITests/android-device.log` or `ios-device.log`
 - ✅ **Test output**: `CustomAgentLogsTmp/UITests/test-output.log`
-- ❌ **NEVER manually save to**: `/tmp/`, repository root, or `CustomAgentLogsTmp/Sandbox/`
+- ❌ **NEVER manually save to**: `/tmp/`, repository root, or other directories
 
 **How testing works**:
 1. Create test page in TestCases.HostApp with proper AutomationIds
@@ -530,7 +530,7 @@ Review the code changes for:
   - Could this fix introduce regressions in other areas?
   - What happens on different platforms (even if PR is platform-specific)?
 - **Test your theories before suggesting them**:
-  - If you think of a better approach, TEST IT in the Sandbox app first
+  - If you think of a better approach, TEST IT with HostApp UI tests first
   - If you identify a potential edge case, REPRODUCE IT and verify it's actually a problem
   - Don't suggest untested alternatives - validate your ideas with real code
   - Include test results when suggesting improvements: "I tested approach X and found Y"
