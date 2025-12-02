@@ -682,8 +682,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				new Grouping<string, CollectionViewTestItem>("Vegetables", new List<CollectionViewTestItem>())
 
 			};
-		AddItems(_groupedList3[0], 12, "Fruits");
-		AddItems(_groupedList3[1], 12, "Vegetables");
+		AddItems(_groupedList3[0], 25, "Fruits");
+		AddItems(_groupedList3[1], 25, "Vegetables");
 
 		_groupedList2 = new List<Grouping<string, ItemModel>>
 			{
