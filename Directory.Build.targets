@@ -26,7 +26,7 @@
   <PropertyGroup>
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
-    <NoWarn>$(NoWarn);NETSDK1206;NU1702</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1206;NU1702;IL6001</NoWarn>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB4011;MSB3277;NETSDK1206;NU1702</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
