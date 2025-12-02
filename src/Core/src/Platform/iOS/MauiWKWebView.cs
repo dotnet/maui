@@ -103,14 +103,12 @@ namespace Microsoft.Maui.Platform
             // LoadHtmlString doesn't create entries in the back/forward list
             // Using LoadRequest with a data URL ensures the HTML content appears in navigation history
             var base64Html = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(html));
-            var dataUrl = $"data:text/html;base64,{base64Html}";
+            var dataUrl = $"data:text/html;charset=utf-8;base64,{base64Html}";
             
             // If baseUrl is provided, we need to use LoadData to respect it for relative resources
             if (!string.IsNullOrEmpty(baseUrl))
             {
-                var nsBaseUrl = new NSUrl(baseUrl, true);
-                var htmlData = NSData.FromString(html, NSStringEncoding.UTF8);
-                LoadData(htmlData, "text/html", "UTF-8", nsBaseUrl);
+                LoadHtmlString(html, new NSUrl(baseUrl, true));
             }
             else
             {
