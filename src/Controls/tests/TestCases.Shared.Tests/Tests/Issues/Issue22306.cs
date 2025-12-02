@@ -32,11 +32,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
-#if ANDROID
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125);
-#else
+
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
-#endif
 
 				changeBoundsButton.Click();
 				WaitForAllElements();
