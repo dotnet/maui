@@ -101,7 +101,7 @@ For Android screenshot generation, you **MUST** use one of these exact configura
 
 **Step-by-step iOS workflow**:
 
-**1. Find or Create iPhone Xs Simulator**:
+**1. Find iPhone Xs Simulator**:
 ```bash
 # First, check what iOS version is required
 DEFAULT_IOS_VERSION=$(grep "const string DefaultVersion" eng/devices/ios.cake | sed 's/.*"\(.*\)".*/\1/')
@@ -110,16 +110,7 @@ echo "Required iOS version: $DEFAULT_IOS_VERSION"
 # Check for existing iPhone Xs/X with that iOS version
 xcrun simctl list devices available | grep -E "iPhone (Xs|X)" | grep "$DEFAULT_IOS_VERSION"
 
-# If iPhone Xs doesn't exist, create it with the required iOS version
-# First, check available iOS runtimes
-xcrun simctl list runtimes available | grep iOS
-
-# Create iPhone Xs with the required iOS version (e.g., 18.5)
-# Replace dots in version with dashes for runtime identifier
-IOS_RUNTIME=$(echo "$DEFAULT_IOS_VERSION" | tr '.' '-')
-xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-$IOS_RUNTIME"
-
-# Or find existing iPhone Xs with the required iOS version using this jq filter:
+# Find existing iPhone Xs with the required iOS version using jq:
 UDID=$(xcrun simctl list devices available --json | jq -r --arg version "$DEFAULT_IOS_VERSION" '
   .devices 
   | to_entries 
@@ -130,6 +121,17 @@ UDID=$(xcrun simctl list devices available --json | jq -r --arg version "$DEFAUL
   | first
   | .udid
 ')
+
+# Verify simulator was found
+if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+    echo "❌ ERROR: No iPhone Xs simulator found with iOS $DEFAULT_IOS_VERSION"
+    echo ""
+    echo "📝 To create one, run:"
+    echo "  1. Check available iOS runtimes: xcrun simctl list runtimes available | grep iOS"
+    echo "  2. Install iOS $DEFAULT_IOS_VERSION runtime if needed (via Xcode Settings > Platforms)"
+    echo "  3. Create simulator: xcrun simctl create \"iPhone Xs\" \"com.apple.CoreSimulator.SimDeviceType.iPhone-XS\" \"com.apple.CoreSimulator.SimRuntime.iOS-$(echo $DEFAULT_IOS_VERSION | tr '.' '-')\""
+    exit 1
+fi
 
 echo "Using iPhone Xs with UDID: $UDID"
 ```
@@ -233,23 +235,47 @@ git commit -m "Add baseline screenshot for IssueXXXXX (iOS)"
 3. **Density**: MUST be 420dpi
 4. **Reason**: CI baselines use these exact configurations - others produce incompatible screenshots
 
+**⚠️ IMPORTANT - Determine Which API Level to Use**:
+- **If user explicitly specified**: Use what they requested (e.g., "Android 36" → use API 36, "Android 30" → use API 30)
+- **If user didn't specify**: 
+  1. List available emulators that meet requirements (API 30 with 1080x1920 420dpi OR API 36 with 1080x2424 420dpi)
+  2. If only ONE compatible emulator exists: Use it automatically without asking
+  3. If MULTIPLE compatible emulators exist: Ask user which one to use
+  4. If NO compatible emulators exist: **DO NOT create one** - instead, inform user they need to create a compatible emulator and provide instructions on how to do so
+
 **Step-by-step Android workflow**:
 
-**1. Verify or Start Correct Emulator**:
+**1. List Available Emulators and Determine Which to Use**:
 ```bash
-# Check if emulator is running
-adb devices
+# List all available AVDs
+$ANDROID_HOME/emulator/emulator -list-avds
 
-# If no device, start emulator (must be API 30 or API 36 with correct config)
-# Example: Using existing emulator named "Pixel_9_API_36_-_screenshots"
-$ANDROID_HOME/emulator/emulator @Pixel_9_API_36_-_screenshots -no-snapshot-load -no-audio -no-boot-anim &
+# Check if any emulator is already running
+adb devices
+```
+
+**Important**: If user said "use API 36" or "Android 36", you MUST use an API 36 emulator. If user said "use API 30" or "Android 30", you MUST use an API 30 emulator.
+
+**2. Start the Correct Emulator** (based on user's choice or request):
+```bash
+# FOR API 36: Start API 36 emulator (replace with your AVD name)
+# Common names: Pixel_9_API_36, pixel_6_api_36, etc.
+$ANDROID_HOME/emulator/emulator @YOUR_API36_AVD_NAME -no-snapshot-load -no-audio -no-boot-anim &
+
+# OR FOR API 30: Start API 30 emulator (replace with your AVD name)
+# Common names: Pixel_5_API_30, pixel_4_api_30, etc.
+# $ANDROID_HOME/emulator/emulator @YOUR_API30_AVD_NAME -no-snapshot-load -no-audio -no-boot-anim &
+
+# OR FOR API 30: Start API 30 emulator (replace with your AVD name)
+# Common names: Pixel_5_API_30, pixel_4_api_30, etc.
+# $ANDROID_HOME/emulator/emulator @YOUR_API30_AVD_NAME -no-snapshot-load -no-audio -no-boot-anim &
 
 # Wait for emulator to boot
 echo "Waiting for emulator to boot..."
 timeout=120
 elapsed=0
 while [ $elapsed -lt $timeout ]; do
-    boot_status=$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+    boot_status=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
     if [ "$boot_status" = "1" ]; then
         echo "✅ Emulator fully booted"
         break
@@ -260,11 +286,15 @@ while [ $elapsed -lt $timeout ]; do
 done
 ```
 
-**2. Verify Emulator Configuration** (🚨 **CRITICAL - Do NOT skip this**):
+**3. Verify Emulator Configuration** (🚨 **CRITICAL - Do NOT skip this**):
 ```bash
-# Check API level (MUST be 30 or 36)
+# Check API level (MUST be 30 or 36, matching what user requested)
 API_LEVEL=$(adb shell getprop ro.build.version.sdk)
 echo "API Level: $API_LEVEL"
+
+# Verify it matches user's request
+# If user said "use API 36", verify API_LEVEL=36
+# If user said "use API 30", verify API_LEVEL=30
 
 # Check screen size
 SCREEN_SIZE=$(adb shell wm size | grep "Physical size" | cut -d: -f2 | tr -d ' ')
@@ -298,7 +328,9 @@ fi
 echo "✅ Emulator configuration is correct"
 ```
 
-**3. Build the Android App**:
+**Important Note**: The verification step (step 3) will catch if the wrong API level emulator is running. If you requested API 36 but API 30 is running, the script will fail with an error. Make sure you start the correct AVD in step 2 that matches the API level you want to use.
+
+**4. Build the Android App**:
 ```bash
 # Build TestCases.HostApp for Android
 dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
@@ -311,13 +343,13 @@ fi
 echo "✅ App built and deployed successfully"
 ```
 
-**4. Kill Existing Appium Processes** (🚨 **CRITICAL - Always do this before running tests**):
+**5. Kill Existing Appium Processes** (🚨 **CRITICAL - Always do this before running tests**):
 ```bash
 # Kill any existing Appium processes on port 4723
 lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9 2>/dev/null && echo "✅ Killed existing Appium processes" || echo "ℹ️ No Appium processes running on port 4723"
 ```
 
-**5. Run the Test** (generates screenshot in `artifacts/`):
+**6. Run the Test** (generates screenshot in `artifacts/`):
 ```bash
 # Set DEVICE_UDID so Appium knows which device to use
 export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
@@ -813,22 +845,17 @@ echo "Required iOS version: $DEFAULT_IOS_VERSION"
 # 2. Check available iOS runtimes
 xcrun simctl list runtimes available | grep iOS
 
-# 3. Verify iPhone Xs supports the required version
-# iPhone Xs typically supports: iOS 12.x through 17.x (check Apple docs for exact range)
+# 3. If the required iOS runtime is not installed:
+#    Install it via Xcode Settings > Platforms, or Apple Developer Downloads
 
-# 4. If version is supported, create simulator:
+# 4. Create iPhone Xs simulator with the required iOS version:
 IOS_RUNTIME=$(echo "$DEFAULT_IOS_VERSION" | tr '.' '-')
 xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-$IOS_RUNTIME"
 
-# 5. If version NOT supported by iPhone Xs:
-#    - If user explicitly requested newer iOS version: Use newer device (iPhone 14+)
-#    - If using default from ios.cake: Verify DefaultVersion is correct, or try iPhone X
+# Note: If iPhone Xs doesn't support the required iOS version:
+#    - Verify `DefaultVersion` in eng/devices/ios.cake is correct
+#    - Or if user explicitly requested newer iOS: Use newer device (but screenshots won't match CI)
 ```
-
-**Alternative**: If the required iOS version is not available:
-1. Install the iOS runtime from Xcode settings or Apple developer downloads
-2. Check if `DefaultVersion` in eng/devices/ios.cake needs updating
-3. If user explicitly requested incompatible version: Use newer device (but screenshots won't match CI baselines)
 
 **Why this matters**: CI uses iPhone Xs with the iOS version from `DefaultVersion` (eng/devices/ios.cake) for baseline screenshots. Using different device or iOS version produces incompatible screenshots.
 
@@ -847,17 +874,13 @@ xcrun simctl list devices | grep Booted
 ```
 
 **Fix**:
-1. Find or create iPhone Xs/X:
+1. Verify iPhone Xs/X exists:
    ```bash
-   # Check for existing iPhone Xs/X
-   xcrun simctl list devices available | grep -E "iPhone (Xs|X)" | grep -v "Max"
+   # Check for existing iPhone Xs/X with correct iOS version
+   DEFAULT_IOS_VERSION=$(grep "const string DefaultVersion" eng/devices/ios.cake | sed 's/.*"\(.*\)".*/\1/')
+   xcrun simctl list devices available | grep -E "iPhone (Xs|X)" | grep "$DEFAULT_IOS_VERSION"
    
-   # If not available, create iPhone Xs simulator
-   # First check available iOS runtimes
-   xcrun simctl list runtimes available | grep iOS
-   
-   # Create with highest available iOS
-   xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+   # If not found, you need to create one - see troubleshooting section "iPhone Xs Compatibility Issues"
    ```
 2. Delete incorrectly generated screenshots:
    ```bash
@@ -962,12 +985,12 @@ lsof -ti :10100 | xargs kill -9 2>/dev/null && echo "✅ Killed process on port 
 
 **iOS: Create/Find iPhone Xs**:
 ```bash
-# Find existing iPhone Xs
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+# Find existing iPhone Xs with required iOS version
+DEFAULT_IOS_VERSION=$(grep "const string DefaultVersion" eng/devices/ios.cake | sed 's/.*"\(.*\)".*/\1/')
+UDID=$(xcrun simctl list devices available --json | jq -r --arg version "$DEFAULT_IOS_VERSION" '.devices | to_entries | map(select(.key | contains("iOS-" + ($version | gsub("\\."; "-"))))) | map(.value) | flatten | map(select(.name == "iPhone Xs")) | first | .udid')
 
-# If not found, create iPhone Xs (check available runtimes first)
-xcrun simctl list runtimes available | grep iOS
-xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+# If not found, see main workflow for creation instructions
+if [ -z "$UDID" ]; then echo "No iPhone Xs found - see iOS workflow section"; exit 1; fi
 ```
 
 **iOS: Boot simulator and install app**:
