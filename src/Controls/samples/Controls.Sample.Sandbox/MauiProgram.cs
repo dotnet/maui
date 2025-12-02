@@ -8,6 +8,7 @@ public static class MauiProgram
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
 #endif
+.ConfigureAndroidMaterial3(options => { options.UseMaterial3 = true; })
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
 			{

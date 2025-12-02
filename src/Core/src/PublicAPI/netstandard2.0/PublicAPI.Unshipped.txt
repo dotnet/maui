@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.Maui.Hosting.MaterialExtensions
+Microsoft.Maui.IMaterialConfiguration
+Microsoft.Maui.IMaterialConfiguration.GetThemeResourceId() -> int
+Microsoft.Maui.IMaterialConfiguration.IsMaterial3Enabled() -> bool
+Microsoft.Maui.IMaterialConfiguration.UseMaterial3.get -> bool
+Microsoft.Maui.IMaterialConfiguration.UseMaterial3.set -> void
+static Microsoft.Maui.Hosting.MaterialExtensions.ConfigureAndroidMaterial3(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.IMaterialConfiguration!>? configureDelegate = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Hosting.MaterialExtensions.GetMaterialConfiguration(this System.IServiceProvider! services) -> Microsoft.Maui.IMaterialConfiguration?

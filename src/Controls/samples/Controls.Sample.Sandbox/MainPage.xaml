@@ -1,5 +1,180 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
+             Title="MAUI Controls Showcase"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="20">
+
+            <!-- Button -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Button"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Button Text="Click Me"/>
+            </VerticalStackLayout>
+
+            <!-- Entry -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Entry"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Entry Placeholder="Enter text here"/>
+            </VerticalStackLayout>
+
+            <!-- Editor -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Editor"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Editor Placeholder="Multi-line text"
+                        HeightRequest="80"/>
+            </VerticalStackLayout>
+
+            <!-- Slider -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Slider"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Slider Value="50"
+                        Minimum="0"
+                        Maximum="100"/>
+            </VerticalStackLayout>
+
+            <!-- Stepper -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Stepper"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Stepper Value="5"
+                         Minimum="0"
+                         Maximum="10"/>
+            </VerticalStackLayout>
+
+            <!-- Switch -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Switch"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Switch IsToggled="True"/>
+            </VerticalStackLayout>
+
+            <!-- CheckBox -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="CheckBox"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <CheckBox IsChecked="True"/>
+            </VerticalStackLayout>
+
+            <!-- RadioButton -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="RadioButton"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <VerticalStackLayout RadioButtonGroup.GroupName="Group1">
+                    <RadioButton Content="Option 1"
+                                 IsChecked="True"/>
+                    <RadioButton Content="Option 2"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Picker -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Picker"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Picker Title="Choose an option">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Option 1</x:String>
+                            <x:String>Option 2</x:String>
+                            <x:String>Option 3</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </VerticalStackLayout>
+
+            <!-- DatePicker -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="DatePicker"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <DatePicker/>
+            </VerticalStackLayout>
+
+            <!-- TimePicker -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="TimePicker"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <TimePicker/>
+            </VerticalStackLayout>
+
+            <!-- ProgressBar -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="ProgressBar"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <ProgressBar Progress="0.6"/>
+            </VerticalStackLayout>
+
+            <!-- ActivityIndicator -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="ActivityIndicator"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <ActivityIndicator IsRunning="True"/>
+            </VerticalStackLayout>
+
+            <!-- SearchBar -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="SearchBar"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <SearchBar Placeholder="Search..."/>
+            </VerticalStackLayout>
+
+            <!-- Image -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Image"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Image Source="dotnet_bot.png"
+                       HeightRequest="100"/>
+            </VerticalStackLayout>
+
+            <!-- ImageButton -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="ImageButton"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <ImageButton Source="dotnet_bot.png"
+                             HeightRequest="60"/>
+            </VerticalStackLayout>
+
+            <!-- Border -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Border"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Border Stroke="Blue"
+                        StrokeThickness="2"
+                        Padding="15">
+                    <Label Text="Content inside Border"/>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- CollectionView -->
+            <VerticalStackLayout Spacing="10">
+                <Label Text="CollectionView"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Button Text="Go to CollectionView Sample"/>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>

@@ -84,9 +84,24 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
-		handlersCollection.AddHandler<Slider, SliderHandler>();
-		handlersCollection.AddHandler<Stepper, StepperHandler>();
+
+#if ANDROID
+		var config = IPlatformApplication.Current?.Services?.GetMaterialConfiguration();
+		if(config?.UseMaterial3 == true)
+		{
+			handlersCollection.AddHandler<Slider, MaterialSliderHandler>();
+			handlersCollection.AddHandler<Switch, MaterialSwitchHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Slider, SliderHandler>();
+			handlersCollection.AddHandler<Switch, SwitchHandler>();
+		}
+#else
+		handlersCollection.AddHandler(typeof(Slider), typeof(SliderHandler));
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
+#endif
+		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();

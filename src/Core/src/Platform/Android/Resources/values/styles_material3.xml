@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <!-- Material 3 Base Theme (Automatically switches between light/dark) -->
+    <style name="Maui.Material3.Theme.Base" parent="Theme.Material3.DayNight">
+        <!-- For .NET 9 we optout of edge to edge enforcement by default -->
+        <item name="maui_edgetoedge_optout">true</item>
+        <item name="maui_splash">false</item>
+        
+        <!-- Material 3 Control Styles -->
+        <item name="appBarLayoutStyle">@style/MauiMaterial3AppBarLayout</item>
+        <item name="bottomNavigationViewStyle">@style/Widget.Material3.BottomNavigationView</item>
+        <item name="materialButtonStyle">@style/MauiMaterial3Button</item>
+        <item name="checkboxStyle">@style/MauiMaterial3CheckBox</item>
+        <item name="radioButtonStyle">@style/MauiMaterial3RadioButton</item>
+        <item name="materialSwitchStyle">@style/MauiMaterial3Switch</item>
+        
+        <item name="textInputStyle">@style/MauiMaterial3TextInputLayout</item>
+        <item name="editTextStyle">@style/MauiMaterial3TextInputEditText</item>
+        <item name="android:progressBarStyleHorizontal">@style/MauiMaterial3LinearProgressIndicator</item>
+        <item name="android:progressBarStyle">@style/MauiMaterial3CircularProgressIndicator</item>
+        
+        <!-- General Material 3 attributes -->
+        <item name="android:textAllCaps">false</item>
+        <item name="alertDialogTheme">@style/MauiMaterial3AlertDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/MauiMaterial3AlertDialogTheme</item>
+        <item name="colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+    </style>
+    
+    <!-- Material 3 AppBar Layout -->
+    <style name="MauiMaterial3AppBarLayout" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+    
+    <!-- Material 3 Main Theme -->
+    <style name="Maui.Material3.Theme" parent="Maui.Material3.Theme.Base">
+      <!-- v35+ uses this to inject edge to edge opt out attribute value -->
+    </style>
+    
+    <!-- Material 3 No Action Bar Theme -->
+    <style name="Maui.Material3.Theme.NoActionBar" parent="Maui.Material3.Theme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:actionModeBackground">?attr/colorSurface</item>
+        <item name="android:actionModeStyle">@style/Material3ActionMode</item>
+    </style>
+
+    <!-- Material 3 Action Mode -->
+    <style name="Material3ActionMode">
+      <item name="android:background">?attr/colorSurface</item>
+      <item name="android:height">?attr/actionBarSize</item>
+    </style>
+  
+    <!-- Material 3 Splash Theme -->
+    <style name="Maui.Material3.SplashTheme" parent="Maui.Material3.Theme.NoActionBar">
+        <item name="maui_splash">true</item>
+        <item name="android:windowBackground">@drawable/maui_splash</item>
+        <!--
+          Android 12+ specific settings
+          See: https://developer.android.com/guide/topics/ui/splash-screen#set-theme
+        -->
+        <item name="android:windowSplashScreenBackground">@color/md_theme_light_surface</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/maui_splash</item>
+    </style>
+
+    <!-- Material 3 Button -->
+    <style name="MauiMaterial3Button" parent="Widget.Material3.Button.UnelevatedButton">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- padding is the space between the edge of the background and the contents  -->
+      <item name="android:paddingLeft">0dp</item>
+      <item name="android:paddingRight">0dp</item>
+      <item name="android:paddingTop">0dp</item>
+      <item name="android:paddingBottom">0dp</item>
+      <!-- insets are the amount of space btween the actual color and the edge of the view frame -->
+      <item name="android:insetTop">0dp</item>
+      <item name="android:insetBottom">0dp</item>
+      <item name="android:insetLeft">0dp</item>
+      <item name="android:insetRight">0dp</item>
+      <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- Material 3 CheckBox -->
+    <style name="MauiMaterial3CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- Material 3 checkbox uses colorPrimary automatically -->
+      <item name="buttonTint">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Material 3 RadioButton -->
+    <style name="MauiMaterial3RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- Material 3 radio button uses colorPrimary automatically -->
+      <item name="buttonTint">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Material 3 Switch -->
+    <style name="MauiMaterial3Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- Material 3 switch uses theme colors automatically -->
+    </style>
+
+    <!-- Material 3 TextInputLayout -->
+    <style name="MauiMaterial3TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+      <item name="boxStrokeWidth">1dp</item>
+      <item name="boxStrokeColor">?attr/colorOutline</item>
+      <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
+      <item name="hintTextColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Material 3 TextInputEditText -->
+    <style name="MauiMaterial3TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+      <item name="android:textAppearance">@style/TextAppearance.Material3.BodyLarge</item>
+      <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Material 3 LinearProgressIndicator -->
+    <style name="MauiMaterial3LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
+      <item name="trackColor">?attr/colorSurfaceVariant</item>
+      <item name="indicatorColor">?attr/colorPrimary</item>
+      <item name="trackCornerRadius">4dp</item>
+    </style>
+
+    <!-- Material 3 CircularProgressIndicator -->
+    <style name="MauiMaterial3CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
+      <item name="trackColor">?attr/colorSurfaceVariant</item>
+      <item name="indicatorColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Material 3 ImageButton (IconButton) -->
+    <style name="MauiMaterial3ImageButton" parent="Widget.Material3.Button.IconButton">
+      <item name="android:background">@null</item>
+      <item name="android:padding">0dp</item>
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <item name="android:insetTop">0dp</item>
+      <item name="android:insetBottom">0dp</item>
+      <item name="android:insetLeft">0dp</item>
+      <item name="android:insetRight">0dp</item>
+    </style>
+
+    <!-- Material 3 AlertDialog Theme -->
+    <style name="MauiMaterial3AlertDialogTheme" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+      <item name="colorPrimary">?attr/colorPrimary</item>
+      <item name="android:colorBackground">?attr/colorSurface</item>
+      <item name="colorOnSurface">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Material 3 SearchView -->
+    <style name="MauiMaterial3SearchView" parent="Widget.AppCompat.SearchView">
+      <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+      <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
+      <item name="queryBackground">@null</item>
+      <item name="submitBackground">@null</item>
+      <item name="searchIcon">@drawable/abc_ic_search_api_material</item>
+      <item name="closeIcon">@drawable/abc_ic_clear_material</item>
+    </style>
+
+  <!-- 
+    The collectionViewScrollBars style will be used as the default style for ItemsViewRenderer (the base renderer
+    for CollectionView and CarouselView. We have to use a style to set up the scrollbars because there is currently
+    no way to add them via code.
+    
+    When the renderer is created, we wrap its Context's theme with collectionViewTheme; that way, the 
+    collectionViewScrollBars style will be defined. With the style defined (and with the collectionViewStyle 
+    attribute defined in attrs.xml), we can apply the collectionViewScrollBars style explicitly to the renderer we are
+    creating (and avoid forcing every child control to have scrollbars).
+  -->
+  <style name="material3ScrollViewScrollBars">
+    <item name="android:scrollbars">vertical|horizontal</item>
+  </style>
+
+  <style name="material3CollectionViewTheme">
+    <item name="android:scrollbars">vertical|horizontal</item>
+  </style>
+
+  <style name="material3ScrollViewTheme">
+    <item name="scrollViewStyle">@style/material3ScrollViewScrollBars</item>
+  </style>
+</resources>

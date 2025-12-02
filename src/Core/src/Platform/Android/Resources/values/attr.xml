@@ -6,6 +6,24 @@
   <attr name="appBarLayoutStyle" format="reference" />
   <attr name="bottomNavigationViewStyle" format="reference" />
 
+  <!-- Material 3 Color Attributes -->
+  <attr name="colorBackground" format="color" />
+  <attr name="colorOnBackground" format="color" />
+  <attr name="colorSurface" format="color" />
+  <attr name="colorOnSurface" format="color" />
+  <attr name="colorSurfaceVariant" format="color" />
+  <attr name="colorOnSurfaceVariant" format="color" />
+  <attr name="colorOutline" format="color" />
+  <attr name="colorOutlineVariant" format="color" />
+  <attr name="colorPrimaryContainer" format="color" />
+  <attr name="colorOnPrimaryContainer" format="color" />
+  <attr name="colorSecondaryContainer" format="color" />
+  <attr name="colorOnSecondaryContainer" format="color" />
+  <attr name="colorTertiaryContainer" format="color" />
+  <attr name="colorOnTertiaryContainer" format="color" />
+  <attr name="colorErrorContainer" format="color" />
+  <attr name="colorOnErrorContainer" format="color" />
+
   <!-- 
     This defines the collectionViewStyle attribute so that we can use it 
     to add the scrollbars style to the CollectionView/CarouselView renderers.
