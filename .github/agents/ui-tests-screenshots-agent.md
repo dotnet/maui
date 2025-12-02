@@ -68,9 +68,11 @@ grep "#if\|#endif" src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueX
 - Platform-specific test → Only in platform-specific folder
 
 **🚨 iOS Device Requirement**:
-For iOS screenshot generation, you **MUST** use **iPhone Xs** or **iPhone X**:
-- CI uses iPhone Xs for baseline screenshots
-- Other devices produce different resolutions/layouts that won't match
+For iOS screenshot generation, you **MUST** use **iPhone Xs** or **iPhone X** with the correct iOS version:
+- **Default iOS version**: Check `DefaultVersion` in `eng/devices/ios.cake` (currently **18.4**)
+- Use this default iOS version unless user explicitly requests a different version (e.g., "use iOS 17.2")
+- CI uses iPhone Xs with the default iOS version for baseline screenshots
+- Other devices or iOS versions produce different resolutions/layouts that won't match
 - Verify device before running: `xcrun simctl list devices | grep "iPhone Xs\|iPhone X"`
 
 **🚨 Android Emulator Requirement**:
@@ -93,26 +95,41 @@ For Android screenshot generation, you **MUST** use one of these exact configura
 
 **🚨 CRITICAL Prerequisites**:
 1. **Device**: MUST be iPhone Xs or iPhone X (NOT iPhone 14/15/16/17)
-2. **iOS Version**: Use highest available iOS version for that device
-3. **Reason**: CI baselines are generated on iPhone Xs - other devices produce incompatible screenshots
+2. **iOS Version**: Check `DefaultVersion` in `eng/devices/ios.cake` for the required iOS version (unless user explicitly requests different version like "use iOS 17.2")
+3. **Reason**: CI baselines are generated on iPhone Xs with the iOS version from `DefaultVersion` - other devices/versions produce incompatible screenshots
+4. **Compatibility Note**: If using older iOS versions (pre-18.x), verify iPhone Xs supports that version
 
 **Step-by-step iOS workflow**:
 
 **1. Find or Create iPhone Xs Simulator**:
 ```bash
-# Check for existing iPhone Xs/X
-xcrun simctl list devices available | grep -E "iPhone (Xs|X)" | grep -v "Max"
+# First, check what iOS version is required
+DEFAULT_IOS_VERSION=$(grep "const string DefaultVersion" eng/devices/ios.cake | sed 's/.*"\(.*\)".*/\1/')
+echo "Required iOS version: $DEFAULT_IOS_VERSION"
 
-# If iPhone Xs doesn't exist, create it
+# Check for existing iPhone Xs/X with that iOS version
+xcrun simctl list devices available | grep -E "iPhone (Xs|X)" | grep "$DEFAULT_IOS_VERSION"
+
+# If iPhone Xs doesn't exist, create it with the required iOS version
 # First, check available iOS runtimes
 xcrun simctl list runtimes available | grep iOS
 
-# Create iPhone Xs with highest available iOS version
-# Example: For iOS 18.5
-xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+# Create iPhone Xs with the required iOS version (e.g., 18.5)
+# Replace dots in version with dashes for runtime identifier
+IOS_RUNTIME=$(echo "$DEFAULT_IOS_VERSION" | tr '.' '-')
+xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-$IOS_RUNTIME"
 
-# Get the UDID from output or find it
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+# Or find existing iPhone Xs with the required iOS version using this jq filter:
+UDID=$(xcrun simctl list devices available --json | jq -r --arg version "$DEFAULT_IOS_VERSION" '
+  .devices 
+  | to_entries 
+  | map(select(.key | contains("iOS-" + ($version | gsub("\\."; "-")))))
+  | map(.value)
+  | flatten
+  | map(select(.name == "iPhone Xs"))
+  | first
+  | .udid
+')
 
 echo "Using iPhone Xs with UDID: $UDID"
 ```
@@ -751,17 +768,71 @@ src/Controls/tests/TestCases.Mac.Tests/snapshots/TestMethodName.png
 **Possible causes**:
 - Test captured wrong element/timing
 - Platform rendering changed
-- **iOS: Wrong device used** (MUST be iPhone Xs or iPhone X)
+- **iOS: Wrong device or iOS version** (MUST be iPhone Xs/X with iOS version from `DefaultVersion` in eng/devices/ios.cake)
 - **Android: Wrong emulator config** (MUST be API 30 1080x1920 420dpi OR API 36 1080x2424 420dpi)
 - Device resolution different
 
 **Actions**:
-1. **For iOS**: Verify you ran on iPhone Xs or iPhone X (NOT iPhone 14/15/16)
+1. **For iOS**: 
+   - Check default iOS version: `grep "const string DefaultVersion" eng/devices/ios.cake`
+   - Verify you ran on iPhone Xs/X with that iOS version (unless user requested specific version)
 2. **For Android**: Verify you ran on API 30 (1080x1920 420dpi) or API 36 (1080x2424 420dpi)
 3. Review test code - verify `WaitForElement()` before `VerifyScreenshot()`
 4. Check if visual change is expected
 5. If expected, update baseline and document why
 6. If unexpected, investigate test or platform rendering issue
+
+---
+
+### iPhone Xs Compatibility Issues with iOS Version
+
+**Error**: When trying to find or create iPhone Xs with an unsupported iOS runtime:
+```
+An error was encountered processing the command (domain=com.apple.CoreSimulator.SimError, code=403):
+Incompatible device
+Unable to create a device for device type: iPhone Xs, runtime: iOS X.X
+```
+
+OR when using Cake/XHarness:
+```
+XHarness exit code: 81 (DEVICE_NOT_FOUND)
+Failed to find/create suitable simulator
+Could not create device runtime: com.apple.CoreSimulator.SimRuntime.iOS-X-X
+device type: com.apple.CoreSimulator.SimDeviceType.iPhone-XS
+```
+
+**Root cause**: iPhone Xs may not support the requested iOS version. Check Apple's device compatibility.
+
+**Solution**: Verify the iOS version requirement and use compatible device:
+
+```bash
+# 1. Check what iOS version is required
+DEFAULT_IOS_VERSION=$(grep "const string DefaultVersion" eng/devices/ios.cake | sed 's/.*"\(.*\)".*/\1/')
+echo "Required iOS version: $DEFAULT_IOS_VERSION"
+
+# 2. Check available iOS runtimes
+xcrun simctl list runtimes available | grep iOS
+
+# 3. Verify iPhone Xs supports the required version
+# iPhone Xs typically supports: iOS 12.x through 17.x (check Apple docs for exact range)
+
+# 4. If version is supported, create simulator:
+IOS_RUNTIME=$(echo "$DEFAULT_IOS_VERSION" | tr '.' '-')
+xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-$IOS_RUNTIME"
+
+# 5. If version NOT supported by iPhone Xs:
+#    - If user explicitly requested newer iOS version: Use newer device (iPhone 14+)
+#    - If using default from ios.cake: Verify DefaultVersion is correct, or try iPhone X
+```
+
+**Alternative**: If the required iOS version is not available:
+1. Install the iOS runtime from Xcode settings or Apple developer downloads
+2. Check if `DefaultVersion` in eng/devices/ios.cake needs updating
+3. If user explicitly requested incompatible version: Use newer device (but screenshots won't match CI baselines)
+
+**Why this matters**: CI uses iPhone Xs with the iOS version from `DefaultVersion` (eng/devices/ios.cake) for baseline screenshots. Using different device or iOS version produces incompatible screenshots.
+
+---
 
 ### Wrong iOS Device Used
 
@@ -795,7 +866,27 @@ xcrun simctl list devices | grep Booted
 3. Follow iOS workflow above with correct device
 4. Recommit new screenshots
 
-**Note**: The device type ID is `iPhone-XS` (not `iPhone-Xs`). Newer iOS versions may not support iPhone Xs - use the highest iOS version available for that device.
+**Note**: The device type ID is `iPhone-XS` (not `iPhone-Xs`). 
+
+**🚨 CRITICAL**: iPhone Xs is NOT compatible with iOS 26.x. If you try to create or use iPhone Xs with iOS 26.x, you'll get error 403:
+```
+An error was encountered processing the command (domain=com.apple.CoreSimulator.SimError, code=403):
+Incompatible device
+Unable to create a device for device type: iPhone Xs (com.apple.CoreSimulator.SimDeviceType.iPhone-XS), runtime: iOS 26.1
+```
+
+**Solution**: Use iOS 18.x with iPhone Xs. To find the highest iOS 18.x version:
+```bash
+# Find highest iOS 18.x runtime
+xcrun simctl list runtimes available | grep "iOS 18"
+
+# Create iPhone Xs with iOS 18.5 (or highest 18.x you have)
+xcrun simctl create "iPhone Xs" "com.apple.CoreSimulator.SimDeviceType.iPhone-XS" "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+```
+
+---
+
+### iPhone Xs Not Compatible with iOS 26.x
 
 ---
 
@@ -830,9 +921,9 @@ xcrun simctl list devices | grep Booted
 ## Best Practices
 
 1. **ALWAYS kill Appium processes before running tests** - Prevents port conflicts and timeouts
-2. **iOS: ALWAYS use iPhone Xs or iPhone X** - Other devices produce incompatible screenshots
-3. **Android: ALWAYS use API 30 (1080x1920 420dpi) or API 36 (1080x2424 420dpi)** - Other configurations produce incompatible screenshots
-4. **Verify device/emulator configuration BEFORE running tests** - Check API level, screen size, and density
+2. **iOS: ALWAYS use iPhone Xs or iPhone X with iOS 18.x** - Other devices/versions produce incompatible screenshots; iOS 26.x is NOT compatible with iPhone Xs
+3. **Android: ALWAYS use API 36 (1080x2424 420dpi)** - Primary baseline configuration with notch support
+4. **Verify device/emulator configuration BEFORE running tests** - Check device type, iOS version (18.x for iPhone Xs), API level, screen size, and density
 5. **Copy screenshots from `artifacts/` to `src/`** - Don't commit from artifacts folder
 6. **Verify test method name** - Must match filename exactly (case-sensitive)
 7. **Check platform conditionals** - Don't generate screenshots for excluded platforms
