@@ -20,13 +20,16 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Title = "Modal Page";
 
-			BackgroundColor = Colors.Transparent;
+			// Use a semi-transparent background so tabs can be verified as visible behind the modal
+			BackgroundColor = Color.FromArgb("#80000000");
 
 			var layout = new StackLayout
 			{
 				Padding = new Thickness(20),
-				BackgroundColor = Colors.Transparent,
-				VerticalOptions = LayoutOptions.End,
+				BackgroundColor = Colors.White,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+				WidthRequest = 300,
 				Children =
 				{
 					new Label 
