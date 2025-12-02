@@ -99,7 +99,6 @@ namespace Microsoft.Maui.Platform
     {
         if (html != null)
         {
-            // If baseUrl is provided, we need to use LoadData to respect it for relative resources
             if (!string.IsNullOrEmpty(baseUrl))
             {
                 LoadHtmlString(html, new NSUrl(baseUrl, true));
