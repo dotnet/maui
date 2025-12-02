@@ -33,33 +33,16 @@ Write new UI tests that:
 
 ## 🚨 CRITICAL: Always Use BuildAndRunHostApp.ps1 Script
 
-**The script handles EVERYTHING - never run manual commands.**
-
 **✅ ONLY DO THIS:**
 ```bash
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios] -TestFilter "IssueXXXXX"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] -TestFilter "IssueXXXXX"
 ```
 
-**❌ NEVER RUN:**
-- `dotnet test` / `dotnet build`
-- `adb` commands (logcat, devices, shell, etc.)
-- `xcrun simctl` commands
-- Manual log capture
-
-**Why:**
-- Script handles device detection, boot, deployment
-- Script captures ALL logs automatically to organized directory
-- Manual commands interfere with test execution
-- All logs are filtered and ready for analysis
-
-**If test fails:**
-1. ✅ Read script output and captured logs (script shows location)
-2. ✅ Check for app crashes in device logs
-3. ❌ DON'T run manual debugging commands
-
----
-
-*See "Running Tests Locally" section below for detailed usage examples.*
+📖 **Complete documentation**: See [uitests.instructions.md](../instructions/uitests.instructions.md#running-ui-tests-locally) for:
+- Full script usage and all parameters
+- What the script handles automatically
+- Manual commands for rapid development
+- Troubleshooting guide and error handling
 
 ---
 
@@ -438,102 +421,23 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXX
 
 ## Running Tests Locally
 
-**✅ Remember: Always use BuildAndRunHostApp.ps1 script (see CRITICAL section above)**
+📖 **Complete documentation**: See [uitests.instructions.md](../instructions/uitests.instructions.md#running-ui-tests-locally) for:
+- Full BuildAndRunHostApp.ps1 script usage
+- All filter options and parameters  
+- Device/iOS version selection
+- Manual commands for rapid development
+- Troubleshooting guide
 
-### Run Specific Test by Class or Method Name
-
-**Filter by class name** (runs ALL tests in the class):
+**Quick reference:**
 ```bash
-# Android
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue530"
+# Run specific test
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] -TestFilter "IssueXXXXX"
 
-# iOS (uses default iOS 18.5 iPhone Xs)
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue530"
-```
+# Run by category
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] -Category "Button"
 
-**Filter by specific test method name** (runs ONLY that test):
-```bash
-# Android
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue530TestsLoadAsync"
-
-# iOS
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue530TestsLoadAsync"
-```
-
-**Filter by full qualified name** (most precise):
-```bash
-# Android
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue530.Issue530TestsLoadAsync"
-
-# iOS
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue530.Issue530TestsLoadAsync"
-```
-
-**How to choose**:
-- **Class name** (e.g., "Issue530"): Use when you want to run all tests in a test class
-- **Method name** (e.g., "Issue530TestsLoadAsync"): Use when you want to run one specific test method
-- **Full qualified name**: Use for maximum precision, especially if multiple classes have similar names
-
-**The script automatically:**
-1. Detects and boots device/simulator (iOS: defaults to iPhone Xs with iOS 18.5)
-2. Builds TestCases.HostApp
-3. Deploys to device
-4. Runs tests matching your filter
-5. Captures all logs to a directory (shown in output)
-
-### Run Test on Specific iOS Device/Version
-
-**When user requests a specific iOS version or device:**
-
-1. **Find the UDID for that device/version combination**:
-   ```bash
-   # Example: Find iPhone Xs with iOS 18.5
-   UDID=$(xcrun simctl list devices available --json | jq -r '
-     .devices 
-     | to_entries 
-     | map(select(.key | contains("iOS-18-5"))) 
-     | map(.value) 
-     | flatten 
-     | map(select(.name == "iPhone Xs")) 
-     | first 
-     | .udid
-   ')
-   
-   echo "Found UDID: $UDID"
-   ```
-
-2. **Pass the UDID to the script**:
-   ```bash
-   pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX" -DeviceUdid "$UDID"
-   ```
-
-**Examples of user requests:**
-
-- **"Run on iOS 18.5"** → Find iPhone Xs with iOS 18.5, get UDID, pass to script
-- **"Run on iPhone 15"** → Find iPhone 15 (any iOS), get UDID, pass to script
-- **"Run on iPhone 16 Pro with iOS 18.0"** → Find iPhone 16 Pro with iOS 18.0, get UDID, pass to script
-
-**Complete example:**
-```bash
-# User says: "Run Issue12345 test on iOS 18.5"
-
-# Step 1: Find the UDID
-UDID=$(xcrun simctl list devices available --json | jq -r '
-  .devices 
-  | to_entries 
-  | map(select(.key | contains("iOS-18-5"))) 
-  | map(.value) 
-  | flatten 
-  | map(select(.name == "iPhone Xs")) 
-  | first 
-  | .udid
-')
-
-# Step 2: Verify UDID was found
-if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-    echo "❌ ERROR: No iPhone Xs simulator found with iOS 18.5"
-    exit 1
-fi
+# Run with specific device (iOS)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX" -DeviceUdid "UDID"
 
 echo "✅ Found iPhone Xs with iOS 18.5: $UDID"
 

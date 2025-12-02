@@ -71,13 +71,11 @@ All logs and artifacts saved to `CustomAgentLogsTmp/Sandbox/`
 
 **Complete agent instructions:**
 - [pr-reviewer agent](../agents/pr-reviewer.md) - Full agent definition with complete workflow
-- [Quick Start](../instructions/pr-reviewer-agent/quick-start.md) - Essential reading (5 min)
 
 **Specialized guides:**
-- [Sandbox Setup](../instructions/pr-reviewer-agent/sandbox-setup.md) - Test scenario examples
+- [Sandbox Instructions](../instructions/sandbox.instructions.md) - Sandbox testing workflow
 - [SafeArea Testing](../instructions/safearea-testing.md) - SafeArea-specific guidance
-- [Error Handling](../instructions/pr-reviewer-agent/error-handling.md) - Troubleshooting
+- [Common Testing Patterns](../instructions/common-testing-patterns.md) - Build and test commands
 
 **Quick references:**
-- [Common Commands](../instructions/pr-reviewer-agent/quick-ref.md) - Build and test commands
 - [Instrumentation Guide](../instructions/instrumentation.md) - Adding debug logging

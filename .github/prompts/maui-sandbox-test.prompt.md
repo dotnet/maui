@@ -69,12 +69,10 @@ The agent will prioritize:
 
 ## Documentation
 
-**Complete agent instructions:**
-- [sandbox-agent](../agents/sandbox-agent.md) - Full agent definition with workflow and troubleshooting
-
 **Related guides:**
-- [Sandbox Testing Patterns](../instructions/sandbox-testing-patterns.md) - Build and deployment commands
+- [Sandbox Instructions](../instructions/sandbox.instructions.md) - Build and deployment commands
 - [Instrumentation Guide](../instructions/instrumentation.md) - Adding logging for debugging
+- [Common Testing Patterns](../instructions/common-testing-patterns.md) - Device management and testing patterns
 
 ## Notes
 

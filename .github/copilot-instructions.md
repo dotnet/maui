@@ -352,11 +352,7 @@ The repository includes specialized custom agents for specific tasks. These agen
    - Use when: Reviewing PRs or validating your own changes
    - Capabilities: Code quality analysis, best practices validation, test coverage review
 
-3. **sandbox-agent** - Specialized agent for working with the .NET MAUI Sandbox app for testing, validation, and experimentation
-   - Use when: Need to test changes in isolation or create reproduction cases
-   - Capabilities: Sandbox app setup, test case creation, behavior validation
-
-4. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
+3. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
    - Use when: Creating new UI tests or updating existing ones
    - Capabilities: UI test authoring, Appium WebDriver usage, NUnit test patterns
 
@@ -369,7 +365,6 @@ Custom agents can be invoked by GitHub Copilot when appropriate for the task at 
 - [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
 - [UI Testing Guide](../docs/UITesting-Guide.md)
 - [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
-- [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
 - [SafeArea Testing Guide](/.github/instructions/safearea-testing.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
 - [Instrumentation Guide](/.github/instructions/instrumentation.md) - Patterns for instrumenting MAUI code for debugging and testing
 - [Appium Control Scripts](/.github/instructions/appium-control.md) - Create standalone scripts for manual Appium-based debugging and exploration

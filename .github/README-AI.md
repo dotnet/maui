@@ -188,29 +188,14 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 - **`agents/pr-reviewer.md`** - PR reviewer agent (inline instructions)
 - **`agents/README.md`** - Agent selection guide and quick reference
 
-### Agent Instruction Packages
+### Agent Files
 
-Each agent has a progressive disclosure structure for optimal learning:
+Agents are now self-contained single files:
 
-**PR Reviewer Agent** (11 files, 3,463 lines):
-- `pr-reviewer-agent/README.md` - Quick lookup by scenario (7 task-oriented scenarios)
-- `pr-reviewer-agent/quick-start.md` - Essential reading (workflow, checkpoints, rules)
-- `pr-reviewer-agent/quick-ref.md` - Command templates and patterns
-- `pr-reviewer-agent/core-guidelines.md` - Philosophy and principles
-- `pr-reviewer-agent/testing-guidelines.md` - Testing procedures
-- `pr-reviewer-agent/error-handling.md` - Common mistakes (9 critical patterns)
-- `pr-reviewer-agent/platforms/` - Platform-specific guides (Android, iOS, Windows, MacCatalyst)
-- `pr-reviewer-agent/output-format.md` - Review output formatting
-
-**Issue Resolver Agent** (8 files, 3,479 lines):
-- `issue-resolver-agent/README.md` - Quick lookup by scenario
-- `issue-resolver-agent/quick-start.md` - Essential reading
-- `issue-resolver-agent/quick-ref.md` - Command templates
-- `issue-resolver-agent/core-guidelines.md` - Philosophy
-- `issue-resolver-agent/testing-guidelines.md` - Testing procedures
-- `issue-resolver-agent/error-handling.md` - Common mistakes
-- `issue-resolver-agent/platforms/` - Platform-specific guides
-- `issue-resolver-agent/output-format.md` - PR description formatting
+- **`agents/pr-reviewer.md`** - PR review workflow with hands-on testing (~400 lines)
+- **`agents/issue-resolver.md`** - Issue resolution workflow with checkpoints (~620 lines)
+- **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
+- **`agents/uitest-coding-agent.md`** - UI test writing and execution
 
 ### Shared Instruction Files
 
@@ -231,9 +216,6 @@ Automated PowerShell scripts for testing workflows:
 
 - **`scripts/BuildAndRunSandbox.ps1`** - Build, deploy, and test Sandbox app (Android/iOS)
 - **`scripts/BuildAndRunHostApp.ps1`** - Build, deploy, and run UI tests (Android/iOS)
-- **`scripts/shared/Start-Emulator.ps1`** - Detect and start Android emulators or iOS simulators
-- **`scripts/shared/Build-AndDeploy.ps1`** - Build and deploy apps to devices
-- **`scripts/shared/shared-utils.ps1`** - Common output formatting functions
 - **`scripts/templates/RunWithAppiumTest.template.cs`** - Template for Appium test scripts
 
 ### Log Directories

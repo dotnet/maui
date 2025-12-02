@@ -1,17 +1,17 @@
 ---
-name: sandbox-agent
-description: Specialized agent for working with the .NET MAUI Sandbox app for testing, validation, and experimentation
+description: "Comprehensive guide for working with the .NET MAUI Sandbox app for testing, validation, and experimentation"
+applyTo: "src/Controls/samples/Controls.Sample.Sandbox/**"
 ---
 
-# Sandbox Agent
+# Sandbox Testing Guide
 
-You are a specialized agent for working with the .NET MAUI Sandbox app. Use this app for manual testing, PR validation, issue reproduction, and experimentation.
+Comprehensive guide for working with the .NET MAUI Sandbox app for manual testing, PR validation, issue reproduction, and experimentation.
 
 ## Purpose
 
 Work with the Sandbox app for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
 
-## When to Use This Agent
+## When to Use Sandbox Testing
 
 - ✅ User asks to "test this PR"
 - ✅ User asks to "validate PR #XXXXX"
@@ -21,14 +21,12 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 - ✅ Need to manually verify a fix works
 - ✅ Need to create a quick test scenario
 
-## When NOT to Use This Agent
+## When NOT to Use Sandbox
 
-- ❌ User asks to "write UI tests" or "create automated tests" → Use `uitest-coding-agent` instead
-- ❌ User asks to "validate the UI tests" or "verify test quality" → Use `uitest-coding-agent` instead
-- ❌ User asks to "review the code" or "check PR quality" → Use `pr-reviewer-agent` instead
+- ❌ User asks to "write UI tests" or "create automated tests" → Write proper UI tests instead
+- ❌ User asks to "validate the UI tests" or "verify test quality" → Review test code instead
 - ❌ PR only adds documentation (no code changes to test)
 - ❌ PR only modifies build scripts (no functional changes)
-- ❌ User wants to understand code without testing → Use `pr-reviewer-agent` for code analysis
 
 ## 🚨 Critical Requirements for Android Testing
 
@@ -103,13 +101,20 @@ gh pr checkout <PR_NUMBER>
 
 **Files to modify**:
 - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml[.cs]` - UI and code for reproduction
-- `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` - Appium test script
+- `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` - Appium test script (see setup below)
+
+**Setting up the Appium test file:**
+1. If `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` does NOT exist:
+   - Create directory: `mkdir -p CustomAgentLogsTmp/Sandbox`
+   - Copy template: `cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
+2. If it already exists, edit it directly (it persists between runs)
+3. Customize the test logic for your scenario
 
 **Implementation**:
 - Copy reproduction code from issue or UITest
 - Add `AutomationId` to interactive elements
 - Add console logging for debugging
-- See [Instrumentation Guide](../instructions/instrumentation.md) for patterns and examples
+- See [Instrumentation Guide](instrumentation.md) for patterns and examples
 
 **🚨 CRITICAL - Document Your Test Scenario:**
 
@@ -125,38 +130,43 @@ Without this documentation, user cannot verify you tested the right thing.
 
 ### Step 3: Test WITH PR Fix
 
-**Choose platform to test:**
+**Platform Selection Decision Tree:**
 
-1. **Check PR title** for `[Android]`, `[iOS]`, `[Windows]`, `[Mac]` tags
-2. **Check modified files** for platform-specific paths:
-   - `Platform/Android/` → Test Android
-   - `Platform/iOS/` → Test iOS
-   - Files with `.Android.`, `.iOS.`, `.MacCatalyst.` → Platform-specific
-3. **Default**: Test **Android** (faster setup, better device availability)
-4. **If cross-platform**: Test at least one platform, ideally both Android + iOS
+Follow this flowchart in order - stop at the first match:
 
-**Multi-Platform Testing Priority:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Does PR title have platform tag? [Android], [iOS], etc.     │
+│    YES → Test that platform ONLY                                │
+│    NO  → Continue to step 2                                     │
+├─────────────────────────────────────────────────────────────────┤
+│ 2. Are ALL modified files in platform-specific paths?          │
+│    (Platform/Android/, Platform/iOS/, *.Android.cs, etc.)      │
+│    YES → Test that platform ONLY                                │
+│    NO  → Continue to step 3                                     │
+├─────────────────────────────────────────────────────────────────┤
+│ 3. Does issue report mention a specific platform?              │
+│    YES (one platform)  → Test that platform ONLY               │
+│    YES (multiple)      → Test Android + iOS                    │
+│    NO  → Continue to step 4                                     │
+├─────────────────────────────────────────────────────────────────┤
+│ 4. Is this high-risk cross-platform code?                      │
+│    (Controls/, Core/, layout, navigation, critical controls)   │
+│    YES → Test Android + iOS                                     │
+│    NO  → Test Android ONLY (default - faster)                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-- ✅ **Test ONLY the affected platform** if:
-  - PR has platform tag in title (e.g., `[Android]`)
-  - ALL modified files are in platform-specific paths
-  - Issue report explicitly mentions one platform
+**Platform-specific path indicators:**
+- `Platform/Android/` or `Platform/iOS/` → Platform-specific
+- Files with `.Android.`, `.iOS.`, `.MacCatalyst.` in name → Platform-specific
+- `Controls/`, `Core/` without platform subfolders → Cross-platform
 
-- ✅ **Test Android ONLY** if:
-  - Cross-platform PR but time/resources limited
-  - No clear platform priority indicated
-  - Android is faster and sufficient for initial validation
+**Hard rule:** Never test more than 2 platforms unless user explicitly requests it.
 
-- ✅ **Test Android + iOS** if:
-  - PR affects core cross-platform code (e.g., `Controls/`, `Core/` without platform subfolders)
-  - Issue report mentions multiple platforms
-  - High regression risk (layout, navigation, critical controls)
+**Run Test on Specific iOS Device/Version:**
 
-- ❌ **Never test more than 2 platforms** unless explicitly requested by user
-
-### Run Test on Specific iOS Device/Version
-
-**When user requests a specific iOS version or device:**
+When user requests a specific iOS version or device:
 
 1. **Find the UDID for that device/version combination**:
    ```bash
@@ -180,19 +190,47 @@ Without this documentation, user cannot verify you tested the right thing.
    pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios -DeviceUdid "$UDID"
    ```
 
-**Examples of user requests:**
-
+**Examples:**
 - **"Run on iOS 18.5"** → Find iPhone Xs with iOS 18.5, get UDID, pass to script
 - **"Run on iPhone 15"** → Find iPhone 15 (any iOS), get UDID, pass to script
 - **"Run on iPhone 16 Pro with iOS 18.0"** → Find iPhone 16 Pro with iOS 18.0, get UDID, pass to script
 
-**🚨 CRITICAL**: ALWAYS use the BuildAndRunSandbox.ps1 script:
+---
 
-```bash
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
-# OR
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+## BuildAndRunSandbox.ps1 Script
+
+**CRITICAL**: For all Sandbox app testing and reproduction work, use this script instead of manual commands.
+
+**Script Location**: `.github/scripts/BuildAndRunSandbox.ps1`
+
+**Usage**:
+```powershell
+# Android
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
+
+# iOS  
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 ```
+
+**What the script handles**:
+- Device detection, boot, and UDID extraction
+- App building (always fresh build)
+- App installation and deployment
+- Appium server management (auto-start/stop)
+- Running Appium test (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
+- Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
+  - `appium.log` - Appium server logs
+  - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
+  - `RunWithAppiumTest.cs` - Your test script (preserved after run)
+
+**Requirements**:
+- Must have `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` file before running
+- If missing, set it up as described in "Setting up the Appium test file" above
+
+**When to use**:
+- ✅ Issue reproduction with Sandbox app
+- ✅ Manual testing and debugging
+- ✅ PR validation with custom UI scenarios
 
 **What to validate:**
 - ✅ App launches successfully
@@ -242,19 +280,7 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 
 This proves the test scenario correctly reproduces the bug.
 
-## Key Resources
-
-### Must-Read Before Testing
-- [Instrumentation Guide](../instructions/instrumentation.md) - How to add logging and measurements
-- [Sandbox Testing Patterns](../instructions/sandbox-testing-patterns.md) - Build/deploy/error handling for Sandbox app
-- [Appium Control Scripts](../instructions/appium-control.md) - UI automation patterns
-
-### Read When Relevant
-- [SafeArea Testing](../instructions/safearea-testing.md) - If PR involves SafeArea
-- [CollectionView Handler Detection](../instructions/pr-reviewer-agent/collectionview-handler-detection.md) - For CollectionView PRs
-
-### Quick Reference
-- [Quick Reference](../instructions/pr-reviewer-agent/quick-ref.md) - Common commands
+---
 
 ## Output Format
 
@@ -312,6 +338,8 @@ OR
 - Then rerun: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]`
 ```
 
+---
+
 ## Best Practices
 
 1. **Use issue reproduction when available** - Most reliable test scenario
@@ -329,43 +357,36 @@ OR
 - ❌ Do NOT rely on screenshots as **primary validation** - use Appium element queries and log analysis
 - ❌ Do NOT take screenshots just to show "it works" - validation should come from test assertions
 
-## When to Report vs. When to Escalate
+---
 
-### ✅ Just Report (Continue Testing)
-- Minor warnings in logs (unrelated to fix)
-- Small visual glitches (if not what's being fixed)
-- Non-critical Appium delays or timeouts that eventually succeed
-- Platform-specific behavior differences (document them)
+## Log Capture and Review
 
-### 🔧 Debug and Fix (Try These Before Reporting)
+### Where Logs Are Saved
 
-**Retry Policy**: Attempt up to **3 times** before reporting as blocked.
+After running BuildAndRunSandbox.ps1, all logs are in `CustomAgentLogsTmp/Sandbox/`:
 
-After each failure:
-1. Analyze logs (device + Appium)
-2. Identify root cause
-3. Fix the issue (test code, XAML, capabilities)
-4. Rerun BuildAndRunSandbox.ps1
+1. **Android**: `CustomAgentLogsTmp/Sandbox/android-device.log`
+2. **iOS**: `CustomAgentLogsTmp/Sandbox/ios-device.log`
+3. **Appium**: `CustomAgentLogsTmp/Sandbox/appium.log`
 
-**Recovery Steps by Issue Type**:
+### Viewing Logs
 
-| Issue | Recovery Action | Max Retries |
-|-------|----------------|-------------|
-| Build error | Check SDK version, restore tools, clean build | 2 |
-| App crash | Fix test code/XAML based on stack trace | 3 |
-| Element not found | Verify AutomationIds, check page loaded | 2 |
-| Fast Deployment error | Add `noReset` capability (Android only) | 1 |
-| Appium timeout | Increase wait time, check app state | 2 |
-| XAML parse error | Fix event handler or binding syntax | 2 |
+```bash
+# View device logs
+cat CustomAgentLogsTmp/Sandbox/android-device.log
+# or
+cat CustomAgentLogsTmp/Sandbox/ios-device.log
 
-**When to stop and report**: After max retries OR if you determine:
-- Issue is outside your control (SDK mismatch, device unavailable)
-- Root cause unclear despite log analysis
-- Issue appears to be a PR bug (not test infrastructure)
+# Search for specific output
+grep "TEST OUTPUT" CustomAgentLogsTmp/Sandbox/android-device.log
 
-### 🔧 Debug and Fix (Analyze Logs and Retry)
+# View Appium logs
+cat CustomAgentLogsTmp/Sandbox/appium.log
+```
 
-**🚨 CRITICAL RULE: Never Run Manual Build/Deploy/Capture Commands**
+---
+
+## 🚨 CRITICAL RULE: Never Run Manual Build/Deploy/Capture Commands
 
 The BuildAndRunSandbox.ps1 script handles build, deploy, and log capture:
 - ✅ Building the app
@@ -374,16 +395,23 @@ The BuildAndRunSandbox.ps1 script handles build, deploy, and log capture:
 - ✅ Running Appium tests
 - ✅ Cleaning logcat before tests
 
-**❌ NEVER RUN THESE BUILD/DEPLOY/CAPTURE COMMANDS:**
+**❌ NEVER RUN THESE BUILD/DEPLOY/CAPTURE COMMANDS DURING TEST WORKFLOW:**
 - `adb logcat` - Script already captures to `CustomAgentLogsTmp/Sandbox/android-device.log`
 - `adb logcat -c` - Script already clears logcat before test
 - `adb install` - Script handles deployment
 - `adb shell am start` - Script launches the app
 - `dotnet build` - Script builds the app
 - `dotnet run` - Script runs the Appium test
-- `xcrun simctl boot` - Script handles iOS simulator
 - `xcrun simctl install` - Script deploys to simulator
 - `xcrun simctl spawn booted log stream` - Script captures iOS logs
+
+**⚠️ EXCEPTION - Pre-test device setup (when user requests specific device/version):**
+
+These commands ARE allowed ONLY for finding/booting a specific device BEFORE running BuildAndRunSandbox.ps1:
+- `xcrun simctl list devices` - To find UDID for specific iOS version/device
+- `xcrun simctl boot <UDID>` - To boot a specific simulator before passing UDID to script
+
+See "Run Test on Specific iOS Device/Version" section above for when this is needed.
 
 **Why this matters:**
 - Running `adb logcat` manually captures DIFFERENT logs than what the script captured
@@ -452,12 +480,93 @@ This indicates a bug in BuildAndRunSandbox.ps1 that MUST be fixed:
 - ✅ Always use BuildAndRunSandbox.ps1 for build/deploy/test cycle
 - ✅ If log files are missing, this is a script bug - fix or report it
 
-**What to fix:**
-- **Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry
-- **App crashes** - Read device log from `CustomAgentLogsTmp/Sandbox/`, check stack trace, fix test code or reproduction scenario
-- **Fast Deployment errors** - Ensure `appium:noReset` is set to `true` in Appium options
-- Cannot find reproduction scenario - Try alternative approaches (UITests, code analysis)
-- Test code errors - Fix Appium script or MainPage code based on error messages
+---
+
+## Common Error Handling Patterns
+
+### PublicAPI Analyzer Failures
+
+**Don't turn off analyzers** - Fix the PublicAPI.Unshipped.txt files properly:
+
+```bash
+# Use dotnet format to fix analyzer issues
+dotnet format analyzers Microsoft.Maui.sln
+
+# If that doesn't work, revert and manually add entries
+git checkout -- src/*/PublicAPI.Unshipped.txt
+# Then add only the new public APIs
+```
+
+### What to Fix Based on Logs
+
+**Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry
+**App crashes** - Read device log from `CustomAgentLogsTmp/Sandbox/`, check stack trace, fix test code or reproduction scenario
+**Fast Deployment errors (Android)** - See "Critical Requirements for Android Testing" section at top of this document
+**Cannot find reproduction scenario** - Try alternative approaches (UITests, code analysis)
+**Test code errors** - Fix Appium script or MainPage code based on error messages
+
+---
+
+## Platform-Specific Patterns (Reference Only)
+
+⚠️ **These patterns are for reference when user requests specific device targeting.** In normal workflow, BuildAndRunSandbox.ps1 handles device detection automatically. Only use these manually when you need a specific device/version per user request.
+
+### Android Device Detection (when debugging device issues)
+```bash
+# Get connected device
+export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
+
+# Verify device
+echo "Using device: $DEVICE_UDID"
+```
+
+### iOS Simulator Detection (when user requests specific device/version)
+```bash
+# Find iPhone Xs with highest iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+
+# Boot simulator (allowed per exception in "Never Run Manual Commands" section)
+xcrun simctl boot $UDID 2>/dev/null || true
+
+# Then pass UDID to script
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios -DeviceUdid "$UDID"
+```
+
+---
+
+## When to Report vs. When to Escalate
+
+### ✅ Just Report (Continue Testing)
+- Minor warnings in logs (unrelated to fix)
+- Small visual glitches (if not what's being fixed)
+- Non-critical Appium delays or timeouts that eventually succeed
+- Platform-specific behavior differences (document them)
+
+### 🔧 Debug and Fix (Try These Before Reporting)
+
+**Retry Policy**: Attempt up to **3 times** before reporting as blocked.
+
+After each failure:
+1. Analyze logs (device + Appium)
+2. Identify root cause
+3. Fix the issue (test code, XAML, capabilities)
+4. Rerun BuildAndRunSandbox.ps1
+
+**Recovery Steps by Issue Type**:
+
+| Issue | Recovery Action | Max Retries |
+|-------|----------------|-------------|
+| Build error | Check SDK version, restore tools, clean build | 2 |
+| App crash | Fix test code/XAML based on stack trace | 3 |
+| Element not found | Verify AutomationIds, check page loaded | 2 |
+| Fast Deployment error (Android) | See "Critical Requirements for Android Testing" section | 1 |
+| Appium timeout | Increase wait time, check app state | 2 |
+| XAML parse error | Fix event handler or binding syntax | 2 |
+
+**When to stop and report**: After max retries OR if you determine:
+- Issue is outside your control (SDK mismatch, device unavailable)
+- Root cause unclear despite log analysis
+- Issue appears to be a PR bug (not test infrastructure)
 
 ### 🚫 STOP and Report (Cannot Proceed After Attempts)
 - Cannot checkout PR (git errors)
@@ -467,17 +576,9 @@ This indicates a bug in BuildAndRunSandbox.ps1 that MUST be fixed:
 - Build failures persist after troubleshooting attempts
 - App crashes that appear unrelated to test code or fix
 
-## Common Mistakes to Avoid
+---
 
-- ❌ Using TestCases.HostApp for manual PR validation (use Sandbox)
-- ❌ Manual build/deploy commands instead of BuildAndRunSandbox.ps1
-- ❌ Testing only one platform when PR affects multiple
-- ❌ Using screenshots for validation (use Appium element queries)
-- ❌ Creating test scenario without checking issue for reproduction steps
-- ❌ Ignoring PR's existing UITests when available
-- ❌ Cleaning up or reverting Sandbox changes (user will iterate on it)
-
-## Troubleshooting
+## Detailed Troubleshooting
 
 ### Build Fails
 **Action**: Stop and report to user
@@ -559,21 +660,9 @@ grep "Abort message" CustomAgentLogsTmp/Sandbox/android-device.log
 
 **If you see: "No assemblies found in '.../__override__/...' ... Fast Deployment"**
 
-**Root Cause**: Missing `appium:noReset` capability in Appium options (ANDROID ONLY)
-
-**Fix**:
-1. Open `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
-2. Find the Android options section (inside `if (PLATFORM == "android")` block)
-3. Verify this line exists:
-   ```csharp
-   options.AddAdditionalAppiumOption("appium:noReset", true);
-   ```
-4. If missing, add it (see template for exact placement)
-5. Rerun test: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android`
+This is a missing `appium:noReset` capability issue. See "Critical Requirements for Android Testing" section at the top of this document for the fix.
 
 **This is NOT a PR bug** - It's a test infrastructure issue. Once fixed, retry the test.
-
-**⚠️ iOS DOES NOT USE noReset** - Do not add this capability for iOS
 
 ---
 
@@ -616,4 +705,55 @@ grep "Abort message" CustomAgentLogsTmp/Sandbox/android-device.log
 **Logs**: [Relevant excerpts]
 
 **Question for user**: Is this expected behavior, or does this indicate an issue?
+```
+
+---
+
+## Common Mistakes to Avoid
+
+- ❌ Using TestCases.HostApp for manual PR validation (use Sandbox)
+- ❌ Manual build/deploy commands instead of BuildAndRunSandbox.ps1
+- ❌ Testing only one platform when PR affects multiple
+- ❌ Using screenshots for validation (use Appium element queries)
+- ❌ Creating test scenario without checking issue for reproduction steps
+- ❌ Ignoring PR's existing UITests when available
+- ❌ Cleaning up or reverting Sandbox changes (user will iterate on it)
+
+---
+
+## Key Resources
+
+### Must-Read Before Testing
+- [Instrumentation Guide](instrumentation.md) - How to add logging and measurements
+- [Appium Control Scripts](appium-control.md) - UI automation patterns
+
+### Read When Relevant
+- [SafeArea Testing](safearea-testing.md) - If PR involves SafeArea
+
+---
+
+## Related Documentation
+
+- [Instrumentation Guide](instrumentation.md) - How to add logging and measurements to Sandbox app
+- [Appium Control Scripts](appium-control.md) - UI automation with Appium
+- [SafeArea Testing](safearea-testing.md) - Testing SafeArea-specific issues
+
+---
+
+## Appendix: Cleanup (Only When User Requests)
+
+⚠️ **DO NOT clean up after testing** - Leave Sandbox as-is so user can iterate on it.
+
+Only use these commands if the **user explicitly requests cleanup**:
+
+### Sandbox App Cleanup (User Request Only)
+```bash
+# Revert all changes to Sandbox app
+git checkout -- src/Controls/samples/Controls.Sample.Sandbox/
+```
+
+### Sandbox Test Files Cleanup (User Request Only)
+```bash
+# Remove Appium test directory (gitignored)
+rm -rf CustomAgentLogsTmp/Sandbox/
 ```
