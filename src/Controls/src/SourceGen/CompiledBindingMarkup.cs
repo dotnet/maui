@@ -306,17 +306,9 @@ internal struct CompiledBindingMarkup
 
 			if (p.Length > 0)
 			{
-				var property = previousPartType.GetAllProperties(p, _context).FirstOrDefault(property => property.GetMethod != null && !property.GetMethod.IsStatic);
-				
-				// If property not found, check if it could be a RelayCommand-generated property
-				ITypeSymbol? currentPropertyType = property?.Type;
-				if (property is null && previousPartType.TryGetRelayCommandPropertyType(p, _context, out var commandType))
-				{
-					// Found a RelayCommand method that would generate this property
-					currentPropertyType = commandType;
-				}
-				
-				if (currentPropertyType is null)
+				// Try to find property or infer from RelayCommand method
+				if (!previousPartType.TryGetPropertyOrRelayCommand(p, _context, out var property, out var currentPropertyType) 
+					|| currentPropertyType is null)
 				{
 					return false; // TODO report diagnostic
 				}
