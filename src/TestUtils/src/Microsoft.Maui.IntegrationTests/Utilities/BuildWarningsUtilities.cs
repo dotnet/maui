@@ -121,25 +121,7 @@ namespace Microsoft.Maui.IntegrationTests
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new()
-		{
-			// Example of expected warning
-			new WarningsPerFile
-			{
-				File = "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL6001",
-						Messages = new List<string>
-						{
-							"ILLink : error IL6001: Assembly 'Xamarin.GooglePlayServices.Tasks' contains reference to obsolete attribute 'Android.Runtime.PreserveAttribute'. Members with this attribute may be trimmed. Please use System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute instead.",
-						}
-					}
-				}
-			}	
-		};
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
 
 		// Windows-specific expected warnings (if any)
 		// These might be different from iOS/Mac warnings due to platform-specific implementations
