@@ -51,12 +51,15 @@ public static class ITypeSymbolExtensions
 	/// </summary>
 	/// <param name="symbol">The type to search</param>
 	/// <param name="propertyName">The name of the property to find (should end with "Command")</param>
-	/// <param name="compilation">The compilation</param>
+	/// <param name="compilation">The compilation (can be null)</param>
 	/// <param name="commandType">The inferred ICommand type if a RelayCommand method is found</param>
 	/// <returns>True if a RelayCommand method was found that would generate this property</returns>
-	public static bool TryGetRelayCommandPropertyType(this ITypeSymbol symbol, string propertyName, Compilation compilation, out ITypeSymbol? commandType)
+	public static bool TryGetRelayCommandPropertyType(this ITypeSymbol symbol, string propertyName, Compilation? compilation, out ITypeSymbol? commandType)
 	{
 		commandType = null;
+
+		if (compilation == null)
+			return false;
 
 		// Check if the property name ends with "Command"
 		if (!propertyName.EndsWith("Command", System.StringComparison.Ordinal) || propertyName.Length <= "Command".Length)

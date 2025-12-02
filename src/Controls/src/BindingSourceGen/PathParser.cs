@@ -44,37 +44,6 @@ internal class PathParser
 		var typeInfo = _context.SemanticModel.GetTypeInfo(memberAccess).Type;
 		var symbol = _context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
 
-		// If symbol is null, check if this could be a RelayCommand-generated property
-		if (symbol == null)
-		{
-			// Get the type of the expression on the left side of the member access
-			var expressionType = _context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type;
-			
-			if (expressionType != null && 
-			    expressionType.TryGetRelayCommandPropertyType(member, _context.SemanticModel.Compilation, out var commandType) &&
-			    commandType != null)
-			{
-				// Found a RelayCommand method that generates this property
-				typeInfo = commandType;
-				
-				// Create the path part with the inferred type
-				var inferredMemberType = typeInfo.CreateTypeDescription(_enabledNullable);
-				var inferredContainingType = expressionType.CreateTypeDescription(_enabledNullable);
-				
-				IPathPart inferredPart = new MemberAccess(
-					MemberName: member,
-					IsValueType: !typeInfo.IsReferenceType,
-					ContainingType: inferredContainingType,
-					MemberType: inferredMemberType,
-					Kind: AccessorKind.Property,
-					IsGetterInaccessible: false, // Assume generated property is accessible
-					IsSetterInaccessible: true);  // Commands are typically read-only
-				
-				result.Value.Add(inferredPart);
-				return Result<List<IPathPart>>.Success(result.Value);
-			}
-		}
-
 		if (symbol == null || typeInfo == null)
 		{
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(memberAccess.GetLocation()));

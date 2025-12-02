@@ -5,6 +5,7 @@ using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.BindingSourceGen;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -93,40 +94,7 @@ static partial class ITypeSymbolExtensions
 	/// <param name="commandType">The inferred ICommand type if a RelayCommand method is found</param>
 	/// <returns>True if a RelayCommand method was found that would generate this property</returns>
 	public static bool TryGetRelayCommandPropertyType(this ITypeSymbol symbol, string propertyName, SourceGenContext? context, out ITypeSymbol? commandType)
-	{
-		commandType = null;
-
-		// Check if the property name ends with "Command"
-		if (!propertyName.EndsWith("Command", StringComparison.Ordinal) || propertyName.Length <= "Command".Length)
-			return false;
-
-		// Extract the method name (property name without "Command" suffix)
-		var methodName = propertyName.Substring(0, propertyName.Length - "Command".Length);
-		
-		// Look for a method with the base name
-		var methods = symbol.GetAllMethods(methodName, context);
-		
-		foreach (var method in methods)
-		{
-			// Check if the method has the RelayCommand attribute
-			var hasRelayCommand = method.GetAttributes().Any(attr =>
-				attr.AttributeClass?.Name == "RelayCommandAttribute" ||
-				attr.AttributeClass?.ToFQDisplayString() == "CommunityToolkit.Mvvm.Input.RelayCommandAttribute");
-
-			if (hasRelayCommand && context?.Compilation != null)
-			{
-				// Try to find the ICommand interface type
-				var icommandType = context.Compilation.GetTypeByMetadataName("System.Windows.Input.ICommand");
-				if (icommandType != null)
-				{
-					commandType = icommandType;
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
+		=> symbol.TryGetRelayCommandPropertyType(propertyName, context?.Compilation, out commandType);
 
 	public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, SourceGenContext? context)
 		=> symbol.GetAllMembers(context).OfType<IMethodSymbol>();
