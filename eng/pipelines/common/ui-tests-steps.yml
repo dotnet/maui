@@ -132,11 +132,11 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    # Get test filter - Azure DevOps will expand $(categoryGroup) from matrix before PowerShell runs
-    $testFilterParam = "$(categoryGroup)"
+    # Get test filter from environment variable (passed from matrix in env block below)
+    $testFilterParam = $env:CATEGORY_GROUP
     
     # Fallback to parameter for backward compatibility (when not using matrix)
-    if (-not $testFilterParam -or $testFilterParam -eq '$(categoryGroup)' -or $testFilterParam -eq '') {
+    if (-not $testFilterParam) {
       $testFilterParam = "${{ parameters.testFilter }}"
     }
     
@@ -170,6 +170,7 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    CATEGORY_GROUP: $(categoryGroup)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
