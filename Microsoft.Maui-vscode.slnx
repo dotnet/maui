@@ -10,6 +10,9 @@
   </Folder>
   <Folder Name="/AI/test/">
     <Project Path="src/AI/tests/Essentials.AI.Benchmarks/Essentials.AI.Benchmarks.csproj" />
+    <Project Path="src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj">
+      <Deploy />
+    </Project>
     <Project Path="src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj" />
   </Folder>
   <Folder Name="/BlazorWebView/" />
