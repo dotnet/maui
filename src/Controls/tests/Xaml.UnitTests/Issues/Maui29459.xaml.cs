@@ -220,10 +220,9 @@ public partial class Maui29459 : ContentPage
 		}
 
 		[Test]
-		public void SwitchingBindingToSameValueDoesNotTriggerPropertyChanged([Values] XamlInflator inflator)
+		public void SwitchingBindingToSameValueMaintainsCorrectValue([Values] XamlInflator inflator)
 		{
-			// When switching bindings but the value remains the same, 
-			// PropertyChanged should NOT fire (optimization)
+			// The value should be correct regardless of PropertyChanged firing behavior
 
 			var page = new Maui29459(inflator);
 			var viewModel = new Maui29459ViewModel { A = 50, B = 50 }; // Same values
@@ -237,8 +236,7 @@ public partial class Maui29459 : ContentPage
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.B));
 
 			Assert.That(page.MyControl.Value, Is.EqualTo(50), "Value should remain 50");
-			// Note: PropertyChanged may or may not fire when values are equal - this is implementation-dependent
-			// The key assertion is that the Value is correct
+			// PropertyChangedCount behavior is implementation-defined when values are equal; no assertion is made.
 		}
 	}
 }
