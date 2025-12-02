@@ -123,23 +123,79 @@ Controls/
 
 ## Handler Pattern (Core MAUI Concept)
 
-Handlers bridge MAUI controls to platform native views.
+> **Essential Guardrails:** For must-follow rules and checklists, see [Handler Development Guardrails](../instructions/handlers.instructions.md). This section focuses on architecture philosophy and trade-off reasoning.
+
+Handlers bridge MAUI's cross-platform controls to platform-native views. Understanding *why* handlers work this way helps you make better design decisions.
+
+### Handler Architecture Philosophy
+
+**Why Handlers Instead of Renderers?**
+
+MAUI moved from Xamarin.Forms renderers to handlers because:
+
+1. **Decoupling** - Handlers don't inherit from platform views, enabling better testability
+2. **Composition over inheritance** - Property/command mappers allow mixing behaviors
+3. **Smaller surface area** - Handlers only need mapper methods, not full view lifecycle
+4. **Better performance** - Lazy initialization, view recycling is easier
+
+### Property Mapper vs Command Mapper: When to Use Each
+
+| Use Case | Property Mapper | Command Mapper |
+|----------|-----------------|----------------|
+| Updating visual state | ✅ Text, Color, Size | |
+| Triggering one-time actions | | ✅ Focus, Scroll, Animate |
+| Responding to value changes | ✅ | |
+| Imperative commands from code | | ✅ |
+
+**Property Mapper** - When the control's property changes, update the platform view:
+```csharp
+[nameof(IButton.Text)] = MapText  // When Text changes, update native button
+```
+
+**Command Mapper** - When code explicitly requests an action:
+```csharp
+[nameof(IButton.Focus)] = MapFocus  // When Focus() called, focus the native view
+```
+
+### Platform Differences: Why They Exist
+
+Each platform has different native control behaviors:
+
+**Text Rendering:**
+- Android: `TextView.setText()` - immediate
+- iOS: `UILabel.Text` - triggers layout
+- Windows: `TextBlock.Text` - may defer
+
+**Event Patterns:**
+- Android: `View.OnClickListener` interface
+- iOS: `UIControl.TouchUpInside` event
+- Windows: `Button.Click` routed event
+
+Understanding these differences helps you write handlers that feel native on each platform.
+
+### Handler Lifecycle
+
+```
+1. CreatePlatformView()  → Create native control
+2. ConnectHandler()      → Wire up events, initial state
+3. [Mapper calls]        → Property changes during lifetime
+4. DisconnectHandler()   → Cleanup events, resources
+```
+
+**Key Insight:** Handlers may be recycled. `ConnectHandler` might be called on a previously-used view. Always clean up defensively.
 
 ### Anatomy of a Handler
 
 ```csharp
 public partial class ButtonHandler : ViewHandler<IButton, PlatformView>
 {
-    // Property mappings: MAUI property -> platform update
     public static IPropertyMapper<IButton, IButtonHandler> Mapper = 
         new PropertyMapper<IButton, IButtonHandler>(ViewHandler.ViewMapper)
     {
         [nameof(IButton.Text)] = MapText,
         [nameof(IButton.TextColor)] = MapTextColor,
-        [nameof(IButton.Command)] = MapCommand,
     };
     
-    // Command mappings: MAUI command -> platform action
     public static CommandMapper<IButton, IButtonHandler> CommandMapper = 
         new(ViewCommandMapper)
     {
@@ -148,11 +204,9 @@ public partial class ButtonHandler : ViewHandler<IButton, PlatformView>
     
     public ButtonHandler() : base(Mapper, CommandMapper) { }
     
-    // Create platform view
     protected override PlatformView CreatePlatformView() => 
         new PlatformView(Context);
     
-    // Map a property
     public static void MapText(IButtonHandler handler, IButton button)
     {
         handler.PlatformView?.UpdateText(button);
@@ -160,27 +214,36 @@ public partial class ButtonHandler : ViewHandler<IButton, PlatformView>
 }
 ```
 
-### Handler Best Practices
+### Extending Existing Handlers
 
-1. **Property Mappers**
-   - Map MAUI properties to platform updates
-   - Keep mapping methods static
-   - Use extension methods for platform updates
+**Adding a new property to existing control:**
+```csharp
+// Append to existing mapper
+ButtonHandler.Mapper.AppendToMapping(nameof(IButton.MyProperty), (handler, button) =>
+{
+    // Your custom mapping
+});
+```
 
-2. **Error Handling in Handlers**
-   - Handlers should NOT throw exceptions
-   - Log errors and set sensible defaults
-   - Platform views must remain in valid state
+**Replacing default behavior:**
+```csharp
+// Replace how Text is mapped
+ButtonHandler.Mapper.ReplaceMapping(nameof(IButton.Text), (handler, button) =>
+{
+    // Your custom text handling
+});
+```
 
-3. **Async in Handlers**
-   - Avoid async in mappers when possible
-   - If needed, use `Task.Run` or `MainThread.BeginInvokeOnMainThread`
-   - Never block on async operations
+### Common Handler Design Decisions
 
-4. **Memory Management**
-   - Disconnect event handlers in `DisconnectHandler`
-   - Release platform resources properly
-   - Don't hold strong references to platform views
+**Should I create a custom handler or modify existing?**
+- New control type → Custom handler
+- Adding property to existing control → Extend via `AppendToMapping`
+- Different behavior on one platform → Platform-specific partial class
+
+**Should this be a property or command?**
+- If it's *state* that can change → Property
+- If it's an *action* user triggers → Command
 
 ## Interface Usage in MAUI
 
@@ -855,9 +918,9 @@ dotnet build ./Microsoft.Maui.BuildTasks.slnf
 
 For specialized topics, refer to these path-specific instruction files:
 
+- **[Handler Development Guardrails](../instructions/handlers.instructions.md)** - Essential rules and checklists for handler development (auto-applied to handler files)
 - **[UI Testing Guidelines](../instructions/uitests.instructions.md)** - Comprehensive UI test patterns and conventions
 - **[Instrumentation Guide](../instructions/instrumentation.instructions.md)** - Debugging and validation instrumentation patterns
 - **[SafeArea Testing Guide](../instructions/safearea-testing.instructions.md)** - Specialized patterns for testing SafeArea changes
 - **[Template Development Guide](../instructions/templates.instructions.md)** - Working with MAUI project templates
 - **[Copilot Instructions](../copilot-instructions.md)** - Repository-wide GitHub Copilot guidance
-- **[AGENTS.md](../../AGENTS.md)** - Universal AI assistant guidance
