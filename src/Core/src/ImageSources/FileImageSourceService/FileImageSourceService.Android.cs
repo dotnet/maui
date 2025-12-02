@@ -4,9 +4,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Extensions.Logging;
+using Path = System.IO.Path;
 
 namespace Microsoft.Maui
 {
@@ -33,6 +35,12 @@ namespace Microsoft.Maui
 					}
 
 					var callback = new ImageLoaderCallback();
+					var bitmap = BitmapFactory.DecodeFile(file);
+					if (bitmap != null)
+					{
+						imageView.SetImageBitmap(bitmap);
+						return Task.FromResult<IImageSourceServiceResult?>(new ImageSourceServiceLoadResult());
+					}
 
 					PlatformInterop.LoadImageFromFile(imageView, file, callback);
 
