@@ -132,11 +132,11 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    # Get test filter - Azure DevOps will expand $(CATEGORY_GROUP) before PowerShell runs
-    $testFilterParam = "$(CATEGORY_GROUP)"
+    # Get test filter - Azure DevOps will expand $(categoryGroup) from matrix before PowerShell runs
+    $testFilterParam = "$(categoryGroup)"
     
-    # Fallback to parameter for backward compatibility
-    if (-not $testFilterParam -or $testFilterParam -eq '$(CATEGORY_GROUP)') {
+    # Fallback to parameter for backward compatibility (when not using matrix)
+    if (-not $testFilterParam -or $testFilterParam -eq '$(categoryGroup)' -or $testFilterParam -eq '') {
       $testFilterParam = "${{ parameters.testFilter }}"
     }
     
