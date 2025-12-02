@@ -93,7 +93,7 @@ stages:
       - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         - analyze_pr_changes
     # Skip if analysis determined no tests needed
-    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.hasTests'], 'false')))
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -112,7 +112,7 @@ stages:
     dependsOn:
       - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         - analyze_pr_changes
-    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.hasTests'], 'false')))
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -133,7 +133,7 @@ stages:
       dependsOn:
         - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
           - analyze_pr_changes
-      condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.hasTests'], 'false')))
+      condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
       jobs:
         - job: build_ui_tests
           displayName: Build Sample App
@@ -153,7 +153,7 @@ stages:
     dependsOn:
       - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         - analyze_pr_changes
-    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.hasTests'], 'false')))
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
@@ -172,7 +172,7 @@ stages:
       - build_ui_tests
       - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         - analyze_pr_changes
-    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.hasTests'], 'false')))
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -183,9 +183,9 @@ stages:
                   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
                     - analyze_pr_changes
                 ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-                  # Use dynamic matrix from PR analysis
+                  # Use dynamic matrix from PR analysis (cross-stage reference uses stageDependencies)
                   strategy:
-                    matrix: $[ dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.matrix'] ]
+                    matrix: $[ stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.matrix'] ]
                 ${{ else }}:
                   # Use static matrix for non-PR builds
                   strategy:
@@ -230,7 +230,7 @@ stages:
       - build_ui_tests
       - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         - analyze_pr_changes
-    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.hasTests'], 'false')))
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.hasTests'], 'false')))
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -241,9 +241,9 @@ stages:
                   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
                     - analyze_pr_changes
                 ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-                  # Use dynamic matrix from PR analysis
+                  # Use dynamic matrix from PR analysis (cross-stage reference uses stageDependencies)
                   strategy:
-                    matrix: $[ dependencies.analyze_pr_changes.outputs['analyze_changes.GenerateMatrix.matrix'] ]
+                    matrix: $[ stageDependencies.analyze_pr_changes.analyze_changes.outputs['GenerateMatrix.matrix'] ]
                 ${{ else }}:
                   # Use static matrix for non-PR builds
                   strategy:
