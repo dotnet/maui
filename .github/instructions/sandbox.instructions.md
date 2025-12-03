@@ -137,6 +137,14 @@ if (PLATFORM == "android")
 
 ## Core Workflow
 
+**🚨 CRITICAL RULE FOR ENTIRE WORKFLOW:**
+- **ALWAYS use BuildAndRunSandbox.ps1 script** for building, deploying, and testing
+- **NEVER use manual `dotnet build`, `adb`, or `xcrun` commands**
+- The script handles device detection, build, deployment, and test execution automatically
+- See "BuildAndRunSandbox.ps1 Script" section below for full details
+
+---
+
 ### Step 1: Checkout PR and Understand Issue
 
 ```bash
@@ -270,40 +278,79 @@ When user requests a specific iOS version or device:
 
 ---
 
-## BuildAndRunSandbox.ps1 Script
+## How the Template Works
 
-**CRITICAL**: For all Sandbox app testing and reproduction work, use this script instead of manual commands.
+**The template ALWAYS does the same thing:**
 
-**Script Location**: `.github/scripts/BuildAndRunSandbox.ps1`
+1. ✅ Verifies app launched successfully (WaitForElement)
+2. ✅ Optionally runs automated UI tests (if you add them)
+3. ✅ Exits WITHOUT closing the app (stays running for manual validation)
 
-**Usage**:
+**Usage:**
+```bash
+# Copy the template
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
+
+# OPTIONAL: Add automated test logic in the TEST LOGIC section
+# If you don't add test logic, it just verifies launch and exits
+
+# Run the script
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios
+```
+
+**Result:**
+- App launches and stays running
+- You can manually validate in the simulator
+- Test script exits without closing the app
+
+---
+
+## 🚨 CRITICAL: BuildAndRunSandbox.ps1 Script - ONLY Way to Deploy Sandbox
+
+**YOU MUST ALWAYS USE THIS SCRIPT. NEVER USE MANUAL `dotnet build`, `adb`, or `xcrun` COMMANDS.**
+
+### Script Location
+`.github/scripts/BuildAndRunSandbox.ps1`
+
+### Basic Usage
 ```powershell
 # Android
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform Android
 
-# iOS  
+# iOS (auto-detects device)
 pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
+
+# iOS with specific device
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS -DeviceUdid "YOUR-DEVICE-UDID"
 ```
 
-**What the script handles**:
-- Device detection, boot, and UDID extraction
-- App building (always fresh build)
-- App installation and deployment
-- Appium server management (auto-start/stop)
-- Running Appium test (`CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`)
-- Complete log capture to `CustomAgentLogsTmp/Sandbox/` directory:
-  - `appium.log` - Appium server logs
-  - `android-device.log` or `ios-device.log` - Device logs filtered to Sandbox app
-  - `RunWithAppiumTest.cs` - Your test script (preserved after run)
+### What the Script Does Automatically
+- ✅ **Device detection and boot** - Finds and boots simulator/emulator
+- ✅ **UDID extraction** - Sets DEVICE_UDID environment variable
+- ✅ **Fresh app build** - Builds Sandbox project for target platform
+- ✅ **App deployment** - Installs and launches app
+- ✅ **Appium server management** - Starts/stops Appium automatically
+- ✅ **Log capture** - Saves device and Appium logs to `CustomAgentLogsTmp/Sandbox/`
+- ✅ **Test execution** - Runs your Appium test script
 
-**Requirements**:
-- Must have `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` file before running
-- If missing, set it up as described in "Setting up the Appium test file" above
+### Requirements Before Running
+**You MUST create the Appium test file first:**
 
-**When to use**:
-- ✅ Issue reproduction with Sandbox app
-- ✅ Manual testing and debugging
-- ✅ PR validation with custom UI scenarios
+```bash
+# Create directory if needed
+mkdir -p CustomAgentLogsTmp/Sandbox
+
+# Copy template
+cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
+
+# OPTIONAL: Add automated test logic (or leave as-is for manual testing only)
+# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs to add UI automation
+```
+
+**What the template does:**
+- ✅ Verifies app launched (always)
+- ✅ Runs any automated tests you add (optional)
+- ✅ Exits without closing app (always)
 
 **🚨 CRITICAL - MANDATORY POST-TEST VALIDATION:**
 
@@ -627,33 +674,6 @@ git checkout -- src/*/PublicAPI.Unshipped.txt
 **Fast Deployment errors (Android)** - See "Critical Requirements for Android Testing" section at top of this document
 **Cannot find reproduction scenario** - Try alternative approaches (UITests, code analysis)
 **Test code errors** - Fix Appium script or MainPage code based on error messages
-
----
-
-## Platform-Specific Patterns (Reference Only)
-
-⚠️ **These patterns are for reference when user requests specific device targeting.** In normal workflow, BuildAndRunSandbox.ps1 handles device detection automatically. Only use these manually when you need a specific device/version per user request.
-
-### Android Device Detection (when debugging device issues)
-```bash
-# Get connected device
-export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-# Verify device
-echo "Using device: $DEVICE_UDID"
-```
-
-### iOS Simulator Detection (when user requests specific device/version)
-```bash
-# Find iPhone Xs with highest iOS version
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-
-# Boot simulator (allowed per exception in "Never Run Manual Commands" section)
-xcrun simctl boot $UDID 2>/dev/null || true
-
-# Then pass UDID to script
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios -DeviceUdid "$UDID"
-```
 
 ---
 
