@@ -776,4 +776,225 @@ public class TestViewModel
 		var emptyHandlersPattern = @"handlers:\s*new\s+global::System\.Tuple<global::System\.Func<global::Test\.TestViewModel,\s*object\?>,\s*string>\[\]\s*\{\s*\}";
 		Assert.Matches(emptyHandlersPattern, generated);
 	}
+
+	[Fact]
+	public void ValueTypeAtEndOfConditionalAccessPath()
+	{
+		// Test value type property at the end of a binding path with conditional access in the middle
+		// The setter should use pattern matching and NOT have HasValue check since PropertyType is non-nullable
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Label Text="{Binding Container.Count}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Container? Container { get; set; }
+}
+
+public class Container
+{
+	public int Count { get; set; }
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+		
+		// Verify setter uses pattern matching for conditional access
+		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
+		
+		// Should NOT have HasValue check since Count is int, not int?
+		Assert.DoesNotContain("HasValue", generated, StringComparison.Ordinal);
+		
+		// Getter should have ?? default for value type through nullable path
+		Assert.Contains("getter: source => (source.Container?.Count ?? default, true)", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NonNullableReferenceTypeAtEndOfConditionalAccessPath()
+	{
+		// Test non-nullable reference type property at the end of a binding path with conditional access
+		// The setter should have an early return for null since the target property doesn't accept null
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Entry Text="{Binding Container.Label}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Container? Container { get; set; }
+}
+
+public class Container
+{
+	public string Label { get; set; } = "";  // Non-nullable string
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+		
+		// Verify setter has early return for null since Label doesn't accept null
+		Assert.Contains("if (value is null)", generated, StringComparison.Ordinal);
+		Assert.Contains("return;", generated, StringComparison.Ordinal);
+		
+		// Verify setter uses pattern matching for conditional access
+		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NullableReferenceTypeAtEndOfConditionalAccessPath()
+	{
+		// Test nullable reference type property at the end of a binding path with conditional access
+		// The setter should NOT have an early return since the target property accepts null
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Entry Text="{Binding Container.Description}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Container? Container { get; set; }
+}
+
+public class Container
+{
+	public string? Description { get; set; }  // Nullable string
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+		
+		// Verify setter does NOT have early return since Description accepts null
+		// The setter should just use pattern matching without null check on value
+		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
+		
+		// Check the setter signature accepts nullable
+		Assert.Contains("global::System.Action<global::Test.TestPage, string?>", generated, StringComparison.Ordinal);
+		
+		// Verify the pattern "if (value is null)" followed by "return;" does NOT appear
+		// This would indicate an early return that we don't want for nullable target properties
+		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
+		Assert.DoesNotMatch(earlyReturnPattern, generated);
+	}
+
+	[Fact]
+	public void NullableValueTypeAtEndOfConditionalAccessPath()
+	{
+		// Test nullable value type property (int?) at the end of a binding path with conditional access
+		// The setter should NOT have an early return since the target property accepts null
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Label Text="{Binding Container.OptionalCount}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Container? Container { get; set; }
+}
+
+public class Container
+{
+	public int? OptionalCount { get; set; }  // Nullable int
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+		
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+		
+		// Verify setter uses pattern matching for conditional access
+		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
+		
+		// Check the setter signature accepts nullable value type
+		Assert.Contains("global::System.Action<global::Test.TestPage, int?>", generated, StringComparison.Ordinal);
+		
+		// Verify no early return patterns for nullable value types
+		// Should NOT have "if (!value.HasValue) { return;" or "if (value is null) { return;"
+		var hasValueEarlyReturnPattern = @"if\s*\(\s*!\s*value\s*\.\s*HasValue\s*\)\s*\{\s*return\s*;";
+		var isNullEarlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
+		Assert.DoesNotMatch(hasValueEarlyReturnPattern, generated);
+		Assert.DoesNotMatch(isNullEarlyReturnPattern, generated);
+	}
 }
