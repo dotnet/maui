@@ -310,6 +310,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ChildViewControllerForStatusBarHidden()?.SetNeedsStatusBarAppearanceUpdate();
 		}
 
+		void UpdateTabBarVisibility()
+		{
+			if (TabBar == null)
+				return;
+
+			// Root Cause: On iOS 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar to prevent
+			// the new iOS 18 toolbar-style tabs on iPads. However, this causes a side effect on
+			// MacCatalyst where the TabBar gets Hidden = true and Alpha = 0 by the system.
+			//
+			// This fix explicitly overrides that behavior to ensure the TabBar remains visible.
+			// Related: ShellItemRenderer.UpdateTabBarHidden() has the same fix for Shell TabbedPage.
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
+			{
+#if MACCATALYST
+				if (TabBar.Hidden || TabBar.Alpha != 1.0f)
+				{
+					// Explicitly set Alpha and Hidden to override incorrect system behavior
+					TabBar.Alpha = 1.0f;
+					TabBar.Hidden = false;
+				}
+#endif
+			}
+		}
+
 		void Reset()
 		{
 			if (Tabbed is not TabbedPage tabbed)
@@ -335,6 +359,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					list.Add(GetViewController(v));
 			}
 			ViewControllers = list.ToArray();
+
+			// Fix TabBar visibility on MacCatalyst 18+ after controllers are set
+			UpdateTabBarVisibility();
 		}
 
 		void SetupPage(Page page, int index)
