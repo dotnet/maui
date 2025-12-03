@@ -52,7 +52,10 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Value = PlatformView.Value;
+			if (VirtualView.Value != PlatformView.Value)
+			{
+				VirtualView.Value = PlatformView.Value;
+			}
 		}
 	}
 }
