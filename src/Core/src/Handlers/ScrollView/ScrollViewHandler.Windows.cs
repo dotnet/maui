@@ -125,21 +125,34 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateContentPanel(IScrollView scrollView, IScrollViewHandler handler, ICrossPlatformLayout crossPlatformLayout)
 		{
-			if (scrollView.PresentedContent == null || handler.MauiContext == null)
+			if (handler.MauiContext == null)
 			{
 				return;
 			}
 
 			var scrollViewer = handler.PlatformView;
+			var currentPaddingLayer = GetContentPanel(scrollViewer);
+
+			// If PresentedContent is null, clean up any existing content and return
+			if (scrollView.PresentedContent == null)
+			{
+				if (currentPaddingLayer != null)
+				{
+					currentPaddingLayer.CachedChildren.Clear();
+				}
+				
+				return;
+			}
+
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
-			if (GetContentPanel(scrollViewer) is ContentPanel currentPaddingLayer)
+			if (currentPaddingLayer != null)
 			{
+				// Only update if content has changed or is missing
 				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
 				{
 					currentPaddingLayer.CachedChildren.Clear();
 					currentPaddingLayer.CachedChildren.Add(nativeContent);
-
 				}
 			}
 			else
