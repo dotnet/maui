@@ -42,7 +42,7 @@ $packageVersionMappings = @{
     'xunit' = 'XunitPackageVersion'
     'xunit.runner.visualstudio' = 'XunitRunnerVisualStudioPackageVersion'
     'xunit.analyzer' = 'XUnitAnalyzersPackageVersion'
-    'coverlet.collector' = 'CoverletCollectorPackageVersion'
+    'Microsoft.CodeCoverage' = 'MicrosoftCodeCoveragePackageVersion'
     
     # Microsoft Extensions packages
     'Microsoft.Extensions.Logging.Debug' = 'MicrosoftExtensionsLoggingDebugVersion'
