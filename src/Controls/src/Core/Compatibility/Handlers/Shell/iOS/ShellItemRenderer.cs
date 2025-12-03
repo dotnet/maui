@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			UpdateMoreCellsEnabled();
 		}
-		
+
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
@@ -463,9 +463,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
 				{
 					// Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar 
-			        // which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
-			        // This is a side effect of TabSidebar mode when there's no sidebar to show.
-					
+					// which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
+					// This is a side effect of TabSidebar mode when there's no sidebar to show.
+
 					// Explicitly set Alpha and Hidden to override this incorrect system behavior.
 					TabBar.Alpha = 1.0f;
 					TabBar.Hidden = !ShellItemController.ShowTabs;
@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					return;
 				}
-	   
+
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else
