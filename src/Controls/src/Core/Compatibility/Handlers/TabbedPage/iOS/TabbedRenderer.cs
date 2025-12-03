@@ -315,9 +315,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (TabBar == null)
 				return;
 
-			// Root Cause: On iOS 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar to prevent
-			// the new iOS 18 toolbar-style tabs on iPads. However, this causes a side effect on
-			// MacCatalyst where the TabBar gets Hidden = true and Alpha = 0 by the system.
+			// Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar 
+			// which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
+			// This is a side effect of TabSidebar mode when there's no sidebar to show.
 			//
 			// This fix explicitly overrides that behavior to ensure the TabBar remains visible.
 			// Related: ShellItemRenderer.UpdateTabBarHidden() has the same fix for Shell TabbedPage.
