@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			double targetWidth = _width();
 			double targetHeight = _height();
 
+			targetWidth = targetWidth == int.MaxValue ? double.PositiveInfinity : targetWidth;
+			targetHeight = targetHeight == int.MaxValue ? double.PositiveInfinity : targetHeight;
+
 			if (!double.IsInfinity(targetWidth))
 				targetWidth = Context.FromPixels(targetWidth);
 
