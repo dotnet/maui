@@ -123,4 +123,13 @@
   <!-- Tell typescript to stop deleting everything before building the next TFM -->
   <Target Name="TypeScriptDeleteOutputFromOtherConfigs" />
 
+  <!--
+    Need this until https://github.com/dotnet/sdk/pull/51428 is completed.
+    This allows CoreCLR builds for iOS, tvOS, and Mac Catalyst to find the correct runtime packs.
+  -->
+  <ItemGroup Condition="'$(UseMonoRuntime)' == 'false'">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App"
+        RuntimePackRuntimeIdentifiers="%(RuntimePackRuntimeIdentifiers);ios-arm64;iossimulator-x64;iossimulator-arm64;tvos-arm64;tvossimulator-x64;tvossimulator-arm64;maccatalyst-arm64;maccatalyst-x64" />
+  </ItemGroup>
+
 </Project>
