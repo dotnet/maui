@@ -15,7 +15,7 @@
 - [ ] Edge cases tested (🔴 HIGH priority at minimum)
 - [ ] UI tests created (HostApp page + NUnit test)
 - [ ] UI tests verified (fails without fix, passes with fix)
-- [ ] Code formatted (`dotnet format Microsoft.Maui.sln --no-restore`)
+- [ ] Code formatted (`dotnet format Microsoft.Maui.slnx --no-restore`)
 - [ ] No breaking changes (or documented if unavoidable)
 
 ✅ **Quality Check**:
@@ -372,10 +372,10 @@ See [UI Tests Instructions](../uitests.instructions.md) for:
 
 ```bash
 # Format the entire solution
-dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+dotnet format Microsoft.Maui.slnx --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 
 # Verify no formatting issues
-dotnet format Microsoft.Maui.sln --verify-no-changes --no-restore --exclude Templates/src
+dotnet format Microsoft.Maui.slnx --verify-no-changes --no-restore --exclude Templates/src
 ```
 
 ### Creating the PR
