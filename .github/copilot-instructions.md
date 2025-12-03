@@ -345,20 +345,41 @@ The repository includes specialized custom agents for specific tasks. These agen
 ### Available Custom Agents
 
 1. **issue-resolver** - Specialized agent for investigating and resolving community-reported .NET MAUI issues through hands-on testing and implementation
-   - Use when: Working on bug fixes from GitHub issues
-   - Capabilities: Issue reproduction, root cause analysis, fix implementation, testing
+   - **Use when**: Working on bug fixes from GitHub issues
+   - **Capabilities**: Issue reproduction, root cause analysis, fix implementation, testing
+   - **Trigger phrases**: "fix issue #XXXXX", "resolve bug #XXXXX", "implement fix for #XXXXX"
 
 2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
-   - Use when: Reviewing PRs or validating your own changes
-   - Capabilities: Code quality analysis, best practices validation, test coverage review
+   - **Use when**: User requests code review of a pull request
+   - **Capabilities**: Code quality analysis, best practices validation, test coverage review
+   - **Trigger phrases**: "review PR #XXXXX", "review pull request #XXXXX", "code review for PR #XXXXX", "review this PR"
+   - **Do NOT use for**: Building/testing PR functionality (use Sandbox), asking about PR details (handle yourself)
 
 3. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
-   - Use when: Creating new UI tests or updating existing ones
-   - Capabilities: UI test authoring, Appium WebDriver usage, NUnit test patterns
+   - **Use when**: Creating new UI tests or updating existing ones
+   - **Capabilities**: UI test authoring, Appium WebDriver usage, NUnit test patterns
+   - **Trigger phrases**: "write UI test for #XXXXX", "create UI tests", "add test coverage"
+
+4. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
+   - **Use when**: User wants to manually test PR functionality or reproduce issues
+   - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
+   - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
+   - **Do NOT use for**: Code review (use pr-reviewer), writing automated tests (use uitest-coding-agent)
 
 ### Using Custom Agents
 
-Custom agents can be invoked by GitHub Copilot when appropriate for the task at hand. They have deep knowledge of their specific domains and follow all repository conventions and best practices.
+**Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
+
+**Examples of correct delegation**:
+- User: "Review PR #12345" → Immediately invoke **pr-reviewer** agent
+- User: "Test this PR" → Immediately invoke **sandbox-agent**
+- User: "Fix issue #67890" → Immediately invoke **issue-resolver** agent
+- User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
+
+**When NOT to delegate**:
+- User asks "What does PR #12345 do?" → Informational query, handle yourself
+- User asks "How do I test PRs?" → Documentation query, handle yourself
+- User has follow-up questions after agent completes → Continue the conversation yourself
 
 ## Additional Resources
 

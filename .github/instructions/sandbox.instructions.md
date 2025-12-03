@@ -86,20 +86,36 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 
 ## When to Use Sandbox Testing
 
-- ✅ User asks to "test this PR"
-- ✅ User asks to "validate PR #XXXXX"
-- ✅ User asks to "reproduce issue #XXXXX"
+- ✅ User asks to "test this PR" (functional testing, not code review)
+- ✅ User asks to "validate PR #XXXXX" or "validate PR #XXXXX in Sandbox"
+- ✅ User asks to "reproduce issue #XXXXX" or "try out issue #XXXXX"
 - ✅ User asks to "try out" or "experiment with" a feature in Sandbox
 - ✅ PR modifies core MAUI functionality (controls, layouts, platform code)
-- ✅ Need to manually verify a fix works
-- ✅ Need to create a quick test scenario
+- ✅ Need to manually verify a fix works on device/simulator
+- ✅ Need to create a quick test scenario for hands-on validation
 
 ## When NOT to Use Sandbox
 
-- ❌ User asks to "write UI tests" or "create automated tests" → Write proper UI tests instead
+- ❌ User asks to "review PR #XXXXX" → Use **pr-reviewer** agent for code review
+- ❌ User asks to "write UI tests" or "create automated tests" → Use **uitest-coding-agent**
 - ❌ User asks to "validate the UI tests" or "verify test quality" → Review test code instead
+- ❌ User asks to "fix issue #XXXXX" → Use **issue-resolver** agent
 - ❌ PR only adds documentation (no code changes to test)
 - ❌ PR only modifies build scripts (no functional changes)
+
+## Distinction: Code Review vs. Functional Testing
+
+**Code Review** (pr-reviewer agent):
+- Analyzes code quality, patterns, best practices
+- Reviews test coverage and correctness
+- Checks for potential bugs or issues in the code itself
+- Trigger: "review PR", "review pull request", "code review"
+
+**Functional Testing** (sandbox-agent):
+- Builds and deploys PR to device/simulator
+- Manually validates the fix works as expected
+- Reproduces issues and verifies they're resolved
+- Trigger: "test this PR", "validate PR in Sandbox", "reproduce issue"
 
 ## 🚨 Critical Requirements for Android Testing
 
