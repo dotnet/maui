@@ -67,6 +67,10 @@ namespace Microsoft.Maui.IntegrationTests
 								// Justification: This warning isn't meaningful in this test scenario.
 					"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
 							// Justification: It's OK for templates to have missing doc comments.
+					"MAUIG2024", // Details: "Binding with x:DataType from outer scope"
+							// Justification: Template test projects may have intentional test cases with this pattern.
+					"MAUIG2045", // Details: "Binding: Property not found on type"
+							// Justification: Template test projects may have intentional test cases with missing properties.
 				};
 
 				if (warningsToIgnore?.Length > 0)
