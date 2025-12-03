@@ -12,6 +12,8 @@ public class Issue32886 : TestContentPage
 		{
 			Text = "Entry Text",
 			IsCursorVisible = false,
+			IsSpellCheckEnabled = false,
+			IsTextPredictionEnabled = false,
 			AutomationId = "TestEntry",
 			ClearButtonVisibility = ClearButtonVisibility.WhileEditing
 		};

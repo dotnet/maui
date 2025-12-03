@@ -239,8 +239,8 @@ namespace Microsoft.Maui.Platform
 					if (cs is not null)
 					{
 						// Clear button is only visible when enabled, so just use the enabled state
-						int[] EnabledState = [global::Android.Resource.Attribute.StateEnabled];
-						var color = new global::Android.Graphics.Color(cs.GetColorForState(EnabledState, Colors.Black.ToPlatform()));
+						int[] enabledState = [global::Android.Resource.Attribute.StateEnabled];
+						var color = new global::Android.Graphics.Color(cs.GetColorForState(enabledState, Colors.Black.ToPlatform()));
 						clearButtonDrawable?.SetColorFilter(color, FilterMode.SrcIn);
 					}
 				}
