@@ -333,7 +333,8 @@ internal struct CompiledBindingMarkup
 
 				// TODO: do this only if it is the last part?
 				setterOptions = new SetterOptions(
-					IsWritable: property?.SetMethod != null
+					IsWritable: property is not null
+						&& property.SetMethod is not null
 						&& property.SetMethod.IsPublic()
 						&& !property.SetMethod.IsInitOnly
 						&& !property.SetMethod.IsStatic,
