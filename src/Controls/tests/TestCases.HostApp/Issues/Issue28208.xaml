@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+  x:Class="Maui.Controls.Sample.Issues.Issue28208">
+
+  <ContentPage.Resources>
+    <local:Issue28208OneWayMultiBindingValueConverter x:Key="ValueConverter"/>
+  </ContentPage.Resources>
+
+  <ScrollView>
+    <VerticalStackLayout
+      Padding="30,0"
+      Spacing="25">
+
+      <Slider x:Name="slider"
+              IsEnabled="False"
+              Maximum="100">
+        <Slider.Value>
+          <MultiBinding Converter="{StaticResource ValueConverter}"
+                        Mode="OneWay">
+            <Binding  Path="Price"/>
+          </MultiBinding>
+        </Slider.Value>
+      </Slider>
+
+      <HorizontalStackLayout>
+        <Label Text="Slider Value : "/>
+        <Label AutomationId="Sliderlabel"
+               Text="{Binding Source={x:Reference slider},Path=Value}"/>
+      </HorizontalStackLayout>
+
+      <Stepper x:Name="stepper"
+               IsEnabled="False">
+        <Stepper.Value>
+          <MultiBinding Converter="{StaticResource ValueConverter}"
+                        Mode="OneWay">
+            <Binding  Path="Price"/>
+          </MultiBinding>
+        </Stepper.Value>
+      </Stepper>
+
+      <HorizontalStackLayout>
+        <Label Text="Stepper Value : "/>
+        <Label AutomationId="StepperLabel"
+               Text="{Binding Source={x:Reference stepper},Path=Value}"/>
+      </HorizontalStackLayout>
+
+      <Button
+        Text="Increase ViewModel Price Value"
+        AutomationId="Button"
+        Clicked="OnCounterClicked"
+        HorizontalOptions="Fill"/>
+    </VerticalStackLayout>
+  </ScrollView>
+
+</ContentPage>
