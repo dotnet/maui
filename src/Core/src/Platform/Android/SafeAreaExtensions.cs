@@ -111,6 +111,19 @@ internal static class SafeAreaExtensions
 					return windowInsets;
 				}
 
+				// Get actual screen dimensions (including system UI) first
+				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+				int screenWidth = 0;
+				int screenHeight = 0;
+
+				if (windowManager?.DefaultDisplay is not null)
+				{
+					var realMetrics = new global::Android.Util.DisplayMetrics();
+					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
+					screenWidth = realMetrics.WidthPixels;
+					screenHeight = realMetrics.HeightPixels;
+				}
+
 				// Get view's position on screen
 				var viewLocation = new int[2];
 				view.GetLocationOnScreen(viewLocation);
@@ -119,13 +132,30 @@ internal static class SafeAreaExtensions
 				var viewRight = viewLeft + viewWidth;
 				var viewBottom = viewTop + viewHeight;
 
+				// Detect invalid view position (extends significantly beyond screen bounds)
+				// This happens during navigation when GetLocationOnScreen() is called before proper layout
+				bool hasInvalidPosition = screenWidth > 0 && screenHeight > 0 &&
+					(viewLeft > screenWidth || viewTop > screenHeight ||
+					 viewRight < 0 || viewBottom < 0 ||
+					 (viewRight > screenWidth + 100 && viewWidth <= screenWidth) ||
+					 (viewBottom > screenHeight + 100 && viewHeight <= screenHeight));
+
+				if (hasInvalidPosition)
+				{
+					// Assume view is at top-left corner if position is invalid
+					viewLeft = 0;
+					viewTop = 0;
+					viewRight = viewWidth;
+					viewBottom = viewHeight;
+				}
+
 				// Adjust for view's position relative to parent (including margins) to calculate
 				// safe area insets relative to the parent's position, not the view's visual position.
 				// This ensures margins and safe area insets are additive rather than overlapping.
 				// For example: 20px margin + 30px safe area = 50px total offset
 				// We only take the margins into account if the Width and Height are set
 				// If the Width and Height aren't set it means the layout pass hasn't happen yet
-				if (view.Width > 0 && view.Height > 0)
+				if (view.Width > 0 && view.Height > 0 && !hasInvalidPosition)
 				{
 					viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
 					viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
@@ -133,15 +163,8 @@ internal static class SafeAreaExtensions
 					viewBottom += (int)context.ToPixels(margins.Bottom);
 				}
 
-				// Get actual screen dimensions (including system UI)
-				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
-				if (windowManager?.DefaultDisplay is not null)
+				if (screenWidth > 0 && screenHeight > 0)
 				{
-					var realMetrics = new global::Android.Util.DisplayMetrics();
-					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
-					var screenWidth = realMetrics.WidthPixels;
-					var screenHeight = realMetrics.HeightPixels;
-
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
@@ -154,7 +177,9 @@ internal static class SafeAreaExtensions
 					else
 					{
 						if (viewHeight > 0 || hasTrackedViews)
+						{
 							top = 0;
+						}
 					}
 
 					// Bottom: how much the view extends into the bottom safe area
@@ -169,7 +194,9 @@ internal static class SafeAreaExtensions
 						// if the view height is zero because it hasn't done the first pass
 						// and we don't have any tracked views yet then we will apply the bottom inset
 						if (viewHeight > 0 || hasTrackedViews)
+						{
 							bottom = 0;
+						}
 					}
 
 					// Left: how much the view extends into the left safe area
@@ -181,7 +208,9 @@ internal static class SafeAreaExtensions
 					else
 					{
 						if (viewWidth > 0 || hasTrackedViews)
+						{
 							left = 0;
+						}
 					}
 
 					// Right: how much the view extends into the right safe area
@@ -194,7 +223,9 @@ internal static class SafeAreaExtensions
 					else
 					{
 						if (viewWidth > 0 || hasTrackedViews)
+						{
 							right = 0;
+						}
 					}
 				}
 
