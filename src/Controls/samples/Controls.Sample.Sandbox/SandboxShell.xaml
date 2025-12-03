@@ -4,8 +4,8 @@
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="shell">
-    <ShellContent Route="main"
+    <ShellContent Route="MainPage"
                   ContentTemplate="{DataTemplate local:MainPage}"/>
-    <ShellContent Route="signout"
+    <ShellContent Route="SignOutPage"
                   ContentTemplate="{DataTemplate local:SignOutPage}"/>
 </Shell>
