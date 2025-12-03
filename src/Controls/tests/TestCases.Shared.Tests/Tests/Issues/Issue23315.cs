@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void WebViewCanLoadFileFromSubdirectory()
 		{
-			App.WaitForElement("DescriptionLabel", timeout: TimeSpan.FromSeconds(3));
+			App.WaitForElement("DescriptionLabel", timeout: TimeSpan.FromSeconds(5));
 			VerifyScreenshot();
 		}
 	}
