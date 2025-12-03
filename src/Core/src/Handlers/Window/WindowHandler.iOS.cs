@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 			_frameObserverProxy.Connect(VirtualView, platformView);
 
 			// For newer Mac Catalyst versions, we want to wait until we get effective window dimensions from the platform.
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				_windowProxy.Connect(VirtualView, platformView);
 			}
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				_windowProxy.Disconnect();
 				_frameObserverProxy.Disconnect(platformView);
@@ -136,13 +136,16 @@ namespace Microsoft.Maui.Handlers
 		class WindowProxy
 		{
 			WeakReference<IWindow>? _virtualView;
+			WeakReference<UIWindow>? _platformView;
 
 			IWindow? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+			UIWindow? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var p) ? p : null;
 			IDisposable? _effectiveGeometryObserver;
 
 			public void Connect(IWindow virtualView, UIWindow platformView)
 			{
 				_virtualView = new(virtualView);
+				_platformView = new(platformView);
 
 				// https://developer.apple.com/documentation/uikit/uiwindowscene/effectivegeometry?language=objc#Discussion mentions:
 				// > This property is key-value observing (KVO) compliant. Observing effectiveGeometry is the recommended way
@@ -160,14 +163,22 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (obj is not null && VirtualView is IWindow virtualView && obj.NewValue is UIWindowSceneGeometry newGeometry)
 				{
-					var newRectangle = newGeometry.SystemFrame.ToRectangle();
-
-					if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height))
+					if (OperatingSystem.IsMacCatalyst())
 					{
-						return;
-					}
+						var newRectangle = newGeometry.SystemFrame.ToRectangle();
 
-					virtualView.FrameChanged(newRectangle);
+						if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height))
+						{
+							return;
+						}
+
+						virtualView.FrameChanged(newRectangle);
+					}
+					// Only update frame when orientation actually changes, not for other display events.
+					else if (obj.OldValue is UIWindowSceneGeometry oldGeometry && oldGeometry.InterfaceOrientation != newGeometry.InterfaceOrientation && PlatformView is UIWindow platformView)
+					{
+						virtualView.FrameChanged(platformView.Bounds.ToRectangle());
+					}
 				}
 			}
 		}
