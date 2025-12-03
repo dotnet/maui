@@ -37,7 +37,7 @@ if (-not (Test-Path $InputFile)) {
     exit 1
 }
 
-$uiCategories = Get-Content $InputFile | Where-Object { $_.Trim() -ne "" }
+$uiCategories = @(Get-Content $InputFile | Where-Object { $_.Trim() -ne "" })
 
 if ($uiCategories.Count -eq 0) {
     Write-Host "No UI test categories found - no device tests needed" -ForegroundColor Yellow
