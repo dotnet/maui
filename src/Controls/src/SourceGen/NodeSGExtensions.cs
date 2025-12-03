@@ -80,10 +80,10 @@ static class NodeSGExtensions
 			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Shape"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 		};
 
-	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
+	public static Dictionary<ITypeSymbol, IKnownMarkupValueProvider> GetKnownValueProviders(SourceGenContext context)
 		=> context.knownSGValueProviders ??= new(SymbolEqualityComparer.Default)
 	{
-		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
 	};
 
 
@@ -92,10 +92,13 @@ static class NodeSGExtensions
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
 		=> context.knownSGEarlyMarkupExtensions ??= new(SymbolEqualityComparer.Default)
 	{
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.NullExtension")!, KnownMarkups.ProvideValueForNullExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DataTemplateExtension")!, KnownMarkups.ProvideValueForDataTemplateExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RelativeSourceExtension")!, KnownMarkups.ProvideValueForRelativeSourceExtension},
 	};
 
 	// These markup extensions can only provide values late once the properties have their final values
@@ -167,8 +170,9 @@ static class NodeSGExtensions
 		if (converter is not null && stringValue is not null)
 			return true;
 
-		if (toType.NullableAnnotation == NullableAnnotation.Annotated
-			&& toType.SpecialType == SpecialType.None)
+		if (   toType.NullableAnnotation == NullableAnnotation.Annotated
+			&& toType.SpecialType == SpecialType.None
+			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
 		{
 			toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		}
@@ -271,8 +275,9 @@ static class NodeSGExtensions
 			=> context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-		if (toType.NullableAnnotation == NullableAnnotation.Annotated
-			&& toType.SpecialType == SpecialType.None)
+		if (   toType.NullableAnnotation == NullableAnnotation.Annotated
+			&& toType.SpecialType == SpecialType.None
+			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
 		{
 			toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		}
@@ -354,7 +359,17 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
+			{
+				// Handle special values that don't need a suffix
+				if (float.IsNaN(floatValue))
+					return "float.NaN";
+				if (float.IsPositiveInfinity(floatValue))
+					return "float.PositiveInfinity";
+				if (float.IsNegativeInfinity(floatValue))
+					return "float.NegativeInfinity";
+				// Regular values need the F suffix
 				return $"{SymbolDisplay.FormatPrimitive(floatValue, true, false)}F";
+			}
 			else
 				reportDiagnostic();
 		}
@@ -363,7 +378,17 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
+			{
+				// Handle special values that don't need a suffix
+				if (double.IsNaN(doubleValue))
+					return "double.NaN";
+				if (double.IsPositiveInfinity(doubleValue))
+					return "double.PositiveInfinity";
+				if (double.IsNegativeInfinity(doubleValue))
+					return "double.NegativeInfinity";
+				// Regular values need the D suffix
 				return $"{SymbolDisplay.FormatPrimitive(doubleValue, true, false)}D";
+			}
 			else
 				reportDiagnostic();
 		}
@@ -424,7 +449,7 @@ static class NodeSGExtensions
 				reportDiagnostic();
 		}
 		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
-			return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
+			return $"new global::System.Uri(@\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
 
 		//default
 		return SymbolDisplay.FormatLiteral(valueString, true);
@@ -497,6 +522,9 @@ static class NodeSGExtensions
 	}
 
 	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context)
+		=> TryProvideValue(node, writer, context, null);
+
+	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue)
 	{
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
@@ -505,7 +533,7 @@ static class NodeSGExtensions
 			return false;
 
 		if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
-			&& provideValue.Invoke(node, writer, context, null, out var returnType0, out var value))
+			&& provideValue.Invoke(node, writer, context, getNodeValue, out var returnType0, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -515,8 +543,8 @@ static class NodeSGExtensions
 			return true;
 		}
 
-		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, writer, context, null, out returnType0, out value))
+		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
+			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");

@@ -89,7 +89,7 @@ dotnet cake --target=VSCode
 
 ```dotnetcli
 dotnet tool restore
-dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.slnx" --target=VS
+dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.sln" --target=VS
 ```
 
 #### Pack
@@ -98,7 +98,7 @@ dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.slnx" --target=VS
 
 ```dotnetcli
 dotnet tool restore
-dotnet cake --target=VS --pack --sln="<download_directory>\MauiApp2\MauiApp2.slnx"
+dotnet cake --target=VS --pack --sln="<download_directory>\MauiApp2\MauiApp2.sln"
 ```
 
 Create a new .NET MAUI app using your new packs
@@ -120,7 +120,7 @@ dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
 .\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks.slnf
 # Builds the rest of Maui
-.\bin\dotnet\dotnet build Microsoft.Maui.slnx
+.\bin\dotnet\dotnet build Microsoft.Maui.sln
 # Launch Visual Studio
 dotnet cake --target=VS
 ```
@@ -170,7 +170,7 @@ Once MSBuild starts, it will print the following
 Waiting for debugger to attach (dotnet PID xxxx).  Press enter to continue...
 ```
 
-You need to copy the PID value so we can use this in the IDE. For Visual Studio, you can use the `Attach to Process` menu option while you have the Microsoft.Maui.slnx solution open. For VSCode, open the workspace, then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
+You need to copy the PID value so we can use this in the IDE. For Visual Studio, you can use the `Attach to Process` menu option while you have the Microsoft.Maui.sln solution open. For VSCode, open the workspace, then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
 
 Once connected, go back to your command prompt and press ENTER so that the MSBuild process can continue.
 

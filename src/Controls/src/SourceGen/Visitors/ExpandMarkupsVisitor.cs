@@ -71,7 +71,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		if (expression.StartsWith("{}", StringComparison.Ordinal))
 			return new ValueNode(expression.Substring(2), null, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 
-		if (expression[expression.Length - 1] != '}')
+		if (expression.Length == 0 || expression[expression.Length - 1] != '}')
 		{
 			//FIXME fix location
 			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;

@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\Microsoft.Maui.slnx",
+    "path": "..\\Microsoft.Maui.sln",
     "projects": [
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\Compatibility\\Core\\src\\Compatibility.csproj",

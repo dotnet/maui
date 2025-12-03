@@ -6,10 +6,6 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
-**🔄 IMPORTANT: Synchronization with AGENTS.md**
-
-When updating this file, you MUST also update `AGENTS.md` (in repository root) to ensure both instruction files remain synchronized. AGENTS.md provides universal guidance for all AI coding assistants, while this file is specifically for GitHub Copilot.
-
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
@@ -157,7 +153,7 @@ UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesti
 Before committing any changes, format the codebase using the following command to ensure consistent code style:
 
 ```bash
-dotnet format Microsoft.Maui.slnx --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
 This command:
@@ -243,6 +239,37 @@ When working with public API changes, proper handling of PublicAPI.Unshipped.txt
 
 **Note:** The main branch is always pinned to the latest stable release of the .NET SDK, regardless of whether it's a long-term support (LTS) release. Ensure you have that version installed to build the codebase.
 
+### Git Workflow (Copilot CLI Rules)
+
+**🚨 CRITICAL Git Rules for Copilot CLI:**
+
+1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
+
+2. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+
+3. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
+
+**Safe Git Workflow:**
+```bash
+# Create a feature branch (NEVER work directly on main)
+git checkout -b feature/issue-12345
+
+# Make commits normally
+git add .
+git commit -m "Fix: Description of the change"
+
+# Push to remote (for new branches)
+git push -u origin feature/issue-12345
+
+# For subsequent pushes on the same branch
+git push
+```
+
+**When asked to update an existing PR:**
+1. Make the requested changes
+2. Stage and commit the changes
+3. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+
 ### Documentation
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
@@ -275,9 +302,9 @@ dotnet build ./Microsoft.Maui.BuildTasks.slnf
 **Issue: "Dependency version conflicts"**
 ```bash
 # Solution: Full clean and restore
-dotnet clean Microsoft.Maui.slnx
+dotnet clean Microsoft.Maui.sln
 rm -rf bin/ obj/
-dotnet restore Microsoft.Maui.slnx --force
+dotnet restore Microsoft.Maui.sln --force
 ```
 
 **Issue: "Android SDK not found"**
@@ -290,7 +317,7 @@ android # Opens Android SDK Manager
 **Issue: "PublicAPI analyzer failures"**
 ```bash
 # Solution: Use format analyzers first
-dotnet format analyzers Microsoft.Maui.slnx
+dotnet format analyzers Microsoft.Maui.sln
 # If still failing, check build output for required API entries
 ```
 
@@ -311,15 +338,41 @@ dotnet format analyzers Microsoft.Maui.slnx
 - Verify Visual Studio workloads include .NET MAUI development
 - Check for missing NuGet packages: `dotnet restore --force`
 
+## Custom Agents
+
+The repository includes specialized custom agents for specific tasks. These agents are available to GitHub Copilot and can be invoked for their respective specializations:
+
+### Available Custom Agents
+
+1. **issue-resolver** - Specialized agent for investigating and resolving community-reported .NET MAUI issues through hands-on testing and implementation
+   - Use when: Working on bug fixes from GitHub issues
+   - Capabilities: Issue reproduction, root cause analysis, fix implementation, testing
+
+2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
+   - Use when: Reviewing PRs or validating your own changes
+   - Capabilities: Code quality analysis, best practices validation, test coverage review
+
+3. **sandbox-agent** - Specialized agent for working with the .NET MAUI Sandbox app for testing, validation, and experimentation
+   - Use when: Need to test changes in isolation or create reproduction cases
+   - Capabilities: Sandbox app setup, test case creation, behavior validation
+
+4. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
+   - Use when: Creating new UI tests or updating existing ones
+   - Capabilities: UI test authoring, Appium WebDriver usage, NUnit test patterns
+
+### Using Custom Agents
+
+Custom agents can be invoked by GitHub Copilot when appropriate for the task at hand. They have deep knowledge of their specific domains and follow all repository conventions and best practices.
+
 ## Additional Resources
 
 - [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
 - [UI Testing Guide](../docs/UITesting-Guide.md)
 - [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
 - [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
-- [SafeArea Testing Guide](/.github/instructions/safearea-testing.instructions.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
-- [Instrumentation Guide](/.github/instructions/instrumentation.instructions.md) - Patterns for instrumenting MAUI code for debugging and testing
-- [Appium Control Scripts](/.github/instructions/appium-control.instructions.md) - Create standalone scripts for manual Appium-based debugging and exploration
+- [SafeArea Testing Guide](/.github/instructions/safearea-testing.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
+- [Instrumentation Guide](/.github/instructions/instrumentation.md) - Patterns for instrumenting MAUI code for debugging and testing
+- [Appium Control Scripts](/.github/instructions/appium-control.md) - Create standalone scripts for manual Appium-based debugging and exploration
 - [Development Guide](/.github/DEVELOPMENT.md)
 - [Development Tips](/docs/DevelopmentTips.md)
 - [Contributing Guidelines](/.github/CONTRIBUTING.md)

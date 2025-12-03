@@ -9,6 +9,7 @@ parameters:
   skipProvisioning: true
   configuration: "Release"
   testFilter: ''
+  headless: true
   runtimeVariant: 'Mono' #Mono, CoreCLR, NativeAOT
 
 steps:
