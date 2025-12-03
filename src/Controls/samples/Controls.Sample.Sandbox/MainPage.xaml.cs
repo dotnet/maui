@@ -10,12 +10,8 @@ public partial class MainPage : ContentPage
 
 	private async void OnGoToSignOutClicked(object sender, EventArgs e)
 	{
-		// await MainThread.InvokeOnMainThreadAsync(async () =>
-		// {
-		//     await Shell.Current.GoToAsync("//signout", true);
-		// });
 		System.Diagnostics.Debug.WriteLine("[SafeArea] Navigation to SignOut page using shell");
-		await Shell.Current.GoToAsync("//signout", false);
+		await Shell.Current.GoToAsync("//SignOutPage", false);
 
 	}
 }
