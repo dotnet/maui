@@ -5,7 +5,80 @@ applyTo: "src/Controls/samples/Controls.Sample.Sandbox/**"
 
 # Sandbox Testing Guide
 
-Comprehensive guide for working with the .NET MAUI Sandbox app for manual testing, PR validation, issue reproduction, and experimentation.
+Comprehensive guide for working with the .NET MAUI Sandbox app for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
+
+## When This Applies
+
+This guide applies when you:
+- Work with files in `src/Controls/samples/Controls.Sample.Sandbox/`
+- User asks to "test this PR" or "validate PR #XXXXX" in Sandbox
+- User asks to "reproduce issue #XXXXX" in Sandbox
+- User wants to deploy to iOS/Android for manual testing
+- User mentions Sandbox app by name in testing context
+
+## 🚨 CRITICAL VALIDATION RULES - READ FIRST
+
+**YOU MUST FOLLOW THESE RULES WHEN RUNNING SANDBOX TESTS:**
+
+### What You NEVER Do (Absolute Rules)
+
+- ❌ **NEVER** assume test completion without validation
+- ❌ **NEVER** claim success based on HTTP 200 responses alone (element found ≠ test completed)
+- ❌ **NEVER** skip the mandatory validation checklist
+- ❌ **NEVER** proceed without verifying device logs show expected behavior
+- ❌ **NEVER** assume Appium connection means test finished
+- ❌ **NEVER** claim button was tapped without checking device logs
+
+### What You ALWAYS Do (Mandatory Steps)
+
+- ✅ **ALWAYS** save full output to file for analysis
+- ✅ **ALWAYS** check for errors/exceptions FIRST before claiming success
+- ✅ **ALWAYS** verify "Test completed" marker appears in output
+- ✅ **ALWAYS** verify expected test actions in logs (Tapping, Screenshot, etc.)
+- ✅ **ALWAYS** check device logs for Console.WriteLine markers
+- ✅ **ALWAYS** verify artifacts exist (screenshots, if test captures them)
+
+### Rule 1: NEVER ASSUME TEST COMPLETION
+- ❌ **DO NOT** assume the test completed successfully just because Appium connected
+- ❌ **DO NOT** assume success based on HTTP 200 responses (element found ≠ test completed)
+- ✅ **DO** verify test completion by checking for completion markers in output
+- ✅ **DO** search for "Test completed", "═══════", or final summary messages
+
+### Rule 2: ALWAYS VALIDATE TEST OUTPUT
+After running BuildAndRunSandbox.ps1, you MUST:
+1. **Save full output to file**: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios > CustomAgentLogsTmp/Sandbox/build-run-output.log 2>&1`
+2. **Check for errors FIRST**: `grep -E "ERROR|Exception|failed" CustomAgentLogsTmp/Sandbox/build-run-output.log`
+3. **Verify completion markers**: `grep "Test completed\|══════" CustomAgentLogsTmp/Sandbox/build-run-output.log`
+4. **Check for expected actions**: `grep "Tapping\|Screenshot saved\|switched to" CustomAgentLogsTmp/Sandbox/build-run-output.log`
+
+### Rule 3: VALIDATE DEVICE LOGS FOR EXPECTED BEHAVIOR
+- ✅ **DO** check device logs confirm your expected test actions happened
+- ✅ **DO** grep for your Console.WriteLine markers (e.g., "SANDBOX.*CLICKED")
+- ❌ **DO NOT** claim the test worked without verifying device logs show the action
+
+### Rule 4: SYSTEMATIC VALIDATION CHECKLIST
+After EVERY test run, verify ALL of these:
+
+```bash
+# 1. Check for errors/exceptions
+grep -iE "error|exception|failed" CustomAgentLogsTmp/Sandbox/build-run-output.log | head -20
+
+# 2. Verify test completed
+grep "Test completed" CustomAgentLogsTmp/Sandbox/build-run-output.log
+
+# 3. Check screenshots were saved (if test captures them)
+ls -lh CustomAgentLogsTmp/Sandbox/*.png
+
+# 4. Verify expected test actions in device logs
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/ios-device.log  # or android-device.log
+
+# 5. Check exit code
+echo $?  # Should be 0 for success
+```
+
+**If ANY of these checks fail, the test DID NOT complete successfully. Investigate and fix before proceeding.**
+
+---
 
 ## Purpose
 
@@ -232,7 +305,56 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 - ✅ Manual testing and debugging
 - ✅ PR validation with custom UI scenarios
 
-**What to validate:**
+**🚨 CRITICAL - MANDATORY POST-TEST VALIDATION:**
+
+After BuildAndRunSandbox.ps1 completes, you **MUST** run these validation commands:
+
+```bash
+# Step 1: Save full output to file for analysis
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios > CustomAgentLogsTmp/Sandbox/build-run-output.log 2>&1
+
+# Step 2: Check for errors/exceptions FIRST (do this before anything else)
+grep -iE "error|exception|failed" CustomAgentLogsTmp/Sandbox/build-run-output.log | head -20
+
+# Step 3: Verify test completion marker
+grep "Test completed" CustomAgentLogsTmp/Sandbox/build-run-output.log
+
+# Step 4: Verify expected test actions in output
+grep -E "Found|Tapping|Screenshot saved|switched" CustomAgentLogsTmp/Sandbox/build-run-output.log
+
+# Step 5: Verify device logs show expected behavior
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/ios-device.log  # or android-device.log
+
+# Step 6: Check if screenshots were created (if test captures them)
+ls -lh CustomAgentLogsTmp/Sandbox/*.png
+```
+
+**Validation Checklist - ALL must pass:**
+- ✅ No errors/exceptions in test output
+- ✅ "Test completed" message appears
+- ✅ Expected test actions appear in output (Tapping, Screenshot, etc.)
+- ✅ Device logs show your SANDBOX markers for button clicks/actions
+- ✅ Screenshots exist (if test captures them)
+- ✅ Exit code is 0 (check: `echo $?` after script)
+
+**If ANY validation fails:**
+1. ❌ **DO NOT** claim test success
+2. ❌ **DO NOT** proceed to summary
+3. ✅ **DO** investigate the specific failure
+4. ✅ **DO** fix the issue (test script, path bug, etc.)
+5. ✅ **DO** rerun and revalidate
+
+**What Appium HTTP 200 means:**
+- ✅ Element was found on the screen
+- ❌ Does NOT mean test completed
+- ❌ Does NOT mean button was tapped
+- ❌ Does NOT mean expected behavior occurred
+
+**Always validate the FULL test execution, not just element finding.**
+
+---
+
+**What to validate (after passing above checklist):**
 - ✅ App launches successfully
 - ✅ **CRITICAL**: Verify app is actually running before proceeding:
   - Check device logs show MainPage initialization
@@ -251,9 +373,10 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS
 5. See [Element Not Found Troubleshooting](#element-not-found-on-first-screen) section
 
 **What to document in your summary:**
+- ✅ Validation checklist results (all passed)
 - ✅ Which test scenario you created (from issue/UITest/custom)
 - ✅ Specific actions your test performs
-- ✅ What behavior you observed
+- ✅ What behavior you observed (from device logs and test output)
 - ✅ Whether fix works as expected
 - ✅ Any warnings, errors, or unexpected behavior
 

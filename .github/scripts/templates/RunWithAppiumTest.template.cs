@@ -184,9 +184,10 @@ try
         
         // Take screenshot before test (for debugging/documentation only)
         // NOTE: NEVER use screenshots for validation - always use Appium element queries
+        // NOTE: Script runs FROM CustomAgentLogsTmp/Sandbox/ so use relative paths
         var screenshotBefore = driver.GetScreenshot();
-        screenshotBefore.SaveAsFile("CustomAgentLogsTmp/Sandbox/issue_XXXXX_before.png");
-        Console.WriteLine("📸 Screenshot saved: CustomAgentLogsTmp/Sandbox/issue_XXXXX_before.png");
+        screenshotBefore.SaveAsFile("issue_XXXXX_before.png");
+        Console.WriteLine("📸 Screenshot saved: issue_XXXXX_before.png");
         
         // Perform action
         Console.WriteLine("\n🔘 Tapping button...");
@@ -224,9 +225,10 @@ try
         
         // Take screenshot after test (for debugging/documentation only)
         // NOTE: NEVER use screenshots for validation - always use Appium element queries
+        // NOTE: Script runs FROM CustomAgentLogsTmp/Sandbox/ so use relative paths
         var screenshotAfter = driver.GetScreenshot();
-        screenshotAfter.SaveAsFile("CustomAgentLogsTmp/Sandbox/issue_XXXXX_after.png");
-        Console.WriteLine("📸 Screenshot saved: CustomAgentLogsTmp/Sandbox/issue_XXXXX_after.png");
+        screenshotAfter.SaveAsFile("issue_XXXXX_after.png");
+        Console.WriteLine("📸 Screenshot saved: issue_XXXXX_after.png");
         
         // Check if UI is visible (not blank)
         var pageSource = driver.PageSource;
