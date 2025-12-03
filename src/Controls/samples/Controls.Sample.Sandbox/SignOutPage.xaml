@@ -3,12 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         x:Class="Maui.Controls.Sample.SignOutPage"
         SafeAreaEdges="Container"
-        Background="Blue"
         Shell.NavBarIsVisible="False">
 
         <VerticalStackLayout Padding="20"
-                             Spacing="20"
-                             Background="Red">
+                             Spacing="20">
                 <Label Text="SignOut / Session Expiry Page"
                        FontSize="24"/>
                 <Button Text="Back to Main"
