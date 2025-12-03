@@ -51,7 +51,7 @@ stages:
             name: AnalyzePR
             displayName: Analyze PR Changes
             env:
-              GITHUB_TOKEN: $(GH_TOKEN)
+              GITHUB_TOKEN: $(GitHubToken)
             inputs:
               targetType: 'filePath'
               filePath: '$(System.DefaultWorkingDirectory)/eng/scripts/analyze-pr-changes.ps1'
