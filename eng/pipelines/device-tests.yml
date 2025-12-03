@@ -107,7 +107,7 @@ parameters:
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net10.0
+  - tfm: net11.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:

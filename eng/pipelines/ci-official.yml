@@ -29,6 +29,7 @@ schedules:
     include:
     - main
     - net10.0
+    - net11.0
     - inflight/current
   always: true
 
