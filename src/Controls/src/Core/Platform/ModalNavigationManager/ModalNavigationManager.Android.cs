@@ -198,14 +198,14 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				// Non-animated modals need to wait for presentation completion to prevent race conditions
-				TaskCompletionSource presentationCompletionSource = new();
+				TaskCompletionSource<bool> presentationCompletionSource = new();
 
 				dialogFragment.PresentationCompleted += OnPresentationCompleted;
 
 				void OnPresentationCompleted(object? sender, EventArgs e)
 				{
 					dialogFragment.PresentationCompleted -= OnPresentationCompleted;
-					presentationCompletionSource.SetResult();
+					presentationCompletionSource.SetResult(true);
 				}
 
 				await presentationCompletionSource.Task;
@@ -377,6 +377,11 @@ namespace Microsoft.Maui.Controls.Platform
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
+			}
+
+			public override void OnResume()
+			{
+				base.OnResume();
 
 				// Signal that the modal is fully presented and ready
 				FirePresentationCompleted();
