@@ -109,7 +109,6 @@ $deviceTestCategories = @{
     "InputTransparent" = "View"
     "IsEnabled" = "View"
     "IsVisible" = "View"
-    "Lifecycle" = "Lifecycle"
     "Shadow" = "View"
     "ViewBaseTests" = "View"
     "Visual" = "VisualElement"
