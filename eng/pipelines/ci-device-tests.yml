@@ -98,13 +98,15 @@ stages:
           skipProvisioning: true
           skipXcode: false
           skipSimulatorSetup: false
-  # Just use the old way for Windows Device Tests
-  - template: common/device-tests.yml
+  # Use intelligent device tests (with PR analysis for selective execution)
+  - template: common/device-tests-intelligent.yml
     parameters:
       windowsPool: ${{ parameters.windowsPool }}
       targetFrameworkVersion: ${{ targetFrameworkVersion }}
       windowsVersions: [ 'packaged', 'unpackaged' ]
       skipProvisioning: true
+      platforms:
+      - windows
       projects:
       - name: essentials
         desc: Essentials
@@ -131,5 +133,3 @@ stages:
         windowsConfiguration: 'Debug'
         windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
         windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
-      platforms:
-      - windows

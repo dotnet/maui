@@ -1,0 +1,252 @@
+parameters:
+  androidPool: {}
+  iosPool: {}
+  catalystPool: {}
+  windowsPool: {}
+  androidApiLevels: [ 33 ]
+  iosVersions: [ 'latest' ]
+  iosDeviceVersions: [ '15' ]
+  catalystVersions: [ 'latest' ]
+  provisionatorChannel: 'latest'
+  skipProvisioning: true
+  artifactName: 'nuget'
+  artifactItemPattern: '**/*.nupkg'
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+  androidConfiguration: 'debug'
+  useArtifacts: false
+  targetFrameworkVersion:
+    tfm: ''
+    dependsOn: ''
+  projects:
+  - name: name
+    desc: Human Description
+    android: /optional/path/to/android.csproj
+    ios: /optional/path/to/ios.csproj
+    catalyst: /optional/path/to/catalyst.csproj
+  platforms:
+  - android
+  - ios
+  - catalyst
+  - windows
+
+stages:
+
+# NEW: Analyze PR changes for intelligent test selection
+- ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+  - stage: analyze_pr_changes_device_tests
+    displayName: Analyze PR for Device Tests
+    dependsOn: []
+    jobs:
+      - job: analyze_changes
+        displayName: Analyze Changed Files
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          # Minimal setup - just need PowerShell and GitHub CLI
+          - checkout: self
+            fetchDepth: 1
+          
+          # Analyze PR changes and determine UI test categories
+          - task: PowerShell@2
+            name: AnalyzePR
+            displayName: Analyze PR Changes
+            env:
+              GITHUB_TOKEN: $(GH_TOKEN)
+            inputs:
+              targetType: 'filePath'
+              filePath: '$(System.DefaultWorkingDirectory)/eng/scripts/analyze-pr-changes.ps1'
+              arguments: '-OutputFile "$(System.DefaultWorkingDirectory)/test-categories.txt"'
+              pwsh: true
+              errorActionPreference: 'stop'
+          
+          # Map UI test categories to device test categories
+          - task: PowerShell@2
+            name: MapCategories
+            displayName: Map to Device Test Categories
+            inputs:
+              targetType: 'filePath'
+              filePath: '$(System.DefaultWorkingDirectory)/eng/scripts/analyze-device-test-categories.ps1'
+              arguments: '-InputFile "$(System.DefaultWorkingDirectory)/test-categories.txt" -OutputFile "$(System.DefaultWorkingDirectory)/device-test-categories.txt"'
+              pwsh: true
+              errorActionPreference: 'stop'
+          
+          # Set output variables for device test execution
+          - task: PowerShell@2
+            name: SetOutputs
+            displayName: Set Pipeline Outputs
+            inputs:
+              targetType: 'inline'
+              script: |
+                $categories = Get-Content "$(System.DefaultWorkingDirectory)/device-test-categories.txt" | Where-Object { $_.Trim() -ne "" }
+                
+                if ($categories.Count -eq 0) {
+                  # No device tests needed
+                  Write-Host "##vso[task.setVariable variable=hasTests;isOutput=true]false"
+                  Write-Host "##vso[task.setVariable variable=testFilter;isOutput=true]"
+                  Write-Host "No device tests needed"
+                }
+                else {
+                  # Join categories with comma for test filter
+                  $testFilter = $categories -join ","
+                  Write-Host "##vso[task.setVariable variable=hasTests;isOutput=true]true"
+                  Write-Host "##vso[task.setVariable variable=testFilter;isOutput=true]$testFilter"
+                  Write-Host "Device test filter: $testFilter"
+                }
+              pwsh: true
+
+# Device test stages per platform
+- ${{ each platform in parameters.platforms }}:
+  - stage: ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} ${{ platform }}
+    ${{ if eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn: 
+        - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+          - analyze_pr_changes_device_tests
+    ${{ else }}:
+      dependsOn:
+      - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - analyze_pr_changes_device_tests
+    # Skip if analysis determined no tests needed (for PR builds)
+    condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), ne(stageDependencies.analyze_pr_changes_device_tests.analyze_changes.outputs['SetOutputs.hasTests'], 'false')))
+    jobs:
+
+    - ${{ if eq(platform, 'android') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              buildAndTest: false
+              platform: android
+              timeoutInMinutes: 60
+              pool: ${{ parameters.androidPool }}
+              versions: ${{ parameters.androidApiLevels }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.android }}
+                versionsExclude: ${{ project.androidApiLevelsExclude }}
+                configuration: ${{ project.androidConfiguration }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              # Pass test filter from analysis (for PR builds)
+              ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                cakeArgs: '--test-filter="$(stageDependencies.analyze_pr_changes_device_tests.analyze_changes.outputs[''SetOutputs.testFilter''])"'
+
+    - ${{ if eq(platform, 'android') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              buildAndTest: false
+              platform: android
+              timeoutInMinutes: 60
+              pool: ${{ parameters.androidPool }}
+              versions: ${{ parameters.androidApiLevels }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.android }}
+                versionsExclude: ${{ project.androidApiLevelsExclude }}
+                configuration: ${{ project.androidConfiguration }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              useCoreClr: true
+              # Pass test filter from analysis (for PR builds)
+              ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                cakeArgs: '--test-filter="$(stageDependencies.analyze_pr_changes_device_tests.analyze_changes.outputs[''SetOutputs.testFilter''])"'
+
+    - ${{ if eq(platform, 'ios') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              buildAndTest: false
+              platform: ios
+              timeoutInMinutes: 60
+              pool: ${{ parameters.iosPool }}
+              versions: ${{ parameters.iosVersions }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.ios }}
+                versionsExclude: ${{ project.iosVersionsExclude }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              # Pass test filter from analysis (for PR builds)
+              ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                cakeArgs: '--test-filter="$(stageDependencies.analyze_pr_changes_device_tests.analyze_changes.outputs[''SetOutputs.testFilter''])"'
+
+    - ${{ if eq(platform, 'catalyst') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.catalyst, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              buildAndTest: false
+              platform: catalyst
+              timeoutInMinutes: 60
+              pool: ${{ parameters.catalystPool }}
+              versions: ${{ parameters.catalystVersions }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.catalyst }}
+                versionsExclude: ${{ project.catalystVersionsExclude }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              # Pass test filter from analysis (for PR builds)
+              ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                cakeArgs: '--test-filter="$(stageDependencies.analyze_pr_changes_device_tests.analyze_changes.outputs[''SetOutputs.testFilter''])"'
+
+    - ${{ if eq(platform, 'windows') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.windows, '') }}:
+          - ${{ each version in parameters.windowsVersions }}:
+            - ${{ if not(containsValue(project.windowsVersionsExclude, version)) }}:
+              - job: windows_device_tests_${{ project.name }}_${{ version }}
+                timeoutInMinutes: 60
+                workspace:
+                  clean: all
+                displayName: Run windows ${{ project.desc }} ${{ version }}
+                pool: ${{ parameters.windowsPool }}
+                steps:
+                - template: device-tests-steps.yml
+                  parameters:
+                    buildType: buildAndTest
+                    platform: windows
+                    path: ${{ project.windows }}
+                    device: ${{ version }}
+                    apiVersion: 10.0.19041.0
+                    targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
+                    packageid: ${{ project.windowsPackageId }}
+                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    artifactName: ${{ parameters.artifactName }}
+                    artifactItemPattern: ${{ parameters.artifactItemPattern }}
+                    checkoutDirectory: ${{ parameters.checkoutDirectory }}
+                    useArtifacts: ${{ parameters.useArtifacts }}
+                    poolName: ${{ parameters.windowsPool.name }}
+                    deviceTestConfiguration: ${{ project.windowsConfiguration }}
+                    skipProvisioning: ${{ parameters.skipProvisioning }}
+                    # Pass test filter from analysis (for PR builds)
+                    ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                      cakeArgs: '--test-filter="$(stageDependencies.analyze_pr_changes_device_tests.analyze_changes.outputs[''SetOutputs.testFilter''])"'
