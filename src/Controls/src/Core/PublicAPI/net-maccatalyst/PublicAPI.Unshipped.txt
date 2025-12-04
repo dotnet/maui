@@ -12,3 +12,4 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>.TypedBinding(System.Func<TSource, (TProperty value, bool success)>! getter, System.Action<TSource, TProperty>? setter, int handlersCount, System.Func<TSource, System.Collections.Generic.IEnumerable<(System.ComponentModel.INotifyPropertyChanged?, string!)>!>? handlers) -> void

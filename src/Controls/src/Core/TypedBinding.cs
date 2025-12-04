@@ -79,9 +79,7 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly IPropertyChangeHandler _propertyChangeHandler;
 
 #nullable enable
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public TypedBinding(
-#pragma warning restore RS0016 // Add public types and members to the declared API
 			Func<TSource, (TProperty value, bool success)> getter,
 			Action<TSource, TProperty>? setter,
 			int handlersCount,
