@@ -8,3 +8,4 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
+Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>.TypedBinding(System.Func<TSource, (TProperty value, bool success)>! getter, System.Action<TSource, TProperty>? setter, int handlersCount, System.Func<TSource, System.Collections.Generic.IEnumerable<(System.ComponentModel.INotifyPropertyChanged?, string!)>!>? handlers) -> void
