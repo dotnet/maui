@@ -91,6 +91,8 @@ namespace Microsoft.Maui
 			}
 			else if (platformView is WrapperView wrapper)
 			{
+				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
+				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
 				sizeThatFits = wrapper.SizeThatFitsWrapper(new CGSize((float)widthConstraint, (float)heightConstraint), virtualView.Width, virtualView.Height, virtualView);
 			}
 			else if (platformView is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
