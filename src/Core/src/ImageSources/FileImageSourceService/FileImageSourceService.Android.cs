@@ -35,12 +35,6 @@ namespace Microsoft.Maui
 					}
 
 					var callback = new ImageLoaderCallback();
-					var bitmap = BitmapFactory.DecodeFile(file);
-					if (bitmap != null)
-					{
-						imageView.SetImageBitmap(bitmap);
-						return Task.FromResult<IImageSourceServiceResult?>(new ImageSourceServiceLoadResult());
-					}
 
 					PlatformInterop.LoadImageFromFile(imageView, file, callback);
 
