@@ -932,18 +932,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_resultsRenderer.ItemSelected += OnSearchItemSelected;
 				_resultsRenderer.SearchHandler = _searchHandler;
 				ViewController.DefinesPresentationContext = true;
-
-				// Fix for iPhone: Ensure the search results controller extends its layout under the
-				// navigation bar. This prevents a gap between the search bar and suggestions list
-				// when the navigation bar hides during search presentation (default iOS behavior).
-				// iPad doesn't have this issue because the navigation bar layout differs.
-				if (_resultsRenderer.ViewController is not null)
-				{
-					_resultsRenderer.ViewController.ExtendedLayoutIncludesOpaqueBars = true;
-				}
 			}
 
 			_searchController = new UISearchController(_resultsRenderer?.ViewController);
+
+			// Fix for iPhone: Prevent the navigation bar from hiding during search presentation.
+			// When HidesNavigationBarDuringPresentation is true (the default), the search bar moves
+			// upward but the suggestions list doesn't follow, creating a visible gap.
+			// Setting these properties to false keeps the suggestions list attached to the search bar.
+			// iPad doesn't have this issue because the navigation bar layout differs.
+			_searchController.HidesNavigationBarDuringPresentation = false;
+			_searchController.ObscuresBackgroundDuringPresentation = false;
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{
