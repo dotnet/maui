@@ -142,14 +142,27 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
+					// Check if this is a full-screen view (typical for ContentPages)
+					// For full-screen views, skip position-based calculations as they can be unreliable
+					// during Shell navigation and always apply the full safe area insets
+					bool isFullScreen = (viewWidth >= screenWidth - 10) && (viewHeight >= screenHeight - 10);
+
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
-					if (top > 0 && viewTop < top && viewTop >= 0)
+					// Skip position-based optimization on first layout (when !hasTrackedViews) or for full-screen views
+					// to avoid incorrect calculations during Shell navigation when view position might not be finalized
+					if (top > 0 && hasTrackedViews && !isFullScreen && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
+					}
+					else if (top > 0 && (!hasTrackedViews || isFullScreen))
+					{
+						// First time applying insets OR full-screen view - use full inset value to ensure proper padding
+						// The view position might not be finalized yet during navigation, or it's full-screen so we
+						// want full insets regardless of calculated position
 					}
 					else
 					{
@@ -158,11 +171,15 @@ internal static class SafeAreaExtensions
 					}
 
 					// Bottom: how much the view extends into the bottom safe area
-					if (bottom > 0 && viewBottom > (screenHeight - bottom))
+					if (bottom > 0 && hasTrackedViews && !isFullScreen && viewBottom > (screenHeight - bottom))
 					{
 						// Calculate the actual overlap amount
 						var bottomEdge = screenHeight - bottom;
 						bottom = Math.Min(viewBottom - bottomEdge, bottom);
+					}
+					else if (bottom > 0 && (!hasTrackedViews || isFullScreen))
+					{
+						// First time applying insets OR full-screen view - use full inset value
 					}
 					else
 					{
@@ -173,10 +190,14 @@ internal static class SafeAreaExtensions
 					}
 
 					// Left: how much the view extends into the left safe area
-					if (left > 0 && viewLeft < left)
+					if (left > 0 && hasTrackedViews && !isFullScreen && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
+					}
+					else if (left > 0 && (!hasTrackedViews || isFullScreen))
+					{
+						// First time applying insets OR full-screen view - use full inset value
 					}
 					else
 					{
@@ -185,11 +206,15 @@ internal static class SafeAreaExtensions
 					}
 
 					// Right: how much the view extends into the right safe area
-					if (right > 0 && viewRight > (screenWidth - right))
+					if (right > 0 && hasTrackedViews && !isFullScreen && viewRight > (screenWidth - right))
 					{
 						// Calculate the actual overlap amount
 						var rightEdge = screenWidth - right;
 						right = Math.Min(viewRight - rightEdge, right);
+					}
+					else if (right > 0 && (!hasTrackedViews || isFullScreen))
+					{
+						// First time applying insets OR full-screen view - use full inset value
 					}
 					else
 					{
