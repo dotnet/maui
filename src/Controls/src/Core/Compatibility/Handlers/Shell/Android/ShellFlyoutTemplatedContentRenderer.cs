@@ -555,7 +555,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// The second time this fires the non flyout part of the view
 			// is visible to the user. I haven't found a better
 			// mechanism to wire into in order to detect this
-			if ((_initialLayoutChangeFired || FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked) &&
+			if ((_initialLayoutChangeFired || FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked || _shellContext.Shell.FlyoutIsPresented) &&
 				_flyoutContentView == null)
 			{
 				UpdateFlyoutContent();
