@@ -19,7 +19,8 @@ public class CollectionView_GroupingFeatureTests : UITest
 	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
 	public const string ItemsLayoutHorizontalGrid = "ItemsLayoutHorizontalGrid";
 	public const string ItemsLayoutVerticalGrid = "ItemsLayoutVerticalGrid";
-
+	public const string FlowDirectionLTR = "FlowDirectionLeftToRight";
+	public const string FlowDirectionRTL = "FlowDirectionRightToLeft";
 
 	public CollectionView_GroupingFeatureTests(TestDevice device)
 		: base(device)
@@ -473,6 +474,29 @@ public class CollectionView_GroupingFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLIsGrouped_WithHorizontalListAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Apple");
+		App.ScrollLeft("CollectionViewControl");
+		App.WaitForElement("Carrot");
+		App.WaitForElement("Vegetables");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
 	public void VerifyIsGrouped_WithHorizontalGridAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -494,6 +518,26 @@ public class CollectionView_GroupingFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLIsGrouped_WithHorizontalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -511,12 +555,42 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana");
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("GroupFooterTemplate");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLGroupHeaderAndFooterTemplate_WithHorizontalListAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(GroupHeaderTemplateGrid);
+		App.Tap(GroupHeaderTemplateGrid);
+		App.WaitForElement(GroupFooterTemplateGrid);
+		App.Tap(GroupFooterTemplateGrid);
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("GroupHeaderTemplate");
+		App.WaitForElement("Banana");
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("Carrot");
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
@@ -539,9 +613,37 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana");
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("Carrot");
+		App.WaitForElement("GroupFooterTemplate");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLGroupHeaderAndFooterTemplate_WithHorizontalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(GroupHeaderTemplateGrid);
+		App.Tap(GroupHeaderTemplateGrid);
+		App.WaitForElement(GroupFooterTemplateGrid);
+		App.Tap(GroupFooterTemplateGrid);
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("GroupHeaderTemplate");
+		App.WaitForElement("Banana");
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
 		App.WaitForElement("GroupFooterTemplate");
 	}
@@ -565,9 +667,33 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana");
 		App.WaitForElement("Carrot");
 		App.WaitForElement("GroupFooterTemplate");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLGroupHeaderAndFooterTemplate_WithVerticalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(GroupHeaderTemplateGrid);
+		App.Tap(GroupHeaderTemplateGrid);
+		App.WaitForElement(GroupFooterTemplateGrid);
+		App.Tap(GroupFooterTemplateGrid);
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("GroupHeaderTemplate");
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -585,9 +711,29 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Fruits");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana");
 		App.WaitForElement("Carrot");
 		App.WaitForElement("Vegetables");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLIsGrouped_WithVerticalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		VerifyScreenshot();
 	}
 #endif
 #endif
@@ -656,7 +802,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana");
             App.ScrollRight("CollectionViewControl");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
@@ -675,7 +821,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana");
             App.ScrollRight("CollectionViewControl");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
@@ -694,7 +840,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
@@ -710,7 +856,7 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
@@ -732,15 +878,13 @@ public class CollectionView_GroupingFeatureTests : UITest
             App.Tap(Apply);
             App.WaitForNoElement("GroupHeaderTemplate");
             App.WaitForNoElement("GroupFooterTemplate");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana");
             App.WaitForElement("Carrot");
         }
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
-	//CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView on Catalyst Issue Link : https://github.com/dotnet/maui/issues/28530
-	//Test fails on CV2 . GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
-	//.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
+#if TEST_FAILS_ON_WINDOWS //.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
+
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyCanMixGroupsFalseWithCanReorderItems()
@@ -755,10 +899,32 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
 		var newY = App.WaitForElement("Carrot").GetRect().Y;
-		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Apple after the drag-and-drop operation.");
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLCanMixGroupsFalseWithCanReorderItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Carrot").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
 	}
 
 	[Test]
@@ -777,10 +943,34 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
-		var newY = App.WaitForElement("Apple").GetRect().Y;
-		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Apple' should be greater after the drag-and-drop operation.");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLCanMixGroupsTrueWithCanReorderItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
 
 	[Test]
@@ -799,10 +989,34 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
-		var newY = App.WaitForElement("Apple").GetRect().Y;
-		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Apple' should be greater after the drag-and-drop operation.");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLCanReorderItemsTrueWithCanMixGroups()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
 
 	[Test]
@@ -819,10 +1033,32 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
-		var newY = App.WaitForElement("Apple").GetRect().Y;
-		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Apple' should be Same Value after the drag-and-drop operation.");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLCanReorderItemsFalseWithCanMixGroups()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
 	}
 #endif
 }
