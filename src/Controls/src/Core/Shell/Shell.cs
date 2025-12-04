@@ -1715,6 +1715,17 @@ namespace Microsoft.Maui.Controls
 			shell.ShellController.AppearanceChanged(shell, false);
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
 
+			// If the new ShellItem is a FlyoutItem or a ShellGroupItem, we need to update the QueryAttributes
+			var existing = (ShellRouteParameters)shell.CurrentContent?.GetValue(ShellContent.QueryAttributesProperty);
+			bool isRelevantShellItem = shell.CurrentItem is FlyoutItem || shell.CurrentItem is ShellGroupItem;
+			bool isNewValueDifferent = oldValue is not null && newValue is not null && existing is null;
+
+			if (isNewValueDifferent && isRelevantShellItem)
+			{
+				ShellContent currentShellContent = shell.CurrentItem.CurrentItem?.CurrentItem;
+				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
+			}
+
 			if (shell.CurrentItem?.CurrentItem != null)
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
 		}
