@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		protected AView FooterView => _footerView?.PlatformView;
 		protected AView View => _rootView;
-		WindowsListener _windowsListener;
+		ShellFlyoutWindowInsetListener _shellFlyoutListener;
 
 
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Keep this minimal.
 		// - Will be replaced by the planned comprehensive window insets solution.
 		// - Do not extend; add new logic to the forthcoming implementation instead.
-		internal class WindowsListener : MauiWindowInsetListener, IOnApplyWindowInsetsListener
+		internal class ShellFlyoutWindowInsetListener : MauiWindowInsetListener
 		{
 			private WeakReference<ImageView> _bgImageRef;
 			private WeakReference<AView> _flyoutViewRef;
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			public WindowsListener(ImageView bgImage)
+			public ShellFlyoutWindowInsetListener(ImageView bgImage)
 			{
 				_bgImageRef = new WeakReference<ImageView>(bgImage);
 			}
@@ -207,8 +207,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
-			_windowsListener = new WindowsListener(_bgImage);
-			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
+			_shellFlyoutListener = new ShellFlyoutWindowInsetListener(_bgImage);
+			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _shellFlyoutListener);
 
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_flyoutContentView = CreateFlyoutContent(_rootView);
-			_windowsListener.FlyoutView = _flyoutContentView;
+			_shellFlyoutListener.FlyoutView = _flyoutContentView;
 			if (_flyoutContentView == null)
 				return;
 
@@ -420,7 +420,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var oldFooterView = _footerView;
 				_rootView.RemoveView(_footerView);
 				_footerView = null;
-				_windowsListener.FooterView = null;
+				_shellFlyoutListener.FooterView = null;
 				oldFooterView.View = null;
 			}
 
@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				MatchWidth = true
 			};
 
-			_windowsListener.FooterView = _footerView;
+			_shellFlyoutListener.FooterView = _footerView;
 
 			var footerViewLP = new CoordinatorLayout.LayoutParams(0, 0)
 			{
