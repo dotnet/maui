@@ -4,6 +4,7 @@ trigger:
     include:
     - main
     - net10.0
+    - net11.0
     - release/*
     - inflight/*
   paths:
@@ -23,6 +24,7 @@ pr:
     include:
     - main
     - net10.0
+    - net11.0
     - release/*
     - inflight/*
   paths:
