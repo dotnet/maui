@@ -307,10 +307,12 @@ stages:
 
         - task: NuGetAuthenticate@1
 
-        # Darc is targeting 8.0, so make sure it's installed
-        - task: UseDotNet@2
-          inputs:
-            version: 8.0.x
+        # Populate internal runtime variables.
+        - template: /eng/common/templates/steps/enable-internal-sources.yml
+          parameters:
+            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+
+        - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
         - task: AzureCLI@2
           displayName: Publish Using Darc
@@ -328,3 +330,5 @@ stages:
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
               -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
+              -runtimeSourceFeed https://ci.dot.net/internal
+              -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
