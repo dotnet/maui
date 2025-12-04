@@ -134,15 +134,13 @@ stages:
             skipXcode: false
             skipSimulatorSetup: false
 
-    # Use intelligent device tests (with PR analysis for selective execution)
-    - template: common/device-tests-intelligent.yml
+    # Just use the old way for Windows Device Tests
+    - template: common/device-tests.yml
       parameters:
         windowsPool: ${{ parameters.windowsPool }}
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         windowsVersions: [ 'packaged', 'unpackaged' ]
         skipProvisioning: true
-        platforms:
-        - windows
         projects:
         - name: essentials
           desc: Essentials
@@ -169,11 +167,13 @@ stages:
           windowsConfiguration: 'Debug'
           windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
           windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+        platforms:
+        - windows
 
   # Run on xamarin public instance
   - ${{ else }}:
 
-    - template: common/device-tests-intelligent.yml
+    - template: common/device-tests.yml
       parameters:
         androidPool: ${{ parameters.androidPool }}
         iosPool: ${{ parameters.iosPool }}
@@ -186,22 +186,12 @@ stages:
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
-          platforms:
-          - android
-          - ios
-          - catalyst
-          - windows
         ${{ else }}:
           androidApiLevels: [ 33, 23 ]
           iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ not(parameters.UseProvisionator) }}
-          platforms:
-          - android
-          - ios
-          - catalyst
-          - windows
         projects:
         - name: essentials
           desc: Essentials
