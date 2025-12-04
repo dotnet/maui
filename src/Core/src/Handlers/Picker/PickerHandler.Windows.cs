@@ -145,9 +145,9 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is null)
 				return;
 
-			if (sender is ComboBox comboBox)
+			if (sender is ComboBox comboBox && comboBox.MinWidth > 0)
 			{
-				//Reset the MinWidth to allow ComboBox to resize with window changes
+				//Reset the MinWidth to allow ComboBox to resize when the parent's size changes
 				comboBox.MinWidth = 0;
 			}
 
