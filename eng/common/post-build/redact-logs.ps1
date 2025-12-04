@@ -7,9 +7,7 @@ param(
   # File with strings to redact - separated by newlines.
   #  For comments start the line with '# ' - such lines are ignored 
   [Parameter(Mandatory=$false)][string] $TokensFilePath,
-  [Parameter(ValueFromRemainingArguments=$true)][String[]]$TokensToRedact,
-  [Parameter(Mandatory=$false)][string] $runtimeSourceFeed,
-  [Parameter(Mandatory=$false)][string] $runtimeSourceFeedKey
+  [Parameter(ValueFromRemainingArguments=$true)][String[]]$TokensToRedact
 )
 
 try {
