@@ -91,8 +91,6 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 #nullable disable
 
-		// TODO make this constructor obsolete
-		// [Obsolete("This constructor is obsolete. Please use the constructor that takes handlersCount and handlers function.")]
 		public TypedBinding(
 			Func<TSource, (TProperty value, bool success)> getter,
 			Action<TSource, TProperty> setter,
