@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"            
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.XmlnsAggregattion"
+             Title="XmlnsAggregattion">
+    <Label 
+        x:Name="label"
+        Text="Welcome to .NET MAUI!"
+        VerticalOptions="Center" 
+        HorizontalOptions="Center" />
+</ContentPage>

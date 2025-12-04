@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -48,6 +49,9 @@ namespace Microsoft.Maui.Authentication
 		}
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+			=> await AuthenticateAsync(webAuthenticatorOptions, CancellationToken.None);
+
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
 		{
 			currentOptions = webAuthenticatorOptions;
 			var url = webAuthenticatorOptions?.Url;
@@ -72,20 +76,25 @@ namespace Microsoft.Maui.Authentication
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			currentRedirectUri = callbackUrl;
 
-			// Try to start with custom tabs if the system supports it and we resolve it
-			AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
-
-			// Fall back to using the system browser if necessary
-			if (!AuthenticatingWithCustomTabs)
+			// Use the CancellationToken to cancel the authentication if requested
+			using (cancellationToken.Register(() => tcsResponse.TrySetCanceled()))
 			{
-				// Fall back to opening the system-registered browser if necessary
-				var urlOriginalString = url.OriginalString;
-				var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(urlOriginalString));
-				Platform.CurrentActivity.StartActivity(browserIntent);
-			}
+				// Try to start with custom tabs if the system supports it and we resolve it
+				AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
 
-			return await tcsResponse.Task;
+				// Fall back to using the system browser if necessary
+				if (!AuthenticatingWithCustomTabs)
+				{
+					// Fall back to opening the system-registered browser if necessary
+					var urlOriginalString = url.OriginalString;
+					var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(urlOriginalString));
+					Platform.CurrentActivity.StartActivity(browserIntent);
+				}
+
+				return await tcsResponse.Task;
+			}
 		}
+
 
 		static async Task<bool> StartCustomTabsActivity(Uri url)
 		{

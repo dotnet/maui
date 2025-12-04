@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Bugzilla53179_2 : _IssuesUITest
 {
 	const string Success = "Success";

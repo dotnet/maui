@@ -29,6 +29,7 @@ namespace Maui.Controls.Sample
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
 				.Issue18720TimePickerAddMappers()
+				.Issue28945AddMappers()
 				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
@@ -50,6 +51,9 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(UITestEditor), typeof(UITestEditorHandler));
 				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
 				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
+#endif
+#if IOS
+				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
 #endif
 			});
 

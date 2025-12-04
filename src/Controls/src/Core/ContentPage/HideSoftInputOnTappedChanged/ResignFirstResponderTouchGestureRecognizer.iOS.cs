@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Platform
 			while (view is not null)
 			{
 				yield return view;
-				view = view.Superview;
+				view = view.Superview!;
 			}
 		}
 

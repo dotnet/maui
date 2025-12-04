@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Authentication
 				// start the intermediate activity again with flags to close the custom tabs
 				var intent = new Intent(this, typeof(WebAuthenticatorIntermediateActivity));
 				intent.SetData(Intent.Data);
+				intent.PutExtra(WebAuthenticatorIntermediateActivity.LaunchedExtra, true);
 				intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
 				StartActivity(intent);
 			}

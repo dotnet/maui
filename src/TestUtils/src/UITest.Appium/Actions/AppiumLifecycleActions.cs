@@ -101,6 +101,9 @@ namespace UITest.Appium
 			else
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
+				// Give it time for the animation to settle, otherwise there's a risk
+				// of picking wrong elements coordinates and `Tap`s will fail silently.
+				Thread.Sleep(100);
 			}
 
 			return CommandResponse.SuccessEmptyResponse;

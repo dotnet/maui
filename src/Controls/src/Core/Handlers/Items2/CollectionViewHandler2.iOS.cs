@@ -93,6 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
 		{
 			handler.Controller?.UpdateItemsSource();
+			handler.UpdateLayout();
 		}
 
 		bool WillNeedScrollAdjustment(ScrollToRequestEventArgs args)
@@ -180,13 +181,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapHeaderTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateLayout();
-			//	(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
+			(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
 		}
 
 		public static void MapFooterTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateLayout();
-			//(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateFooterView();
+			(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateFooterView();
 		}
 
 		public static void MapItemsLayout(CollectionViewHandler2 handler, StructuredItemsView itemsView)

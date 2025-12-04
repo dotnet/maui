@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var mauiContextStub1 = new ContextStub(ApplicationServices);
 			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			mauiContextStub1.Context = new global::Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
 			Color color = Color.Transparent;
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 				var builder = new AlertDialog.Builder(activity);
 				var alertDialog = builder.Create();
 				alertDialog.Show();
-				var button = alertDialog.GetButton((int)Android.Content.DialogButtonType.Negative);
+				var button = alertDialog.GetButton((int)global::Android.Content.DialogButtonType.Negative);
 				var textColor = button.CurrentTextColor;
 				color = new Color(textColor);
 				activity.Delegate.SetLocalNightMode(initialNightMode);

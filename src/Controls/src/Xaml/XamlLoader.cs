@@ -59,8 +59,29 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
 		{
+			rootAssembly ??= view.GetType().Assembly;
+
+			if (XamlParser.s_xmlnsPrefixes == null)
+				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes(rootAssembly);
+			if (!XamlParser.s_allowImplicitXmlns.TryGetValue(rootAssembly, out var allowImplicitXmlns))
+			{
+				allowImplicitXmlns = rootAssembly.CustomAttributes.Any(a =>
+				   		a.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute"
+					&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+				XamlParser.s_allowImplicitXmlns.Add(rootAssembly, allowImplicitXmlns);
+			}
+
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			if (allowImplicitXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+				foreach (var xmlnsPrefix in XamlParser.s_xmlnsPrefixes)
+					nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+			}
 			using (var textReader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textReader))
+			using (var reader = XmlReader.Create(textReader,
+										new XmlReaderSettings { ConformanceLevel = allowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				while (reader.Read())
 				{
@@ -82,7 +103,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					Visit(rootnode, new HydrationContext
 					{
 						RootElement = view,
-						RootAssembly = rootAssembly ?? view.GetType().Assembly,
+						RootAssembly = rootAssembly,
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
 					}, useDesignProperties);
 
@@ -161,7 +182,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					//the root is set to null, and not to rootView, on purpose as we don't want to erase the current Resources of the view
 					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootNode, reader);
-					var rNode = (IElementNode)rootNode;
+					var rNode = (ElementNode)rootNode;
 					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resources))
 						return null;
 

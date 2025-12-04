@@ -1,4 +1,1 @@
 #nullable enable
-override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
-override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
-override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void

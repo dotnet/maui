@@ -80,6 +80,11 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentView != null && _contentView.Frame.IsEmpty)
 				_contentView.Frame = Bounds;
+
+			if (_isOpen)
+			{
+				Swipe(animated: false);
+			}
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent? evt)
@@ -581,7 +586,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
 			{
-				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				void SetFrame()
 				{
 					switch (_swipeDirection)
 					{
@@ -598,7 +603,16 @@ namespace Microsoft.Maui.Platform
 							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
 							break;
 					}
-				}, null);
+				}
+
+				if (animated)
+				{
+					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, () => { });
+				}
+				else
+				{
+					SetFrame();
+				}
 			}
 
 			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
@@ -631,7 +645,7 @@ namespace Microsoft.Maui.Platform
 							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
 							break;
 					}
-				}, null);
+				}, () => { });
 			}
 		}
 
@@ -694,15 +708,9 @@ namespace Microsoft.Maui.Platform
 			_swipeOffset = 0;
 			_originalBounds = CGRect.Empty;
 
-			if (_actionView != null)
-			{
-				_actionView.RemoveFromSuperview();
-			}
+			_actionView?.RemoveFromSuperview();
 
-			if (_swipeItemsRect != null)
-			{
-				_swipeItemsRect.Clear();
-			}
+			_swipeItemsRect?.Clear();
 
 			UpdateIsOpen(false);
 		}

@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Authentication
 	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = false)]
 	class WebAuthenticatorIntermediateActivity : Activity
 	{
-		const string launchedExtra = "launched";
-		const string actualIntentExtra = "actual_intent";
+		internal const string LaunchedExtra = "launched";
+		internal const string ActualIntentExtra = "actual_intent";
 
 		bool launched;
 		Intent actualIntent;
@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Authentication
 			}
 
 			// read the values
-			launched = extras.GetBoolean(launchedExtra, false);
+			launched = extras.GetBoolean(LaunchedExtra, false);
 #pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/android/os/Bundle#getParcelable(java.lang.String,%20java.lang.Class%3CT%3E)
 #pragma warning disable CA1422 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
-			actualIntent = extras.GetParcelable(actualIntentExtra) as Intent;
+			actualIntent = extras.GetParcelable(ActualIntentExtra) as Intent;
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore 618
@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Authentication
 		protected override void OnSaveInstanceState(Bundle outState)
 		{
 			// save the values
-			outState.PutBoolean(launchedExtra, launched);
-			outState.PutParcelable(actualIntentExtra, actualIntent);
+			outState.PutBoolean(LaunchedExtra, launched);
+			outState.PutParcelable(ActualIntentExtra, actualIntent);
 
 			base.OnSaveInstanceState(outState);
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Authentication
 		public static void StartActivity(Activity activity, Intent intent)
 		{
 			var intermediateIntent = new Intent(activity, typeof(WebAuthenticatorIntermediateActivity));
-			intermediateIntent.PutExtra(actualIntentExtra, intent);
+			intermediateIntent.PutExtra(ActualIntentExtra, intent);
 
 			activity.StartActivity(intermediateIntent);
 		}

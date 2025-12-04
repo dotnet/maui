@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
@@ -18,17 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui16208
 {
-	public Maui16208()
-	{
-		InitializeComponent();
-	}
+	public Maui16208() => InitializeComponent();
 
-	public Maui16208(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		MockDeviceInfo mockDeviceInfo;
@@ -49,11 +33,10 @@ public partial class Maui16208
 		}
 
 		[Test]
-		public void SetterAndTargetName([Values(false, true)] bool useCompiledXaml)
+		public void SetterAndTargetName([Values] XamlInflator inflator)
 		{
-
-			Assert.DoesNotThrow(() => new Maui16208(useCompiledXaml));
-			var page = new Maui16208(useCompiledXaml);
+			Assert.DoesNotThrow(() => new Maui16208(inflator));
+			var page = new Maui16208(inflator);
 			Assert.That(page!.ItemLabel.BackgroundColor, Is.EqualTo(Colors.Green));
 		}
 	}

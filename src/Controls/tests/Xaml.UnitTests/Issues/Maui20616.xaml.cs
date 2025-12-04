@@ -1,15 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
@@ -17,18 +9,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui20616
 {
-	public Maui20616()
-	{
-		InitializeComponent();
-		BindingContext = new ViewModel20616<string> { Value = "Foo" };
-	}
+	public Maui20616() => InitializeComponent();
 
-	public Maui20616(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -41,14 +23,19 @@ public partial class Maui20616
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void XDataTypeCanBeGeneric([Values(false, true)] bool useCompiledXaml)
+		public void XDataTypeCanBeGeneric([Values] XamlInflator inflator)
 		{
-			var page = new Maui20616(useCompiledXaml);
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui20616));
+
+			}
+			var page = new Maui20616(inflator) { BindingContext = new ViewModel20616<string> { Value = "Foo" } };
 
 			page.LabelA.BindingContext = new ViewModel20616<string> { Value = "ABC" };
 			Assert.AreEqual("ABC", page.LabelA.Text);
 
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
 			{
 				var binding = page.LabelA.GetContext(Label.TextProperty).Bindings.GetValue();
 				Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<string>, string>>());
@@ -57,7 +44,7 @@ public partial class Maui20616
 			page.LabelB.BindingContext = new ViewModel20616<ViewModel20616<bool>> { Value = new ViewModel20616<bool> { Value = true } };
 			Assert.AreEqual("True", page.LabelB.Text);
 
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
 			{
 				var binding = page.LabelB.GetContext(Label.TextProperty).Bindings.GetValue();
 				Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<ViewModel20616<bool>>, bool>>());

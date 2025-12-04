@@ -62,8 +62,7 @@ namespace Microsoft.Maui.Platform
 
 			handler.SyncPlatformCookiesToVirtualView(url);
 
-			if (handler != null)
-				handler.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
+			handler?.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
 
 			base.OnPageFinished(view, url);
 		}

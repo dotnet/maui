@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static class ImageSourceServiceExtensions
 	{
 #if __ANDROID__
-		public static Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>> GetImageAsync(
+		public static Task<IImageSourceServiceResult<global::Android.Graphics.Drawables.Drawable>> GetImageAsync(
 			this IImageSourceService service,
 			IImageSource imageSource,
 			CancellationToken cancellationToken = default) =>

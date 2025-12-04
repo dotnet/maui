@@ -99,6 +99,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(slant == FontSlant.Italic, isItalic);
 		}
 #endif
+#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
+
 		protected virtual void SetFont(TStub stub, Font font)
 		{
 			stub.GetType().GetProperty("Font").SetValue(stub, font);
@@ -112,5 +114,6 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				stub.GetType().GetProperty("Text").SetValue(stub, text);
 		}
+#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 	}
 }

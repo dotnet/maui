@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.Entry;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry']/Docs/*" />
+	/// <summary>The entry instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
 	public static class Entry
 	{
 		/// <summary>Bindable property for <see cref="AdjustsFontSizeToFitWidth"/>.</summary>
@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for attached property <c>CursorColor</c>.</summary>
 		public static readonly BindableProperty CursorColorProperty = BindableProperty.Create("CursorColor", typeof(Color), typeof(Entry), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='GetAdjustsFontSizeToFitWidth']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the entry control automatically adjusts the font size of text that the user enters.</summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether the entry control automatically adjusts the font size of text that the user enters.</returns>
 		public static bool GetAdjustsFontSizeToFitWidth(BindableObject element)
 		{
 			return (bool)element.GetValue(AdjustsFontSizeToFitWidthProperty);
@@ -29,7 +31,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(AdjustsFontSizeToFitWidthProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='AdjustsFontSizeToFitWidth']/Docs/*" />
+		/// <summary>Returns a Boolean value that tells whether the entry control automatically adjusts the font size.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A Boolean value that tells whether the entry control automatically adjusts the font size.</returns>
 		public static bool AdjustsFontSizeToFitWidth(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetAdjustsFontSizeToFitWidth(config.Element);
@@ -43,7 +47,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='EnableAdjustsFontSizeToFitWidth']/Docs/*" />
+		/// <summary>Enables automatic font size adjustment on the platform-specific element.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> EnableAdjustsFontSizeToFitWidth(
 			this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
@@ -51,7 +57,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='DisableAdjustsFontSizeToFitWidth']/Docs/*" />
+		/// <summary>Disables automatic font size adjustment on the platform-specific element.</summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> DisableAdjustsFontSizeToFitWidth(
 			this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{

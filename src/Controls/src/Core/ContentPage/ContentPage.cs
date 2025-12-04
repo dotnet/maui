@@ -6,13 +6,14 @@ using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView
+	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement, ISafeAreaView2
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -28,6 +29,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HideSoftInputOnTappedProperty
 			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
 
+		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
+		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
 		/// <summary>
 		/// Gets or sets a value that indicates whether tapping anywhere on the page will cause the soft input to hide.
 		/// </summary>
@@ -35,6 +39,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
 			set { SetValue(HideSoftInputOnTappedProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the safe area edges to obey for this content page.
+		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// </summary>
+		/// <remarks>
+		/// This property controls which edges of the content page should obey safe area insets.
+		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
+		/// </remarks>
+		public SafeAreaEdges SafeAreaEdges
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaElement.SafeAreaEdgesProperty);
+			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
 		}
 
 		public ContentPage()
@@ -149,6 +168,43 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
+		}
+
+		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		{
+			// Check if the developer has explicitly set SafeAreaEdges
+			if (IsSet(SafeAreaEdgesProperty))
+			{
+				// Developer has explicitly set SafeAreaEdges, use it directly
+				return SafeAreaEdges.GetEdge(edge);
+			}
+
+
+#if IOS || MACCATALYST
+
+			// Developer hasn't set SafeAreaEdges, fall back to legacy IgnoreSafeArea behavior
+			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
+			if (ignoreSafeArea)
+			{
+				return SafeAreaRegions.None; // If legacy says "ignore", return None (edge-to-edge)
+			}
+			else
+			{
+				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
+			}
+
+#else
+
+			// Default to None (edge-to-edge) for consistent behavior across all platforms
+			return SafeAreaRegions.None;
+
+#endif
+		}
+
+		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		{
+			return SafeAreaEdges.None;
 		}
 
 		private protected override string GetDebuggerDisplay()

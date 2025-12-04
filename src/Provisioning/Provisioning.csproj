@@ -36,7 +36,7 @@
 
 	<ItemGroup>
 		<!-- Android SDK - construct package names to install -->
-		<AndroidSdkPackages Include="platform-tools" />
+		<AndroidSdkPackages Include="platform-tools%3B$(AndroidSdkPlatformToolsVersion)" />
 		<AndroidSdkPackages Include="build-tools%3B$(AndroidSdkBuildToolsVersion)" />
 		<AndroidSdkPackages Include="cmdline-tools%3B$(AndroidSdkCmdLineToolsVersion)" />
 		<AndroidSdkPackages Include="emulator" />
@@ -359,7 +359,7 @@
 		</PropertyGroup>
 		<ItemGroup>
 			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg -i packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg --force-confdef -i packages-microsoft-prod.deb" />
 			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
 			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get update" />
 			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />

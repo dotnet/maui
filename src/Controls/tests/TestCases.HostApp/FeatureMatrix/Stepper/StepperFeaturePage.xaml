@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.StepperFeaturePage"
-             Title="StepperFeature">
+             Title="StepperFeature"
+             SafeAreaEdges="Container">
 
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Apply"

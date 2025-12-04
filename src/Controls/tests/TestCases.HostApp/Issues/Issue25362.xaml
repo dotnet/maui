@@ -2,8 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue25362"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="Self"
-             Title="Issue25362">
+             Title="Issue25362"
+             x:DataType="local:Issue25362">
     <Grid RowDefinitions="Auto,*">
         <HorizontalStackLayout Grid.Row="0">
             <Button
@@ -19,9 +21,9 @@
 
             <CollectionView.Header>
                 <VerticalStackLayout>
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding BindingContext.ItemListHeader, Source={x:Reference Self}}">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding ItemListHeader}">
                         <BindableLayout.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="x:String">
                                 <Label Padding="10" Text="{Binding .}" />
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
@@ -34,7 +36,7 @@
             </CollectionView.Header>
 
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="x:String">
                     <Label Padding="10" Text="{Binding .}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>

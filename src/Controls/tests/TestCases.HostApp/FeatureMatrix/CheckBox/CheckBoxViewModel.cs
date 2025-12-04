@@ -14,12 +14,16 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 	private bool _isVisible = true;
 	private string _checkedChangedStatus = string.Empty;
 	private bool _isEventStatusLabelVisible = false;
+	private string _commandStatus = string.Empty;
+	private bool _isCommandStatusLabelVisible = false;
+	private string _commandParameter = string.Empty;
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	public CheckBoxFeatureMatrixViewModel()
 	{
 		CheckedChangedCommand = new Command(OnCheckedChanged);
+		CheckBoxCommand = new Command<string>(OnCheckBoxCommand);
 	}
 
 	public bool IsChecked
@@ -105,10 +109,66 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 	}
 
 	public ICommand CheckedChangedCommand { get; }
+	public ICommand CheckBoxCommand { get; }
+
+	public string CommandParameter
+	{
+		get => _commandParameter;
+		set
+		{
+			if (_commandParameter != value)
+			{
+				_commandParameter = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string CommandStatus
+	{
+		get => _commandStatus;
+		set
+		{
+			if (_commandStatus != value)
+			{
+				if (!string.IsNullOrEmpty(value))
+				{
+					IsCommandStatusLabelVisible = true;
+				}
+				_commandStatus = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsCommandStatusLabelVisible
+	{
+		get => _isCommandStatusLabelVisible;
+		set
+		{
+			if (_isCommandStatusLabelVisible != value)
+			{
+				_isCommandStatusLabelVisible = value;
+				OnPropertyChanged();
+			}
+		}
+	}
 
 	private void OnCheckedChanged()
 	{
 		CheckedChangedStatus = "CheckedChanged Triggered";
+	}
+
+	private void OnCheckBoxCommand(string parameter)
+	{
+		if (string.IsNullOrEmpty(parameter))
+		{
+			CommandStatus = "Command Executed";
+		}
+		else
+		{
+			CommandStatus = $"Command Executed: {parameter}";
+		}
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

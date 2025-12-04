@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Tests.BugFixes.L1_TapGestureRecognizer"
+             Title="L1_TapGestureRecognizer">
+    <ScrollView>
+        <VerticalStackLayout
+         Padding="30,0"
+         Spacing="25">
+            <Label Text="1. This test is to check TapGestureRecognizer can trigger the Tapped event when TalkBack is enabled on an Android device or VoiceOver is enabled on iOS device.(https://github.com/dotnet/maui/issues/31483)" />
+            <Label Text="2. Click Label 'Click me (Label TapGestureRecognizer)',Talkback/VoiceOver will announce 'Double tap to activate'. " />
+            <Label Text="3. Double click the screen, verify it triggers the Tapped event, count increase by 1 " />
+
+            <Label
+             Text="TapGestureRecognizer with TalkBack/VoiceOver" 
+             HorizontalTextAlignment="Center"
+             FontAttributes="Bold" />
+
+            <Label
+             x:Name="CounterLabel"
+             Text="Clicks 0"
+             HorizontalTextAlignment="Center"
+             FontAttributes="Bold" />
+
+            <Label
+             Text="Click me (Label TapGestureRecognizer)"
+             SemanticProperties.Hint="Counts the number of times you click"
+             BackgroundColor="Red"
+             HorizontalOptions="Fill"
+             TextColor="White"
+             HorizontalTextAlignment="Center"
+             Padding="10">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCounterClicked" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Button
+             Text="Click me (Button)" 
+             SemanticProperties.Hint="Counts the number of times you click"
+             Clicked="OnCounterClicked"
+             BackgroundColor="Red"
+             HorizontalOptions="Fill" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

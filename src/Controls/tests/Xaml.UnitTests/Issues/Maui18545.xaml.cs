@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
@@ -17,13 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui18545 : ContentPage
 {
-
 	public Maui18545() => InitializeComponent();
-
-	public Maui18545(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 
 	[TestFixture]
 	class Test
@@ -38,7 +25,7 @@ public partial class Maui18545 : ContentPage
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void DynamicResourcesOnGradient([Values(false, true)] bool useCompiledXaml)
+		public void DynamicResourcesOnGradient([Values] XamlInflator inflator)
 		{
 			var lighttheme = new ResourceDictionary
 			{
@@ -51,7 +38,7 @@ public partial class Maui18545 : ContentPage
 				["GradientColorEnd"] = Colors.Yellow
 			};
 			Application.Current.Resources.MergedDictionaries.Add(lighttheme);
-			var page = new Maui18545(useCompiledXaml);
+			var page = new Maui18545(inflator);
 			Application.Current.MainPage = page;
 
 			Assert.That(page.label.Background, Is.TypeOf<LinearGradientBrush>());

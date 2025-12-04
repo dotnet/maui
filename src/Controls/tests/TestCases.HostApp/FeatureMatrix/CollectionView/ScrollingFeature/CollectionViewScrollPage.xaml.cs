@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample;
+
 public partial class CollectionViewScrollPage : ContentPage
 {
 	private CollectionViewViewModel _viewModel;

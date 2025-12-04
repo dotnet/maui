@@ -5,11 +5,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 {
 	bool _invalidateParentWhenMovedToWindow;
 
-	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
+	readonly WeakEventManager _movedToWindowEventManager = new();
 
 	internal bool NeedsCellLayout { get; set; }
 
@@ -40,39 +40,21 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 	}
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
-	EventHandler? _movedToWindow;
-
 	event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 	{
-		add => _movedToWindow += value;
-		remove => _movedToWindow -= value;
+		add => _movedToWindowEventManager.AddEventHandler(value);
+		remove => _movedToWindowEventManager.RemoveEventHandler(value);
 	}
 
 	public override void MovedToWindow()
 	{
 		base.MovedToWindow();
-		_movedToWindow?.Invoke(this, EventArgs.Empty);
-
-		if (_customDelegate?.TryGetTarget(out var target) == true)
-		{
-			target.MovedToWindow(this);
-		}
+		_movedToWindowEventManager.HandleEvent(this, EventArgs.Empty, nameof(IUIViewLifeCycleEvents.MovedToWindow));
 
 		if (_invalidateParentWhenMovedToWindow)
 		{
 			_invalidateParentWhenMovedToWindow = false;
 			this.InvalidateAncestorsMeasures();
 		}
-	}
-
-	internal void SetCustomDelegate(ICustomMauiCollectionViewDelegate customDelegate)
-	{
-		_customDelegate = new WeakReference<ICustomMauiCollectionViewDelegate>(customDelegate);
-	}
-
-
-	internal interface ICustomMauiCollectionViewDelegate
-	{
-		void MovedToWindow(UIView view);
 	}
 }

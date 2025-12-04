@@ -6,11 +6,15 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
-		internal static new void RemapForControls()
+		static Label() => RemapForControls();
+
+		private new static void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
@@ -21,7 +25,7 @@ namespace Microsoft.Maui.Controls
 
 			// these are really a single property
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(Text), MapText);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(FormattedText), MapText);
+			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(FormattedText), MapFormattedText);
 
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
@@ -54,8 +58,19 @@ namespace Microsoft.Maui.Controls
 			MapTextOrFormattedText(handler, label);
 		static void MapTextTransform(ILabelHandler handler, Label label) =>
 			MapTextOrFormattedText(handler, label);
+		static void MapFormattedText(ILabelHandler handler, Label label)
+		{
+			if (label.IsConnectingHandler())
+				return;
+
+			MapText(handler, label);
+		}
+
 		static void MapTextOrFormattedText(ILabelHandler handler, Label label)
 		{
+			if (label.IsConnectingHandler())
+				return;
+
 			if (label.HasFormattedTextSpans)
 				handler.UpdateValue(nameof(FormattedText));
 			else

@@ -1,33 +1,19 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class SharedResourceDictionary : ResourceDictionary
 {
-	public partial class SharedResourceDictionary : ResourceDictionary
+	public SharedResourceDictionary() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public SharedResourceDictionary()
+		[Test]
+		public void ResourcesDirectoriesCanBeXamlRoots([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public SharedResourceDictionary(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ResourcesDirectoriesCanBeXamlRoots(bool useCompiledXaml)
-			{
-				var layout = new SharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(5, layout.Count);
-			}
+			var layout = new SharedResourceDictionary(inflator);
+			Assert.AreEqual(5, layout.Count);
 		}
 	}
 }

@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabPosition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.TabPosition']/Docs/*" />
+	/// <summary>Enumerates tab positions on a tabbed page on the GTK platform.</summary>
 	public enum TabPosition
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabPosition.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates that the default tab location is used.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabPosition.xml" path="//Member[@MemberName='Top']/Docs/*" />
+		/// <summary>Indicates that the tabs are placed at the top of the navigation page.</summary>
 		Top,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabPosition.xml" path="//Member[@MemberName='Bottom']/Docs/*" />
+		/// <summary>Indicates that the tabs are placed at the bottom of the tabbed page.</summary>
 		Bottom
 	}
 }

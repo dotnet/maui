@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.VisualElement;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement']/Docs/*" />
+	/// <summary>Provides access to platform-specific features of visual elements on the Windows platform.</summary>
 	public static class VisualElement
 	{
 		/// <summary>Bindable property for attached property <c>AccessKey</c>.</summary>

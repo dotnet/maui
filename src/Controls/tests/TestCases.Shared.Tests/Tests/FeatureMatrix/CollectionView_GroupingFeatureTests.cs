@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_GroupingFeatureTests : UITest
 {
 	public const string GroupingFeatureMatrix = "CollectionView Feature Matrix";
@@ -514,6 +515,8 @@ public class CollectionView_GroupingFeatureTests : UITest
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
+		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("GroupFooterTemplate");
 	}
 

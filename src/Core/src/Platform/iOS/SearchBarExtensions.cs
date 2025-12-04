@@ -63,13 +63,8 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var placeholder = searchBar.Placeholder ?? string.Empty;
-			var placeholderColor = searchBar.PlaceholderColor;
-			var foregroundColor = placeholderColor ?? ColorExtensions.PlaceholderColor.ToColor();
-
-			textField.AttributedPlaceholder = foregroundColor == null
-				? new NSAttributedString(placeholder)
-				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToPlatform());
-
+			var placeholderColor = searchBar.PlaceholderColor is Color color ? color.ToPlatform() : ColorExtensions.PlaceholderColor;
+			textField.AttributedPlaceholder = new NSAttributedString(str: placeholder, foregroundColor: placeholderColor);
 			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
 
@@ -146,6 +141,21 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateSearchIcon(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField?.LeftView is not UIImageView iconView || iconView.Image is null)
+				return;
+
+			if (searchBar.SearchIconColor is not null)
+			{
+				iconView.Image = iconView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				iconView.TintColor = searchBar.SearchIconColor.ToPlatform();
+			}
+
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField = null)
 		{
 			textField ??= uiSearchBar.GetSearchTextField();
@@ -185,6 +195,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			uiSearchBar.ReloadInputViews();
+		}
+
+		public static void UpdateReturnType(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.ReturnKeyType = searchBar.ReturnType.ToPlatform();
 		}
 	}
 }
