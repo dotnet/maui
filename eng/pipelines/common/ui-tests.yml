@@ -24,7 +24,10 @@ parameters:
     - 'Entry'
     - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
-    - 'Label,Layout,Lifecycle,ListView'
+    - 'Label'
+    - 'Layout'
+    - 'Lifecycle'
+    - 'ListView'
     - 'ManualReview,Maps'
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
@@ -35,7 +38,11 @@ parameters:
     - 'SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'Shadow,ViewBaseTests,Visual,WebView,Window'
+    - 'Shadow'
+    - 'ViewBaseTests'
+    - 'Visual'
+    - 'WebView'
+    - 'Window'
 
   projects:
     - name: name
