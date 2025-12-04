@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
@@ -85,6 +86,39 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context.IL.Append(PushValueFromLanguagePrimitive(typedef, node));
 				Context.IL.Emit(Stloc, vardef);
 				return;
+			}
+
+			// Convert OnIdiomExtension to OnIdiomExtension<T>
+			if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.OnIdiomExtension")
+			{
+				// Find the property being set with {OnIdiom}
+				XmlName propertyName = XmlName.Empty;
+				SetPropertiesVisitor.TryGetPropertyName(node, node.Parent, out propertyName);
+				var localName = propertyName.LocalName;
+				var parentType = Module.ImportReference((node.Parent as IElementNode).XmlType.GetTypeReference(Context.Cache, Module, node));
+				var bpRef = SetPropertiesVisitor.GetBindablePropertyReference(parentType, propertyName.NamespaceURI, ref localName, out _, Context, node);
+
+				// Lookup the target type for OnIdiomExtension<T>
+				TypeReference targetType = null;
+				if (bpRef is not null)
+				{
+					targetType = Module.ImportReference(bpRef.GetBindablePropertyType(Context.Cache, node, Module));
+				}
+				else
+				{
+					var propertyRef = parentType.GetProperty(Context.Cache, pd => pd.Name == localName, out var declaringTypeReference);
+					if (propertyRef != null)
+					{
+						targetType = Module.ImportReference(propertyRef.PropertyType.ResolveGenericParameters(declaringTypeReference));
+					}
+				}
+
+				// Change typeref to OnIdiomExtension<T>
+				if (targetType is not null)
+				{
+					var onIdiomExtensionType = Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml.Internals", "OnIdiomExtension`1"));
+					typeref = onIdiomExtensionType.MakeGenericInstanceType(targetType);
+				}
 			}
 
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
