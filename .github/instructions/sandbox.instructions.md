@@ -28,6 +28,7 @@ This guide applies when you:
 - ❌ **NEVER** proceed without verifying device logs show expected behavior
 - ❌ **NEVER** assume Appium connection means test finished
 - ❌ **NEVER** claim button was tapped without checking device logs
+- ❌ **NEVER** switch branches (e.g., `git checkout main`) during reproduction - stay on current branch
 
 ### What You ALWAYS Do (Mandatory Steps)
 
@@ -217,27 +218,31 @@ if (PLATFORM == "android")
 
 ## Core Workflow
 
-**🚨 CRITICAL RULE FOR ENTIRE WORKFLOW:**
+**🚨 CRITICAL RULES FOR ENTIRE WORKFLOW:**
 - **ALWAYS use BuildAndRunSandbox.ps1 script** for building, deploying, and testing
 - **NEVER use manual `dotnet build`, `adb`, or `xcrun` commands**
+- **NEVER switch branches during reproduction** - stay on the current branch
+- **ALWAYS stop and ask user if you cannot reproduce** - do not try alternative branches
 - The script handles device detection, build, deployment, and test execution automatically
 - See "BuildAndRunSandbox.ps1 Script" section below for full details
 
 ---
 
-### Step 1: Checkout PR and Understand Issue
+### Step 1: Understand Issue (DO NOT Checkout PR Unless Instructed)
+
+**⚠️ IMPORTANT**: Only checkout a PR if the user explicitly asks you to test a specific PR. For general issue reproduction, work on the current branch.
 
 ```bash
-# Fetch and checkout PR
+# ONLY if user explicitly asks to test a PR:
 gh pr checkout <PR_NUMBER>
 ```
 
 **Understand the issue thoroughly:**
-- Read PR description and linked issue report
-- Identify what bug is being fixed
+- Read issue report or PR description
+- Identify what bug needs to be reproduced
 - Note affected platforms
 - Look for reproduction steps in the issue
-- Review PR changes to understand the fix
+- If testing a PR: Review PR changes to understand the fix
 
 ---
 
@@ -551,10 +556,16 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
 ### When to Stop Iterating
 
 - ✅ **All validation checks pass** → Report success with detailed summary
-- ❌ **Max 3 iterations reached** → Report as blocked with all details from attempts
-- ❌ **Build fails repeatedly** → Report build issue with error details
-- ❌ **Root cause unclear after log analysis** → Ask for guidance with log excerpts
-- ❌ **Issue appears to be PR bug, not test** → Report findings to user
+- ❌ **Max 3 iterations reached** → **STOP and report**: "I wasn't able to reproduce the issue. What should I try next?"
+- ❌ **Build fails repeatedly** → **STOP and report**: "I wasn't able to reproduce the issue due to build failures. What should I try next?"
+- ❌ **Root cause unclear after log analysis** → **STOP and report**: "I wasn't able to reproduce the issue. What should I try next?"
+- ❌ **Issue appears to be PR bug, not test** → **STOP and report findings to user**: "I wasn't able to reproduce the issue - it appears there may be an issue with [details]. What should I try next?"
+- ❌ **Cannot reproduce the issue** → **STOP immediately**: "I wasn't able to reproduce the issue. What should I try next?"
+
+**CRITICAL**: When you cannot reproduce or hit blockers, **PAUSE and ask the user**. Do NOT:
+- ❌ Switch to a different branch (e.g., `git checkout main`)
+- ❌ Try alternative approaches without asking first
+- ❌ Change the workflow significantly without user guidance
 
 ### Mental Model: The Script is Your Robot
 
@@ -721,14 +732,20 @@ grep "SANDBOX.*MainPage" CustomAgentLogsTmp/Sandbox/android-device.log
 
 ### When to Stop & Report
 - ✅ **Continue**: Minor warnings, non-critical timeouts, platform differences
-- ❌ **Stop**: Can't checkout PR, build fails after max retries, SDK mismatch, root cause unclear
-**Action**: Try alternative approaches
+- ❌ **Stop and ask user**: Can't checkout PR, build fails after max retries, SDK mismatch, root cause unclear, cannot reproduce issue
 
-1. Check linked issue for "Reproduction" section
-2. Look for PR's UITest files in `TestCases.HostApp/Issues/`
-3. Examine PR code changes to understand what's being fixed
-4. Create minimal test scenario based on code analysis
-5. Report to user if reproduction scenario is unclear
+**When blocked, ALWAYS report to user with this format**:
+```markdown
+I wasn't able to reproduce the issue. Here's what I tried:
+
+1. [What I attempted]
+2. [Issues encountered]
+3. [Current state of reproduction attempt]
+
+What should I try next?
+```
+
+**DO NOT** try alternative approaches without asking first. **DO NOT** switch branches.
 
 ### Test Shows Unexpected Behavior
 **Action**: Document and report
