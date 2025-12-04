@@ -19,7 +19,15 @@ public class Issue32984 : _IssuesUITest
 	{
 		App.WaitForElement("issue32984Button");
 		App.Tap("issue32984Picker");
-		App.TapCoordinates(10, 10);
+#if ANDROID
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif IOS || MACCATALYST
+		App.WaitForElement("Done");
+		App.Tap("Done");
+#elif WINDOWS
+		App.TapCoordinates(10, 10); 
+#endif
 		App.Tap("issue32984Button");
 		App.Tap("issue32984Picker");
 		VerifyScreenshot();
