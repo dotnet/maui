@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
     - main
-    - net*
+    - net*.0
     - release/*
     - internal/release/*
   tags:
@@ -27,7 +27,7 @@ schedules:
   branches:
     include:
     - main
-    - net*
+    - net*.0
     - inflight/current
   always: true
 

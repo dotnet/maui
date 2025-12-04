@@ -3,7 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - net*
+    - net*.0
   tags:
     include:
     - '*'
@@ -25,7 +25,7 @@ pr:
     include:
     - main
     - release/*
-    - net*
+    - net*.0
   paths:
     include:
     - '*'
