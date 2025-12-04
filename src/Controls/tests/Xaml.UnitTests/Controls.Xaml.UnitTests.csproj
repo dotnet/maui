@@ -16,7 +16,7 @@
     <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
     -->
     
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <EmitCompilerGeneratedFiles Condition="'$(Configuration)' == 'Debug'">true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
@@ -62,7 +62,7 @@
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
-    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
