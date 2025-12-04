@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             FlyoutBehavior="Flyout"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:DataType="local:FlyoutpageViewModel"
+             x:Class="Maui.Controls.Sample.Issues.Issue28497">
+
+
+     <Shell.ItemTemplate>
+        <DataTemplate x:DataType="ShellContent">
+            <Grid ColumnDefinitions="Auto,Auto" >
+                <Label Grid.Column="0"
+                       Text="{Binding Title}" />
+                <Label Grid.Column="1" x:Name="label" AutomationId="ShellItemLabel"
+                       Text="{Binding Source={x:RelativeSource AncestorType={x:Type local:FlyoutpageViewModel}}, x:DataType=local:FlyoutpageViewModel, Path=Counter}">
+                </Label>
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <ShellContent Title="Home" x:Name="home"
+                  Route="MainPage" >
+                  <ContentPage>
+                    <VerticalStackLayout>
+                        <Button Text="Click" Background="White" AutomationId="Button" />
+                    </VerticalStackLayout>
+                  </ContentPage>
+    </ShellContent>
+
+</Shell>
