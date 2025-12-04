@@ -4,6 +4,7 @@ trigger:
     - main
     - release/*
     - net10.0
+    - net11.0
   tags:
     include:
     - '*'
@@ -27,6 +28,7 @@ pr:
     - main
     - release/*
     - net10.0
+    - net11.0
   paths:
     include:
     - '*'
