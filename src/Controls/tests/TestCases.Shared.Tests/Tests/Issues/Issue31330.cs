@@ -15,7 +15,7 @@ public class Issue31330 : _IssuesUITest
     [Category(UITestCategories.Shape)]
     public void UpdateSizeOnlyWhenStrokeExists()
     {
-        App.WaitForElement("Issue31330BoxView");
+        App.WaitForElement("TestBoxView");
         VerifyScreenshot();
     }
 }

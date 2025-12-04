@@ -2,81 +2,120 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31330, "Rectangle renders as thin line instead of filled shape for small height values", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 31330, "Rectangle renders as thin line instead of filled shape for small height values", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue31330 : ContentPage
 {
     public Issue31330()
     {
-        Grid grid = new Grid();
-        grid.RowDefinitions = new RowDefinitionCollection
+        var scrollView = new ScrollView
         {
-            new RowDefinition { Height = GridLength.Auto },
-            new RowDefinition { Height = GridLength.Auto },
-            new RowDefinition { Height = GridLength.Star },
-            new RowDefinition { Height = GridLength.Star }
+            Orientation = ScrollOrientation.Both,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Always,
         };
 
-        Label labelText = new Label { Text = "The test passes if the edges of the circle touch the BoxView.", FontAttributes = FontAttributes.Bold };
-
-        BoxView boxView = new BoxView
+        var grid = new Grid
         {
-            Color = Colors.Green,
-            HeightRequest = 100,
-            WidthRequest = 100,
-            AutomationId = "Issue31330BoxView"
+            WidthRequest = 800,
+            HeightRequest = 600,
+            BackgroundColor = Colors.LightGray,
+            RowSpacing = 10,
+            Padding = 20
         };
 
-        Ellipse ellipse = new Ellipse
-        {
-            Fill = Colors.Yellow,
-            StrokeThickness = 0,
-            WidthRequest = 100,
-            HeightRequest = 100
-        };
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
-        Button button = new Button { Text = "Update StrokeThickness" };
-        button.Clicked += (s, e) =>
+        // Instructions
+        var instructions = new Label
         {
-            ellipse.StrokeThickness = 20;
+            Text = "Test passes if:\n1. Red BoxView (height 1.2) is visible as a filled rectangle\n2. Blue Rectangle (height 1.2) is visible as a filled rectangle (not a thin line)\n3. Both should have similar appearance",
+            FontAttributes = FontAttributes.Bold,
+            AutomationId = "Instructions"
         };
+        Grid.SetRow(instructions, 0);
+        grid.Children.Add(instructions);
 
-        Label label = new Label
+        // BoxView with small height (reference for correct rendering)
+        var boxViewLabel = new Label { Text = "BoxView (height 1.2):" };
+        Grid.SetRow(boxViewLabel, 1);
+        grid.Children.Add(boxViewLabel);
+
+        var boxView = new BoxView
         {
-            Text = "Test passes if the Rectangle renders as filled shape for small height",
-            FontAttributes = FontAttributes.Bold
+            Color = Colors.Red,
+            WidthRequest = 50,
+            HeightRequest = 1.2,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            AutomationId = "TestBoxView"
         };
+        Grid.SetRow(boxView, 1);
+        grid.Children.Add(boxView);
 
-        Rectangle rectangle = new Rectangle
+        // Rectangle with small height (should render like BoxView, not as a line)
+        var rectangleLabel = new Label { Text = "Rectangle (height 1.2, Fill only, no Stroke):" };
+        Grid.SetRow(rectangleLabel, 2);
+        grid.Children.Add(rectangleLabel);
+
+        var rectangle = new Rectangle
         {
             WidthRequest = 50,
             HeightRequest = 1.2,
+            Fill = Colors.Blue,
+            Stroke = null, // Explicitly no stroke
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            AutomationId = "TestRectangle"
+        };
+        Grid.SetRow(rectangle, 2);
+        grid.Children.Add(rectangle);
+
+        // AbsoluteLayout test (from original issue report)
+        var absoluteLayout = new AbsoluteLayout
+        {
+            BackgroundColor = Colors.White,
+            AutomationId = "AbsoluteLayoutTest"
+        };
+        Grid.SetRow(absoluteLayout, 3);
+        grid.Children.Add(absoluteLayout);
+
+        double shapeWidth = 20;
+        double shapeHeight = 1.2;
+        double centerX = 400;
+        double centerY = 200;
+
+        // BoxView in AbsoluteLayout (reference)
+        var absBoxView = new BoxView
+        {
+            BackgroundColor = Colors.Red
+        };
+        AbsoluteLayout.SetLayoutBounds(absBoxView, new Rect(
+            centerX - shapeWidth - 30,
+            centerY - (shapeHeight / 2),
+            shapeWidth,
+            shapeHeight
+        ));
+        AbsoluteLayout.SetLayoutFlags(absBoxView, AbsoluteLayoutFlags.None);
+        absoluteLayout.Children.Add(absBoxView);
+
+        // Rectangle in AbsoluteLayout (should match BoxView appearance)
+        var absRectangle = new Rectangle
+        {
             Fill = Colors.Blue
         };
+        AbsoluteLayout.SetLayoutBounds(absRectangle, new Rect(
+            centerX + 30,
+            centerY - (shapeHeight / 2),
+            shapeWidth,
+            shapeHeight
+        ));
+        AbsoluteLayout.SetLayoutFlags(absRectangle, AbsoluteLayoutFlags.None);
+        absoluteLayout.Children.Add(absRectangle);
 
-        Grid bottomGrid = new Grid { Background = Colors.AliceBlue };
-        bottomGrid.Children.Add(label);
-        bottomGrid.Children.Add(rectangle);
-
-        bottomGrid.RowDefinitions = new RowDefinitionCollection
-        {
-            new RowDefinition { Height = GridLength.Auto },
-            new RowDefinition { Height = GridLength.Star },
-        };
-
-        bottomGrid.SetRow(label, 0);
-        bottomGrid.SetRow(rectangle, 1);
-
-        grid.Children.Add(labelText);
-        grid.SetRow(labelText, 0);
-        grid.Children.Add(button);
-        grid.SetRow(button, 1);
-        grid.Children.Add(boxView);
-        grid.SetRow(boxView, 2);
-        grid.Children.Add(ellipse);
-        grid.SetRow(ellipse, 2);
-        grid.SetRow(bottomGrid, 3);
-        grid.Children.Add(bottomGrid);
-
-        Content = grid;
+        scrollView.Content = grid;
+        Content = scrollView;
     }
 }
