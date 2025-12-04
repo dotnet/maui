@@ -615,5 +615,5 @@ dotnet format analyzers Microsoft.Maui.sln
 
 Only read these if specifically needed:
 - [uitests.instructions.md](../instructions/uitests.instructions.md) - Full UI testing guide
-- [instrumentation.md](../instructions/instrumentation.md) - Detailed instrumentation patterns
+
 - [collectionview-handler-detection.instructions.md](../instructions/collectionview-handler-detection.instructions.md) - Handler configuration

@@ -18,12 +18,54 @@ The PR reviewer agent conducts thorough, constructive code reviews of .NET MAUI 
 
 ## How to Use
 
-### Option 1: GitHub Copilot CLI (Local)
+### Option 1: Multi-Agent Mode (Recommended)
+
+**Let GitHub Copilot automatically delegate to the right agent:**
+
+Instead of manually selecting an agent, you can prompt Copilot directly and it will automatically delegate to the appropriate specialized agent. This is often more efficient because Copilot can coordinate multiple agents if needed.
+
+**How to use it:**
+
+```bash
+# Start GitHub Copilot CLI
+copilot
+
+# Prompt naturally without selecting an agent
+Can you reproduce https://github.com/dotnet/maui/issues/32941 inside the sandbox? 
+Please make sure to check if there's an agent you can use for each step of your plan.
+
+# Or for other tasks
+Please review PR #12345
+Please write UI tests for issue #67890
+Please investigate and fix this bug: https://github.com/dotnet/maui/issues/XXXXX
+```
+
+**💡 Pro tip - Ask for the plan first:**
+
+Sometimes it's helpful to see the execution plan before work begins. Add this to your prompt:
+
+```bash
+Can you reproduce https://github.com/dotnet/maui/issues/32941 inside the sandbox?
+Please tell me your plan before you start.
+```
+
+This gives you a chance to adjust the plan or provide additional context before execution.
+
+**Setting yourself up for success:**
+
+When using multi-agent mode, craft your prompts to guide proper delegation:
+- ✅ "Can you reproduce <URL> inside the sandbox? Please check if there's an agent for each step."
+- ✅ "Please test this PR and make sure to use agents where appropriate"
+- ✅ "Write UI tests for this issue, using the uitest agent if available"
+
+The key phrases like "check if there's an agent", "use agents", and "inside the sandbox" help Copilot understand you want specialized agent delegation.
+
+### Option 2: GitHub Copilot CLI (Direct Agent Selection)
 
 **Sandbox Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
-copilot --allow-all-tools --allow-all-paths
+copilot
 
 # Invoke the sandbox-agent
 /agent sandbox-agent
@@ -36,7 +78,7 @@ please reproduce issue #12345
 **UI Test Coding Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
-copilot --allow-all-tools --allow-all-paths
+copilot
 
 # Invoke the uitest-coding-agent
 /agent uitest-coding-agent
@@ -49,7 +91,7 @@ please run the UI tests from PR #32479
 **Issue Resolver Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
-copilot --allow-all-tools --allow-all-paths
+copilot
 
 # Invoke the issue-resolver agent
 /agent issue-resolver
@@ -61,7 +103,7 @@ please investigate and fix https://github.com/dotnet/maui/issues/XXXXX
 **PR Reviewer Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
-copilot --allow-all-tools --allow-all-paths
+copilot
 
 # Invoke the pr-reviewer agent
 /agent pr-reviewer
@@ -70,7 +112,7 @@ copilot --allow-all-tools --allow-all-paths
 please review https://github.com/dotnet/maui/pull/XXXXX
 ```
 
-### Option 2: GitHub Copilot Agents (Web)
+### Option 3: GitHub Copilot Agents (Web)
 
 1. **Navigate to the agents tab** at https://github.com/copilot/agents
 
@@ -201,14 +243,11 @@ Agents are now self-contained single files:
 
 These provide specialized guidance for specific scenarios used by all agents:
 
-- **`instructions/common-testing-patterns.md`** - Command sequences (UDID extraction, builds, deploys, error checking)
 - **`instructions/uitests.instructions.md`** - UI testing guidelines (when to use HostApp vs Sandbox)
-- **`instructions/safearea-testing.md`** - SafeArea testing patterns (measure children, not parents)
-- **`instructions/instrumentation.md`** - Code instrumentation for debugging and testing
-- **`instructions/appium-control.md`** - Standalone Appium scripts for manual debugging
+- **`instructions/sandbox.instructions.md`** - Sandbox app testing patterns
 - **`instructions/templates.instructions.md`** - Template modification rules
-- **`instructions/sandbox-testing-patterns.md`** - Sandbox app testing patterns
-- **`instructions/edge-case-testing.md`** - Edge case testing strategies
+- **`instructions/xaml-unittests.instructions.md`** - XAML unit testing guidelines
+- **`instructions/collectionview-handler-detection.instructions.md`** - CollectionView handler configuration
 
 ### Shared Scripts
 
@@ -247,9 +286,6 @@ All agent logs are consolidated under `CustomAgentLogsTmp/`:
 - **`copilot-instructions.md`** - General coding standards, build requirements, file conventions for the entire repository
 
 ### Prompts
-- **`prompts/maui-pr-reviewer.prompt.md`** - Prompt for comprehensive PR reviews with testing
-- **`prompts/maui-sandbox-test.prompt.md`** - Prompt for testing PRs in Sandbox app
-- **`prompts/maui-uitest-write.prompt.md`** - Prompt for writing new UI tests
 - **`prompts/maui-release-notes.prompt.md`** - Prompt for generating release notes
 
 ## For GitHub Copilot (General Development)
@@ -285,7 +321,6 @@ When updating agent instructions or guidelines:
 
 ## Related Documentation
 
-- **Repository root**: `AGENTS.md` - Universal guidance for all AI coding assistants
 - **Development**: `DEVELOPMENT.md` - Development environment setup
 - **Contributing**: `CONTRIBUTING.md` - Contribution guidelines
 - **Wiki**: [.NET MAUI GitHub Wiki](https://github.com/dotnet/maui/wiki) - Additional resources

@@ -631,5 +631,5 @@ public partial class IssueXXXXX : ContentPage { }
 ## Key Resources
 
 - [UI Testing Guide](../instructions/uitests.instructions.md) - Complete UI test documentation
-- [Common Testing Patterns](../instructions/common-testing-patterns.md) - Build and deployment commands
+
 - [UITestCategories.cs](../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs) - All available categories

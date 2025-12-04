@@ -297,7 +297,7 @@ If PR modifies `Handlers/Items/` or `Handlers/Items2/`, you may need to configur
 
 ### SafeArea PRs
 
-Read [safearea-testing.md](../instructions/safearea-testing.md) - key points:
+For SafeArea PRs - key points:
 - Measure CHILD content position, not parent container
 - Calculate gaps from screen edges
 - Use colored backgrounds for visual debugging
@@ -388,5 +388,5 @@ If blocked by environment issues (no device, platform unavailable):
 
 Only read these if specifically needed:
 - [uitests.instructions.md](../instructions/uitests.instructions.md) - Full UI testing guide
-- [safearea-testing.md](../instructions/safearea-testing.md) - SafeArea-specific testing
+
 - [collectionview-handler-detection.instructions.md](../instructions/collectionview-handler-detection.instructions.md) - Handler configuration

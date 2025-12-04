@@ -57,26 +57,90 @@ After running BuildAndRunSandbox.ps1, you MUST:
 - ❌ **DO NOT** claim the test worked without verifying device logs show the action
 
 ### Rule 4: SYSTEMATIC VALIDATION CHECKLIST
-After EVERY test run, verify ALL of these:
+After EVERY test run, verify ALL of these **IN THIS ORDER**:
 
 ```bash
-# 1. Check for errors/exceptions
-grep -iE "error|exception|failed" CustomAgentLogsTmp/Sandbox/build-run-output.log | head -20
+# Step 1: Check for errors/exceptions FIRST
+grep -iE "error|exception|failed" CustomAgentLogsTmp/Sandbox/build-run-output.log | grep -v "no such element" | head -20
 
-# 2. Verify test completed
+# Step 2: Verify expected test actions (MOST IMPORTANT - proves test actually ran)
+grep -E "Tapping|Screenshot saved|Found.*element|Clicking|Entering text" CustomAgentLogsTmp/Sandbox/build-run-output.log
+
+# Step 3: Verify test completion marker
 grep "Test completed" CustomAgentLogsTmp/Sandbox/build-run-output.log
 
-# 3. Check screenshots were saved (if test captures them)
+# Step 4: Verify device logs show expected behavior
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/android-device.log  # or ios-device.log
+
+# Step 5: Check screenshots were saved (if test captures them)
 ls -lh CustomAgentLogsTmp/Sandbox/*.png
 
-# 4. Verify expected test actions in device logs
-grep "SANDBOX" CustomAgentLogsTmp/Sandbox/ios-device.log  # or android-device.log
-
-# 5. Check exit code
+# Step 6: Check exit code
 echo $?  # Should be 0 for success
 ```
 
+**CRITICAL**: If Step 2 shows NO test actions, the test didn't actually run even if it "completed successfully". Update your Appium test and rerun.
+
 **If ANY of these checks fail, the test DID NOT complete successfully. Investigate and fix before proceeding.**
+
+---
+
+## 🚨 WARNING: "Test Completed Successfully" ≠ Test Actually Worked
+
+**CRITICAL UNDERSTANDING**: The message "✅ Test completed successfully" only means:
+- ✅ Appium test script finished running without crashing
+- ✅ Script exit code was 0
+
+**It does NOT mean**:
+- ❌ Appium found your UI elements
+- ❌ Buttons were clicked
+- ❌ Navigation happened
+- ❌ Your test scenario actually ran
+
+### Example of False Success
+
+**What you see in output**:
+```
+✅ Test completed successfully
+
+╔═══════════════════════════════════════════════════════════╗
+║                    Test Summary                           ║
+╠═══════════════════════════════════════════════════════════╣
+║  Platform:     ANDROID                                    ║
+║  Device:       emulator-5554                              ║
+║  Result:       SUCCESS ✅                                 ║
+╚═══════════════════════════════════════════════════════════╝
+```
+
+**What actually happened**:
+```bash
+# Check the logs:
+grep "no such element" CustomAgentLogsTmp/Sandbox/build-run-output.log
+# Result: 20+ lines of "no such element" errors
+
+# The test looked for "InstructionLabel" which doesn't exist in MainPage
+# Appium never found ANY elements
+# Test script just gave up and exited with code 0
+# NO ACTUAL TESTING WAS PERFORMED
+```
+
+### How to Detect False Success
+
+**MANDATORY check after EVERY "successful" test**:
+```bash
+# Look for actual test actions in output
+grep -E "Tapping|Clicking|Found element|Screenshot saved" CustomAgentLogsTmp/Sandbox/build-run-output.log
+```
+
+**If grep returns NOTHING → FALSE SUCCESS**:
+- Test didn't actually do anything
+- Template test is looking for elements that don't exist
+- You MUST update `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` to match your MainPage
+- Rerun BuildAndRunSandbox.ps1 after updating test
+
+**If grep returns multiple lines → REAL SUCCESS**:
+- Test found elements and interacted with them
+- Proceed with full validation checklist
 
 ---
 
@@ -198,20 +262,35 @@ gh pr checkout <PR_NUMBER>
 
 **Files to modify**:
 - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml[.cs]` - UI and code for reproduction
-- `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` - Appium test script (see setup below)
+- `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` - Appium test script (MANDATORY - see setup below)
 
-**Setting up the Appium test file:**
-1. If `CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs` does NOT exist:
-   - Create directory: `mkdir -p CustomAgentLogsTmp/Sandbox`
-   - Copy template: `cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs`
-2. If it already exists, edit it directly (it persists between runs)
-3. Customize the test logic for your scenario
+**Setting up the Appium test file (MANDATORY):**
 
-**Implementation**:
-- Copy reproduction code from issue or UITest
-- Add `AutomationId` to interactive elements
-- Add console logging for debugging
-- See [Instrumentation Guide](instrumentation.md) for patterns and examples
+🚨 **CRITICAL**: Update Appium test BEFORE running script. Template will give FALSE SUCCESS otherwise.
+
+1. **Create test file**:
+   ```bash
+   mkdir -p CustomAgentLogsTmp/Sandbox
+   cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
+   ```
+
+2. **Update test to match MainPage**:
+   - Check AutomationIds: `grep AutomationId MainPage.xaml`
+   - Update test to use those IDs (not template defaults)
+   - Add test logic: tap buttons, verify labels
+   - Add `Console.WriteLine("SANDBOX ...")` markers
+
+3. **Example**:
+   ```bash
+   # Check MainPage
+   grep 'AutomationId=' MainPage.xaml
+   # Update test: App.WaitForElement("NavigateButton");
+   ```
+
+**Checklist**:
+- ✅ Add AutomationIds to MainPage.xaml elements
+- ✅ Update RunWithAppiumTest.cs to match
+- ✅ Add SANDBOX markers for debugging
 
 **🚨 CRITICAL - Document Your Test Scenario:**
 
@@ -350,98 +429,16 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform iOS -DeviceUdid "YOUR-DEVI
 - ✅ **Test execution** - Runs your Appium test script
 
 ### Requirements Before Running
-**You MUST create the Appium test file first:**
+Copy and update test file (see Step 2 above). Template looks for "InstructionLabel" which doesn't exist - update first!
 
-```bash
-# Create directory if needed
-mkdir -p CustomAgentLogsTmp/Sandbox
+**🚨 POST-TEST VALIDATION (MANDATORY):**
 
-# Copy template
-cp .github/scripts/templates/RunWithAppiumTest.template.cs CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
+After script completes, run Rule 4 validation checklist (see above). If ANY check fails: investigate, fix, rerun.
 
-# OPTIONAL: Add automated test logic (or leave as-is for manual testing only)
-# Edit CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs to add UI automation
-```
-
-**What the template does:**
-- ✅ Verifies app launched (always)
-- ✅ Runs any automated tests you add (optional)
-- ✅ Exits without closing app (always)
-
-**🚨 CRITICAL - MANDATORY POST-TEST VALIDATION:**
-
-After BuildAndRunSandbox.ps1 completes, you **MUST** run these validation commands:
-
-```bash
-# Step 1: Save full output to file for analysis
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform ios > CustomAgentLogsTmp/Sandbox/build-run-output.log 2>&1
-
-# Step 2: Check for errors/exceptions FIRST (do this before anything else)
-grep -iE "error|exception|failed" CustomAgentLogsTmp/Sandbox/build-run-output.log | head -20
-
-# Step 3: Verify test completion marker
-grep "Test completed" CustomAgentLogsTmp/Sandbox/build-run-output.log
-
-# Step 4: Verify expected test actions in output
-grep -E "Found|Tapping|Screenshot saved|switched" CustomAgentLogsTmp/Sandbox/build-run-output.log
-
-# Step 5: Verify device logs show expected behavior
-grep "SANDBOX" CustomAgentLogsTmp/Sandbox/ios-device.log  # or android-device.log
-
-# Step 6: Check if screenshots were created (if test captures them)
-ls -lh CustomAgentLogsTmp/Sandbox/*.png
-```
-
-**Validation Checklist - ALL must pass:**
-- ✅ No errors/exceptions in test output
-- ✅ "Test completed" message appears
-- ✅ Expected test actions appear in output (Tapping, Screenshot, etc.)
-- ✅ Device logs show your SANDBOX markers for button clicks/actions
-- ✅ Screenshots exist (if test captures them)
-- ✅ Exit code is 0 (check: `echo $?` after script)
-
-**If ANY validation fails:**
-1. ❌ **DO NOT** claim test success
-2. ❌ **DO NOT** proceed to summary
-3. ✅ **DO** investigate the specific failure
-4. ✅ **DO** fix the issue (test script, path bug, etc.)
-5. ✅ **DO** rerun and revalidate
-
-**What Appium HTTP 200 means:**
-- ✅ Element was found on the screen
-- ❌ Does NOT mean test completed
-- ❌ Does NOT mean button was tapped
-- ❌ Does NOT mean expected behavior occurred
-
-**Always validate the FULL test execution, not just element finding.**
-
----
-
-**What to validate (after passing above checklist):**
-- ✅ App launches successfully
-- ✅ **CRITICAL**: Verify app is actually running before proceeding:
-  - Check device logs show MainPage initialization
-  - Confirm Appium can find your initial test element
-  - If element not found: STOP and investigate logs (see Troubleshooting)
-- ✅ Test scenario completes without crashes/hangs
-- ✅ Appium test finds expected elements
-- ✅ Behavior matches expected fix
-
-**If Appium can't find initial element:**
-🚨 **DO NOT PROCEED** - Something is wrong:
-1. Check device logs for crashes/exceptions
-2. Verify XAML AutomationIds match test code
-3. Confirm app actually loaded MainPage (check logs for "MainPage" messages)
-4. Check if XAML has matching event handler (e.g., `Clicked="OnNavigateClicked"` needs method in code-behind)
-5. See [Element Not Found Troubleshooting](#element-not-found-on-first-screen) section
-
-**What to document in your summary:**
-- ✅ Validation checklist results (all passed)
-- ✅ Which test scenario you created (from issue/UITest/custom)
-- ✅ Specific actions your test performs
-- ✅ What behavior you observed (from device logs and test output)
-- ✅ Whether fix works as expected
-- ✅ Any warnings, errors, or unexpected behavior
+**Key reminders**:
+- HTTP 200 = element found, NOT test completed
+- If no test actions in logs = FALSE SUCCESS
+- If Appium can't find initial element = app crashed or AutomationIds wrong
 
 ---
 
@@ -465,6 +462,105 @@ pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform [android|ios]
 ```
 
 This proves the test scenario correctly reproduces the bug.
+
+---
+
+## 🔄 Iterative Testing Workflow (MANDATORY PROCESS)
+
+**🚨 CRITICAL**: This is THE workflow for Sandbox testing. Do NOT use manual `adb`/`xcrun` commands to bypass it.
+
+### The Required Loop
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Update MainPage.xaml[.cs] with your test scenario       │
+│    - Add UI elements for reproduction                       │
+│    - Add AutomationIds to all interactive elements          │
+│    - Add Console.WriteLine with "SANDBOX" markers           │
+├─────────────────────────────────────────────────────────────┤
+│ 2. Update Appium test to match your MainPage               │
+│    CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs         │
+│    - Update element locators to match AutomationIds        │
+│    - Add test logic (tap buttons, verify labels)           │
+├─────────────────────────────────────────────────────────────┤
+│ 3. Run BuildAndRunSandbox.ps1                               │
+│    pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform X  │
+├─────────────────────────────────────────────────────────────┤
+│ 4. Validate results using SYSTEMATIC CHECKLIST             │
+│    - Step 1: Check for errors/exceptions                   │
+│    - Step 2: Verify test actions (Tapping, etc.)           │
+│    - Step 3: Verify "Test completed"                       │
+│    - Step 4: Check device logs for SANDBOX markers         │
+│    - Step 5-6: Screenshots and exit code                   │
+├─────────────────────────────────────────────────────────────┤
+│ 5. Did ALL validation checks pass?                         │
+│    YES → Report success with summary (go to step 8)        │
+│    NO  → Continue to step 6                                │
+├─────────────────────────────────────────────────────────────┤
+│ 6. Investigate failure from captured logs                  │
+│    - Read CustomAgentLogsTmp/Sandbox/android-device.log    │
+│    - Read CustomAgentLogsTmp/Sandbox/build-run-output.log  │
+│    - Identify root cause (element not found? crash?)       │
+├─────────────────────────────────────────────────────────────┤
+│ 7. Fix the issue and LOOP BACK TO STEP 3                   │
+│    - Update MainPage if UI/code issue                      │
+│    - Update RunWithAppiumTest.cs if test issue             │
+│    - Update both if AutomationId mismatch                  │
+│    - Max 3 iterations before reporting as blocked          │
+├─────────────────────────────────────────────────────────────┤
+│ 8. Report comprehensive summary to user                    │
+│    - Test scenario source and justification                │
+│    - Validation results                                    │
+│    - Verdict (success/partial/issues/blocked)              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### ❌ What NOT To Do
+
+**Never use manual commands during testing**:
+- ❌ `adb logcat`, `adb shell`, `adb install`
+- ❌ `xcrun simctl spawn`, `xcrun simctl install`
+- ❌ `dotnet build`, `dotnet run`
+
+**Why**: Script already captured everything. Manual commands show CURRENT state, not test execution state.
+
+**✅ Correct**: Edit files → Rerun `BuildAndRunSandbox.ps1`
+
+### ✅ Correct Iteration Example
+
+**Most common case - Test fails to find element**:
+```bash
+# 1. Check what went wrong
+grep "no such element" CustomAgentLogsTmp/Sandbox/build-run-output.log
+
+# 2. Check what DOES exist in MainPage
+grep AutomationId src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml
+
+# 3. Fix MainPage: Add AutomationIds
+# Edit MainPage.xaml: <Button AutomationId="NavigateButton" ...
+
+# 4. Fix test: Update to match
+# Edit RunWithAppiumTest.cs: App.WaitForElement("NavigateButton");
+
+# 5. Rerun
+pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+```
+
+**When validation passes**: Report success with comprehensive summary
+
+### When to Stop Iterating
+
+- ✅ **All validation checks pass** → Report success with detailed summary
+- ❌ **Max 3 iterations reached** → Report as blocked with all details from attempts
+- ❌ **Build fails repeatedly** → Report build issue with error details
+- ❌ **Root cause unclear after log analysis** → Ask for guidance with log excerpts
+- ❌ **Issue appears to be PR bug, not test** → Report findings to user
+
+### Mental Model: The Script is Your Robot
+
+BuildAndRunSandbox.ps1 handles: build → deploy → capture logs → run test → report
+
+**Your workflow**: Edit files → Run script → Read logs → Fix issues → Repeat
 
 ---
 
@@ -572,275 +668,60 @@ cat CustomAgentLogsTmp/Sandbox/appium.log
 
 ---
 
-## 🚨 CRITICAL RULE: Never Run Manual Build/Deploy/Capture Commands
+## 🚨 ABSOLUTE RULE: BuildAndRunSandbox.ps1 is THE ONLY Deployment Method
 
-The BuildAndRunSandbox.ps1 script handles build, deploy, and log capture:
-- ✅ Building the app
-- ✅ Deploying to device
-- ✅ Capturing logs (device + Appium)
-- ✅ Running Appium tests
-- ✅ Cleaning logcat before tests
+**THIS IS MANDATORY. NOT A SUGGESTION.**
 
-**❌ NEVER RUN THESE BUILD/DEPLOY/CAPTURE COMMANDS DURING TEST WORKFLOW:**
-- `adb logcat` - Script already captures to `CustomAgentLogsTmp/Sandbox/android-device.log`
-- `adb logcat -c` - Script already clears logcat before test
-- `adb install` - Script handles deployment
-- `adb shell am start` - Script launches the app
-- `dotnet build` - Script builds the app
-- `dotnet run` - Script runs the Appium test
-- `xcrun simctl install` - Script deploys to simulator
-- `xcrun simctl spawn booted log stream` - Script captures iOS logs
+❌ If typing `adb`/`xcrun` commands during testing → STOP. You're violating the workflow.
 
-**⚠️ EXCEPTION - Pre-test device setup (when user requests specific device/version):**
+**Why**: Manual commands show CURRENT state, not test execution state. Script already captured correct logs during test.
 
-These commands ARE allowed ONLY for finding/booting a specific device BEFORE running BuildAndRunSandbox.ps1:
-- `xcrun simctl list devices` - To find UDID for specific iOS version/device
-- `xcrun simctl boot <UDID>` - To boot a specific simulator before passing UDID to script
+**❌ NEVER during testing**: `adb logcat`, `adb install`, `adb shell`, `xcrun simctl install/spawn`, `dotnet build/run`
 
-See "Run Test on Specific iOS Device/Version" section above for when this is needed.
+**✅ ONLY exception**: Finding/booting specific iOS device BEFORE running script (`xcrun simctl list/boot`)
 
-**Why this matters:**
-- Running `adb logcat` manually captures DIFFERENT logs than what the script captured
-- Manual logcat shows CURRENT state, not what happened during the test
-- Script filters logs to Sandbox app only and includes PID
-- You'll miss the actual crash/error if you run logcat after the fact
+**Correct workflow**:
+1. Edit files (MainPage, RunWithAppiumTest.cs)
+2. Run: `pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform X`
+3. Analyze logs in `CustomAgentLogsTmp/Sandbox/` (android-device.log, appium.log)
+4. Fix issues, rerun script
 
-**✅ DO RUN THE SCRIPT TO BUILD/DEPLOY/TEST:**
+**Expected logs**: `android-device.log` or `ios-device.log`, `appium.log`, `RunWithAppiumTest.cs`, optional screenshots
+
+---
+
+## Troubleshooting & Recovery
+
+**Retry up to 3 times before reporting as blocked.** After each failure: analyze logs → fix → rerun script.
+
+### Common Issues
+
+| Issue | Recovery | Max Retries |
+|-------|----------|-------------|
+| Build error | Check SDK version, `dotnet tool restore` | 2 |
+| App crash | Check stack trace in device log, fix code/XAML | 3 |
+| Element not found | Verify AutomationIds match, check app loaded | 2 |
+| Fast Deployment (Android) | Add `appium:noReset` capability | 1 |
+| XAML parse error | Verify event handler exists in code-behind | 2 |
+
+### Element Not Found Debugging
+
+🚨 If Appium can't find initial element, app is NOT running correctly.
+
+**Check**:
 ```bash
-# Let the script handle everything
-pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+# Look for crashes
+grep -i "FATAL\|crash\|exception" CustomAgentLogsTmp/Sandbox/android-device.log | tail -20
+
+# Verify app launched
+grep "SANDBOX.*MainPage" CustomAgentLogsTmp/Sandbox/android-device.log
 ```
 
-**✅ DO RUN ANALYSIS COMMANDS TO READ CAPTURED LOGS:**
-```bash
-# The script ALREADY captured logs. Now analyze them:
-grep -i "error" CustomAgentLogsTmp/Sandbox/android-device.log
-grep -i "exception" CustomAgentLogsTmp/Sandbox/android-device.log
-grep -i "FATAL" CustomAgentLogsTmp/Sandbox/android-device.log
-tail -50 CustomAgentLogsTmp/Sandbox/android-device.log
-cat CustomAgentLogsTmp/Sandbox/appium.log
+**Root causes**: App crashed, XAML parse error, AutomationId mismatch, Android Fast Deployment
 
-# Search for your console markers:
-grep "SANDBOX" CustomAgentLogsTmp/Sandbox/android-device.log
-
-# These commands READ existing files. They don't capture new logs.
-```
-
-**Expected files after BuildAndRunSandbox.ps1:**
-```
-CustomAgentLogsTmp/Sandbox/
-├── RunWithAppiumTest.cs           # Your Appium test script
-├── android-device.log             # Android device logs (filtered to Sandbox app)
-│   OR ios-device.log              # iOS simulator logs (filtered to Sandbox app)
-├── appium.log                     # Appium server logs
-├── issue_XXXXX_before.png         # Screenshot before test (if test captures it)
-└── issue_XXXXX_after.png          # Screenshot after test (if test captures it)
-```
-
-**If logs are missing or empty:**
-
-This indicates a bug in BuildAndRunSandbox.ps1 that MUST be fixed:
-
-1. **Check script output** - Look for "Logcat dumped to:" or "iOS logs saved to:" messages
-2. **Verify variable is defined** - Script must set `$deviceLogFile` before using it:
-   ```powershell
-   $deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
-   ```
-3. **Check file permissions** - Ensure `CustomAgentLogsTmp/Sandbox/` directory is writable
-4. **Report the bug** - If script doesn't generate logs, this is a script bug that blocks testing
-
-**How to debug:**
-
-1. **Run BuildAndRunSandbox.ps1** - It builds, deploys, captures logs, and runs tests
-2. **Read script output** - Shows build errors, deployment status, test results
-3. **Verify log files exist** - Check `ls -lh CustomAgentLogsTmp/Sandbox/` for log files
-4. **Analyze captured logs** - Use `grep`, `cat`, `tail` to read log files in `CustomAgentLogsTmp/Sandbox/`:
-   - `android-device.log` or `ios-device.log` - Device logs
-   - `appium.log` - Appium server logs
-5. **Fix issues** - Update test code, MainPage, or report if blocked
-6. **Rerun script** - It will rebuild, redeploy, recapture logs, and retest
-
-**Summary:**
-- ❌ Don't run commands that BUILD, DEPLOY, or CAPTURE logs
-- ✅ DO run commands that ANALYZE already-captured logs
-- ✅ Always use BuildAndRunSandbox.ps1 for build/deploy/test cycle
-- ✅ If log files are missing, this is a script bug - fix or report it
-
----
-
-## Common Error Handling Patterns
-
-### PublicAPI Analyzer Failures
-
-**Don't turn off analyzers** - Fix the PublicAPI.Unshipped.txt files properly:
-
-```bash
-# Use dotnet format to fix analyzer issues
-dotnet format analyzers Microsoft.Maui.sln
-
-# If that doesn't work, revert and manually add entries
-git checkout -- src/*/PublicAPI.Unshipped.txt
-# Then add only the new public APIs
-```
-
-### What to Fix Based on Logs
-
-**Build failures** - Analyze error in script output, check if SDK mismatch, fix project files if needed, retry
-**App crashes** - Read device log from `CustomAgentLogsTmp/Sandbox/`, check stack trace, fix test code or reproduction scenario
-**Fast Deployment errors (Android)** - See "Critical Requirements for Android Testing" section at top of this document
-**Cannot find reproduction scenario** - Try alternative approaches (UITests, code analysis)
-**Test code errors** - Fix Appium script or MainPage code based on error messages
-
----
-
-## When to Report vs. When to Escalate
-
-### ✅ Just Report (Continue Testing)
-- Minor warnings in logs (unrelated to fix)
-- Small visual glitches (if not what's being fixed)
-- Non-critical Appium delays or timeouts that eventually succeed
-- Platform-specific behavior differences (document them)
-
-### 🔧 Debug and Fix (Try These Before Reporting)
-
-**Retry Policy**: Attempt up to **3 times** before reporting as blocked.
-
-After each failure:
-1. Analyze logs (device + Appium)
-2. Identify root cause
-3. Fix the issue (test code, XAML, capabilities)
-4. Rerun BuildAndRunSandbox.ps1
-
-**Recovery Steps by Issue Type**:
-
-| Issue | Recovery Action | Max Retries |
-|-------|----------------|-------------|
-| Build error | Check SDK version, restore tools, clean build | 2 |
-| App crash | Fix test code/XAML based on stack trace | 3 |
-| Element not found | Verify AutomationIds, check page loaded | 2 |
-| Fast Deployment error (Android) | See "Critical Requirements for Android Testing" section | 1 |
-| Appium timeout | Increase wait time, check app state | 2 |
-| XAML parse error | Fix event handler or binding syntax | 2 |
-
-**When to stop and report**: After max retries OR if you determine:
-- Issue is outside your control (SDK mismatch, device unavailable)
-- Root cause unclear despite log analysis
-- Issue appears to be a PR bug (not test infrastructure)
-
-### 🚫 STOP and Report (Cannot Proceed After Attempts)
-- Cannot checkout PR (git errors)
-- BuildAndRunSandbox.ps1 doesn't exist
-- No device/simulator available
-- SDK version mismatch with no resolution
-- Build failures persist after troubleshooting attempts
-- App crashes that appear unrelated to test code or fix
-
----
-
-## Detailed Troubleshooting
-
-### Build Fails
-**Action**: Stop and report to user
-
-```markdown
-❌ Build failed
-
-**Error**: [Full error message]
-
-**Common Causes**:
-- .NET SDK version mismatch (check global.json)
-- Missing dependencies
-- Corrupted build cache
-
-**Recommended Actions**:
-1. Verify .NET SDK version: `dotnet --version`
-2. Should match value in global.json
-3. Run: `dotnet tool restore`
-
-Unable to proceed with validation. Please advise.
-```
-
-### Element Not Found on First Screen
-**Action**: ALWAYS investigate - Do NOT assume app is working
-
-🚨 **CRITICAL**: If Appium can't find your initial element (e.g., test button), the app is NOT running correctly.
-
-**DO NOT ASSUME**:
-- ❌ "App is just loading slowly" - Wait longer
-- ❌ "AutomationId is wrong" - Just try different locators
-- ❌ "Maybe the page didn't navigate yet" - Try other elements
-
-**IMMEDIATELY CHECK**:
-
-1. **Check device logs for crashes**:
-   ```bash
-   # Android - Look for "FATAL", "crash", or "Exception"
-   grep -i "FATAL\|crash\|exception" CustomAgentLogsTmp/Sandbox/android-device.log | tail -20
-   
-   # iOS - Look for "Terminating app" or "exception"
-   grep -i "terminating\|exception\|crash" CustomAgentLogsTmp/Sandbox/ios-device.log | tail -20
-   ```
-
-2. **Verify app actually launched**:
-   ```bash
-   # Android - Check if MainPage initialized
-   grep "SANDBOX.*MainPage" CustomAgentLogsTmp/Sandbox/android-device.log
-   
-   # iOS - Check if app process is present
-   grep "Maui.Controls.Sample.Sandbox" CustomAgentLogsTmp/Sandbox/ios-device.log | head -5
-   ```
-
-3. **Common Root Causes**:
-   - **App crashed on launch** - Check logs for exception/crash
-   - **XAML parse error** - Missing event handler in code-behind
-   - **AutomationId mismatch** - XAML has different name than test expects
-   - **Wrong page displayed** - App navigated somewhere else
-   - **Android Fast Deployment issue** - Missing `noReset` capability
-
-**Debugging Steps**:
-
-1. Check logs first (see commands above)
-2. If crashed: Find and fix the exception
-3. If XAML error: Verify event handler exists and matches
-4. If no crash: Verify AutomationIds match between XAML and test
-5. If still unclear: Check Appium page source: `driver.PageSource`
-
----
-
-### App Crashes Immediately on Launch (Android)
-**Action**: Check for Fast Deployment error first
-
-```bash
-# Search device log for Fast Deployment error
-grep "No assemblies found" CustomAgentLogsTmp/Sandbox/android-device.log
-# OR
-grep "Abort message" CustomAgentLogsTmp/Sandbox/android-device.log
-```
-
-**If you see: "No assemblies found in '.../__override__/...' ... Fast Deployment"**
-
-This is a missing `appium:noReset` capability issue. See "Critical Requirements for Android Testing" section at the top of this document for the fix.
-
-**This is NOT a PR bug** - It's a test infrastructure issue. Once fixed, retry the test.
-
----
-
-### App Crashes During Test (Other Reasons)
-**Action**: Analyze crash logs and report
-
-```markdown
-❌ App crashed during testing
-
-**When**: [Specific action that caused crash]
-
-**Error from logs**: [Exception/crash details]
-
-**Analysis**: [Your interpretation - does this seem related to the PR changes?]
-
-**Recommendation**: [Does this indicate the fix doesn't work, or is it an unrelated issue?]
-```
-
-### Cannot Find Reproduction Steps
+### When to Stop & Report
+- ✅ **Continue**: Minor warnings, non-critical timeouts, platform differences
+- ❌ **Stop**: Can't checkout PR, build fails after max retries, SDK mismatch, root cause unclear
 **Action**: Try alternative approaches
 
 1. Check linked issue for "Reproduction" section
@@ -878,24 +759,10 @@ This is a missing `appium:noReset` capability issue. See "Critical Requirements 
 - ❌ Ignoring PR's existing UITests when available
 - ❌ Cleaning up or reverting Sandbox changes (user will iterate on it)
 
----
-
-## Key Resources
-
-### Must-Read Before Testing
-- [Instrumentation Guide](instrumentation.md) - How to add logging and measurements
-- [Appium Control Scripts](appium-control.md) - UI automation patterns
-
-### Read When Relevant
-- [SafeArea Testing](safearea-testing.md) - If PR involves SafeArea
-
----
-
-## Related Documentation
-
-- [Instrumentation Guide](instrumentation.md) - How to add logging and measurements to Sandbox app
-- [Appium Control Scripts](appium-control.md) - UI automation with Appium
-- [SafeArea Testing](safearea-testing.md) - Testing SafeArea-specific issues
+**Testing Tips**:
+- For layout bugs: Use `element.GetRect()` to measure positions
+- For SafeArea PRs: Measure child content position, not parent size
+- Add `Console.WriteLine("SANDBOX ...")` markers for debugging
 
 ---
 

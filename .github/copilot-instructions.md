@@ -144,10 +144,6 @@ dotnet cake --target=dotnet-pack
   - **XAML tests**: `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
   - **To find other test projects**: `find . -name "*.UnitTests.csproj"` or check the solution file
 
-#### UI Testing
-
-UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesting-Guide.md) for comprehensive documentation.
-
 ### Code Formatting
 
 Before committing any changes, format the codebase using the following command to ensure consistent code style:
@@ -380,17 +376,3 @@ The repository includes specialized custom agents for specific tasks. These agen
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
 - User asks "How do I test PRs?" → Documentation query, handle yourself
 - User has follow-up questions after agent completes → Continue the conversation yourself
-
-## Additional Resources
-
-- [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
-- [UI Testing Guide](../docs/UITesting-Guide.md)
-- [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
-- [SafeArea Testing Guide](/.github/instructions/safearea-testing.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
-- [Instrumentation Guide](/.github/instructions/instrumentation.md) - Patterns for instrumenting MAUI code for debugging and testing
-- [Appium Control Scripts](/.github/instructions/appium-control.md) - Create standalone scripts for manual Appium-based debugging and exploration
-- [Development Guide](/.github/DEVELOPMENT.md)
-- [Development Tips](/docs/DevelopmentTips.md)
-- [Contributing Guidelines](/.github/CONTRIBUTING.md)
-- [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
-- [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)

@@ -8,7 +8,7 @@ applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCa
 
 This document provides specific guidance for GitHub Copilot when writing UI tests for the .NET MAUI repository.
 
-**Common Command Patterns**: For UDID extraction, device boot, builds, and error checking patterns, see [Common Testing Patterns](common-testing-patterns.md).
+
 
 **Critical Principle**: UI tests should run on all applicable platforms (iOS, Android, Windows, MacCatalyst) by default unless there is a specific technical limitation.
 
