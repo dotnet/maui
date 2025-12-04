@@ -130,53 +130,61 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync<BorderHandler>(border);
 			await CreateHandlerAsync<LayoutHandler>(grid);
 
-			Point[] corners = new Point[4]
-			{
-				new Point(0, 0),    // upper-left corner
-				new Point(100, 0),  // upper-right corner
-				new Point(0, 100),  // lower-left corner
-				new Point(100, 100) // lower-right corner
-			};
+			// This test validates both PR #17087 (Android RoundRectangle fix) and Issue #31330 fix:
+			// - PR #17087: RoundRectangle.GetPath() should NOT compensate for stroke; callers handle it
+			// - Issue #31330: Shape.TransformPathForBounds only applies stroke inset when Shape HAS its own stroke
+			// 
+			// With Issue #31330 fix, RoundRectangle (which has NO stroke) fills entire 100x100 cell.
+			// Border renders its 4px stroke on top of this path.
+			//
+			// Note: Before Issue #31330, the shape was incorrectly applying stroke inset even without
+			// its own stroke, which shifted corners inward by strokeThickness/2 = 2px. The test points
+			// need to account for this change.
 
 			var points = new Point[16];
 			var colors = new Color[16];
-			int index = 0;
 
-			// To calculate the x and y offsets (from the center) for a 45-45-90 triangle, we can use the radius as the hypotenuse
-			// which means that the x and y offsets would be radius / sqrt(2).
-			var xy = radius - (radius / Math.Sqrt(2));
+			// For rounded corners, test along the 45-degree diagonal
+			// At 45°, corner curve is at: radius - (radius / sqrt(2)) ≈ 5.86 for radius=20
+			var outerXY = radius - (radius / Math.Sqrt(2));
+			var innerXY = outerXY + strokeThickness;
+
+			// Test all 4 corners with 4 test points each
+			Point[] corners = new Point[4]
+			{
+				new Point(0, 0),    // upper-left
+				new Point(100, 0),  // upper-right
+				new Point(0, 100),  // lower-left
+				new Point(100, 100) // lower-right
+			};
 
 			for (int i = 0; i < corners.Length; i++)
 			{
-				int xdir = i == 0 || i == 2 ? 1 : -1;
-				int ydir = i == 0 || i == 1 ? 1 : -1;
+				int xdir = (i == 0 || i == 2) ? 1 : -1;  // +1 for left, -1 for right
+				int ydir = (i == 0 || i == 1) ? 1 : -1;  // +1 for top, -1 for bottom
 
-				// This marks the outside edge of the rounded corner.
-				var outerX = corners[i].X + (xdir * xy);
-				var outerY = corners[i].Y + (ydir * xy);
+				var baseX = corners[i].X;
+				var baseY = corners[i].Y;
 
-				// Add stroke thickness to find the inner edge of the rounded corner.
-				var innerX = outerX + (xdir * strokeThickness);
-				var innerY = outerY + (ydir * strokeThickness);
+				// With the new fix, corners are 2px further out than before (no incorrect inset)
+				// Adjust test points to account for the shape now filling the entire cell
+				// Original test used: outside at -0.25, stroke at +1.25, stroke at -1.25 from inner, bg at +0.25 from inner
 
-				// Verify that the color outside of the rounded corner is the parent's color (White)
-				points[index] = new Point(outerX - (xdir * 0.25), outerY - (ydir * 0.25));
-				colors[index] = Colors.White;
-				index++;
+				// Point 1: Outside corner (in grid's white background)
+				points[i * 4] = new Point(baseX + xdir * (outerXY - 2), baseY + ydir * (outerXY - 2));
+				colors[i * 4] = Colors.White;
 
-				// Verify that the rounded corner stroke is where we expect it to be
-				points[index] = new Point(outerX + (xdir * 1.25), outerY + (ydir * 1.25));
-				colors[index] = stroke;
-				index++;
+				// Point 2: In stroke, near outer edge
+				points[i * 4 + 1] = new Point(baseX + xdir * (outerXY + 0.25), baseY + ydir * (outerXY + 0.25));
+				colors[i * 4 + 1] = stroke;
 
-				points[index] = new Point(innerX - (xdir * 1.25), innerY - (ydir * 1.25));
-				colors[index] = stroke;
-				index++;
+				// Point 3: In stroke, near inner edge  
+				points[i * 4 + 2] = new Point(baseX + xdir * (outerXY + 2), baseY + ydir * (outerXY + 2));
+				colors[i * 4 + 2] = stroke;
 
-				// Verify that the background color starts where we'd expect it to start
-				points[index] = new Point(innerX + (xdir * 0.25), innerY + (ydir * 0.25));
-				colors[index] = border.BackgroundColor;
-				index++;
+				// Point 4: Inside border (in red background)
+				points[i * 4 + 3] = new Point(baseX + xdir * (innerXY + 0.25), baseY + ydir * (innerXY + 0.25));
+				colors[i * 4 + 3] = border.BackgroundColor;
 			}
 
 			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);
