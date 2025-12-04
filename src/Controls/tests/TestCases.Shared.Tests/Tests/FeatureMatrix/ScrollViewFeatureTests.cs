@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class ScrollViewFeatureTests : _GalleryUITest
 {
 	public const string ScrollViewFeatureMatrix = "ScrollView Feature Matrix";
-	override public string GalleryPageName => ScrollViewFeatureMatrix;
+	public override string GalleryPageName => ScrollViewFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string ContentLabel = "ContentLabel";
