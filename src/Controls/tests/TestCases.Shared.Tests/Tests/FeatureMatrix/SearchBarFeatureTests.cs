@@ -8,7 +8,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 {
 	public const string SearchBarFeatureMatrix = "Search Bar Feature Matrix";
 
-	override public string GalleryPageName => SearchBarFeatureMatrix;
+	public override string GalleryPageName => SearchBarFeatureMatrix;
 
 	public SearchBarFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
