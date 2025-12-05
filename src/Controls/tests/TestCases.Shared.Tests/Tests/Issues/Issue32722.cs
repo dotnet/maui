@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
+using NUnit.Framework;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,7 +9,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	public class Issue32722 : _IssuesUITest
 	{
 		public override string Issue => "NavigationPage.TitleView does not expand with host window in iPadOS 26+";
-
 		public Issue32722(TestDevice device) : base(device) { }
 
 		[Test]
@@ -52,3 +53,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
