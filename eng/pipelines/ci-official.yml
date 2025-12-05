@@ -101,11 +101,7 @@ extends:
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
-    - ${{ if or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-          and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')),
-          startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
-        ) }}:
+    - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
       - template: /eng/pipelines/arcade/stage-api-scan.yml@self
         parameters:
           pool: ${{ parameters.VM_IMAGE_HOST }}
