@@ -1,5 +1,11 @@
 #nullable enable
+*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+Microsoft.Maui.Controls.SearchBar.ShowsCancelButton.get -> bool
+Microsoft.Maui.Controls.SearchBar.ShowsCancelButton.set -> void
+Microsoft.Maui.Controls.SearchHandler.ShowsCancelButton.get -> bool
+Microsoft.Maui.Controls.SearchHandler.ShowsCancelButton.set -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
-*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~static readonly Microsoft.Maui.Controls.SearchBar.ShowsCancelButtonProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SearchHandler.ShowsCancelButtonProperty -> Microsoft.Maui.Controls.BindableProperty

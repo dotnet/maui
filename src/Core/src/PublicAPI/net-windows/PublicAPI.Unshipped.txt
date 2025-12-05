@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.ISearchBar.ShowsCancelButton.get -> bool
+static Microsoft.Maui.Handlers.SearchBarHandler.MapShowsCancelButton(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

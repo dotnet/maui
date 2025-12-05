@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.Maui.Controls.SearchBar.ShowsCancelButton.get -> bool
+Microsoft.Maui.Controls.SearchBar.ShowsCancelButton.set -> void
+Microsoft.Maui.Controls.SearchHandler.ShowsCancelButton.get -> bool
+Microsoft.Maui.Controls.SearchHandler.ShowsCancelButton.set -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
+~static readonly Microsoft.Maui.Controls.SearchBar.ShowsCancelButtonProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SearchHandler.ShowsCancelButtonProperty -> Microsoft.Maui.Controls.BindableProperty
