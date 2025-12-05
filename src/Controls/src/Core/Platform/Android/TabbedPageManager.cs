@@ -123,18 +123,20 @@ public class TabbedPageManager
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
-			Element.Disappearing -= OnTabbedPageDisappearing;
+
 			RemoveTabs();
+			
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
 		}
 
 		Element = tabbedPage;
+		
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
-			Element.Disappearing += OnTabbedPageDisappearing;
+
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 			if (IsBottomTabPlacement)
@@ -218,7 +220,8 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		RemoveTabs();
+		// No op, TODO can be removed in .NET 11, empty method
+		// needs to stay here so we don't change the public API surface for .NET 10
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
