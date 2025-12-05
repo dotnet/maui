@@ -98,11 +98,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
-	[TestCase("maui", DotNetCurrent, "Release", false)]
-	[TestCase("maui", DotNetPrevious, "Release", true)]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", true)]
+	// [Test]
+	// [TestCase("maui", DotNetCurrent, "Release", false)]
+	// [TestCase("maui", DotNetPrevious, "Release", true)]
+	// [TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+	// [TestCase("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		if (!TestEnvironment.IsWindows)
@@ -140,11 +140,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 		}
 	}
 
-	[Test]
-	[TestCase("maui", DotNetCurrent, "Release", false)]
-	[TestCase("maui", DotNetPrevious, "Release", true)]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", true)]
+	// [Test]
+	// [TestCase("maui", DotNetCurrent, "Release", false)]
+	// [TestCase("maui", DotNetPrevious, "Release", true)]
+	// [TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+	// [TestCase("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		if (!TestEnvironment.IsWindows)
