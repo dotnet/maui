@@ -516,14 +516,14 @@ namespace Microsoft.Maui.Media
 		}
 	}
 
-	class PHPickerFileResult : FileResult, IDisposable
+	class PHPickerFileResult : FileResult
 	{
 		readonly string _identifier;
 		readonly NSItemProvider _provider;
 		readonly object _loadLock = new object();
+		NSUrl _fileUrl;
 		bool _isFileLoaded;
-		bool _isLoading; // Track loading in progress
-		bool _disposed;
+		bool _isLoading;
 
 		internal PHPickerFileResult(NSItemProvider provider)
 		{
@@ -543,25 +543,23 @@ namespace Microsoft.Maui.Media
 			// Set the original filename
 			var extension = GetTag(_identifier, UTType.TagClassFilenameExtension);
 			FileName = $"{provider?.SuggestedName}.{extension}";
-
-			// Create a temporary file path for the actual file
-			var tempFileName = $"{Guid.NewGuid()}.{extension}";
-			FullPath = Path.Combine(Path.GetTempPath(), tempFileName);
 		}
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
 		{
-			if (_disposed)
-				throw new ObjectDisposedException(nameof(PHPickerFileResult));
-
-			// Ensure the file is loaded to disk on first access
+			// Ensure the file is loaded
 			if (!_isFileLoaded)
 			{
 				await EnsureFileLoadedAsync();
 			}
 
 			// Return a stream to the file
-			return File.OpenRead(FullPath);
+			if (_fileUrl != null && !string.IsNullOrWhiteSpace(FullPath))
+			{
+				return File.OpenRead(FullPath);
+			}
+
+			throw new InvalidOperationException("File could not be loaded");
 		}
 
 		async Task EnsureFileLoadedAsync()
@@ -570,23 +568,9 @@ namespace Microsoft.Maui.Media
 			
 			lock (_loadLock)
 			{
-				// Check if disposed
-				if (_disposed)
-					throw new ObjectDisposedException(nameof(PHPickerFileResult));
-
 				// If already loaded or currently loading, return
 				if (_isFileLoaded || _isLoading)
 					return;
-
-				if (string.IsNullOrWhiteSpace(FullPath))
-					return;
-
-				// Check if file already exists (another instance may have created it)
-				if (File.Exists(FullPath))
-				{
-					_isFileLoaded = true;
-					return;
-				}
 
 				// Mark as loading to prevent other threads from also attempting to load
 				_isLoading = true;
@@ -603,19 +587,31 @@ namespace Microsoft.Maui.Media
 						throw new InvalidOperationException("Item provider is null");
 					}
 
-					// Load the data from the provider
-					var data = await _provider.LoadDataRepresentationAsync(_identifier);
-					if (data == null)
+					// Use LoadFileRepresentationAsync to get a file URL without copying
+					var tcs = new TaskCompletionSource<NSUrl>();
+					_provider.LoadFileRepresentation(_identifier, (url, error) =>
 					{
-						throw new InvalidOperationException("Failed to load data from provider");
+						if (error != null)
+						{
+							tcs.TrySetException(new NSErrorException(error));
+						}
+						else
+						{
+							tcs.TrySetResult(url);
+						}
+					});
+
+					_fileUrl = await tcs.Task;
+					
+					if (_fileUrl == null)
+					{
+						throw new InvalidOperationException("Failed to load file from provider");
 					}
 
-					// Write the data to the temporary file using FileMode.CreateNew for atomic creation
-					using var stream = data.AsStream();
-					using var fileStream = new FileStream(FullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-					await stream.CopyToAsync(fileStream);
+					// Set FullPath to the file URL path
+					FullPath = _fileUrl.Path;
 					
-					// Only mark as loaded after successful write
+					// Only mark as loaded after successful load
 					lock (_loadLock)
 					{
 						_isFileLoaded = true;
@@ -636,44 +632,6 @@ namespace Microsoft.Maui.Media
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
-
-			if (disposing)
-			{
-				// Clean up the temporary file if it was created
-				// Use lock to prevent race with loading
-				lock (_loadLock)
-				{
-					try
-					{
-						if (_isFileLoaded && !string.IsNullOrWhiteSpace(FullPath) && File.Exists(FullPath))
-						{
-							File.Delete(FullPath);
-						}
-					}
-					catch
-					{
-						// Ignore errors during cleanup
-					}
-					
-					_disposed = true;
-				}
-			}
-			else
-			{
-				_disposed = true;
-			}
-		}
 	}
 
 	class CompressedUIImageFileResult : FileResult
