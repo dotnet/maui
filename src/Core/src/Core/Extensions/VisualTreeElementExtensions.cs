@@ -209,93 +209,10 @@ namespace Microsoft.Maui
 		internal static IVisualTreeElement? GetVisualTreeElement(
 			this PlatformView platformView, bool searchAncestors)
 		{
-			var platformParentPath = new List<PlatformView>();
-			IVisualTreeElement? foundParent = null;
-
-			// Locate the first Platform View we can find that can return us its Maui Element
-			var nearestParentContainer =
-				platformView
-					.FindParent(x =>
-					{
-						if (x is PlatformView pv)
-							platformParentPath.Add(pv);
-
-						if (x is IVisualTreeElementProvidable backing)
-						{
-							foundParent = backing.GetElement();
-							return foundParent is not null;
-						}
-
-						return false;
-					});
-
-			platformParentPath.Reverse();
-
-			if (foundParent?.IsThisMyPlatformView(platformView) == true)
-				return foundParent;
-
-			if (nearestParentContainer is null || foundParent is null)
-				return null;
-
-			// Now that we have an xplat starting point
-			// Let's search back down the xplat tree to figure out what IElement to return
-			// This searches down the xplat tree to figure out what path going down the xplat tree
-			// matches up against the path we took to go up the platform tree
-			var returnValue = FindNextChild(foundParent, platformView, platformParentPath);
-
-			// If we aren't searching ancestors, then we only want to return
-			// IVTE if it matches the found platformView
-			if (!searchAncestors &&
-				returnValue != null &&
-				!returnValue.IsThisMyPlatformView(platformView))
-			{
-				return null;
-			}
-
-			return returnValue;
-
-			static IVisualTreeElement? FindNextChild(
-				IVisualTreeElement parent,
-				PlatformView platformView,
-				List<PlatformView> platformParentPath)
-			{
-				var children = parent.GetVisualChildren();
-				IVisualTreeElement? childMatch = null;
-				foreach (var child in children)
-				{
-					if (child is not IVisualTreeElement childVTE)
-					{
-						return parent;
-					}
-
-					if (childVTE.IsThisMyPlatformView(platformView))
-					{
-						return childVTE;
-					}
-
-					// We only want to check children with platform components that have been realized
-					if (childVTE is IElement element &&
-						element.Handler is IPlatformViewHandler pvh &&
-						pvh.PlatformView is not null)
-					{
-						var indexOfPlatformView = platformParentPath.IndexOf(pvh.PlatformView);
-
-						if (indexOfPlatformView < 0)
-							continue;
-
-						childMatch = child;
-						platformParentPath.RemoveRange(0, indexOfPlatformView + 1);
-						break;
-					}
-				}
-
-				// If I've ran out of children then we just return the parent 
-				// as the furthest down element we've been able to match to
-				if (childMatch is null)
-					return parent;
-
-				return FindNextChild(childMatch, platformView, platformParentPath);
-			}
+			// The IVisualTreeElementProvidable interface has been removed as it was never
+			// actually needed or used in practice (issue #30295).
+			// This method now returns null since the interface-based lookup is no longer available.
+			return null;
 		}
 
 		internal static bool IsThisMyPlatformView(this IVisualTreeElement? visualTreeElement, PlatformView platformView)
