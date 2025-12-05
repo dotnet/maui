@@ -131,12 +131,24 @@ steps:
 
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
-
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    
+    # Get test filter from environment variable (passed from matrix via env block)
+    # When a dynamic matrix is used, the categoryGroup value is passed via env block
+    $testFilterParam = $env:CATEGORY_GROUP
+    
+    # Fallback to parameter for non-matrix builds
+    if (-not $testFilterParam) {
+      $testFilterParam = "${{ parameters.testFilter }}"
     }
-
-    $testFilter = $testFilter.TrimEnd("|")
+    
+    Write-Host "Test filter: '$testFilterParam'"
+    
+    if ($testFilterParam) {
+      $testFilterParam.Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
+      }
+      $testFilter = $testFilter.TrimEnd("|")
+    }
 
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
@@ -159,6 +171,7 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    CATEGORY_GROUP: $(categoryGroup)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
