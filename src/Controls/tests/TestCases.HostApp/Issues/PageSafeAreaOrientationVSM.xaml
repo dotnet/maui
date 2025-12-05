@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.PageSafeAreaOrientationVSM"
+             Title="Page SafeArea VSM Test">
+    <!-- Apply VSM to the Page itself to change SafeAreaEdges based on orientation -->
+    <VisualStateManager.VisualStateGroups>
+        <VisualStateGroupList>
+            <VisualStateGroup x:Name="OrientationStates">
+                <VisualState x:Name="Portrait">
+                    <VisualState.StateTriggers>
+                        <OrientationStateTrigger Orientation="Portrait" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="SafeAreaEdges" Value="Container" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Landscape">
+                    <VisualState.StateTriggers>
+                        <OrientationStateTrigger Orientation="Landscape" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="SafeAreaEdges" Value="Container" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateGroupList>
+    </VisualStateManager.VisualStateGroups>
+
+    <ScrollView BackgroundColor="LightGray">
+        <VerticalStackLayout Spacing="20" Padding="20">
+            
+            <Label Text="Page SafeArea with Orientation VSM Test"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <Label Text="This test validates that Page SafeAreaEdges responds to orientation changes via VisualStateManager."
+                   FontSize="14"
+                   HorizontalOptions="Center"/>
+
+            <Border BackgroundColor="LightBlue"
+                    Stroke="DarkBlue"
+                    StrokeThickness="2"
+                    Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Current State"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+                    
+                    <Label x:Name="OrientationLabel"
+                           Text="Orientation: Detecting..."
+                           FontSize="16"
+                           AutomationId="OrientationLabel"/>
+                    
+                    <Label x:Name="SafeAreaEdgesLabel"
+                           Text="SafeAreaEdges: Detecting..."
+                           FontSize="16"
+                           AutomationId="SafeAreaEdgesLabel"/>
+                    
+                    <Label x:Name="PageDimensionsLabel"
+                           Text="Page Dimensions: Loading..."
+                           FontSize="16"
+                           AutomationId="PageDimensionsLabel"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="LightYellow"
+                    Stroke="Orange"
+                    StrokeThickness="2"
+                    Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Test Instructions"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+                    
+                    <Label Text="• Rotate device from Portrait to Landscape"
+                           FontSize="14"/>
+                    <Label Text="• Observe SafeAreaEdges updates automatically"
+                           FontSize="14"/>
+                    <Label Text="• The page safe area should be Container in both orientations"
+                           FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Visual markers to show safe area effect -->
+            <Border BackgroundColor="White"
+                    Stroke="Red"
+                    StrokeThickness="3"
+                    Padding="10">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Visual Markers"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+                    
+                    <BoxView Color="Red"
+                             HeightRequest="50"
+                             WidthRequest="100"
+                             HorizontalOptions="Start"
+                             AutomationId="TopLeftMarker"/>
+                    
+                    <BoxView Color="Green"
+                             HeightRequest="50"
+                             WidthRequest="100"
+                             HorizontalOptions="End"
+                             AutomationId="TopRightMarker"/>
+                    
+                    <BoxView Color="Blue"
+                             HeightRequest="50"
+                             WidthRequest="100"
+                             HorizontalOptions="Center"
+                             AutomationId="CenterMarker"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="End of Content"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
