@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
@@ -8,7 +9,7 @@ namespace Maui.Controls.Sample.Controls
 {
 	internal class BorderlessEntryRegistration
 	{
-		private readonly Action<BordelessEntryServiceBuilder> _builderAction;
+		readonly Action<BordelessEntryServiceBuilder> _builderAction;
 
 		public BorderlessEntryRegistration(Action<BordelessEntryServiceBuilder> builderAction)
 		{
@@ -24,8 +25,9 @@ namespace Maui.Controls.Sample.Controls
 	class BordelessEntryServiceBuilder
 	{
 		internal static IMauiHandlersCollection? HandlersCollection;
-		internal static readonly Dictionary<Type, Type> PendingHandlers = new();
+		internal static readonly Dictionary<Type, Type> PendingHandlers = new Dictionary<Type, Type>();
 
+		[UnconditionalSuppressMessage("Trimming", "IL2091", Justification = "Sample code not used in production")]
 		public static void TryAddHandler<TType, TTypeRender>()
 			where TType : IView
 			where TTypeRender : IViewHandler
@@ -46,6 +48,7 @@ namespace Maui.Controls.Sample.Controls
 			_borderlessEntryRegistrations = borderlessEntryRegistrations;
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Sample code not used in production")]
 		public void Initialize(IServiceProvider services)
 		{
 			var essentialsBuilder = new BordelessEntryServiceBuilder();

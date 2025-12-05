@@ -42,6 +42,7 @@ namespace Microsoft.Maui
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsShellSearchResultsRendererDisplayMemberNameSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
+		[UnconditionalSuppressMessage("Trimming", "IL2045", Justification = "Feature guard attributes may be removed; logic falls back to default without attribute instances.")]
 		public static bool IsShellSearchResultsRendererDisplayMemberNameSupported
 			=> AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsShellSearchResultsRendererDisplayMemberNameSupported)}", out bool isSupported)
 				? isSupported
@@ -51,6 +52,7 @@ namespace Microsoft.Maui
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsQueryPropertyAttributeSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
+		[UnconditionalSuppressMessage("Trimming", "IL2045", Justification = "Feature guard attributes may be removed; logic does not rely on attribute instances.")]
 		public static bool IsQueryPropertyAttributeSupported =>
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsQueryPropertyAttributeSupported)}", out bool isSupported)
 				? isSupported
@@ -60,6 +62,7 @@ namespace Microsoft.Maui
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsImplicitCastOperatorsUsageViaReflectionSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
+		[UnconditionalSuppressMessage("Trimming", "IL2045", Justification = "Feature guard attributes may be removed; logic does not rely on attribute instances.")]
 		public static bool IsImplicitCastOperatorsUsageViaReflectionSupported =>
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsImplicitCastOperatorsUsageViaReflectionSupported)}", out bool isSupported)
 				? isSupported
@@ -86,6 +89,7 @@ namespace Microsoft.Maui
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
 #endif
+		[UnconditionalSuppressMessage("Trimming", "IL2045", Justification = "Feature guard attributes may be removed; logic does not rely on attribute instances.")]
 		public static bool IsHybridWebViewSupported =>
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}", out bool isSupported)
 				? isSupported
