@@ -7,11 +7,13 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBar']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(SearchBarHandler))]
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
 		/// <summary>Bindable property for <see cref="ReturnType"/>.</summary>

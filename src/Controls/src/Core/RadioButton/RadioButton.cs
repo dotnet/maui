@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Handlers;
 
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButton']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(RadioButtonHandler))]
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CheckedVisualState']/Docs/*" />
@@ -665,6 +667,17 @@ namespace Microsoft.Maui.Controls
 			{
 				throw new NotImplementedException();
 			}
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool rbResult))
+			{
+				IsChecked = rbResult;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

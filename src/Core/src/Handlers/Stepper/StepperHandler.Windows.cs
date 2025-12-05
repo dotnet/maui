@@ -54,5 +54,7 @@ namespace Microsoft.Maui.Handlers
 
 			VirtualView.Value = PlatformView.Value;
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }

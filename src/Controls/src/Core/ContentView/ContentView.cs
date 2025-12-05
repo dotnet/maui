@@ -3,12 +3,14 @@ using System.Diagnostics;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs/*" />
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(ContentViewHandler))]
 	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>

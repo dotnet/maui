@@ -12,6 +12,11 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.ItemsView"/> whose scrollable child views 'snap' into place.</summary>
+#if IOS || MACCATALYST
+	[ElementHandler(typeof(Handlers.Items2.CarouselViewHandler2))]
+#else
+	[ElementHandler(typeof(Handlers.Items.CarouselViewHandler))]
+#endif
 	public class CarouselView : ItemsView
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemVisualState']/Docs/*" />
