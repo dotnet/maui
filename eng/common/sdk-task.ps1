@@ -9,8 +9,6 @@ Param(
   [switch][Alias('nobl')]$excludeCIBinaryLog,
   [switch]$noWarnAsError,
   [switch] $help,
-  [string] $runtimeSourceFeed = '',
-  [string] $runtimeSourceFeedKey = '',
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
