@@ -12,7 +12,9 @@ public record MemberAccess(
 	TypeDescription? MemberType = null,
 	AccessorKind? Kind = null,
 	bool IsGetterAccessible = true,
-	bool IsSetterAccessible = true) : IPathPart
+	bool IsSetterAccessible = true,
+	bool DefinitelyImplementsINPC = false,
+	bool MaybeImplementsINPC = false) : IPathPart
 {
 	public string PropertyName => MemberName;
 	
@@ -54,14 +56,16 @@ public record MemberAccess(
 				&& MemberType == memberAccess.MemberType
 				&& Kind == memberAccess.Kind
 				&& IsGetterAccessible == memberAccess.IsGetterAccessible
-				&& IsSetterAccessible == memberAccess.IsSetterAccessible;
+				&& IsSetterAccessible == memberAccess.IsSetterAccessible
+				&& DefinitelyImplementsINPC == memberAccess.DefinitelyImplementsINPC
+				&& MaybeImplementsINPC == memberAccess.MaybeImplementsINPC;
 		}
 		
 		return true;
 	}
 }
 
-public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false) : IPathPart
+public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false, bool DefinitelyImplementsINPC = false, bool MaybeImplementsINPC = false) : IPathPart
 {
 	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
 

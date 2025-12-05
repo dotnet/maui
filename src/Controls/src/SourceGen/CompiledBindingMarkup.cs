@@ -178,14 +178,22 @@ internal struct CompiledBindingMarkup
 		}
 
 		// TypedBinding creation
+		var (handlersCount, localFunctionCode) = GenerateHandlersLocalFunction(binding);
+		code.WriteLine($"var handlersCount = {handlersCount};");
+		if (localFunctionCode is not null)
+		{
+			code.WriteLine();
+			code.Write(localFunctionCode);
+			code.WriteLine();
+		}
 		code.WriteLine($"return new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
 		code.Indent++;
 		var targetNullValueExpression = isTemplateBinding || !propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue) ? null : "extension.TargetNullValue";
 		code.WriteLine($"getter: source => ({GenerateGetterExpression(binding, sourceVariableName: "source", targetNullValueExpression)}, true),");
 		code.WriteLine("setter,");
-		code.Write("handlers: ");
-		AppendHandlersArray(code, binding);
-		code.Write(")");
+		code.WriteLine("handlersCount,");
+		code.Write(localFunctionCode is not null ? "handlers" : "null");
+		code.Write(")");;
 		code.Indent--;
 
 		// Object initializer if any properties are set
@@ -610,39 +618,139 @@ internal struct CompiledBindingMarkup
 		code.WriteLine("};");
 	}
 
-	void AppendHandlersArray(IndentedTextWriter code, BindingInvocationDescription binding)
-	{
-		code.WriteLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
-		code.WriteLine("{");
-		code.Indent++;
+	const string INPC = "global::System.ComponentModel.INotifyPropertyChanged";
+	const string IEnumerableOfINPCTuple = $"global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<{INPC}?, string>>";
 
-		string nextExpression = "source";
+	/// <summary>
+	/// Generates the GetHandlers local function and returns the handlersCount and the local function code.
+	/// </summary>
+	(int handlersCount, string? localFunctionCode) GenerateHandlersLocalFunction(BindingInvocationDescription binding)
+	{
+		if (!binding.Path.Any())
+		{
+			return (0, null);
+		}
+
+		int handlersCount = 0;
+		var statements = new List<string>();
+
+		string currentVar = "source";
+		int varIndex = 0;
 		bool forceConditionalAccessToNextPart = false;
+		
 		foreach (var part in binding.Path)
 		{
-			var previousExpression = nextExpression;
-			nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart));
+			var previousVar = currentVar;
+			var wrappedPart = MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart);
+			var nextExpression = AccessExpressionBuilder.ExtendExpression(previousVar, wrappedPart);
 			forceConditionalAccessToNextPart = part is Cast;
 
+			// Create a variable for the next expression to avoid re-evaluating
+			var nextVar = $"p{varIndex++}";
+			statements.Add($"var {nextVar} = {nextExpression};");
+
 			// Make binding react for PropertyChanged events on indexer itself
+			// If we know for certain it implements INPC, generate the yield directly
+			// If it might implement INPC at runtime, generate a runtime check
 			if (part is IndexAccess indexAccess)
 			{
-				code.WriteLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+				if (indexAccess.DefinitelyImplementsINPC)
+				{
+					statements.Add($"yield return ({previousVar}, \"{indexAccess.DefaultMemberName}\");");
+					handlersCount++;
+				}
+				else if (indexAccess.MaybeImplementsINPC)
+				{
+					var nextVarLocal = $"p{varIndex++}";
+					statements.Add($"""
+						if ({previousVar} is {INPC} {nextVarLocal})
+							yield return ({nextVarLocal}, "{indexAccess.DefaultMemberName}");
+						""");
+					handlersCount++;
+				}
 			}
 			else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
 			{
-				code.WriteLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+				if (innerIndexAccess.DefinitelyImplementsINPC)
+				{
+					statements.Add($"yield return ({previousVar}, \"{innerIndexAccess.DefaultMemberName}\");");
+					handlersCount++;
+				}
+				else if (innerIndexAccess.MaybeImplementsINPC)
+				{
+					var nextVarLocal = $"p{varIndex++}";
+					statements.Add($"""
+						if ({previousVar} is {INPC} {nextVarLocal})
+							yield return ({nextVarLocal}, "{innerIndexAccess.DefaultMemberName}");
+						""");
+					handlersCount++;
+				}
 			}
 
 			// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
-			if (part.PropertyName is string propertyName)
+			// If we know for certain it implements INPC, generate the yield directly
+			// If it might implement INPC at runtime, generate a runtime check
+			if (part is MemberAccess memberAccess)
 			{
-				code.WriteLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
+				if (memberAccess.DefinitelyImplementsINPC)
+				{
+					statements.Add($"yield return ({previousVar}, \"{memberAccess.PropertyName}\");");
+					handlersCount++;
+				}
+				else if (memberAccess.MaybeImplementsINPC)
+				{
+					var nextVarLocal = $"p{varIndex++}";
+					statements.Add($"""
+						if ({previousVar} is {INPC} {nextVarLocal})
+							yield return ({nextVarLocal}, "{memberAccess.PropertyName}");
+						""");
+					handlersCount++;
+				}
 			}
+			else if (part is ConditionalAccess condAccess && condAccess.Part is MemberAccess innerMemberAccess)
+			{
+				if (innerMemberAccess.DefinitelyImplementsINPC)
+				{
+					statements.Add($"yield return ({previousVar}, \"{innerMemberAccess.PropertyName}\");");
+					handlersCount++;
+				}
+				else if (innerMemberAccess.MaybeImplementsINPC)
+				{
+					var nextVarLocal = $"p{varIndex++}";
+					statements.Add($"""
+						if ({previousVar} is {INPC} {nextVarLocal})
+							yield return ({nextVarLocal}, "{innerMemberAccess.PropertyName}");
+						""");
+					handlersCount++;
+				}
+			}
+
+			currentVar = nextVar;
 		}
 
-		code.Indent--;
-		code.Write("}");
+		// If no handlers were generated, don't generate the function
+		if (handlersCount == 0)
+		{
+			return (0, null);
+		}
+
+		// Generate the local function
+		using var localFunctionWriter = new StringWriter();
+		using var localCode = new IndentedTextWriter(localFunctionWriter, "\t");
+		
+		localCode.WriteLine($"static {IEnumerableOfINPCTuple} GetHandlers({binding.SourceType} source)");
+		localCode.WriteLine("{");
+		localCode.Indent++;
+
+		foreach (var statement in statements)
+		{
+			localCode.WriteLine(statement);
+		}
+
+		localCode.Indent--;
+		localCode.WriteLine("}");
+
+		return (handlersCount, localFunctionWriter.ToString());
 
 		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccess)
 		{
