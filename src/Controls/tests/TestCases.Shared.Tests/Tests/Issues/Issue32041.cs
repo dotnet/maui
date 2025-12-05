@@ -20,9 +20,9 @@ public class Issue32041 : _IssuesUITest
 		// Wait for the main container to be visible
 		App.WaitForElement("MainContainer");
 
-		// Get the container's initial height before keyboard appears
-		var containerBeforeKeyboard = App.FindElement("MainContainer").GetRect();
-		var initialHeight = containerBeforeKeyboard.Height;
+		// Get the bottom marker's initial position before keyboard appears
+		var bottomMarkerBefore = App.FindElement("BottomMarker").GetRect();
+		var initialBottom = bottomMarkerBefore.Y + bottomMarkerBefore.Height;
 
 		// Tap the entry to show the keyboard
 		App.Tap("TestEntry");
@@ -31,19 +31,19 @@ public class Issue32041 : _IssuesUITest
 		// Keyboard animation can take 300-500ms, plus layout adjustment time
 		Task.Delay(1500).Wait();
 
-		// Get the container's height after keyboard appears
-		var containerAfterKeyboard = App.FindElement("MainContainer").GetRect();
-		var resizedHeight = containerAfterKeyboard.Height;
+		// Get the bottom marker's position after keyboard appears
+		var bottomMarkerAfter = App.FindElement("BottomMarker").GetRect();
+		var afterBottom = bottomMarkerAfter.Y + bottomMarkerAfter.Height;
 
-		// With AdjustResize, the entire container should shrink (height decreases) to make room for keyboard
-		// This ensures all content (TabbedPage tabs, FlyoutPage content, etc.) stays above the keyboard
-		Assert.That(resizedHeight, Is.LessThan(initialHeight),
-			$"Container should resize (height decrease) when keyboard appears with AdjustResize. Before: {initialHeight}px, After: {resizedHeight}px");
+		// With AdjustResize, the bottom marker should move up (Y position decreases) to stay above keyboard
+		// This verifies that padding was applied to push content up
+		Assert.That(afterBottom, Is.LessThan(initialBottom),
+			$"Bottom marker should move up when keyboard appears with AdjustResize. Before Y: {initialBottom}px, After Y: {afterBottom}px");
 
-		// The height reduction should be significant (at least 200px for a typical keyboard)
-		var heightReduction = initialHeight - resizedHeight;
-		Assert.That(heightReduction, Is.GreaterThan(200),
-			$"Container should shrink by at least 200px (typical keyboard height). Actual reduction: {heightReduction}px");
+		// The upward movement should be significant (at least 200px for a typical keyboard)
+		var upwardMovement = initialBottom - afterBottom;
+		Assert.That(upwardMovement, Is.GreaterThan(200),
+			$"Bottom marker should move up by at least 200px (typical keyboard height). Actual movement: {upwardMovement}px");
 
 		// Verify the bottom marker is still visible and accessible
 		var bottomMarker = App.FindElement("BottomMarker");

@@ -279,13 +279,8 @@ internal static class SafeAreaExtensions
 
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets, SoftInput softInputMode = SoftInput.StateUnspecified)
 	{
-		// Edge-to-edge content - no safe area padding
-		if (safeAreaRegion == SafeAreaRegions.None)
-		{
-			return 0;
-		}
-
 		// Handle SoftInput/keyboard specifically for bottom edge when keyboard is showing
+		// Check this BEFORE the SafeAreaRegions.None check to ensure AdjustResize works even without explicit SafeAreaEdges
 		if (isKeyboardShowing && edge == EdgeBottom)
 		{
 			// Apply keyboard insets if:
@@ -305,6 +300,12 @@ internal static class SafeAreaExtensions
 		else if (!isKeyboardShowing && SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
 		{
 			// For bottom edges when keyboard is hidden and region is only softinput, don't apply safe area insets
+			return 0;
+		}
+
+		// Edge-to-edge content - no safe area padding
+		if (safeAreaRegion == SafeAreaRegions.None)
+		{
 			return 0;
 		}
 
