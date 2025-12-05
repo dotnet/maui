@@ -37,10 +37,22 @@ namespace Microsoft.Maui.Controls
 			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
-		public static bool GetCanExecute(ICommandElement commandElement)
+		public static bool GetCanExecute(ICommandElement commandElement, BindableProperty? commandProperty = null)
 		{
 			if (commandElement.Command == null)
 				return true;
+
+			// If there are dependencies (e.g., CommandParameter for Command), force their bindings
+			// to apply before evaluating CanExecute. This fixes timing issues where Command binding
+			// resolves before CommandParameter binding during reparenting.
+			// See https://github.com/dotnet/maui/issues/31939
+			if (commandProperty?.Dependencies is not null && commandElement is BindableObject bo)
+			{
+				foreach (var dependency in commandProperty.Dependencies)
+				{
+					bo.ForceBindingApply(dependency);
+				}
+			}
 
 			return commandElement.Command.CanExecute(commandElement.CommandParameter);
 		}
