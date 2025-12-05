@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.ImageSource)]
 	public partial class ImageSourceServiceTests : BaseImageSourceServiceTests
 	{
 		[Fact]

@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Equal(expected, actual);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task FlowDirectionPropagatesToImmediateChildren()
 		{
 			var layout = new LayoutStub();
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task FlowDirectionPropagatesToDescendants()
 		{
 			var layout0 = new LayoutStub();
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task FlowDirectionPropagatesToAddedChildren()
 		{
 			var layout = new LayoutStub() { FlowDirection = FlowDirection.RightToLeft };
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
 		}
 
-		[Fact, Category(TestCategory.FlowDirection)]
+		[Fact]
 		public async Task DoesNotPropagateToChildrenWithExplicitFlowDirection()
 		{
 			var layout = new LayoutStub();

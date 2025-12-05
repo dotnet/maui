@@ -24,6 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 	}
 
+	[Category(TestCategory.Image)]
 	public abstract partial class ImageHandlerTests<TImageHandler, TStub> : CoreHandlerTestBase<TImageHandler, TStub>
 		where TImageHandler : class, IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()

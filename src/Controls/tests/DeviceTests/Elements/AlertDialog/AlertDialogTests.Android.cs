@@ -11,6 +11,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.AlertDialog)]
 	public partial class AlertDialogTests : ControlsHandlerTestBase
 	{
 

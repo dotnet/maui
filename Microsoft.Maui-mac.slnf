@@ -63,7 +63,8 @@
       "src\\TestUtils\\src\\VisualTestUtils.MagickNet\\VisualTestUtils.MagickNet.csproj",
       "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
-      "src\\Workload\\Microsoft.NET.Sdk.Maui.Manifest\\Microsoft.NET.Sdk.Maui.Manifest.csproj"
+      "src\\Workload\\Microsoft.NET.Sdk.Maui.Manifest\\Microsoft.NET.Sdk.Maui.Manifest.csproj",
+      "src\\TestUtils\\src\\DeviceTests.Analyzers\\DeviceTests.Analyzers.csproj"
     ]
   }
 }

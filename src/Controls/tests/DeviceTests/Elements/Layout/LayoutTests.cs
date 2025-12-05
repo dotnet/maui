@@ -208,13 +208,13 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		[Fact, Category(TestCategory.FlexLayout)]
+		[Fact]
 		public async Task FlexLayoutInVerticalStackLayoutDoesNotCycle()
 		{
 			await FlexLayoutInStackLayoutDoesNotCycle(new VerticalStackLayout());
 		}
 
-		[Fact, Category(TestCategory.FlexLayout)]
+		[Fact]
 		public async Task FlexLayoutInHorizontalStackLayoutDoesNotCycle()
 		{
 			await FlexLayoutInStackLayoutDoesNotCycle(new HorizontalStackLayout());
@@ -341,7 +341,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Category(TestCategory.Button, TestCategory.FlexLayout)]
 		public async Task ButtonWithImageInFlexLayoutInGridDoesNotCycle()
 		{
 			EnsureHandlerCreated((builder) =>
