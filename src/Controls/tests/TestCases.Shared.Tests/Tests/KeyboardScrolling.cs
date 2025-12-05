@@ -120,7 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		internal static void CloseiOSEditorKeyboard(AppiumDriver? driver)
 		{
-			var keyboardDoneButton = driver?.FindElement(MobileBy.Name("Microsoft.Maui.Platform.MauiDoneAccessory.DoneButton"));
+			var keyboardDoneButton = driver?.FindElement(MobileBy.Name("Done"));
 			keyboardDoneButton?.Click();
 		}
 
