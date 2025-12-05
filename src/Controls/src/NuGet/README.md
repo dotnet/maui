@@ -76,6 +76,11 @@ Run on iOS (Mac only):
 dotnet build -t:Run -f net10.0-ios
 ```
 
+Run on Mac Catalyst (Mac only):
+```bash
+dotnet build -t:Run -f net10.0-maccatalyst
+```
+
 Run on Windows:
 ```bash
 dotnet build -t:Run -f net10.0-windows10.0.19041.0
@@ -83,138 +88,55 @@ dotnet build -t:Run -f net10.0-windows10.0.19041.0
 
 ## 💡 Quick Start Example
 
-Here's a simple .NET MAUI page with various controls:
+To get started quickly with .NET MAUI, follow our comprehensive tutorials:
 
-### XAML (MainPage.xaml)
-
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MyMauiApp.MainPage"
-             Background="{DynamicResource PageBackgroundColor}">
-
-    <ScrollView>
-        <VerticalStackLayout Spacing="25" Padding="30">
-            
-            <Image Source="dotnet_bot.png" 
-                   HeightRequest="185"
-                   Aspect="AspectFit" />
-            
-            <Label Text="Hello, .NET MAUI!"
-                   Style="{StaticResource Headline}"
-                   HorizontalOptions="Center" />
-            
-            <Label Text="Build native apps for mobile and desktop"
-                   HorizontalOptions="Center" />
-            
-            <Entry Placeholder="Enter your name"
-                   x:Name="NameEntry" />
-            
-            <Button Text="Click Me"
-                    Clicked="OnCounterClicked"
-                    HorizontalOptions="Fill" />
-            
-            <Label x:Name="CounterLabel"
-                   Text="Button not clicked yet"
-                   HorizontalOptions="Center" />
-                   
-        </VerticalStackLayout>
-    </ScrollView>
-
-</ContentPage>
-```
-
-### Code-Behind (MainPage.xaml.cs)
-
-```csharp
-namespace MyMauiApp;
-
-public partial class MainPage : ContentPage
-{
-    private int count = 0;
-
-    public MainPage()
-    {
-        InitializeComponent();
-    }
-
-    private void OnCounterClicked(object sender, EventArgs e)
-    {
-        count++;
-        
-        if (count == 1)
-            CounterLabel.Text = $"Hello {NameEntry.Text}! Button clicked {count} time";
-        else
-            CounterLabel.Text = $"Hello {NameEntry.Text}! Button clicked {count} times";
-
-        SemanticScreenReader.Announce(CounterLabel.Text);
-    }
-}
-```
+- [Build your first app](https://learn.microsoft.com/dotnet/maui/get-started/first-app) - Step-by-step guide with UI examples
+- [XAML basics](https://learn.microsoft.com/dotnet/maui/xaml/fundamentals/get-started) - Learn XAML fundamentals with visual examples
+- [Create a multi-page app](https://learn.microsoft.com/dotnet/maui/tutorials/notes-app/) - Build a complete note-taking app
 
 ## 🎯 Key Features
 
 ### MVVM and Data Binding
 
-.NET MAUI fully supports the Model-View-ViewModel (MVVM) pattern with powerful data binding:
+.NET MAUI fully supports the Model-View-ViewModel (MVVM) pattern with powerful data binding. Learn more:
 
-```xml
-<Label Text="{Binding UserName}" />
-<Entry Text="{Binding Email, Mode=TwoWay}" />
-```
-
-Use the [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui) for MVVM helpers and the [MVVM Toolkit](https://github.com/CommunityToolkit/dotnet) for source generators and commands.
+- [Data binding fundamentals](https://learn.microsoft.com/dotnet/maui/xaml/fundamentals/data-binding-basics) - Visual examples of data binding
+- [MVVM pattern](https://learn.microsoft.com/dotnet/maui/xaml/fundamentals/mvvm) - Complete MVVM guide with examples
+- [.NET MAUI Community Toolkit](https://learn.microsoft.com/dotnet/communitytoolkit/maui/) - MVVM helpers and more
+- [MVVM Toolkit](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/) - Source generators and commands
 
 ### XAML Enhancements
 
 .NET MAUI includes powerful XAML features for cleaner, more efficient code:
 
-- **XAML Source Generation** - Compile-time XAML parsing for better performance and smaller app sizes
-- **XAML Simplifications** - Reduced boilerplate with improved syntax and type inference
-
-Learn more about [XAML compilation and source generation](https://learn.microsoft.com/dotnet/maui/xaml/xamlc).
+- [XAML compilation and source generation](https://learn.microsoft.com/dotnet/maui/xaml/xamlc) - Better performance and smaller app sizes
+- [XAML markup extensions](https://learn.microsoft.com/dotnet/maui/xaml/markup-extensions/consume) - Extend XAML capabilities
+- [XAML hot reload](https://learn.microsoft.com/dotnet/maui/xaml/hot-reload) - See changes instantly during development
 
 ### Shell Navigation
 
 Shell provides a structured, performant navigation experience:
 
-```xml
-<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
-    <TabBar>
-        <ShellContent Title="Home" Icon="home.png" ContentTemplate="{DataTemplate local:HomePage}" />
-        <ShellContent Title="Profile" Icon="profile.png" ContentTemplate="{DataTemplate local:ProfilePage}" />
-    </TabBar>
-</Shell>
-```
+- [Shell overview](https://learn.microsoft.com/dotnet/maui/fundamentals/shell/) - Introduction to Shell navigation
+- [Shell navigation](https://learn.microsoft.com/dotnet/maui/fundamentals/shell/navigation) - Routing and navigation patterns
+- [Shell tabs](https://learn.microsoft.com/dotnet/maui/fundamentals/shell/tabs) - Create tabbed interfaces
 
 ### Collections and Lists
 
-Display lists and collections with CollectionView:
+Display lists and collections with powerful controls:
 
-```xml
-<CollectionView ItemsSource="{Binding Items}">
-    <CollectionView.ItemTemplate>
-        <DataTemplate>
-            <Grid Padding="10">
-                <Label Text="{Binding Name}" FontSize="18" />
-            </Grid>
-        </DataTemplate>
-    </CollectionView.ItemTemplate>
-</CollectionView>
-```
+- [CollectionView](https://learn.microsoft.com/dotnet/maui/user-interface/controls/collectionview/) - High-performance lists with UI examples
+- [ListView](https://learn.microsoft.com/dotnet/maui/user-interface/controls/listview) - Traditional list view control
+- [CarouselView](https://learn.microsoft.com/dotnet/maui/user-interface/controls/carouselview/) - Scrollable carousel of items
 
 ### Responsive Layouts
 
 Build adaptive UIs that work across different screen sizes:
 
-```xml
-<Grid RowDefinitions="Auto,*" ColumnDefinitions="*,*">
-    <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Header" />
-    <BoxView Grid.Row="1" Grid.Column="0" Color="Red" />
-    <BoxView Grid.Row="1" Grid.Column="1" Color="Blue" />
-</Grid>
-```
+- [Layouts](https://learn.microsoft.com/dotnet/maui/user-interface/layouts/) - Overview of all layout types
+- [Grid layout](https://learn.microsoft.com/dotnet/maui/user-interface/layouts/grid) - Flexible grid with visual examples
+- [FlexLayout](https://learn.microsoft.com/dotnet/maui/user-interface/layouts/flexlayout) - CSS flexbox-style layout
+- [Adaptive layouts](https://learn.microsoft.com/dotnet/maui/user-interface/layouts/choose-layout) - Design for different screen sizes
 
 ## 📚 Documentation and Resources
 
