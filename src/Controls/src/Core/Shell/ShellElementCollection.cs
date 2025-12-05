@@ -251,9 +251,37 @@ namespace Microsoft.Maui.Controls
 		void BaseShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(BaseShellItem.IsVisible))
+			{
 				CheckVisibility((BaseShellItem)sender);
-		}
+			}
+			// When dynamically updating TabBarIsVisible through ShellContent
+			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
+			{
+				var baseShellItem = (BaseShellItem)sender;
 
+				if (baseShellItem is ShellContent shellContent)
+				{
+					var shell = baseShellItem.FindParentOfType<Shell>();
+					if (shell is not null)
+					{
+						var displayedPage = shell.GetCurrentShellPage();
+
+						// Check whether the displayed page is in the current ShellContent
+						if (displayedPage is not null && ((IShellContentController)shellContent).Page == displayedPage)
+						{
+							var shellContentValue = (bool)baseShellItem.GetValue(Shell.TabBarIsVisibleProperty);
+							var pageValue = (bool)displayedPage.GetValue(Shell.TabBarIsVisibleProperty);
+
+							if (shellContentValue != pageValue)
+							{
+								// Update the value to the page through SetTabBarIsVisible
+								Shell.SetTabBarIsVisible(displayedPage, shellContentValue);
+							}
+						}
+					}
+				}
+			}
+		}
 		void OnShellElementControllerItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			foreach (BaseShellItem bsi in (e.NewItems ?? e.OldItems ?? Inner))
