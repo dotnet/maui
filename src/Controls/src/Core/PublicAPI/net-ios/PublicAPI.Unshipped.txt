@@ -1,2 +1,8 @@
 #nullable enable
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
+Microsoft.Maui.Controls.SearchBar.ShowsCancelButton.get -> bool
+Microsoft.Maui.Controls.SearchBar.ShowsCancelButton.set -> void
+~static readonly Microsoft.Maui.Controls.SearchBar.ShowsCancelButtonProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.SearchHandler.ShowsCancelButton.get -> bool
+Microsoft.Maui.Controls.SearchHandler.ShowsCancelButton.set -> void
+~static readonly Microsoft.Maui.Controls.SearchHandler.ShowsCancelButtonProperty -> Microsoft.Maui.Controls.BindableProperty

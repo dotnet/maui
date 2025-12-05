@@ -117,10 +117,12 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static bool ShouldShowCancelButton(this ISearchBar searchBar) =>
-			!string.IsNullOrEmpty(searchBar.Text);
+			searchBar.ShowsCancelButton && !string.IsNullOrEmpty(searchBar.Text);
 
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
+			// Respect the ShowsCancelButton property - if false, never show the button
+			// If true, show it based on whether there's text (iOS standard behavior)
 			uiSearchBar.ShowsCancelButton = searchBar.ShouldShowCancelButton();
 
 			// We can't cache the cancel button reference because iOS drops it when it's not displayed
