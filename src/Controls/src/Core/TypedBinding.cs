@@ -551,6 +551,7 @@ namespace Microsoft.Maui.Controls.Internals
 					}
 				}
 
+#pragma warning disable RS0030 // Do not use banned APIs
 				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, handlers)
 				{
 					Mode = _binding.Mode,
@@ -560,6 +561,7 @@ namespace Microsoft.Maui.Controls.Internals
 					Source = _binding.Source,
 					UpdateSourceEventName = _binding.UpdateSourceEventName,
 				};
+#pragma warning restore RS0030 // Do not use banned APIs
 			}
 		}
 
