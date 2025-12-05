@@ -9,11 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.Header = string.IsNullOrEmpty(picker.Title) ? null : picker;
-
-			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
-				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
-
+			nativeComboBox.PlaceholderText = picker.Title ?? string.Empty;
 		}
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
