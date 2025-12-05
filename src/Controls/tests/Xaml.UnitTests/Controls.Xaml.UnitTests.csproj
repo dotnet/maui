@@ -30,8 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="Microsoft.Build.Framework" />
@@ -86,6 +85,10 @@
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
 
     <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

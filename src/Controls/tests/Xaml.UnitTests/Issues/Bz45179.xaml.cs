@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,16 +22,17 @@ public partial class Bz45179 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void DTDoNotInstantiateTheirContent([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DTDoNotInstantiateTheirContent(XamlInflator inflator)
 		{
 			Bz45179_0.creator_count = 0;
-			Assume.That(Bz45179_0.creator_count, Is.EqualTo(0));
+			Assert.Equal(0, Bz45179_0.creator_count);
 			var page = new Bz45179(inflator);
-			Assert.That(Bz45179_0.creator_count, Is.EqualTo(0));
+			Assert.Equal(0, Bz45179_0.creator_count);
 		}
 	}
 }

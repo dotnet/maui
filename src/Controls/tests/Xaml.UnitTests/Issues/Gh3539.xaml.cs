@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -177,11 +177,12 @@ public partial class Gh3539 : ContentPage
 	public Gh3539() => InitializeComponent();
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CompiledBindingCodeIsValid([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CompiledBindingCodeIsValid(XamlInflator inflator)
 		{
 			var layout = new Gh3539(inflator);
 		}

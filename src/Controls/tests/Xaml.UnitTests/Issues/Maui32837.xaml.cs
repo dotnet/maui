@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,48 +13,44 @@ public partial class Maui32837 : Application
 {
 	public Maui32837() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			Application.SetCurrentApplication(null);
 		}
 
-		[Test]
-		public void ConverterReceivesCorrectValueFromStaticResource([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ConverterReceivesCorrectValueFromStaticResource(XamlInflator inflator)
 		{
 			var app = new Maui32837(inflator);
 			
 			// Get the converter from resources
 			var converter = app.Resources["IntToCornerRadiusConverter"] as Maui32837IntToCornerRadiusConverter;
-			Assert.IsNotNull(converter, "Converter should not be null");
+			Assert.NotNull(converter);
 			
 			// Get the RoundRectangle from resources
 			var roundRect = app.Resources["MyRoundRectangle"] as RoundRectangle;
-			Assert.IsNotNull(roundRect, "RoundRectangle should not be null");
+			Assert.NotNull(roundRect);
 			
 			// The binding should have been evaluated and converter should have been called
 			// Check that the converter was actually invoked by looking at the result
 			var cornerRadius = roundRect.CornerRadius;
 			
 			// The converter should have converted the int value 16 to CornerRadius(16)
-			Assert.That(cornerRadius.TopLeft, Is.EqualTo(16.0), 
-				$"TopLeft corner radius should be 16.0 for {inflator}, but was {cornerRadius.TopLeft}");
-			Assert.That(cornerRadius.TopRight, Is.EqualTo(16.0), 
-				$"TopRight corner radius should be 16.0 for {inflator}, but was {cornerRadius.TopRight}");
-			Assert.That(cornerRadius.BottomLeft, Is.EqualTo(16.0), 
-				$"BottomLeft corner radius should be 16.0 for {inflator}, but was {cornerRadius.BottomLeft}");
-			Assert.That(cornerRadius.BottomRight, Is.EqualTo(16.0), 
-				$"BottomRight corner radius should be 16.0 for {inflator}, but was {cornerRadius.BottomRight}");
+			Assert.Equal(16.0, cornerRadius.TopLeft);
+			Assert.Equal(16.0, cornerRadius.TopRight);
+			Assert.Equal(16.0, cornerRadius.BottomLeft);
+			Assert.Equal(16.0, cornerRadius.BottomRight);
 		}
 	}
 }

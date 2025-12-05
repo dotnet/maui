@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,26 +7,31 @@ public partial class TypeLoader : ContentPage
 {
 	public TypeLoader() => InitializeComponent();
 
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IClassFixture<ApplicationFixture>
 	{
-		[SetUp] public void SetUp() => Application.Current = new MockApplication();
+		public Tests(ApplicationFixture fixture) { }
 
-		[Test]
-		public void LoadTypeFromXmlns([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void LoadTypeFromXmlns(XamlInflator inflator)
 		{
 			TypeLoader layout = null;
-			Assert.DoesNotThrow(() => layout = new TypeLoader(inflator));
+			var exception = Record.Exception(() => layout = new TypeLoader(inflator));
+			Assert.Null(exception);
 			Assert.NotNull(layout.customview0);
-			Assert.That(layout.customview0, Is.TypeOf<CustomView>());
+			Assert.IsType<CustomView>(layout.customview0);
 		}
 
-		[Test]
-		public void LoadTypeFromXmlnsWithoutAssembly([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void LoadTypeFromXmlnsWithoutAssembly(XamlInflator inflator)
 		{
 			TypeLoader layout = null;
-			Assert.DoesNotThrow(() => layout = new TypeLoader(inflator));
+			var exception = Record.Exception(() => layout = new TypeLoader(inflator));
+			Assert.Null(exception);
 			Assert.NotNull(layout.customview1);
-			Assert.That(layout.customview1, Is.TypeOf<CustomView>());
+			Assert.IsType<CustomView>(layout.customview1);
 		}
 	}
 }

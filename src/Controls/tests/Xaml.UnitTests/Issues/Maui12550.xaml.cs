@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,40 +7,41 @@ public partial class Maui12550 : ContentPage
 {
 	public Maui12550() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CSSStyleAppliedToInitiallyEnabledButton([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CSSStyleAppliedToInitiallyEnabledButton(XamlInflator inflator)
 		{
 			var page = new Maui12550(inflator);
-			Assert.That(page.EnabledButton.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page.EnabledButton.BackgroundColor);
 		}
 
-		[Test]
-		public void CSSStyleAppliedAfterReEnablingInitiallyDisabledButton([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CSSStyleAppliedAfterReEnablingInitiallyDisabledButton(XamlInflator inflator)
 		{
 			var page = new Maui12550(inflator);
-			Assert.That(page.DisabledButton.IsEnabled, Is.False);
+			Assert.False(page.DisabledButton.IsEnabled);
 
 			page.DisabledButton.IsEnabled = true;
 
 			// https://github.com/dotnet/maui/issues/12550
-			Assert.That(page.DisabledButton.BackgroundColor, Is.EqualTo(Colors.Green),
-				"CSS background-color should be applied after re-enabling a button that was initially disabled");
+			Assert.Equal(Colors.Green, page.DisabledButton.BackgroundColor);
 		}
 
-		[Test]
-		public void CSSStyleAppliedAfterDisableEnableCycle([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CSSStyleAppliedAfterDisableEnableCycle(XamlInflator inflator)
 		{
 			var page = new Maui12550(inflator);
-			Assert.That(page.EnabledButton.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page.EnabledButton.BackgroundColor);
 
 			page.EnabledButton.IsEnabled = false;
 			page.EnabledButton.IsEnabled = true;
 
-			Assert.That(page.EnabledButton.BackgroundColor, Is.EqualTo(Colors.Green),
-				"CSS background-color should be preserved after disable/enable cycle");
+			Assert.Equal(Colors.Green, page.EnabledButton.BackgroundColor);
 		}
 	}
 }

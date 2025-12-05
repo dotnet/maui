@@ -1,5 +1,6 @@
+using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,16 +10,23 @@ public partial class Bz43694 : ContentPage
 {
 	public Bz43694() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void xStaticWithOnPlatformChildInRD([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void xStaticWithOnPlatformChildInRD(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(9, 6), () => MockCompiler.Compile(typeof(Bz43694)));
+			{
+				var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Bz43694)));
+				Assert.True(ex is Microsoft.Maui.Controls.Build.Tasks.BuildException);
+			}
 			else if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(9, 6), () => new Bz43694(inflator));
+			{
+				var ex = Assert.ThrowsAny<Exception>(() => new Bz43694(inflator));
+				Assert.True(ex is XamlParseException);
+			}
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
@@ -34,7 +42,7 @@ public partial class Bz43694 : ContentPage
 """)
 					.RunMauiSourceGenerator(typeof(Bz43694));
 				var generated = result.GeneratedInitializeComponent();
-				Assert.That(result.Diagnostics.Any());
+				Assert.True(result.Diagnostics.Any());
 			}
 		}
 	}

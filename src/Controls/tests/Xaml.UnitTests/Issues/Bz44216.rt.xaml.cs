@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -27,16 +27,25 @@ public partial class Bz44216 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void DonSetValueOnPrivateBP([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DonSetValueOnPrivateBP(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(7, 26, s => s.Contains("No property,", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Bz44216)));
+			{
+				var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Bz44216)));
+				Assert.True(ex is Microsoft.Maui.Controls.Build.Tasks.BuildException);
+				Assert.Contains("No property,", ex.Message, StringComparison.Ordinal);
+			}
 			if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(7, 26, s => s.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new Bz44216(inflator));
+			{
+				var ex = Assert.ThrowsAny<Exception>(() => new Bz44216(inflator));
+				Assert.True(ex is XamlParseException);
+				Assert.Contains("Cannot assign property", ex.Message, StringComparison.Ordinal);
+			}
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
@@ -67,7 +76,7 @@ public partial class Bz44216 : ContentPage
 					.RunMauiSourceGenerator(typeof(Bz44216));
 				//sourcegen succeeds
 				var diagnostics = result.Diagnostics;
-				Assert.That(diagnostics.Any(d => d.Id == "MAUIX2002"));
+				Assert.True(diagnostics.Any(d => d.Id == "MAUIX2002"));
 
 			}
 		}

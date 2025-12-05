@@ -1,15 +1,15 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[TestFixture]
+[Collection("Xaml Inflation")]
 public class UnclosedTagErrorTests : BaseTestFixture
 {
-	[Test]
+	[Fact]
 	public void UnclosedTagReportsErrorDiagnostic()
 	{
 		// XAML with an unclosed Label tag (missing > or />)
@@ -21,24 +21,22 @@ public class UnclosedTagErrorTests : BaseTestFixture
 			.RunMauiSourceGenerator(new AdditionalXamlFile("TestPage.xaml", xaml));
 
 		// Should have an error diagnostic
-		Assert.That(result.Diagnostics.Length, Is.EqualTo(1), "Should have exactly one diagnostic");
+		Assert.Single(result.Diagnostics);
 		
 		var diagnostic = result.Diagnostics[0];
 		
 		// Verify diagnostic ID
-		Assert.That(diagnostic.Id, Is.EqualTo("MAUIG1001"), "Should be XAML parser error");
+		Assert.Equal("MAUIG1001", diagnostic.Id);
 		
 		// Verify severity
-		Assert.That(diagnostic.Severity, Is.EqualTo(DiagnosticSeverity.Error), "Should be an error");
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
 		
 		// Verify the error message indicates an XML parsing error (unclosed tag)
 		var message = diagnostic.GetMessage();
-		TestContext.WriteLine($"Diagnostic message: {message}");
 		
 		// The message should mention the XML error (character cannot begin with '<')
 		// This error occurs when the XML parser encounters '<' where it's expecting content or a closing tag
-		Assert.That(message, Does.Contain("Name cannot begin with the '<' character"), 
-			"Should contain the XML error message indicating an unclosed tag");
+		Assert.Contains("Name cannot begin with the '<' character", message, System.StringComparison.Ordinal);
 		
 		// Note: This PR (fix for issue #13797) aims to:
 		// 1. Report errors at the correct line/column (extracted from XmlException)
