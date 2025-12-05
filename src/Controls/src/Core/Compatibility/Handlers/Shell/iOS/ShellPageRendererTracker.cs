@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
-			else if (e.Is(Shell.FlyoutIconProperty))
+			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
 				UpdateLeftToolbarItems();
 		}
 
@@ -150,6 +150,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
 				UpdateTabBarVisible();
+			}
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftToolbarItems();
 			}
 		}
 
@@ -497,6 +501,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (image is not null)
 				{
 					icon = result?.Value;
+
+					var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+					_context?.Shell.GetValue(Shell.ForegroundColorProperty);
+
+					if (foregroundColor is null)
+					{
+						icon = icon?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					}
+
 					var originalImageSize = icon?.Size ?? CGSize.Empty;
 
 					// The largest height you can use for navigation bar icons in iOS.
