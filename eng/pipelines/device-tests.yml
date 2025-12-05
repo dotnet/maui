@@ -171,6 +171,9 @@ stages:
         desc: Controls
         androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
         androidApiLevelsCoreClrExclude: [ 27, 25, 23]
+        # Tracking issue: https://github.com/dotnet/runtime/issues/122219
+        iosVersionsCoreClrExclude: [ 'simulator-18.4' ] # Disable Controls tests on CoreCLR for iOS as they are failing
+        catalystVersionsCoreClrExclude: [ 'latest' ] # Disable Controls tests on CoreCLR for Catalyst as they are failing
         androidConfiguration: 'Debug'
         iOSConfiguration: 'Debug'
         windowsConfiguration: 'Debug'
