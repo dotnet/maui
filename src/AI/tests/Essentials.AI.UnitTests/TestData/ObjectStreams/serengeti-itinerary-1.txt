@@ -1,0 +1,57 @@
+{
+"days":[{"subtitle":"Day 1: Arrival and Wildlife Safari","activities":[
+
+{"title":"Morning Game Drive","type":"Sightseeing
+","description":"Embark on a thrilling morning game drive to witness the Great
+ Migration in all its glory.
+"},{"type":"FoodAndDining
+","title":"Lunch at Restaurant 1
+","description":"Enjoy a delicious lunch at Restaurant 1, renowned for
+ its local cuisine.
+"},{"type":"HotelAndLodging
+","title":"Check-in at Hotel 1
+","description":"Relax after your adventure with a comfortable stay at Hotel
+ 1.
+"}],"destination":"Serengeti National Park
+","title":"Day 1: Arrival and Wildlife Safari"},{
+"subtitle":"Day 2: Cultural Exploration
+ and Relaxation
+","activities":[{"type":"Sightseeing
+","title":"Visit Ngorongoro Crater
+","description":"Explore the Ngorongoro Crater, a UNESCO World Heritage Site and
+ home to diverse wildlife.
+"},{"type":"FoodAndDining
+","title":"Dinner at Restaurant 2
+","description":"Savor a memorable dinner at Restaurant 2, offering
+ panoramic views of the crater.
+"},{"type":"HotelAndLodging
+","title":"Overnight at Hotel 1
+","description":"Enjoy a restful night at Hotel 1, known
+ for its serene ambiance.
+"}],"destination":"Ngorongoro Crater
+","title":"Day 2: Cultural Exploration and Relaxation
+
+"},{"subtitle":"Day 3: Departure and Local Markets","activities":[{
+
+"title":"Visit Local Markets","type":"Shopping","description":"Explore vibrant local
+ markets for souvenirs and unique handicrafts."},{
+
+"title":"Farewell Lunch at Restaurant 3","type":"FoodAndDining
+","description":"Enjoy a farewell lunch at Restaurant 3, famous
+ for its traditional dishes.
+"},{"type":"HotelAndLodging
+","title":"Check-out and Departure
+","description":"Check out of Hotel 1 and depart from Seren
+geti.
+"}],"destination":"Serengeti
+","title":"Day 3: Departure and Local Markets
+"}],"rationale":"This itinerary offers a perfect blend of wildlife adventure,
+ cultural exploration, and relaxation, ensuring a memorable experience
+ in Serengeti.
+","destinationName":"Serengeti
+","description":"Embark on an unforgettable journey through Serengeti,
+ where you can witness the Great Migration, explore cultural
+ wonders, and unwind in luxurious accommodations.
+","title":"Serengeti Safari Adventure: Wildlife, Culture
+, and Relaxation
+"}
