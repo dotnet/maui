@@ -501,6 +501,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (image is not null)
 				{
 					icon = result?.Value;
+
+					var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+					_context?.Shell.GetValue(Shell.ForegroundColorProperty);
+
+					if (foregroundColor is null)
+					{
+						icon = icon?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					}
+
 					var originalImageSize = icon?.Size ?? CGSize.Empty;
 
 					// The largest height you can use for navigation bar icons in iOS.
