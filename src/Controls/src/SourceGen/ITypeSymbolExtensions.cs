@@ -5,6 +5,7 @@ using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.BindingSourceGen;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -82,6 +83,43 @@ static partial class ITypeSymbolExtensions
 		=> symbol.GetAllMembers(context).OfType<IPropertySymbol>();
 	public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, string name, SourceGenContext? context)
 		=> symbol.GetAllMembers(name, context).OfType<IPropertySymbol>();
+
+	/// <summary>
+	/// Tries to get a property by name, and if not found, checks if it could be inferred from a RelayCommand method.
+	/// Returns the property type if found or inferred.
+	/// </summary>
+	/// <param name="symbol">The type to search</param>
+	/// <param name="propertyName">The name of the property to find</param>
+	/// <param name="context">The source generation context</param>
+	/// <param name="property">The found property symbol (null if inferred from RelayCommand)</param>
+	/// <param name="propertyType">The property type (either from the property or inferred from RelayCommand)</param>
+	/// <returns>True if property exists or can be inferred from RelayCommand</returns>
+	public static bool TryGetProperty(
+		this ITypeSymbol symbol,
+		string propertyName,
+		SourceGenContext? context,
+		out IPropertySymbol? property,
+		out ITypeSymbol? propertyType)
+	{
+		property = symbol.GetAllProperties(propertyName, context)
+			.FirstOrDefault(p => p.GetMethod != null && !p.GetMethod.IsStatic);
+		
+		if (property != null)
+		{
+			propertyType = property.Type;
+			return true;
+		}
+
+		// If property not found, check if it could be a RelayCommand-generated property
+		// Call the BindingSourceGen extension method directly
+		if (symbol.TryGetRelayCommandPropertyType(propertyName, context?.Compilation, out propertyType))
+		{
+			return true;
+		}
+
+		propertyType = null;
+		return false;
+	}
 
 	public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, SourceGenContext? context)
 		=> symbol.GetAllMembers(context).OfType<IMethodSymbol>();
