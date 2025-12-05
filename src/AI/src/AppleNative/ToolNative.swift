@@ -31,8 +31,13 @@ final class ToolNative: Tool {
             self.parameters = JsonSchemaDecoder.StringGenerationSchema
         }
 
-        // Output is always a string
-        self.output = JsonSchemaDecoder.StringGenerationSchema
+        // Parse the JSON schema for output
+        do {
+            self.output =
+                try JsonSchemaDecoder.parse(tool.outputSchema) ?? JsonSchemaDecoder.StringGenerationSchema
+        } catch {
+            self.output = JsonSchemaDecoder.StringGenerationSchema
+        }
     }
 
     func call(arguments: Arguments) async throws -> Output {

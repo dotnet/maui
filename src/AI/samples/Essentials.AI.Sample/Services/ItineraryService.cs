@@ -8,7 +8,9 @@ using Microsoft.Extensions.AI;
 
 namespace Maui.Controls.Sample.Services;
 
+#pragma warning disable CS9113 // Parameter is unread.
 public class ItineraryService(IChatClient chatClient, LandmarkDataService landmarkService)
+#pragma warning restore CS9113 // Parameter is unread.
 {
 	public record ItineraryStreamUpdate(
 		ToolLookup? ToolLookup = null,
@@ -29,16 +31,13 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 			
 			Each day needs an activity, hotel and restaurant.
 			
-			Always use the findPointsOfInterest tool to find businesses 
-			and activities in {landmark.Name}, especially hotels
-			and restaurants.
+			ALWAYS use the findPointsOfInterest tool to find businesses and activities in {landmark.Name}, especially hotels and restaurants.
 			
 			The point of interest categories may include:
 
 			{string.Join(", ", Enum.GetNames<FindPointsOfInterestTool.Category>())}
 			
-			Here is a description of {landmark.Name} for your reference
-			when considering what activities to generate:
+			Here is a description of {landmark.Name} for your reference when considering what activities to generate:
 			{landmark.Description}
 			""";
 
@@ -49,8 +48,11 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 			Give it a fun title and description.
 
 			Here is an example, but don't copy it:
-			{JsonSerializer.Serialize(Itinerary.GetExampleTripToJapan(), new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })}
+			
+			{JsonSerializer.Serialize(Itinerary.GetExampleTripToJapan())}
 			""";
+
+		Debug.WriteLine($"[userPrompt]: {userPrompt.Length} characters");
 
 		var messages = new List<ChatMessage>
 		{
@@ -61,10 +63,7 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 		var options = new ChatOptions
 		{
 			Tools = [findPointsOfInterestFunction],
-			ResponseFormat = ChatResponseFormat.ForJsonSchema(
-				Itinerary.ToJsonSchema(landmarkService.Landmarks.Select(l => l.Name)),
-				schemaName: "Itinerary",
-				schemaDescription: "A travel itinerary with days and activities")
+			ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>()
 		};
 
 		var jsonOptions = new JsonSerializerOptions
@@ -75,8 +74,8 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 
 		var deserializer = new StreamingJsonDeserializer<Itinerary>(jsonOptions);
 
-		var bufferedClient = new BufferedChatClient(chatClient, minBufferSize: 100, bufferDelay: TimeSpan.FromMilliseconds(250));
-		await foreach (var update in bufferedClient.GetStreamingResponseAsync(messages, options, cancellationToken))
+		// var bufferedClient = new BufferedChatClient(chatClient, minBufferSize: 100, bufferDelay: TimeSpan.FromMilliseconds(250));
+		await foreach (var update in chatClient.GetStreamingResponseAsync(messages, options, cancellationToken))
 		{
 			// Detect tool calls from the streaming update
 			foreach (var item in update.Contents)

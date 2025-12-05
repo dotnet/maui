@@ -32,6 +32,19 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
     return @"{\"type\":\"object\",\"properties\":{}}";
 }
 
+- (NSString *)outputSchema {
+    return @"{"
+        "\"type\":\"object\","
+        "\"properties\":{"
+            "\"currentTime\":{"
+                "\"type\":\"string\","
+                "\"description\":\"The current date and time in YYYY-MM-DD HH:mm:ss format\""
+            "}"
+        "},"
+        "\"required\":[\"currentTime\"]"
+    "}";
+}
+
 - (void)callWithArguments:(NSString *)arguments
                completion:(void (^)(NSString *))completion {
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -69,6 +82,31 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
             "}"
         "},"
         "\"required\":[\"date\"]"
+    "}";
+}
+
+- (NSString *)outputSchema {
+    return @"{"
+        "\"type\":\"object\","
+        "\"properties\":{"
+            "\"date\":{"
+                "\"type\":\"string\","
+                "\"description\":\"The date for this weather forecast\""
+            "},"
+            "\"condition\":{"
+                "\"type\":\"string\","
+                "\"description\":\"Weather condition (sunny, cloudy, rainy, etc)\""
+            "},"
+            "\"temperature\":{"
+                "\"type\":\"integer\","
+                "\"description\":\"Temperature in Fahrenheit\""
+            "},"
+            "\"humidity\":{"
+                "\"type\":\"integer\","
+                "\"description\":\"Humidity percentage\""
+            "}"
+        "},"
+        "\"required\":[\"date\",\"condition\",\"temperature\",\"humidity\"]"
     "}";
 }
 

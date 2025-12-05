@@ -12,6 +12,9 @@ class JsonSchemaDecoder {
         var required: [String]?
         var items: JsonSchema?
         var additionalProperties: Bool?
+        var `enum`: [String]?
+        var minItems: Int?
+        var maxItems: Int?
 
         static func parse(jsonString: String) throws -> JsonSchema? {
             // Decode into an object
@@ -76,9 +79,19 @@ class JsonSchemaDecoder {
                 let items = schema.items,
                 let itemSchema = toDynamicSchema(items)
             else { return nil }
-            return DynamicGenerationSchema(arrayOf: itemSchema)
+            return DynamicGenerationSchema(
+                arrayOf: itemSchema,
+                minimumElements: schema.minItems,
+                maximumElements: schema.maxItems
+            )
         // Handle primitive data types
-        case "string": return DynamicGenerationSchema(type: String.self)
+        case "string":
+            // Support enum values
+            if let enumValues = schema.enum, !enumValues.isEmpty {
+                return DynamicGenerationSchema(type: String.self, guides: [.anyOf(enumValues)])
+            }
+            // No enum values
+            return DynamicGenerationSchema(type: String.self)
         case "integer": return DynamicGenerationSchema(type: Int.self)
         case "number": return DynamicGenerationSchema(type: Double.self)
         case "boolean": return DynamicGenerationSchema(type: Bool.self)

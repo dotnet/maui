@@ -243,7 +243,7 @@ public class BufferedChatClientTests
 		}
 
 		public Task<ChatResponse> GetResponseAsync(
-			IEnumerable<ChatMessage> chatMessages,
+			IEnumerable<ChatMessage> messages,
 			ChatOptions? options = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -254,7 +254,7 @@ public class BufferedChatClientTests
 		}
 
 		public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-			IEnumerable<ChatMessage> chatMessages,
+			IEnumerable<ChatMessage> messages,
 			ChatOptions? options = null,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{

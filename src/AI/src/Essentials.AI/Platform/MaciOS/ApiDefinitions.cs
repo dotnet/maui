@@ -46,6 +46,11 @@ interface AIToolNative
 	[Export("argumentsSchema")]
 	string ArgumentsSchema { get; }
 
+	// @property (nonatomic, readonly, copy) NSString * _Nonnull outputSchema;
+	[Abstract]
+	[Export("outputSchema")]
+	string OutputSchema { get; }
+
 	// - (void)callWithArguments:(NSString * _Nonnull)arguments completion:(void (^ _Nonnull)(NSString * _Nonnull))completion;
 	[Abstract]
 	[Export("callWithArguments:completion:")]

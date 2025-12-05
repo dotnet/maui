@@ -23,7 +23,7 @@ public sealed class WindowsAIChatClient : IChatClient
 
 	/// <inheritdoc />
 	public async Task<ChatResponse> GetResponseAsync(
-		IEnumerable<ChatMessage> chatMessages,
+		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		CancellationToken cancellationToken = default)
 	{
@@ -32,7 +32,7 @@ public sealed class WindowsAIChatClient : IChatClient
 
 	/// <inheritdoc />
 	public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-		IEnumerable<ChatMessage> chatMessages,
+		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{

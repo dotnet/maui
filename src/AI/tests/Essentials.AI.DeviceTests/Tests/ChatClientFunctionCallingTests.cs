@@ -492,4 +492,131 @@ public class ChatClientFunctionCallingTests
 		Assert.True(foundToolResult, "Should stream FunctionResultContent");
 		Assert.True(foundStaticTime, "Should find the static time '2025-12-02 12:00:00' in function results");
 	}
+
+	public enum PointOfInterestCategory
+	{
+		Cafe,
+		Campground,
+		Hotel,
+		Marina,
+		Museum,
+		NationalMonument,
+		Restaurant
+	}
+
+	[Fact]
+	public async Task GetResponseAsync_FunctionWithEnumParameter_CallsToolCorrectly()
+	{
+		// This test verifies that enum parameters are properly preserved in the JSON schema
+		// and that the AI can call the function with valid enum values.
+		// This was a critical bug where enum constraints were being lost during schema parsing.
+		
+		bool functionWasCalled = false;
+		PointOfInterestCategory? capturedCategory = null;
+		string? capturedQuery = null;
+
+		var findPointsOfInterestTool = AIFunctionFactory.Create(
+			(PointOfInterestCategory pointOfInterest, string naturalLanguageQuery) =>
+			{
+				functionWasCalled = true;
+				capturedCategory = pointOfInterest;
+				capturedQuery = naturalLanguageQuery;
+				
+				// Return mock data based on category
+				return pointOfInterest switch
+				{
+					PointOfInterestCategory.Hotel => "There are these hotel in Maui: Hotel 1, Hotel 2, Hotel 3",
+					PointOfInterestCategory.Restaurant => "There are these restaurant in Maui: Restaurant 1, Restaurant 2, Restaurant 3",
+					PointOfInterestCategory.Cafe => "There are these cafe in Maui: Cafe 1, Cafe 2, Cafe 3",
+					_ => $"Found some {pointOfInterest} locations"
+				};
+			},
+			name: "FindPointsOfInterest",
+			description: "Finds points of interest for a landmark.");
+
+		var client = new PlatformChatClient();
+		var systemMessage = new ChatMessage(ChatRole.System,
+			"Your job is to help find hotels and restaurants. " +
+			"Always use the FindPointsOfInterest tool to find businesses.");
+
+		var messages = new List<ChatMessage>
+		{
+			systemMessage,
+			new(ChatRole.User, "Find hotels in Maui")
+		};
+		var options = new ChatOptions
+		{
+			Tools = [findPointsOfInterestTool]
+		};
+
+		var response = await client.GetResponseAsync(messages, options);
+
+		Assert.NotNull(response);
+		Assert.True(functionWasCalled, "Function with enum parameter should have been called");
+		Assert.NotNull(capturedCategory);
+		Assert.NotNull(capturedQuery);
+		
+		// Verify the AI used a valid enum value
+		Assert.True(Enum.IsDefined(typeof(PointOfInterestCategory), capturedCategory.Value),
+			$"AI should use a valid enum value, but got: {capturedCategory}");
+		
+		// Verify the query is related to the user's request
+		Assert.Contains("hotel", capturedQuery, StringComparison.OrdinalIgnoreCase);
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_FunctionWithEnumParameter_CallsToolCorrectly()
+	{
+		// This test verifies enum parameters work correctly in streaming scenarios
+		
+		bool functionWasCalled = false;
+		PointOfInterestCategory? capturedCategory = null;
+
+		var findPointsOfInterestTool = AIFunctionFactory.Create(
+			(PointOfInterestCategory pointOfInterest, string naturalLanguageQuery) =>
+			{
+				functionWasCalled = true;
+				capturedCategory = pointOfInterest;
+				return $"There are these {pointOfInterest} in Maui: Location 1, Location 2, Location 3";
+			},
+			name: "FindPointsOfInterest",
+			description: "Finds points of interest for a landmark.");
+
+		var client = new PlatformChatClient();
+		var systemMessage = new ChatMessage(ChatRole.System,
+			"Your job is to help find restaurants and cafes. " +
+			"Always use the FindPointsOfInterest tool to find businesses.");
+
+		var messages = new List<ChatMessage>
+		{
+			systemMessage,
+			new(ChatRole.User, "Find restaurants in Maui")
+		};
+		var options = new ChatOptions
+		{
+			Tools = [findPointsOfInterestTool]
+		};
+
+		bool receivedUpdates = false;
+		bool foundFunctionCall = false;
+
+		await foreach (var update in client.GetStreamingResponseAsync(messages, options))
+		{
+			receivedUpdates = true;
+			
+			if (update.Contents.Any(c => c is FunctionCallContent))
+			{
+				foundFunctionCall = true;
+			}
+		}
+
+		Assert.True(receivedUpdates, "Should receive streaming updates");
+		Assert.True(foundFunctionCall, "Should receive FunctionCallContent in streaming updates");
+		Assert.True(functionWasCalled, "Function with enum parameter should have been called during streaming");
+		Assert.NotNull(capturedCategory);
+		
+		// Verify the AI used a valid enum value
+		Assert.True(Enum.IsDefined(typeof(PointOfInterestCategory), capturedCategory.Value),
+			$"AI should use a valid enum value, but got: {capturedCategory}");
+	}
 }

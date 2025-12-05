@@ -50,6 +50,9 @@ public class ChatClientNative: NSObject {
                     includeSchemaInPrompt: false,
                     options: genOptions
                 )
+                
+                let update = StreamUpdateNative(text: jsonSchema.debugDescription)
+                cq?.async { onUpdate(update) } ?? onUpdate(update)
 
                 for try await response in responseStream {
                     try Task.checkCancellation()
@@ -202,10 +205,8 @@ public class ChatClientNative: NSObject {
         // Parse the JSON schema from the options
         let schema: GenerationSchema? = try {
             if let jsonSchema = options?.responseJsonSchema {
-                let decoder = JSONDecoder()
-                let data = String(jsonSchema).data(using: .utf8)!
-                let decoded = try decoder.decode(GenerationSchema.self, from: data)
-                return decoded
+                let parsed = try JsonSchemaDecoder.parse(String(jsonSchema))
+                return parsed
             }
             return nil
         }()
@@ -216,12 +217,12 @@ public class ChatClientNative: NSObject {
                 if let topK = options?.topK?.intValue {
                     return .random(top: topK, seed: options?.seed?.uint64Value)
                 }
-                return nil
+                return .greedy
             }(),
             temperature: options?.temperature?.doubleValue,
             maximumResponseTokens: options?.maxOutputTokens?.intValue
         )
-
+        
         let session = LanguageModelSession(
             model: model,
             tools: tools,
@@ -302,41 +303,47 @@ public class ChatClientNative: NSObject {
             return message
         
         case .toolCalls(let toolCalls):
-            // Multiple tool calls in one message
-            let contents: [AIContentNative] = toolCalls.map { toolCall in
-                let argsJson = toolCall.arguments.jsonString
-                return FunctionCallContentNative(
-                    callId: toolCall.id,
-                    name: toolCall.toolName,
-                    arguments: argsJson
-                )
-            }
             let message = ChatMessageNative()
             message.role = .assistant
-            message.contents = contents
+            message.contents = toolCalls.map(fromToolCall)
             return message
         
         case .toolOutput(let toolOutput):
-            // Tool output becomes a tool role message
-            let resultText = toolOutput.segments
-                .compactMap { segment -> String? in
-                    if case .text(let textSegment) = segment {
-                        return textSegment.content
-                    }
-                    return nil
-                }
-                .joined()
-            
             let message = ChatMessageNative()
             message.role = .tool
-            message.contents = [FunctionResultContentNative(
-                callId: toolOutput.id,
-                result: resultText
-            )]
+            message.contents = fromToolOutput(toolOutput)
             return message
         
         @unknown default:
             return nil
+        }
+    }
+    
+    private func fromToolCall(_ toolCall: Transcript.ToolCall) -> AIContentNative {
+        let argsJson = toolCall.arguments.jsonString
+        return FunctionCallContentNative(
+            callId: toolCall.id,
+            name: toolCall.toolName,
+            arguments: argsJson
+        )
+    }
+    
+    private func fromToolOutput(_ toolOutput: Transcript.ToolOutput) -> [AIContentNative] {
+        return toolOutput.segments.compactMap { segment -> AIContentNative? in
+            let resultText: String
+            switch segment {
+            case .text(let textSegment):
+                resultText = textSegment.content
+            case .structure(let structuredSegment):
+                resultText = structuredSegment.content.jsonString
+            @unknown default:
+                return nil
+            }
+            
+            return FunctionResultContentNative(
+                callId: toolOutput.id,
+                result: resultText
+            )
         }
     }
 

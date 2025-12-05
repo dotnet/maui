@@ -27,7 +27,7 @@ public class BufferedChatClient(IChatClient innerClient, int minBufferSize = 100
 	/// <summary>
 	/// Gets streaming chat response updates with buffering applied to text content.
 	/// </summary>
-	/// <param name="chatMessages">The chat messages to send to the model.</param>
+	/// <param name="messages">The chat messages to send to the model.</param>
 	/// <param name="options">Optional chat options to configure the request.</param>
 	/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 	/// <returns>
@@ -48,7 +48,7 @@ public class BufferedChatClient(IChatClient innerClient, int minBufferSize = 100
 	/// </list>
 	/// </remarks>
 	public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-		IEnumerable<ChatMessage> chatMessages,
+		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
@@ -56,7 +56,7 @@ public class BufferedChatClient(IChatClient innerClient, int minBufferSize = 100
 		var lastYieldTicks = Environment.TickCount64;
 		ChatResponseUpdate? lastUpdate = null;
 
-		await foreach (var update in InnerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken))
+		await foreach (var update in InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken))
 		{
 			var currentYieldTicks = Environment.TickCount64;
 			var hasNonTextContent = false;

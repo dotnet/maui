@@ -1,11 +1,10 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
 
 namespace Maui.Controls.Sample.Models;
 
+[DisplayName("Itinerary")]
+[Description("A travel itinerary with days and activities.")]
 public record Itinerary
 {
 	[Description("An exciting name for the trip.")]
@@ -21,66 +20,6 @@ public record Itinerary
 	[Description("A list of day-by-day plans.")]
 	[Length(3, 3)]
 	public required List<DayPlan> Days { get; init; }
-
-	public static JsonElement ToJsonSchema(IEnumerable<string> landmarks)
-	{
-		// TODO: see if we can do this inside the client directly
-		// https://github.com/dotnet/maui/issues/32909
-
-		var schema = AIJsonUtilities.CreateJsonSchema(
-			typeof(Itinerary),
-			inferenceOptions: new AIJsonSchemaCreateOptions
-			{
-				TransformSchemaNode = TransformSchemaNode,
-				TransformOptions = new AIJsonSchemaTransformOptions
-				{
-					DisallowAdditionalProperties = true
-				}
-			});
-
-		return schema;
-
-		JsonNode TransformSchemaNode(AIJsonSchemaCreateContext context, JsonNode schema)
-		{
-			if (schema is not JsonObject obj)
-			{
-				return schema;
-			}
-
-			// Add enum constraint for destinationName
-			if (context.PropertyInfo?.Name.Equals(nameof(DestinationName), StringComparison.OrdinalIgnoreCase) == true)
-			{
-				var enumArray = new JsonArray();
-				foreach (var landmark in landmarks)
-				{
-					enumArray.Add(JsonValue.Create(landmark));
-				}
-				obj["enum"] = enumArray;
-			}
-
-			if (obj.TryGetPropertyValue("type", out var typeNode) && typeNode?.GetValue<string>() == "object")
-			{
-				// Add title for object type definitions only
-				if (context.TypeInfo is not null && !obj.ContainsKey("title"))
-				{
-					obj["title"] = context.TypeInfo.Type.Name;
-				}
-			}
-
-			// Add x-order for property ordering
-			if (obj.TryGetPropertyValue("properties", out var props) && props is JsonObject propsObj)
-			{
-				var order = new JsonArray();
-				foreach (var prop in propsObj)
-				{
-					order.Add(JsonValue.Create(prop.Key));
-				}
-				obj["x-order"] = order;
-			}
-
-			return schema;
-		}
-	}
 
 	public static Itinerary GetExampleTripToJapan() =>
 		new()
@@ -129,6 +68,7 @@ public record Itinerary
 		};
 }
 
+[DisplayName("DayPlan")]
 public record DayPlan
 {
 	[Description("A unique and exciting title for this day plan.")]
@@ -142,6 +82,7 @@ public record DayPlan
 	public required List<Activity> Activities { get; init; }
 }
 
+[DisplayName("Activity")]
 public record Activity
 {
 	public required ActivityKind Type { get; init; }
