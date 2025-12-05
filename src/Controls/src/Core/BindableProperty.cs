@@ -252,6 +252,21 @@ namespace Microsoft.Maui.Controls
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
+		// Properties that this property depends on - when getting this property's value,
+		// if the dependency has a pending binding, return the default value instead.
+		// This is used to fix timing issues where one property binding resolves before another.
+		// See https://github.com/dotnet/maui/issues/31939
+		internal BindableProperty[] Dependencies { get; private set; }
+
+		/// <summary>
+		/// Registers a dependency on another BindableProperty. When this property's value is retrieved,
+		/// if the dependency has a binding that hasn't resolved yet (value is null), return null.
+		/// </summary>
+		internal void DependsOn(params BindableProperty[] dependencies)
+		{
+			Dependencies = dependencies;
+		}
+
 		/// <summary>Creates a new instance of the BindableProperty class.</summary>
 		/// <param name="propertyName">The name of the BindableProperty.</param>
 		/// <param name="returnType">The type of the property.</param>
