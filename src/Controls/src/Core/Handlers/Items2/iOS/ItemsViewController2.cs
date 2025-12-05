@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_initialized)
 			{
 				// Reload the data so the currently visible cells get laid out according to the new layout
-				CollectionView.ReloadData();
+				ReloadData();
 			}
 		}
 
@@ -241,11 +241,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		internal void ReloadData()
+		{
+			// Reset cached first item size when reloading data
+			if (ItemsView.Handler is CollectionViewHandler2 handler)
+			{
+				handler.SetCachedFirstItemSize(CoreGraphics.CGSize.Empty);
+			}
+
+			CollectionView.ReloadData();
+		}
+
 		internal void DisposeItemsSource()
 		{
 			ItemsSource?.Dispose();
 			ItemsSource = new Items.EmptySource();
-			CollectionView.ReloadData();
+			ReloadData();
 		}
 
 		void EnsureLayoutInitialized()
@@ -280,7 +291,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
 
-			CollectionView.ReloadData();
+			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
 			(ItemsView as IView)?.InvalidateMeasure();

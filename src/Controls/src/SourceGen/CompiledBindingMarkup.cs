@@ -306,8 +306,9 @@ internal struct CompiledBindingMarkup
 
 			if (p.Length > 0)
 			{
-				var property = previousPartType.GetAllProperties(p, _context).FirstOrDefault(property => property.GetMethod != null && !property.GetMethod.IsStatic);
-				if (property is null)
+				// Try to find property or infer from RelayCommand method
+				if (!previousPartType.TryGetProperty(p, _context, out var property, out var currentPropertyType) 
+					|| currentPropertyType is null)
 				{
 					return false; // TODO report diagnostic
 				}
@@ -319,10 +320,10 @@ internal struct CompiledBindingMarkup
 				// 		&& a.ConstructorArguments.Length == 1
 				// 		&& a.ConstructorArguments[0].Value is int nullableContextValue
 				// 		&& nullableContextValue > 0);
-				var memberIsNullable = property.Type.IsTypeNullable(enabledNullable);
+				var memberIsNullable = currentPropertyType.IsTypeNullable(enabledNullable);
 				isNullable |= memberIsNullable;
 
-				IPathPart memberAccess = new MemberAccess(p, property.Type.IsValueType);
+				IPathPart memberAccess = new MemberAccess(p, currentPropertyType.IsValueType);
 				if (previousPartIsNullable)
 				{
 					memberAccess = new ConditionalAccess(memberAccess);
@@ -332,13 +333,14 @@ internal struct CompiledBindingMarkup
 
 				// TODO: do this only if it is the last part?
 				setterOptions = new SetterOptions(
-					IsWritable: property.SetMethod != null
+					IsWritable: property is not null
+						&& property.SetMethod is not null
 						&& property.SetMethod.IsPublic()
 						&& !property.SetMethod.IsInitOnly
 						&& !property.SetMethod.IsStatic,
 					AcceptsNullValue: memberIsNullable);
 
-				previousPartType = property.Type;
+				previousPartType = currentPropertyType;
 				previousPartIsNullable = memberIsNullable;
 			}
 

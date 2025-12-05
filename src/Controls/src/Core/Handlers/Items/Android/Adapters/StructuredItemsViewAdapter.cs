@@ -33,12 +33,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ItemsViewPropertyChanged(sender, property);
 
-			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty))
+			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderTemplateProperty))
 			{
 				UpdateHasHeader();
 				NotifyDataSetChanged();
 			}
-			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty))
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
 			{
 				UpdateHasFooter();
 				NotifyDataSetChanged();

@@ -122,5 +122,7 @@
 
   <!-- Tell typescript to stop deleting everything before building the next TFM -->
   <Target Name="TypeScriptDeleteOutputFromOtherConfigs" />
+  <!-- Don't include any JS files in the Content, we will embed it -->
+  <Target Name="GetTypeScriptOutputForPublishing" />
 
 </Project>
