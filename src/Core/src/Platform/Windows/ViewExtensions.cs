@@ -155,6 +155,12 @@ namespace Microsoft.Maui.Platform
 
 			AutomationProperties.SetHelpText(platformView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
+
+			// Update focusability for ContentPanel based on semantic properties
+			if (platformView is ContentPanel contentPanel)
+			{
+				contentPanel.UpdateFocusability();
+			}
 		}
 
 		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, Color color)
