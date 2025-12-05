@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Platform
 {
 	internal class MauiDoneAccessoryView : UIToolbar
 	{
-		const string DoneButtonAutomationId = "Microsoft.Maui.Platform.MauiDoneAccessory.DoneButton";
 		readonly BarButtonItemProxy _proxy;
 
 		public MauiDoneAccessoryView() : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, 44))
@@ -17,7 +16,6 @@ namespace Microsoft.Maui.Platform
 			Translucent = true;
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, _proxy.OnDataClicked);
-			doneButton.AccessibilityIdentifier = DoneButtonAutomationId;
 
 			SetItems(new[] { spacer, doneButton }, false);
 		}
@@ -35,7 +33,6 @@ namespace Microsoft.Maui.Platform
 
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, _proxy.OnClicked);
-			doneButton.AccessibilityIdentifier = DoneButtonAutomationId;
 			SetItems(new[] { spacer, doneButton }, false);
 		}
 
