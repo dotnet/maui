@@ -173,7 +173,7 @@ Use the [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui) 
 - **XAML Source Generation** - Compile-time XAML parsing for better performance and smaller app sizes
 - **XAML Simplifications** - Reduced boilerplate with improved syntax and type inference
 
-Learn more about [XAML compilation and source generation](https://learn.microsoft.com/dotnet/maui/xaml/xamlc?view=net-maui-10.0).
+Learn more about [XAML compilation and source generation](https://learn.microsoft.com/dotnet/maui/xaml/xamlc).
 
 ### Shell Navigation
 
