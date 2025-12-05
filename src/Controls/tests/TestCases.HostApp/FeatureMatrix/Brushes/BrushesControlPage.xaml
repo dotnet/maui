@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.BrushesControlMainPage"
+             x:DataType="local:BrushesViewModel"
+             Title="BrushesControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="OnOptionsClicked"/>
+       </ContentPage.ToolbarItems>
+       <VerticalStackLayout Padding="15"
+                            Spacing="10">
+              <StackLayout>
+                     <Label Text="Brushes Feature Matrix"
+                            FontSize="20"
+                            HorizontalOptions="Center"
+                            AutomationId="BrushesLabel"/>
+                     <BoxView HeightRequest="25"/>
+                     <Border
+                            WidthRequest="300"
+                            HeightRequest="300"
+                            StrokeThickness="30"
+                            Stroke="{Binding StrokeBrush}"
+                            Background="{Binding BrushTarget}"
+                            Opacity="{Binding BrushOpacity}"
+                            StrokeShape="RoundRectangle 30"
+                            Shadow="{Binding ShadowBrush}">
+                            <Label Text="Test Brushes"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                     </Border>
+              </StackLayout>
+              <BoxView HeightRequest="30"/>
+              <VerticalStackLayout Spacing="5">
+                     <HorizontalStackLayout Spacing="10"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                            <Label Text="Selected Color 1:"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding SelectedColorName1}"
+                                   VerticalOptions="Center"
+                                   AutomationId="Color1"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                            <Label Text="Selected Color 2:"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding SelectedColorName2}"
+                                   VerticalOptions="Center"
+                                   AutomationId="Color2"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                            <Label Text="Compare Result:"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding CompareResult}"
+                                   VerticalOptions="Center"
+                                   AutomationId="CompareResultLabel"/>
+                     </HorizontalStackLayout>
+                     <Button Text="Compare Selected Brushes"
+                             Clicked="OnCompareClicked"
+                             BackgroundColor="DarkBlue"
+                             TextColor="White"
+                             AutomationId="CompareButton"/>
+                     <HorizontalStackLayout Spacing="10"
+                                            HorizontalOptions="Center">
+                            <Button Text="Add Linear Stop"
+                                    Clicked="OnAddLinearStopClicked"
+                                    AutomationId="AddLinearStopButton"/>
+                            <Button Text="Remove Linear Stop"
+                                    Clicked="OnRemoveLinearStopClicked"
+                                    AutomationId="RemoveLinearStopButton"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10"
+                                            HorizontalOptions="Center">
+                            <Button Text="Add Radial Stop"
+                                    Clicked="OnAddRadialStopClicked"
+                                    AutomationId="AddRadialStopButton"/>
+                            <Button Text="Remove Radial Stop"
+                                    Clicked="OnRemoveRadialStopClicked"
+                                    AutomationId="RemoveRadialStopButton"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+       </VerticalStackLayout>
+</ContentPage>
