@@ -221,6 +221,24 @@ namespace Microsoft.Maui.Platform
 				return WindowInsetsCompat.Consumed;
 			}
 
+			// Check if the current Page has SafeAreaEdges set to None
+			// to allow content to flow behind navigation bars
+			var window = v.Context?.GetWindow();
+			var pageContent = window?.Content;
+			bool respectTopSafeArea = true;
+			bool respectBottomSafeArea = true;
+
+			if (pageContent is ISafeAreaView2 safeAreaView)
+			{
+				// Check top edge (index 1)
+				var topRegion = safeAreaView.GetSafeAreaRegionsForEdge(1);
+				respectTopSafeArea = topRegion != SafeAreaRegions.None;
+
+				// Check bottom edge (index 3)
+				var bottomRegion = safeAreaView.GetSafeAreaRegionsForEdge(3);
+				respectBottomSafeArea = bottomRegion != SafeAreaRegions.None;
+			}
+
 			// Find AppBarLayout - check direct child first, then first two children
 			var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 			if (appBarLayout is null && v is ViewGroup group)
@@ -251,9 +269,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Apply padding to AppBarLayout based on content and system insets
+			// Only apply padding if the page respects top safe area
 			if (appBarLayout is not null)
 			{
-				if (appBarHasContent)
+				if (appBarHasContent && respectTopSafeArea)
 				{
 					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 					appBarLayout.SetPadding(systemBars?.Left ?? 0, topInset, systemBars?.Right ?? 0, 0);
@@ -265,8 +284,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Handle bottom navigation
+			// Only apply padding if the page respects bottom safe area
 			var hasBottomNav = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
-			if (hasBottomNav)
+			if (hasBottomNav && respectBottomSafeArea)
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 				v.SetPadding(0, 0, 0, bottomInset);
@@ -277,18 +297,19 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Create new insets with consumed values
+			// Only consume insets if we applied them
 			var newSystemBars = Insets.Of(
 				systemBars?.Left ?? 0,
-				appBarHasContent ? 0 : systemBars?.Top ?? 0,
+				(appBarHasContent && respectTopSafeArea) ? 0 : systemBars?.Top ?? 0,
 				systemBars?.Right ?? 0,
-				hasBottomNav ? 0 : systemBars?.Bottom ?? 0
+				(hasBottomNav && respectBottomSafeArea) ? 0 : systemBars?.Bottom ?? 0
 			) ?? Insets.None;
 
 			var newDisplayCutout = Insets.Of(
 				displayCutout?.Left ?? 0,
-				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
+				(appBarHasContent && respectTopSafeArea) ? 0 : displayCutout?.Top ?? 0,
 				displayCutout?.Right ?? 0,
-				hasBottomNav ? 0 : displayCutout?.Bottom ?? 0
+				(hasBottomNav && respectBottomSafeArea) ? 0 : displayCutout?.Bottom ?? 0
 			) ?? Insets.None;
 
 			return new WindowInsetsCompat.Builder(insets)
