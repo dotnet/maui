@@ -1,52 +1,52 @@
-{
-"description":"Maui is a tropical paradise with beaches, rainforests, and volcanoes. This
+{"description":"Maui is a tropical
+ paradise with beaches, rainforests, and volcanoes. This
  itinerary will take you to the best of Maui'
-s natural beauty and culture.","days":[
-
-{"activities":[{"description":"Explore the Road to Hana and see waterfalls, rainforests, and
- ocean views.
+s natural beauty and culture.
+","days":[{"activities":[{"description":"Explore the
+ Road to Hana and see waterfalls, rainforests, and
+ ocean views.","type":"Hote
+lAndLodging","title":"
+Stay at a Hotel in Hana"},{"description":"
+Visit Haleakalā National Park for sunrise views.
 ","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"},{"description":"Visit Haleakalā National Park for sunrise views.
-
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"},{"description":"Enjoy a meal at a local restaurant.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"}],"subtitle":"Day 1: Explore Hana
-","title":"Day 1: Explore Hana
-","destination":"Maui"},{"activities":[{
-"description":"Relax at a hotel with hot springs
-.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"},{"description":"Visit a museum to learn about Maui's culture.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"},{"description":"Enjoy a meal at a local restaurant.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"}],"subtitle":"Day 2: Relax and Explore
-","title":"Day 2: Relax and Explore
-","destination":"Maui"},{"activities":[{
-"description":"Visit Haleakalā National Park for
- sunrise views.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"},{"description":"Enjoy a meal at a local restaurant.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"},{"description":"Visit a museum to learn about Maui's culture
-.
-","type":"HotelAndLodging
-","title":"Stay at a Hotel in Hana
-"}],"subtitle":"Day 3: Explore and Relax
-","title":"Day 3: Explore and Relax
-","destination":"Maui
-"}],"title":"Maui Itinerary
-","destinationName":"Maui
-","rationale":"Maui is a tropical paradise with beaches, rainforests
+","title":"Stay at a Hotel in
+ Hana"},{"description":"Enjoy a meal at
+ a local restaurant.","type":"HotelAnd
+Lodging","title":"Stay
+ at a Hotel in Hana"}],"subtitle":"
+Day 1: Explore Hana","title":"
+Day 1: Explore Hana","destination":"
+Maui
+"},{"activities":[{"description":"Relax at a hotel with hot springs
+.","type":"HotelAndLodging
+","title":"Stay at a Hotel in
+ Hana"},{"description":"Visit a museum to
+ learn about Maui's culture.","type":"
+HotelAndLodging","title":"
+Stay at a Hotel in Hana"},{"description":"
+Enjoy a meal at a local restaurant.","type":"
+HotelAndLodging","title":"
+Stay at a Hotel in Hana"}],"subtitle":"
+Day 2: Relax and Explore","title":"
+Day 2: Relax and Explore","destination":"
+Maui
+"},{"activities":[{"description":"Visit Haleakalā National Park for
+ sunrise views.","type":"HotelAndL
+odging","title":"Stay at a
+ Hotel in Hana"},{"description":"Enjoy a
+ meal at a local restaurant.","type":"
+HotelAndLodging","title":"
+Stay at a Hotel in Hana"},{"description":"
+Visit a museum to learn about Maui's culture
+.","type":"HotelAndLodging
+","title":"Stay at a Hotel in
+ Hana"}],"subtitle":"Day
+ 3: Explore and Relax","title":"
+Day 3: Explore and Relax","destination":"
+Maui"}],"title":"M
+aui Itinerary","destinationName":"
+Maui","rationale":"M
+aui is a tropical paradise with beaches, rainforests
 , and volcanoes. This itinerary will take you to
  the best of Maui's natural beauty and culture
 .

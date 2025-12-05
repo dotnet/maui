@@ -5,53 +5,71 @@ namespace Maui.Controls.Sample.Services;
 
 /// <summary>
 /// Converts a series of complete JSON objects into streaming chunks that, when concatenated, 
-/// produce valid JSON matching the final object.
+/// produce valid JSON matching the final object (structurally equivalent).
 /// </summary>
 /// <remarks>
-/// Uses a 1-chunk delay for empty strings to handle the case where empty strings get filled
-/// in the next chunk. Non-empty values are emitted immediately.
+/// Key principles:
+/// 1. Emit immediately when possible - no deferring to the end
+/// 2. Keep strings OPEN (no closing quote) while they might still grow
+/// 3. Track property order from first appearance, not alphabetically
+/// 4. Use 1-chunk delay for multiple new strings (wait to see which one grows)
+/// 5. Numbers, booleans, null are always complete immediately
+/// 
+/// Multi-string handling:
+/// - When multiple strings appear in same chunk, add ALL to pending
+/// - Next chunk: the one that changed is still growing (keep open), others are complete (close)
 /// </remarks>
 public class JsonStreamChunker
 {
 	private readonly StringBuilder _output = new();
 	
+	// Flattened state: path -> value
+	private Dictionary<string, JsonValue> _previousState = new();
+	
 	// What we've emitted so far (path -> string value for strings)
 	private readonly Dictionary<string, string> _emittedStrings = new();
 	
-	// All paths we've ever emitted (to know if something is new)
+	// All leaf paths we've ever emitted
 	private readonly HashSet<string> _emittedPaths = new();
+	
+	// All container paths we've ever created (properties and arrays)
+	// This prevents emitting the same property twice when order changes
+	private readonly HashSet<string> _createdContainers = new();
 	
 	// Stack of open structures with their paths
 	private readonly Stack<(string Path, bool IsArray)> _openStructures = new();
 	
-	// Currently open string path (if any)
+	// Currently open string path (if any) - string without closing quote
 	private string? _openStringPath;
 	
-	// Tracks the last property we emitted at each object level
+	// Track property count at each level (for comma insertion)
 	private readonly Dictionary<string, int> _propertyCountAtLevel = new();
 	
-	// Tracks emitted array element counts
+	// Track array element counts
 	private readonly Dictionary<string, int> _arrayElementCount = new();
 	
-	// Pending empty strings (path -> seen in previous chunk, waiting to see if filled)
-	private readonly Dictionary<string, PendingValue> _pendingValues = new();
+	// Pending values waiting to see if they grow: path -> value
+	// ALL new strings go here first, then next chunk we determine which grew
+	private readonly Dictionary<string, JsonValue> _pendingStrings = new();
 	
-	// Previous chunk's state for comparison
-	private Dictionary<string, JsonValue> _previousState = new();
+	// Pending empty containers: path -> (value, chunks seen)
+	private readonly Dictionary<string, (JsonValue Value, int ChunksSeen)> _pendingContainers = new();
 
 	public string EmittedJson => _output.ToString();
 
 	public void Reset()
 	{
 		_output.Clear();
+		_previousState.Clear();
 		_emittedStrings.Clear();
 		_emittedPaths.Clear();
+		_createdContainers.Clear();
 		_openStructures.Clear();
 		_openStringPath = null;
 		_propertyCountAtLevel.Clear();
 		_arrayElementCount.Clear();
-		_pendingValues.Clear();
-		_previousState.Clear();
+		_pendingStrings.Clear();
+		_pendingContainers.Clear();
 	}
 
 	public string ProcessLine(string jsonLine)
@@ -71,132 +89,209 @@ public class JsonStreamChunker
 
 		using (doc)
 		{
-			var currentState = FlattenJson(doc.RootElement, "");
+			var currentState = FlattenJsonWithOrder(doc.RootElement, "");
 			var chunk = new StringBuilder();
-
-			// First line - initialize
-			if (_emittedPaths.Count == 0 && _pendingValues.Count == 0)
+			
+			// First line - open the root object
+			if (_previousState.Count == 0)
 			{
 				chunk.Append('{');
 				_openStructures.Push(("", false));
 				_propertyCountAtLevel[""] = 0;
 			}
 
-			// First, check pending values from previous chunk
-			// If they're still empty, emit them now
-			// If they got filled, emit the filled value
-			var pendingToEmit = new List<(string Path, JsonValue Value)>();
+			// === PHASE 1: Process pending strings from previous chunk ===
+			// Check which pending strings changed vs stayed the same
+			var pendingToEmit = new List<(string Path, JsonValue Value, bool KeepOpen)>();
 			var pendingToRemove = new List<string>();
 			
-			foreach (var (path, pending) in _pendingValues)
+			string? grewPath = null;
+			
+			foreach (var (path, pendingValue) in _pendingStrings)
 			{
-				if (currentState.TryGetValue(path, out var currentValue))
+				var pendingStr = pendingValue.StringValue ?? "";
+				
+				if (currentState.TryGetValue(path, out var currentValue) && 
+				    currentValue.Kind == JsonValueKind.String)
 				{
 					var currentStr = currentValue.StringValue ?? "";
-					if (currentStr != pending.Value)
+					
+					if (currentStr.Length > pendingStr.Length && currentStr.StartsWith(pendingStr))
 					{
-						// Value changed - emit the new value
-						pendingToEmit.Add((path, currentValue));
+						// This string grew - it's the active one, keep it open
+						grewPath = path;
+						pendingToEmit.Add((path, currentValue, true));
+					}
+					else if (currentStr == pendingStr)
+					{
+						// Unchanged - it's complete, emit closed
+						pendingToEmit.Add((path, pendingValue, false));
 					}
 					else
 					{
-						// Value is still the same empty string - emit it now
-						pendingToEmit.Add((path, currentValue));
+						// Value changed completely - emit the new value, keep open
+						grewPath = path;
+						pendingToEmit.Add((path, currentValue, true));
 					}
-					pendingToRemove.Add(path);
-				}
-			}
-			
-			// Sort pending emissions in path order
-			pendingToEmit.Sort((a, b) => CompareJsonPaths(a.Path, b.Path));
-			
-			foreach (var (path, value) in pendingToEmit)
-			{
-				chunk.Append(EmitNewPath(path, value));
-			}
-			
-			foreach (var path in pendingToRemove)
-			{
-				_pendingValues.Remove(path);
-			}
-
-			// Find what changed in current state
-			var changes = new List<(string Path, string? Extension, ChangeType Type, JsonValue Value)>();
-
-			// Threshold for "short" strings that might still be growing
-			const int ShortStringThreshold = 20;
-
-			foreach (var (path, value) in currentState)
-			{
-				if (_emittedPaths.Contains(path))
-				{
-					// Check for string extension - ONLY if this is the currently open string
-					if (value.Kind == JsonValueKind.String && 
-					    path == _openStringPath &&
-					    _emittedStrings.TryGetValue(path, out var emittedStr))
-					{
-						var currentStr = value.StringValue ?? "";
-						if (currentStr.Length > emittedStr.Length && currentStr.StartsWith(emittedStr))
-						{
-							var extension = currentStr[emittedStr.Length..];
-							changes.Add((path, extension, ChangeType.Extended, value));
-						}
-					}
-				}
-				else if (_pendingValues.ContainsKey(path))
-				{
-					// Already pending - update the pending value if it changed
-					var pending = _pendingValues[path];
-					var currentStr = value.StringValue ?? "";
-					if (currentStr != pending.Value)
-					{
-						// Value changed while pending - update it
-						_pendingValues[path] = new PendingValue(currentStr, value.Kind);
-					}
-					// Don't emit yet - still pending
 				}
 				else
 				{
-					// New path - delay short strings by 1 chunk
-					if (value.Kind == JsonValueKind.String)
+					// Path no longer exists or type changed - emit as complete
+					pendingToEmit.Add((path, pendingValue, false));
+				}
+				pendingToRemove.Add(path);
+			}
+			
+			foreach (var path in pendingToRemove)
+				_pendingStrings.Remove(path);
+			
+			// Sort pending emissions by path to keep siblings together
+			pendingToEmit.Sort((a, b) => string.Compare(a.Path, b.Path, StringComparison.Ordinal));
+			
+			// Emit pending strings
+			foreach (var (path, value, keepOpen) in pendingToEmit)
+			{
+				chunk.Append(EmitNewPath(path, value, keepOpen));
+				if (keepOpen)
+					_openStringPath = path;
+			}
+			
+			// === PHASE 2: Check if currently open string was extended ===
+			if (_openStringPath != null && 
+			    _openStringPath != grewPath && // Don't double-process
+			    currentState.TryGetValue(_openStringPath, out var currentOpenValue))
+			{
+				if (currentOpenValue.Kind == JsonValueKind.String &&
+				    _emittedStrings.TryGetValue(_openStringPath, out var emittedStr))
+				{
+					var currentStr = currentOpenValue.StringValue ?? "";
+					if (currentStr.Length > emittedStr.Length && currentStr.StartsWith(emittedStr))
 					{
-						var str = value.StringValue ?? "";
-						if (str.Length < ShortStringThreshold)
-						{
-							// Short string - mark as pending, might still grow
-							_pendingValues[path] = new PendingValue(str, value.Kind);
-						}
-						else
-						{
-							// Long string - emit immediately
-							changes.Add((path, null, ChangeType.New, value));
-						}
-					}
-					else
-					{
-						// Non-string - emit immediately
-						changes.Add((path, null, ChangeType.New, value));
+						// String was extended - emit extension
+						var extension = currentStr[emittedStr.Length..];
+						chunk.Append(Escape(extension));
+						_emittedStrings[_openStringPath] = currentStr;
 					}
 				}
 			}
-
-			// Sort changes: extensions first (for the currently open string), then new paths in order
-			var orderedChanges = changes
-				.OrderBy(c => c.Type == ChangeType.Extended && c.Path == _openStringPath ? 0 : 1)
-				.ThenBy(c => c.Path, Comparer<string>.Create(CompareJsonPaths))
-				.ToList();
-
-			foreach (var (path, extension, changeType, value) in orderedChanges)
+			
+			// === PHASE 3: Process pending containers ===
+			pendingToRemove.Clear();
+			var containerToEmit = new List<(string Path, JsonValue Value)>();
+			
+			foreach (var (path, (pendingValue, chunksSeen)) in _pendingContainers)
 			{
-				if (changeType == ChangeType.Extended)
+				// Check if container now has children
+				var hasChildren = currentState.Keys.Any(k => 
+					k.StartsWith(path + ".") || k.StartsWith(path + "["));
+				
+				if (hasChildren)
 				{
-					// Just emit the extension
-					chunk.Append(Escape(extension!));
-					_emittedStrings[path] = (_emittedStrings.GetValueOrDefault(path, "") + extension);
+					// Container will be created when children are emitted
+					pendingToRemove.Add(path);
 				}
-				else // New
+				else if (chunksSeen >= 1)
 				{
-					chunk.Append(EmitNewPath(path, value));
+					// Still empty after 1 chunk - emit as empty
+					containerToEmit.Add((path, pendingValue));
+					pendingToRemove.Add(path);
+				}
+				else
+				{
+					// Wait one more chunk
+					_pendingContainers[path] = (pendingValue, chunksSeen + 1);
+				}
+			}
+			
+			foreach (var path in pendingToRemove)
+				_pendingContainers.Remove(path);
+			
+			foreach (var (path, value) in containerToEmit)
+			{
+				chunk.Append(EmitNewPath(path, value, false));
+			}
+			
+			// === PHASE 4: Find new values in current state ===
+			var newStrings = new List<(string Path, JsonValue Value)>();
+			var newNonStrings = new List<(string Path, JsonValue Value)>();
+			
+			foreach (var (path, value) in currentState)
+			{
+				// Skip if already emitted or pending
+				if (_emittedPaths.Contains(path) || 
+				    _pendingStrings.ContainsKey(path) ||
+				    _pendingContainers.ContainsKey(path))
+					continue;
+				
+				// Skip if this is the open string (handled above)
+				if (path == _openStringPath)
+					continue;
+				
+				// Check if this is truly new
+				bool isNew = !_previousState.ContainsKey(path);
+				bool valueChanged = false;
+				
+				if (!isNew && _previousState.TryGetValue(path, out var prevValue))
+				{
+					// Existed before - check if value changed
+					if (value.Kind == JsonValueKind.String && prevValue.Kind == JsonValueKind.String)
+					{
+						valueChanged = value.StringValue != prevValue.StringValue;
+					}
+				}
+				
+				if (!isNew && !valueChanged)
+					continue;
+				
+				// Categorize by type
+				switch (value.Kind)
+				{
+					case JsonValueKind.String:
+						newStrings.Add((path, value));
+						break;
+					case JsonValueKind.Object when !currentState.Keys.Any(k => k.StartsWith(path + ".")):
+						// Empty object
+						_pendingContainers[path] = (value, 0);
+						break;
+					case JsonValueKind.Array when !currentState.Keys.Any(k => k.StartsWith(path + "[")):
+						// Empty array
+						_pendingContainers[path] = (value, 0);
+						break;
+					default:
+						// Numbers, bools, null, non-empty containers - emit immediately
+						newNonStrings.Add((path, value));
+						break;
+				}
+			}
+			
+			// Emit non-string values immediately (they're always complete)
+			// Sort by path to group related paths together (keeps containers open longer)
+			newNonStrings.Sort((a, b) =>
+			{
+				// Sort by full path to keep siblings together
+				return string.Compare(a.Path, b.Path, StringComparison.Ordinal);
+			});
+			
+			foreach (var (path, value) in newNonStrings)
+			{
+				chunk.Append(EmitNewPath(path, value, false));
+			}
+			
+			// Handle new strings
+			if (newStrings.Count == 1)
+			{
+				// Only one new string - emit it open (it might grow)
+				var (path, value) = newStrings[0];
+				chunk.Append(EmitNewPath(path, value, true));
+				_openStringPath = path;
+			}
+			else if (newStrings.Count > 1)
+			{
+				// Multiple new strings - add ALL to pending
+				// Next chunk will reveal which one is growing
+				foreach (var (path, value) in newStrings)
+				{
+					_pendingStrings[path] = value;
 				}
 			}
 
@@ -209,18 +304,22 @@ public class JsonStreamChunker
 	public string Finalize()
 	{
 		var chunk = new StringBuilder();
-
-		// Emit any remaining pending values
-		var pendingList = _pendingValues
-			.OrderBy(kv => kv.Key, Comparer<string>.Create(CompareJsonPaths))
-			.ToList();
 		
-		foreach (var (path, pending) in pendingList)
+		// Emit any remaining pending strings as closed
+		var pendingStringsList = _pendingStrings.OrderBy(kv => kv.Key).ToList();
+		foreach (var (path, value) in pendingStringsList)
 		{
-			var value = new JsonValue(pending.Value, pending.Kind);
-			chunk.Append(EmitNewPath(path, value));
+			chunk.Append(EmitNewPath(path, value, false));
 		}
-		_pendingValues.Clear();
+		_pendingStrings.Clear();
+		
+		// Emit any remaining pending containers
+		var pendingContainersList = _pendingContainers.OrderBy(kv => kv.Key).ToList();
+		foreach (var (path, (value, _)) in pendingContainersList)
+		{
+			chunk.Append(EmitNewPath(path, value, false));
+		}
+		_pendingContainers.Clear();
 
 		// Close open string
 		if (_openStringPath != null)
@@ -240,12 +339,12 @@ public class JsonStreamChunker
 		return chunk.ToString();
 	}
 
-	private string EmitNewPath(string path, JsonValue value)
+	private string EmitNewPath(string path, JsonValue value, bool keepStringOpen)
 	{
 		var sb = new StringBuilder();
 
-		// Close open string if we have one
-		if (_openStringPath != null)
+		// Close open string if we have one and we're emitting something else
+		if (_openStringPath != null && path != _openStringPath)
 		{
 			sb.Append('"');
 			_openStringPath = null;
@@ -308,6 +407,22 @@ public class JsonStreamChunker
 
 			if (part.Key != null)
 			{
+				// Check if this property path was already created
+				if (_createdContainers.Contains(currentPath))
+				{
+					// Container already exists - check if it's still open
+					var isOpen = _openStructures.Any(s => s.Path == currentPath);
+					if (!isOpen)
+					{
+						// Container is closed - we can't add to it
+						// This is a data loss scenario due to property reordering
+						// Skip this path entirely
+						return sb.ToString();
+					}
+					// Container is open - continue to add children
+					continue;
+				}
+				
 				if (_propertyCountAtLevel.GetValueOrDefault(parentPath, 0) > 0)
 				{
 					sb.Append(',');
@@ -315,6 +430,7 @@ public class JsonStreamChunker
 				_propertyCountAtLevel[parentPath] = _propertyCountAtLevel.GetValueOrDefault(parentPath, 0) + 1;
 
 				sb.Append($"\"{Escape(part.Key)}\":");
+				_createdContainers.Add(currentPath);
 
 				if (!isLast)
 				{
@@ -336,6 +452,21 @@ public class JsonStreamChunker
 			else if (part.Index.HasValue)
 			{
 				var arrayPath = parentPath;
+				
+				// Check if this array element was already created
+				if (_createdContainers.Contains(currentPath))
+				{
+					// Element already exists - check if it's still open
+					var isOpen = _openStructures.Any(s => s.Path == currentPath);
+					if (!isOpen)
+					{
+						// Element is closed - we can't add to it
+						return sb.ToString();
+					}
+					// Element is open - continue to add properties
+					continue;
+				}
+				
 				var elemCount = _arrayElementCount.GetValueOrDefault(arrayPath, 0);
 				
 				if (elemCount > 0)
@@ -343,6 +474,7 @@ public class JsonStreamChunker
 					sb.Append(',');
 				}
 				_arrayElementCount[arrayPath] = elemCount + 1;
+				_createdContainers.Add(currentPath);
 
 				if (!isLast)
 				{
@@ -353,12 +485,12 @@ public class JsonStreamChunker
 			}
 		}
 
-		sb.Append(EmitValue(path, value));
+		sb.Append(EmitValue(path, value, keepStringOpen));
 
 		return sb.ToString();
 	}
 
-	private string EmitValue(string path, JsonValue value)
+	private string EmitValue(string path, JsonValue value, bool keepStringOpen)
 	{
 		_emittedPaths.Add(path);
 
@@ -366,8 +498,16 @@ public class JsonStreamChunker
 		{
 			case JsonValueKind.String:
 				_emittedStrings[path] = value.StringValue ?? "";
-				_openStringPath = path;
-				return $"\"{Escape(value.StringValue ?? "")}";
+				if (keepStringOpen)
+				{
+					// Emit opening quote and content, but NO closing quote (string stays open)
+					return $"\"{Escape(value.StringValue ?? "")}";
+				}
+				else
+				{
+					// Emit complete string with both quotes
+					return $"\"{Escape(value.StringValue ?? "")}\"";
+				}
 
 			case JsonValueKind.Number:
 				return value.RawValue ?? "0";
@@ -382,22 +522,21 @@ public class JsonStreamChunker
 				return "null";
 
 			case JsonValueKind.Array:
-				_openStructures.Push((path, true));
-				_arrayElementCount[path] = 0;
-				return "[";
+				// Empty arrays are emitted closed, don't add to open structures
+				return "[]";
 
 			case JsonValueKind.Object:
-				_openStructures.Push((path, false));
-				_propertyCountAtLevel[path] = 0;
-				return "{";
+				// Empty objects are emitted closed, don't add to open structures
+				return "{}";
 
 			default:
 				return "";
 		}
 	}
 
-	private static Dictionary<string, JsonValue> FlattenJson(JsonElement element, string prefix)
+	private static Dictionary<string, JsonValue> FlattenJsonWithOrder(JsonElement element, string prefix)
 	{
+		// Use ordered dictionary to preserve property order from JSON
 		var result = new Dictionary<string, JsonValue>();
 
 		switch (element.ValueKind)
@@ -412,7 +551,7 @@ public class JsonStreamChunker
 					foreach (var prop in element.EnumerateObject())
 					{
 						var path = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
-						foreach (var kv in FlattenJson(prop.Value, path))
+						foreach (var kv in FlattenJsonWithOrder(prop.Value, path))
 							result[kv.Key] = kv.Value;
 					}
 				}
@@ -429,7 +568,7 @@ public class JsonStreamChunker
 					foreach (var item in element.EnumerateArray())
 					{
 						var path = $"{prefix}[{index}]";
-						foreach (var kv in FlattenJson(item, path))
+						foreach (var kv in FlattenJsonWithOrder(item, path))
 							result[kv.Key] = kv.Value;
 						index++;
 					}
@@ -526,35 +665,6 @@ public class JsonStreamChunker
 		return sb.ToString();
 	}
 
-	private static int CompareJsonPaths(string a, string b)
-	{
-		var partsA = ParsePath(a);
-		var partsB = ParsePath(b);
-
-		for (int i = 0; i < Math.Min(partsA.Count, partsB.Count); i++)
-		{
-			var pa = partsA[i];
-			var pb = partsB[i];
-
-			if (pa.Key != null && pb.Key != null)
-			{
-				var cmp = string.Compare(pa.Key, pb.Key, StringComparison.Ordinal);
-				if (cmp != 0) return cmp;
-			}
-			else if (pa.Index.HasValue && pb.Index.HasValue)
-			{
-				if (pa.Index.Value != pb.Index.Value)
-					return pa.Index.Value.CompareTo(pb.Index.Value);
-			}
-			else if (pa.Key != null)
-				return -1;
-			else
-				return 1;
-		}
-
-		return partsA.Count.CompareTo(partsB.Count);
-	}
-
 	private static string Escape(string s)
 	{
 		var sb = new StringBuilder();
@@ -584,8 +694,4 @@ public class JsonStreamChunker
 			kind)
 		{ }
 	}
-	
-	private record struct PendingValue(string Value, JsonValueKind Kind);
-
-	private enum ChangeType { Extended, New }
 }

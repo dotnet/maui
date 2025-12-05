@@ -57,6 +57,8 @@ public class JsonStreamChunkerTests
 		var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 		var lines = File.ReadAllLines(filePath);
 
+		var txtPath = Path.Combine("/Users/matthew/Documents/GitHub/maui/src/AI/tests/Essentials.AI.UnitTests/TestData/ObjectStreams", Path.ChangeExtension(fileName, ".txt"));
+
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
@@ -65,6 +67,8 @@ public class JsonStreamChunkerTests
 			chunks.Add(chunk);
 		}
 		chunks.Add(chunker.Finalize());
+
+		File.WriteAllLines(txtPath, chunks);
 
 		var concatenated = string.Concat(chunks);
 		var finalLine = lines[^1];
