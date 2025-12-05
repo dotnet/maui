@@ -135,7 +135,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-    bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
+	bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
 	var monoRuntime = isUsingCoreClr ? "coreclr" : "mono";
 	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-ios.binlog";
 
@@ -156,10 +156,10 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 				.Append("/bl:" + binlog)
 				.Append("/tl");
 
-            if (isUsingCoreClr)
-            {
-                args.Append("/p:UseMonoRuntime=false");
-            }
+			if (isUsingCoreClr)
+			{
+				args.Append("/p:UseMonoRuntime=false");
+			}
 
 			return args;
 		}

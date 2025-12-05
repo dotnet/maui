@@ -70,7 +70,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-    bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
+	bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
 	var monoRuntime = isUsingCoreClr ? "coreclr" : "mono";
 	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-catalyst.binlog";
 	DotNetBuild(project, new DotNetBuildSettings
