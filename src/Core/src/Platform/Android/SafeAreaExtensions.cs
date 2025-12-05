@@ -108,20 +108,12 @@ internal static class SafeAreaExtensions
 				if (left == 0 && right == 0 && top == 0 && bottom == 0)
 				{
 					view.SetPadding(0, 0, 0, 0);
+					// Untrack view if it was previously tracked since padding is now 0
+					if (globalWindowInsetsListener?.IsViewTracked(view) == true)
+					{
+						globalWindowInsetsListener.ResetView(view);
+					}
 					return windowInsets;
-				}
-
-				// Get actual screen dimensions (including system UI) first
-				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
-				int screenWidth = 0;
-				int screenHeight = 0;
-
-				if (windowManager?.DefaultDisplay is not null)
-				{
-					var realMetrics = new global::Android.Util.DisplayMetrics();
-					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
-					screenWidth = realMetrics.WidthPixels;
-					screenHeight = realMetrics.HeightPixels;
 				}
 
 				// Get view's position on screen
@@ -132,30 +124,13 @@ internal static class SafeAreaExtensions
 				var viewRight = viewLeft + viewWidth;
 				var viewBottom = viewTop + viewHeight;
 
-				// Detect invalid view position (extends significantly beyond screen bounds)
-				// This happens during navigation when GetLocationOnScreen() is called before proper layout
-				bool hasInvalidPosition = screenWidth > 0 && screenHeight > 0 &&
-					(viewLeft > screenWidth || viewTop > screenHeight ||
-					 viewRight < 0 || viewBottom < 0 ||
-					 (viewRight > screenWidth + 100 && viewWidth <= screenWidth) ||
-					 (viewBottom > screenHeight + 100 && viewHeight <= screenHeight));
-
-				if (hasInvalidPosition)
-				{
-					// Assume view is at top-left corner if position is invalid
-					viewLeft = 0;
-					viewTop = 0;
-					viewRight = viewWidth;
-					viewBottom = viewHeight;
-				}
-
 				// Adjust for view's position relative to parent (including margins) to calculate
 				// safe area insets relative to the parent's position, not the view's visual position.
 				// This ensures margins and safe area insets are additive rather than overlapping.
 				// For example: 20px margin + 30px safe area = 50px total offset
 				// We only take the margins into account if the Width and Height are set
 				// If the Width and Height aren't set it means the layout pass hasn't happen yet
-				if (view.Width > 0 && view.Height > 0 && !hasInvalidPosition)
+				if (view.Width > 0 && view.Height > 0)
 				{
 					viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
 					viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
@@ -163,70 +138,84 @@ internal static class SafeAreaExtensions
 					viewBottom += (int)context.ToPixels(margins.Bottom);
 				}
 
-				if (screenWidth > 0 && screenHeight > 0)
+				// Get actual screen dimensions (including system UI)
+				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+				if (windowManager?.DefaultDisplay is not null)
 				{
+					var realMetrics = new global::Android.Util.DisplayMetrics();
+					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
+					var screenWidth = realMetrics.WidthPixels;
+					var screenHeight = realMetrics.HeightPixels;
+
+					// Check if this is a full-screen view (typical for ContentPages)
+					// For full-screen views, skip position-based calculations as they can be unreliable
+					// during Shell navigation and always apply the full safe area insets
+					// Calculate the available content area (screen minus all safe area insets)
+					var availableWidth = screenWidth - baseSafeArea.Left - baseSafeArea.Right;
+					var availableHeight = screenHeight - baseSafeArea.Top - baseSafeArea.Bottom;
+
+					// A view is considered full-screen if it occupies most of the available content area
+					// Use a percentage-based threshold (95%) instead of fixed pixels to handle all screen sizes
+					bool isFullScreen = (viewWidth >= availableWidth * 0.95) && (viewHeight >= availableHeight * 0.95);
+
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
-					if (top > 0 && viewTop < top && viewTop >= 0)
+					// Skip position-based optimization on first layout (when !hasTrackedViews) or for full-screen views
+					// to avoid incorrect calculations during Shell navigation when view position might not be finalized
+					if (top > 0 && hasTrackedViews && !isFullScreen && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
 					}
-					else
+					else if ((viewHeight > 0 || hasTrackedViews) && !isFullScreen && hasTrackedViews)
 					{
-						if (viewHeight > 0 || hasTrackedViews)
-						{
-							top = 0;
-						}
+						// For non-full-screen views that don't overlap, reset to 0
+						top = 0;
 					}
+					// Otherwise keep the inset value (first layout or full-screen)
 
 					// Bottom: how much the view extends into the bottom safe area
-					if (bottom > 0 && viewBottom > (screenHeight - bottom))
+					if (bottom > 0 && hasTrackedViews && !isFullScreen && viewBottom > (screenHeight - bottom))
 					{
 						// Calculate the actual overlap amount
 						var bottomEdge = screenHeight - bottom;
 						bottom = Math.Min(viewBottom - bottomEdge, bottom);
 					}
-					else
+					else if ((viewHeight > 0 || hasTrackedViews) && !isFullScreen && hasTrackedViews)
 					{
-						// if the view height is zero because it hasn't done the first pass
-						// and we don't have any tracked views yet then we will apply the bottom inset
-						if (viewHeight > 0 || hasTrackedViews)
-						{
-							bottom = 0;
-						}
+						// For non-full-screen views that don't overlap, reset to 0
+						bottom = 0;
 					}
+					// Otherwise keep the inset value (first layout or full-screen)
 
 					// Left: how much the view extends into the left safe area
-					if (left > 0 && viewLeft < left)
+					if (left > 0 && hasTrackedViews && !isFullScreen && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
 					}
-					else
+					else if ((viewWidth > 0 || hasTrackedViews) && !isFullScreen && hasTrackedViews)
 					{
-						if (viewWidth > 0 || hasTrackedViews)
-						{
-							left = 0;
-						}
+						// For non-full-screen views that don't overlap, reset to 0
+						left = 0;
 					}
+					// Otherwise keep the inset value (first layout or full-screen)
 
 					// Right: how much the view extends into the right safe area
-					if (right > 0 && viewRight > (screenWidth - right))
+					if (right > 0 && hasTrackedViews && !isFullScreen && viewRight > (screenWidth - right))
 					{
 						// Calculate the actual overlap amount
 						var rightEdge = screenWidth - right;
 						right = Math.Min(viewRight - rightEdge, right);
 					}
-					else
+					else if ((viewWidth > 0 || hasTrackedViews) && !isFullScreen && hasTrackedViews)
 					{
-						if (viewWidth > 0 || hasTrackedViews)
-						{
-							right = 0;
-						}
+						// For non-full-screen views that don't overlap, reset to 0
+						right = 0;
 					}
+					// Otherwise keep the inset value (first layout or full-screen)
 				}
 
 				// Build new window insets with unconsumed values
