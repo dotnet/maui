@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue32578"
+             x:Name="Root"
+             x:DataType="local:Issue32578"
+             Title="Issue 32578 - Grouped CollectionView MeasureFirstItem">
+    
+    <CollectionView x:Name="TestCollection"
+                    AutomationId="TestCollection"
+                    ItemsSource="{Binding Animals, Source={x:Reference Root}}"
+                    ItemSizingStrategy="MeasureFirstItem"
+                    IsGrouped="true">
+        <CollectionView.GroupHeaderTemplate>
+            <DataTemplate x:DataType="local:AnimalGroup32578">
+                <Label Text="{Binding Name}"
+                       BackgroundColor="LightGray"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       Padding="10"
+                       AutomationId="GroupHeader"/>
+            </DataTemplate>
+        </CollectionView.GroupHeaderTemplate>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="local:Animal32578">
+                <Grid RowDefinitions="60"
+                      ColumnDefinitions="60,*"
+                      Padding="10">
+                    <BoxView Grid.RowSpan="2"
+                             Color="DarkGray"
+                             HeightRequest="60"
+                             WidthRequest="60"
+                             AutomationId="ItemImage" />
+                    
+                    <Label Grid.Column="1"
+                           Text="{Binding Name}"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"
+                           AutomationId="ItemName"/>
+                    
+                    <Label Grid.Column="1"
+                           Text="{Binding Location}"
+                           FontAttributes="Italic"
+                           VerticalOptions="End"
+                           Margin="0,0,0,10"
+                           AutomationId="ItemLocation"/>
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
