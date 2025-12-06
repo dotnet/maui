@@ -147,77 +147,85 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Check if this is a full-screen view (typical for ContentPages in Shell)
-					// For full-screen views, skip position-based calculations as they can be unreliable
-					// during Shell navigation and always apply the full safe area insets
-					// Calculate the available content area (screen minus all safe area insets)
-					var availableWidth = screenWidth - baseSafeArea.Left - baseSafeArea.Right;
-					var availableHeight = screenHeight - baseSafeArea.Top - baseSafeArea.Bottom;
-
-					// A view is considered full-screen if it occupies most of the available content area
-					// Use a percentage-based threshold (95%) instead of fixed pixels to handle all screen sizes
-					// Only apply this optimization when we have tracked views (not first layout) to avoid
-					// incorrectly treating TabbedPage content as full-screen during initialization
-					bool isFullScreen = hasTrackedViews && 
-					                    (viewWidth >= availableWidth * 0.95) && 
-					                    (viewHeight >= availableHeight * 0.95);
+					// Check if this is a top-level page view that should get full safe area treatment
+					// Top-level pages (e.g., ContentPage as direct Shell content) need full safe area padding
+					// during navigation to prevent content from being overlapped by system UI.
+					// We detect this by checking if the view's virtual view has no parent or if its parent
+					// is a navigation container (Shell, NavigationPage, etc.)
+					bool isTopLevelPage = false;
+					if (safeAreaView2 is IView virtualView)
+					{
+						// Check if this view has no parent (root level) or if parent is a Window/Shell/NavigationPage
+						var parent = virtualView.Parent;
+						
+						// View is top-level if its parent is not also requesting safe area
+						// (parent doesn't implement ISafeAreaView2). This means the parent is a container
+						// like Shell, NavigationPage, Window, etc., not another ContentPage.
+						// Exception: If we have no tracked views yet AND the parent IS requesting safe area,
+						// this might be TabbedPage initialization - use position-based logic instead.
+						bool parentRequestsSafeArea = parent != null && GetSafeAreaView2(parent) != null;
+						
+						isTopLevelPage = parent == null || 
+						                 (!parentRequestsSafeArea) ||
+						                 (parentRequestsSafeArea && hasTrackedViews);
+					}
 
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
-					if (top > 0 && !isFullScreen && viewTop < top && viewTop >= 0)
+					if (top > 0 && !isTopLevelPage && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
 					}
-					else if (!isFullScreen && (viewHeight > 0 || hasTrackedViews))
+					else if (!isTopLevelPage && (viewHeight > 0 || hasTrackedViews))
 					{
-						// For non-full-screen views that don't overlap, reset to 0
+						// For non-top-level views that don't overlap, reset to 0
 						top = 0;
 					}
-					// Otherwise keep the inset value (first layout or full-screen)
+					// Otherwise keep the inset value (first layout or top-level page)
 
 					// Bottom: how much the view extends into the bottom safe area
-					if (bottom > 0 && !isFullScreen && viewBottom > (screenHeight - bottom))
+					if (bottom > 0 && !isTopLevelPage && viewBottom > (screenHeight - bottom))
 					{
 						// Calculate the actual overlap amount
 						var bottomEdge = screenHeight - bottom;
 						bottom = Math.Min(viewBottom - bottomEdge, bottom);
 					}
-					else if (!isFullScreen && (viewHeight > 0 || hasTrackedViews))
+					else if (!isTopLevelPage && (viewHeight > 0 || hasTrackedViews))
 					{
-						// For non-full-screen views that don't overlap, reset to 0
+						// For non-top-level views that don't overlap, reset to 0
 						bottom = 0;
 					}
-					// Otherwise keep the inset value (first layout or full-screen)
+					// Otherwise keep the inset value (first layout or top-level page)
 
 					// Left: how much the view extends into the left safe area
-					if (left > 0 && !isFullScreen && viewLeft < left)
+					if (left > 0 && !isTopLevelPage && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
 					}
-					else if (!isFullScreen && (viewWidth > 0 || hasTrackedViews))
+					else if (!isTopLevelPage && (viewWidth > 0 || hasTrackedViews))
 					{
-						// For non-full-screen views that don't overlap, reset to 0
+						// For non-top-level views that don't overlap, reset to 0
 						left = 0;
 					}
-					// Otherwise keep the inset value (first layout or full-screen)
+					// Otherwise keep the inset value (first layout or top-level page)
 
 					// Right: how much the view extends into the right safe area
-					if (right > 0 && !isFullScreen && viewRight > (screenWidth - right))
+					if (right > 0 && !isTopLevelPage && viewRight > (screenWidth - right))
 					{
 						// Calculate the actual overlap amount
 						var rightEdge = screenWidth - right;
 						right = Math.Min(viewRight - rightEdge, right);
 					}
-					else if (!isFullScreen && (viewWidth > 0 || hasTrackedViews))
+					else if (!isTopLevelPage && (viewWidth > 0 || hasTrackedViews))
 					{
-						// For non-full-screen views that don't overlap, reset to 0
+						// For non-top-level views that don't overlap, reset to 0
 						right = 0;
 					}
-					// Otherwise keep the inset value (first layout or full-screen)
+					// Otherwise keep the inset value (first layout or top-level page)
 				}
 
 				// Build new window insets with unconsumed values
