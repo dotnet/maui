@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
 	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
-	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
+	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement, ISafeAreaIgnoredContainer
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
 		// https://github.com/xamarin/Xamarin.Forms/pull/12057

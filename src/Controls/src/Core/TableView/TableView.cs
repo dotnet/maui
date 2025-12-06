@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableView']/Docs/*" />
 	[Obsolete("Please use CollectionView instead.")]
 	[ContentProperty(nameof(Root))]
-	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
+	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, ISafeAreaIgnoredContainer, IVisualTreeElement
 	{
 		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(TableView), -1);
