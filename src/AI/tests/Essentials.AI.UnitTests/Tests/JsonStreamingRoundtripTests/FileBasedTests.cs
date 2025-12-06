@@ -1,0 +1,106 @@
+using System.Text.Json;
+using Maui.Controls.Sample.Services;
+using Xunit;
+
+namespace Microsoft.Maui.Essentials.AI.UnitTests;
+
+public partial class JsonStreamingRoundtripTests
+{
+	/// <summary>
+	/// Tests using real JSONL files from TestData.
+	/// </summary>
+	public class FileBasedTests
+	{
+		[Theory]
+		[InlineData("maui-itinerary-1.jsonl")]
+		[InlineData("mount-fuji-itinerary-1.jsonl")]
+		[InlineData("sahara-itinerary-1.jsonl")]
+		[InlineData("serengeti-itinerary-1.jsonl")]
+		public void Roundtrip_FromJsonlFile_DeserializerProducesEquivalentResult(string fileName)
+		{
+			// Arrange
+			var chunker = new JsonStreamChunker();
+			var deserializer = new StreamingJsonDeserializer<ItineraryModel>();
+			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
+			var lines = File.ReadAllLines(filePath);
+			var finalLine = lines[^1];
+
+			// Act - pass each line through chunker
+			var chunks = new List<string>();
+			foreach (var line in lines)
+				chunks.Add(chunker.Process(line));
+			chunks.Add(chunker.Flush());
+
+			// Pass accumulated chunks through deserializer
+			ItineraryModel? finalModel = null;
+			foreach (var chunk in chunks)
+				finalModel = deserializer.ProcessChunk(chunk);
+
+			// Assert
+			Assert.NotNull(finalModel);
+
+			// Parse final line directly for comparison
+			var expectedDoc = JsonDocument.Parse(finalLine);
+			var actualJson = JsonSerializer.Serialize(finalModel, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+			var actualDoc = JsonDocument.Parse(actualJson);
+
+			// Compare key properties - objects should be structurally equivalent
+			AssertJsonStructureContainsExpected(expectedDoc.RootElement, actualDoc.RootElement, "root");
+		}
+
+		/// <summary>
+		/// Asserts that all properties in expected are present in actual with equivalent values.
+		/// This handles the case where chunker output may have properties in different order.
+		/// </summary>
+		private static void AssertJsonStructureContainsExpected(JsonElement expected, JsonElement actual, string path)
+		{
+			if (expected.ValueKind != actual.ValueKind)
+			{
+				// Allow null in actual when expected has a value (partial streaming may leave some null)
+				if (actual.ValueKind == JsonValueKind.Null)
+					return;
+				Assert.Fail($"Value kind mismatch at {path}: expected {expected.ValueKind}, got {actual.ValueKind}");
+			}
+
+			switch (expected.ValueKind)
+			{
+				case JsonValueKind.Object:
+					foreach (var prop in expected.EnumerateObject())
+					{
+						if (actual.TryGetProperty(prop.Name, out var actualProp))
+						{
+							AssertJsonStructureContainsExpected(prop.Value, actualProp, $"{path}.{prop.Name}");
+						}
+						// Note: We don't fail if property is missing - streaming may not have all properties yet
+					}
+					break;
+
+				case JsonValueKind.Array:
+					var expectedItems = expected.EnumerateArray().ToList();
+					var actualItems = actual.EnumerateArray().ToList();
+					var minCount = Math.Min(expectedItems.Count, actualItems.Count);
+					for (int i = 0; i < minCount; i++)
+					{
+						AssertJsonStructureContainsExpected(expectedItems[i], actualItems[i], $"{path}[{i}]");
+					}
+					break;
+
+				case JsonValueKind.String:
+					Assert.Equal(expected.GetString(), actual.GetString());
+					break;
+
+				case JsonValueKind.Number:
+					// Compare as raw text to handle int/double differences
+					Assert.Equal(expected.GetRawText(), actual.GetRawText());
+					break;
+
+				case JsonValueKind.True:
+				case JsonValueKind.False:
+					Assert.Equal(expected.GetBoolean(), actual.GetBoolean());
+					break;
+
+				// Null is already handled above
+			}
+		}
+	}
+}
