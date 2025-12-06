@@ -56,6 +56,14 @@ internal static class SafeAreaExtensions
 
 		if (safeAreaView2 is not null)
 		{
+			// Check if this view is inside a container that ignores safe area (ListView, TableView, ViewCell)
+			// These containers manage their own layout and should NOT have safe area insets applied
+			if (safeAreaView2 is IView view && IsInsideSafeAreaIgnoredContainer(view))
+			{
+				// Don't apply safe area insets for views inside these containers
+				return windowInsets;
+			}
+
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
 			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
@@ -289,6 +297,22 @@ internal static class SafeAreaExtensions
 
 		// Fallback: return the base safe area for legacy views
 		return newWindowInsets;
+	}
+
+	internal static bool IsInsideSafeAreaIgnoredContainer(IView view)
+	{
+		// Walk up the parent hierarchy to check if this view is inside a container
+		// that implements ISafeAreaIgnoredContainer (ListView, TableView, ViewCell)
+		var parent = view.Parent;
+		while (parent != null)
+		{
+			if (parent is ISafeAreaIgnoredContainer)
+				return true;
+
+			parent = (parent as IView)?.Parent;
+		}
+
+		return false;
 	}
 
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
