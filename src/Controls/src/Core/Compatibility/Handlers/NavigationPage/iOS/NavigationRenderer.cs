@@ -1398,8 +1398,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidLoad();
 
-				_tracker.Target = Child;
-				_tracker.AdditionalTargets = Child.GetParentPages();
+				var parentPages = Child.GetParentPages();
+				var flyoutPageWithToolbarItems = FindFlyoutPageWithToolbarItems(parentPages);
+				if (flyoutPageWithToolbarItems != null)
+				{
+					_tracker.Target = flyoutPageWithToolbarItems.Flyout;
+					var additionalTargets = new List<Page>(parentPages);
+					additionalTargets.Add(Child);
+					_tracker.AdditionalTargets = additionalTargets;
+				}
+				else
+				{
+					_tracker.Target = Child;
+					_tracker.AdditionalTargets = parentPages;
+				}
 				_tracker.CollectionChanged += TrackerOnCollectionChanged;
 
 				UpdateToolbarItems();
@@ -1671,6 +1683,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			FlyoutPage FindFlyoutPageWithToolbarItems(IEnumerable<Page> parentPages)
+			{
+				foreach (var page in parentPages)
+				{
+					if (page is FlyoutPage flyoutPage && flyoutPage.Flyout?.ToolbarItems?.Count > 0)
+					{
+						return flyoutPage;
+					}
+				}
+				return null;
+			}
+        
 			/// <summary>
 			/// Creates a Container with the appropriate configuration for the current iOS version.
 			/// For iOS 26+, uses autoresizing masks and sets frame from navigation bar to prevent layout issues.
