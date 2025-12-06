@@ -53,9 +53,9 @@ public class BindingCodeWriterTests
 			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
-				new MemberAccess("A"),
-				new ConditionalAccess(new MemberAccess("B")),
-				new ConditionalAccess(new MemberAccess("C")),
+				new MemberAccess("A", MaybeImplementsINPC: true),
+				new ConditionalAccess(new MemberAccess("B", MaybeImplementsINPC: true)),
+				new ConditionalAccess(new MemberAccess("C", MaybeImplementsINPC: true)),
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
 			NullableContextEnabled: true,
@@ -125,11 +125,11 @@ public class BindingCodeWriterTests
 
                         static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                         {
-                            yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "A");
-                            var p0 = source.A;
-                            yield return (p0 as global::System.ComponentModel.INotifyPropertyChanged, "B");
-                            var p1 = p0?.B;
-                            yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "C");
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                            var p1 = source.A;
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                            var p3 = p1?.B;
+                            if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
@@ -164,9 +164,9 @@ public class BindingCodeWriterTests
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
-				new MemberAccess("A"),
-				new ConditionalAccess(new MemberAccess("B")),
-				new ConditionalAccess(new MemberAccess("C")),
+				new MemberAccess("A", MaybeImplementsINPC: true),
+				new ConditionalAccess(new MemberAccess("B", MaybeImplementsINPC: true)),
+				new ConditionalAccess(new MemberAccess("C", MaybeImplementsINPC: true)),
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
 			NullableContextEnabled: true,
@@ -204,11 +204,11 @@ public class BindingCodeWriterTests
 
                 static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                 {
-                    yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "A");
-                    var p0 = source.A;
-                    yield return (p0 as global::System.ComponentModel.INotifyPropertyChanged, "B");
-                    var p1 = p0?.B;
-                    yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "C");
+                    if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                    var p1 = source.A;
+                    if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                    var p3 = p1?.B;
+                    if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
                 }
 
                 var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
@@ -241,9 +241,9 @@ public class BindingCodeWriterTests
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
-				new MemberAccess("A"),
-				new MemberAccess("B"),
-				new MemberAccess("C"),
+				new MemberAccess("A", MaybeImplementsINPC: true),
+				new MemberAccess("B", MaybeImplementsINPC: true),
+				new MemberAccess("C", MaybeImplementsINPC: true),
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
 			NullableContextEnabled: true,
@@ -277,11 +277,11 @@ public class BindingCodeWriterTests
 
                 static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                 {
-                    yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "A");
-                    var p0 = source.A;
-                    yield return (p0 as global::System.ComponentModel.INotifyPropertyChanged, "B");
-                    var p1 = p0.B;
-                    yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "C");
+                    if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                    var p1 = source.A;
+                    if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                    var p3 = p1.B;
+                    if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
                 }
 
                 var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
@@ -314,9 +314,9 @@ public class BindingCodeWriterTests
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
 			Path: new EquatableArray<IPathPart>([
-				new MemberAccess("A"),
-				new MemberAccess("B"),
-				new MemberAccess("C"),
+				new MemberAccess("A", MaybeImplementsINPC: true),
+				new MemberAccess("B", MaybeImplementsINPC: true),
+				new MemberAccess("C", MaybeImplementsINPC: true),
 			]),
 			SetterOptions: new(IsWritable: false),
 			NullableContextEnabled: true,
@@ -350,11 +350,11 @@ public class BindingCodeWriterTests
 
                 static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                 {
-                    yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "A");
-                    var p0 = source.A;
-                    yield return (p0 as global::System.ComponentModel.INotifyPropertyChanged, "B");
-                    var p1 = p0.B;
-                    yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "C");
+                    if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                    var p1 = source.A;
+                    if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                    var p3 = p1.B;
+                    if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
                 }
 
                 var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
@@ -387,9 +387,9 @@ public class BindingCodeWriterTests
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
-				new IndexAccess("Item", 12),
-				new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
-				new IndexAccess("Item", 0),
+				new IndexAccess("Item", 12, MaybeImplementsINPC: true),
+				new ConditionalAccess(new IndexAccess("Indexer", "Abc", MaybeImplementsINPC: true)),
+				new IndexAccess("Item", 0, MaybeImplementsINPC: true),
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
 			NullableContextEnabled: true,
@@ -431,14 +431,14 @@ public class BindingCodeWriterTests
 
                 static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                 {
-                    yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "Item");
-                    yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "Item[12]");
-                    var p0 = source[12];
-                    yield return (p0 as global::System.ComponentModel.INotifyPropertyChanged, "Indexer");
-                    yield return (p0 as global::System.ComponentModel.INotifyPropertyChanged, "Indexer[Abc]");
-                    var p1 = p0?["Abc"];
-                    yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "Item");
-                    yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "Item[0]");
+                    if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Item");
+                    if (source is global::System.ComponentModel.INotifyPropertyChanged p1) yield return (p1, "Item[12]");
+                    var p2 = source[12];
+                    if (p2 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "Indexer");
+                    if (p2 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "Indexer[Abc]");
+                    var p5 = p2?["Abc"];
+                    if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "Item");
+                    if (p5 is global::System.ComponentModel.INotifyPropertyChanged p7) yield return (p7, "Item[0]");
                 }
 
                 var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
@@ -471,13 +471,13 @@ public class BindingCodeWriterTests
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
-				new MemberAccess("A"),
+				new MemberAccess("A", MaybeImplementsINPC: true),
 				new Cast(new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
-				new ConditionalAccess(new MemberAccess("B")),
+				new ConditionalAccess(new MemberAccess("B", MaybeImplementsINPC: true)),
 				new Cast(new TypeDescription("Y", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
-				new ConditionalAccess(new MemberAccess("C")),
+				new ConditionalAccess(new MemberAccess("C", MaybeImplementsINPC: true)),
 				new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false)),
-				new ConditionalAccess(new MemberAccess("D")),
+				new ConditionalAccess(new MemberAccess("D", MaybeImplementsINPC: true)),
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
 			NullableContextEnabled: true,
@@ -517,16 +517,16 @@ public class BindingCodeWriterTests
 
                 static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                 {
-                    yield return (source as global::System.ComponentModel.INotifyPropertyChanged, "A");
-                    var p0 = source.A;
-                    var p1 = (p0 as X);
-                    yield return (p1 as global::System.ComponentModel.INotifyPropertyChanged, "B");
-                    var p2 = p1?.B;
-                    var p3 = (p2 as Y);
-                    yield return (p3 as global::System.ComponentModel.INotifyPropertyChanged, "C");
-                    var p4 = p3?.C;
-                    var p5 = (p4 as Z?);
-                    yield return (p5 as global::System.ComponentModel.INotifyPropertyChanged, "D");
+                    if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                    var p1 = source.A;
+                    var p2 = (p1 as X);
+                    if (p2 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "B");
+                    var p4 = p2?.B;
+                    var p5 = (p4 as Y);
+                    if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "C");
+                    var p7 = p5?.C;
+                    var p8 = (p7 as Z?);
+                    if (p8 is global::System.ComponentModel.INotifyPropertyChanged p9) yield return (p9, "D");
                 }
 
                 var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
