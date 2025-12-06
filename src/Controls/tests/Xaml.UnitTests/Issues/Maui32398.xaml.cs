@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,24 +18,24 @@ public partial class Maui32398 : ContentPage
 		get;set;
 	}
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void NonStaticBP([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void NonStaticBP(XamlInflator inflator)
         {
 			var page = new Maui32398(inflator);
-			Assert.AreEqual("foo", page.NonStatic);
-			Assert.AreNotEqual("foo", page.GetValue(page.NonStaticProperty));
+			Assert.Equal("foo", page.NonStatic);
+			Assert.NotEqual("foo", page.GetValue(page.NonStaticProperty));
         }
 	}
 }

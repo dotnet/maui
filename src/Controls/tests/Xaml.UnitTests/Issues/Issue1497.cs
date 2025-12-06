@@ -1,11 +1,11 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[TestFixture]
+[Collection("Issue")]
 public class Issue1497
 {
-	[Test]
+	[Fact]
 	public void BPCollectionsWithSingleElement()
 	{
 		var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -18,7 +18,7 @@ public class Issue1497
 					    </Grid>";
 
 		var grid = new Grid().LoadFromXaml(xaml);
-		Assert.AreEqual(1, grid.ColumnDefinitions.Count);
+		Assert.Single(grid.ColumnDefinitions);
 		Assert.True(grid.ColumnDefinitions[0].Width.IsStar);
 	}
 }

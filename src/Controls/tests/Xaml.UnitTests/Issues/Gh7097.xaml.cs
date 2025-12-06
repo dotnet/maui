@@ -2,7 +2,7 @@ using System;
 using System.Windows.Input;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,15 +10,16 @@ public partial class Gh7097 : Gh7097Base
 {
 	public Gh7097() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void CanXReferenceRoot([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CanXReferenceRoot(XamlInflator inflator)
 		{
 			var layout = new Gh7097(inflator)
 			{
@@ -31,17 +32,18 @@ public partial class Gh7097 : Gh7097Base
 			var cv = layout.Content as CollectionView;
 			var content = cv.ItemTemplate.CreateContent() as StackLayout;
 			var btn1 = content.Children[0] as Button;
-			Assert.That(btn1.Command, Is.TypeOf<MockCommand>());
+			Assert.IsType<MockCommand>(btn1.Command);
 		}
 
-		[Test]
+		[Theory]
+		[XamlInflatorData]
 		//this was later reported as https://github.com/xamarin/Microsoft.Maui.Controls/issues/7286
-		public void RegisteringXNameOnSubPages([Values] XamlInflator inflator)
+		internal void RegisteringXNameOnSubPages(XamlInflator inflator)
 		{
 			var layout = new Gh7097(inflator);
 			var s = layout.FindByName("self");
-			Assert.That(layout.self, Is.Not.Null);
-			Assert.That(layout.collectionview, Is.Not.Null);
+			Assert.NotNull(layout.self);
+			Assert.NotNull(layout.collectionview);
 		}
 
 		class MockCommand : ICommand
