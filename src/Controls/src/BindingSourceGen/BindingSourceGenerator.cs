@@ -210,17 +210,27 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var lambdaResultType = semanticModel.GetTypeInfo(lambdaBody, t).Type;
 		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
 		{
-			// Try to infer the type from known patterns (e.g., RelayCommand properties)
+			// Try to infer the type from known patterns (e.g., RelayCommand, ObservableProperty)
 			if (lambdaBody is MemberAccessExpressionSyntax memberAccess)
 			{
 				var memberName = memberAccess.Name.Identifier.Text;
 				var expressionType = semanticModel.GetTypeInfo(memberAccess.Expression).Type;
 				
-				if (expressionType != null && 
-				    expressionType.TryGetRelayCommandPropertyType(memberName, semanticModel.Compilation, out var commandType) &&
-				    commandType != null)
+				if (expressionType != null)
 				{
-					return Result<ITypeSymbol>.Success(commandType);
+					// Check for RelayCommand-generated properties
+					if (expressionType.TryGetRelayCommandPropertyType(memberName, semanticModel.Compilation, out var commandType) &&
+					    commandType != null)
+					{
+						return Result<ITypeSymbol>.Success(commandType);
+					}
+
+					// Check for ObservableProperty-generated properties
+					if (expressionType.TryGetObservablePropertyType(memberName, semanticModel.Compilation, out var propertyType) &&
+					    propertyType != null)
+					{
+						return Result<ITypeSymbol>.Success(propertyType);
+					}
 				}
 			}
 			

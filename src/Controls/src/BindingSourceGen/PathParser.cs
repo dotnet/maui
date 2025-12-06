@@ -105,6 +105,25 @@ internal class PathParser
 			return true;
 		}
 
+		// Check for ObservableProperty-generated properties
+		if (expressionType.TryGetObservablePropertyType(memberName, _context.SemanticModel.Compilation, out var propertyType)
+			&& propertyType != null)
+		{
+			var memberType = propertyType.CreateTypeDescription(_enabledNullable);
+			var containingType = expressionType.CreateTypeDescription(_enabledNullable);
+
+			pathPart = new MemberAccess(
+				MemberName: memberName,
+				IsValueType: !propertyType.IsReferenceType,
+				ContainingType: containingType,
+				MemberType: memberType,
+				Kind: AccessorKind.Property,
+				IsGetterInaccessible: false, // Assume generated property is accessible
+				IsSetterInaccessible: false); // ObservableProperty properties have setters
+
+			return true;
+		}
+
 		return false;
 	}
 
