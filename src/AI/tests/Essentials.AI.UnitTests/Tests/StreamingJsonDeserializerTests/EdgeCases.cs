@@ -284,5 +284,188 @@ public partial class StreamingJsonDeserializerTests
 			Assert.NotNull(result);
 			Assert.Equal("Line1\n© Corp\tTab", result.Text);
 		}
+
+		[Fact]
+		public void ProcessChunk_EmptyStringValue_ParsesCorrectly()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// Empty string as a value
+			var result = deserializer.ProcessChunk(@"{""text"":"""",""score"":5}");
+
+			Assert.NotNull(result);
+			Assert.Equal("", result.Text);
+			Assert.Equal(5, result.Score);
+		}
+
+		[Fact]
+		public void ProcessChunk_JustOpeningQuote_HandlesGracefully()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// String property with just opening quote, no content yet
+			// This is a valid partial object with an empty string value
+			var result1 = deserializer.ProcessChunk(@"{""text"":""");
+			Assert.NotNull(result1);
+			Assert.Equal("", result1.Text); // Empty string, not null
+
+			// Complete the string
+			var result2 = deserializer.ProcessChunk(@"Hello"",""score"":10}");
+			Assert.NotNull(result2);
+			Assert.Equal("Hello", result2.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_OpeningQuoteWithEscapedQuote_ParsesQuoteAsValue()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// String with escaped quote character: {"text":"\"
+			// This means the value is a single quote character "
+			var result1 = deserializer.ProcessChunk(@"{""text"":""\""");
+			Assert.NotNull(result1);
+			Assert.Equal("\"", result1.Text); // Value is a quote character
+
+			// Continue the string
+			var result2 = deserializer.ProcessChunk(@"rest"",""score"":5}");
+			Assert.NotNull(result2);
+			Assert.Equal("\"rest", result2.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_TrailingBackslash_HandlesIncompleteEscape()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// String with trailing backslash (incomplete escape sequence)
+			var result1 = deserializer.ProcessChunk(@"{""text"":""Test\");
+			Assert.NotNull(result1);
+			Assert.Equal("Test", result1.Text); // Backslash should be stripped
+
+			// Complete the escape
+			var result2 = deserializer.ProcessChunk(@"n more"",""score"":1}");
+			Assert.NotNull(result2);
+			Assert.Equal("Test\n more", result2.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_IncompleteUnicodeEscape_HandlesGracefully()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// Incomplete unicode escape sequence at end
+			var result1 = deserializer.ProcessChunk(@"{""text"":""Symbol \u00");
+			Assert.NotNull(result1);
+			// May have partial content
+
+			// Complete the unicode escape
+			var result2 = deserializer.ProcessChunk(@"A9"",""score"":2}");
+			Assert.NotNull(result2);
+			Assert.Equal("Symbol ©", result2.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_PropertyNameWithoutValue_HandlesGracefully()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// Property name without any value
+			var result1 = deserializer.ProcessChunk(@"{""text"":");
+			Assert.NotNull(result1);
+			// Should return empty model since value is missing
+
+			// Now add the value
+			var result2 = deserializer.ProcessChunk(@"""Hello"",""score"":5}");
+			Assert.NotNull(result2);
+			Assert.Equal("Hello", result2.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_NestedEmptyObject_ParsesCorrectly()
+		{
+			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+
+			// Nested object that's empty
+			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""meta"":{}}");
+
+			Assert.NotNull(result);
+			Assert.Equal("Test", result.Text);
+			Assert.NotNull(result.Meta);
+		}
+
+		[Fact]
+		public void ProcessChunk_SingleCharacterString_ParsesCorrectly()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			var result = deserializer.ProcessChunk(@"{""text"":""X"",""score"":1}");
+
+			Assert.NotNull(result);
+			Assert.Equal("X", result.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_OnlyWhitespaceInString_PreservesWhitespace()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			var result = deserializer.ProcessChunk(@"{""text"":""   "",""score"":1}");
+
+			Assert.NotNull(result);
+			Assert.Equal("   ", result.Text);
+		}
+
+		[Fact]
+		public void ProcessChunk_NullValueForReferenceType_SetsNull()
+		{
+			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+
+			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""meta"":null}");
+
+			Assert.NotNull(result);
+			Assert.Equal("Test", result.Text);
+			Assert.Null(result.Meta);
+		}
+
+		[Fact]
+		public void ProcessChunk_ZeroValue_ParsesCorrectly()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""score"":0}");
+
+			Assert.NotNull(result);
+			Assert.Equal("Test", result.Text);
+			Assert.Equal(0, result.Score);
+		}
+
+		[Fact]
+		public void ProcessChunk_NegativeNumber_ParsesCorrectly()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""score"":-42}");
+
+			Assert.NotNull(result);
+			Assert.Equal("Test", result.Text);
+			Assert.Equal(-42, result.Score);
+		}
+
+		[Fact]
+		public void ProcessChunk_OnlyBackslash_HandlesEmptyResult()
+		{
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+
+			// String that's literally just a backslash (incomplete escape)
+			// The backslash is stripped as it's incomplete, leaving empty string
+			var result1 = deserializer.ProcessChunk(@"{""text"":""\");
+			Assert.NotNull(result1);
+			Assert.Equal("", result1.Text); // Backslash stripped, empty string
+
+			// Complete with another character
+			var result2 = deserializer.ProcessChunk(@"n"",""score"":1}");
+			Assert.NotNull(result2);
+			Assert.Equal("\n", result2.Text);
+		}
 	}
 }

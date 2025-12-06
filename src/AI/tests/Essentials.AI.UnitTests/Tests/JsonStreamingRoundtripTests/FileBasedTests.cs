@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Maui.Controls.Sample.Models;
-using Maui.Controls.Sample.Services;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
@@ -14,44 +13,72 @@ public partial class JsonStreamingRoundtripTests
 	{
 		[Theory]
 		[InlineData("maui-itinerary-1.jsonl")]
+		[InlineData("maui-itinerary-2.jsonl")]
+		[InlineData("maui-itinerary-3.jsonl")]
 		[InlineData("mount-fuji-itinerary-1.jsonl")]
 		[InlineData("sahara-itinerary-1.jsonl")]
 		[InlineData("serengeti-itinerary-1.jsonl")]
 		public void Roundtrip_FromJsonlFile_DeserializerProducesEquivalentResult(string fileName)
 		{
 			// Arrange
-			var chunker = new JsonStreamChunker();
-			var deserializer = new StreamingJsonDeserializer<Itinerary>();
 			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 			var lines = File.ReadAllLines(filePath);
 			var finalLine = lines[^1];
 
-			// Act - pass each line through chunker
-			var chunks = new List<string>();
-			foreach (var line in lines)
-				chunks.Add(chunker.Process(line));
-			chunks.Add(chunker.Flush());
+			// Act - pass each line through chunker and deserializer
+			var models = ProcessLines<Itinerary>(lines);
 
-			// Pass accumulated chunks through deserializer
-			Itinerary? finalModel = null;
-			foreach (var chunk in chunks)
-				finalModel = deserializer.ProcessChunk(chunk);
+			// Assert - we get one model per line plus flush
+			Assert.Equal(lines.Length + 1, models.Count);
 
-			// Assert
+			// Final model should match the final JSON line
+			var finalModel = models[^1];
 			Assert.NotNull(finalModel);
 
 			// Parse final line directly for comparison
-			var expectedDoc = JsonDocument.Parse(finalLine);
 			var serializerOptions = new JsonSerializerOptions
 			{
 				PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 				Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
 			};
+			var expectedDoc = JsonDocument.Parse(finalLine);
 			var actualJson = JsonSerializer.Serialize(finalModel, serializerOptions);
 			var actualDoc = JsonDocument.Parse(actualJson);
 
 			// Compare key properties - objects should be structurally equivalent
 			AssertJsonStructureContainsExpected(expectedDoc.RootElement, actualDoc.RootElement, "root");
+		}
+
+		[Theory]
+		[InlineData("maui-itinerary-1.jsonl")]
+		[InlineData("maui-itinerary-2.jsonl")]
+		[InlineData("maui-itinerary-3.jsonl")]
+		[InlineData("mount-fuji-itinerary-1.jsonl")]
+		[InlineData("sahara-itinerary-1.jsonl")]
+		[InlineData("serengeti-itinerary-1.jsonl")]
+		public void Roundtrip_FromJsonlFile_EachLineDeserializesProgressively(string fileName)
+		{
+			// This test validates that each intermediate line produces a valid partial object
+			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
+			var lines = File.ReadAllLines(filePath);
+
+			var models = ProcessLines<Itinerary>(lines);
+
+			// Verify each model after each line is valid (not null after first non-trivial content)
+			// The structure should progressively grow
+			int? lastDaysCount = null;
+			for (int i = 0; i < models.Count; i++)
+			{
+				var model = models[i];
+				if (model?.Days != null && model.Days.Count > 0)
+				{
+					// Days count should never decrease
+					if (lastDaysCount.HasValue)
+						Assert.True(model.Days.Count >= lastDaysCount.Value, 
+							$"Days count decreased from {lastDaysCount} to {model.Days.Count} at step {i}");
+					lastDaysCount = model.Days.Count;
+				}
+			}
 		}
 
 		/// <summary>

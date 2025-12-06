@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Maui.Controls.Sample.Models;
@@ -147,6 +148,8 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
             // Handle partial itinerary updates
             if (update.PartialItinerary is not null)
             {
+                Debug.WriteLine($"[TripPlanningViewModel] Received partial itinerary update: {update.PartialItinerary}");
+
                 latestItinerary = update.PartialItinerary;
                 Itinerary = new ItineraryViewModel(latestItinerary, Landmark);
             }

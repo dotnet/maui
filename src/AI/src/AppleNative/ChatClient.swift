@@ -50,9 +50,6 @@ public class ChatClientNative: NSObject {
                     includeSchemaInPrompt: false,
                     options: genOptions
                 )
-                
-                let update = StreamUpdateNative(text: jsonSchema.debugDescription)
-                cq?.async { onUpdate(update) } ?? onUpdate(update)
 
                 for try await response in responseStream {
                     try Task.checkCancellation()
@@ -222,7 +219,7 @@ public class ChatClientNative: NSObject {
             temperature: options?.temperature?.doubleValue,
             maximumResponseTokens: options?.maxOutputTokens?.intValue
         )
-        
+
         let session = LanguageModelSession(
             model: model,
             tools: tools,
@@ -269,7 +266,7 @@ public class ChatClientNative: NSObject {
 
                 // Convert transcript entries to messages
                 let transcriptMessages = try result.1.compactMap(self.fromTranscriptEntry)
-                
+
                 // Create response with all transcript messages
                 let response = ChatResponseNative(messages: transcriptMessages)
 
@@ -281,7 +278,7 @@ public class ChatClientNative: NSObject {
 
         return CancellationTokenNative(task: task)
     }
-    
+
     private func fromTranscriptEntry(_ entry: Transcript.Entry) throws -> ChatMessageNative? {
         switch entry {
         case .prompt(let prompt):
@@ -289,36 +286,36 @@ public class ChatClientNative: NSObject {
             message.role = .user
             message.contents = prompt.segments.compactMap(fromTranscriptSegment)
             return message
-        
+
         case .response(let response):
             let message = ChatMessageNative()
             message.role = .assistant
             message.contents = response.segments.compactMap(fromTranscriptSegment)
             return message
-        
+
         case .instructions(let instructions):
             let message = ChatMessageNative()
             message.role = .system
             message.contents = instructions.segments.compactMap(fromTranscriptSegment)
             return message
-        
+
         case .toolCalls(let toolCalls):
             let message = ChatMessageNative()
             message.role = .assistant
             message.contents = toolCalls.map(fromToolCall)
             return message
-        
+
         case .toolOutput(let toolOutput):
             let message = ChatMessageNative()
             message.role = .tool
             message.contents = fromToolOutput(toolOutput)
             return message
-        
+
         @unknown default:
             return nil
         }
     }
-    
+
     private func fromToolCall(_ toolCall: Transcript.ToolCall) -> AIContentNative {
         let argsJson = toolCall.arguments.jsonString
         return FunctionCallContentNative(
@@ -327,7 +324,7 @@ public class ChatClientNative: NSObject {
             arguments: argsJson
         )
     }
-    
+
     private func fromToolOutput(_ toolOutput: Transcript.ToolOutput) -> [AIContentNative] {
         return toolOutput.segments.compactMap { segment -> AIContentNative? in
             let resultText: String
@@ -339,7 +336,7 @@ public class ChatClientNative: NSObject {
             @unknown default:
                 return nil
             }
-            
+
             return FunctionResultContentNative(
                 callId: toolOutput.id,
                 result: resultText
@@ -351,12 +348,12 @@ public class ChatClientNative: NSObject {
         switch segment {
         case .text(let textSegment):
             return TextContentNative(text: textSegment.content)
-        
+
         case .structure(let structuredSegment):
             // For now, convert structured content to text
             let jsonString = structuredSegment.content.jsonString
             return TextContentNative(text: jsonString)
-        
+
         @unknown default:
             return nil
         }

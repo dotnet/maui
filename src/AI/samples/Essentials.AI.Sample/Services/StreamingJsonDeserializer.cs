@@ -169,15 +169,11 @@ internal sealed class StreamingJsonDeserializer<T>
 
 		// Track pending property name for key-value pairs
 		ReadOnlySpan<byte> pendingPropertyNameBytes = default;
-		var lastTokenStart = 0;
 
 		try
 		{
 			while (reader.Read())
 			{
-				// Track position for partial string extraction later
-				lastTokenStart = (int)reader.TokenStartIndex;
-
 				switch (reader.TokenType)
 				{
 					case JsonTokenType.StartObject:
@@ -214,9 +210,10 @@ internal sealed class StreamingJsonDeserializer<T>
 
 					case JsonTokenType.PropertyName:
 						// Store property name bytes to write later when we get the value
+						// Must copy to array since the span becomes invalid after reader advances
 						pendingPropertyNameBytes = reader.HasValueSequence
 							? reader.ValueSequence.ToArray()
-							: reader.ValueSpan;
+							: reader.ValueSpan.ToArray();
 						break;
 
 					case JsonTokenType.String:
@@ -246,10 +243,10 @@ internal sealed class StreamingJsonDeserializer<T>
 			// Reader exhausted - expected for incomplete JSON
 		}
 
-		// If we have a property name without a value, extract the partial string value
+		// If we have a property name without a value, try to extract the partial value
 		if (!pendingPropertyNameBytes.IsEmpty)
 		{
-			TryWritePartialStringValue(writer, incompleteUtf8Json, lastTokenStart, pendingPropertyNameBytes);
+			TryWritePartialValue(writer, incompleteUtf8Json, pendingPropertyNameBytes);
 		}
 
 		// Close any unclosed JSON structures (objects/arrays) to make the JSON valid
@@ -391,38 +388,109 @@ internal sealed class StreamingJsonDeserializer<T>
 	}
 
 	/// <summary>
-	/// Attempts to extract and write a partially received string value for a pending property.
-	/// This handles cases where streaming JSON cuts off mid-string (e.g., "name": "John Do[end of chunk]).
+	/// Attempts to extract and write a partially received value for a pending property.
+	/// This handles cases where streaming JSON cuts off mid-value (strings, numbers, booleans, or null).
 	/// </summary>
 	/// <param name="writer">The JSON writer to write the completed property to.</param>
 	/// <param name="utf8Json">The complete accumulated JSON buffer.</param>
-	/// <param name="lastPosition">The position of the last successfully parsed token.</param>
 	/// <param name="propertyNameBytes">The UTF-8 bytes of the property name.</param>
-	private static void TryWritePartialStringValue(Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Json, int lastPosition, ReadOnlySpan<byte> propertyNameBytes)
+	private static void TryWritePartialValue(Utf8JsonWriter writer, ReadOnlySpan<byte> utf8Json, ReadOnlySpan<byte> propertyNameBytes)
 	{
-		// Build search pattern: "propertyName":"
-		Span<byte> pattern = stackalloc byte[propertyNameBytes.Length + 4];
+		// Build search pattern for property name: "propertyName":
+		Span<byte> pattern = stackalloc byte[propertyNameBytes.Length + 3];
 		pattern[0] = (byte)'"';
-		propertyNameBytes.CopyTo(pattern[1..^3]);
-		pattern[^3] = (byte)'"';
-		pattern[^2] = (byte)':';
-		pattern[^1] = (byte)'"';
+		propertyNameBytes.CopyTo(pattern[1..^2]);
+		pattern[^2] = (byte)'"';
+		pattern[^1] = (byte)':';
 
 		// Find the last occurrence of the property:value pattern
 		var index = utf8Json.LastIndexOf(pattern);
 		if (index < 0)
 			return;
 
-		// Extract everything after the opening quote of the string value
+		// Get the value portion after the colon
 		var valueStartIndex = index + pattern.Length;
 		if (valueStartIndex >= utf8Json.Length)
 			return;
 
-		// Unescape any escape sequences in the partial value
 		var partialValueBytes = utf8Json[valueStartIndex..];
-		var unescapedBytes = UnescapeJsonStringBytes(partialValueBytes);
-
-		writer.WriteString(propertyNameBytes, unescapedBytes.WrittenSpan);
+		
+		// Skip any whitespace after the colon
+		int i = 0;
+		while (i < partialValueBytes.Length && (partialValueBytes[i] == (byte)' ' || partialValueBytes[i] == (byte)'\t' || partialValueBytes[i] == (byte)'\n' || partialValueBytes[i] == (byte)'\r'))
+			i++;
+		
+		if (i >= partialValueBytes.Length)
+			return;
+			
+		partialValueBytes = partialValueBytes[i..];
+		
+		// Determine the value type by the first character
+		var firstChar = partialValueBytes[0];
+		
+		if (firstChar == (byte)'"')
+		{
+			// String value - extract everything after the opening quote
+			var stringValueBytes = partialValueBytes[1..];
+			var unescapedBytes = UnescapeJsonStringBytes(stringValueBytes);
+			writer.WriteString(propertyNameBytes, unescapedBytes.WrittenSpan);
+		}
+		else if (firstChar == (byte)'-' || (firstChar >= (byte)'0' && firstChar <= (byte)'9'))
+		{
+			// Number value - extract digits, decimal point, exponent
+			var numberEnd = 0;
+			while (numberEnd < partialValueBytes.Length && IsNumberChar(partialValueBytes[numberEnd]))
+				numberEnd++;
+			
+			if (numberEnd > 0)
+			{
+				var numberBytes = partialValueBytes[..numberEnd];
+				// Try to parse as a number using a temporary reader
+				try
+				{
+					var numberReader = new Utf8JsonReader(numberBytes, isFinalBlock: true, state: default);
+					if (numberReader.Read() && numberReader.TokenType == JsonTokenType.Number)
+					{
+						if (numberReader.TryGetInt64(out var longValue))
+							writer.WriteNumber(propertyNameBytes, longValue);
+						else if (numberReader.TryGetDouble(out var doubleValue))
+							writer.WriteNumber(propertyNameBytes, doubleValue);
+						else
+							writer.WriteNumber(propertyNameBytes, numberReader.GetDecimal());
+					}
+				}
+				catch
+				{
+					// Invalid number format - skip
+				}
+			}
+		}
+		else if (partialValueBytes.Length >= 4 && partialValueBytes[..4].SequenceEqual("true"u8))
+		{
+			writer.WriteBoolean(propertyNameBytes, true);
+		}
+		else if (partialValueBytes.Length >= 5 && partialValueBytes[..5].SequenceEqual("false"u8))
+		{
+			writer.WriteBoolean(propertyNameBytes, false);
+		}
+		else if (partialValueBytes.Length >= 4 && partialValueBytes[..4].SequenceEqual("null"u8))
+		{
+			writer.WriteNull(propertyNameBytes);
+		}
+		// else: incomplete literal (e.g., "tru", "fal", "nul") - skip for now
+	}
+	
+	/// <summary>
+	/// Checks if a byte is a valid character in a JSON number (digit, decimal point, sign, or exponent).
+	/// </summary>
+	private static bool IsNumberChar(byte b)
+	{
+		return b >= (byte)'0' && b <= (byte)'9' 
+			|| b == (byte)'.' 
+			|| b == (byte)'-' 
+			|| b == (byte)'+' 
+			|| b == (byte)'e' 
+			|| b == (byte)'E';
 	}
 
 	/// <summary>
@@ -433,10 +501,18 @@ internal sealed class StreamingJsonDeserializer<T>
 	/// <returns>A buffer containing the unescaped UTF-8 bytes.</returns>
 	private static ArrayBufferWriter<byte> UnescapeJsonStringBytes(ReadOnlySpan<byte> escapedBytes)
 	{
+		// Handle empty input
+		if (escapedBytes.IsEmpty)
+			return new ArrayBufferWriter<byte>();
+
 		// Remove trailing backslash if present (incomplete escape sequence)
 		if (escapedBytes[^1] == (byte)'\\')
 			escapedBytes = escapedBytes[..^1];
-			
+
+		// Handle case where only a backslash was present
+		if (escapedBytes.IsEmpty)
+			return new ArrayBufferWriter<byte>();
+
 		var buffer = new ArrayBufferWriter<byte>(escapedBytes.Length);
 
 		for (int i = 0; i < escapedBytes.Length; i++)

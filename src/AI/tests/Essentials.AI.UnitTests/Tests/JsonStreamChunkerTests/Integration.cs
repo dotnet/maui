@@ -13,6 +13,8 @@ public partial class JsonStreamChunkerTests
 	{
 		[Theory]
 		[InlineData("maui-itinerary-1.jsonl")]
+		[InlineData("maui-itinerary-2.jsonl")]
+		[InlineData("maui-itinerary-3.jsonl")]
 		[InlineData("mount-fuji-itinerary-1.jsonl")]
 		[InlineData("sahara-itinerary-1.jsonl")]
 		[InlineData("serengeti-itinerary-1.jsonl")]
