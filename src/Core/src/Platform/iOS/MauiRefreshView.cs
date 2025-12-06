@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 					// indicator may not appear. Scheduling BeginRefreshing/EndRefreshing on the
 					// next runloop tick ensures the control has been inserted and laid out
 					// before we toggle its refreshing state.
-					DispatchQueue.MainQueue.DispatchAsync(async () =>
+					DispatchQueue.MainQueue.DispatchAsync(() =>
 					{
 						if (_isRefreshing)
 						{
