@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32667MainPage"
+             Shell.NavBarIsVisible="False">
+    
+    <VerticalStackLayout
+        Padding="30"
+        Spacing="25"
+        BackgroundColor="LightBlue">
+        
+        <Label
+            Text="Main Page - NavBar Hidden"
+            FontSize="24"
+            FontAttributes="Bold"
+            HorizontalOptions="Center"
+            AutomationId="MainPageLabel"/>
+        
+        <Label
+            Text="This page has Shell.NavBarIsVisible=&#34;False&#34;"
+            FontSize="16"
+            HorizontalOptions="Center"
+            TextColor="DarkBlue"/>
+        
+        <BoxView
+            x:Name="ContentBox"
+            HeightRequest="200"
+            Color="DarkBlue"
+            AutomationId="ContentBox"/>
+        
+        <Button 
+            Text="Navigate to SubPage"
+            Clicked="OnNavigateToSubPage"
+            AutomationId="NavigateButton"
+            BackgroundColor="DarkBlue"
+            TextColor="White"/>
+    </VerticalStackLayout>
+</ContentPage>
