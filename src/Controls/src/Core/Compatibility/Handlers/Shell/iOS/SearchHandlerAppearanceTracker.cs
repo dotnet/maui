@@ -117,6 +117,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateSearchBarVerticalTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
 			}
+			else if (e.Is(SearchHandler.ShowsCancelButtonProperty))
+			{
+				UpdateShowsCancelButton();
+			}
 		}
 
 		void GetDefaultSearchBarColors(UISearchBar searchBar)
@@ -319,13 +323,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.ReloadInputViews();
 		}
 
+		void UpdateShowsCancelButton()
+		{
+			if (_searchHandler.IsFocused)
+			{
+				_uiSearchBar.SetShowsCancelButton(_searchHandler.ShowsCancelButton, true);
+			}
+		}
+
 		void OnEditingEnded(object sender, EventArgs e)
 		{
+			if (_searchHandler.ShowsCancelButton)
+			{
+				_uiSearchBar.SetShowsCancelButton(false, true);
+			}
 			_searchHandler.SetIsFocused(false);
 		}
 
 		void OnEditingStarted(object sender, EventArgs e)
 		{
+			if (_searchHandler.ShowsCancelButton)
+			{
+				_uiSearchBar.SetShowsCancelButton(true, true);
+			}
 			UpdateCancelButtonColor(_uiSearchBar.FindDescendantView<UIButton>());
 			_searchHandler.SetIsFocused(true);
 			//ElementController?.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
