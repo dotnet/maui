@@ -41,6 +41,8 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyLayoutWithOrientationVertical_HorizontalOptionsStart()
 	{
+		App.WaitForElement("ScrollViewWithLayoutOptionsButton");
+		App.Tap("ScrollViewWithLayoutOptionsButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(HorizontalStart);
