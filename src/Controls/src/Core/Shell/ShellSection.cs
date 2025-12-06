@@ -251,6 +251,7 @@ namespace Microsoft.Maui.Controls
 		List<Page> _navStack = new List<Page> { null };
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
+		internal bool IsPoppingModalStackToRoot { get; set; }
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ShellSection()
@@ -1130,11 +1131,15 @@ namespace Microsoft.Maui.Controls
 				return returnedPage;
 			}
 
-			protected override Task OnPopToRootAsync(bool animated)
+			protected override async Task OnPopToRootAsync(bool animated)
 			{
+				_owner.IsPoppingModalStackToRoot = true;
+
 				if (!_owner.IsVisibleSection)
 				{
-					return _owner.OnPopToRootAsync(animated);
+					await _owner.OnPopToRootAsync(animated);
+					_owner.IsPoppingModalStackToRoot = false;
+					return;
 				}
 
 				var shell = _owner.Shell;
@@ -1153,7 +1158,8 @@ namespace Microsoft.Maui.Controls
 					PopAllPagesNotSpecifiedOnTargetState = true
 				};
 
-				return _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
+				await _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
+				_owner.IsPoppingModalStackToRoot = false;
 			}
 
 			protected override Task OnPushAsync(Page page, bool animated)
