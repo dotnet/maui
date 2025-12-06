@@ -21,7 +21,7 @@ public partial class Issue2450 : ContentPage
 			if (inflator == XamlInflator.Runtime)
 			{
 				var layout = new Issue2450(inflator);
-				Assert.Throws<XamlParseException>(
+				XamlExceptionAssert.ThrowsXamlParseException(11, 13, m => m == "An element with the name \"label0\" already exists in this NameScope",
 							() => (layout.Resources["foo"] as Microsoft.Maui.Controls.DataTemplate).CreateContent());
 			}
 			else if (inflator == XamlInflator.SourceGen)

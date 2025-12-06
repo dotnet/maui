@@ -35,17 +35,9 @@ public partial class Bz44216 : ContentPage
 		internal void DonSetValueOnPrivateBP(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-			{
-				var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Bz44216)));
-				Assert.True(ex is Microsoft.Maui.Controls.Build.Tasks.BuildException);
-				Assert.Contains("No property,", ex.Message, StringComparison.Ordinal);
-			}
-			if (inflator == XamlInflator.Runtime)
-			{
-				var ex = Assert.ThrowsAny<Exception>(() => new Bz44216(inflator));
-				Assert.True(ex is XamlParseException);
-				Assert.Contains("Cannot assign property", ex.Message, StringComparison.Ordinal);
-			}
+				XamlExceptionAssert.ThrowsBuildException(7, 26, s => s.Contains("No property,", StringComparison.Ordinal), () => MockCompiler.Compile(typeof(Bz44216)));
+			else if (inflator == XamlInflator.Runtime)
+				XamlExceptionAssert.ThrowsXamlParseException(7, 26, s => s.StartsWith("Cannot assign property", StringComparison.Ordinal), () => new Bz44216(inflator));
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()

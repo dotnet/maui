@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Xunit;
 
@@ -18,15 +17,9 @@ public partial class Bz43694 : ContentPage
 		internal void xStaticWithOnPlatformChildInRD(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-			{
-				var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Bz43694)));
-				Assert.True(ex is Microsoft.Maui.Controls.Build.Tasks.BuildException);
-			}
+				XamlExceptionAssert.ThrowsBuildException(9, 6, () => MockCompiler.Compile(typeof(Bz43694)));
 			else if (inflator == XamlInflator.Runtime)
-			{
-				var ex = Assert.ThrowsAny<Exception>(() => new Bz43694(inflator));
-				Assert.True(ex is XamlParseException);
-			}
+				XamlExceptionAssert.ThrowsXamlParseException(9, 6, () => new Bz43694(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
