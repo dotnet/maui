@@ -1,3 +1,4 @@
+using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Xunit;
 
@@ -15,7 +16,7 @@ public partial class JsonStreamingRoundtripTests
 		{
 			// Arrange
 			var chunker = new JsonStreamChunker();
-			var deserializer = new StreamingJsonDeserializer<ItineraryModel>();
+			var deserializer = new StreamingJsonDeserializer<Itinerary>();
 			var lines = new[]
 			{
 				"""{"days": []}""",
@@ -30,7 +31,7 @@ public partial class JsonStreamingRoundtripTests
 				chunks.Add(chunker.Process(line));
 			chunks.Add(chunker.Flush());
 
-			ItineraryModel? finalModel = null;
+			Itinerary? finalModel = null;
 			foreach (var chunk in chunks)
 				finalModel = deserializer.ProcessChunk(chunk);
 

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Xunit;
 
@@ -20,7 +21,7 @@ public partial class JsonStreamingRoundtripTests
 		{
 			// Arrange
 			var chunker = new JsonStreamChunker();
-			var deserializer = new StreamingJsonDeserializer<ItineraryModel>();
+			var deserializer = new StreamingJsonDeserializer<Itinerary>();
 			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 			var lines = File.ReadAllLines(filePath);
 			var finalLine = lines[^1];
@@ -32,7 +33,7 @@ public partial class JsonStreamingRoundtripTests
 			chunks.Add(chunker.Flush());
 
 			// Pass accumulated chunks through deserializer
-			ItineraryModel? finalModel = null;
+			Itinerary? finalModel = null;
 			foreach (var chunk in chunks)
 				finalModel = deserializer.ProcessChunk(chunk);
 
@@ -41,7 +42,12 @@ public partial class JsonStreamingRoundtripTests
 
 			// Parse final line directly for comparison
 			var expectedDoc = JsonDocument.Parse(finalLine);
-			var actualJson = JsonSerializer.Serialize(finalModel, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+			var serializerOptions = new JsonSerializerOptions
+			{
+				PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+				Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+			};
+			var actualJson = JsonSerializer.Serialize(finalModel, serializerOptions);
 			var actualDoc = JsonDocument.Parse(actualJson);
 
 			// Compare key properties - objects should be structurally equivalent
