@@ -324,10 +324,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\""),
 			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
-		// Verify the project actually builds
-		Assert.IsTrue(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
-			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
-
 		// Verify the project file was created with the correct name (this was the bug)
 		Assert.IsTrue(File.Exists(expectedProjectFile),
 			$"Expected project file '{expectedProjectFile}' was not created. This indicates the template naming issue.");
@@ -350,5 +346,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"Project file should contain Aspire-specific properties.");
 		Assert.IsTrue(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
 			"Project file should contain UseMauiCore property.");
+
+		// Verify the project actually builds
+		Assert.IsTrue(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }
