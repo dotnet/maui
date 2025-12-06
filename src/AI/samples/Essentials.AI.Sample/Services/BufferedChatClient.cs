@@ -40,8 +40,8 @@ public class BufferedChatClient(IChatClient innerClient, int minBufferSize = 100
 	/// The buffering behavior follows these rules:
 	/// </para>
 	/// <list type="bullet">
-	/// <item>Text content is accumulated until at least <paramref name="minBufferSize"/> characters 
-	/// have been buffered AND the configured <paramref name="bufferDelay"/> has elapsed.</item>
+	/// <item>Text content is accumulated until at least the configured minimum buffer size 
+	/// has been buffered AND the configured buffer delay has elapsed.</item>
 	/// <item>When non-text content (such as function calls) is encountered, any buffered text is 
 	/// flushed immediately, then the non-text content is yielded.</item>
 	/// <item>At the end of the stream, any remaining buffered text is flushed.</item>

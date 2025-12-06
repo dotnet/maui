@@ -58,8 +58,6 @@ public class JsonStreamChunkerTests
 		var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 		var lines = File.ReadAllLines(filePath);
 
-		var txtPath = Path.Combine("/Users/matthew/Documents/GitHub/maui/src/AI/tests/Essentials.AI.UnitTests/TestData/ObjectStreams", Path.ChangeExtension(fileName, ".txt"));
-
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
@@ -69,8 +67,6 @@ public class JsonStreamChunkerTests
 		}
 		foreach (var chunk in chunker.Flush())
 			chunks.Add(chunk);
-
-		File.WriteAllLines(txtPath, chunks);
 
 		var concatenated = string.Concat(chunks);
 		var finalLine = lines[^1];
@@ -367,6 +363,140 @@ public class JsonStreamChunkerTests
 		Assert.Equal(42, doc.RootElement.GetProperty("count").GetInt32());
 		Assert.True(doc.RootElement.GetProperty("active").GetBoolean());
 		Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("data").ValueKind);
+	}
+
+	[Fact]
+	public void Process_EmptyObjectInArray_ProducesValidJson()
+	{
+		// Test pattern from mount-fuji line 35: {"activities": [{}, ...]}
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"activities": [{}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"activities": [{}, {"description": "Hello"}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal(2, doc.RootElement.GetProperty("activities").GetArrayLength());
+	}
+
+	[Fact]
+	public void Process_RootLevelPropertyAppearsMidStream_ProducesValidJson()
+	{
+		// Test pattern: deep nesting first, then new root property appears
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Hello"}]}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Hello World"}]}], "title": "Trip"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal("Trip", doc.RootElement.GetProperty("title").GetString());
+		Assert.Equal("Hello World", doc.RootElement.GetProperty("days")[0].GetProperty("activities")[0].GetProperty("title").GetString());
+	}
+
+	[Fact]
+	public void Process_VeryShortStringGrows_ProducesValidJson()
+	{
+		// Test pattern: single char grows to full string
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"title": "M"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"title": "Maui Itinerary"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal("Maui Itinerary", doc.RootElement.GetProperty("title").GetString());
+	}
+
+	[Fact]
+	public void Process_TypeFieldEmptyThenFilled_ProducesValidJson()
+	{
+		// Test pattern from serengeti: {"type": ""} → {"type": "Sightseeing"}
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"activities": [{"type": ""}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"activities": [{"type": "Sightseeing", "title": "Game Drive"}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		var activity = doc.RootElement.GetProperty("activities")[0];
+		Assert.Equal("Sightseeing", activity.GetProperty("type").GetString());
+		Assert.Equal("Game Drive", activity.GetProperty("title").GetString());
+	}
+
+	[Fact]
+	public void Process_MultipleNewRootProperties_ProducesValidJson()
+	{
+		// Test pattern: multiple new root properties appear at once
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"description": "Hello"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"description": "Hello World", "title": "Trip", "rationale": "Fun"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal("Hello World", doc.RootElement.GetProperty("description").GetString());
+		Assert.Equal("Trip", doc.RootElement.GetProperty("title").GetString());
+		Assert.Equal("Fun", doc.RootElement.GetProperty("rationale").GetString());
+	}
+
+	[Fact]
+	public void Process_DeeplyNestedWithMultipleArrays_ProducesValidJson()
+	{
+		// Complex nesting: days[] with activities[] inside
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Drive"}]}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}, {"activities": []}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal(2, doc.RootElement.GetProperty("days").GetArrayLength());
+		Assert.Equal(2, doc.RootElement.GetProperty("days")[0].GetProperty("activities").GetArrayLength());
 	}
 
 	/// <summary>

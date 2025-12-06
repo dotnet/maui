@@ -7,7 +7,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace Maui.Controls.Sample.Services;
 
 /// <summary>
-/// Zero-allocation streaming JSON deserializer using Utf8JsonWriter with ReadOnlySpan<byte> overloads.
+/// Zero-allocation streaming JSON deserializer using Utf8JsonWriter with ReadOnlySpan&lt;byte&gt; overloads.
 /// Eliminates string allocations by using the writer's native UTF-8 span APIs.
 /// </summary>
 internal sealed class StreamingJsonDeserializer<T>
