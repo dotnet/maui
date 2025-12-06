@@ -22,6 +22,12 @@ namespace Microsoft.Maui.Controls
 
 				return;
 			}
+			else if (radioButton.Content is IView view)
+			{
+				radioButton.ControlTemplate = DefaultTemplate;
+				MapContent(handler, radioButton);
+				return;
+			}
 
 			RadioButtonHandler.MapContent(handler, radioButton);
 		}
@@ -32,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			if (radioButton.VirtualView is not RadioButton rb)
 				return null;
 
-			if (rb.ResolveControlTemplate() == null)
+			if (rb.ResolveControlTemplate() == null && rb.Content is not IView)
 			{
 				return null;
 			}
