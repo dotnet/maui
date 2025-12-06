@@ -66,9 +66,8 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 		App.WaitForNoElement("Footer");
 
 		// verify header and footer react to size changes
-		// These tests are ignored on iOS and Catalyst because the header height doesn't update correctly. Refer to issue: https://github.com/dotnet/maui/issues/26397
 		// On Windows, the stack layout's AutomationId isn't behaving as expected, so the Y position of the first flyout item is used to verify header and footer sizes.
-#if ANDROID
+#if ANDROID || IOS
 
 		App.Tap(ResizeHeaderFooter);
 		var headerSizeSmall = App.WaitForElement("HeaderView").GetRect();
