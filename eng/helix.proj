@@ -30,6 +30,7 @@
     <XUnitProject Include="$(RepoRoot)src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Core/tests/UnitTests/Core.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj" />
 
     <!-- <XUnitProject Include="$(RepoRoot)/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj" /> -->
 

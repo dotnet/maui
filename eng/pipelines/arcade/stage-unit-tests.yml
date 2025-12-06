@@ -46,20 +46,20 @@ stages:
       #     installPackageArtifacts: false
       #     buildMSBuildTasks: true
 
-      - template: /eng/pipelines/common/run-dotnet-preview.yml
-        parameters:
-          displayName: Run Controls.Xaml.UnitTests - ${{ job.testOS }}
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          command: test
-          project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/Controls.Xaml.UnitTests.binlog /p:_SkipUpdateBuildNumber=true'
-          useExitCodeForErrors: true
+      # - template: /eng/pipelines/common/run-dotnet-preview.yml
+      #   parameters:
+      #     displayName: Run Controls.Xaml.UnitTests - ${{ job.testOS }}
+      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      #     command: test
+      #     project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
+      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/Controls.Xaml.UnitTests.binlog /p:_SkipUpdateBuildNumber=true'
+      #     useExitCodeForErrors: true
 
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
-          testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
+      # - task: PublishTestResults@2
+      #   inputs:
+      #     testResultsFormat: VSTest
+      #     testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
+      #     testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
