@@ -529,6 +529,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+						
+					// For iOS 26+, explicitly set the tint color on the bar button item
+					// because the navigation bar's tint color is not automatically inherited
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						var navigationBar = ViewController?.NavigationController?.NavigationBar;
+						if (navigationBar?.TintColor is not null)
+						{
+							NavigationItem.LeftBarButtonItem.TintColor = navigationBar.TintColor;
+						}
+					}
 				}
 				else
 				{
