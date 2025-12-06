@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue29862">
+    <Grid RowDefinitions="100, *">
+        <ScrollView Orientation="Vertical"
+                    Grid.Row="1">
+            <VerticalStackLayout>
+                <ScrollView Orientation="Horizontal">
+                    <HorizontalStackLayout
+                        HeightRequest="200">
+                        <Label Text="Item 1"
+                               WidthRequest="300"
+                               AutomationId="LabelInHorizontalScrollView1"
+                               BackgroundColor="Brown"/>
+                        <Label Text="Item 2"
+                               AutomationId="LabelInHorizontalScrollView2"
+                               WidthRequest="300"
+                               BackgroundColor="Gray"/>
+                    </HorizontalStackLayout>
+                </ScrollView>
+                <VerticalStackLayout>
+                    <SwipeView>
+                        <SwipeView.LeftItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItem BackgroundColor="Black"/>
+                            </SwipeItems>
+                        </SwipeView.LeftItems>
+                        <Label
+                            BackgroundColor="Pink"
+                            AutomationId="LabelInVerticalScrollView1"
+                            HeightRequest="1000"
+                            Text="Item 1"/>
+                    </SwipeView>
+                    <SwipeView>
+                        <SwipeView.LeftItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItem BackgroundColor="Black"/>
+                            </SwipeItems>
+                        </SwipeView.LeftItems>
+                        <Label
+                            BackgroundColor="Gray"
+                            AutomationId="LabelInVerticalScrollView2"
+                            HeightRequest="1000"
+                            Text="Item 2"/>
+                    </SwipeView>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>
