@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 32941, "Label Overlapped by Android Status Bar When Using SafeAreaEdges=Container in .NET MAUI", PlatformAffected.Android)]
 public class Issue32941 : TestShell
@@ -10,74 +8,77 @@ public class Issue32941 : TestShell
 		var shellContent1 = new ShellContent
 		{
 			Title = "Home",
-			Route = "Issue32941_ContentPage_1",
-			Content = new Issue32941_ContentPage_1()
+			Route = "MainPage",
+			Content = new Issue32941_MainPage()
 		};
 		var shellContent2 = new ShellContent
 		{
-			Title = "Home",
-			Route = "Issue32941_ContentPage_2",
-			Content = new Issue32941_ContentPage_2()
+			Title = "SignOut",
+			Route = "SignOutPage",
+			Content = new Issue32941_SignOutPage()
 		};
 		Items.Add(shellContent1);
 		Items.Add(shellContent2);
 	}
 }
 
-public class Issue32941_ContentPage_1 : ContentPage
+public class Issue32941_MainPage : ContentPage
 {
-	public Issue32941_ContentPage_1()
+	public Issue32941_MainPage()
 	{
-		var label = new Label
+		var goToSignOutButton = new Button
 		{
-			Text = "Click the button to navigate to the next page.",
+			Text = "Go to SignOut",
+			AutomationId = "GoToSignOutButton"
 		};
+		goToSignOutButton.Clicked += async (s, e) => await Shell.Current.GoToAsync("//SignOutPage", false);
 
-		var button = new Button
+		Content = new VerticalStackLayout
 		{
-			Text = "Go to Next Page",
-			AutomationId = "NavigateToNextPageBtn",
-		};
-
-		button.Clicked += async (s, e) =>
-		{
-			await Shell.Current.GoToAsync("//Issue32941_ContentPage_2");
-		};
-
-		Content = new StackLayout
-		{
-			Padding = new Thickness(20),
 			Spacing = 20,
+			Padding = new Thickness(20),
 			Children =
+			{
+				new Label
 				{
-					label,
-					button
-				}
+					Text = "Main Page",
+					FontSize = 24,
+					AutomationId = "MainPageLabel"
+				},
+				goToSignOutButton
+			}
 		};
 	}
 }
 
-public class Issue32941_ContentPage_2 : ContentPage
+public class Issue32941_SignOutPage : ContentPage
 {
-	public Issue32941_ContentPage_2()
+	public Issue32941_SignOutPage()
 	{
 		Shell.SetNavBarIsVisible(this, false);
 		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
-		var verticalStackLayout = new VerticalStackLayout
+		
+		var backButton = new Button
 		{
-			Padding = new Thickness(20),
-			Spacing = 20
+			Text = "Back to Main",
+			AutomationId = "BackButton"
 		};
-
-		var label = new Label
+		backButton.Clicked += async (s, e) => await Shell.Current.GoToAsync("//MainPage", true);
+		
+		Content = new VerticalStackLayout
 		{
-			Text = "Test Label. This label should not be overlapped by the Android status bar when SafeAreaEdges is set to Container.",
-			FontSize = 24,
-			AutomationId = "testLabel"
+			BackgroundColor = Colors.White,
+			Children =
+			{
+				new Label
+				{
+					Text = "SignOut / Session Expiry Page",
+					FontSize = 24,
+					BackgroundColor = Colors.Yellow,
+					AutomationId = "SignOutLabel"
+				},
+				backButton
+			}
 		};
-
-		verticalStackLayout.Children.Add(label);
-
-		Content = verticalStackLayout;
 	}
 }
