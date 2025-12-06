@@ -1,7 +1,7 @@
 {"days":[{"subtitle":"Day
- 1: Arrival and Wildlife Safari
-
-","activities":[{"title":"Morning Game Drive","type":"Sightseeing","description":"Embark
+ 1: Arrival and Wildlife Safari","activities":[
+{
+"type":"Sightseeing","title":"Morning Game Drive","description":"Embark
  on a thrilling morning game drive to witness the Great
  Migration in all its glory."},{"type":"
 FoodAndDining","title":"Lunch
@@ -11,10 +11,10 @@ FoodAndDining","title":"Lunch
 HotelAndLodging","title":"
 Check-in at Hotel 1","description":"
 Relax after your adventure with a comfortable stay at Hotel
- 1."}],"destination":"Seren
-geti National Park","title":"
-Day 1: Arrival and Wildlife Safari
-"},{"subtitle":"Day 2: Cultural Exploration
+ 1.
+"}],"destination":"Serengeti National Park","title":"
+Day 1: Arrival and Wildlife Safari"},{
+"subtitle":"Day 2: Cultural Exploration
  and Relaxation","activities":[{"type":"
 Sightseeing","title":"Visit Ngorong
 oro Crater","description":"Explore the Ng
@@ -27,25 +27,23 @@ avor a memorable dinner at Restaurant 2, offering
 HotelAndLodging","title":"
 Overnight at Hotel 1","description":"
 Enjoy a restful night at Hotel 1, known
- for its serene ambiance."}],"destination":"
-Ngorongoro Crater","title":"
+ for its serene ambiance.
+"}],"destination":"Ngorongoro Crater","title":"
 Day 2: Cultural Exploration and Relaxation
 "},{"subtitle":"Day 3: Depart
-ure and Local Markets
-
-","activities":[{"title":"Visit Local Markets","type":"Shopping","description":"Explore vibrant local
- markets for souvenirs and unique handicrafts.
-
-"},{"title":"Farewell Lunch at Restaurant 3","type":"FoodAndDining","description":"
+ure and Local Markets","activities":[{
+"type":"Shopping","title":"Visit Local Markets","description":"Explore vibrant local
+ markets for souvenirs and unique handicrafts."},{
+"type":"FoodAndDining","title":"Farewell Lunch at Restaurant 3","description":"
 Enjoy a farewell lunch at Restaurant 3, famous
  for its traditional dishes."},{"type":"
 HotelAndLodging","title":"
 Check-out and Departure","description":"
 Check out of Hotel 1 and depart from Seren
-geti."}],"destination":"Seren
-geti","title":"Day 
-3: Departure and Local Markets"}],"rationale":"
-This itinerary offers a perfect blend of wildlife adventure,
+geti.
+"}],"destination":"Serengeti","title":"Day 
+3: Departure and Local Markets
+"}],"rationale":"This itinerary offers a perfect blend of wildlife adventure,
  cultural exploration, and relaxation, ensuring a memorable experience
  in Serengeti.","destinationName":"
 Serengeti","description":"Emb

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Essentials.AI.UnitTests;
 public class JsonStreamChunkerTests
 {
 	[Fact]
-	public void ProcessLine_SimpleProgression_ProducesValidJson()
+	public void Process_SimpleProgression_ProducesValidJson()
 	{
 		// Arrange
 		var chunker = new JsonStreamChunker();
@@ -22,10 +22,11 @@ public class JsonStreamChunkerTests
 		var chunks = new List<string>();
 		foreach (var line in lines)
 		{
-			var chunk = chunker.ProcessLine(line);
-			chunks.Add(chunk);
+			foreach (var chunk in chunker.Process(line))
+				chunks.Add(chunk);
 		}
-		chunks.Add(chunker.Finalize());
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 
 		var concatenated = string.Concat(chunks);
 
@@ -50,7 +51,7 @@ public class JsonStreamChunkerTests
 	[InlineData("mount-fuji-itinerary-1.jsonl")]
 	[InlineData("sahara-itinerary-1.jsonl")]
 	[InlineData("serengeti-itinerary-1.jsonl")]
-	public void ProcessLines_FromJsonlFile_ProducesValidJsonMatchingFinalLine(string fileName)
+	public void Process_FromJsonlFile_ProducesValidJsonMatchingFinalLine(string fileName)
 	{
 		// Arrange
 		var chunker = new JsonStreamChunker();
@@ -63,10 +64,11 @@ public class JsonStreamChunkerTests
 		var chunks = new List<string>();
 		foreach (var line in lines)
 		{
-			var chunk = chunker.ProcessLine(line);
-			chunks.Add(chunk);
+			foreach (var chunk in chunker.Process(line))
+				chunks.Add(chunk);
 		}
-		chunks.Add(chunker.Finalize());
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 
 		File.WriteAllLines(txtPath, chunks);
 
@@ -96,7 +98,7 @@ public class JsonStreamChunkerTests
 	}
 
 	[Fact]
-	public void ProcessLine_NestedEmptyArraysThenContent_ProducesValidJson()
+	public void Process_NestedEmptyArraysThenContent_ProducesValidJson()
 	{
 		// Arrange - simulates progressive array/object construction
 		var chunker = new JsonStreamChunker();
@@ -111,11 +113,11 @@ public class JsonStreamChunkerTests
 		var chunks = new List<string>();
 		foreach (var line in lines)
 		{
-			var chunk = chunker.ProcessLine(line);
-			chunks.Add(chunk);
+			foreach (var chunk in chunker.Process(line))
+				chunks.Add(chunk);
 		}
-		var finalChunk = chunker.Finalize();
-		chunks.Add(finalChunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 
 		var concatenated = string.Concat(chunks);
 
@@ -143,17 +145,21 @@ public class JsonStreamChunkerTests
 	}
 
 	[Fact]
-	public void ProcessLine_StringExtension_ProducesValidFinalJson()
+	public void Process_StringExtension_ProducesValidFinalJson()
 	{
 		// Arrange
 		var chunker = new JsonStreamChunker();
 
 		// Act
-		chunker.ProcessLine("""{"description": "Maui is a tropical"}""");
-		chunker.ProcessLine("""{"description": "Maui is a tropical paradise"}""");
-		chunker.Finalize();
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"description": "Maui is a tropical"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"description": "Maui is a tropical paradise"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 
-		var concatenated = chunker.EmittedJson;
+		var concatenated = string.Concat(chunks);
 
 		// Assert - final result should be valid JSON with the final value
 		var doc = JsonDocument.Parse(concatenated);
@@ -161,17 +167,21 @@ public class JsonStreamChunkerTests
 	}
 
 	[Fact]
-	public void ProcessLine_NewProperty_ClosesOpenStringAndAddsProperty()
+	public void Process_NewProperty_ClosesOpenStringAndAddsProperty()
 	{
 		// Arrange
 		var chunker = new JsonStreamChunker();
 
 		// Act
-		var chunk1 = chunker.ProcessLine("""{"description": "Hello"}""");
-		var chunk2 = chunker.ProcessLine("""{"description": "Hello", "name": "World"}""");
-		var chunk3 = chunker.Finalize();
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"description": "Hello"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"description": "Hello", "name": "World"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 
-		var concatenated = chunk1 + chunk2 + chunk3;
+		var concatenated = string.Concat(chunks);
 
 		// Assert
 		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
@@ -181,7 +191,7 @@ public class JsonStreamChunkerTests
 	}
 
 	[Fact]
-	public void ProcessLine_NestedObject_HandlesCorrectly()
+	public void Process_NestedObject_HandlesCorrectly()
 	{
 		// Arrange
 		var chunker = new JsonStreamChunker();
@@ -193,8 +203,14 @@ public class JsonStreamChunkerTests
 		};
 
 		// Act
-		var chunks = lines.Select(chunker.ProcessLine).ToList();
-		chunks.Add(chunker.Finalize());
+		var chunks = new List<string>();
+		foreach (var line in lines)
+		{
+			foreach (var chunk in chunker.Process(line))
+				chunks.Add(chunk);
+		}
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 		var concatenated = string.Concat(chunks);
 
 		// Assert
@@ -206,7 +222,7 @@ public class JsonStreamChunkerTests
 	}
 
 	[Fact]
-	public void ProcessLine_PropertyOrderChange_StillProducesValidJson()
+	public void Process_PropertyOrderChange_StillProducesValidJson()
 	{
 		// Arrange - simulates the AI model reordering properties
 		var chunker = new JsonStreamChunker();
@@ -217,8 +233,14 @@ public class JsonStreamChunkerTests
 		};
 
 		// Act
-		var chunks = lines.Select(chunker.ProcessLine).ToList();
-		chunks.Add(chunker.Finalize());
+		var chunks = new List<string>();
+		foreach (var line in lines)
+		{
+			foreach (var chunk in chunker.Process(line))
+				chunks.Add(chunk);
+		}
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
 		var concatenated = string.Concat(chunks);
 
 		// Assert
@@ -226,6 +248,125 @@ public class JsonStreamChunkerTests
 		Assert.Equal("1", doc.RootElement.GetProperty("a").GetString());
 		Assert.Equal("2", doc.RootElement.GetProperty("b").GetString());
 		Assert.Equal("3", doc.RootElement.GetProperty("c").GetString());
+	}
+
+	[Fact]
+	public void Process_SerengetiPattern_NewPropertyClosesString()
+	{
+		// This is the exact pattern from serengeti-itinerary-1.jsonl lines 1-2
+		// When activities[] appears, it should close the subtitle string
+		var chunker = new JsonStreamChunker();
+		
+		// Act
+		var chunks = new List<string>();
+		// Line 1
+		foreach (var chunk in chunker.Process("""{"days": [{"subtitle": "Day"}]}"""))
+			chunks.Add(chunk);
+		// Line 2 - subtitle extended AND new property activities appears
+		foreach (var chunk in chunker.Process("""{"days": [{"subtitle": "Day 1: Arrival and Wildlife Safari", "activities": []}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		// Should be valid JSON
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
+		
+		var doc = JsonDocument.Parse(concatenated);
+		var day = doc.RootElement.GetProperty("days")[0];
+		
+		Assert.Equal("Day 1: Arrival and Wildlife Safari", day.GetProperty("subtitle").GetString());
+		Assert.True(day.TryGetProperty("activities", out var activities), "activities property should exist");
+		Assert.Equal(0, activities.GetArrayLength());
+	}
+
+	[Fact]
+	public void Process_EmptyStringGrows_ProducesValidJson()
+	{
+		// Test that empty strings can grow to non-empty
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"title": ""}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"title": "Hello World"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal("Hello World", doc.RootElement.GetProperty("title").GetString());
+	}
+
+	[Fact]
+	public void Process_MultipleNewStrings_AddsToPending()
+	{
+		// When multiple new strings appear at once, they should go to pending
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"title": "A", "subtitle": "B"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Process("""{"title": "A", "subtitle": "B", "description": "C"}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal("A", doc.RootElement.GetProperty("title").GetString());
+		Assert.Equal("B", doc.RootElement.GetProperty("subtitle").GetString());
+		Assert.Equal("C", doc.RootElement.GetProperty("description").GetString());
+	}
+
+	[Fact]
+	public void Process_ParentLevelChange_ClosesString()
+	{
+		// When a new array item appears, it should close strings in the previous item
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"items": [{"name": "First"}]}"""))
+			chunks.Add(chunk);
+		// New array item appears - should close "First"
+		foreach (var chunk in chunker.Process("""{"items": [{"name": "First"}, {"name": "Second"}]}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal("First", doc.RootElement.GetProperty("items")[0].GetProperty("name").GetString());
+		Assert.Equal("Second", doc.RootElement.GetProperty("items")[1].GetProperty("name").GetString());
+	}
+
+	[Fact]
+	public void Process_NonStringTypes_EmittedImmediately()
+	{
+		// Numbers, booleans, null should be emitted immediately
+		var chunker = new JsonStreamChunker();
+		
+		var chunks = new List<string>();
+		foreach (var chunk in chunker.Process("""{"count": 42, "active": true, "data": null}"""))
+			chunks.Add(chunk);
+		foreach (var chunk in chunker.Flush())
+			chunks.Add(chunk);
+
+		var concatenated = string.Concat(chunks);
+		
+		Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
+		var doc = JsonDocument.Parse(concatenated);
+		Assert.Equal(42, doc.RootElement.GetProperty("count").GetInt32());
+		Assert.True(doc.RootElement.GetProperty("active").GetBoolean());
+		Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("data").ValueKind);
 	}
 
 	/// <summary>

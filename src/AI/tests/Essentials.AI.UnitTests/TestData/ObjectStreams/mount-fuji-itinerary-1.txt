@@ -3,21 +3,21 @@
  restaurants.","rationale":"This itinerary provides
  a balanced mix of sightseeing, relaxation, and dining
  experiences around Mount Fuji, ensuring a memorable trip for
- all interests.
-","days":[{"activities":[{"description":"Visit an authentic sushi restaurant for
+ all interests.","days":[{"activities":[
+{"description":"Visit an authentic sushi restaurant for
  lunch.","type":"FoodAnd
 Dining","title":"The Restaurant
  serving Sushi"},{"description":"Enjoy souvenir shopping
  at various shops.","type":"Shopping
-
-","title":"The Plaza"},{"description":"Admire the beautiful cherry blossom trees in the park
-.
-","title":"The Beautiful Cherry Blossom Park","type":"Sightseeing"}],"destination":"
-Kawaguchiko Lake","title":"
+","title":"The Plaza"},{"description":"
+Admire the beautiful cherry blossom trees in the park
+."
+,"type":"Sightseeing","title":"The Beautiful Cherry Blossom Park
+"}],"destination":"Kawaguchiko Lake","title":"
 Sushi and Shopping Near Kawaguchiko
 ","subtitle":"Spend your final day enjoying
- sushi and souvenir shopping.
-"},{"activities":[{"description":"Spend one final evening in the hot
+ sushi and souvenir shopping."},{"activities":[{
+"description":"Spend one final evening in the hot
  spring before heading home.","type":"Food
 AndDining","title":"The Hotel
 "},{"description":"Relax and unwind in
@@ -26,23 +26,23 @@ seeing","title":"The Beautiful Cherry Blossom
  Park"},{"description":"Enjoy a relaxing
  evening with a view of Mount Fuji.","type":"
 FoodAndDining","title":"Restaurant
- 3"}],"destination":"Mount Fuji
-","title":"Relaxation Day at Mount
+ 3
+"}],"destination":"Mount Fuji","title":"Relaxation Day at Mount
  Fuji","subtitle":"Enjoy a relaxing
- day at Mount Fuji.
-"},{"activities":[{"description":"Visit an authentic sushi restaurant for lunch
+ day at Mount Fuji."},{"activities":[{
+"description":"Visit an authentic sushi restaurant for lunch
 .","type":"FoodAndDining
-","title":"The Restaurant serving Sushi
-"},{"description":"Enjoy souvenir shopping at various shops.
-
-","title":"The Plaza","type":"Shopping"},{"description":"Admire the
+","title":"The Restaurant serving Sushi"},{
+"description":"Enjoy souvenir shopping at various shops.
+"
+,"type":"Shopping","title":"The Plaza"},{"description":"Admire the
  beautiful cherry blossom trees in the park.","type":"
 Sightseeing","title":"The Beautiful Cherry
- Blossom Park"}],"destination":"Kawag
-uchiko Lake","title":"Sushi
+ Blossom Park
+"}],"destination":"Kawaguchiko Lake","title":"Sushi
  and Shopping Near Kawaguchiko","subtitle":"
 Spend your final day enjoying sushi and souvenir shopping.
-
-"}],"destinationName":"Mount Fuji","title":"A 3-Day Itinerary to Mount Fuji
+"
+}],"destinationName":"Mount Fuji","title":"A 3-Day Itinerary to Mount Fuji
 : Activities, Hotels, and Restaurants
 "}

@@ -10,8 +10,8 @@
  this itinerary offers a perfect balance of exploration and relaxation
 .","destinationName":"Sahara Desert
 ","days":[{"subtitle":"Day
- 1: Arrival and Exploration
-","activities":[{"description":"Visit a local restaurant for lunch
+ 1: Arrival and Exploration","activities":[
+{"description":"Visit a local restaurant for lunch
  and experience authentic desert cuisine.","title":"
 Restaurant 1","type":"
 FoodAndDining"},{"description":"Explore
@@ -24,30 +24,30 @@ Desert Walk","type":"Sightseeing
 "}],"destination":"Sahara Desert
 ","title":"Arrival and Exploration
 "},{"subtitle":"Day 2:
- Cultural Immersion and Relaxation
-","activities":[{"description":"Visit a local restaurant for lunch
+ Cultural Immersion and Relaxation","activities":[
+{"description":"Visit a local restaurant for lunch
  and experience authentic desert cuisine.","title":"
 Restaurant 2","type":"FoodAnd
 Dining"},{"description":"Explore the local
  hotel for a comfortable stay and a chance to relax
-.
-","title":"Hotel 2","type":"HotelAndLodging"},{"description":"
+."
+,"title":"Hotel 2","type":"HotelAndLodging"},{"description":"
 Visit a local museum to learn about the history and
  culture of the region.","title":"Museum
-
-","type":"Sightseeing"}],"destination":"Sahara Desert","title":"Cultural
+","type":"Sightseeing
+"}],"destination":"Sahara Desert","title":"Cultural
  Immersion and Relaxation"},{"subtitle":"
 Day 3: Departure and Souvenirs
 ","activities":[{"description":"Visit a
  local restaurant for lunch and experience authentic desert cuisine.
-
-","title":"Restaurant 3","type":"FoodAndDining"},{"description":"Shop
+"
+,"title":"Restaurant 3","type":"FoodAndDining"},{"description":"Shop
  for souvenirs at the local market.","title":"
 Souvenir Shopping","type":"Shopping
 "},{"description":"Enjoy a final dinner at
  the hotel and reflect on the journey.","title":"
 Hotel 3","type":"FoodAnd
-Dining"}],"destination":"Sah
-ara Desert","title":"Departure
+Dining
+"}],"destination":"Sahara Desert","title":"Departure
  and Souvenirs
 "}]}
