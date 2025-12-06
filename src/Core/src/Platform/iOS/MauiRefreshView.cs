@@ -41,16 +41,23 @@ namespace Microsoft.Maui.Platform
 
 				if (_isRefreshing != _refreshControl.Refreshing)
 				{
-					if (_isRefreshing)
+					// iOS 26+ quirk: without dispatching to the main queue, the UIRefreshControl
+					// indicator may not appear. Scheduling BeginRefreshing/EndRefreshing on the
+					// next runloop tick ensures the control has been inserted and laid out
+					// before we toggle its refreshing state.
+					DispatchQueue.MainQueue.DispatchAsync(async () =>
 					{
-						TryOffsetRefresh(this, IsRefreshing);
-						_refreshControl.BeginRefreshing();
-					}
-					else
-					{
-						_refreshControl.EndRefreshing();
-						TryOffsetRefresh(this, IsRefreshing);
-					}
+						if (_isRefreshing)
+						{
+							TryOffsetRefresh(this, IsRefreshing);
+							_refreshControl.BeginRefreshing();
+						}
+						else
+						{
+							_refreshControl.EndRefreshing();
+							TryOffsetRefresh(this, IsRefreshing);
+						}
+					});
 				}
 			}
 		}
