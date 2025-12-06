@@ -21,12 +21,8 @@ public class JsonStreamChunkerTests
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
-		{
-			foreach (var chunk in chunker.Process(line))
-				chunks.Add(chunk);
-		}
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+			chunks.Add(chunker.Process(line));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 
@@ -61,12 +57,8 @@ public class JsonStreamChunkerTests
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
-		{
-			foreach (var chunk in chunker.Process(line))
-				chunks.Add(chunk);
-		}
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+			chunks.Add(chunker.Process(line));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		var finalLine = lines[^1];
@@ -108,12 +100,8 @@ public class JsonStreamChunkerTests
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
-		{
-			foreach (var chunk in chunker.Process(line))
-				chunks.Add(chunk);
-		}
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+			chunks.Add(chunker.Process(line));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 
@@ -148,12 +136,9 @@ public class JsonStreamChunkerTests
 
 		// Act
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"description": "Maui is a tropical"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"description": "Maui is a tropical paradise"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"description": "Maui is a tropical"}"""));
+		chunks.Add(chunker.Process("""{"description": "Maui is a tropical paradise"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 
@@ -170,12 +155,9 @@ public class JsonStreamChunkerTests
 
 		// Act
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"description": "Hello"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"description": "Hello", "name": "World"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"description": "Hello"}"""));
+		chunks.Add(chunker.Process("""{"description": "Hello", "name": "World"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 
@@ -201,12 +183,8 @@ public class JsonStreamChunkerTests
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
-		{
-			foreach (var chunk in chunker.Process(line))
-				chunks.Add(chunk);
-		}
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+			chunks.Add(chunker.Process(line));
+		chunks.Add(chunker.Flush());
 		var concatenated = string.Concat(chunks);
 
 		// Assert
@@ -231,12 +209,8 @@ public class JsonStreamChunkerTests
 		// Act
 		var chunks = new List<string>();
 		foreach (var line in lines)
-		{
-			foreach (var chunk in chunker.Process(line))
-				chunks.Add(chunk);
-		}
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+			chunks.Add(chunker.Process(line));
+		chunks.Add(chunker.Flush());
 		var concatenated = string.Concat(chunks);
 
 		// Assert
@@ -256,13 +230,10 @@ public class JsonStreamChunkerTests
 		// Act
 		var chunks = new List<string>();
 		// Line 1
-		foreach (var chunk in chunker.Process("""{"days": [{"subtitle": "Day"}]}"""))
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"days": [{"subtitle": "Day"}]}"""));
 		// Line 2 - subtitle extended AND new property activities appears
-		foreach (var chunk in chunker.Process("""{"days": [{"subtitle": "Day 1: Arrival and Wildlife Safari", "activities": []}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"days": [{"subtitle": "Day 1: Arrival and Wildlife Safari", "activities": []}]}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -284,12 +255,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"title": ""}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"title": "Hello World"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"title": ""}"""));
+		chunks.Add(chunker.Process("""{"title": "Hello World"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -305,12 +273,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"title": "A", "subtitle": "B"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"title": "A", "subtitle": "B", "description": "C"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"title": "A", "subtitle": "B"}"""));
+		chunks.Add(chunker.Process("""{"title": "A", "subtitle": "B", "description": "C"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -328,13 +293,10 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"items": [{"name": "First"}]}"""))
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"items": [{"name": "First"}]}"""));
 		// New array item appears - should close "First"
-		foreach (var chunk in chunker.Process("""{"items": [{"name": "First"}, {"name": "Second"}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"items": [{"name": "First"}, {"name": "Second"}]}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -351,10 +313,8 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"count": 42, "active": true, "data": null}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"count": 42, "active": true, "data": null}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -372,12 +332,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"activities": [{}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"activities": [{}, {"description": "Hello"}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"activities": [{}]}"""));
+		chunks.Add(chunker.Process("""{"activities": [{}, {"description": "Hello"}]}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -393,12 +350,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Hello"}]}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Hello World"}]}], "title": "Trip"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Hello"}]}]}"""));
+		chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Hello World"}]}], "title": "Trip"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -415,12 +369,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"title": "M"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"title": "Maui Itinerary"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"title": "M"}"""));
+		chunks.Add(chunker.Process("""{"title": "Maui Itinerary"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -436,12 +387,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"activities": [{"type": ""}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"activities": [{"type": "Sightseeing", "title": "Game Drive"}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"activities": [{"type": ""}]}"""));
+		chunks.Add(chunker.Process("""{"activities": [{"type": "Sightseeing", "title": "Game Drive"}]}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -459,12 +407,9 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"description": "Hello"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"description": "Hello World", "title": "Trip", "rationale": "Fun"}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"description": "Hello"}"""));
+		chunks.Add(chunker.Process("""{"description": "Hello World", "title": "Trip", "rationale": "Fun"}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		
@@ -482,14 +427,10 @@ public class JsonStreamChunkerTests
 		var chunker = new JsonStreamChunker();
 		
 		var chunks = new List<string>();
-		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Drive"}]}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}, {"activities": []}]}"""))
-			chunks.Add(chunk);
-		foreach (var chunk in chunker.Flush())
-			chunks.Add(chunk);
+		chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Drive"}]}]}"""));
+		chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}]}"""));
+		chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}, {"activities": []}]}"""));
+		chunks.Add(chunker.Flush());
 
 		var concatenated = string.Concat(chunks);
 		

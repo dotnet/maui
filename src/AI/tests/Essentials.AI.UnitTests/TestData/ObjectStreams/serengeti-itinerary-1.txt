@@ -32,8 +32,10 @@ Enjoy a restful night at Hotel 1, known
 Day 2: Cultural Exploration and Relaxation
 "},{"subtitle":"Day 3: Depart
 ure and Local Markets","activities":[{
+
 "type":"Shopping","title":"Visit Local Markets","description":"Explore vibrant local
  markets for souvenirs and unique handicrafts."},{
+
 "type":"FoodAndDining","title":"Farewell Lunch at Restaurant 3","description":"
 Enjoy a farewell lunch at Restaurant 3, famous
  for its traditional dishes."},{"type":"

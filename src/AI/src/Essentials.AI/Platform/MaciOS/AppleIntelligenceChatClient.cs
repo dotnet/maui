@@ -139,7 +139,10 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 		var channel = Channel.CreateUnbounded<ChatResponseUpdate>();
 
-		// var lastResponse = "";
+		// Use appropriate stream chunker based on response format
+		StreamChunkerBase chunker = options?.ResponseFormat is ChatResponseFormatJson
+			? new JsonStreamChunker()
+			: new PlainTextStreamChunker();
 
 		var nativeToken = native.StreamResponse(
 			nativeMessages,
@@ -151,19 +154,20 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				{
 					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync received text update: {update.Text}");
 
-					// // Compute the partial update since Apple Intelligence returns the full response each time
-					// var newResponse = update.Text;
-					// var delta = newResponse.Substring(lastResponse.Length);
-					// lastResponse = newResponse;
+					// Use stream chunker to compute delta - handles both JSON and plain text
+					var delta = chunker.Process(update.Text);
 
-					// Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync computed delta: {delta}");
+					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync computed delta: {delta}");
 
-					// var chatUpdate = new ChatResponseUpdate
-					// {
-					// 	Role = ChatRole.Assistant,
-					// 	Contents = { new TextContent(delta) }
-					// };
-					// channel.Writer.TryWrite(chatUpdate);
+					if (!string.IsNullOrEmpty(delta))
+					{
+						var chatUpdate = new ChatResponseUpdate
+						{
+							Role = ChatRole.Assistant,
+							Contents = { new TextContent(delta) }
+						};
+						channel.Writer.TryWrite(chatUpdate);
+					}
 				}
 
 				// Handle tool call notifications
@@ -211,6 +215,20 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				else
 				{
 					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync completed successfully.");
+
+					// Flush any remaining content from the chunker
+					var finalChunk = chunker.Flush();
+					if (!string.IsNullOrEmpty(finalChunk))
+					{
+						Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync flushing final chunk: {finalChunk}");
+
+						var finalUpdate = new ChatResponseUpdate
+						{
+							Role = ChatRole.Assistant,
+							Contents = { new TextContent(finalChunk) }
+						};
+						channel.Writer.TryWrite(finalUpdate);
+					}
 
 					channel.Writer.Complete();
 				}

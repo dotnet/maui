@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Maui.Controls.Sample.Services;
+namespace Microsoft.Maui.Essentials.AI;
 
 /// <summary>
 /// Converts complete JSON objects (from an AI model that post-processes its output) back into 
@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample.Services;
 /// See json-stream-chunker-design.md for full algorithm documentation.
 /// </para>
 /// </remarks>
-public class JsonStreamChunker
+internal sealed class JsonStreamChunker : StreamChunkerBase
 {
     /// <summary>Flattened path→value dictionary from the previous chunk.</summary>
     private Dictionary<string, JsonValue>? _prevState;
@@ -55,18 +55,18 @@ public class JsonStreamChunker
     private record struct JsonValue(JsonValueKind Kind, string? StringValue, string? RawValue);
 
     /// <summary>
-    /// Processes a complete JSON snapshot and yields streaming chunks representing the delta.
+    /// Processes a complete JSON snapshot and returns a streaming chunk representing the delta.
     /// </summary>
     /// <param name="completeJson">A complete, valid JSON object representing the current state.</param>
-    /// <returns>Zero or more string chunks to emit. Concatenating all chunks yields valid JSON.</returns>
+    /// <returns>A string chunk to emit (may be empty if no output yet). Concatenating all chunks yields valid JSON.</returns>
     /// <remarks>
     /// Call this method for each complete JSON object received from the AI model.
     /// The chunker maintains state between calls to track what has been emitted.
     /// </remarks>
-    public IEnumerable<string> Process(string completeJson)
+    public override string Process(string completeJson)
     {
         if (string.IsNullOrWhiteSpace(completeJson))
-            yield break;
+            return string.Empty;
 
         JsonDocument doc;
         try
@@ -75,39 +75,39 @@ public class JsonStreamChunker
         }
         catch
         {
-            yield break;
+            return string.Empty;
         }
 
         using (doc)
         {
             var currState = FlattenJson(doc.RootElement, "");
 
+            string result;
             if (_prevState == null)
             {
                 // First chunk - emit structure with strings potentially open
-                foreach (var chunk in ProcessFirstChunk(currState, doc.RootElement))
-                    yield return chunk;
+                result = ProcessFirstChunk(currState, doc.RootElement);
             }
             else
             {
                 // Subsequent chunk - compare and emit deltas
-                foreach (var chunk in ProcessSubsequentChunk(currState, doc.RootElement))
-                    yield return chunk;
+                result = ProcessSubsequentChunk(currState, doc.RootElement);
             }
 
             _prevState = currState;
+            return result;
         }
     }
 
     /// <summary>
     /// Flushes any remaining state and closes all open structures.
     /// </summary>
-    /// <returns>Final chunks to complete the JSON output.</returns>
+    /// <returns>Final chunk to complete the JSON output (may be empty).</returns>
     /// <remarks>
     /// Must be called after all JSON snapshots have been processed to properly close
     /// any pending strings and open containers (objects/arrays).
     /// </remarks>
-    public IEnumerable<string> Flush()
+    public override string Flush()
     {
         var sb = new StringBuilder();
 
@@ -133,16 +133,13 @@ public class JsonStreamChunker
             sb.Append(isArray ? ']' : '}');
         }
 
-        if (sb.Length > 0)
-        {
-            yield return sb.ToString();
-        }
+        return sb.ToString();
     }
 
     /// <summary>
     /// Processes the first JSON chunk - emits initial structure with strings potentially open.
     /// </summary>
-    private IEnumerable<string> ProcessFirstChunk(Dictionary<string, JsonValue> state, JsonElement elem)
+    private string ProcessFirstChunk(Dictionary<string, JsonValue> state, JsonElement elem)
     {
         var sb = new StringBuilder();
         sb.Append('{');
@@ -153,14 +150,13 @@ public class JsonStreamChunker
         var stringsByParent = GroupStringsByParent(state);
         EmitStructure(sb, elem, "", state, stringsByParent);
 
-        if (sb.Length > 0)
-            yield return sb.ToString();
+        return sb.ToString();
     }
 
     /// <summary>
     /// Processes subsequent chunks - compares with previous state and emits deltas.
     /// </summary>
-    private IEnumerable<string> ProcessSubsequentChunk(Dictionary<string, JsonValue> currState, JsonElement currElem)
+    private string ProcessSubsequentChunk(Dictionary<string, JsonValue> currState, JsonElement currElem)
     {
         var sb = new StringBuilder();
 
@@ -175,8 +171,7 @@ public class JsonStreamChunker
         // Step 3: Process new content (new properties, new array items)
         ProcessNewContent(sb, _prevState!, currState, currElem, "");
 
-        if (sb.Length > 0)
-            yield return sb.ToString();
+        return sb.ToString();
     }
 
     /// <summary>

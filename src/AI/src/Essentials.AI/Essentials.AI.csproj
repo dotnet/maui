@@ -20,6 +20,9 @@
     <PackageTags>$(DefaultPackageTags);essentials;ai</PackageTags>
     <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains a collection of cross-platform APIs for working with device AI and local models.</Description>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Essentials.AI.UnitTests" />
+  </ItemGroup>
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
