@@ -2248,8 +2248,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								value.Width = (value.X - xSpace) + value.Width;
 								value.X = xSpace;
 							}
+
+							if (_child?.VirtualView is IView view)
+							{
+								var margin = view.Margin;
+
+								// Removed height from calculation since it's overwritten anyway
+								value = new RectangleF(
+									value.X + (nfloat)margin.Left,
+									value.Y + (nfloat)margin.Top,
+									value.Width - (nfloat)(margin.Left + margin.Right),
+									value.Height  // Keep original height since it gets overwritten
+								);
+							}
 						}
-						;
 
 						value.Height = ToolbarHeight;
 					}
