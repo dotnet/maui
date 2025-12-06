@@ -48,14 +48,14 @@ public class ObservablePropertyTests
 			""";
 
 		var result = SourceGenHelpers.Run(source);
-		
+
 		// The binding should be generated successfully with ObservableProperty inference
 		Assert.NotNull(result.Binding);
-		
+
 		// Verify the generated interceptor code contains the Name property access
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		Assert.Contains("Name", allGeneratedCode, System.StringComparison.Ordinal);
-		
+
 		// Note: There will be compilation errors because Name doesn't actually exist,
 		// but the interceptor code itself is generated correctly. In real usage with
 		// CommunityToolkit.Mvvm, the property would exist and compile successfully.
@@ -95,10 +95,10 @@ public class ObservablePropertyTests
 			""";
 
 		var result = SourceGenHelpers.Run(source);
-		
+
 		// The binding should be generated successfully with ObservableProperty inference
 		Assert.NotNull(result.Binding);
-		
+
 		// Verify the generated interceptor code contains the Title property access
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		Assert.Contains("Title", allGeneratedCode, System.StringComparison.Ordinal);
@@ -140,10 +140,10 @@ public class ObservablePropertyTests
 			""";
 
 		var result = SourceGenHelpers.Run(source);
-		
+
 		// The binding should be generated successfully with ObservableProperty inference
 		Assert.NotNull(result.Binding);
-		
+
 		// Verify the generated interceptor code contains the Tags property access
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		Assert.Contains("Tags", allGeneratedCode, System.StringComparison.Ordinal);
@@ -182,7 +182,7 @@ public class ObservablePropertyTests
 
 		// Test that TryGetObservablePropertyType can detect the Name property from name field
 		var canInfer = myViewModelType.TryGetObservablePropertyType("Name", compilation, out var propertyType);
-		
+
 		Assert.True(canInfer, "Should be able to infer Name from name field with [ObservableProperty]");
 		Assert.NotNull(propertyType);
 		Assert.Equal("string?", propertyType!.ToDisplayString());
@@ -219,7 +219,7 @@ public class ObservablePropertyTests
 
 		// Test that TryGetObservablePropertyType can detect the Count property from _count field
 		var canInfer = myViewModelType.TryGetObservablePropertyType("Count", compilation, out var propertyType);
-		
+
 		Assert.True(canInfer, "Should be able to infer Count from _count field with [ObservableProperty]");
 		Assert.NotNull(propertyType);
 		Assert.Equal("int", propertyType!.ToDisplayString());
@@ -248,7 +248,7 @@ public class ObservablePropertyTests
 
 		// Should not infer Name without [ObservableProperty] attribute
 		var canInfer = myViewModelType.TryGetObservablePropertyType("Name", compilation, out var propertyType);
-		
+
 		Assert.False(canInfer, "Should not infer Name without [ObservableProperty] attribute");
 		Assert.Null(propertyType);
 	}
@@ -284,7 +284,7 @@ public class ObservablePropertyTests
 		Assert.NotNull(myViewModelType);
 
 		var canInfer = myViewModelType.TryGetObservablePropertyType("IsActive", compilation, out var propertyType);
-		
+
 		Assert.True(canInfer, "Should be able to infer IsActive from _isActive field");
 		Assert.NotNull(propertyType);
 		Assert.Equal("bool", propertyType!.ToDisplayString());

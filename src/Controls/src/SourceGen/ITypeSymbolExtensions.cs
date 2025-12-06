@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-
 using Microsoft.CodeAnalysis;
-using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.BindingSourceGen;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -103,7 +102,7 @@ static partial class ITypeSymbolExtensions
 	{
 		property = symbol.GetAllProperties(propertyName, context)
 			.FirstOrDefault(p => p.GetMethod != null && !p.GetMethod.IsStatic);
-		
+
 		if (property != null)
 		{
 			propertyType = property.Type;

@@ -67,10 +67,10 @@ public static class ITypeSymbolExtensions
 
 		// Extract the method name (property name without "Command" suffix)
 		var methodName = propertyName.Substring(0, propertyName.Length - "Command".Length);
-		
+
 		// Look for a method with the base name - search in the type and base types
 		var methods = GetAllMethods(symbol, methodName);
-		
+
 		foreach (var method in methods)
 		{
 			// Check if the method has the RelayCommand attribute
@@ -121,7 +121,7 @@ public static class ITypeSymbolExtensions
 		foreach (var fieldName in possibleFieldNames)
 		{
 			var fields = GetAllFields(symbol, fieldName);
-			
+
 			foreach (var field in fields)
 			{
 				// Check if the field has the ObservableProperty attribute

@@ -87,7 +87,7 @@ internal class PathParser
 		pathPart = null;
 
 		// Check for RelayCommand-generated properties
-		if (expressionType.TryGetRelayCommandPropertyType(memberName, _context.SemanticModel.Compilation, out var commandType) 
+		if (expressionType.TryGetRelayCommandPropertyType(memberName, _context.SemanticModel.Compilation, out var commandType)
 			&& commandType != null)
 		{
 			var memberType = commandType.CreateTypeDescription(_enabledNullable);

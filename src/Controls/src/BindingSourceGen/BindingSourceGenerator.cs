@@ -215,25 +215,25 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			{
 				var memberName = memberAccess.Name.Identifier.Text;
 				var expressionType = semanticModel.GetTypeInfo(memberAccess.Expression).Type;
-				
+
 				if (expressionType != null)
 				{
 					// Check for RelayCommand-generated properties
 					if (expressionType.TryGetRelayCommandPropertyType(memberName, semanticModel.Compilation, out var commandType) &&
-					    commandType != null)
+						commandType != null)
 					{
 						return Result<ITypeSymbol>.Success(commandType);
 					}
 
 					// Check for ObservableProperty-generated properties
 					if (expressionType.TryGetObservablePropertyType(memberName, semanticModel.Compilation, out var propertyType) &&
-					    propertyType != null)
+						propertyType != null)
 					{
 						return Result<ITypeSymbol>.Success(propertyType);
 					}
 				}
 			}
-			
+
 			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBody.GetLocation()));
 		}
 
