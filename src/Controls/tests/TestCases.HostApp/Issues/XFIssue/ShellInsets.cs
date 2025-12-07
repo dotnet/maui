@@ -153,6 +153,8 @@ public class ShellInsets : TestShell
 	{
 		var page = CreateContentPage();
 
+		page.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+
 		page.Content = new Microsoft.Maui.Controls.ListView(ListViewCachingStrategy.RecycleElement)
 		{
 			ItemTemplate = new DataTemplate(() =>

@@ -6,6 +6,7 @@
 		public Issue5924()
 		{
 			InitializeComponent();
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		}
 	}
 }
