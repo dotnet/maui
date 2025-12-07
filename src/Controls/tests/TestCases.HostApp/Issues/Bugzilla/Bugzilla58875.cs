@@ -23,6 +23,8 @@ public class Bugzilla58875 : TestNavigationPage
 		{
 			BindingContext = this;
 
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
 				ItemTemplate = new DataTemplate(() =>
