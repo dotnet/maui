@@ -58,35 +58,46 @@ internal static class SafeAreaExtensions
 		{
 			// Check if this view is inside a container that ignores safe area (ListView, TableView, ViewCell)
 			// These containers manage their own layout and should NOT have safe area insets applied to their CONTENT
-			// Note: We check the view's PARENT, not the view itself, because ListView/TableView/ViewCell
-			// might implement ISafeAreaView2 but their content should not have safe area
+			bool isInsideSafeAreaIgnoredContainer = false;
 			if (safeAreaView2 is IView mauiView)
 			{
 				var parent = mauiView.Parent;
 				if (parent is ISafeAreaIgnoredContainer)
 				{
-					// Direct child of a safe-area-ignored container - don't apply safe area
-					return windowInsets;
+					isInsideSafeAreaIgnoredContainer = true;
 				}
-				
-				// Also check if any ancestor is a safe-area-ignored container
-				var ancestor = parent as IView;
-				while (ancestor != null)
+				else
 				{
-					if (ancestor is ISafeAreaIgnoredContainer)
+					// Also check if any ancestor is a safe-area-ignored container
+					var ancestor = parent as IView;
+					while (ancestor != null)
 					{
-						// Inside a safe-area-ignored container hierarchy - don't apply safe area
-						return windowInsets;
+						if (ancestor is ISafeAreaIgnoredContainer)
+						{
+							isInsideSafeAreaIgnoredContainer = true;
+							break;
+						}
+						ancestor = ancestor.Parent as IView;
 					}
-					ancestor = ancestor.Parent as IView;
 				}
 			}
 
 			// Apply safe area selectively per edge based on SafeAreaRegions
-			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-			var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+			// If inside a safe-area-ignored container, set all values to 0 instead of calculating them
+			double left, top, right, bottom;
+			if (isInsideSafeAreaIgnoredContainer)
+			{
+				// Inside ListView/TableView/ViewCell - no safe area padding
+				left = top = right = bottom = 0;
+			}
+			else
+			{
+				// Normal safe area calculation
+				left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
+				top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
+				right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
+				bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+			}
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
