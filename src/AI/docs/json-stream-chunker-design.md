@@ -28,10 +28,10 @@ Line 4:  {"days": [{"activities": [{"type": "Sightseeing", "description": "Embar
 ## Key Constraints
 
 1. **Must stream output** - Cannot wait until the end to emit
-2. **1-2 chunk delay OK** - For disambiguation when multiple strings appear
+2. **1-2 chunk delay OK** - For disambiguation when multiple growable items appear
 3. **Property order varies** - Must track by path, not position
-4. **Objects only grow** - Properties never removed, strings only get longer
-5. **Only one string changes per chunk** - Confirmed by analysis of all test data
+4. **Objects only grow** - Properties never removed, values only get longer/deeper
+5. **Only one value changes per chunk** - Confirmed by analysis of all test data
 
 ## API Design
 
@@ -46,19 +46,19 @@ namespace Microsoft.Maui.Essentials.AI;
 public class JsonStreamChunker
 {
     /// <summary>
-    /// Process one complete JSON object and return streaming chunks.
-    /// May return 0 chunks (data pending), 1 chunk, or multiple chunks.
+    /// Process one complete JSON object and return a streaming chunk.
+    /// May return empty string (data pending) or a chunk to emit.
     /// </summary>
     /// <param name="completeJson">A complete, valid JSON object representing the current state.</param>
-    /// <returns>Zero or more chunks to emit.</returns>
-    public IEnumerable<string> Process(string completeJson);
+    /// <returns>A chunk to emit, or empty string if data is pending.</returns>
+    public string Process(string completeJson);
     
     /// <summary>
     /// Finalize processing and return any remaining output.
     /// Call this after all input has been processed.
     /// </summary>
-    /// <returns>Final chunks including closing brackets and any pending strings.</returns>
-    public IEnumerable<string> Flush();
+    /// <returns>Final chunk including closing brackets and any pending strings.</returns>
+    public string Flush();
 }
 ```
 
@@ -72,15 +72,17 @@ public async IAsyncEnumerable<string> ConvertToChunks(IAsyncEnumerable<string> c
     
     await foreach (var completeJson in completeJsonStream)
     {
-        foreach (var chunk in chunker.Process(completeJson))
+        var chunk = chunker.Process(completeJson);
+        if (!string.IsNullOrEmpty(chunk))
         {
             yield return chunk;
         }
     }
     
-    foreach (var chunk in chunker.Flush())
+    var finalChunk = chunker.Flush();
+    if (!string.IsNullOrEmpty(finalChunk))
     {
-        yield return chunk;
+        yield return finalChunk;
     }
 }
 
@@ -90,10 +92,10 @@ public async IAsyncEnumerable<string> ConvertToChunks(IAsyncEnumerable<string> c
 
 ### Behavior Contract
 
-1. **Process()** returns chunks that should be emitted immediately
-2. **Process()** may return empty enumerable if data is ambiguous (pending resolution)
+1. **Process()** returns a chunk that should be emitted immediately
+2. **Process()** may return empty string if data is ambiguous (pending resolution)
 3. **Flush()** must be called after all input to close any open structures
-4. Concatenating all chunks from all Process() + Flush() calls produces valid JSON
+4. Concatenating all non-empty chunks from all Process() + Flush() calls produces valid JSON
 5. The output JSON is structurally equivalent to the final input JSON (property order may differ)
 
 ---
@@ -106,13 +108,13 @@ Analysis of all 4 test JSONL files revealed:
 |---------|-----------|-------|
 | String grows | ~40-50 per file | Most common change type |
 | New string appears | ~39 per file | Often 1 at a time |
-| 2 new strings at once | 0-4 per file | Requires pending list |
-| Multiple strings change | 0 | Never happens - confirms assumption |
+| 2 new growable items at once | 0-4 per file | Requires pending list |
+| Multiple values change | 0 | Never happens - confirms assumption |
 | Empty array `[]` | Occasional | Gets populated in later chunk |
 | Empty object `{}` | Occasional | Gets populated in later chunk |
 | Non-string primitives | 0 in test data | All values are strings in these examples |
 
-**Key insight**: The "only one string changes per chunk" assumption holds in all test data.
+**Key insight**: The "only one value changes per chunk" assumption holds in all test data (where values include strings, arrays, and objects).
 
 ---
 
@@ -160,9 +162,16 @@ Current:  {"name": "Matthew", "age": 30}
 ```
 
 ### Rule 4: Pending Rule
-If 2+ new strings appear at the same parent level in the same chunk, add ALL to pending and wait for the next chunk to see which one changes.
+If 2+ new **growable** items appear at the same parent level in the same chunk, add them to pending and wait for the next chunk to see which one changes.
 
-**Example:**
+**Growable types:**
+- Strings: Can grow (characters appended)
+- Arrays: Can grow (items added)
+- Objects: Can grow (properties added)
+
+Numbers, bools, and null are NOT growable - they are always complete.
+
+**Example 1 - Multiple strings:**
 ```
 Previous: {"count": 5}
 Current:  {"count": 5, "a": "Hello", "b": "World"}
@@ -173,14 +182,34 @@ Current:  {"count": 5, "a": "Hello", "b": "World"}
 → Wait for next chunk to see which changes
 ```
 
+**Example 2 - String and array at same level:**
+```
+Previous: {"days": [{}]}
+Current:  {"days": [{"subtitle": "", "activities": []}]}
+
+1 new string (subtitle) + 1 new array (activities) at days[0] level
+Total: 2 growable items at same level - which one will grow?
+→ Add subtitle (string) to _pendingStrings
+→ Add activities (array) to _pendingContainers
+→ Emit NOTHING for either yet
+→ Wait for next chunk to see which changes:
+  - If subtitle value changes → subtitle is active, activities was complete
+  - If activities gets children → activities is active, subtitle was complete
+  - If both unchanged → both were complete
+```
+
 ---
 
 ## State Variables
 
 ```
-_prevState: Dictionary<string, JsonValue>
-  - Flattened path→value dictionary from last chunk
+_prevState: Dictionary<string, JsonValue>?
+  - Flattened path→value dictionary from last chunk (null on first call)
   - Used to detect what changed
+  - JsonValue is a record struct: (JsonValueKind Kind, string? StringValue, string? RawValue)
+  - Stores the Kind, StringValue (for strings), and RawValue (raw JSON for non-strings)
+  - IMPORTANT: Empty containers are stored as entries with JsonValueKind.Array or JsonValueKind.Object
+    (so we know they exist even with no children)
 
 _openStringPath: string?
   - Path of the currently open string (no closing quote emitted)
@@ -190,10 +219,16 @@ _openStringPath: string?
 _pendingStrings: Dictionary<string, string>
   - Map of path → value for strings we haven't emitted yet
   - Populated when:
-    - 2+ new strings appear at the SAME parent level (siblings)
-    - OR we already have an open string and encounter a new string at a different level
+    - 2+ new growable items (strings, arrays, objects) appear at the SAME parent level
+    - OR we already have an open value and encounter a new growable item
   - Resolved at start of next chunk by comparing values
-  - Note: pending strings may or may not be siblings
+  - Note: pending items may or may not be siblings (different nesting levels also go to pending)
+
+_pendingContainers: Dictionary<string, bool>
+  - Map of path → isArray for containers we haven't emitted yet
+  - Populated when 2+ new growable items appear at the same parent level
+  - Resolved at start of next chunk by checking if container grew (got children)
+  - Detection: count paths starting with container path in prev vs curr
 
 _emittedStrings: Dictionary<string, string>
   - Map of path → emitted value for strings we HAVE emitted
@@ -202,10 +237,12 @@ _emittedStrings: Dictionary<string, string>
 _openStructures: Stack<(string path, bool isArray)>
   - Stack of currently open containers
   - Used to properly close structures when moving to different parts of tree
+  - IMPORTANT: When emitting at a different level, close structures down to target path
 
 _emittedPaths: HashSet<string>
   - Tracks which paths have been emitted
   - Used to know when to emit commas (if sibling already emitted, prepend comma)
+  - IMPORTANT: Do NOT skip processing of existing array items just because path is in _emittedPaths
 ```
 
 ### Comma Rules
@@ -247,24 +284,28 @@ days[0].activities[0].title = "Game"
 ```
 For each chunk:
 
-1. FIRST CHUNK:
+1. FIRST CHUNK (special path - no previous state):
    - Parse and flatten JSON
-   - Process all containers depth-first (emit { or [ for each, no closing brackets)
-   - For each container (depth-first order), count its direct string children:
-     - If 0 strings at this level: continue
-     - If 1 string at this level AND no open string yet: emit open, set _openStringPath
-     - If 1 string at this level AND already have open string: add to pending
-     - If 2+ strings at this level: add ALL to pending
-   - Result: at most 1 open string, rest in pending
+   - Emit root structure opening "{"
+   - Process all containers depth-first via EmitStructure()
+   - For each container, count its direct GROWABLE children (strings, arrays, objects):
+     - If 0 growable values at this level: emit all non-growables (numbers, bools, null), continue to nested containers
+     - If 1 growable value at this level:
+       - If string: emit property open (no closing quote), set _openStringPath
+       - If container (array/object): emit opening bracket, push to _openStructures, recurse into children
+     - If 2+ growable values at this level:
+       - Add strings to _pendingStrings
+       - Add containers to _pendingContainers
+       - Emit NOTHING for these until next chunk resolves which is active
+   - Result: at most 1 open string, rest in pending or fully emitted
 
-2. SUBSEQUENT CHUNKS:
+2. SUBSEQUENT CHUNKS (compare with previous state):
    a. Step A - Handle open string (if _openStringPath is set):
       - Check for new siblings at same level
       - Check for new content at parent level
       - If new sibling OR parent-level change:
           → Emit extension (if value changed)
           → Emit closing quote
-          → Close containers as needed
           → Set _openStringPath = null
       - Else if value changed:
           → Emit extension
@@ -273,26 +314,35 @@ For each chunk:
           → Emit closing quote
           → Set _openStringPath = null
 
-   b. Step B - Resolve pending (if _pendingStrings not empty):
-      - Categorize: COMPLETE (unchanged) vs CHANGED
-      - Emit all COMPLETE first (with closing ")
-      - Emit the CHANGED one as open (if any) - becomes _openStringPath
-      - After setting active, check for new siblings → if found, close immediately
+   b. Step B - Resolve pending (if _pendingStrings or _pendingContainers not empty):
+      - For strings: Categorize as COMPLETE (unchanged) vs CHANGED
+      - For containers: Categorize as COMPLETE (no new children) vs CHANGED (got children)
+        - Detection: count paths with prefix in prev vs curr state
+      - Emit all COMPLETE items first (sorted by path for consistency):
+        - Strings: emit with closing quote
+        - Containers: emit opening AND closing brackets AND all content (they're complete)
+      - Emit the CHANGED one as open (if any):
+        - String: becomes _openStringPath
+        - Container: emit opening bracket, push to _openStructures, recurse into children
+      - After setting active string, check for new siblings → if found, close immediately
 
    c. Step C - Process new content:
-      - For each new path not in previous state:
-        - Non-strings → emit complete
-        - Objects/arrays → emit opening bracket, push to stack, process children
-        - Strings:
-          - Group by parent
-          - 1 new string at parent AND no open string: emit open, set _openStringPath
-          - 1 new string at parent AND have open string: add to pending
-          - 2+ new strings at parent: add ALL to pending
+      - For objects: iterate properties, categorize as existing vs new
+        - Existing non-strings: recurse into them
+        - New properties: categorize by growable type
+      - For arrays: iterate items, compare index to previous count
+        - Existing items: recurse into non-strings
+        - New items: emit via EmitNewArrayItem
+      - For new growable items:
+        - Count growables at same parent level
+        - If 1 growable AND no open value: emit open, set as active
+        - If 1 growable AND have open value: add to pending
+        - If 2+ growable: add ALL to pending, emit nothing
 
 3. FINALIZE (after last chunk):
-   - Emit any remaining pending strings (all complete with closing ")
+   - Emit any remaining pending items (all complete - sorted by path)
    - Close _openStringPath if set (emit closing ")
-   - Close all open structures (emit } or ] for each, in reverse order)
+   - Close all open structures (emit } or ] for each, in reverse order from stack)
 ```
 
 ---
@@ -396,37 +446,65 @@ Action:
 │                         STEP B: RESOLVE PENDING                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-IF _pendingStrings is not empty:
+IF _pendingStrings OR _pendingContainers is not empty:
     │
-    ├─► Categorize all pending strings:
-    │       For each (path, storedValue) in _pendingStrings:
-    │           currentValue = current[path]
-    │           IF currentValue == storedValue:
-    │               Add to COMPLETE list
-    │           ELSE:
-    │               Add to CHANGED list (should be exactly 0 or 1)
+    ├─► RESOLVE PENDING STRINGS:
+    │   │
+    │   ├─► Categorize all pending strings:
+    │   │       For each (path, storedValue) in _pendingStrings:
+    │   │           currentValue = current[path]
+    │   │           IF currentValue == storedValue:
+    │   │               Add to COMPLETE_STRINGS list
+    │   │           ELSE:
+    │   │               Add to CHANGED_STRINGS list (should be exactly 0 or 1)
+    │   │
+    │   ├─► FIRST: Emit all COMPLETE strings (with closing quotes):
+    │   │       For each in COMPLETE_STRINGS:
+    │   │           needsComma = any sibling already in _emittedPaths
+    │   │           Emit: [,]"path":"value"
+    │   │           Add path to _emittedPaths
+    │   │
+    │   └─► Clear _pendingStrings
     │
-    ├─► FIRST: Emit all COMPLETE strings (with closing quotes):
-    │       For each in COMPLETE:
-    │           needsComma = any sibling already in _emittedPaths
-    │           Emit: [,]"path":"value"
-    │           Add path to _emittedPaths
+    ├─► RESOLVE PENDING CONTAINERS:
+    │   │
+    │   ├─► Categorize all pending containers:
+    │   │       For each (path, isArray) in _pendingContainers:
+    │   │           previousChildCount = count of previous paths starting with this container
+    │   │           currentChildCount = count of current paths starting with this container
+    │   │           IF currentChildCount == previousChildCount:
+    │   │               Add to COMPLETE_CONTAINERS list (container didn't grow)
+    │   │           ELSE:
+    │   │               Add to CHANGED_CONTAINERS list (container got children)
+    │   │
+    │   ├─► Emit all COMPLETE containers (with opening AND closing brackets):
+    │   │       For each in COMPLETE_CONTAINERS:
+    │   │           needsComma = any sibling already in _emittedPaths
+    │   │           IF isArray: Emit: [,]"path":[]
+    │   │           ELSE: Emit: [,]"path":{}
+    │   │           Add path to _emittedPaths
+    │   │
+    │   └─► Clear _pendingContainers
     │
-    ├─► THEN: Emit the CHANGED string (if any) as open:
-    │       IF CHANGED has exactly 1:
+    ├─► EMIT THE CHANGED ITEM (at most 1 across strings and containers):
+    │       IF CHANGED_STRINGS has exactly 1:
     │           needsComma = any sibling already in _emittedPaths
     │           Emit: [,]"path":"value (no closing quote)
     │           Set _openStringPath = path
     │           Add path to _emittedPaths
     │           Update _emittedStrings[path] = currentValue
     │       
-    │       IF CHANGED has 0:
-    │           All were complete, no open string
+    │       IF CHANGED_CONTAINERS has exactly 1:
+    │           needsComma = any sibling already in _emittedPaths
+    │           IF isArray: Emit: [,]"path":[
+    │           ELSE: Emit: [,]"path":{
+    │           Push to _openStructures
+    │           Add path to _emittedPaths
+    │           → Recursively process children of this container
     │       
-    │       IF CHANGED has 2+:
-    │           ERROR: Violates "only one string changes per chunk" assumption
-    │
-    ├─► Clear _pendingStrings
+    │       IF total CHANGED has 2+:
+    │           This should never happen per "only one value changes per chunk" invariant
+    │           Log warning and treat all as complete
     │
     └─► IF _openStringPath was just set:
             Check for new siblings at same level (in current, not in previous)
@@ -482,51 +560,55 @@ Output: "type":"Sightseeing","title":"Morning Game Drive"
 
 For each new path in current that wasn't in previous:
     │
-    ├─► IF value is non-string (number, bool, null):
+    ├─► IF value is NON-GROWABLE (number, bool, null):
     │       needsComma = any sibling already in _emittedPaths
     │       Emit complete: [,]"path":value
     │       Add path to _emittedPaths
     │
-    ├─► IF value is object or array:
-    │       needsComma = any sibling already in _emittedPaths
-    │       Emit opening: [,]{ or [,][
-    │       Push to _openStructures
-    │       Add path to _emittedPaths
-    │       Recursively process children
-    │
-    └─► IF value is string:
-            Group all new strings BY PARENT (siblings only):
+    └─► IF value is GROWABLE (string, object, array):
+            Group all new GROWABLE items BY PARENT (siblings only):
             │
-            ├─► For each parent with new strings:
-            │       Count new strings at this parent
+            ├─► For each parent with new growable items:
+            │       Count new growable items at this parent
             │       │
-            │       ├─► IF 1 new string at this parent:
-            │       │       IF _openStringPath is null:
-            │       │           needsComma = any sibling in _emittedPaths
-            │       │           Emit open: [,]"path":"value
-            │       │           Set _openStringPath = path
-            │       │           Add to _emittedPaths
-            │       │           Update _emittedStrings[path] = value
-            │       │       ELSE:
-            │       │           We already have an open string at different level
-            │       │           Add to _pendingStrings (wait for next chunk)
+            │       ├─► IF 1 new growable item at this parent:
+            │       │       IF no open value (_openStringPath is null AND no pending):
+            │       │           │
+            │       │           ├─► IF string:
+            │       │           │       needsComma = any sibling in _emittedPaths
+            │       │           │       Emit open: [,]"path":"value  (no closing quote)
+            │       │           │       Set _openStringPath = path
+            │       │           │       Add to _emittedPaths
+            │       │           │       Update _emittedStrings[path] = value
+            │       │           │
+            │       │           └─► IF object or array:
+            │       │                   needsComma = any sibling in _emittedPaths
+            │       │                   Emit opening: [,]"path":{ or [,]"path":[
+            │       │                   Push to _openStructures
+            │       │                   Add path to _emittedPaths
+            │       │                   Recursively process children
+            │       │       
+            │       │       ELSE (already have open value):
+            │       │           IF string: Add to _pendingStrings (wait for next chunk)
+            │       │           IF container: Add to _pendingContainers (wait for next chunk)
             │       │
-            │       └─► IF 2+ new strings at this parent:
-            │               Add ALL to _pendingStrings
-            │               (Will resolve in next chunk)
-            │               Do NOT emit string values
-            │               Do NOT set _openStringPath
+            │       └─► IF 2+ new growable items at this parent:
+            │               For each growable item:
+            │                   IF string: Add to _pendingStrings
+            │                   IF container: Add to _pendingContainers
+            │               Do NOT emit values for these
+            │               (Will resolve in next chunk to see which one changes)
 ```
 
-**Note**: We count new strings per parent level, not globally. If we get:
+**Note**: We count new growable items per parent level, not globally. If we get:
 ```json
 {"a": {"x": "hello"}, "b": "world"}
 ```
-- `a.x` has 1 new string at parent `a`
-- `b` has 1 new string at parent root
+- `a.x` has 1 new growable item at parent `a`
+- `b` has 1 new growable item at parent root
 - These are NOT siblings, so each is handled separately
-- First one encountered becomes _openStringPath
-- Second goes to pending (can only have one open string)
+- First one encountered becomes the open value
+- Second goes to pending (can only have one open value at a time)
 
 **Example - 1 new string (Line 7):**
 ```
@@ -852,6 +934,64 @@ Line 3: "activities": [{"title": ""}]
 - When items appear → emit them normally
 - Closing brackets emitted when moving to sibling/parent or at finalize
 
+**Note on flattening**: Empty containers ARE stored in the flattened state dictionary
+with their JsonValueKind (Array or Object). This allows us to:
+1. Know the container exists even with no children
+2. Detect when children are added (container grew)
+
+### Nested container changes propagate up
+
+Containers (arrays and objects) can have nested children that grow. When determining if a container is "changing", we must check ALL descendants, not just direct children.
+
+**The Rule**: A container is "still active/growing" if ANY descendant path changes.
+
+**Example - Nested array with growing string:**
+```
+Previous: {"items": [{"name": "Jo"}]}
+Current:  {"items": [{"name": "John"}]}
+```
+- `items` is an array containing an object
+- The object contains a string `name` that grew ("Jo" → "John")
+- Even though `items[0]` exists in both, the string inside changed
+- Therefore `items` (the array) is still "active" - don't close it
+
+**Example - Deep nesting:**
+```
+Previous: {"root": {"level1": {"level2": {"value": "He"}}}}
+Current:  {"root": {"level1": {"level2": {"value": "Hello"}}}}
+```
+- `value` is the actual string that changed
+- But `level2`, `level1`, and `root` are ALL still active because a descendant changed
+- None of these containers should be closed
+
+**Detection Algorithm:**
+When checking if a container at path P is "complete" vs "still active":
+1. Find all current paths that START WITH P (all descendants)
+2. Find all previous paths that START WITH P
+3. If ANY descendant value changed → container is still active
+4. Only if ALL descendants are unchanged → container is complete
+
+**Why this matters for pending:**
+When we have pending containers (e.g., a string and an array both appeared):
+```
+Previous: {"days": [{}]}
+Current:  {"days": [{"subtitle": "", "activities": []}]}
+```
+- `subtitle` (string) and `activities` (array) are both pending
+- Next chunk:
+  ```
+  Current:  {"days": [{"subtitle": "Day 1", "activities": []}]}
+  ```
+- `subtitle` changed ("" → "Day 1") → subtitle is the active one
+- `activities` has no new children → activities is complete
+- BUT if instead:
+  ```
+  Current:  {"days": [{"subtitle": "", "activities": [{"type": ""}]}]}
+  ```
+- `subtitle` unchanged ("" → "")
+- `activities` now has children → activities is the active one
+- The array "grew" even though `activities` itself didn't change - its DESCENDANTS did
+
 ### Array grows by new item
 ```
 Line 5: activities has 1 item
@@ -877,7 +1017,7 @@ Current:  {"count": 5, "a": {"x": "hello"}, "b": "world"}
 - We can only have ONE open string at a time
 - First encountered (e.g., `a.x`) becomes _openStringPath
 - Second (`b`) goes to pending even though it's alone at its level
-- Next chunk resolves: whichever changed is active
+- Next chunk resolves: whichever changed is active (per invariant, at most one changes)
 
 ### All pending strings complete (none changed)
 ```
@@ -935,20 +1075,86 @@ Example: If open string is at `days[0].activities[0].description`:
 
 ## Key Invariants
 
-1. **At most ONE string is open** at any time (never two)
-2. **Pending strings are NEVER emitted** until resolved in next chunk
+1. **At most ONE growable value is open** at any time (never two)
+2. **Pending items (strings and containers) are NEVER emitted** until resolved in next chunk
 3. **Extension = current[emitted.Length..]** - strings only grow, never shrink
 4. **Order: Step A (open) → Step B (pending) → Step C (new)** - always this order
-5. **2+ new strings at same parent = pending** - never guess which is active
+5. **2+ new growable items at same parent = pending** - never guess which is active
 6. **New sibling = complete** - AI moved on horizontally
 7. **Parent-level change = complete** - AI moved on vertically
 8. **Track by path, not position** - property order doesn't matter
 9. **Containers stay open** until sibling/parent change or finalize
 10. **Empty containers are valid** - `{}` and `[]` can get populated later
 11. **Comma before sibling** - check _emittedPaths to know if comma needed
-12. **At most ONE string changes per chunk** - if Step B finds 2+ changed, that's an error
+12. **At most ONE value changes per chunk** - if Step B finds 2+ changed (strings or containers), that's an error
+13. **Growable types: strings, arrays, objects** - all can grow and need pending logic
+14. **Non-growable types: numbers, bools, null** - always complete immediately
+15. **Nested changes propagate up** - if ANY descendant of a container changes, the container is still active
+16. **Complete containers emit all content** - when a pending container is resolved as complete, emit its full content (opening bracket, all children recursively, closing bracket)
+17. **Structure closing is level-aware** - use `CloseStructuresDownTo` to close structures when emitting at a different tree level
 
 ---
+
+## Structure Management
+
+### CloseStructuresDownTo Algorithm
+
+When we need to emit content at a different level in the JSON tree, we must first close any open structures that are not ancestors of the target path.
+
+```
+CloseStructuresDownTo(targetPath):
+    while _openStructures is not empty:
+        (topPath, isArray) = peek top of stack
+        
+        // Check if targetPath is at or inside topPath
+        isPrefix = targetPath.startsWith(topPath) AND
+                   (lengths equal OR next char is '.' or '[')
+        
+        if topPath is root ("") OR isPrefix:
+            break  // Don't close - we're inside this structure
+        
+        pop from stack
+        emit ']' if isArray else '}'
+```
+
+**Example:**
+```
+_openStructures = [("", false), ("days", true), ("days[0]", false), ("days[0].activities", true)]
+
+We want to emit at "days[1]" (new array item in days)
+
+1. Check "days[0].activities" - "days[1]" doesn't start with this → close with ']'
+2. Check "days[0]" - "days[1]" doesn't start with this → close with '}'  
+3. Check "days" - "days[1]" DOES start with "days" → stop
+
+Result: emitted "]}" and stack is now [("", false), ("days", true)]
+```
+
+### When Structure Closing Happens
+
+1. **Before emitting a new property** - `EmitNewProperty` calls `CloseStructuresDownTo(parentPath)`
+2. **Before emitting a pending string** - `EmitPendingString` calls `CloseStructuresDownTo(parentPath)`
+3. **Before emitting a new array item** - `EmitNewArrayItem` calls `CloseStructuresDownTo(arrayPath)`
+
+This ensures we're always at the correct nesting level before emitting new content.
+
+---
+
+## First Chunk vs Subsequent Chunk
+
+The implementation handles the first chunk differently from subsequent chunks:
+
+### First Chunk (ProcessFirstChunk)
+- No previous state to compare against
+- Uses `EmitStructure` to recursively process the JSON tree
+- Counts growables at each level to decide open vs pending
+- Emits structure (brackets) and handles string ambiguity
+
+### Subsequent Chunks (ProcessSubsequentChunk)
+- Has previous state for comparison
+- Follows the Step A → Step B → Step C order
+- Uses `ProcessNewContent` to find and emit new properties/items
+- Can detect siblings and parent-level changes
 
 ## Critical Rules Checklist
 

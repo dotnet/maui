@@ -144,5 +144,75 @@ public partial class JsonStreamChunkerTests
 			Assert.Equal("Sightseeing", activity.GetProperty("type").GetString());
 			Assert.Equal("Game Drive", activity.GetProperty("title").GetString());
 		}
+
+		[Fact]
+		public void Process_StringAndArrayAtSameLevel_BothHandledCorrectly()
+		{
+			// When a string and an array appear at the same level, both are "growable"
+			// We need to handle this without knowing which will change
+			var chunker = new JsonStreamChunker();
+			
+			var chunks = new List<string>();
+			// First: empty object in days array
+			chunks.Add(chunker.Process("""{"days": [{}]}"""));
+			// Second: subtitle (string) and activities (array) both appear at days[0] level
+			chunks.Add(chunker.Process("""{"days": [{"subtitle": "", "activities": []}]}"""));
+			// Third: subtitle grows, activities still empty
+			chunks.Add(chunker.Process("""{"days": [{"subtitle": "Day 1", "activities": []}]}"""));
+			chunks.Add(chunker.Flush());
+
+			var concatenated = string.Concat(chunks);
+			
+			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
+			var doc = JsonDocument.Parse(concatenated);
+			var day = doc.RootElement.GetProperty("days")[0];
+			Assert.Equal("Day 1", day.GetProperty("subtitle").GetString());
+			Assert.True(day.TryGetProperty("activities", out var activities), "activities property should exist");
+			Assert.Equal(0, activities.GetArrayLength());
+		}
+
+		[Fact]
+		public void Process_StringAndArrayAppearTogether_ArrayGrows()
+		{
+			// Opposite case: array is the one that grows
+			var chunker = new JsonStreamChunker();
+			
+			var chunks = new List<string>();
+			chunks.Add(chunker.Process("""{"days": [{}]}"""));
+			chunks.Add(chunker.Process("""{"days": [{"subtitle": "", "activities": []}]}"""));
+			// Array grows while string stays empty
+			chunks.Add(chunker.Process("""{"days": [{"subtitle": "", "activities": [{"type": ""}]}]}"""));
+			chunks.Add(chunker.Flush());
+
+			var concatenated = string.Concat(chunks);
+			
+			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
+			var doc = JsonDocument.Parse(concatenated);
+			var day = doc.RootElement.GetProperty("days")[0];
+			Assert.Equal("", day.GetProperty("subtitle").GetString());
+			var activities = day.GetProperty("activities");
+			Assert.Equal(1, activities.GetArrayLength());
+		}
+
+		[Fact]
+		public void Process_MultipleGrowableTypes_AllHandled()
+		{
+			// Multiple growable types: string, array, object
+			var chunker = new JsonStreamChunker();
+			
+			var chunks = new List<string>();
+			chunks.Add(chunker.Process("""{"title": "", "items": [], "meta": {}}"""));
+			// String grows
+			chunks.Add(chunker.Process("""{"title": "Hello", "items": [], "meta": {}}"""));
+			chunks.Add(chunker.Flush());
+
+			var concatenated = string.Concat(chunks);
+			
+			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
+			var doc = JsonDocument.Parse(concatenated);
+			Assert.Equal("Hello", doc.RootElement.GetProperty("title").GetString());
+			Assert.Equal(0, doc.RootElement.GetProperty("items").GetArrayLength());
+			Assert.Equal(JsonValueKind.Object, doc.RootElement.GetProperty("meta").ValueKind);
+		}
 	}
 }
