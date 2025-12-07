@@ -56,29 +56,21 @@ internal static class SafeAreaExtensions
 
 		if (safeAreaView2 is not null)
 		{
-			// Check if this view is inside a container that ignores safe area (ListView, TableView, ViewCell)
+			// Check if this view is inside a container that ignores safe area (ListView, TableView)
 			// These containers manage their own layout and should NOT have safe area insets applied to their CONTENT
 			bool isInsideSafeAreaIgnoredContainer = false;
 			if (safeAreaView2 is IView mauiView)
 			{
-				var parent = mauiView.Parent;
-				if (parent is ISafeAreaIgnoredContainer)
+				// Walk up the parent hierarchy to check if any ancestor is a safe-area-ignored container
+				var ancestor = mauiView.Parent as IView;
+				while (ancestor != null)
 				{
-					isInsideSafeAreaIgnoredContainer = true;
-				}
-				else
-				{
-					// Also check if any ancestor is a safe-area-ignored container
-					var ancestor = parent as IView;
-					while (ancestor != null)
+					if (ancestor is ISafeAreaIgnoredContainer)
 					{
-						if (ancestor is ISafeAreaIgnoredContainer)
-						{
-							isInsideSafeAreaIgnoredContainer = true;
-							break;
-						}
-						ancestor = ancestor.Parent as IView;
+						isInsideSafeAreaIgnoredContainer = true;
+						break;
 					}
+					ancestor = ancestor.Parent as IView;
 				}
 			}
 
