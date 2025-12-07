@@ -8,6 +8,7 @@ public class Issue1028 : TestContentPage
 	// Issue1028, ViewCell with StackLayout causes exception when nested in a table section. This occurs when the app's root page is a ContentPage with a TableView.
 	protected override void Init()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = new TableView
 		{
 			Root = new TableRoot("Table Title") {

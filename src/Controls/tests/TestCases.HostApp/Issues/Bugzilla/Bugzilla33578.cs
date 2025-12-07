@@ -6,6 +6,7 @@ public class Bugzilla33578 : TestContentPage
 {
 	protected override void Init()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = new TableView
 		{
 			AutomationId = "table",
