@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> containing a developer-defined <see cref="Microsoft.Maui.Controls.View"/>.</summary>
 	[Obsolete("The controls which use ViewCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	[ContentProperty("View")]
-	public class ViewCell : Cell, ISafeAreaIgnoredContainer
+	public class ViewCell : Cell
 	{
 		View _view;
 
