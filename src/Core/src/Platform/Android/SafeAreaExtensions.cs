@@ -58,7 +58,7 @@ internal static class SafeAreaExtensions
 		{
 			// Check if this view is inside a container that ignores safe area (ListView, TableView, ViewCell)
 			// These containers manage their own layout and should NOT have safe area insets applied
-			if (safeAreaView2 is IView view && IsInsideSafeAreaIgnoredContainer(view))
+			if (safeAreaView2 is IView mauiView && IsInsideSafeAreaIgnoredContainer(mauiView))
 			{
 				// Don't apply safe area insets for views inside these containers
 				return windowInsets;
