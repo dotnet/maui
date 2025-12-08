@@ -12,7 +12,7 @@ trigger:
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/*
+    - .github/**
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT
@@ -31,7 +31,7 @@ pr:
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/*
+    - .github/**
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT

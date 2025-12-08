@@ -12,7 +12,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
