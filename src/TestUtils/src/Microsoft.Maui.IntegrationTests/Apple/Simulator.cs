@@ -39,6 +39,9 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 				if (exitCode == 0)
 					return true;
 
+				// Print diagnostic output to help troubleshoot boot issues
+				TestContext.WriteLine($"Simulator not ready yet: {output}");
+
 				// Wait a bit before checking again
 				System.Threading.Thread.Sleep(2000);
 			}
