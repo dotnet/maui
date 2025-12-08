@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,33 +15,32 @@ public partial class Maui27202 : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
-			Application.Current = new MockApplication();
+			Application.SetCurrentApplication(new MockApplication());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			Application.Current = null;
 		}
 
-		[Test]
-		public void DerivedStylesInheritVisualStateManager([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DerivedStylesInheritVisualStateManager(XamlInflator inflator)
 		{
 			var page = new Maui27202(inflator);
 
 			// Verify styles are applied
-			Assert.That(page.EnabledLabel1.TextColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page.EnabledLabel1.TextColor);
 			
 			// Verify VSG exists
 			var groups = VisualStateManager.GetVisualStateGroups(page.DisabledLabel1);
-			Assert.That(groups, Is.Not.Null);
-			Assert.That(groups.Count, Is.GreaterThan(0));
+			Assert.NotNull(groups);
+			Assert.True(groups.Count > 0);
 			
 			// Check if GoToState succeeds
 			var gotoResult = VisualStateManager.GoToState(page.DisabledLabel1, "Disabled");
@@ -51,9 +50,8 @@ public partial class Maui27202 : ContentPage
 			Console.WriteLine($"TextColor after GoToState: {page.DisabledLabel1.TextColor}");
 			Console.WriteLine($"Expected: Gray ({Colors.Gray})");
 			
-			Assert.That(gotoResult, Is.True, "GoToState should succeed");
-			Assert.That(page.DisabledLabel1.TextColor, Is.EqualTo(Colors.Gray),
-				"VSM Disabled state should override derived style TextColor");
+			Assert.True(gotoResult, "GoToState should succeed");
+			Assert.Equal(Colors.Gray, page.DisabledLabel1.TextColor);
 		}
 	}
 }
