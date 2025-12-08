@@ -1,37 +1,27 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui18103 : ContentPage
 {
-
 	public Maui18103() => InitializeComponent();
 
-	public Maui18103(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
+		public Test() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-	[TestFixture]
-	class Test
-	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void VSMOverride([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void VSMOverride(XamlInflator inflator)
 		{
-			var page = new Maui18103(useCompiledXaml);
-			Assert.That(page.button.Background, Is.EqualTo(new SolidColorBrush(Colors.Orange)));
+			var page = new Maui18103(inflator);
+			Assert.Equal(new SolidColorBrush(Colors.Orange), page.button.Background);
 		}
 	}
 }

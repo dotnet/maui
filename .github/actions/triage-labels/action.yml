@@ -1,0 +1,105 @@
+name: 'Flexible Triage Labels Action'
+description: 'Process issues and apply labels using AI inference, supporting multiple triage modes.'
+
+inputs:
+  token:
+    description: 'GitHub token to use for authentication'
+    required: false
+    default: ${{ github.token }}
+  issue:
+    description: 'The issue to triage'
+    required: true
+  mode:
+    description: 'Triage mode: multi-label, single-label, regression, missing-info'
+    required: true
+    default: 'multi-label'
+  label-prefix:
+    description: 'Prefix for label search (e.g., platform/, area-, etc.)'
+    required: false
+    default: ''
+  label:
+    description: 'The label to apply to an issue'
+    required: false
+    default: ''
+
+outputs:
+  response-file:
+    description: 'The file that contains the labels to apply to the issue'
+    value: ${{ steps.triage-ai.outputs.response }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Setup working directory
+      id: setup
+      uses: ./.github/actions/triage-setup
+      with:
+        token: ${{ inputs.token }}
+
+    - name: Fetch issue data
+      id: issue-data
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issueNumber = '${{ inputs.issue }}' || github.event.issue.number;
+          const issue = await github.rest.issues.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issueNumber
+          });
+
+          const data = issue.data;
+          const json = JSON.stringify(data, null, 2);
+
+          const fs = require('fs');
+          fs.writeFileSync("${{ steps.setup.outputs.work-dir }}/issue.json", json);
+
+          return data;
+
+    - name: Select system prompt template
+      id: select-system-prompt
+      shell: pwsh
+      run: |
+        "Select system prompt template"
+        echo "::group::Select system prompt template"
+        $mode = "${{ inputs.mode }}"
+        switch ($mode) {
+          "multi-label"   { $template = "${{ github.action_path }}/system-prompt-multilabel.md" }
+          "single-label"  { $template = "${{ github.action_path }}/system-prompt-singlelabel.md" }
+          "regression"    { $template = "${{ github.action_path }}/system-prompt-regression.md" }
+          "missing-info"  { $template = "${{ github.action_path }}/system-prompt-missinginfo.md" }
+          default         { throw "Unknown mode: $mode" }
+        }
+        "Using system prompt template: $template"
+        "system-prompt-template=$template" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Create System prompt file
+      id: create-system-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        label-prefix: ${{ inputs.label-prefix }}
+        label: ${{ inputs.label }}
+        template: ${{ steps.select-system-prompt.outputs.system-prompt-template }}
+        output: ${{ steps.setup.outputs.work-dir }}/system-prompt.md
+
+    - name: Create User prompt file
+      id: create-user-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        label-prefix: ${{ inputs.label-prefix }}
+        label: ${{ inputs.label }}
+        template: ${{ github.action_path }}/user-prompt.md
+        output: ${{ steps.setup.outputs.work-dir }}/user-prompt.md
+
+    - name: Run Triage AI Action
+      id: triage-ai
+      uses: ./.github/actions/triage-ai
+      with:
+        system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
+        prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
+        token: ${{ inputs.token }}
+        response-file: "${{ steps.setup.outputs.responses-dir }}/response-${{ steps.setup.outputs.work-id }}.json"

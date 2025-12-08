@@ -63,11 +63,6 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         shadowInvalidated = true;
     }
 
-    @Deprecated
-    protected final void setHasShadow(boolean hasShadow) {
-        // TODO: remove this method in .NET10
-    }
-
     protected final void updateShadow(int paintType, float radius, float offsetX, float offsetY, int[] colors, float[] positions, float[] bounds) {
         this.paintType = paintType;
         this.radius = radius;

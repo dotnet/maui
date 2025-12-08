@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -99,11 +98,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateMoreCellsEnabled();
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
+				return;
+
+			foreach (var item in TabBar.Items)
+			{
+				item.Image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, item.Image);
+			}
+		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
 
 			_appearanceTracker?.UpdateLayout(this);
+			UpdateNavBarHidden();
 		}
 
 		public override void ViewDidLoad()
@@ -114,7 +125,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				bool accept = true;
 				var r = RendererForViewController(viewController);
-				if (r != null)
+				if (r is not null)
 					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
 
 				return accept;
@@ -433,13 +444,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillLayoutSubviews();
 		}
 
+		void UpdateNavBarHidden()
+		{
+			if (SelectedViewController is UINavigationController navigationController && _displayedPage is not null)
+			{
+				navigationController.SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
+			}
+		}
+
 		void UpdateTabBarHidden()
 		{
 			if (ShellItemController == null)
 				return;
 
-			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
+#if MACCATALYST
+				if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
+				{
+					// Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar 
+					// which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
+					// This is a side effect of TabSidebar mode when there's no sidebar to show.
+
+					// Explicitly set Alpha and Hidden to override this incorrect system behavior.
+					TabBar.Alpha = 1.0f;
+					TabBar.Hidden = !ShellItemController.ShowTabs;
+				}
+#endif
+
+				if (TabBarHidden == !ShellItemController.ShowTabs)
+				{
+					return;
+				}
+
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}
 			else

@@ -1,46 +1,40 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class BuiltInConversions : ContentPage
 {
-	public partial class BuiltInConversions : ContentPage
+	public BuiltInConversions() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		public BuiltInConversions()
+		public Tests() => Application.Current = new MockApplication();
+		public void Dispose() => Application.Current = null;
+
+		[Theory]
+		[XamlInflatorData]
+		internal void Datetime(XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new BuiltInConversions(inflator);
+
+			Assert.Equal(new DateTime(2015, 01, 16), layout.datetime0.Date);
+			Assert.Equal(new DateTime(2015, 01, 16), layout.datetime1.Date);
 		}
 
-		public BuiltInConversions(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void String(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var layout = new BuiltInConversions(inflator);
 
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Datetime(bool useCompiledXaml)
-			{
-				var layout = new BuiltInConversions(useCompiledXaml);
+			Assert.Equal("foobar", layout.label0.Text);
+			Assert.Equal("foobar", layout.label1.Text);
 
-				Assert.AreEqual(new DateTime(2015, 01, 16), layout.datetime0.Date);
-				Assert.AreEqual(new DateTime(2015, 01, 16), layout.datetime1.Date);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void String(bool useCompiledXaml)
-			{
-				var layout = new BuiltInConversions(useCompiledXaml);
-
-				Assert.AreEqual("foobar", layout.label0.Text);
-				Assert.AreEqual("foobar", layout.label1.Text);
-
-				//Issue #2122, implicit content property not trimmed
-				Assert.AreEqual("foobar", layout.label2.Text);
-			}
+			//Issue #2122, implicit content property not trimmed
+			Assert.Equal("foobar", layout.label2.Text);
 		}
 	}
 }

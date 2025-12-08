@@ -1,8 +1,8 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "./uitests-shared.cake"
 
-const string DefaultVersion = "18.0";
-const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
+const string DefaultVersion = "18.4";
+const string DefaultTestDevice = $"ios-simulator-64";
 
 // Required arguments
 string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj";
@@ -20,6 +20,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -117,7 +118,7 @@ Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
-		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath, headless);
 	});
 
 Task("uitest")
@@ -146,7 +147,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		ArgumentCustomization = args =>
 		{
 			args
-				.Append("/p:BuildIpa=true")
+				.Append("/p:CodesignRequireProvisioningProfile=false")
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
@@ -171,50 +172,45 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
 	}
 
+	// Use longer launch timeout for CI builds to handle problematic conditions
+	var launchTimeout = IsCIBuild() ? "00:10:00" : "00:06:00";
+	Information($"Using launch timeout: {launchTimeout} (CI: {IsCIBuild()})");
+
 	Information($"Testing App: {testApp}");
 
-	var settings = new DotNetToolSettings
+	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
 	{
-		ToolPath = toolPath,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args =>
+		return new DotNetToolSettings
 		{
-			args.Append("run xharness apple test " +
-				$"--app=\"{testApp}\" " +
-				$"--targets=\"{device}\" " +
-				$"--output-directory=\"{resultsDir}\" " +
-				$"--timeout=01:15:00 " +
-				$"--launch-timeout=00:06:00 " +
-				xcode_args +
-				$"--verbosity=\"Debug\" ");
-
-			if (device.Contains("device"))
+			ToolPath = toolPath,
+			DiagnosticOutput = true,
+			ArgumentCustomization = args =>
 			{
-				if (string.IsNullOrEmpty(DEVICE_UDID))
-				{
-					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
-				}
-				args.Append($"--device=\"{DEVICE_UDID}\" ");
-			}
-			return args;
-		}
-	};
+				args.Append("run xharness apple test " +
+					$"--app=\"{testApp}\" " +
+					$"--targets=\"{device}\" " +
+					$"--output-directory=\"{resultsDir}\" " +
+					$"--timeout=01:15:00 " +
+					$"--launch-timeout={launchTimeout} " +
+					xcode_args +
+					$"--verbosity=\"Debug\" " +
+					$"--set-env=\"TestFilter={category}\" ");
 
-	bool testsFailed = true;
-	try
-	{
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	}
-	finally
-	{
-		HandleTestResults(resultsDir, testsFailed, true);
-	}
-	
-	Information("Testing completed.");
+				if (device.Contains("device"))
+				{
+					if (string.IsNullOrEmpty(DEVICE_UDID))
+					{
+						throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+					}
+					args.Append($"--device=\"{DEVICE_UDID}\" ");
+				}
+				return args;
+			}
+		};
+	});
 }
 
-void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
+void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, bool headless)
 {
 	Information("Preparing UI Tests...");
 	Information($"Testing Device: {device}");
@@ -230,7 +226,7 @@ void ExecutePrepareUITests(string project, string app, string device, string res
 		throw new Exception("UI Test application path not specified.");
 	}
 
-	InstallIpa(testApp, "", device, resultsDir, ver, toolPath);
+	InstallIpa(testApp, "", device, resultsDir, ver, toolPath, headless);
 }
 
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
@@ -385,7 +381,7 @@ string GetDefaultRuntimeIdentifier(string testDeviceIdentifier)
    : $"ios-arm64";
 }
 
-void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath)
+void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath, bool headless)
 {
 	Information("Install with xharness: {0} testDevice:{1}", testApp, testDevice);
 	var settings = new DotNetToolSettings
@@ -456,6 +452,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
+        SetEnvironmentVariable("HEADLESS", headless.ToString());
 	}
 }
 

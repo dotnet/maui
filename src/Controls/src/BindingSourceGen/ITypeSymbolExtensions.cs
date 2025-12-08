@@ -2,9 +2,9 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
-internal static class ITypeSymbolExtensions
+public static class ITypeSymbolExtensions
 {
-	internal static bool IsTypeNullable(this ITypeSymbol typeInfo, bool enabledNullable)
+	public static bool IsTypeNullable(this ITypeSymbol typeInfo, bool enabledNullable)
 	{
 		if (!enabledNullable && typeInfo.IsReferenceType)
 		{
@@ -14,7 +14,7 @@ internal static class ITypeSymbolExtensions
 		return typeInfo.IsNullableValueType() || typeInfo.IsNullableReferenceType();
 	}
 
-	internal static TypeDescription CreateTypeDescription(this ITypeSymbol typeSymbol, bool enabledNullable)
+	public static TypeDescription CreateTypeDescription(this ITypeSymbol typeSymbol, bool enabledNullable)
 	{
 		var isNullable = IsTypeNullable(typeSymbol, enabledNullable);
 		return new TypeDescription(

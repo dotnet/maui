@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 			catch (Exception ex)
 			{
-				await DisplayAlert("EXCEPTION", ex.Message, "OK");
+				await DisplayAlertAsync("EXCEPTION", ex.Message, "OK");
 			}
 		}
 
@@ -41,7 +41,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 			catch (Exception ex)
 			{
-				await DisplayAlert("EXCEPTION", ex.Message, "OK");
+				await DisplayAlertAsync("EXCEPTION", ex.Message, "OK");
 			}
 		}
 

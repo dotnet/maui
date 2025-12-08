@@ -9,7 +9,13 @@
         "netstandard",
         "Appium",
         "XCUI",
-        "Automator"
+        "Automator",
+        "cgmanifest",
+        "Namescopes",
+        "sourcegen",
+        "Tizen",
+        "darc",
+        "Darc"
     ],
     "ignoreWords": [],
     "patterns": [

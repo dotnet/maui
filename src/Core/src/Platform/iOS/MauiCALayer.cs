@@ -386,7 +386,8 @@ namespace Microsoft.Maui.Platform
 					for (int index = 0; index < gradientPaint.GradientStops.Length; index++)
 					{
 						Graphics.Color color = gradientPaint.GradientStops[index].Color;
-						colors[index] = new CGColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						var uiColor = new UIColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						colors[index] = uiColor.CGColor;
 						locations[index] = new nfloat(gradientPaint.GradientStops[index].Offset);
 					}
 
@@ -417,7 +418,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsBorderDashed()
 		{
-			return _strokeDash != null && _strokeDashOffset > 0;
+			return _strokeDash != null;
 		}
 	}
 }

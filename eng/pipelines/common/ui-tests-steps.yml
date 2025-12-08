@@ -6,180 +6,185 @@ parameters:
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
-  configuration : "Release"
-  runtimeVariant : "Mono"
+  configuration: "Release"
+  runtimeVariant: "Mono"
   testFilter: ''
+  headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
-  - task: DownloadPipelineArtifact@2
-    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
-    inputs:
-      artifact: ui-tests-samples
-  
-  - task: DownloadPipelineArtifact@2
-    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
-    inputs:
-      artifact: ui-tests-samples-nativeaot
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
+  inputs:
+    artifact: ui-tests-samples
 
-  - task: DownloadPipelineArtifact@2
-    condition: eq('${{ parameters.platform }}' , 'windows')
-    inputs:
-      artifact: ui-tests-samples-windows
-  
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-      displayName: 'Clean bot'
-      continueOnError: true
-      timeoutInMinutes: 60
-  
-  # Enable KVM for Android builds on Linux
-  - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
-    - bash: |
-        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-        sudo udevadm control --reload-rules
-        sudo udevadm trigger --name-match=kvm
-      displayName: Enable KVM
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))      
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
+  inputs:
+    artifact: ui-tests-samples-nativeaot
 
-  - ${{ if eq(parameters.platform, 'catalyst')}}:
-        - bash: |
-              chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
-              $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
-          displayName: 'Disable Notification Center'
-          continueOnError: true
-          timeoutInMinutes: 60
-          
-  - template: provision.yml
-    parameters:
-      skipProvisioning:  true
-      skipJdk: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidPlatformApis: true
-      onlyAndroidPlatformDefaultApis: true
-      skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidCreateAvds: true
-      androidEmulatorApiLevel: ${{ parameters.version }}
-      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if parameters.skipProvisioning }}:
-        skipProvisionator: true
-      ${{ else }}:  
-        skipProvisionator: false
-        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
+  inputs:
+    artifact: ui-tests-samples-coreclr
 
-  - task: PowerShell@2
-    condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
-    inputs:
-      targetType: 'inline'
-      script: |
-        defaults write -g NSAutomaticCapitalizationEnabled -bool false
-        defaults write -g NSAutomaticTextCompletionEnabled -bool false
-        defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
-    displayName: "Modify defaults"
-    continueOnError: true
-  
-  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
-    displayName: 'Install .NET'
-    retryCountOnTaskFailure: 2
-    env:
-      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
+- task: DownloadPipelineArtifact@2
+  condition: eq('${{ parameters.platform }}' , 'windows')
+  inputs:
+    artifact: ui-tests-samples-windows
 
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: 'Add .NET to PATH'
-
-  # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
-  - task: ScreenResolutionUtility@1
-    condition: eq('${{ parameters.platform }}' , 'windows')
-    inputs:
-      displaySettings: 'specific'
-      width: '1920'
-      height: '1080'
-    displayName: "Set screen resolution"
-
-  - task: UseNode@1
-    inputs:
-      version: "20.3.1"
-    displayName: "Install node"
-
-  - pwsh: |
-      $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
-      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
-    displayName: "Install Appium"
-    continueOnError: false
-    retryCountOnTaskFailure: 2
-    timeoutInMinutes: 10
-    env:
-      APPIUM_HOME: $(APPIUM_HOME)
-
-  - pwsh: |
-      Get-Content $PSCommandPath
-      $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
-      $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
-      $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
-      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
-      
-      $testFilter = ""
-      $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
-
-      "${{ parameters.testFilter }}".Split(",") | ForEach {
-        $testFilter += "TestCategory=" + $_ + "|"
-      }
-
-      $testFilter = $testFilter.TrimEnd("|")
-
-      # Cake does not allow empty parameters, so check if our filter is empty before adding it
-      if ($testConfigrationArgs) {
-        $command += " --TEST_CONFIGURATION_ARGS=""$testConfigrationArgs"""
-      }
-      if ($testFilter) {
-        $command += " --test-filter ""$testFilter"""
-      }
-
-      Write-Host "Running command: $command"
-
-      Invoke-Expression $command  
-    displayName: $(Agent.JobName)
-    ${{ if ne(parameters.platform, 'android')}}:
-      retryCountOnTaskFailure: 1
-    env:
-      APPIUM_HOME: $(APPIUM_HOME)
-
+- ${{ if eq(parameters.platform, 'ios')}}:
   - bash: |
-      cat ${BASH_SOURCE[0]}
-      pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
-    displayName: Cleanup and Create Simulator Logs if Test Run Failed To
-    condition: ${{ eq(parameters.platform, 'ios') }}
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    displayName: 'Clean bot'
     continueOnError: true
+    timeoutInMinutes: 60
 
-  - task: PublishTestResults@2
-    displayName: Publish the $(System.PhaseName) test results
-    condition: always()
-    inputs:
-      testResultsFormat: VSTest
-      testResultsFiles: '$(TestResultsDirectory)/*.trx'
-      testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
-      failTaskOnFailedTests: true
+# Enable KVM for Android builds on Linux
+- ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
+  - bash: |
+      echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+      sudo udevadm control --reload-rules
+      sudo udevadm trigger --name-match=kvm
+    displayName: Enable KVM
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: PublishBuildArtifacts@1
-    condition: always()
-    displayName: publish artifacts
+- ${{ if eq(parameters.platform, 'catalyst')}}:
+  - bash: |
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+      $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+    displayName: 'Disable Notification Center'
+    continueOnError: true
+    timeoutInMinutes: 60
 
-  - ${{ if eq(parameters.platform, 'catalyst')}}:
-        - bash: |
-              chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
-              $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
-          displayName: 'Enable Notification Center'
-          continueOnError: true
-          timeoutInMinutes: 60
+- template: provision.yml
+  parameters:
+    skipJdk: ${{ ne(parameters.platform, 'android') }}
+    skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
+    skipAndroidPlatformApis: true
+    onlyAndroidPlatformDefaultApis: true
+    skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
+    skipAndroidCreateAvds: true
+    androidEmulatorApiLevel: ${{ parameters.version }}
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
+    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+    ${{ if parameters.skipProvisioning }}:
+      skipProvisionator: true
+    ${{ else }}:
+      skipProvisionator: false
+    ${{ if eq(parameters.platform, 'catalyst') }}:
+      openSslArgs: '' # Do not use legacy openssl for Catalyst builds
 
-  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines'), eq(variables['System.TeamProject'], 'devdiv') ) }}:
-      # This must always be placed as the last step in the job
-      - template: agent-rebooter/mac.v1.yml@yaml-templates
-        parameters:
-          AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+- task: PowerShell@2
+  condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
+  inputs:
+    targetType: 'inline'
+    script: |
+      defaults write -g NSAutomaticCapitalizationEnabled -bool false
+      defaults write -g NSAutomaticTextCompletionEnabled -bool false
+      defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+  displayName: "Modify defaults"
+  continueOnError: true
+
+- pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+  displayName: 'Install .NET'
+  retryCountOnTaskFailure: 2
+  env:
+    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+    PRIVATE_BUILD: $(PrivateBuild)
+
+- pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+  displayName: 'Add .NET to PATH'
+
+# AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
+- pwsh: |
+    $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+    & $scriptPath -Width 1920 -Height 1080
+  condition: eq('${{ parameters.platform }}' , 'windows')
+  displayName: "Set screen resolution"
+
+- task: UseNode@1
+  inputs:
+    version: "20.3.1"
+  displayName: "Install node"
+
+- pwsh: |
+    $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+    dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+  displayName: "Install Appium"
+  continueOnError: false
+  retryCountOnTaskFailure: 2
+  timeoutInMinutes: 10
+  env:
+    APPIUM_HOME: $(APPIUM_HOME)
+
+- pwsh: |
+    Get-Content $PSCommandPath
+    $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
+    $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
+    $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
+    $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
+
+    $testFilter = ""
+    $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
+
+    "${{ parameters.testFilter }}".Split(",") | ForEach {
+      $testFilter += "TestCategory=" + $_ + "|"
+    }
+
+    $testFilter = $testFilter.TrimEnd("|")
+
+    # Cake does not allow empty parameters, so check if our filter is empty before adding it
+    if ($testConfigrationArgs) {
+      $command += " --TEST_CONFIGURATION_ARGS=""$testConfigrationArgs"""
+    }
+    if ($testFilter) {
+      $command += " --test-filter ""$testFilter"""
+    }
+    
+    $headless = ${{ parameters.headless }}
+    if ($headless) {
+      $command += " --headless ""$headless"""
+    }
+
+    Write-Host "Running command: $command"
+
+    Invoke-Expression $command  
+  displayName: $(Agent.JobName)
+  ${{ if ne(parameters.platform, 'android')}}:
+    retryCountOnTaskFailure: 1
+  env:
+    APPIUM_HOME: $(APPIUM_HOME)
+
+- bash: |
+    cat ${BASH_SOURCE[0]}
+    pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+  displayName: Cleanup and Create Simulator Logs if Test Run Failed To
+  condition: ${{ eq(parameters.platform, 'ios') }}
+  continueOnError: true
+
+- task: PublishTestResults@2
+  displayName: Publish the $(System.PhaseName) test results
+  condition: always()
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '$(TestResultsDirectory)/*.trx'
+    testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
+    failTaskOnFailedTests: true
+
+- task: PublishBuildArtifacts@1
+  condition: always()
+  displayName: publish artifacts
+
+# Enable Notification Center re-enabled only for catalyst
+- ${{ if eq(parameters.platform, 'catalyst')}}:
+  - bash: |
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+      $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+    displayName: 'Enable Notification Center'
+    continueOnError: true
+    timeoutInMinutes: 60

@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
+using OpenQA.Selenium.Appium.iOS;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -16,8 +18,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
@@ -29,8 +29,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
@@ -251,6 +249,68 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the soft keyboard to be shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes visible within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToShow(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Thread.Sleep(retryFrequency.Value.Milliseconds);
+			}
+		}
+
+		/// <summary>
+		/// Waits for the soft keyboard to be hidden from the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes hidden within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToHide(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (!app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Thread.Sleep(retryFrequency.Value);
+			}
+		}
+
+		/// <summary>
 		/// (Android Only) Sends a device key event with meta state.
 		/// </summary>
 		/// <param name="app"></param>
@@ -308,8 +368,6 @@ namespace UITest.Appium
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
-		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
-		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IUIElement element)
@@ -409,11 +467,18 @@ namespace UITest.Appium
 		/// <param name="y">The y coordinate to double tap.</param>
 		public static void DoubleTapCoordinates(this IApp app, float x, float y)
 		{
-			app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+			if (app is AppiumCatalystApp)
 			{
-				{ "x", x },
-				{ "y", y }
-			});
+				app.DoubleClickCoordinates(x, y); // Directly invoke coordinate-based double click for AppiumCatalystApp.
+			}
+			else
+			{
+				app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
 		}
 
 		/// <summary>
@@ -737,6 +802,40 @@ namespace UITest.Appium
 			return results;
 		}
 
+		public static void RetryAssert(
+			this IApp app,
+			Action assertToRetry,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				try
+				{
+					assertToRetry();
+					return; // Assert succeeded, exit
+				}
+				catch
+				{
+
+					// Check if timeout has been reached
+					long elapsed = DateTime.Now.Subtract(start).Ticks;
+					if (elapsed >= timeout.Value.Ticks)
+					{
+						// Timeout reached, rethrow the last exception
+						throw;
+					}
+
+					// Wait before retrying
+					Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+				}
+			}
+		}
+
 		/// <summary>
 		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
@@ -814,7 +913,7 @@ namespace UITest.Appium
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
-				
+
 				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
@@ -913,6 +1012,15 @@ namespace UITest.Appium
 		public static void PressEnter(this IApp app)
 		{
 			app.CommandExecutor.Execute("pressEnter", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sends the tab key in the app.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SendTabKey(this IApp app)
+		{
+			app.CommandExecutor.Execute("sendTabKey", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1422,11 +1530,18 @@ namespace UITest.Appium
 		/// <param name="y">The y coordinate to tap.</param>
 		public static void TapCoordinates(this IApp app, float x, float y)
 		{
-			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			if (app is AppiumCatalystApp)
 			{
-				{ "x", x },
-				{ "y", y }
-			});
+				app.ClickCoordinates(x, y); // // Directly invoke coordinate-based click for AppiumCatalystApp.
+			}
+			else
+			{
+				app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
 		}
 
 		/// <summary>
@@ -2161,6 +2276,38 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the flyout icon to disappear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForNoFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForNoElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.WaitForNoElement("OK");
+				}
+				if (!isShell)
+				{
+					if (app is AppiumWindowsApp)
+					{
+						app.WaitForNoElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.WaitForNoElement(automationId);
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Shows the flyout menu in the app.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the application.</param>
@@ -2311,6 +2458,10 @@ namespace UITest.Appium
 			{
 				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
 			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("SecondaryToolbarMenuButton");
+			}
 			else
 			{
 				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
@@ -2331,6 +2482,10 @@ namespace UITest.Appium
 			else if (app is AppiumWindowsApp)
 			{
 				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("SecondaryToolbarMenuButton");
 			}
 		}
 
@@ -2514,6 +2669,107 @@ namespace UITest.Appium
 			}
 
 			return element;
+		}
+
+		/// <summary>
+		/// Taps an element and retries until another element appears and is ready for interaction.
+		/// Sometimes elements may appear but are not yet ready for interaction; this helper method retries the tap until the target element is interactable or the retry limit is reached.
+		/// </summary>
+		/// <param name="app">The app instance</param>
+		/// <param name="elementToTap">The element to tap</param>
+		/// <param name="elementToWaitFor">The element to wait for after tapping</param>
+		/// <param name="maxRetries">Maximum number of retry attempts</param>
+		/// <param name="retryDelayMs">Delay between retries in milliseconds</param>
+		/// <returns>True if the target element appeared and is ready, false otherwise</returns>
+		public static bool TapWithRetriesUntilElementReady(this IApp app, string elementToTap, string elementToWaitFor,
+			int maxRetries = 5, int retryDelayMs = 500)
+		{
+			// Initial tap
+			app.Tap(elementToTap);
+
+			for (int retry = 0; retry < maxRetries - 1; retry++)
+			{
+				// Check if target element is visible
+				if (IsElementVisible(app, elementToWaitFor))
+					return true;
+
+				// Element not found, wait and tap again
+				System.Threading.Thread.Sleep(retryDelayMs);
+				app.Tap(elementToTap);
+			}
+
+			// Final check
+			return IsElementVisible(app, elementToWaitFor);
+		}
+
+		/// <summary>
+		/// Determines whether a UI element with the specified name is currently visible in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="elementName">The name or identifier of the element to check for visibility.</param>
+		/// <returns>True if the element is visible; otherwise, false.</returns>
+		public static bool IsElementVisible(IApp app, string elementName)
+		{
+			try
+			{
+				app.WaitForElement(elementName);
+				return true;
+			}
+			catch (TimeoutException)
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Gets the display density for the current device using the appropriate platform-specific method.
+		/// For Android, uses the Appium getDisplayDensity command for accurate results.
+		/// For iOS and Catalyst, uses the deviceScreenInfo command.
+		/// For other platforms, falls back to driver capabilities.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The display density as a double value (e.g., 1.0 for mdpi, 2.0 for xhdpi/Retina, 3.0 for xxhdpi/Retina HD)</returns>
+		public static double GetDisplayDensity(this IApp app)
+		{
+			if (app is not AppiumApp appiumApp)
+			{
+				throw new InvalidOperationException($"GetDisplayDensity is only supported on AppiumApp");
+			}
+
+			// Use platform-specific methods for accurate results
+			return app switch
+			{
+				AppiumAndroidApp androidApp => GetAndroidDisplayDensity(androidApp),
+				AppiumIOSApp iOSApp => GetIOSDisplayDensity(iOSApp),
+				_ => 1.0 // Fallback for other platforms (Catalyst, Windows)
+			};
+		}
+
+		static double GetAndroidDisplayDensity(AppiumAndroidApp androidApp)
+		{
+			// Use the command executor to call the Android-specific action
+			float? response = (androidApp.Driver as AndroidDriver)?.GetDisplayDensity();
+			if (response is not null)
+			{
+				return (double)response.Value / 160f;
+			}
+
+			return 1.0;
+		}
+
+		static double GetIOSDisplayDensity(AppiumIOSApp iOSApp)
+		{
+			var response = (iOSApp.Driver as IOSDriver)?.ExecuteScript("mobile: deviceScreenInfo");
+			if (response is not null && response is IDictionary<string, object> screenInfo)
+			{
+				// Extract the scale factor from the deviceScreenInfo response
+				if (screenInfo.TryGetValue("scale", out var scaleValue))
+				{
+					return Convert.ToDouble(scaleValue);
+				}
+			}
+
+			return 1.0;
 		}
 	}
 }

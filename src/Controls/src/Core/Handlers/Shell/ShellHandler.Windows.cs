@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			UpdateValue(nameof(Shell.FlyoutIcon));
 			UpdateValue(nameof(Shell.FlyoutBackground));
+			UpdateValue(nameof(Shell.FlyoutBackgroundImage));
 		}
 
 		protected override void DisconnectHandler(ShellView platformView)
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			UpdateValue(nameof(Shell.FlyoutBackground));
 			UpdateValue(nameof(Shell.FlyoutVerticalScrollMode));
+			UpdateValue(nameof(Shell.FlyoutBackgroundImage));
 			PlatformView.UpdateFlyoutBackdrop();
 			PlatformView.UpdateFlyoutPosition();
 			VirtualView.FlyoutIsPresented = true;
@@ -125,6 +127,16 @@ namespace Microsoft.Maui.Controls.Handlers
 				!Brush.IsNullOrEmpty(view.FlyoutBackground) ?
 					view.FlyoutBackground :
 					view.FlyoutBackgroundColor?.AsPaint());
+		}
+
+		//TODO: Make it public in .NET 10.
+		internal static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+			if (handler?.PlatformView is not null && provider is not null)
+			{
+				handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget();
+			}
 		}
 
 		public static void MapFlyoutIcon(ShellHandler handler, Shell view)

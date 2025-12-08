@@ -6,19 +6,17 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
-	class ExpandMarkupsVisitor : IXamlNodeVisitor
+	class ExpandMarkupsVisitor(ILContext context) : IXamlNodeVisitor
 	{
-		readonly IList<XmlName> _skips = new List<XmlName>
-		{
+		readonly IList<XmlName> _skips =
+		[
 			XmlName.xKey,
 			XmlName.xTypeArguments,
 			XmlName.xFactoryMethod,
 			XmlName.xName,
-		};
+		];
 
-		public ExpandMarkupsVisitor(ILContext context) => Context = context;
-
-		ILContext Context { get; }
+		ILContext Context { get; } = context;
 
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => false;
@@ -28,7 +26,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public bool IsResourceDictionary(ElementNode node)
 		{
-			var parentVar = Context.Variables[(IElementNode)node];
+			var parentVar = Context.Variables[node];
 			return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
 				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
 		}
@@ -43,12 +41,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if (_skips.Contains(propertyName))
 				return;
-			if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+			if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
 				return;
 			var markupString = markupnode.MarkupString;
-			if (ParseExpression(ref markupString, Context, markupnode.NamespaceResolver, markupnode) is IElementNode node)
+			if (ParseExpression(ref markupString, Context, markupnode.NamespaceResolver, markupnode) is ElementNode node)
 			{
-				((IElementNode)parentNode).Properties[propertyName] = node;
+				((ElementNode)parentNode).Properties[propertyName] = node;
 				node.Accept(new XamlNodeVisitor((n, parent) => n.Parent = parent), parentNode);
 			}
 		}
@@ -68,7 +66,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static bool TryGetProperyName(INode node, INode parentNode, out XmlName name)
 		{
 			name = default(XmlName);
-			if (!(parentNode is IElementNode parentElement))
+			if (parentNode is not ElementNode parentElement)
 				return false;
 			foreach (var kvp in parentElement.Properties)
 			{
@@ -103,16 +101,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return new MarkupExpansionParser().Parse(match, ref expression, provider);
 		}
 
-		class ILContextProvider
+		class ILContextProvider(ILContext context)
 		{
-			public ILContextProvider(ILContext context) => Context = context;
-
-			public ILContext Context { get; }
+			public ILContext Context { get; } = context;
 		}
 
 		class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 		{
-			IElementNode _node;
+			ElementNode _node;
 
 			object IExpressionParser.Parse(string match, ref string remaining, IServiceProvider serviceProvider) => Parse(match, ref remaining, serviceProvider);
 

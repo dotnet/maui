@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A view for displaying content using XAML. This is very suitable for creating your own custom and reusable controls.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zobrazení pro obsah s využitím kódu XAML. Je velmi vhodné pro vytváření vlastních a opakovaně použitelných ovládacích prvků.]]></Val>
+            <Val><![CDATA[Zobrazení pro obsah s využitím kódu XAML. Je to velmi vhodné pro vytváření vlastních a opakovaně použitelných ovládacích prvků.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI ContentView (XAML)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

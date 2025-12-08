@@ -62,7 +62,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var page = new ContentPage();
 			var navPage = new NavigationPage(page) { Title = "App Page" };
+#pragma warning disable CS0618 // Type or member is obsolete
 			Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetIsNavigationBarTranslucent(navPage, enabled);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var translucent = await GetValueAsync(navPage, (handler) => (handler.ViewController as UINavigationController).NavigationBar.Translucent);
 			Assert.Equal(enabled, translucent);

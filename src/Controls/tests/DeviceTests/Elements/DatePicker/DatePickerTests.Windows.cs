@@ -38,6 +38,29 @@ public partial class DatePickerTests
 		});
 	}
 
-	static CalendarDatePicker GetPlatformControl(DatePickerHandler handler) =>	
+	[Fact]
+	[Description("Setting the DatePicker's MinimumDate to null should not throw an ArgumentOutOfRangeException")]
+	public async Task DatePickerMinimumDateToNullShouldNotThrowArgumentOutOfRangeException()
+	{
+		SetupBuilder();
+
+		var datePicker = new Controls.DatePicker
+		{
+			MinimumDate = null
+		};
+
+		var handler = await CreateHandlerAsync<DatePickerHandler>(datePicker);
+		var platformView = GetPlatformControl(handler);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			datePicker.MinimumDate = null;
+		});
+
+		// If we reach here without exception, the test passes
+		Assert.True(true);
+	}
+
+	static CalendarDatePicker GetPlatformControl(DatePickerHandler handler) =>
 		handler.PlatformView;
 }

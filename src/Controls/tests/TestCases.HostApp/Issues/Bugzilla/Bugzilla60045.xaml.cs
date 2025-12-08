@@ -25,7 +25,7 @@ public partial class Bugzilla60045 : TestContentPage
 			new {
 				Action = new Command(async () =>
 				{
-					await DisplayAlert(Fail, "Well, this is embarrassing.", "Ok");
+					await DisplayAlertAsync(Fail, "Well, this is embarrassing.", "Ok");
 				},
 				() => false) }
 		};

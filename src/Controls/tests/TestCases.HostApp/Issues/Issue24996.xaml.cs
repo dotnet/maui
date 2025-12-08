@@ -17,8 +17,10 @@ public partial class Issue24996 : ContentPage
 		InitializeComponent();
 		UpdateText();
 
-		SizeChanged += delegate {
-			if (Width > 0) {
+		SizeChanged += delegate
+		{
+			if (Width > 0)
+			{
 				// For some reason, constraining this layout to a fixed size causes a `SetNeedsLayout` to be called
 				// when translating the Lvl2 view outside the bottom boundary.
 				// This causes a layout pass to be called on the Root, Lvl1, Lvl2, and Lvl3.

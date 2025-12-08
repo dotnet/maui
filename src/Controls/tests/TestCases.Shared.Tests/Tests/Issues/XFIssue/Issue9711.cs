@@ -23,10 +23,13 @@ public class Issue9711 : _IssuesUITest
 
 		Assert.DoesNotThrowAsync(async () =>
 		{
+			App.WaitForElement("Group2");
 			App.Tap("Group2");
 			await Task.Delay(3000);
+			App.WaitForElement("Group1");
 			App.Tap("Group1");
 			await Task.Delay(3000);
+			App.WaitForElement("Group0");
 			App.Tap("Group0");
 			await Task.Delay(3000);
 			App.WaitForElement("9711TestListView");

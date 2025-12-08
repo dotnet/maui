@@ -32,6 +32,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 				textField.SecureTextEntry = entry.IsPassword;
+#if MACCATALYST
+			textField.TextContentType = UITextContentType.OneTimeCode;
+#endif
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
@@ -223,26 +226,44 @@ namespace Microsoft.Maui.Platform
 		{
 			var size = image.Size;
 
-			UIGraphics.BeginImageContextWithOptions(size, false, UIScreen.MainScreen.Scale);
+			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = UIScreen.MainScreen.Scale,
+			});
 
-			if (UIGraphics.GetCurrentContext() == null)
+			if (renderer is null)
+			{
 				return null;
+			}
 
-			var context = UIGraphics.GetCurrentContext();
+			return renderer.CreateImage((context) =>
+			{
+				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				color.ColorWithAlpha(1.0f).SetFill();
 
-			image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
-			context?.SetFillColor(color.CGColor);
-			context?.SetBlendMode(CGBlendMode.SourceIn);
-			context?.SetAlpha(1.0f);
+				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
+				context?.FillRect(rect, CGBlendMode.SourceIn);
+			});
+		}
 
-			var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
-			context?.FillRect(rect);
+		internal static void AddMauiDoneAccessoryView(this UITextField textField, IViewHandler handler)
+		{
+#if !MACCATALYST
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(handler);
+			accessoryView.SetDoneClicked(OnDoneClicked);
+			textField.InputAccessoryView = accessoryView;
+#endif
+		}
 
-			var tintedImage = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
-
-			return tintedImage;
+		static void OnDoneClicked(object sender)
+		{
+			if (sender is IEntryHandler entryHandler)
+			{
+				entryHandler.PlatformView.ResignFirstResponder();
+				entryHandler.VirtualView.Completed();
+			}
 		}
 	}
 }

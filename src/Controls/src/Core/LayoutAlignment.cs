@@ -2,17 +2,17 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/LayoutAlignment.xml" path="Type[@FullName='Microsoft.Maui.Controls.LayoutAlignment']/Docs/*" />
+	/// <summary>Values that represent LayoutAlignment.</summary>
 	[Flags]
 	public enum LayoutAlignment
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutAlignment.xml" path="//Member[@MemberName='Start']/Docs/*" />
+		/// <summary>The start of an alignment. Usually the Top or Left.</summary>
 		Start = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutAlignment.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		/// <summary>The center of an alignment.</summary>
 		Center = 1,
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutAlignment.xml" path="//Member[@MemberName='End']/Docs/*" />
+		/// <summary>The end of an alignment. Usually the Bottom or Right.</summary>
 		End = 2,
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutAlignment.xml" path="//Member[@MemberName='Fill']/Docs/*" />
+		/// <summary>Fill the entire area if possible.</summary>
 		Fill = 3
 	}
 }

@@ -18,6 +18,7 @@
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
@@ -28,15 +29,16 @@
                 <Label Grid.ColumnSpan="2" Text="The RadioButtons in this Grid have a GroupName and Selection bound to a ViewModel."></Label>
 
                 <Label Text="{Binding GroupName, StringFormat='The GroupName is {0}'}" Grid.Row="1" />
-                <Label Text="{Binding Selection, StringFormat='The Selection is {0}'}" Grid.Row="1" Grid.Column="1" />
+                <Label Text="{Binding Selection, StringFormat='The Selection is {0}', TargetNullValue='The Selection is (null)'}" Grid.Row="1" Grid.Column="1" />
 
                 <RadioButton Content="Option A" Value="A" Grid.Row="2"></RadioButton>
                 <RadioButton Content="Option B" Value="B" Grid.Row="2" Grid.Column="1"></RadioButton>
                 <RadioButton Content="Option C" Value="C" Grid.Row="3"></RadioButton>
                 <RadioButton Content="Option D" Value="D" Grid.Row="3" Grid.Column="1"></RadioButton>
 
-                <Button Margin="5" Grid.ColumnSpan="2" Grid.Row="4" Text="Set selection in view model to 'B'" Clicked="Button_Clicked"></Button>
-            </Grid>
+                <Button Margin="5" Grid.ColumnSpan="2" Grid.Row="4" Text="Set selection in view model to 'B'" Clicked="Set_Button_Clicked"></Button>
+                <Button Margin="5" Grid.ColumnSpan="2" Grid.Row="5" Text="Clear selection in view model to 'null'" Clicked="Clear_Button_Clicked"></Button>
+      </Grid>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

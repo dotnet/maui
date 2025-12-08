@@ -41,13 +41,13 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='Equals']/Docs/*" />
+		/// <param name="obj">The obj parameter.</param>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is SolidColorBrush dest))
 				return false;
 
-			return Color == dest.Color;
+			return Equals(Color, dest.Color);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />

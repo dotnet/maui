@@ -109,6 +109,10 @@
         Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Hosting.Abstractions"
+        Version="$(MicrosoftExtensionsHostingAbstractionsVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
         Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)"
     />
@@ -149,18 +153,6 @@
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
         Version="$(MicrosoftGraphicsWin2DPackageVersion)"
-    />
-    <PackageReference
-        Update="Xamarin.Android.Glide"
-        Version="$(_XamarinAndroidGlideVersion)"
-    />
-    <PackageReference
-        Update="Xamarin.AndroidX.Security.SecurityCrypto"
-        Version="$(_XamarinAndroidXSecurityVersion)"
-    />
-    <PackageReference
-        Update="Xamarin.Google.Crypto.Tink.Android"
-        Version="$(_XamarinGoogleCryptoTinkAndroidVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
@@ -262,6 +254,10 @@
     <PackageReference
         Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
+    />
+    <PackageReference
+        Update="Mono.ApiTools.MSBuildTasks"
+        Version="$(MonoApiToolsMSBuildTasksPackageVersion)"
     />
     <PackageReference
         Update="Tizen.UIExtensions.NUI"

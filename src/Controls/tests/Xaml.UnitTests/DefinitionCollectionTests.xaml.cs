@@ -7,65 +7,61 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class DefinitionCollectionTests : ContentPage
 {
-	public partial class DefinitionCollectionTests : ContentPage
+	public DefinitionCollectionTests() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public DefinitionCollectionTests() => InitializeComponent();
-		public DefinitionCollectionTests(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void DefinitionCollectionsParsedFromMarkup(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var layout = new DefinitionCollectionTests(inflator);
+			var coldef = layout.grid.ColumnDefinitions;
+			var rowdef = layout.grid.RowDefinitions;
+
+			Assert.Equal(5, coldef.Count);
+
+			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[0].Width);
+			Assert.Equal(new GridLength(2, GridUnitType.Star), coldef[1].Width);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), coldef[2].Width);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[3].Width);
+			Assert.Equal(new GridLength(300, GridUnitType.Absolute), coldef[4].Width);
+
+			Assert.Equal(5, rowdef.Count);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), rowdef[0].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), rowdef[1].Height);
+			Assert.Equal(new GridLength(25, GridUnitType.Absolute), rowdef[2].Height);
+			Assert.Equal(new GridLength(14, GridUnitType.Absolute), rowdef[3].Height);
+			Assert.Equal(new GridLength(20, GridUnitType.Absolute), rowdef[4].Height);
+
 		}
 
-		[TestFixture]
-		class Tests
+		[Fact]
+		internal void DefinitionCollectionsReplacedAtCompilation()
 		{
-			[Test]
-			public void DefinitionCollectionsParsedFromMarkup([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new DefinitionCollectionTests(useCompiledXaml);
-				var coldef = layout.grid.ColumnDefinitions;
-				var rowdef = layout.grid.RowDefinitions;
+			MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef, out var hasLoggedErrors);
+			Assert.False(hasLoggedErrors);
+			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
+		}
 
-				Assert.That(coldef.Count, Is.EqualTo(5));
-
-				Assert.That(coldef[0].Width, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-				Assert.That(coldef[1].Width, Is.EqualTo(new GridLength(2, GridUnitType.Star)));
-				Assert.That(coldef[2].Width, Is.EqualTo(new GridLength(1, GridUnitType.Auto)));
-				Assert.That(coldef[3].Width, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-				Assert.That(coldef[4].Width, Is.EqualTo(new GridLength(300, GridUnitType.Absolute)));
-
-				Assert.That(rowdef.Count, Is.EqualTo(5));
-				Assert.That(rowdef[0].Height, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-				Assert.That(rowdef[1].Height, Is.EqualTo(new GridLength(1, GridUnitType.Auto)));
-				Assert.That(rowdef[2].Height, Is.EqualTo(new GridLength(25, GridUnitType.Absolute)));
-				Assert.That(rowdef[3].Height, Is.EqualTo(new GridLength(14, GridUnitType.Absolute)));
-				Assert.That(rowdef[4].Height, Is.EqualTo(new GridLength(20, GridUnitType.Absolute)));
-
-			}
-
-			[Test]
-			public void DefinitionCollectionsReplacedAtCompilation()
-			{
-				MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef, out var hasLoggedErrors);
-				Assert.That(!hasLoggedErrors);
-				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
-			}
-
-			bool InstructionIsDefColConvCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
-			{
-				if (instruction.OpCode != OpCodes.Newobj)
-					return false;
-				if (!(instruction.Operand is MethodReference methodRef))
-					return false;
-				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))))
-					return true;
-				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))))
-					return true;
+		bool InstructionIsDefColConvCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
+		{
+			if (instruction.OpCode != OpCodes.Newobj)
 				return false;
-			}
+			if (!(instruction.Operand is MethodReference methodRef))
+				return false;
+			if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))))
+				return true;
+			if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))))
+				return true;
+			return false;
 		}
 	}
 }

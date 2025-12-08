@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return cell;
 		}
 
-		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.LoopCount;
+		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.Loop ? LoopItemsSource.LoopCount : LoopItemsSource.ItemCount;
 
 		void InitializeCarouselViewLoopManager()
 		{
@@ -154,6 +154,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
+		}
+
+		internal void UpdateScrollingConstraints()
+		{
+			CollectionView.AlwaysBounceVertical = !IsHorizontal;
+			CollectionView.AlwaysBounceHorizontal = IsHorizontal;
 		}
 
 		void Setup(CarouselView carouselView)
@@ -303,7 +309,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return 0;
 			}
-			
+
 			return ItemsView.ItemsUpdatingScrollMode switch
 			{
 				ItemsUpdatingScrollMode.KeepItemsInView => 0,
@@ -402,6 +408,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
 
+				if (!LayoutFactory2.IsIndexPathValid(goToIndexPath, CollectionView))
+				{
+					return;
+				}
+
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
 		}
@@ -499,6 +510,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (!ItemsView.IsVisible)
+			{
+				// If the CarouselView is not visible we don't want to set the initial position
+				// since it will be set when the CarouselView becomes visible
+				return;
+			}
+
 			if (ItemsSource is null)
 			{
 				return;
@@ -518,12 +536,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						return;
 					}
 
-					InitialPositionSet = true;
-
 					if (ItemsSource is null || ItemsSource.ItemCount == 0)
 					{
 						return;
 					}
+
+					InitialPositionSet = true;
 
 					int position = carousel.Position;
 					var currentItem = carousel.CurrentItem;
@@ -543,6 +561,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						: NSIndexPath.FromItemSection(position, _section);
 
 					var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
+
+					if (!LayoutFactory2.IsIndexPathValid(projectedPosition, CollectionView))
+					{
+						return;
+					}
 
 					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
 

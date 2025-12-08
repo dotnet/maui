@@ -1,31 +1,55 @@
 using System;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+
+public class CollectionViewFeaturePage : NavigationPage
 {
-	public class CollectionViewFeaturePage : NavigationPage
+	public CollectionViewFeaturePage()
 	{
-		public CollectionViewFeaturePage()
-		{
-			PushAsync(new CollectionViewFeatureMainPage());
-		}
+		PushAsync(new CollectionViewFeatureMainPage());
+	}
+}
+
+public partial class CollectionViewFeatureMainPage : ContentPage
+{
+	public CollectionViewFeatureMainPage()
+	{
+		InitializeComponent();
 	}
 
-	public partial class CollectionViewFeatureMainPage : ContentPage
+	private async void OnEmptyViewButtonClicked(object sender, EventArgs e)
 	{
-		public CollectionViewFeatureMainPage()
-		{
-			InitializeComponent();
-		}
+		await Navigation.PushAsync(new CollectionViewEmptyViewPage());
+	}
 
-		private async void OnEmptyViewButtonClicked(object sender, EventArgs e)
-		{
-			await Navigation.PushAsync(new CollectionViewEmptyViewPage());
-		}
+	private async void OnHeaderFooterViewButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewHeaderPage());
+	}
 
-		private async void OnHeaderFooterViewButtonClicked(object sender, EventArgs e)
-		{
-			await Navigation.PushAsync(new CollectionViewHeaderPage());
-		}
+	private async void OnGroupingButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewGroupingPage());
+	}
+
+	private async void OnScrollingButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewScrollPage());
+	}
+	private async void OnDynamicChangesButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewDynamicPage());
+	}
+
+	private async void OnSelectionButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewSelectionPage());
+	}
+
+
+	private async void OnItemsSourceButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewItemsSourcePage());
 	}
 }

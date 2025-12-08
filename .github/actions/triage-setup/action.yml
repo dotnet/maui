@@ -1,0 +1,57 @@
+name: 'Setup Triage Action'
+
+description: 'Generates a unique working directory and sets up git/gh context.'
+
+inputs:
+  token:
+    description: 'GitHub token to use for authentication'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  work-id:
+    description: 'The unique ID for the working directory'
+    value: ${{ steps.gen-work-dir.outputs.work-id }}
+  work-dir:
+    description: 'The path to the working directory'
+    value: ${{ steps.gen-work-dir.outputs.work-dir }}
+  responses-dir:
+    description: 'The path to the collected responses directory'
+    value: ${{ steps.gen-work-dir.outputs.responses-dir }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Generate a unique working directory
+      id: gen-work-dir
+      shell: pwsh
+      run: |
+        "Generate a unique working directory"
+        echo "::group::Generate a unique working directory"
+
+        $guid = [guid]::NewGuid().ToString()
+        "work-id=$guid" >> $env:GITHUB_OUTPUT
+
+        $workDir = "${{ runner.temp }}/triage-action-$guid";
+        New-Item -ItemType Directory -Path $workDir -Force | Out-Null
+        "work-dir=$workDir" >> $env:GITHUB_OUTPUT
+
+        $responsesDir = "${{ runner.temp }}/triage-action-responses";
+        New-Item -ItemType Directory -Path $responsesDir -Force | Out-Null
+        "responses-dir=$responsesDir" >> $env:GITHUB_OUTPUT
+
+        echo "::endgroup::"
+
+    - name: Setup working directory
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        "Setup working directory"
+        echo "::group::Setup working directory"
+        cd "${{ steps.gen-work-dir.outputs.work-dir }}"
+        git init
+        git remote add origin ${{ github.repositoryUrl }}
+        gh repo set-default ${{ github.repository }}
+        echo "::endgroup::"

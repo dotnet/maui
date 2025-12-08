@@ -31,6 +31,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public partial class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
 
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
+#pragma warning restore CS0618 // Type or member is obsolete
 		bool _collectionIsWrapped;
 		IList _collection = null;
 		bool _itemWasClicked;
@@ -81,7 +83,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			base.OnElementChanged(e);
 
@@ -89,7 +93,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				e.OldElement.ItemSelected -= OnElementItemSelected;
 				e.OldElement.ScrollToRequested -= OnElementScrollToRequested;
+#pragma warning disable CS0618 // Type or member is obsolete
 				((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems.CollectionChanged -= OnCollectionChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (Control != null)
 				{
 					Control.Loaded -= ControlOnLoaded;
@@ -100,7 +106,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				e.NewElement.ItemSelected += OnElementItemSelected;
 				e.NewElement.ScrollToRequested += OnElementScrollToRequested;
+#pragma warning disable CS0618 // Type or member is obsolete
 				((ITemplatedItemsView<Cell>)e.NewElement).TemplatedItems.CollectionChanged += OnCollectionChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (List == null)
 				{
@@ -267,26 +275,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.OnElementPropertyChanged(sender, e);
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (e.PropertyName == ListView.IsGroupingEnabledProperty.PropertyName)
 			{
 				UpdateGrouping();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.HeaderProperty.PropertyName || e.PropertyName == "HeaderElement")
 			{
 				UpdateHeader();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.FooterProperty.PropertyName || e.PropertyName == "FooterElement")
 			{
 				UpdateFooter();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.RowHeightProperty.PropertyName)
 			{
 				ClearSizeEstimate();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.HasUnevenRowsProperty.PropertyName)
 			{
 				ClearSizeEstimate();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.ItemTemplateProperty.PropertyName)
 			{
 				ClearSizeEstimate();
@@ -295,10 +310,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateSelectionMode();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == Specifics.SelectionModeProperty.PropertyName)
 			{
 				UpdateWindowsSpecificSelectionMode();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.VerticalScrollBarVisibilityProperty.PropertyName)
 			{
 				UpdateVerticalScrollBarVisibility();
@@ -307,6 +324,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void Dispose(bool disposing)
@@ -479,6 +505,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateWindowsSpecificSelectionMode()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().GetSelectionMode() == PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Accessible)
 			{
 				// Using Tapped will disable the ability to use the Enter key
@@ -513,6 +540,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					List.ItemClick -= OnListItemClicked;
 				}
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -807,10 +835,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		private protected override void DisconnectHandlerCore()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element is ITemplatedItemsView<Cell> templatedItemsView)
 			{
 				templatedItemsView.TemplatedItems.CollectionChanged -= OnCollectionChanged;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			CleanUpResources();
 			base.DisconnectHandlerCore();
@@ -830,7 +860,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_itemWasClicked)
 					List.SelectedItem = Element.SelectedItem;
 				else
+#pragma warning disable CS0618 // Type or member is obsolete
 					((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			_itemWasClicked = false;

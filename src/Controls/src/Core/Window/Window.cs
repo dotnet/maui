@@ -14,6 +14,12 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
+		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
+
+		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
+		public static readonly BindableProperty IsActivatedProperty = IsActivatedPropertyKey.BindableProperty;
+
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -64,11 +70,18 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
 			nameof(TitleBar), typeof(TitleBar), typeof(Window), null, propertyChanged: TitleBarChanged);
 
+		/// <summary>Bindable property for <see cref="IsMinimizable"/>.</summary>
+		public static readonly BindableProperty IsMinimizableProperty = BindableProperty.Create(nameof(IsMinimizable),
+			typeof(bool), typeof(Window), defaultValue: true);
+
+		/// <summary>Bindable property for <see cref="IsMaximizable"/>.</summary>
+		public static readonly BindableProperty IsMaximizableProperty = BindableProperty.Create(nameof(IsMaximizable),
+			typeof(bool), typeof(Window), defaultValue: true);
+
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
-		bool _isActivated;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -107,6 +120,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (string?)GetValue(TitleProperty);
 			set => SetValue(TitleProperty, value);
+		}
+
+		public bool IsActivated
+		{
+			get => (bool)GetValue(IsActivatedProperty);
+			private set => SetValue(IsActivatedPropertyKey, value);
 		}
 
 		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
@@ -316,24 +335,6 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-		internal bool IsActivated
-		{
-			get
-			{
-				return _isActivated;
-			}
-			private set
-			{
-				if (_isActivated == value)
-					return;
-
-				_isActivated = value;
-
-				if (value)
-					SendWindowAppearing();
-			}
-		}
-
 		internal bool IsDestroyed { get; private set; }
 		internal bool IsCreated { get; private set; }
 
@@ -431,7 +432,13 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			if (Navigation.ModalStack.Count == 0)
+			{
 				Page?.SendDisappearing();
+			}
+			else if (Navigation.ModalStack.Count > 0)
+			{
+				Navigation.ModalStack[Navigation.ModalStack.Count - 1]?.SendDisappearing();
+			}
 
 			IsActivated = false;
 		}
@@ -538,7 +545,12 @@ namespace Microsoft.Maui.Controls
 
 			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
+			
+			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
+
+			// Dispose the window-scoped service scope
+			mauiContext?.DisposeWindowScope();
 		}
 
 		void IWindow.Resumed()
@@ -588,6 +600,20 @@ namespace Microsoft.Maui.Controls
 
 		public float DisplayDensity => ((IWindow)this).RequestDisplayDensity();
 
+		/// <summary>Gets or sets whether the window can be minimized.</summary>
+		public bool IsMinimizable
+		{
+			get { return (bool)GetValue(IsMinimizableProperty); }
+			set { SetValue(IsMinimizableProperty, value); }
+		}
+
+		/// <summary>Gets or sets whether the window can be maximized.</summary>
+		public bool IsMaximizable
+		{
+			get { return (bool)GetValue(IsMaximizableProperty); }
+			set { SetValue(IsMaximizableProperty, value); }
+		}
+
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			base.OnHandlerChangingCore(args);
@@ -604,6 +630,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldValue is Page oldPage)
 				oldPage.SendDisappearing();
+		}
+
+		static void OnIsActivatedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			if ((bool)newValue)
+			{
+				window.SendWindowAppearing();
+			}
 		}
 
 		void OnPageChanged(Page? oldPage, Page? newPage)
@@ -627,16 +662,18 @@ namespace Microsoft.Maui.Controls
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 
-				if (Parent != null)
-				{
-					SendWindowAppearing();
-				}
-
 				newPage.HandlerChanged += OnPageHandlerChanged;
 				newPage.HandlerChanging += OnPageHandlerChanging;
 
 				if (newPage.Handler != null)
+				{
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
+				}
+
+				if (Parent != null)
+				{
+					SendWindowAppearing();
+				}
 			}
 
 			if (newPage is Shell newShell)

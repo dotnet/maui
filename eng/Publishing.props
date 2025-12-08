@@ -13,6 +13,8 @@
   
   <ItemGroup>
     <_InstallersToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+    <_MetadataRollbacksToPublish Include="$(ArtifactsShippingPackagesDir)\**\metadata\rollbacks\**\*.json" />
+    <_MetadataSdksToPublish Include="$(ArtifactsShippingPackagesDir)\**\metadata\sdks\**\*.json" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -27,7 +29,19 @@
         <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
         <PublishFlatContainer>true</PublishFlatContainer>
       </Artifact>
-    </ItemGroup>
+  
+      <!-- <Artifact Include="@(_MetadataRollbacksToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/metadata/rollback/%(Filename)%(Extension)">
+        <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+        <PublishFlatContainer>false</PublishFlatContainer>
+      </Artifact>
+      
+      <Artifact Include="@(_MetadataSdksToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/metadata/sdks/%(Filename)%(Extension)">
+        <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+        <PublishFlatContainer>false</PublishFlatContainer>
+      </Artifact>-->
+    </ItemGroup> 
 
   </Target>
 

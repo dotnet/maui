@@ -1,6 +1,5 @@
 ﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
-using Windows.UI.Text;
 
 #if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
@@ -24,14 +23,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			var format = new CanvasTextFormat
-			{
-				FontFamily = font.Name,
-				FontSize = textSize,
-				FontWeight = new FontWeight { Weight = (ushort)font.Weight },
-				FontStyle = font.StyleType.ToFontStyle(),
-				WordWrapping = CanvasWordWrapping.NoWrap
-			};
+			var format = font.ToCanvasTextFormat(textSize);
+			format.WordWrapping = CanvasWordWrapping.NoWrap;
 
 			var device = CanvasDevice.GetSharedDevice();
 			var textLayout = new CanvasTextLayout(device, value, format, 0.0f, 0.0f);

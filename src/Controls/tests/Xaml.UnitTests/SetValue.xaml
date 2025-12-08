@@ -13,6 +13,7 @@
 		<ResourceDictionary>
 			<Color x:Key="purple">Purple</Color>
 		</ResourceDictionary>
+		<local:SetValue_ReverseConverter x:Key="ReverseConverter"/>
 	</ContentPage.Resources>
 	<cmp:StackLayout>
 		<Label x:Name="label0" Text="Foo"/>
@@ -49,6 +50,7 @@
 			<Label x:Name="label10"/>
 		</cmp:StackLayout>
 		<Label x:Name="label11" Text="{Binding labeltext}"/>
+		<Label x:Name="label15" Text="{Binding labeltext, Converter={StaticResource ReverseConverter}}"/>
 		<ListView x:Name="listView">
 			<ListView.ItemsSource>
 				<x:Array Type="{x:Type x:String}" x:Key="array">
@@ -99,5 +101,6 @@
 			</local:MockViewWithValues.Bar>
 		</local:MockViewWithValues>
 		<local:MockViewWithValues x:Name="implicit3" Foo="Foo" />
+		<Label x:Name="label16" Text="Welcome to &#10; .NET Multi-platform App UI"/>
 	</cmp:StackLayout>
 </ContentPage>

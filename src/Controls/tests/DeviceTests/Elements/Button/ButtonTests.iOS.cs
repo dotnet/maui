@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 		UIButton GetPlatformButton(ButtonHandler buttonHandler) =>
 			(UIButton)buttonHandler.PlatformView;
 
-		Task<string> GetPlatformText(ButtonHandler buttonHandler)
+		Task<string?> GetPlatformText(ButtonHandler buttonHandler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
 		}
@@ -74,6 +74,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Wait for image to load and force the grid to measure itself again
 				await Task.Delay(1000);
+
+				// The layout and buttons are not connected to a window, so the measure invalidation won't propagate.
+				// Therefore, we have to invalidate and measure the layout manually.
+				layout.InvalidateMeasure();
 				layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 				await handler.ToPlatform().AssertContainsColor(Colors.Blue, MauiContext); // Grid renders

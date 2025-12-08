@@ -1,41 +1,35 @@
-﻿using Microsoft.Maui.ApplicationModel;
+using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui22536
 {
-	public Maui22536()
-	{
-		InitializeComponent();
-	}
+	public Maui22536() => InitializeComponent();
 
-	public Maui22536(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void TestNonCompiledResourceDictionary([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestNonCompiledResourceDictionary(XamlInflator inflator)
 		{
-			var page = new Maui22536(useCompiledXaml);
-			Assert.AreEqual(page.Button.BackgroundColor, Color.FromArgb("#010203"));
+			var page = new Maui22536(inflator);
+			Assert.Equal(Color.FromArgb("#010203"), page.Button.BackgroundColor);
 		}
 	}
 }

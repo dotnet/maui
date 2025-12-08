@@ -14,11 +14,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var result = (CellTableViewCell)base.GetCell(item, reusableCell, tv);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var imageCell = (ImageCell)item;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			SetImage(imageCell, result);
 
@@ -27,16 +31,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void HandleCellPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var imageCell = (ImageCell)sender;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var tvc = (CellTableViewCell)GetRealCell(imageCell);
 
 			base.HandleCellPropertyChanged(sender, args);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
 				SetImage(imageCell, tvc);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		void SetImage(ImageCell cell, CellTableViewCell target)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var source = cell.ImageSource;
 

@@ -1,6 +1,4 @@
-﻿using UIKit;
-using Xunit;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -10,6 +8,8 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using UIKit;
+using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
@@ -66,6 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class ScrollTests : ControlsHandlerTestBase
 		{
 			[Fact]
@@ -126,6 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class NextKeyboardTests : ControlsHandlerTestBase
 		{
 			void SetupNextBuilder()
@@ -134,11 +136,15 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					builder.ConfigureMauiHandlers(handlers =>
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<ListView, ListViewRenderer>();
 						handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 						handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 						handlers.AddHandler<Entry, EntryHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<EntryCell, EntryCellRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 					});
 				});
 			}
@@ -154,12 +160,14 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var listView = new ListView()
 				{
 					ItemTemplate = new DataTemplate(() =>
 					{
 						var cell = new EntryCell();
 						cell.SetBinding(EntryCell.TextProperty, ".");
+#pragma warning restore CS0618 // Type or member is obsolete
 						return cell;
 					}),
 					ItemsSource = Enumerable.Range(0, 10).Select(i => $"EntryCell {i}").ToList()
@@ -199,6 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var tableView = new TableView()
 				{
 					Root = new TableRoot("Table Title") {
@@ -215,6 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var layout = new VerticalStackLayout()
 				{

@@ -16,9 +16,7 @@ public class Issue2809 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{
-#if ANDROID && WINDOWS // WaitForMoreButton is only supported on Android and Windows
 		App.WaitForMoreButton();
-#endif
 		App.TapMoreButton();
 		App.Tap("Item 1");
 	}

@@ -8,6 +8,13 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement
 	{
+		static VisualElement() => RemapIfNeeded();
+
+		internal static new void RemapIfNeeded()
+		{
+			RemappingHelper.RemapIfNeeded(typeof(VisualElement), RemapForControls);
+		}
+
 		internal static new void RemapForControls()
 		{
 			RemapForControls(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper);
@@ -17,6 +24,8 @@ namespace Microsoft.Maui.Controls
 			IPropertyMapper<IView, IViewHandler> viewMapper,
 			CommandMapper<IView, IViewHandler> commandMapper)
 		{
+			Element.RemapIfNeeded();
+
 #if WINDOWS
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);

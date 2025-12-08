@@ -6,7 +6,6 @@ parameters:
   cakeArgs: '' # additional cake args
   deviceTestConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -18,184 +17,167 @@ parameters:
   poolName: 'Azure Pipelines'
   skipDotNet: false
   buildType: 'buildAndTest' # [ buildAndTest, buildOnly, testOnly ]
+  useCoreClr: false # Use CoreCLR for Android builds
 
 steps:
 
-  ##################################################
-  #               Provision Machine                #
-  ##################################################
+##################################################
+#               Provision Machine                #
+##################################################
 
-  # Clean the machine for iOS builds that are running on physical machines
-  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
-    - bash: |
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
-        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-      displayName: 'Clean bot'
-      continueOnError: true
-      timeoutInMinutes: 60
+# Clean the machine for iOS builds that are running on physical machines
+- ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
+  - bash: |
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+      $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    displayName: 'Clean bot'
+    continueOnError: true
+    timeoutInMinutes: 60
 
-  # Enable KVM for Android builds on Linux
-  - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
-    - bash: |
-        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-        sudo udevadm control --reload-rules
-        sudo udevadm trigger --name-match=kvm
-      displayName: Enable KVM
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))      
+# Enable KVM for Android builds on Linux
+- ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
+  - bash: |
+      echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+      sudo udevadm control --reload-rules
+      sudo udevadm trigger --name-match=kvm
+    displayName: Enable KVM
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  # Provision the various SDKs that are needed
-  - template: provision.yml
-    parameters:
-      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      skipJdk: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidPlatformApis: ${{ or(eq(parameters.buildType, 'testOnly'), ne(parameters.platform, 'android')) }}
-      onlyAndroidPlatformDefaultApis: true
-      skipAndroidEmulatorImages: ${{ or(eq(parameters.buildType, 'buildOnly'), ne(parameters.platform, 'android')) }}
-      skipAndroidCreateAvds: true
-      androidEmulatorApiLevel: ${{ parameters.apiversion }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if eq(parameters.skipProvisioning, false) }}:
-        skipProvisionator : false
-        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-      skipInternalFeeds: ${{ eq(parameters.buildType, 'testOnly') }}
+# Provision the various SDKs that are needed
+- template: provision.yml
+  parameters:
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipJdk: ${{ ne(parameters.platform, 'android') }}
+    skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
+    skipAndroidPlatformApis: ${{ or(eq(parameters.buildType, 'testOnly'), ne(parameters.platform, 'android')) }}
+    onlyAndroidPlatformDefaultApis: true
+    skipAndroidEmulatorImages: ${{ or(eq(parameters.buildType, 'buildOnly'), ne(parameters.platform, 'android')) }}
+    skipAndroidCreateAvds: true
+    androidEmulatorApiLevel: ${{ parameters.apiversion }}
+    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+    ${{ if eq(parameters.skipProvisioning, false) }}:
+      skipProvisionator: false
+    skipInternalFeeds: true
 
+##################################################
+#                Provision .NET                  #
+##################################################
 
-  ##################################################
-  #                Provision .NET                  #
-  ##################################################
+# Install a local .NET SDK
+- script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
+  displayName: 'Install .NET'
+  condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
+  retryCountOnTaskFailure: 3
+  env:
+    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+    PRIVATE_BUILD: $(PrivateBuild)
 
-  # Install a local .NET SDK
-  - script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
-    displayName: 'Install .NET'
-    condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
-    retryCountOnTaskFailure: 3
-    env:
-      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
+# Add the .NET SDK to the PATH
+- pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+  displayName: 'Add .NET to PATH'
+  condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
 
-  # Add the .NET SDK to the PATH
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: 'Add .NET to PATH'
-    condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
+##################################################
+#                 Prepare Build                  #
+##################################################
 
+# Do not prepare the .NET install if we are not going to build anything
+- ${{ if ne(parameters.buildType, 'testOnly') }}:
 
-  ##################################################
-  #                 Prepare Build                  #
-  ##################################################
+  # Download the pre-build .NET MAUI workload and install it to the local .NET SDK
+  - ${{ if eq(parameters.useArtifacts, true) }}:
 
-  # Do not prepare the .NET install if we are not going to build anything
-  - ${{ if ne(parameters.buildType, 'testOnly') }}:
-
-    # Download the pre-build .NET MAUI workload and install it to the local .NET SDK
-    - ${{ if eq(parameters.useArtifacts, true) }}:
-
-      - task: DownloadBuildArtifacts@0
-        displayName: 'Download Packages'
-        inputs:
-          artifactName: ${{ parameters.artifactName }}
-          itemPattern: ${{ parameters.artifactItemPattern }}
-          downloadPath: ${{ parameters.checkoutDirectory }}/artifacts
-
-      - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
-        displayName: Move the downloaded artifacts
-
-      - script: dotnet cake --target=dotnet-local-workloads --verbosity=diagnostic
-        displayName: 'Install .NET (Local Workloads)'
-        retryCountOnTaskFailure: 2
-        workingDirectory: ${{ parameters.checkoutDirectory }}
-        env:
-          DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-          PRIVATE_BUILD: $(PrivateBuild)
-
-    # Run the build for .NET MAUI on this machine
-    - ${{ else }}:
-
-      - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
-        displayName: 'Build the MSBuild Tasks'
-
-
-  ##################################################
-  #                  Prepare Run                   #
-  ##################################################
-
-  # If this job is a test-only job, download the pre-built artifacts from the build job
-  - task: DownloadPipelineArtifact@2
-    displayName: 'Download Build'
-    condition: and(succeeded(), eq('${{ parameters.buildType }}', 'testOnly'))
-    inputs:
-      artifactName: ${{ parameters.appArtifactName }}
-      targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-
-  ##################################################
-  #                  Build / Run                   #
-  ##################################################
-
-  # First run the build if this is a build-only or build-and-test job
-  - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
-    displayName: Execute Build
-    workingDirectory: ${{ parameters.checkoutDirectory }}
-    condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))
-    retryCountOnTaskFailure: 1
-
-  # Then run the tests if this is a test-only or build-and-test job
-  - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="testOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
-    displayName: Execute Test Run
-    workingDirectory: ${{ parameters.checkoutDirectory }}
-    condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
-    retryCountOnTaskFailure: 1
-
-
-  ##################################################
-  #                    Publish                     #
-  ##################################################
-
-  # Cleanup and create simulator logs for iOS builds
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - script: dotnet cake --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
-      displayName: Cleanup and Create Simulator Logs
-      condition: always()
-      continueOnError: true
-
-  # Publish the artifacts directory if this is a build-only job
-  - ${{ if eq(parameters.buildType, 'buildOnly') }}:
-    - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-      displayName: Publish Succeeded Artifacts Directory
-      condition: succeeded()
-      artifact: ${{ parameters.appArtifactName }}
-    - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-      displayName: Publish Failed Artifacts Directory
-      condition: not(succeeded())
-      artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
-
-  # Publish the test results
-  - ${{ if ne(parameters.buildType, 'buildOnly') }}:
-    - task: PublishTestResults@2
-      displayName: Publish the $(Agent.JobName) test results
-      condition: always()
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Packages'
       inputs:
-        testResultsFormat: xUnit
-        testResultsFiles: '$(TestResultsDirectory)/**/TestResults*(-*).xml'
-        testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+        artifactName: ${{ parameters.artifactName }}
+        itemPattern: ${{ parameters.artifactItemPattern }}
+        downloadPath: ${{ parameters.checkoutDirectory }}/artifacts
 
-  # Publish the job artifacts
-  - task: PublishBuildArtifacts@1
-    displayName: Publish Logs
+    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
+      displayName: Move the downloaded artifacts
+
+    - script: dotnet cake --target=dotnet-local-workloads --verbosity=diagnostic
+      displayName: 'Install .NET (Local Workloads)'
+      retryCountOnTaskFailure: 2
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+      env:
+        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+        PRIVATE_BUILD: $(PrivateBuild)
+
+  # Run the build for .NET MAUI on this machine
+  - ${{ else }}:
+
+    - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
+      displayName: 'Build the MSBuild Tasks'
+
+##################################################
+#                  Prepare Run                   #
+##################################################
+
+# If this job is a test-only job, download the pre-built artifacts from the build job
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Build'
+  condition: and(succeeded(), eq('${{ parameters.buildType }}', 'testOnly'))
+  inputs:
+    artifactName: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
+    targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
+##################################################
+#                  Build / Run                   #
+##################################################
+
+# First run the build if this is a build-only or build-and-test job
+- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --coreclr="${{ parameters.useCoreClr }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
+  displayName: Execute Build
+  workingDirectory: ${{ parameters.checkoutDirectory }}
+  condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))
+  retryCountOnTaskFailure: 1
+
+# Then run the tests if this is a test-only or build-and-test job
+- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="testOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
+  displayName: Execute Test Run
+  workingDirectory: ${{ parameters.checkoutDirectory }}
+  condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
+  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android'), eq(parameters.platform, 'ios')) }}:
+    retryCountOnTaskFailure: 1
+
+##################################################
+#                    Publish                     #
+##################################################
+
+# Cleanup and create simulator logs for iOS builds
+- ${{ if eq(parameters.platform, 'ios')}}:
+  - script: dotnet cake --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+    displayName: Cleanup and Create Simulator Logs
+    condition: always()
+    continueOnError: true
+
+# Publish the artifacts directory if this is a build-only job
+- ${{ if eq(parameters.buildType, 'buildOnly') }}:
+  - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+    displayName: Publish Succeeded Artifacts Directory
+    condition: succeeded()
+    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
+  - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+    displayName: Publish Failed Artifacts Directory
+    condition: not(succeeded())
+    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}_failed_$(System.JobAttempt)
+
+# Publish the test results
+- ${{ if ne(parameters.buildType, 'buildOnly') }}:
+  - task: PublishTestResults@2
+    displayName: Publish the $(Agent.JobName) test results
     condition: always()
     inputs:
-      artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+      testResultsFormat: xUnit
+      testResultsFiles: '$(TestResultsDirectory)/**/*Results*(-*).xml'
+      testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
-
-  ##################################################
-  #                    Reboot                      #
-  ##################################################
-
-  # Reboot the physical macs after running iOS tests
-  - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'ios')) }}:
-    - ${{ if and(ne(parameters.poolName, 'Azure Pipelines'), eq(variables['System.TeamProject'], 'devdiv') ) }}:
-      # This must always be placed as the last step in the job
-      - template: agent-rebooter/mac.v1.yml@yaml-templates
-        parameters:
-          AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+# Publish the job artifacts
+- task: PublishBuildArtifacts@1
+  displayName: Publish Logs
+  condition: always()
+  inputs:
+    artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'

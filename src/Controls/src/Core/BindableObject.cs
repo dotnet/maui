@@ -482,7 +482,7 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
-			if (value is BindingBase binding && !property.ReturnType.IsAssignableFrom(typeof(BindableProperty)))
+			if (value is BindingBase binding && !property.ReturnType.IsAssignableFrom(typeof(BindingBase)))
 			{
 				SetBinding(property, binding);
 				return;

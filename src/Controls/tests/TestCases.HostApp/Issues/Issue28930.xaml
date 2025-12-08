@@ -2,6 +2,7 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue28930">
   <VerticalStackLayout>
     <Border Stroke="Violet"
@@ -10,6 +11,7 @@
       <VerticalStackLayout Spacing="10">
         <Label Text="CAROUSEL"
                TextTransform="Uppercase" />
+        <!--https://github.com/dotnet/maui/issues/29402 -->
         <CarouselView x:Name="MyCarousel"
                       AutomationId="MyCarousel"
                       HorizontalOptions="Fill"
@@ -31,7 +33,7 @@
                     RowDefinitions="*,Auto">
                 <Label Grid.ColumnSpan="4"
                        Grid.Row="1"
-                       AutomationId="ItemLabel"
+                       AutomationId="{Binding .}"
                        Text="{Binding .}"
                        VerticalTextAlignment="Center"
                        HorizontalTextAlignment="Center" />

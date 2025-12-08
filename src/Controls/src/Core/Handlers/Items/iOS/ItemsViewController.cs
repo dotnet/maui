@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class ItemsViewController<TItemsView> : UICollectionViewController, MauiCollectionView.ICustomMauiCollectionViewDelegate
+	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (disposing)
 			{
 				ItemsSource?.Dispose();
+
+				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
 
 				CollectionView.Delegate = null;
 				Delegator?.Dispose();
@@ -187,8 +189,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.LoadView();
 			var collectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
-			collectionView.SetCustomDelegate(this);
+			((IUIViewLifeCycleEvents)collectionView).MovedToWindow += MovedToWindow;
 			CollectionView = collectionView;
+		}
+
+		private void MovedToWindow(object sender, EventArgs e)
+		{
+			if (CollectionView?.Window != null)
+			{
+				AttachingToWindow();
+			}
+			else
+			{
+				DetachingFromWindow();
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -210,7 +224,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			base.ViewWillLayoutSubviews();
 
-			if (needsCellLayout || !_laidOut)
+			if (needsCellLayout || // A cell changed its measure
+				!_laidOut || // We have never laid out
+							 // With no cells, nothing will trigger a layout when bounds change,
+							 // but we still need to properly lay out supplementary views
+				ItemsSource.ItemCount == 0)
 			{
 				// We don't want to mess up with ContentOffset while refreshing, given that's also gonna cause
 				// a change in the content's offset Y.
@@ -239,24 +257,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
 			var visibleCells = CollectionView.VisibleCells;
-			List<NSIndexPath> invalidatedPaths = null;
+			List<TemplatedCell> invalidatedCells = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true } cell)
 				{
-					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
-					var path = CollectionView.IndexPathForCell(cell);
-					invalidatedPaths.Add(path);
+					invalidatedCells ??= [];
+					invalidatedCells.Add(cell);
 				}
 			}
 
-			if (invalidatedPaths != null)
+			if (invalidatedCells is not null)
 			{
-				var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
-				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				// GridLayout has a special positioning override when there's only one item
+				// so we have to invalidate the layout entirely to trigger that special case.
+				if (ItemsSource.ItemCount == 1)
+				{
+					CollectionView.CollectionViewLayout.InvalidateLayout();
+				}
+				else
+				{
+					var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
+					layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+					CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				}
 			}
 		}
 
@@ -273,18 +299,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return false;
-		}
-
-		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
-		{
-			if (CollectionView?.Window != null)
-			{
-				AttachingToWindow();
-			}
-			else
-			{
-				DetachingFromWindow();
-			}
 		}
 
 		void InvalidateMeasureIfContentSizeChanged()
@@ -414,7 +428,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateFlowDirection()
 		{
-			CollectionView.UpdateFlowDirection(ItemsView);
+			if (ItemsView.Handler.PlatformView is UIView itemsView)
+			{
+				itemsView.UpdateFlowDirection(ItemsView);
+				if (ItemsView.ItemTemplate is not null)
+				{
+					foreach (var child in ItemsView.LogicalChildrenInternal)
+					{
+						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
+						{
+							view.UpdateFlowDirection(ve);
+						}
+					}
+				}
+				else
+				{
+					// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
+					if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+					{
+						foreach (var cell in visibleCells.OfType<DefaultCell>())
+						{
+							cell.Label.UpdateFlowDirection(ItemsView);
+						}
+					}
+				}
+			}
 
 			if (_emptyViewDisplayed)
 			{
@@ -808,8 +846,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var frame = DetermineEmptyViewFrame();
 
-			_emptyUIView.Frame = frame;
+			_emptyViewFormsElement?.Measure(frame.Width, frame.Height);
 			_emptyViewFormsElement?.Arrange(frame.ToRectangle());
+			_emptyUIView.Frame = frame;
 		}
 
 		TemplatedCell CreateAppropriateCellForLayout()
@@ -924,6 +963,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					!Equals(itemsSource[indexPath], bindingContext))
 				{
 					templatedCell.Unbind();
+
+					if (CollectionView is MauiCollectionView collectionView)
+					{
+						// When removing a cell, we need to trigger a layout update in order to sync the footer position
+						collectionView.NeedsCellLayout = true;
+					}
 				}
 			}
 		}

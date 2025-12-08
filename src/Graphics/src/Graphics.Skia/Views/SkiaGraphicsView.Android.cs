@@ -7,6 +7,9 @@ using SkiaSharp.Views.Android;
 
 namespace Microsoft.Maui.Graphics.Skia.Views
 {
+	/// <summary>
+	/// A SkiaSharp-based graphics view for Android that can render <see cref="IDrawable"/> objects.
+	/// </summary>
 	public class SkiaGraphicsView : SKCanvasView
 	{
 		private IDrawable _drawable;
@@ -15,6 +18,11 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 		private float _width, _height;
 		private readonly float _scale = 1;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaGraphicsView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context.</param>
+		/// <param name="drawable">The drawable object to render in this view.</param>
 		public SkiaGraphicsView(Context context, IDrawable drawable = null) : base(context)
 		{
 			_scale = Resources.DisplayMetrics.Density;
@@ -23,6 +31,9 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 			Drawable = drawable;
 		}
 
+		/// <summary>
+		/// Gets or sets the drawable object to render in this view.
+		/// </summary>
 		public IDrawable Drawable
 		{
 			get => _drawable;

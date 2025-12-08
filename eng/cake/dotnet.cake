@@ -11,6 +11,8 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string officialBuildId = Argument("officialbuildid", "");
 
+string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
+
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 var rootFolder = Context.Environment.WorkingDirectory;
@@ -38,12 +40,14 @@ var NuGetOnlyPackages = new string[] {
 };
 public enum RuntimeVariant
 {
-	Mono,
-	NativeAOT
+    Mono,
+    NativeAOT,
+    CoreCLR
 }
 
 RuntimeVariant RUNTIME_VARIANT = Argument("runtimevariant", RuntimeVariant.Mono);
 bool USE_NATIVE_AOT = RUNTIME_VARIANT == RuntimeVariant.NativeAOT ? true : false;
+bool USE_CORECLR = RUNTIME_VARIANT == RuntimeVariant.CoreCLR ? true : false;
 
 ProcessTFMSwitches();
 
@@ -53,11 +57,11 @@ Task("dotnet")
     .Description("Provisions the .NET SDK into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
-        if (!localDotnet) 
+        if (!localDotnet)
             return;
 
         //We are passing a nuget folder with nuget locations
-        if(!string.IsNullOrEmpty(nugetSource))
+        if (!string.IsNullOrEmpty(nugetSource))
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File($"{rootFolder}/NuGet.config");
@@ -72,19 +76,20 @@ Task("dotnet")
                 .SetConfiguration(configuration),
         });
 
-        DotNetTool("tool",  new DotNetToolSettings {
-		    ToolPath = dotnetPath,
-		    DiagnosticOutput = true,	
-		    ArgumentCustomization = args => args.Append("restore")
-	    });
+        DotNetTool("tool", new DotNetToolSettings
+        {
+            ToolPath = dotnetPath,
+            DiagnosticOutput = true,
+            ArgumentCustomization = args => args.Append("restore")
+        });
     });
 
 Task("dotnet-local-workloads")
     .Does(() =>
     {
-        if (!localDotnet) 
+        if (!localDotnet)
             return;
-        
+
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -102,11 +107,12 @@ Task("dotnet-local-workloads")
             ToolPath = dotnetPath,
         });
 
-        DotNetTool("tool",  new DotNetToolSettings {
-		    ToolPath = dotnetPath,
-		    DiagnosticOutput = true,	
-		    ArgumentCustomization = args => args.Append("restore")
-	    });
+        DotNetTool("tool", new DotNetToolSettings
+        {
+            ToolPath = dotnetPath,
+            DiagnosticOutput = true,
+            ArgumentCustomization = args => args.Append("restore")
+        });
     });
 
 Task("dotnet-buildtasks")
@@ -143,7 +149,10 @@ Task("dotnet-build")
         }
         else
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            // On macOS, for this type of build we don't need to ensure that the provisioning profile is required
+            var properties = new Dictionary<string, string>();
+            properties["CodesignRequireProvisioningProfile"] = "false";
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", properties);
         }
     });
 
@@ -155,9 +164,10 @@ Task("dotnet-samples")
 
         var properties = new Dictionary<string, string>();
 
-        if(useNuget)
+        if (useNuget)
         {
-            properties = new Dictionary<string, string> {
+            properties = new Dictionary<string, string>
+            {
                 ["UseWorkload"] = "true",
                 // ["GenerateAppxPackageOnBuild"] = "true",
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
@@ -195,13 +205,26 @@ Task("uitests-apphost")
 
         var properties = new Dictionary<string, string>();
 
-        if(useNuget)
+        if (USE_CORECLR)
         {
-            properties = new Dictionary<string, string> {
-                ["UseWorkload"] = "true",
-                // ["GenerateAppxPackageOnBuild"] = "true",
-                ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-            };
+            Information("Building for CoreCLR");
+            properties.Add("UseMonoRuntime", "false");
+            properties.Add("TargetFramework", $"{DefaultDotnetVersion}-android");
+        }
+
+        if (USE_NATIVE_AOT)
+        {
+            Information("Building for NativeAOT");
+            properties.Add("_UseNativeAot", "true");
+            properties.Add("RuntimeIdentifier", "iossimulator-x64");
+        }
+
+        if (useNuget)
+        {
+            properties.Add("UseWorkload", "true");
+            // properties.Add("GenerateAppxPackageOnBuild", "true");
+            // We are passing a nuget folder with nuget locations
+            properties.Add("RestoreConfigFile", tempDir.CombineWithFilePath("NuGet.config").FullPath);
         }
         RunMSBuildWithDotNet("./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj", properties, binlogPrefix: "uitests-apphost-");
     });
@@ -231,7 +254,7 @@ Task("dotnet-test")
     .Description("Build the solutions")
     .Does(() =>
     {
-        var tests = new []
+        var tests = new[]
         {
             "**/Controls.Core.UnitTests.csproj",
         //    "**/Controls.Core.Design.UnitTests.csproj",
@@ -249,7 +272,7 @@ Task("dotnet-test")
 
         foreach (var test in tests)
         {
-            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests"))) 
+            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests")))
             {
                 continue;
             }
@@ -289,8 +312,8 @@ Task("dotnet-pack-maui")
         {
             sln = "./eng/Microsoft.Maui.Packages-mac.slnf";
         }
- 
-        if(string.IsNullOrEmpty(officialBuildId))
+
+        if (string.IsNullOrEmpty(officialBuildId))
         {
             officialBuildId = DateTime.UtcNow.ToString("yyyyMMdd.1");
         }
@@ -361,12 +384,12 @@ Task("dotnet-pack-docs")
                 if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
                     || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
                 {
-                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                    CopyFiles($"{d}/lib/**/net??.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
 
                     continue;
                 }
 
-                CopyFiles($"{d}/lib/**/net?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net??.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
             }
         }
 
@@ -486,7 +509,26 @@ Task("VSCode")
 
         UseLocalNuGetCacheFolder();
 
-        StartVisualStudioCodeForDotNet();
+        StartVisualStudioCodeForDotNet(false);
+    });
+
+Task("Insiders")
+    .Description("Provisions .NET, and launches an instance of Visual Studio Code using it.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally
+    .Does(() =>
+    {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioCodeForDotNet(true);
     });
 
 // Tasks for Local Development
@@ -507,8 +549,121 @@ Task("VS")
         UseLocalNuGetCacheFolder();
 
         StartVisualStudioForDotNet();
-    }); 
+    });
 
+
+Task("GenerateCgManifest")
+    .Description("Generates the cgmanifest.json file with versions from Versions.props")
+    .Does(() =>
+{
+    Information("Generating cgmanifest.json from Versions.props");
+
+    // Use pwsh on all platforms
+    var pwshExecutable = "pwsh";
+
+    // Check if pwsh is available
+    try
+    {
+        if (IsRunningOnWindows())
+        {
+            var exitCode = StartProcess("where", new ProcessSettings
+            {
+                Arguments = "pwsh",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            });
+            if (exitCode != 0)
+            {
+                Information("pwsh not found, falling back to powershell");
+                pwshExecutable = "powershell";
+            }
+        }
+        else
+        {
+            var exitCode = StartProcess("which", new ProcessSettings
+            {
+                Arguments = "pwsh",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            });
+            if (exitCode != 0)
+            {
+                throw new Exception("PowerShell Core (pwsh) is not installed. Please install it to continue.");
+            }
+        }
+    }
+    catch (Exception ex) when (!IsRunningOnWindows())
+    {
+        Error("Error checking for pwsh: " + ex.Message);
+        throw new Exception("PowerShell Core (pwsh) is required on non-Windows platforms. Please install it and try again.");
+    }
+
+    // Execute the PowerShell script
+    StartProcess(pwshExecutable, new ProcessSettings
+    {
+        Arguments = "-NonInteractive -ExecutionPolicy Bypass -File ./eng/scripts/update-cgmanifest.ps1"
+    });
+});
+
+Task("publicapi")
+    .Description("Clears PublicAPI.Unshipped.txt files and regenerates them with current public APIs. Processes Core, Controls, Essentials, and Graphics projects. Skips Windows files on non-Windows platforms and always skips Tizen files. Use after adding new public APIs to resolve build errors.")
+    .Does(() =>
+{
+    var corePublicApiDir = MakeAbsolute(Directory("./src/Core/src/PublicAPI"));
+    var controlsPublicApiDir = MakeAbsolute(Directory("./src/Controls/src/Core/PublicAPI"));
+    var essentialsPublicApiDir = MakeAbsolute(Directory("./src/Essentials/src/PublicAPI"));
+    var graphicsPublicApiDir = MakeAbsolute(Directory("./src/Graphics/src/Graphics/PublicAPI"));
+
+    Information("Resetting PublicAPI.Unshipped.txt files...");
+
+    // Find and clear all PublicAPI.Unshipped.txt files in Core, Controls, Essentials, and Graphics
+    var coreUnshippedFiles = GetFiles($"{corePublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var controlsUnshippedFiles = GetFiles($"{controlsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var essentialsUnshippedFiles = GetFiles($"{essentialsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var graphicsUnshippedFiles = GetFiles($"{graphicsPublicApiDir}/**/PublicAPI.Unshipped.txt");
+    var allUnshippedFiles = coreUnshippedFiles.Concat(controlsUnshippedFiles).Concat(essentialsUnshippedFiles).Concat(graphicsUnshippedFiles);
+
+    foreach (var file in allUnshippedFiles)
+    {
+        // Skip Windows-specific files if not on Windows
+        if (!IsRunningOnWindows() && file.FullPath.Contains("windows"))
+        {
+            Information($"Skipping Windows file (not on Windows): {file}");
+            continue;
+        }
+
+        // Skip Tizen-specific files
+        if (file.FullPath.Contains("tizen"))
+        {
+            Information($"Skipping Tizen file: {file}");
+            continue;
+        }
+
+        // Skip macOS-specific files
+        if (file.FullPath.Contains("macos"))
+        {
+            Information($"Skipping macOS file: {file}");
+            continue;
+        }
+
+        Information($"Clearing: {file}");
+        System.IO.File.WriteAllText(file.FullPath, string.Empty);
+    }
+
+    Information("Regenerating PublicAPI...");
+
+    // Build Controls.Core.csproj with PublicApiType=Generate
+    var settings = new DotNetBuildSettings
+    {
+        Configuration = "Debug",
+        MSBuildSettings = new DotNetMSBuildSettings()
+    };
+    settings.MSBuildSettings.Properties["PublicApiType"] = new List<string> { "Generate" };
+
+    DotNetBuild("./src/Controls/src/Core/Controls.Core.csproj", settings);
+
+    Information("PublicAPI reset and regeneration completed!");
+});
 
 bool RunPackTarget()
 {
@@ -523,7 +678,7 @@ bool RunPackTarget()
     // Does the user want to run a pack as part of a different target?
     if (HasArgument("pack") && Argument<string>("pack", "true") != "false")
         return true;
-        
+
     // If the request is to open a different sln then let's see if pack has ever run
     // if it hasn't then lets pack maui so the sln will open
     if (Argument<string>("sln", null) != null)
@@ -543,6 +698,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
     envVariables.Add("DOTNET_ROOT", dotnet);
     envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+    envVariables.Add("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     envVariables.Add("MSBuildEnableWorkloadResolver", "true");
 
     var existingPath = EnvironmentVariable("PATH");
@@ -559,12 +715,19 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
     var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
-    
+    var dotnetHostPath = IsRunningOnWindows() ? $"{dotnet}/dotnet.exe" : $"{dotnet}/dotnet";
+  
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+    if (IsRunningOnWindows())
+    { 
+        //workaround for dev18 
+        SetEnvironmentVariable("DOTNET_HOST_PATH", dotnetHostPath);
+    }
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT", "true");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
@@ -590,7 +753,7 @@ void UseLocalNuGetCacheFolder(bool reset = false)
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
-void StartVisualStudioCodeForDotNet()
+void StartVisualStudioCodeForDotNet(bool useInsiders)
 {
     if (IsCIBuild())
     {
@@ -598,12 +761,14 @@ void StartVisualStudioCodeForDotNet()
         return;
     }
 
-    if(localDotnet)
+    if (localDotnet)
     {
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    string codeProcessName = useInsiders ? "code-insiders" : "code";
+
+    StartProcess(codeProcessName, new ProcessSettings { EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()
@@ -633,7 +798,7 @@ void StartVisualStudioForDotNet()
         return;
     }
 
-    if(localDotnet)
+    if (localDotnet)
     {
         SetDotNetEnvironmentVariables();
     }
@@ -643,13 +808,13 @@ void StartVisualStudioForDotNet()
         var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
-    
+
         StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     }
     else
     {
-       
-        StartProcess("open", new ProcessSettings{ Arguments = sln, EnvironmentVariables = GetDotNetEnvironmentVariables() });
+
+        StartProcess("open", new ProcessSettings { Arguments = sln, EnvironmentVariables = GetDotNetEnvironmentVariables() });
     }
 }
 
@@ -673,8 +838,8 @@ void RunMSBuildWithDotNet(
     var binlog = string.IsNullOrEmpty(targetFramework) ?
         $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"" :
         $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"";
-    
-    if(localDotnet)
+
+    if (localDotnet)
         SetDotNetEnvironmentVariables();
 
     var msbuildSettings = new DotNetMSBuildSettings()
@@ -682,9 +847,15 @@ void RunMSBuildWithDotNet(
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
         .EnableBinaryLogger(binlog)
-        
-       // .SetVerbosity(Verbosity.Diagnostic)
+
+        // .SetVerbosity(Verbosity.Diagnostic)
         ;
+
+    var loggerArg = GetMSBuildForwardingLoggerPath();
+    if (loggerArg != null)
+    {
+        msbuildSettings.WithArgumentCustomization(args => args.Append(loggerArg));
+    }
 
     if (warningsAsError)
     {
@@ -711,7 +882,7 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
-    
+
         return args;
     };
 
@@ -721,7 +892,7 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string, string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
     if (string.IsNullOrWhiteSpace(filter))
     {
@@ -730,7 +901,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
     if (!string.IsNullOrWhiteSpace(filter))
     {
-        Information("Run Tests With Filter {0}", filter);	
+        Information("Run Tests With Filter {0}", filter);
     }
 
     string binlog;
@@ -743,7 +914,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     {
         // Make sure the path doesn't refer to the dotnet executable and make path absolute
         var localDotnetRoot = MakeAbsolute(Directory(System.IO.Path.GetDirectoryName(pathDotnet)));
-    	Information("new dotnet root: {0}", localDotnetRoot);
+        Information("new dotnet root: {0}", localDotnetRoot);
 
         SetDotNetEnvironmentVariables(localDotnetRoot.FullPath);
     }
@@ -751,7 +922,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
         binlog = $"{logDirectory}/{name}-{config}.binlog";
-        results = $"{name}-{config}.trx";   
+        results = $"{name}-{config}.trx";
     }
     else
     {
@@ -762,47 +933,57 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     Information("Run Test binlog: {0}", binlog);
 
     var settings = new DotNetTestSettings
-        {
-            Configuration = config,
-            NoBuild = noBuild,
-            Filter = filter,
-            Loggers = { 
+    {
+        Configuration = config,
+        NoBuild = noBuild,
+        Filter = filter,
+        Loggers = {
                 $"trx;LogFileName={results}",
                 $"console;verbosity=normal"
-            }, 
-           	ResultsDirectory = GetTestResultsDirectory(),
+            },
+        ResultsDirectory = GetTestResultsDirectory(),
         //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
-            ArgumentCustomization = args => 
-            { 
-                args.Append($"-bl:{binlog}");
-                if(maxCpuCount > 0)
-                {
-                    args.Append($"-maxcpucount:{maxCpuCount}");
-                }
 
-                if(argsExtra != null)
-                {
-                    foreach(var prop in argsExtra)
-                    {
-                        args.Append($"/p:{prop.Key}={prop.Value}");
-                    }        
-                }        
-                    
-                // https://github.com/microsoft/vstest/issues/5112
-                args.Append($"/p:VStestUseMSBuildOutput=false");
-                
-                return args;
+        ArgumentCustomization = args => 
+        { 
+            var loggerArg = GetMSBuildForwardingLoggerPath();
+            if (loggerArg != null)
+            {
+               args.Append(loggerArg);
             }
-        };
-    
-    if(!string.IsNullOrEmpty(pathDotnet))
+
+            args.Append($"-bl:{binlog}");
+            if(maxCpuCount > 0)
+            {
+               args.Append($"-maxcpucount:{maxCpuCount}");
+            }
+
+            if (argsExtra != null)
+            {
+                foreach (var prop in argsExtra)
+                {
+                    args.Append($"/p:{prop.Key}={prop.Value}");
+                }
+            }
+
+            // https://github.com/microsoft/vstest/issues/5112
+            args.Append($"/p:VStestUseMSBuildOutput=false");
+
+            return args;
+        }
+    };
+
+    if (!string.IsNullOrEmpty(pathDotnet))
     {
         settings.ToolPath = pathDotnet;
     }
 
-    try {
+    try
+    {
         DotNetTest(csproj, settings);
-    } finally {
+    }
+    finally
+    {
         Information("Test Run complete: {0}", results);
     }
 }
@@ -846,25 +1027,25 @@ void ProcessTFMSwitches()
 {
     List<string> replaceTarget = new List<String>();
 
-    if(HasArgument("android"))
+    if (HasArgument("android"))
         replaceTarget.Add("_IncludeAndroid");
 
-    if(HasArgument("windows"))
+    if (HasArgument("windows"))
         replaceTarget.Add("_IncludeWindows");
 
-    if(HasArgument("ios"))
+    if (HasArgument("ios"))
         replaceTarget.Add("_IncludeIos");
 
-    if(HasArgument("catalyst") || HasArgument("maccatalyst"))
+    if (HasArgument("catalyst") || HasArgument("maccatalyst"))
         replaceTarget.Add("_IncludeMacCatalyst");
 
-    if(HasArgument("tizen"))
+    if (HasArgument("tizen"))
         replaceTarget.Add("_IncludeTizen");
 
     if (replaceTarget.Count > 0)
     {
         CopyFile("Directory.Build.Override.props.in", "Directory.Build.Override.props");
-        foreach(var replaceWith in replaceTarget)
+        foreach (var replaceWith in replaceTarget)
         {
             ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
         }
@@ -874,4 +1055,26 @@ void ProcessTFMSwitches()
         if (FileExists("Directory.Build.Override.props"))
             DeleteFile("Directory.Build.Override.props");
     }
+}
+
+string GetMSBuildForwardingLoggerPath()
+{
+    if (!IsCIBuild())
+        return null;
+
+    // Download and extract MSBuild logger
+    var loggerUrl = "https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msbuildlogger.zip";
+    var loggerDir = MakeAbsolute(Directory("./artifacts/msbuildlogger"));
+    EnsureDirectoryExists(loggerDir);
+    var loggerZip = loggerDir.CombineWithFilePath("msbuildlogger.zip");
+
+    if (!FileExists(loggerZip))
+    {
+        DownloadFile(loggerUrl, loggerZip.FullPath);
+        Unzip(loggerZip.FullPath, loggerDir.FullPath);
+    }
+
+    var loggerArg = $"-dl:CentralLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"*ForwardingLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"";
+
+    return loggerArg;
 }

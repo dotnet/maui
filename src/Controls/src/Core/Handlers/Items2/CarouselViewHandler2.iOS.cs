@@ -27,7 +27,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
-			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
+			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
+			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 		};
 	}
 
@@ -38,122 +39,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override UICollectionViewLayout SelectLayout()
 		{
-			bool isHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+			var weakItemsView = new WeakReference<CarouselView>(ItemsView);
+			var weakController = new WeakReference<CarouselViewController2>((CarouselViewController2)Controller);
 
-			NSCollectionLayoutDimension itemWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
-			NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-			NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
-			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-			nfloat itemSpacing = 0;
-			NSCollectionLayoutGroup group = null;
-
-			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
-			{
-				if (VirtualView is null)
-				{
-					return null;
-				}
-				double sectionMargin = 0.0;
-				if (!isHorizontal)
-				{
-					sectionMargin = VirtualView.PeekAreaInsets.VerticalThickness / 2;
-					var newGroupHeight = environment.Container.ContentSize.Height - VirtualView.PeekAreaInsets.VerticalThickness;
-					groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
-					groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
-				}
-				else
-				{
-					sectionMargin = VirtualView.PeekAreaInsets.HorizontalThickness / 2;
-					var newGroupWidth = environment.Container.ContentSize.Width - VirtualView.PeekAreaInsets.HorizontalThickness;
-					groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
-					groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-				}
-
-				// Each item has a size
-				var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
-				// Create the item itself from the size
-				var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
-
-				//item.ContentInsets = new NSDirectionalEdgeInsets(0, itemInset, 0, 0);
-
-				var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
-
-				if (OperatingSystem.IsIOSVersionAtLeast(16))
-				{
-					group = isHorizontal ? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1) :
-										   NSCollectionLayoutGroup.GetVerticalGroup(groupSize, item, 1);
-				}
-				else
-				{
-					group = isHorizontal ? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1) :
-										   NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
-				}
-
-				// Create our section layout
-				var section = NSCollectionLayoutSection.Create(group: group);
-				section.InterGroupSpacing = itemSpacing;
-				section.OrthogonalScrollingBehavior = isHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
-				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
-				{
-					//This will allow us to SetPosition when we are scrolling the items
-					//based on the current page
-					var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
-
-					// Check if we not are at the beginning or end of the page and if we have items
-					if (Math.Abs(page % 1) > (double.Epsilon * 100) || Controller.ItemsSource.ItemCount <= 0)
-					{
-						return;
-					}
-
-					var pageIndex = (int)page;
-					var carouselPosition = pageIndex;
-
-					var cv2Controller = (CarouselViewController2)Controller;
-
-					//If we are looping, we need to get the correct position
-					if (ItemsView.Loop)
-					{
-						var maxIndex = (Controller.ItemsSource as ILoopItemsViewSource).LoopCount - 1;
-
-						//To mimic looping, we needed to modify the ItemSource and inserted a new item at the beginning and at the end
-						if (pageIndex == maxIndex)
-						{
-							//When at last item, we need to change to 2nd item, so we can scroll right or left
-							pageIndex = 1;
-						}
-						else if (pageIndex == 0)
-						{
-							//When at first item, need to change to one before last, so we can scroll right or left
-							pageIndex = maxIndex - 1;
-						}
-
-						//since we added one item at the beginning of our ItemSource, we need to subtract one
-						carouselPosition = pageIndex - 1;
-
-						if (ItemsView.Position != carouselPosition)
-						{
-							//If we are updating the ItemsSource, we don't want to scroll the CollectionView
-							if (cv2Controller.IsUpdating())
-							{
-								return;
-							}
-
-							var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
-
-							//This will move the carousel to fake the loop
-							Controller.CollectionView.ScrollToItem(NSIndexPath.FromItemSection(pageIndex, 0), UICollectionViewScrollPosition.Left, false);
-
-						}
-					}
-
-					//Update the CarouselView position
-					cv2Controller?.SetPosition(carouselPosition);
-
-				};
-				return section;
-			});
-
-			return layout;
+			return LayoutFactory2.CreateCarouselLayout(weakItemsView, weakController);
 		}
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
@@ -188,6 +77,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
 			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+		}
+
+		// TODO: Change the modifier to public in .NET 10.
+		internal static void MapItemsLayout(CarouselViewHandler2 handler, CarouselView carouselView)
+		{
+			handler?.UpdateLayout();
+			(handler.Controller as CarouselViewController2)?.UpdateScrollingConstraints();
 		}
 
 		public static void MapPeekAreaInsets(CarouselViewHandler2 handler, CarouselView carouselView)

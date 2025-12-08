@@ -1,17 +1,32 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Maui.Controls.Sample
 {
 	public static class TestCases
 	{
-		public class TestCaseScreen : TableView
+		public class TestCaseScreen : CollectionView
 		{
 			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterBugzilla;
+			
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterNone;
+			
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterGitHub;
+			
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterManual;
+			
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			string _filter;
 
 			void CheckInternetAndLoadPage(Type type)
@@ -42,18 +57,6 @@ namespace Maui.Controls.Sample
 					var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
 					Application.Current.Windows[0].Page = noInternetConnectionPage;
 				}
-			}
-
-
-			static TextCell MakeIssueCell(string text, string detail, Action tapped)
-			{
-				PageToAction[text] = tapped;
-				if (detail != null)
-					PageToAction[detail] = tapped;
-
-				var cell = new TextCell { Text = text, Detail = detail };
-				cell.Tapped += (s, e) => tapped();
-				return cell;
 			}
 
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
@@ -99,7 +102,9 @@ namespace Maui.Controls.Sample
 				return navigationAction;
 			}
 
-			Page ActivatePage(Type type)
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026", 
+				Justification = "ActivatePage method is only called in non-NativeAOT builds where reflection-based test discovery is enabled.")]
+			Page ActivatePage([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			{
 				var page = Activator.CreateInstance(type) as Page;
 				if (page == null)
@@ -147,8 +152,9 @@ namespace Maui.Controls.Sample
 				}
 			}
 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			readonly List<IssueModel> _issues;
-			TableSection _section;
 
 			void VerifyNoDuplicates()
 			{
@@ -166,11 +172,10 @@ namespace Maui.Controls.Sample
 				});
 			}
 
+			[RequiresUnreferencedCode("TestCaseScreen uses reflection for test case discovery")]
 			public TestCaseScreen()
 			{
 				AutomationId = "TestCasesIssueList";
-
-				Intent = TableIntent.Settings;
 
 				var assembly = typeof(TestCases).Assembly;
 
@@ -245,7 +250,7 @@ namespace Maui.Controls.Sample
 
 				PageToAction.Clear();
 
-				var issueCells = Enumerable.Empty<TextCell>();
+				var issues = Enumerable.Empty<IssueModel>();
 
 				if (!_filterBugzilla)
 				{
@@ -253,9 +258,9 @@ namespace Maui.Controls.Sample
 						from issueModel in _issues
 						where issueModel.IssueTracker == IssueTracker.Bugzilla && issueModel.Matches(filter)
 						orderby issueModel.IssueNumber descending
-						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+						select issueModel;
 
-					issueCells = issueCells.Concat(bugzillaIssueCells);
+					issues = issues.Concat(bugzillaIssueCells);
 				}
 
 				if (!_filterGitHub)
@@ -264,9 +269,9 @@ namespace Maui.Controls.Sample
 						from issueModel in _issues
 						where issueModel.IssueTracker == IssueTracker.Github && issueModel.Matches(filter)
 						orderby issueModel.IssueNumber descending
-						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+						select issueModel;
 
-					issueCells = issueCells.Concat(githubIssueCells);
+					issues = issues.Concat(githubIssueCells);
 				}
 
 				if (!_filterManual)
@@ -275,9 +280,9 @@ namespace Maui.Controls.Sample
 						from issueModel in _issues
 						where issueModel.IssueTracker == IssueTracker.ManualTest && issueModel.Matches(filter)
 						orderby issueModel.IssueNumber descending
-						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+						select issueModel;
 
-					issueCells = issueCells.Concat(manualIssueCells);
+					issues = issues.Concat(manualIssueCells);
 				}
 
 				if (!_filterNone)
@@ -286,26 +291,57 @@ namespace Maui.Controls.Sample
 						from issueModel in _issues
 						where issueModel.IssueTracker == IssueTracker.None && issueModel.Matches(filter)
 						orderby issueModel.IssueNumber descending, issueModel.Description
-						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+						select issueModel;
 
-					issueCells = issueCells.Concat(untrackedIssueCells);
+					issues = issues.Concat(untrackedIssueCells);
 				}
 
-				if (_section != null)
+				ItemTemplate = new DataTemplate(() =>
 				{
-					Root.Remove(_section);
-				}
+					var grid = new Grid
+					{
+						Padding = 10,
+						RowDefinitions =
+						{
+							new RowDefinition { Height = GridLength.Auto },
+							new RowDefinition { Height = GridLength.Star }
+						}
+					};
 
-				_section = new TableSection("Bug Repro");
+					var tapGestureRecognizer = new TapGestureRecognizer();
+					tapGestureRecognizer.Tapped += (sender, args) =>
+					{
+						var issueModel = (IssueModel)grid.BindingContext;
+						issueModel.Action?.Invoke();
+					};
+					grid.GestureRecognizers.Add(tapGestureRecognizer);
 
-				foreach (var issueCell in issueCells)
-				{
-					_section.Add(issueCell);
-				}
+					var titleLabel = new Label
+					{
+						FontSize = 14,
+						FontAttributes = FontAttributes.Bold,
+					};
+					titleLabel.SetBinding(Label.TextProperty, "IssueNumber");
 
-				Root.Add(_section);
+					var descriptionLabel = new Label
+					{
+						FontSize = 12,
+					};
+					descriptionLabel.SetBinding(Label.TextProperty, "Description");
+
+					grid.Add(titleLabel);
+					Grid.SetRow(titleLabel, 0);
+					grid.Add(descriptionLabel);
+					Grid.SetRow(descriptionLabel, 1);
+
+					return grid;
+				});
+
+				ItemsSource = issues;
 			}
 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			HashSet<string> _exemptNames = new HashSet<string> { };
 
 			// Legacy reasons, do not add to this list
@@ -316,7 +352,13 @@ namespace Maui.Controls.Sample
 		public static NavigationPage GetTestCases()
 		{
 			TestCaseScreen testCaseScreen = null;
-			var rootLayout = new StackLayout();
+			var rootLayout = new Grid();
+
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			rootLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
 			var testCasesRoot = new ContentPage
 			{
@@ -352,7 +394,6 @@ namespace Maui.Controls.Sample
 						System.Diagnostics.Debug.WriteLine(e.Message);
 						Console.WriteLine(e.Message);
 					}
-
 				})
 			};
 
@@ -364,14 +405,21 @@ namespace Maui.Controls.Sample
 			};
 
 			rootLayout.Children.Add(leaveTestCasesButton);
+			Grid.SetRow(leaveTestCasesButton, 0);
+
 			rootLayout.Children.Add(searchBar);
+			Grid.SetRow(searchBar, 1);
+
 			rootLayout.Children.Add(searchButton);
+			Grid.SetRow(searchButton, 2);
+
+			var trackerFilter = CreateTrackerFilter(testCaseScreen);
+			rootLayout.Children.Add(trackerFilter);
+			Grid.SetRow(trackerFilter, 3);
 
 			testCaseScreen = new TestCaseScreen();
-
-			rootLayout.Children.Add(CreateTrackerFilter(testCaseScreen));
-
 			rootLayout.Children.Add(testCaseScreen);
+			Grid.SetRow(testCaseScreen, 4);
 
 			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
@@ -434,5 +482,4 @@ namespace Maui.Controls.Sample
 			cases.FilterIssues(filter);
 		}
 	}
-
 }
