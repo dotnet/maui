@@ -8,6 +8,8 @@ public class Issue6258 : TestNavigationPage
 	{
 		var page = new ContentPage();
 
+		page.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+
 		PushAsync(page);
 
 		page.Content = new ListView()
