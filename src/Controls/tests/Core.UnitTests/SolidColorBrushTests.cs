@@ -77,6 +77,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// which compares references instead of values, causing infinite loops with DynamicResource
 			// and OnPlatform<Color> because OnPlatform creates new Color instances each time
 			Assert.True(brush1.Equals(brush2));
+		}
+
+		[Fact]
 		public void TestHasTransparencySolidColorBrush()
 		{
 			SolidColorBrush nullBrush = null;
