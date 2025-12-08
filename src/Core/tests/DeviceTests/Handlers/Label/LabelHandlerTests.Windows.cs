@@ -12,7 +12,6 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class LabelHandlerTests
 	{
 		[Theory]
-		[Category(TestCategory.Fonts)]
 		[InlineData(true, Skip = "https://github.com/dotnet/maui/issues/26749")]
 		[InlineData(false)]
 		public async Task FontFamilyIsCorrectForRendering(bool validateSize)
@@ -43,7 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[Category(TestCategory.Fonts)]
 		[InlineData(true, Skip = "https://github.com/dotnet/maui/issues/26749")]
 		[InlineData(false)]
 		public async Task EmbeddedFontFamilyIsCorrectForRendering(bool validateSize)

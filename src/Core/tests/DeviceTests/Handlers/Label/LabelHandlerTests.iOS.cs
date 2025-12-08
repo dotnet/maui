@@ -83,7 +83,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Category(TestCategory.TextFormatting)]
 		public async Task CanSetAlignmentAndLineHeight()
 		{
 			// Verifying that setting LineHeight (which requires an attributed string on iOS)
@@ -111,7 +110,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Category(TestCategory.TextFormatting)]
 		public async Task TextDecorationsAppliedWhenTextAdded()
 		{
 			TextDecorations xplatTextDecorations = TextDecorations.Underline;
@@ -129,7 +127,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Category(TestCategory.TextFormatting)]
 		public async Task LineHeightSurvivesTextDecorations()
 		{
 			TextDecorations xplatTextDecorations = TextDecorations.Underline;
