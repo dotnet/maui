@@ -1292,6 +1292,53 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Scrolls to the bottom of a scrollable element by repeatedly scrolling until a bottom indicator element is found.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="scrollElementMarked">Marked selector for the element to scroll (e.g., a list item to use for scroll coordinates).</param>
+		/// <param name="bottomMarked">Marked selector for the element that indicates the bottom has been reached.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipeSpeed">The speed of the scroll gesture in milliseconds.</param>
+		/// <param name="maxScrolls">Maximum number of scroll attempts before giving up.</param>
+		public static void ScrollToBottom(this IApp app, string scrollElementMarked, string bottomMarked, ScrollStrategy strategy = ScrollStrategy.Gesture, int swipeSpeed = 50, int maxScrolls = 100)
+		{
+			var scrollElement = FindElement(app, scrollElementMarked);
+
+			app.ScrollToBottom(scrollElement, bottomMarked, strategy, swipeSpeed, maxScrolls);
+		}
+
+		/// <summary>
+		/// Scrolls to the bottom of a scrollable element by repeatedly scrolling until a bottom indicator element is found.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Query to locate the element to scroll.</param>
+		/// <param name="bottomMarked">Marked selector for the element that indicates the bottom has been reached.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipeSpeed">The speed of the scroll gesture in milliseconds.</param>
+		/// <param name="maxScrolls">Maximum number of scroll attempts before giving up.</param>
+		public static void ScrollToBottom(this IApp app, IQuery query, string bottomMarked, ScrollStrategy strategy = ScrollStrategy.Gesture, int swipeSpeed = 50, int maxScrolls = 100)
+		{
+			var scrollElement = app.FindElement(query);
+
+			app.ScrollToBottom(scrollElement, bottomMarked, strategy, swipeSpeed, maxScrolls);
+		}
+
+		internal static void ScrollToBottom(this IApp app, IUIElement? element, string bottomMarked, ScrollStrategy strategy = ScrollStrategy.Gesture, int swipeSpeed = 50, int maxScrolls = 100)
+		{
+			if (element is not null)
+			{
+				app.CommandExecutor.Execute("scrollToBottom", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "bottomMarked", bottomMarked },
+					{ "strategy", strategy },
+					{ "swipeSpeed", swipeSpeed },
+					{ "maxScrolls", maxScrolls }
+				});
+			}
+		}
+
+		/// <summary>
 		/// Scrolls right on the first element matching query.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -2375,6 +2422,33 @@ namespace UITest.Appium
 		public static void TapShellFlyoutIcon(this IApp app)
 		{
 			app.TapFlyoutIcon();
+		}
+
+		/// <summary>
+		/// Closes the flyout by tapping outside the flyout area.
+		/// This method automatically detects the screen size and taps near the right edge.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void CloseFlyout(this IApp app)
+		{
+			// Get screen dimensions from the app driver
+			if (app is AppiumApp appiumApp && appiumApp.Driver != null)
+			{
+				var driver = appiumApp.Driver;
+				var windowSize = driver.Manage().Window.Size;
+				
+				// Tap very close to the right edge to ensure we're outside the flyout
+				// Use 10px from right edge to avoid any flyout items
+				int tapX = windowSize.Width - 10;
+				int tapY = windowSize.Height / 2;
+				
+				app.TapCoordinates(tapX, tapY);
+				System.Threading.Thread.Sleep(500); // Wait for flyout to close
+			}
+			else
+			{
+				throw new InvalidOperationException("App must be an AppiumApp to close flyout");
+			}
 		}
 
 		/// <summary>

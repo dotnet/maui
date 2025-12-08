@@ -20,6 +20,7 @@ public class Bugzilla44338 : TestContentPage
 
 	protected override void Init()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = new ListView
 		{
 			ItemsSource = Items,
