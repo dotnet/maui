@@ -1,6 +1,5 @@
 # .NET Multi-platform App UI (.NET MAUI)
 
-![Build Status](https://img.shields.io/azure-devops/build/xamarin/public/57/main?label=Build&style=flat-square) 
 ![NuGet](https://img.shields.io/nuget/v/Microsoft.Maui.Controls?style=flat-square&label=NuGet)
 ![License](https://img.shields.io/github/license/dotnet/maui?style=flat-square&label=License)
 
