@@ -59,8 +59,6 @@ namespace Microsoft.Maui.Controls
 			return this;
 		}
 
-
-
 		internal void Apply(BindableObject target, SetterSpecificity specificity)
 		{
 			if (target == null)
@@ -86,7 +84,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void UnApply(BindableObject target, SetterSpecificity specificity)
 		{
-
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
 

@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class ItemsViewController<TItemsView> : UICollectionViewController, MauiCollectionView.ICustomMauiCollectionViewDelegate
+	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (disposing)
 			{
 				ItemsSource?.Dispose();
+
+				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
 
 				CollectionView.Delegate = null;
 				Delegator?.Dispose();
@@ -187,8 +189,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.LoadView();
 			var collectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
-			collectionView.SetCustomDelegate(this);
+			((IUIViewLifeCycleEvents)collectionView).MovedToWindow += MovedToWindow;
 			CollectionView = collectionView;
+		}
+
+		private void MovedToWindow(object sender, EventArgs e)
+		{
+			if (CollectionView?.Window != null)
+			{
+				AttachingToWindow();
+			}
+			else
+			{
+				DetachingFromWindow();
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -285,18 +299,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return false;
-		}
-
-		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
-		{
-			if (CollectionView?.Window != null)
-			{
-				AttachingToWindow();
-			}
-			else
-			{
-				DetachingFromWindow();
-			}
 		}
 
 		void InvalidateMeasureIfContentSizeChanged()
@@ -844,8 +846,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var frame = DetermineEmptyViewFrame();
 
-			_emptyUIView.Frame = frame;
+			_emptyViewFormsElement?.Measure(frame.Width, frame.Height);
 			_emptyViewFormsElement?.Arrange(frame.ToRectangle());
+			_emptyUIView.Frame = frame;
 		}
 
 		TemplatedCell CreateAppropriateCellForLayout()

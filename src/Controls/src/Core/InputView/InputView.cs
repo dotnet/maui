@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public string UpdateFormsText(string original, TextTransform transform)
 		{
-			return TextTransformUtilites.GetTransformedText(original, transform);
+			return TextTransformUtilities.GetTransformedText(original, transform);
 		}
 
 		/// <summary>

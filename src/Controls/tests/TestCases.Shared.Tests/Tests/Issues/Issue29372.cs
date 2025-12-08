@@ -4,6 +4,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue29372 : _IssuesUITest
 {
 	public override string Issue => "CarouselView ItemsLayout Not Updating at Runtime";

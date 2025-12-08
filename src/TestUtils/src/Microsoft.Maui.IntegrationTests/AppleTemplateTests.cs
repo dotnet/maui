@@ -35,8 +35,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// [TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// FIXME: has trimmer warnings
-		//[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, null)]
 		public void RunOniOS(string id, string config, string framework, string runtimeIdentifier, RuntimeVariant runtimeVariant, string trimMode)
 		{
@@ -59,7 +58,7 @@ namespace Microsoft.Maui.IntegrationTests
 			if (!string.IsNullOrEmpty(trimMode))
 			{
 				buildProps.Add($"TrimMode={trimMode}");
-				buildProps.Add("TrimmerSingleWarn=false");
+				buildProps.Add("TrimmerSingleWarn=false"); // Disable trimmer warnings for iOS full trimming builds due to ObjCRuntime issues
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),

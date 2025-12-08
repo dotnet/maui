@@ -34,7 +34,7 @@ public class Bugzilla34912 : TestContentPage
 		list.ItemTapped += (sender, e) =>
 		{
 			var listItem = (Issue2777.ListItemValue)e.Item;
-			DisplayAlert(listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
+			DisplayAlertAsync(listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
 		};
 
 		var btnDisable = new Button()

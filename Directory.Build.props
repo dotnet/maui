@@ -3,7 +3,19 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
   <PropertyGroup>
+    <!-- 
+      Keep backward compatibility with XamlC, XamlCompilationAttribute, and xaml-comp processing instruction
+      When we're ready to turn this off, we can remove all code depending on this condition, and drop this property group
+      -->
+
+    <_MauiXamlSourceGenBackCompat>true</_MauiXamlSourceGenBackCompat>
+    <DefineConstants Condition=" '$(_MauiXamlSourceGenBackCompat)' == 'true' ">$(DefineConstants);_MAUIXAML_SOURCEGEN_BACKCOMPAT</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Detailed trimmer warnings, if present -->
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>Latest</LangVersion>
@@ -33,25 +45,25 @@
     <LicenseFile>$(MauiRootDirectory)LICENSE.TXT</LicenseFile>
     <PackageIconFullPath>$(MauiRootDirectory)Assets\icon.png</PackageIconFullPath>
     <PackageThirdPartyNoticesFile>$(MauiRootDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
-    <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui;tizen</DefaultPackageTags>
+    <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui</DefaultPackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
-    <NuGetAuditMode>all</NuGetAuditMode>
-    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
     <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
   </PropertyGroup>
 
   <PropertyGroup>
-    <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">9</_MauiDotNetVersionMajor>
+    <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">10</_MauiDotNetVersionMajor>
     <_MauiDotNetVersionMinor Condition="'$(_MauiDotNetVersionMinor)' == ''">0</_MauiDotNetVersionMinor>
     <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">$(_MauiDotNetVersionMajor).$(_MauiDotNetVersionMinor)</_MauiDotNetVersion>
     <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
 
-    <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">8</_MauiPreviousDotNetVersionMajor>
+    <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">9</_MauiPreviousDotNetVersionMajor>
     <_MauiPreviousDotNetVersionMinor Condition="'$(_MauiPreviousDotNetVersionMinor)' == ''">0</_MauiPreviousDotNetVersionMinor>
     <_MauiPreviousDotNetVersion Condition="'$(_MauiPreviousDotNetVersion)' == ''">$(_MauiPreviousDotNetVersionMajor).$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersion>
     <_MauiPreviousDotNetVersionNoDot Condition="'$(_MauiPreviousDotNetVersionNoDot)' == ''">$(_MauiPreviousDotNetVersionMajor)$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersionNoDot>
@@ -117,8 +129,8 @@
   <!-- this is CI, so everything should be there -->
   <PropertyGroup Condition="('$(CI)' == 'true' or '$(TF_BUILD)' == 'true') and ('$(BuildTaskOnlyBuild)' != 'true')">
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
-    <!-- Disabled until net9.0-tizen is available -->
-    <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
+    <!-- Disabled until net10.0-tizen is available -->
+    <IncludeTizenTargetFrameworks>false</IncludeTizenTargetFrameworks>
     <IncludeMacOSTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeMacOSTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
     <IncludeMacCatalystTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeMacCatalystTargetFrameworks>
@@ -145,25 +157,25 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>18.0</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>18.0</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>18.0</MacCatalystTargetFrameworkVersionSdkDefault>
-    <MacosTargetFrameworkVersionSdkDefault>15.0</MacosTargetFrameworkVersionSdkDefault>
-    <AndroidTargetFrameworkVersionSdkDefault>35.0</AndroidTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>26.0</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>26.0</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>26.0</MacCatalystTargetFrameworkVersionSdkDefault>
+    <MacosTargetFrameworkVersionSdkDefault>26.0</MacosTargetFrameworkVersionSdkDefault>
+    <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
-    <IosTargetFrameworkVersion>18.0</IosTargetFrameworkVersion>
-    <TvosTargetFrameworkVersion>18.0</TvosTargetFrameworkVersion>
-    <MacCatalystTargetFrameworkVersion>18.0</MacCatalystTargetFrameworkVersion>
-    <MacosTargetFrameworkVersion>15.0</MacosTargetFrameworkVersion>
-    <AndroidTargetFrameworkVersion>35.0</AndroidTargetFrameworkVersion>
+    <IosTargetFrameworkVersion>26.0</IosTargetFrameworkVersion>
+    <TvosTargetFrameworkVersion>26.0</TvosTargetFrameworkVersion>
+    <MacCatalystTargetFrameworkVersion>26.0</MacCatalystTargetFrameworkVersion>
+    <MacosTargetFrameworkVersion>26.0</MacosTargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion>36.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>
     <!-- Previous .NET -->
-    <IosPreviousTargetFrameworkVersion>17.5</IosPreviousTargetFrameworkVersion>
-    <TvosPreviousTargetFrameworkVersion>17.5</TvosPreviousTargetFrameworkVersion>
-    <MacCatalystPreviousTargetFrameworkVersion>17.5</MacCatalystPreviousTargetFrameworkVersion>
-    <MacosPreviousTargetFrameworkVersion>14.5</MacosPreviousTargetFrameworkVersion>
+    <IosPreviousTargetFrameworkVersion>18.0</IosPreviousTargetFrameworkVersion>
+    <TvosPreviousTargetFrameworkVersion>18.0</TvosPreviousTargetFrameworkVersion>
+    <MacCatalystPreviousTargetFrameworkVersion>18.0</MacCatalystPreviousTargetFrameworkVersion>
+    <MacosPreviousTargetFrameworkVersion>15.0</MacosPreviousTargetFrameworkVersion>
     <AndroidPreviousTargetFrameworkVersion>35.0</AndroidPreviousTargetFrameworkVersion>
     <WindowsPreviousTargetFrameworkVersion>10.0.19041.0</WindowsPreviousTargetFrameworkVersion>
     <Windows2PreviousTargetFrameworkVersion>10.0.20348.0</Windows2PreviousTargetFrameworkVersion>

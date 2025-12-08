@@ -29,13 +29,20 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var type = typeResolver.Resolve(typename, serviceProvider, expandToExtension: false);
 
-			var pinfo = type.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == membername && pi.GetMethod.IsStatic);
-			if (pinfo != null)
-				return pinfo.GetMethod.Invoke(null, Array.Empty<object>());
+			// Search for static property in the type hierarchy
+			var currentType = type.GetTypeInfo();
+			while (currentType != null)
+			{
+				var pinfo = currentType.DeclaredProperties.FirstOrDefault(pi => pi.Name == membername && pi.GetMethod?.IsStatic == true);
+				if (pinfo != null)
+					return pinfo.GetMethod.Invoke(null, Array.Empty<object>());
 
-			var finfo = type.GetRuntimeFields().FirstOrDefault(fi => fi.Name == membername && fi.IsStatic);
-			if (finfo != null)
-				return finfo.GetValue(null);
+				var finfo = currentType.DeclaredFields.FirstOrDefault(fi => fi.Name == membername && fi.IsStatic);
+				if (finfo != null)
+					return finfo.GetValue(null);
+
+				currentType = currentType.BaseType?.GetTypeInfo();
+			}
 
 			throw new XamlParseException($"No static member found for {Member}", serviceProvider);
 		}

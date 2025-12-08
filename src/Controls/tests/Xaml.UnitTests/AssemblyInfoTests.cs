@@ -2,15 +2,15 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	[TestFixture]
+	[Collection("Xaml Inflation")]
 	public class AssemblyInfoTests
 	{
-		static readonly string[] references = new[]
+		public static TheoryData<string> References => new TheoryData<string>
 		{
 			"Microsoft.Maui",
 			"Microsoft.Maui.Controls",
@@ -25,26 +25,29 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		const string s_versionPropsFile = "eng/Versions.props";
 
-		[Test, TestCaseSource(nameof(references))]
+		[Theory]
+		[MemberData(nameof(References))]
 		public void AssemblyTitle(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-			Assert.AreEqual(assemblyName, testAssembly.GetName().Name);
+			Assert.Equal(assemblyName, testAssembly.GetName().Name);
 		}
 
-		[Test, TestCaseSource(nameof(references))]
+		[Theory]
+		[MemberData(nameof(References))]
 		public void AssemblyVersion(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
-			// Currently we keep the assembly verison at 1.0.0.0
-			Assert.AreEqual(1, actual.Major, actual.ToString());
-			Assert.AreEqual(0, actual.Minor, actual.ToString());
-			Assert.AreEqual(0, actual.Build, actual.ToString());
-			Assert.AreEqual(0, actual.Revision, actual.ToString());
+			// Currently we keep the assembly verison at 10.0.0.0
+			Assert.Equal(10, actual.Major);
+			Assert.Equal(0, actual.Minor);
+			Assert.Equal(0, actual.Build);
+			Assert.Equal(0, actual.Revision);
 		}
 
-		// [Test, TestCaseSource(nameof(references))]
+		// [Theory]
+		// [MemberData(nameof(References))]
 		// public void FileVersion(string assemblyName)
 		// {
 		// 	Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
@@ -56,28 +59,29 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
 		// 	var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
 		// 	Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
-		// 	Assert.AreEqual(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
-		// 	Assert.AreEqual(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
+		// 	Assert.Equal(expected.Major, actual.FileMajorPart);
+		// 	Assert.Equal(expected.Minor, actual.FileMinorPart);
 		// 	// Fails locally
-		// 	//Assert.AreEqual(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
+		// 	//Assert.Equal(expected.Build, actual.FileBuildPart);
 		// 	//We need to enable this
-		// 	//	Assert.AreEqual(ThisAssembly.Git.Commits, version.FilePrivatePart);
-		// 	Assert.AreEqual(s_productName, actual.ProductName);
-		// 	Assert.AreEqual(s_company, actual.CompanyName);
+		// 	//	Assert.Equal(ThisAssembly.Git.Commits, version.FilePrivatePart);
+		// 	Assert.Equal(s_productName, actual.ProductName);
+		// 	Assert.Equal(s_company, actual.CompanyName);
 		// }
 
-		[Test, TestCaseSource(nameof(references))]
+		[Theory]
+		[MemberData(nameof(References))]
 		public void ProductAndCompany(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-			Assert.AreEqual(s_productName, actual.ProductName);
-			Assert.AreEqual(s_company, actual.CompanyName);
+			Assert.Equal(s_productName, actual.ProductName);
+			Assert.Equal(s_company, actual.CompanyName);
 		}
 
 		internal static string GetFilePathFromRoot(string file)
 		{
-			var fileFromRoot = IOPath.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..", file);
+			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", file);
 			if (!File.Exists(fileFromRoot))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source

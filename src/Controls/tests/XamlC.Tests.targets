@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<MauiKeepXamlResources>True</MauiKeepXamlResources>
+		<_MauiForceXamlCForDebug>True</_MauiForceXamlCForDebug>
+	</PropertyGroup>
+</Project>

@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentView (C#)",
-  "description": "C# kullanarak içeriğin görüntülendiği bir görüntü. Bu işlem, kendi özel ve yeniden kullanılabilir denetimlerinizi oluşturmak için son derece uygundur.",
+  "description": "C# kullanarak içeriğin görüntülendiği bir görüntü. Bu, kendi özel ve yeniden kullanılabilir denetimlerinizi oluşturmak için son derece uygundur.",
   "postActions/openInEditor/description": "Düzenleyicide NewContent1.cs dosyasını açar.",
   "symbols/namespace/description": "Oluşturulan kod için ad alanı."
 }

@@ -13,7 +13,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, Items.MauiCollectionView.ICustomMauiCollectionViewDelegate
+	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (disposing)
 			{
 				ItemsSource?.Dispose();
+
+				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
 
 				CollectionView.Delegate = null;
 				Delegator?.Dispose();
@@ -186,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.LoadView();
 			var collectionView = new Items.MauiCollectionView(CGRect.Empty, ItemsViewLayout);
-			collectionView.SetCustomDelegate(this);
+			((IUIViewLifeCycleEvents)collectionView).MovedToWindow += MovedToWindow;
 			CollectionView = collectionView;
 		}
 
@@ -227,7 +229,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
+		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
 			{
@@ -310,6 +312,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						}
 					}
 				}
+	
+				CollectionView.UpdateFlowDirection(ItemsView);
 			}
 
 			if (_emptyViewDisplayed)
@@ -447,6 +451,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		}
+
+		internal UICollectionViewScrollDirection GetScrollDirection()
+		{
+			return ScrollDirection;
 		}
 
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
@@ -596,10 +605,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var frame = DetermineEmptyViewFrame();
 
-			_emptyUIView.Frame = frame;
-
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
-				_emptyViewFormsElement.Layout(frame.ToRectangle());
+			{
+				_emptyViewFormsElement.Measure(frame.Width, frame.Height);
+				_emptyViewFormsElement.Arrange(frame.ToRectangle());
+			}
+
+			_emptyUIView.Frame = frame;
 
 			return frame;
 		}

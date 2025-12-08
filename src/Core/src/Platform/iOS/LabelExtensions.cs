@@ -95,7 +95,9 @@ namespace Microsoft.Maui.Platform
 			// This is observed with CarouselView 1 but not with 2, so hopefully this
 			// will be just disappear once we switch.
 #pragma warning disable CS8601
+#pragma warning disable CS0618
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
+#pragma warning restore CS0618
 #pragma warning restore CS8601
 		}
 

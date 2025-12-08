@@ -17,6 +17,12 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
 - name: runAsPublic
   type: boolean
   default: true
@@ -30,9 +36,9 @@ stages:
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
-      enableMicrobuild: true
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       enableSourceIndex: ${{ parameters.enableSourceIndex }}
@@ -67,12 +73,12 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - ${{ if parameters.runAsPublic }}:
+        - ${{ if not(parameters.enableMicrobuild) }}:
           - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if and(not(parameters.runAsPublic) , notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - ${{ if and(not(parameters.runAsPublic) , parameters.enableMicrobuild) }}:
           - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack, Sign
 

@@ -5,14 +5,17 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
-    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
-    <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains the supporting functionality for XAML source generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,26 +24,49 @@
     <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Core\XmlnsPrefixAttribute.cs" Link="XmlnsPrefixAttribute.cs" />
+    <Compile Include="..\Core\AllowImplicitXmlnsDeclarationAttribute.cs" Link="AllowImplicitXmlnsDeclarationAttribute.cs" />
+    <Compile Include="..\Xaml\IDictionaryExtensions.cs" Link="IDictionaryExtensions.cs" />
+    <Compile Include="..\Xaml\IExpressionParser.cs" Link="IExpressionParser.cs" />
+    <Compile Include="..\Xaml\IXmlLineInfoExtensions.cs" Link="IXmlLineInfoExtensions.cs" />
+    <Compile Include="..\Xaml\NodeExtensions.cs" Link="NodeExtensions.cs" />
+    <Compile Include="..\Xaml\MarkupExpressionParser.cs" Link="MarkupExpressionParser.cs" />
+    <Compile Include="..\Xaml\PruneIgnoredNodesVisitor.cs" Link="PruneIgnoredNodesVisitor.cs" />
+    <Compile Include="..\Xaml\RemoveDuplicateDesignNodes.cs" Link="RemoveDuplicateDesignNodes.cs" />
+    <Compile Include="..\Xaml\SimplifyOnPlatformVisitor.cs" Link="SimplifyOnPlatformVisitor.cs" />
+    <Compile Include="..\Xaml\SimplifyTypeExtensionVisitor.cs" Link="SimplifyTypeExtensionVisitor.cs" />
     <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
+    <Compile Include="..\Xaml\XamlInflator.cs" Link="XamlInflator.cs" />
     <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
-    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XamlNode.cs" Link="XamlNode.cs" />
     <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="XamlNodeVisitor.cs" />
+    <Compile Include="..\Xaml\XamlParser.cs" Link="XamlParser.Namespaces.cs" />
+    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
+    <Compile Include="..\Xaml\XmlType.cs" Link="XmlType.cs" />
     <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
-    <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
     <Compile Include="..\..\..\Core\src\Services\Crc64.cs">
       <Link>Crc64.cs</Link>
     </Compile>
     <Compile Include="..\..\..\Core\src\Services\Crc64HashAlgorithm.cs">
       <Link>Crc64HashAlgorithm.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\Graphics\src\Graphics\ColorUtils.cs" Link="ColorUtils.cs" />
+    <Compile Include="..\..\..\Graphics\src\Graphics\NumericExtensions.cs" Link="NumericExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="BannedSymbols.txt" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Update="MauiGResources.Designer.cs">
       <DesignTime>True</DesignTime>

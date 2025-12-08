@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
 			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
 			[nameof(IDatePicker.TextColor)] = MapTextColor,
+			[nameof(IDatePicker.IsOpen)] = MapIsOpen,
 		};
 
 		public static CommandMapper<IPicker, IDatePickerHandler> CommandMapper = new(ViewCommandMapper)
@@ -124,5 +125,15 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="datePicker">The associated <see cref="IDatePicker"/> instance.</param>
 		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IDatePicker.IsOpen"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler that controls platform behavior.</param>
+		/// <param name="datePicker">The <see cref="IDatePicker"/> instance that determines whether the date picker dropdown is open.</param>
+		/// <remarks>
+		/// This method is responsible for ensuring that opening and closing the date picker is correctly handled across different platforms.
+		/// </remarks>
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker);
 	}
 }

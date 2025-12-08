@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -9,6 +10,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 	{
 		Slider _slider;
 
+		[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.BindableObjectExtensions.SetBinding(BindableProperty, String, BindingMode, IValueConverter, String)")]
 		public PositionControl(CarouselView carousel, int itemsCount)
 		{
 			var animateLabel = new Label { Text = "Animate: ", VerticalTextAlignment = TextAlignment.Center };
