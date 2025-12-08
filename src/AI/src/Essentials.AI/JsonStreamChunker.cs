@@ -85,6 +85,47 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
         }
     }
 
+    /// <summary>
+    /// Emits and removes any pending items that are children of the given path.
+    /// Used when we know a subtree is complete (e.g., moving to next array item in first chunk).
+    /// </summary>
+    private void EmitPendingItemsUnder(StringBuilder sb, string parentPath)
+    {
+        // Find pending strings under this path
+        var stringsToEmit = _pendingStrings
+            .Where(kvp => kvp.Key.StartsWith(parentPath + ".", StringComparison.Ordinal) || 
+                          kvp.Key.StartsWith(parentPath + "[", StringComparison.Ordinal))
+            .OrderBy(kvp => kvp.Key)
+            .ToList();
+
+        foreach (var (path, value) in stringsToEmit)
+        {
+            EmitPendingString(sb, path, value, keepOpen: false);
+            _pendingStrings.Remove(path);
+        }
+
+        // Find pending containers under this path
+        var containersToEmit = _pendingContainers
+            .Where(kvp => kvp.Key.StartsWith(parentPath + ".", StringComparison.Ordinal) ||
+                          kvp.Key.StartsWith(parentPath + "[", StringComparison.Ordinal))
+            .OrderBy(kvp => kvp.Key)
+            .ToList();
+
+        foreach (var (path, isArray) in containersToEmit)
+        {
+            var (containerParent, propName) = SplitPath(path);
+            CloseStructuresDownTo(sb, containerParent);
+
+            if (HasEmittedSiblingAt(containerParent))
+                sb.Append(',');
+
+            sb.Append("\"" + Escape(propName) + "\":");
+            sb.Append(isArray ? "[]" : "{}");
+            _emittedPaths.Add(path);
+            _pendingContainers.Remove(path);
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════════════════════
     // PUBLIC API
     // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -368,8 +409,18 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
             EmitPendingContainer(sb, changedContainerPath, isArray, currElem, currState, complete: false);
         }
 
-        _pendingStrings.Clear();
-        _pendingContainers.Clear();
+        // Remove only the items that were pending when we entered this method.
+        // Don't clear everything - EmitPendingContainer may have added NEW pending items
+        // when processing nested content.
+        foreach (var (path, _) in completeStrings)
+            _pendingStrings.Remove(path);
+        if (changedStringPath != null)
+            _pendingStrings.Remove(changedStringPath);
+        
+        foreach (var (path, _) in completeContainers)
+            _pendingContainers.Remove(path);
+        if (changedContainerPath != null)
+            _pendingContainers.Remove(changedContainerPath);
     }
 
     /// <summary>
@@ -901,10 +952,20 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
         int idx = 0;
         foreach (var item in elem.EnumerateArray())
         {
-            if (idx > 0)
-                sb.Append(',');
-
             var itemPath = path + "[" + idx + "]";
+            
+            if (idx > 0)
+            {
+                // Emit any pending items from the previous array item (they are complete)
+                var prevItemPath = path + "[" + (idx - 1) + "]";
+                EmitPendingItemsUnder(sb, prevItemPath);
+                
+                // Close any open string from previous array item before moving to next
+                CloseOpenString(sb);
+                // Close any open structures down to the array level
+                CloseStructuresDownTo(sb, path);
+                sb.Append(',');
+            }
             _emittedPaths.Add(itemPath);
 
             if (item.ValueKind == JsonValueKind.Object)

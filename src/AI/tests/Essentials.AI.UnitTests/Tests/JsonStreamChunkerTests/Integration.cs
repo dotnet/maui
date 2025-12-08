@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Maui.Controls.Sample.Services;
+using Microsoft.Maui.Essentials.AI.UnitTests.TestHelpers;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
@@ -12,12 +13,7 @@ public partial class JsonStreamChunkerTests
 	public class IntegrationTests
 	{
 		[Theory]
-		[InlineData("maui-itinerary-1.jsonl")]
-		[InlineData("maui-itinerary-2.jsonl")]
-		[InlineData("maui-itinerary-3.jsonl")]
-		[InlineData("mount-fuji-itinerary-1.jsonl")]
-		[InlineData("sahara-itinerary-1.jsonl")]
-		[InlineData("serengeti-itinerary-1.jsonl")]
+		[MemberData(nameof(ObjectStreamHelper.JsonlFiles), MemberType = typeof(ObjectStreamHelper))]
 		public void Process_FromJsonlFile_ProducesValidJsonMatchingFinalLine(string fileName)
 		{
 			// Arrange

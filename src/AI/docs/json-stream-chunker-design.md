@@ -1092,6 +1092,8 @@ Example: If open string is at `days[0].activities[0].description`:
 15. **Nested changes propagate up** - if ANY descendant of a container changes, the container is still active
 16. **Complete containers emit all content** - when a pending container is resolved as complete, emit its full content (opening bracket, all children recursively, closing bracket)
 17. **Structure closing is level-aware** - use `CloseStructuresDownTo` to close structures when emitting at a different tree level
+18. **Pending resolution preserves new pending** - when resolving pending items, NEW pending items may be added during container emission (e.g., emitting a pending array creates new pending strings for its children). Only remove the original pending items, not the newly added ones.
+19. **Array iteration closes previous items** - when iterating array items in first chunk, close any pending items from the previous array item before moving to the next one
 
 ---
 

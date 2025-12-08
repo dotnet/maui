@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Maui.Controls.Sample.Models;
+using Microsoft.Maui.Essentials.AI.UnitTests.TestHelpers;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
@@ -12,12 +13,7 @@ public partial class JsonStreamingRoundtripTests
 	public class FileBasedTests
 	{
 		[Theory]
-		[InlineData("maui-itinerary-1.jsonl")]
-		[InlineData("maui-itinerary-2.jsonl")]
-		[InlineData("maui-itinerary-3.jsonl")]
-		[InlineData("mount-fuji-itinerary-1.jsonl")]
-		[InlineData("sahara-itinerary-1.jsonl")]
-		[InlineData("serengeti-itinerary-1.jsonl")]
+		[MemberData(nameof(ObjectStreamHelper.JsonlFiles), MemberType = typeof(ObjectStreamHelper))]
 		public void Roundtrip_FromJsonlFile_DeserializerProducesEquivalentResult(string fileName)
 		{
 			// Arrange
@@ -50,12 +46,7 @@ public partial class JsonStreamingRoundtripTests
 		}
 
 		[Theory]
-		[InlineData("maui-itinerary-1.jsonl")]
-		[InlineData("maui-itinerary-2.jsonl")]
-		[InlineData("maui-itinerary-3.jsonl")]
-		[InlineData("mount-fuji-itinerary-1.jsonl")]
-		[InlineData("sahara-itinerary-1.jsonl")]
-		[InlineData("serengeti-itinerary-1.jsonl")]
+		[MemberData(nameof(ObjectStreamHelper.JsonlFiles), MemberType = typeof(ObjectStreamHelper))]
 		public void Roundtrip_FromJsonlFile_EachLineDeserializesProgressively(string fileName)
 		{
 			// This test validates that each intermediate line produces a valid partial object
