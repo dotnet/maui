@@ -56,39 +56,11 @@ internal static class SafeAreaExtensions
 
 		if (safeAreaView2 is not null)
 		{
-			// Check if this view is inside a container that ignores safe area (ListView, TableView)
-			// These containers manage their own layout and should NOT have safe area insets applied to their CONTENT
-			bool isInsideSafeAreaIgnoredContainer = false;
-			if (safeAreaView2 is IView mauiView)
-			{
-				// Walk up the parent hierarchy to check if any ancestor is a safe-area-ignored container
-				var ancestor = mauiView.Parent as IView;
-				while (ancestor != null)
-				{
-					if (ancestor is ISafeAreaIgnoredContainer)
-					{
-						isInsideSafeAreaIgnoredContainer = true;
-						break;
-					}
-					ancestor = ancestor.Parent as IView;
-				}
-			}
-
-			// Apply safe area selectively per edge based on SafeAreaRegions
-			// If inside a safe-area-ignored container, set all values to 0 instead of calculating them
-			double left, top, right, bottom;
-			if (isInsideSafeAreaIgnoredContainer)
-			{
-				// Inside ListView/TableView/ViewCell - no safe area padding
-				left = top = right = bottom = 0;
-			}
-			else
-			{
-				// Normal safe area calculation
-				left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-				top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-				right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-				bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+		// Apply safe area selectively per edge based on SafeAreaRegions
+		double left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
+		double top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
+		double right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
+		double bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Top, 3, isKeyboardShowing, keyboardInsets);
 			}
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
