@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if(sender is not ShellContent shellContent)
+			if (sender is not ShellContent shellContent)
 				return;
 
 			if (e.PropertyName == nameof(ShellContent.Title))
