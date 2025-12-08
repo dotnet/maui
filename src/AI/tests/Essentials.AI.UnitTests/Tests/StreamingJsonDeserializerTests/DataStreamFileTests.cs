@@ -16,7 +16,7 @@ public partial class StreamingJsonDeserializerTests
 		public void ProcessChunk_EmotionalResponses_DeserializeCorrectly(string fileName, double expectedHappiness, double expectedAnger)
 		{
 			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>();
-			var chunks = DataStreamLoader.LoadStream(fileName);
+			var chunks = DataStreamsHelper.GetFileLines(fileName);
 
 			EmotionalResponse? finalResponse = null;
 			foreach (var chunk in chunks)
@@ -45,7 +45,7 @@ public partial class StreamingJsonDeserializerTests
 		public void ProcessChunk_NumbersFirst_DeserializesCorrectly()
 		{
 			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>();
-			var chunks = DataStreamLoader.LoadStream("numbers-first.txt");
+			var chunks = DataStreamsHelper.GetFileLines("numbers-first.txt");
 
 			EmotionalResponse? finalResponse = null;
 			foreach (var chunk in chunks)

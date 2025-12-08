@@ -428,10 +428,13 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
     /// </summary>
     private bool HasContainerGrown(string path, Dictionary<string, JsonValue> prevState, Dictionary<string, JsonValue> currState)
     {
-        // Check if any children were added
-        var prevChildren = prevState.Keys.Where(k => k.StartsWith(path + ".") || k.StartsWith(path + "[")).ToList();
-        var currChildren = currState.Keys.Where(k => k.StartsWith(path + ".") || k.StartsWith(path + "[")).ToList();
-        return currChildren.Count > prevChildren.Count;
+        // Check if any children were added or changed
+        var prevChildren = prevState.Keys.Where(k => k.StartsWith(path + ".") || k.StartsWith(path + "[")).ToHashSet();
+        var currChildren = currState.Keys.Where(k => k.StartsWith(path + ".") || k.StartsWith(path + "[")).ToHashSet();
+        
+        // Container grew if there are new keys that weren't in prevChildren
+        // This handles the case where days[0] (empty object) becomes days[0].activities[0].title
+        return !currChildren.SetEquals(prevChildren);
     }
 
     /// <summary>

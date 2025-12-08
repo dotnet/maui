@@ -13,12 +13,13 @@ public partial class JsonStreamChunkerTests
 	public class IntegrationTests
 	{
 		[Theory]
-		[MemberData(nameof(ObjectStreamHelper.JsonlFiles), MemberType = typeof(ObjectStreamHelper))]
-		public void Process_FromJsonlFile_ProducesValidJsonMatchingFinalLine(string fileName)
+		[MemberData(nameof(DataStreamsHelper.JsonlItineraries), MemberType = typeof(DataStreamsHelper))]
+		public void Process_FromJsonlFile_ProducesValidJsonMatchingFinalLine(string fileName, string filePath)
 		{
+			_ = fileName; // We are not using the parameter here
+
 			// Arrange
 			var chunker = new JsonStreamChunker();
-			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 			var lines = File.ReadAllLines(filePath);
 
 			// Act
@@ -26,6 +27,10 @@ public partial class JsonStreamChunkerTests
 			foreach (var line in lines)
 				chunks.Add(chunker.Process(line));
 			chunks.Add(chunker.Flush());
+
+			// For debugging - write chunks to .txt file
+			var txtPath = Path.ChangeExtension(filePath, ".txt");
+			File.WriteAllLines(txtPath, chunks);
 
 			var concatenated = string.Concat(chunks);
 			var finalLine = lines[^1];

@@ -13,11 +13,12 @@ public partial class JsonStreamingRoundtripTests
 	public class FileBasedTests
 	{
 		[Theory]
-		[MemberData(nameof(ObjectStreamHelper.JsonlFiles), MemberType = typeof(ObjectStreamHelper))]
-		public void Roundtrip_FromJsonlFile_DeserializerProducesEquivalentResult(string fileName)
+		[MemberData(nameof(DataStreamsHelper.JsonlItineraries), MemberType = typeof(DataStreamsHelper))]
+		public void Roundtrip_FromJsonlFile_DeserializerProducesEquivalentResult(string fileName, string filePath)
 		{
+			_ = fileName; // We are not using the parameter here
+
 			// Arrange
-			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 			var lines = File.ReadAllLines(filePath);
 			var finalLine = lines[^1];
 
@@ -46,11 +47,12 @@ public partial class JsonStreamingRoundtripTests
 		}
 
 		[Theory]
-		[MemberData(nameof(ObjectStreamHelper.JsonlFiles), MemberType = typeof(ObjectStreamHelper))]
-		public void Roundtrip_FromJsonlFile_EachLineDeserializesProgressively(string fileName)
+		[MemberData(nameof(DataStreamsHelper.JsonlItineraries), MemberType = typeof(DataStreamsHelper))]
+		public void Roundtrip_FromJsonlFile_EachLineDeserializesProgressively(string fileName, string filePath)
 		{
+			_ = fileName; // We are not using the parameter here
+
 			// This test validates that each intermediate line produces a valid partial object
-			var filePath = Path.Combine("TestData", "ObjectStreams", fileName);
 			var lines = File.ReadAllLines(filePath);
 
 			var models = ProcessLines<Itinerary>(lines);
