@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
-    <value>Wystąpił błąd podczas analizowania kodu XAML: {0}.</value>
+    <value>Wystąpił błąd podczas analizowania kodu Xaml: {0}.</value>
     <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>Analizowanie składni XAML nie powiodło się</value>
+    <value>Analizowanie kodu XAML nie powiodło się</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
     <value>Wyrażenie musi kończyć się wyrazem „}”.</value>
@@ -196,11 +196,11 @@
 </comment>
   </data>
   <data name="RequiredPropertyTitle" xml:space="preserve">
-    <value>Use of 'required'</value>
+    <value>Użycie właściwości „required”</value>
     <comment>/</comment>
   </data>
   <data name="RequiredPropertyMessage" xml:space="preserve">
-    <value>{0} has the 'required' keyword. Support for this in XAML is limited at the moment, avoid using it. We're still doing a best effort to provide a value.</value>
+    <value>Właściwość {0} zawiera słowo kluczowe „required”. Obsługa tego problemu w języku XAML jest obecnie ograniczona, dlatego nie należy go używać. Nadal dokładamy wszelkich starań, aby zapewnić wartość.</value>
     <comment>0 is a property identifier</comment>
   </data>
 </root>

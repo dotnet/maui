@@ -1,9 +1,10 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,35 +12,35 @@ public partial class Maui22877 : ContentPage
 {
 	public Maui22877() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void OnBindingRelease([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void OnBindingRelease(XamlInflator inflator)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var page = new Maui22877(inflator) { BindingContext = new { BoundString = "BoundString" } };
-			Assert.That(page.label0.Text, Is.EqualTo("Grade"));
+			Assert.Equal("Grade", page.label0.Text);
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			page = new Maui22877(inflator) { BindingContext = new { BoundString = "BoundString" } };
-			Assert.That(page.label0.Text, Is.EqualTo("BoundString"));
+			Assert.Equal("BoundString", page.label0.Text);
 
 
 		}

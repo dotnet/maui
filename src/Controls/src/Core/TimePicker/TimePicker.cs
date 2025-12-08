@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls
 		static void TimePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is TimePicker timePicker)
-				timePicker.TimeSelected?.Invoke(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
+				timePicker.TimeSelected?.Invoke(timePicker, new TimeChangedEventArgs((TimeSpan?)oldValue, (TimeSpan?)newValue));
 		}
 
 		private protected override string GetDebuggerDisplay()

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,18 +6,18 @@ public partial class TestXmlnsUsing : ContentPage
 {
 	public TestXmlnsUsing() => InitializeComponent();
 
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[TearDown] public void TearDown() => Application.Current = null;
-
-		[Test]
-		public void SupportUsingXmlns([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void SupportUsingXmlns(XamlInflator inflator)
 		{
 			var page = new TestXmlnsUsing(inflator);
-			Assert.That(page.Content, Is.Not.Null);
-			Assert.That(page.CustomView, Is.TypeOf<CustomXamlView>());
-			Assert.That(page.Radio1.Value, Is.EqualTo(1));
-			Assert.That(page.Radio2.Value, Is.EqualTo(2));
+			Assert.NotNull(page.Content);
+			Assert.IsType<CustomXamlView>(page.CustomView);
+			Assert.Equal(1, page.Radio1.Value);
+			Assert.Equal(2, page.Radio2.Value);
 		}
 	}
 }

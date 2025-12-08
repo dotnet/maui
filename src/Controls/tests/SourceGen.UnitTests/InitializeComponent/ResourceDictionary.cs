@@ -30,6 +30,7 @@ public class ResourceDictionary : SourceGenXamlInitializeComponentTestBase
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace __XamlGeneratedCode__;
 
@@ -78,7 +79,7 @@ public partial class __TypeDBD64C1C77CDA760
 		var (result, generated) = RunGenerator(xaml, "", path: "Styles.xaml");
 		Assert.False(result.Diagnostics.Any());
 
-		TestAssertions.AssertEqualIgnoringLineEndings(expected, generated);
+		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 		
     }
 }

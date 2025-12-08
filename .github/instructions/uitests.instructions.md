@@ -1,6 +1,5 @@
 ---
 applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCases.HostApp/**"
-date: 2025-10-30
 ---
 
 # UI Testing Guidelines for .NET MAUI
@@ -8,6 +7,8 @@ date: 2025-10-30
 ## Overview
 
 This document provides specific guidance for GitHub Copilot when writing UI tests for the .NET MAUI repository.
+
+
 
 **Critical Principle**: UI tests should run on all applicable platforms (iOS, Android, Windows, MacCatalyst) by default unless there is a specific technical limitation.
 
@@ -140,17 +141,25 @@ App.Screenshot("TestStep1");
 - **Only ONE** `[Category]` attribute per test
 - Pick the most specific category that applies
 
-### Common Categories
-See [UITestCategories.cs](../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs) for the complete list.
+### Test Categories
 
-Examples:
-- `SafeAreaEdges` - Safe area and padding tests
-- `Button`, `Label`, `Entry`, `Editor` - Specific control tests
-- `CollectionView`, `ListView`, `CarouselView` - Collection control tests
-- `Layout` - Layout-related tests
-- `Shell`, `Navigation`, `TabbedPage` - Navigation tests
-- `Gestures`, `Focus`, `Accessibility` - Interaction tests
-- `Window`, `Page`, `LifeCycle` - Page lifecycle tests
+**CRITICAL**: Always check [UITestCategories.cs](../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs) for the authoritative, complete list of categories.
+
+**Selection rule**: Choose the MOST SPECIFIC category that applies to your test. If multiple categories seem applicable, choose the one that best describes the primary focus of the test.
+
+**Common categories** (examples only - not exhaustive):
+- **SafeArea**: `SafeAreaEdges` - Safe area and padding tests
+- **Basic controls**: `Button`, `Label`, `Entry`, `Editor` - Specific control tests
+- **Collection controls**: `CollectionView`, `ListView`, `CarouselView` - Collection control tests
+- **Layout**: `Layout` - Layout-related tests
+- **Navigation**: `Shell`, `Navigation`, `TabbedPage` - Navigation tests
+- **Interaction**: `Gestures`, `Focus`, `Accessibility` - Interaction tests
+- **Lifecycle**: `Window`, `Page`, `LifeCycle` - Page lifecycle tests
+
+**List all categories programmatically**:
+```bash
+grep -E "public const string [A-Za-z]+ = " src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
+```
 
 **Important**: When a new UI test category is added to `UITestCategories.cs`, also update `eng/pipelines/common/ui-tests.yml` to include the new category.
 
@@ -199,6 +208,119 @@ public void SoftInputBehaviorTest()
 #endif
 ```
 
+## Running UI Tests Locally
+
+**CRITICAL: ALWAYS use the BuildAndRunHostApp.ps1 script to run UI tests. NEVER run `dotnet test` or `dotnet build` commands manually.**
+
+### BuildAndRunHostApp.ps1 Script (ONLY Way to Run Tests)
+
+**Script location**: `.github/scripts/BuildAndRunHostApp.ps1`
+
+**Usage:**
+```powershell
+# Run specific test on Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~Issue12345"
+
+# Run specific test on iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~Issue12345"
+
+# Run specific test on MacCatalyst
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform maccatalyst -TestFilter "FullyQualifiedName~Issue12345"
+
+# Run tests by category
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "SafeAreaEdges"
+
+# Run specific test with custom device (iOS only)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue12345" -DeviceUdid "12345678-1234567890ABCDEF"
+```
+
+**What the script handles automatically:**
+- ✅ Automatic device detection and boot (iPhone Xs for iOS, first available for Android)
+- ✅ Building TestCases.HostApp (always fresh build)
+- ✅ App installation and deployment
+- ✅ Running your NUnit test via `dotnet test`
+- ✅ Complete log capture to `CustomAgentLogsTmp/UITests/` directory:
+  - `android-device.log` or `ios-device.log` - Device logs filtered to HostApp
+  - `test-output.log` - Test execution output
+
+**Why you must use the script:**
+- The script ensures correct device targeting and environment variables
+- It handles platform-specific quirks and setup requirements
+- It provides consistent test execution across all platforms
+- It captures logs automatically for debugging
+- Manual `dotnet` commands often fail due to missing environment setup
+
+### Prerequisites: Kill Existing Appium Processes
+
+**CRITICAL**: Before running UITests with BuildAndRunHostApp.ps1, always kill any existing Appium processes. The UITest framework needs to start its own Appium server, and having a stale process running will cause the tests to fail with an error like:
+
+```
+AppiumServerHasNotBeenStartedLocallyException: The local appium server has not been started.
+Time 120000 ms for the service starting has been expired!
+```
+
+**Solution: Always kill existing Appium processes before running tests:**
+
+```bash
+# Kill any Appium processes on port 4723
+lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9 2>/dev/null && echo "✅ Killed existing Appium processes" || echo "ℹ️ No Appium processes running on port 4723"
+```
+
+**Why this is needed:** The UITest framework automatically starts and manages its own Appium server. If there's already an Appium process running (from a previous test run or manual testing), the framework will timeout trying to start a new one.
+
+### Troubleshooting
+
+**Android App Crashes on Launch:**
+
+If you encounter navigation fragment errors or resource ID issues:
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Read the crash logs to find the actual exception:
+```bash
+# Monitor logcat for the crash
+adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
+```
+
+**Debugging steps:**
+1. **Find the exception** in logcat - look for the stack trace
+2. **Investigate the root cause** - What line of code is throwing? Why?
+3. **Check for null references** - Are required resources missing?
+4. **Verify resource IDs exist** - Check if the ID referenced actually exists in the app
+5. If you can't determine the fix, **ask for guidance** with the full exception details
+
+**iOS App Crashes on Launch or Won't Start with Appium:**
+
+If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`:
+
+**Solution:** Read the crash logs to find the actual exception:
+```bash
+# Capture crash logs
+xcrun simctl spawn booted log stream --predicate 'processImagePath contains "TestCases.HostApp"' --level=debug > /tmp/ios_crash.log 2>&1 &
+LOG_PID=$!
+
+# Try to launch the app
+xcrun simctl launch $UDID com.microsoft.maui.uitests
+
+# Wait a moment for crash
+sleep 3
+
+# Stop log capture
+kill $LOG_PID
+
+# Review the crash log
+cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
+```
+
+**Debugging steps:**
+1. **Find the exception** in the crash log - look for stack traces
+2. **Investigate the root cause** - What's causing the crash?
+3. **Check for missing resources** - Are all required files included in the bundle?
+4. **Verify Info.plist** - Are required keys present?
+5. **Check for platform-specific issues** - iOS version compatibility, permissions, etc.
+6. If you can't determine the fix, **ask for guidance** with the full exception details
+
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
@@ -211,6 +333,7 @@ Verify the following checklist before committing UI tests:
 - [ ] Confirm only ONE `[Category]` attribute is used per test
 - [ ] Verify tests run on all applicable platforms (iOS, Android, Windows, MacCatalyst) unless platform-specific
 - [ ] Document any platform-specific limitations with clear comments
+- [ ] Test passes locally on at least one platform
 
 ### Test State Management
 

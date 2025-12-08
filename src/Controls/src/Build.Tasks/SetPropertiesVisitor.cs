@@ -1705,6 +1705,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, ElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
+			if (parent is null)
+				return false;
+
 			if (collectionType.FullName != "Microsoft.Maui.Controls.ResourceDictionary"
 				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;

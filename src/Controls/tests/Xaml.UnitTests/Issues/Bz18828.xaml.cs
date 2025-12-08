@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -33,11 +33,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 
-		[TestFixture]
-		class Tests
+		[Collection("Issue")]
+		public class Tests
 		{
-			[Test]
-			public void GridItemsLayoutWithConverter([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void GridItemsLayoutWithConverter(XamlInflator inflator)
 			{
 				var layout = new Bz18828(inflator);
 				Assert.True(((GridItemsLayout)layout.collectionView.ItemsLayout).Span == 2);

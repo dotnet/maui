@@ -9,17 +9,27 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
 {
+	internal static SourceGenContext CreateNewForTests() => new SourceGenContext(
+		null!,
+		null!,
+		default,
+		null!,
+		new Dictionary<XmlType, INamedTypeSymbol>(),
+		null!,
+		null,
+		null!);
+
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
 	
 	public IndentedTextWriter? RefStructWriter { get; set; }
 
 	public Compilation Compilation => compilation;
-	public AssemblyCaches XmlnsCache => assemblyCaches;
+	public AssemblyAttributes XmlnsCache => assemblyCaches;
 	public ITypeSymbol RootType => rootType;
-	public IDictionary<XmlType, ITypeSymbol> TypeCache => typeCache;
+	public IDictionary<XmlType, INamedTypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
 	public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);
@@ -32,6 +42,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<(ILocalValue, IFieldSymbol?, IPropertySymbol?), ILocalValue> VariablesProperties { get; } = new Dictionary<(ILocalValue, IFieldSymbol?, IPropertySymbol?), ILocalValue>();
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public ProjectItem ProjectItem { get; } = projectItem;
+
+	public Dictionary<string, int> lastIdForName = [];
 
 	public void AddLocalMethod(string code)
 	{
@@ -46,7 +58,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	}
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
-	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGValueProviders;
+	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGEarlyMarkupExtensions;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGLateMarkupExtensions;
 }

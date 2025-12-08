@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -18,20 +18,19 @@ public partial class Gh11334 : ContentPage
 		stack.Children.Insert(index + 1, newLabel);
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
 		bool enableDiagnosticsInitialState;
+		bool eventTriggered;
 
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 			VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
@@ -39,18 +38,20 @@ public partial class Gh11334 : ContentPage
 
 		void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
 		{
-			Assert.That(e.ChangeType, Is.EqualTo(VisualTreeChangeType.Remove));
-			Assert.That(e.ChildIndex, Is.EqualTo(0));
-			Assert.Pass();
+			Assert.Equal(VisualTreeChangeType.Remove, e.ChangeType);
+			Assert.Equal(0, e.ChildIndex);
+			eventTriggered = true;
 		}
 
-		[Test]
-		public void ChildIndexOnRemove([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ChildIndexOnRemove(XamlInflator inflator)
 		{
+			eventTriggered = false;
 			var layout = new Gh11334(inflator);
 			VisualDiagnostics.VisualTreeChanged += OnVTChanged;
 			layout.Remove(null, EventArgs.Empty);
-			Assert.Fail();
+			Assert.True(eventTriggered, "VisualTreeChanged event was not triggered");
 		}
 	}
 }

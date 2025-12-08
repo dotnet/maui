@@ -23,7 +23,8 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsDisabled("build_property.MauiXamlLineInfo"))
 				return false;
-			return Configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase);
+			//return Configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase);
+			return false; //default to False due to roslyn issues with large pdbs https://github.com/dotnet/roslyn/issues/80952
 		}
 	}
 

@@ -31,7 +31,9 @@
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
-                    <Border SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
+                    <Border 
+                        Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"
+                        SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
                         <VerticalStackLayout Padding="10">
                             <Label Text="{Binding Name}" FontSize="24" />
                             <Label Text="{Binding Description}" />
@@ -42,6 +44,8 @@
         </CollectionView>
 
         <controls:AddButton
-        Command="{Binding AddProjectCommand}" />
+        Command="{Binding AddProjectCommand}"
+        SemanticProperties.Description="Add project" 
+        ToolTipProperties.Text="Add project" />
     </Grid>
 </ContentPage>

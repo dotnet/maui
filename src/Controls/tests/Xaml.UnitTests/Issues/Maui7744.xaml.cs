@@ -1,7 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,17 +11,19 @@ public partial class Maui7744 : ContentPage
 {
 	public Maui7744() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public Test() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void ConvertersAreExecutedWhileApplyingSetter([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ConvertersAreExecutedWhileApplyingSetter(XamlInflator inflator)
 		{
 			var page = new Maui7744(inflator);
-			Assert.That(page.border0.StrokeShape, Is.TypeOf<RoundRectangle>());
-			Assert.That(page.border1.StrokeShape, Is.TypeOf<RoundRectangle>());
+			Assert.IsType<RoundRectangle>(page.border0.StrokeShape);
+			Assert.IsType<RoundRectangle>(page.border1.StrokeShape);
 		}
 	}
 }

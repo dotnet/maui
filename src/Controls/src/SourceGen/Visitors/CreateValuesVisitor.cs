@@ -33,9 +33,9 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//At this point, all MarkupNodes are expanded to ElementNodes
 	}
 
-	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyCaches xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
+	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
 	{
-		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var type) || type is null)
+		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
 
 		//x:Array
@@ -269,6 +269,54 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		}
 		else if (ctor != null)
 		{
+			// Check if this type is a known value provider that can be inlined.
+			// Use CanProvideValue to verify that ALL properties can be inlined (no markup extensions).
+			if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var valueProvider) &&
+				valueProvider.CanProvideValue(node, Context))
+			{
+				// This element can be fully inlined without property assignments or variable creation.
+				// Skip setting all simple value properties since they'll be handled
+				// by inline initialization in TryProvideValue.
+				// 
+				// This eliminates the dead code that creates:
+				// 1. Empty variable instantiation (var setter = new Setter();)
+				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider, 
+				//    XmlNamespaceResolver, XamlTypeResolver) for property assignments
+				// 
+				// These are not AOT-compatible and were completely dead code.
+				//
+				// Register a placeholder variable entry so TryProvideValue can replace it
+				// with the actual inline instantiation later.
+				foreach (var prop in node.Properties)
+				{
+					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
+						node.SkipProperties.Add(prop.Key);
+				}
+
+				// Also skip the content property when the value is specified as a collection item.
+				// This handles the content property syntax like:
+				//   <Setter Property="...">10,10,20,20</Setter>
+				// where the value is a collection item instead of a property.
+				// Without skipping this, SetPropertiesVisitor would try to process the
+				// collection item and generate invalid code like ".Value = ..." 
+				// (with an empty variable name).
+				if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
+				{
+					var contentPropertyName = type.GetContentPropertyName(Context);
+					if (!string.IsNullOrEmpty(contentPropertyName))
+					{
+						var contentPropertyXmlName = new XmlName(node.NamespaceURI, contentPropertyName);
+						if (!node.SkipProperties.Contains(contentPropertyXmlName))
+							node.SkipProperties.Add(contentPropertyXmlName);
+					}
+				}
+
+				// Register placeholder - TryProvideValue will create the actual variable
+				// Use empty string as placeholder name since it will be replaced
+				variables[node] = new LocalVariable(type, string.Empty);
+				return;
+			}
+
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
 
 			if (requiredPropAndFields.Any())
@@ -284,6 +332,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
+
 			return;
 		}
 	}

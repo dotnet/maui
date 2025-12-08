@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,11 +12,12 @@ public partial class FontImageExtension : TabBar
 	public static Color Color => Colors.Black;
 	public static double Size = 50d;
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void FontImageExtension_Positive([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FontImageExtension_Positive(XamlInflator inflator)
 		{
 			var layout = new FontImageExtension(inflator);
 			var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
@@ -28,24 +29,25 @@ public partial class FontImageExtension : TabBar
 				if (myTab == null)
 					continue;
 
-				Assert.That(myTab.Icon, Is.TypeOf<FontImageSource>());
+				Assert.IsType<FontImageSource>(myTab.Icon);
 
 				var fontImage = (FontImageSource)myTab.Icon;
-				Assert.AreEqual(FontFamily, fontImage.FontFamily);
-				Assert.AreEqual(Glyph, fontImage.Glyph);
+				Assert.Equal(FontFamily, fontImage.FontFamily);
+				Assert.Equal(Glyph, fontImage.Glyph);
 
 				if (i == 3)
-					Assert.AreEqual(30d, fontImage.Size);
+					Assert.Equal(30d, fontImage.Size);
 				else
-					Assert.AreEqual(Size, fontImage.Size);
+					Assert.Equal(Size, fontImage.Size);
 
-				Assert.AreEqual(Color, fontImage.Color);
+				Assert.Equal(Color, fontImage.Color);
 				i++;
 			}
 		}
 
-		[Test]
-		public void FontImageExtension_Negative([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FontImageExtension_Negative(XamlInflator inflator)
 		{
 			var layout = new FontImageExtension(inflator);
 			var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
@@ -56,7 +58,8 @@ public partial class FontImageExtension : TabBar
 				if (myTab == null)
 					continue;
 
-				Assert.That(myTab.Icon, Is.Not.TypeOf<ImageSource>());
+				// Check that Icon is not exactly ImageSource type (but can be a subtype like FontImageSource)
+				Assert.NotEqual(typeof(ImageSource), myTab.Icon.GetType());
 			}
 		}
 	}

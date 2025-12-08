@@ -58,10 +58,6 @@ public class LineInfoTests : SourceGenXamlInitializeComponentTestBase
 
         var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
         var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
-#if RELEASE
-        Assert.False(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));        
-#else
-		Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
-#endif
+        Assert.False(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
     }
 }

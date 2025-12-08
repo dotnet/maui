@@ -56,7 +56,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore NuGet packages required by this project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Consente di ripristinare i pacchetti NuGet richiesti da questo progetto.]]></Val>
+            <Val><![CDATA[Ripristinare i pacchetti NuGet richiesti da questo progetto.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -65,7 +65,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run 'dotnet restore']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Esegui "dotnet restore"]]></Val>
+            <Val><![CDATA[Esegui 'dotnet restore']]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Framework di destinazione per il progetto.]]></Val>
+            <Val><![CDATA[Il framework di destinazione per il progetto.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -101,7 +101,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Include sample content]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_Includi contenuto di esempio]]></Val>
+            <Val><![CDATA[_Include contenuto di esempio]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

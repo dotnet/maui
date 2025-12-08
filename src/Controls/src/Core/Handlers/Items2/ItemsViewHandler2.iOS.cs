@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapFlowDirection(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.Controller?.UpdateFlowDirection();
+
+			// UIKit does not automatically mirror or reflow UICollectionView layouts when the flow direction
+			// (semanticContentAttribute) changes at runtime. To ensure correct RTL/LTR behavior, we explicitly
+			// notify the controller to rebuild or reassign its layout. Without this, UICollectionViewCompositionalLayout
+			// and other layouts will keep their previous geometry and ignore the new direction.
+			handler.UpdateLayout();
 		}
 
 		public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -164,23 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected bool IsIndexPathValid(NSIndexPath indexPath)
 		{
-			if (indexPath.Item < 0 || indexPath.Section < 0)
-			{
-				return false;
-			}
-
-			var collectionView = Controller.CollectionView;
-			if (indexPath.Section >= collectionView.NumberOfSections())
-			{
-				return false;
-			}
-
-			if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
-			{
-				return false;
-			}
-
-			return true;
+			return LayoutFactory2.IsIndexPathValid(indexPath, Controller.CollectionView);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

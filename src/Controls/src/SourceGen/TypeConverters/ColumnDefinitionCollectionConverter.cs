@@ -13,6 +13,7 @@ class ColumnDefinitionCollectionConverter : ISGTypeConverter
 	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
+		var columnDefinitionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinition")!;
 		if (!string.IsNullOrEmpty(value))
 		{
 			var lengths = value.Split([',']);
@@ -22,7 +23,7 @@ class ColumnDefinitionCollectionConverter : ISGTypeConverter
 			foreach (var length in lengths)
 			{
 				var gridLength = gridLengthConverter.Convert(length, node, toType, writer, context);
-				columnDefinitions.Add($"new ColumnDefinition({gridLength})");
+				columnDefinitions.Add($"new {columnDefinitionType.ToFQDisplayString()}({gridLength})");
 			}
 
 			var columnDefinitionCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ColumnDefinitionCollection")!;

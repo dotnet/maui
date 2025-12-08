@@ -39,16 +39,23 @@ static class IMethodSymbolExtensions
 			// }
 
 			var argType = getNodeValue?.Invoke(nodeparameters[i], paramType)?.Type ?? context.Variables[nodeparameters[i]].Type;
-			if (!argType.InheritsFrom(paramType, context))
+			
+			// Check interface implementation first (interfaces don't use inheritance)
+			if (paramType.IsInterface())
+			{
+				if (!argType.Implements(paramType))
+				{
+					parameters = null;
+					return false;
+				}
+			}
+			// Then check class inheritance
+			else if (!argType.InheritsFrom(paramType, context))
 			{
 				parameters = null;
 				return false;
 			}
-			if (paramType.IsInterface() && !argType.Implements(paramType))
-			{
-				parameters = null;
-				return false;
-			}
+			
 			parameters.Add((nodeparameters[i], paramType, null));
 		}
 		return true;

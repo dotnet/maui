@@ -312,6 +312,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						}
 					}
 				}
+	
+				CollectionView.UpdateFlowDirection(ItemsView);
 			}
 
 			if (_emptyViewDisplayed)

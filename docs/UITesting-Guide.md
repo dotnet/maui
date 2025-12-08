@@ -17,6 +17,8 @@ Comprehensive guidance for creating automated UI tests for .NET MAUI using Appiu
 
 ### All Platforms
 
+**Appium Package**: All UI tests use `Appium.WebDriver@8.0.1` (latest stable version)
+
 ```bash
 # Restore tools (required)
 
@@ -302,7 +304,84 @@ public void iOSOnlyFeature()
 
 ## Running Tests
 
-### Command Line
+### Quick Start: Running Specific Tests
+
+For rapid development and debugging, you can run specific tests directly:
+
+**Android:**
+
+1. Deploy TestCases.HostApp to Android emulator/device:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+**iOS (3-step process):**
+
+1. **Find iPhone Xs with highest API level:**
+   ```bash
+   # Extract UDID of iPhone Xs with highest iOS version
+   UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
+
+   # Verify UDID was found
+   if [ -z "$UDID" ]; then
+       echo "ERROR: No iPhone Xs simulator found. Please create an iPhone Xs simulator before running iOS tests."
+       exit 1
+   fi
+
+   echo "Using iPhone Xs with UDID: $UDID"
+   ```
+
+2. **Build the iOS app:**
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
+   ```
+
+3. **Boot simulator and install app (non-blocking):**
+   ```bash
+   # Boot the simulator (will error if already booted, which is fine)
+   xcrun simctl boot $UDID 2>/dev/null || true
+
+   # Install the app to the simulator
+   xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+
+   # Verify simulator is booted
+   xcrun simctl list devices | grep "$UDID"
+   ```
+
+4. **Run specific test:**
+   ```bash
+   dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+**MacCatalyst:**
+
+1. Deploy TestCases.HostApp to MacCatalyst:
+   ```bash
+   # Use local dotnet if available, otherwise use global dotnet
+   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   # OR:
+   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
+   ```
+
+2. Run specific test:
+   ```bash
+   dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
+   ```
+
+### Full Test Suite: Using Cake Build System
+
+For comprehensive CI-like test runs:
 
 **Android:**
 
@@ -435,6 +514,44 @@ Don't:
 * Skip assertions (tests should validate something).
 * Rely solely on element existence without visual validation.
 
+## Troubleshooting
+
+### Android App Crashes on Launch
+
+If you encounter navigation fragment errors or resource ID issues when launching the Android HostApp:
+
+```
+java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
+```
+
+**Solution:** Read the crash logs to find the full exception and investigate the root cause:
+
+```bash
+# Monitor logcat for the full crash details
+adb logcat -c  # Clear logcat buffer
+adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
+```
+
+**Debugging Steps:**
+
+1. **Find the full exception** in logcat - look for the complete stack trace
+
+2. **Investigate the root cause**:
+   - Does the resource ID (`0x7f0800f8`) actually exist in the APK?
+   - Is the fragment being created before the resource is available?
+   - Are there initialization order issues?
+   - Check for null references or missing dependencies
+
+3. **If you can't determine the fix**, ask for guidance with:
+   - The full exception stack trace
+   - What you've tried so far
+   - Any patterns you've noticed
+
+3. Check Android emulator is running:
+   ```bash
+   adb devices
+   ```
+
 ## Pre-Commit Checklist
 
 Before committing UI tests:
@@ -505,6 +622,7 @@ If migrating from Xamarin.UITest:
 ## Additional Resources
 
 - [UITesting-Architecture.md](design/UITesting-Architecture.md) - CI/CD integration, advanced patterns, and architecture decisions
+- [Appium Control Scripts](../.github/instructions/appium-control.instructions.md) - Create standalone scripts for manual Appium-based debugging and exploration
 - [Appium Documentation](http://appium.io/docs/en/about-appium/intro/)
 - [NUnit Documentation](https://docs.nunit.org/)
 - [.NET MAUI Testing Wiki](https://github.com/dotnet/maui/wiki/UITests)

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,23 +7,25 @@ public partial class Gh16293 : ContentPage
 	public Gh16293() => InitializeComponent();
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void ShouldResolveNested([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ShouldResolveNested(XamlInflator inflator)
 		{
 			var layout = new Gh16293(inflator);
-			Assert.That(layout.Label1.Text, Is.EqualTo("LibraryConstant"));
-			Assert.That(layout.Label2.Text, Is.EqualTo("NestedLibraryConstant"));
+			Assert.Equal("LibraryConstant", layout.Label1.Text);
+			Assert.Equal("NestedLibraryConstant", layout.Label2.Text);
 		}
 
-		[Test]
-		public void ShouldResolveInternalNested([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ShouldResolveInternalNested(XamlInflator inflator)
 		{
 			var layout = new Gh16293(inflator);
-			Assert.That(layout.Label3.Text, Is.EqualTo("InternalLibraryConstant"));
-			Assert.That(layout.Label4.Text, Is.EqualTo("InternalNestedLibraryConstant"));
+			Assert.Equal("InternalLibraryConstant", layout.Label3.Text);
+			Assert.Equal("InternalNestedLibraryConstant", layout.Label4.Text);
 		}
 	}
 }

@@ -81,7 +81,7 @@ public static class BindingCodeWriter
 		}
 		""";
 
-	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2)
+	public static string GenerateBindingMethod(BindingInvocationDescription binding, string methodName, int indent = 2, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 	{
 		if (!binding.NullableContextEnabled)
 		{
@@ -90,7 +90,7 @@ public static class BindingCodeWriter
 		}
 
 		using var builder = new BindingInterceptorCodeBuilder(indent);
-		builder.AppendBindingFactoryMethod(binding, methodName);
+		builder.AppendBindingFactoryMethod(binding, methodName, propertyFlags);
 		return builder.ToString();
 	}
 
@@ -111,7 +111,7 @@ public static class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendBindingFactoryMethod(BindingInvocationDescription binding, string methodName)
+		public void AppendBindingFactoryMethod(BindingInvocationDescription binding, string methodName, BindingPropertyFlags propertyFlags = BindingPropertyFlags.All)
 		{
 			AppendLine(GeneratedCodeAttribute);
 			if (binding.InterceptableLocation is not null)
@@ -177,20 +177,12 @@ public static class BindingCodeWriter
 			Append("handlers: ");
 
 			AppendHandlersArray(binding);
-			AppendLine(')');
+			Append(")");
 			Unindent();
-			AppendLines($$"""
-				{
-					Mode = mode,
-					Converter = converter,
-					ConverterParameter = converterParameter,
-					StringFormat = stringFormat,
-					Source = source,
-					FallbackValue = fallbackValue,
-					TargetNullValue = targetNullValue
-				};
-				""");
-
+			
+			// Only generate property setters for the properties indicated by the flags
+			AppendBindingPropertySetters(propertyFlags);
+			AppendLine(";");
 			AppendBlankLine();
 
 			// Set binding
@@ -388,40 +380,79 @@ public static class BindingCodeWriter
 			}
 		}
 
+		private void AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
+		{
+			// Skip initializer block entirely if no properties need to be set
+			if (propertyFlags == BindingPropertyFlags.None)
+			{
+				return;
+			}
+
+			// Use object initializer syntax for cleaner, shorter code
+			AppendBlankLine();
+			AppendLine('{');
+			Indent();
+			
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
+				AppendLine("Mode = mode,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
+				AppendLine("Converter = converter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
+				AppendLine("ConverterParameter = converterParameter,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
+				AppendLine("StringFormat = stringFormat,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))
+				AppendLine("Source = source,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue))
+				AppendLine("FallbackValue = fallbackValue,");
+			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
+				AppendLine("TargetNullValue = targetNullValue,");
+			
+			Unindent();
+			Append('}');
+		}
+
 		private void AppendUnsafeAccessors(BindingInvocationDescription binding)
 		{
-			// Append unsafe accessors as local methods
-			var unsafeAccessors = binding.Path.OfType<InaccessibleMemberAccess>();
+			// Append unsafe accessors as local methods for members with inaccessible accessors
+			var membersWithInaccessibleAccessors = binding.Path.OfType<MemberAccess>().Where(m => m.HasInaccessibleAccessor);
 
-			foreach (var unsafeAccessor in unsafeAccessors)
+			foreach (var member in membersWithInaccessibleAccessors)
 			{
 				AppendBlankLine();
 
-				if (unsafeAccessor.Kind == AccessorKind.Field)
+				// Members with inaccessible accessors must have MemberType and ContainingType populated
+				// by PathParser during source analysis
+				if (member.MemberType == null || member.ContainingType == null)
 				{
-					AppendUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+					throw new InvalidOperationException($"Member '{member.MemberName}' with inaccessible accessor must have MemberType and ContainingType populated.");
 				}
-				else if (unsafeAccessor.Kind == AccessorKind.Property)
+
+				if (member.Kind == AccessorKind.Field)
 				{
-					bool isLastPart = unsafeAccessor.Equals(binding.Path.Last());
+					AppendUnsafeFieldAccessor(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
+				}
+				else if (member.Kind == AccessorKind.Property)
+				{
+					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
 
-					if (!isLastPart || needsGetterForLastPart)
+					if (member.IsGetterInaccessible && (!isLastPart || needsGetterForLastPart))
 					{
 						// we don't need the unsafe getter if the item is the very last part of the path
 						// because we don't need to access its value while constructing the handlers array
-						AppendUnsafePropertyGetAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 
-					if (isLastPart && binding.SetterOptions.IsWritable)
+					if (member.IsSetterInaccessible && isLastPart && binding.SetterOptions.IsWritable)
 					{
 						// We only need the unsafe setter if the item is the very last part of the path
-						AppendUnsafePropertySetAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+						AppendUnsafePropertySetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 				}
 				else
 				{
-					throw new ArgumentException(nameof(unsafeAccessor.Kind));
+					throw new ArgumentException(nameof(member.Kind));
 				}
 			}
 

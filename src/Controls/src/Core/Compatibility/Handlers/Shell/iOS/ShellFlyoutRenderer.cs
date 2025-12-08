@@ -269,6 +269,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateFlyoutAccessibility();
 		}
 
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+
+			coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
+			{
+				if (IsOpen && TapoffView != null)
+				{
+					TapoffView.Frame = View.Bounds;
+				}
+			}, null);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
