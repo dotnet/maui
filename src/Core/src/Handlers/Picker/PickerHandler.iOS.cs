@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Handlers
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
 
-		UITapGestureRecognizer? _tapGestureRecognizer;
-
 #if !MACCATALYST
 		protected override MauiPicker CreatePlatformView()
 		{
@@ -40,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
 
-		void DisplayAlert(MauiPicker uITextField)
+		void DisplayAlert(MauiPicker uITextField, int selectedIndex)
 		{
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
@@ -52,7 +50,16 @@ namespace Microsoft.Maui.Handlers
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 
-			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
+			if (pickerView?.Model is PickerSource source)
+			{
+				source.SelectedIndex = selectedIndex;
+				pickerView.Select(Math.Max(selectedIndex, 0), 0, true);
+				pickerView.ReloadAllComponents();
+			}
+
+			// The UIPickerView is displayed as a subview of the UIAlertController when an empty string is provided as the title, instead of using the VirtualView title. 
+			// This behavior deviates from the expected native macOS behavior.
+			var pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
 			pickerController.AddAction(UIAlertAction.Create("Done",
@@ -81,17 +88,33 @@ namespace Microsoft.Maui.Handlers
 			{
 				await pickerController.DismissViewControllerAsync(true);
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = false;
+					virtualView.IsFocused = virtualView.IsOpen = false;
 				uITextField.EditingDidEnd -= editingDidEndHandler;
 			};
 
 			uITextField.EditingDidEnd += editingDidEndHandler;
 
 			var platformWindow = MauiContext?.GetPlatformWindow();
-			platformWindow?.BeginInvokeOnMainThread(() =>
+			if (platformWindow is null)
 			{
-				_ = platformWindow?.RootViewController?.PresentViewControllerAsync(pickerController, true);
+				return;
+			}
+
+			var currentViewController = GetCurrentViewController(platformWindow.RootViewController);
+			platformWindow.BeginInvokeOnMainThread(() =>
+			{
+				currentViewController?.PresentViewControllerAsync(pickerController, true);
 			});
+		}
+
+		static UIViewController? GetCurrentViewController(UIViewController? viewController)
+		{
+			while (viewController?.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+ 
+			return viewController;
 		}
 #endif
 
@@ -107,7 +130,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
 			_proxy.Disconnect(platformView);
-			RemoveTouchDismissGesture();
 
 			if (_pickerView != null)
 			{
@@ -128,7 +150,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
-		// Uncomment me on NET8 [Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
@@ -175,6 +197,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateIsOpen(picker);
+		}
+
 		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
 			if (VirtualView == null || PlatformView == null || pickerSource == null)
@@ -203,31 +230,6 @@ namespace Microsoft.Maui.Handlers
 
 			UpdatePickerFromPickerSource(pickerSource);
 			textField.ResignFirstResponder();
-		}
-
-		void SetupTouchDismissGesture()
-		{
-			if (_tapGestureRecognizer is not null && PlatformView?.Window is null)
-				return;
-
-			var weakPlatformView = new WeakReference<MauiPicker>(PlatformView);
-			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
-			{
-				if (weakPlatformView.TryGetTarget(out var platformView))
-					platformView?.EndEditing(true);
-			});
-			_tapGestureRecognizer.CancelsTouchesInView = false;
-			PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
-		}
-
-		void RemoveTouchDismissGesture()
-		{
-			if (_tapGestureRecognizer is not null && PlatformView?.Window is not null)
-			{
-				PlatformView.Window.RemoveGestureRecognizer(_tapGestureRecognizer);
-				_tapGestureRecognizer.Dispose();
-				_tapGestureRecognizer = null;
-			}
 		}
 
 		class MauiPickerProxy
@@ -269,14 +271,14 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = true;
+					virtualView.IsFocused = virtualView.IsOpen = true;
 #if MACCATALYST
 				if (Handler is not PickerHandler handler)
 					return;
 
-				handler.DisplayAlert(handler.PlatformView);
+				int selectedIndex = handler.VirtualView?.SelectedIndex ?? 0;
+				handler.DisplayAlert(handler.PlatformView, selectedIndex);
 #endif
-				Handler?.SetupTouchDismissGesture();
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
@@ -290,9 +292,7 @@ namespace Microsoft.Maui.Handlers
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}
 				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = false;
-
-				Handler?.RemoveTouchDismissGesture();
+					virtualView.IsFocused = virtualView.IsOpen = false;
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
