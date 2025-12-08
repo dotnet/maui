@@ -123,6 +123,7 @@ public class TabbedPageManager
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
+			Element.Disappearing -= OnTabbedPageDisappearing;
 
 			RemoveTabs();
 			
@@ -136,6 +137,7 @@ public class TabbedPageManager
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
+			Element.Disappearing += OnTabbedPageDisappearing;
 
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
@@ -220,8 +222,10 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// No op, TODO can be removed in .NET 11, empty method
-		// needs to stay here so we don't change the public API surface for .NET 10
+		// Reset the content bottom margin when navigating away from the tabbed page
+		// This ensures subsequent pages can use the full screen height
+		// We don't remove the tabs themselves to avoid issues with modal navigation
+		SetContentBottomMargin(0);
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
