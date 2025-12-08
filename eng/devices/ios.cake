@@ -155,7 +155,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 				.Append("/bl:" + binlog)
 				.Append("/tl");
 
-			if (isUsingCoreClr)
+			if (useCoreClr)
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}
