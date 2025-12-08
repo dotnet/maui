@@ -56,12 +56,11 @@ internal static class SafeAreaExtensions
 
 		if (safeAreaView2 is not null)
 		{
-		// Apply safe area selectively per edge based on SafeAreaRegions
-		double left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-		double top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-		double right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-		double bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Top, 3, isKeyboardShowing, keyboardInsets);
-			}
+			// Apply safe area selectively per edge based on SafeAreaRegions
+			double left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
+			double top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
+			double right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
+			double bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Top, 3, isKeyboardShowing, keyboardInsets);
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;

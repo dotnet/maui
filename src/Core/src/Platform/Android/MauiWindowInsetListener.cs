@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Platform
 						{
 						// Before returning the listener, check if any ancestor is a safe-area-ignored container
 						// If so, don't apply inset listeners to this view or any of its children
-						if (entry.Listener.IsInsideSafeAreaIgnoredContainer(view))
+						if (IsInsideSafeAreaIgnoredContainer(view))
 						{
 							return null;
 						}
@@ -139,13 +139,12 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-	/// <summary>
 	/// Checks if a view is inside a container that ignores safe area (ListView, TableView).
 	/// These containers manage their own layout and should NOT have safe area insets applied to their content.
 	/// </summary>
 	/// <param name="view">The view to check</param>
 	/// <returns>True if the view is inside an ISafeAreaIgnoredContainer, false otherwise</returns>
-	private bool IsInsideSafeAreaIgnoredContainer(AView view)
+	private static bool IsInsideSafeAreaIgnoredContainer(AView view)
 	{
 		// Walk up from the current view to find its IView representation
 		var currentView = view;
@@ -171,13 +170,14 @@ namespace Microsoft.Maui.Platform
 		return false;
 	}
 
-		/// Sets up a view to use this listener for inset handling.
-		/// This method registers the view and attaches the listener.
-		/// Must be called on UI thread.
-		/// </summary>
-		/// <param name="view">The view to set up</param>
-		/// <returns>The same view for method chaining</returns>
-		internal static AView SetupViewWithLocalListener(AView view, MauiWindowInsetListener? listener = null)
+	/// <summary>
+	/// Sets up a view to use this listener for inset handling.
+	/// This method registers the view and attaches the listener.
+	/// Must be called on UI thread.
+	/// </summary>
+	/// <param name="view">The view to set up</param>
+	/// <returns>The same view for method chaining</returns>
+	internal static AView SetupViewWithLocalListener(AView view, MauiWindowInsetListener? listener = null)
 		{
 			listener ??= new MauiWindowInsetListener();
 			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
