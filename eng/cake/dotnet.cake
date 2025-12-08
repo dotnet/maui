@@ -209,7 +209,20 @@ Task("uitests-apphost")
         {
             Information("Building for CoreCLR");
             properties.Add("UseMonoRuntime", "false");
-            properties.Add("TargetFramework", $"{DefaultDotnetVersion}-android");
+
+            // Set the target framework based on the platform argument
+            if (HasArgument("ios"))
+            {
+                properties.Add("TargetFramework", $"{DefaultDotnetVersion}-ios");
+            }
+            else if (HasArgument("catalyst") || HasArgument("maccatalyst"))
+            {
+                properties.Add("TargetFramework", $"{DefaultDotnetVersion}-maccatalyst");
+            }
+            else if (HasArgument("android"))
+            {
+                properties.Add("TargetFramework", $"{DefaultDotnetVersion}-android");
+            }
         }
 
         if (USE_NATIVE_AOT)
