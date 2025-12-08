@@ -120,6 +120,13 @@ namespace Microsoft.Maui.Platform
 						}
 						else if (ReferenceEquals(registeredView, parentView))
 						{
+						// Before returning the listener, check if any ancestor is a safe-area-ignored container
+						// If so, don't apply inset listeners to this view or any of its children
+						if (entry.Listener.IsInsideSafeAreaIgnoredContainer(view))
+						{
+							return null;
+						}
+
 							return entry.Listener;
 						}
 					}
@@ -132,6 +139,38 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
+	/// <summary>
+	/// Checks if a view is inside a container that ignores safe area (ListView, TableView).
+	/// These containers manage their own layout and should NOT have safe area insets applied to their content.
+	/// </summary>
+	/// <param name="view">The view to check</param>
+	/// <returns>True if the view is inside an ISafeAreaIgnoredContainer, false otherwise</returns>
+	private bool IsInsideSafeAreaIgnoredContainer(AView view)
+	{
+		// Walk up from the current view to find its IView representation
+		var currentView = view;
+		while (currentView != null)
+		{
+			if (currentView is IViewHandler handler && handler.VirtualView is IView virtualView)
+			{
+				// Check if any ancestor in the virtual view hierarchy is ISafeAreaIgnoredContainer
+				var ancestor = virtualView.Parent as IView;
+				while (ancestor != null)
+				{
+					if (ancestor is ISafeAreaIgnoredContainer)
+					{
+						return true;
+					}
+					ancestor = ancestor.Parent as IView;
+				}
+				break;
+			}
+			currentView = currentView.Parent as AView;
+		}
+
+		return false;
+	}
+
 		/// Sets up a view to use this listener for inset handling.
 		/// This method registers the view and attaches the listener.
 		/// Must be called on UI thread.
