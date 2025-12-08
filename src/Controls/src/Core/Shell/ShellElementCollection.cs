@@ -257,19 +257,19 @@ namespace Microsoft.Maui.Controls
 			// When dynamically updating TabBarIsVisible through ShellContent
 			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
-				var baseShellItem = (BaseShellItem)sender;
+				var shellContent = sender as ShellContent;
 
-				if (baseShellItem is ShellContent shellContent)
+				if (shellContent is not null)
 				{
-					var shell = baseShellItem.FindParentOfType<Shell>();
+					var shell = shellContent.FindParentOfType<Shell>();
 					if (shell is not null)
 					{
 						var displayedPage = shell.GetCurrentShellPage();
 
 						// Check whether the displayed page is in the current ShellContent
-						if (displayedPage is not null && ((IShellContentController)shellContent).Page == displayedPage)
+						if (displayedPage is not null && (shellContent as IShellContentController)?.Page == displayedPage)
 						{
-							var shellContentValue = (bool)baseShellItem.GetValue(Shell.TabBarIsVisibleProperty);
+							var shellContentValue = (bool)shellContent.GetValue(Shell.TabBarIsVisibleProperty);
 							var pageValue = (bool)displayedPage.GetValue(Shell.TabBarIsVisibleProperty);
 
 							if (shellContentValue != pageValue)
