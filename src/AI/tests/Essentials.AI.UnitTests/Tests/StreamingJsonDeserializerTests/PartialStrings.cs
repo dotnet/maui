@@ -14,7 +14,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_StringCutMidValue_ReconstructsCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String is cut in the middle: "Hel
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Hel");
@@ -30,7 +30,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_LongStringInMultipleChunks_BuildsGradually()
 		{
-			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>();
+			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>(DeserializationOptions);
 
 			// Simulate streaming a long reply in chunks (like LLM output)
 			var chunk1 = @"{""anger"": 0, ""reply"": ""Hello! I'm just a";
@@ -50,7 +50,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_StringWithEscapedCharacters_HandlesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String with escaped quote cut mid-escape
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""He said \""Hel");
@@ -64,7 +64,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_StringWithNewlines_PreservesContent()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Multi-line string split across chunks
 			var chunk1 = @"{""text"": ""Line 1\nLine ";
@@ -81,7 +81,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_StringCutBeforeClosingQuote_WaitsForCompletion()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String value complete but missing closing quote
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Complete text");
@@ -97,7 +97,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_EmptyString_HandlesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Empty string split (unlikely but possible)
 			var result1 = deserializer.ProcessChunk(@"{""text"": """);
@@ -111,7 +111,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_VeryLongString_StreamsEfficiently()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Build a long string in many small chunks (simulating token streaming)
 			var baseText = "This is a very long text that represents LLM output streaming. ";
@@ -135,28 +135,28 @@ public partial class StreamingJsonDeserializerTests
 		public void ProcessChunk_MultipleStringSplitPatterns_AllParseCorrectly()
 		{
 			// Test pattern 1: Simple mid-word split
-			var deserializer1 = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer1 = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 			deserializer1.ProcessChunk(@"{""text"": ""Hel");
 			var result1 = deserializer1.ProcessChunk(@"lo"", ""score"": 1}");
 			Assert.NotNull(result1);
 			Assert.Equal("Hello", result1.Text);
 
 			// Test pattern 2: Empty string split
-			var deserializer2 = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer2 = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 			deserializer2.ProcessChunk(@"{""text"": """);
 			var result2 = deserializer2.ProcessChunk(@"Test"", ""score"": 2}");
 			Assert.NotNull(result2);
 			Assert.Equal("Test", result2.Text);
 
 			// Test pattern 3: Multi-word split
-			var deserializer3 = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer3 = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 			deserializer3.ProcessChunk(@"{""text"": ""A B C ");
 			var result3 = deserializer3.ProcessChunk(@"D E F"", ""score"": 3}");
 			Assert.NotNull(result3);
 			Assert.Equal("A B C D E F", result3.Text);
 
 			// Test pattern 4: Multiple chunks
-			var deserializer4 = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer4 = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 			deserializer4.ProcessChunk(@"{""text"": ""First");
 			deserializer4.ProcessChunk(@" Second");
 			var result4 = deserializer4.ProcessChunk(@" Third"", ""score"": 4}");

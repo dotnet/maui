@@ -15,7 +15,7 @@ public partial class StreamingJsonDeserializerTests
 		[InlineData("emotional-response-3.txt", 0.0, 0.0)]
 		public void ProcessChunk_EmotionalResponses_DeserializeCorrectly(string fileName, double expectedHappiness, double expectedAnger)
 		{
-			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>();
+			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>(DeserializationOptions);
 			var chunks = DataStreamsHelper.GetFileLines(fileName);
 
 			EmotionalResponse? finalResponse = null;
@@ -32,10 +32,7 @@ public partial class StreamingJsonDeserializerTests
 
 			// Deep comparison with direct deserialization
 			var fullJson = string.Concat(chunks);
-			var directDeserialized = JsonSerializer.Deserialize<EmotionalResponse>(fullJson, new JsonSerializerOptions
-			{
-				PropertyNameCaseInsensitive = true,
-			});
+			var directDeserialized = JsonSerializer.Deserialize<EmotionalResponse>(fullJson, DeserializationOptions);
 			
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, finalResponse, strict: true);
@@ -44,7 +41,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NumbersFirst_DeserializesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>();
+			var deserializer = new StreamingJsonDeserializer<EmotionalResponse>(DeserializationOptions);
 			var chunks = DataStreamsHelper.GetFileLines("numbers-first.txt");
 
 			EmotionalResponse? finalResponse = null;
@@ -60,10 +57,7 @@ public partial class StreamingJsonDeserializerTests
 
 			// Deep comparison with direct deserialization
 			var fullJson = string.Concat(chunks);
-			var directDeserialized = JsonSerializer.Deserialize<EmotionalResponse>(fullJson, new JsonSerializerOptions
-			{
-				PropertyNameCaseInsensitive = true,
-			});
+			var directDeserialized = JsonSerializer.Deserialize<EmotionalResponse>(fullJson, DeserializationOptions);
 			
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, finalResponse, strict: true);

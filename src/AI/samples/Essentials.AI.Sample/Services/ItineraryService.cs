@@ -74,8 +74,8 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 
 		var deserializer = new StreamingJsonDeserializer<Itinerary>(jsonOptions);
 
-		// var bufferedClient = new BufferedChatClient(chatClient, minBufferSize: 100, bufferDelay: TimeSpan.FromMilliseconds(250));
-		await foreach (var update in chatClient.GetStreamingResponseAsync(messages, options, cancellationToken))
+		var bufferedClient = new BufferedChatClient(chatClient, minBufferSize: 100, bufferDelay: TimeSpan.FromMilliseconds(250));
+		await foreach (var update in bufferedClient.GetStreamingResponseAsync(messages, options, cancellationToken))
 		{
 			// Detect tool calls from the streaming update
 			foreach (var item in update.Contents)

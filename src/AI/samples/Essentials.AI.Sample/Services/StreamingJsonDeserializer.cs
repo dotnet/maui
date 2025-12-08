@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -29,13 +30,12 @@ internal sealed class StreamingJsonDeserializer<T>
 	public StreamingJsonDeserializer(JsonSerializerOptions? options = null, bool skipDeserialization = false)
 	{
 		_skipDeserialization = skipDeserialization;
-		_options = options ?? new JsonSerializerOptions
-		{
-			PropertyNameCaseInsensitive = true,
+		options ??= new JsonSerializerOptions();
+		_options = new JsonSerializerOptions(options)
+        {
 			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
 			AllowTrailingCommas = true,
 			ReadCommentHandling = JsonCommentHandling.Skip,
-			Converters = { new JsonStringEnumConverter() },
 
 			// Make all properties optional to handle incomplete streaming JSON
 			TypeInfoResolver = new DefaultJsonTypeInfoResolver
@@ -54,7 +54,7 @@ internal sealed class StreamingJsonDeserializer<T>
 					}
 				}
 			}
-		};
+        };
 	}
 
 	/// <summary>
@@ -136,15 +136,19 @@ internal sealed class StreamingJsonDeserializer<T>
 				{
 					return JsonSerializer.Deserialize<T>(reconstructedBytes, _options);
 				}
-				catch (JsonException)
+				catch (JsonException ex)
 				{
+					Debug.WriteLine($"Deserialization failed: {ex.Message}");
+
 					// Deserialization failed - JSON may still be too incomplete
 					return null;
 				}
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			Debug.WriteLine($"Reconstruction failed: {ex.Message}");
+
 			// Reconstruction failed
 		}
 

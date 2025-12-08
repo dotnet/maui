@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Maui.Controls.Sample.Services;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
@@ -8,6 +10,13 @@ namespace Microsoft.Maui.Essentials.AI.UnitTests;
 /// </summary>
 public partial class JsonStreamingRoundtripTests
 {
+	private static JsonSerializerOptions DeserializationOptions =>
+		field ??= new JsonSerializerOptions
+		{
+			PropertyNameCaseInsensitive = true,
+			Converters = { new JsonStringEnumConverter() }
+		};
+
 	/// <summary>
 	/// Test model for simple roundtrip tests.
 	/// </summary>
@@ -28,7 +37,7 @@ public partial class JsonStreamingRoundtripTests
 	private static List<T?> ProcessLines<T>(string[] lines) where T : class
 	{
 		var chunker = new JsonStreamChunker();
-		var deserializer = new StreamingJsonDeserializer<T>();
+		var deserializer = new StreamingJsonDeserializer<T>(DeserializationOptions);
 		var models = new List<T?>();
 
 		foreach (var line in lines)
@@ -47,7 +56,7 @@ public partial class JsonStreamingRoundtripTests
 	private static (List<string> Chunks, List<T?> Models) ProcessLinesWithChunks<T>(string[] lines) where T : class
 	{
 		var chunker = new JsonStreamChunker();
-		var deserializer = new StreamingJsonDeserializer<T>();
+		var deserializer = new StreamingJsonDeserializer<T>(DeserializationOptions);
 		var chunks = new List<string>();
 		var models = new List<T?>();
 

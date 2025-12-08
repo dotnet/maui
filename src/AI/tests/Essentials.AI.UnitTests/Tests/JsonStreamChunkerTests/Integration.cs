@@ -29,7 +29,7 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			// For debugging - write chunks to .txt file
-			var txtPath = Path.ChangeExtension(filePath, ".txt");
+			var txtPath = DataStreamsHelper.GetTxtItinerary(fileName);
 			File.WriteAllLines(txtPath, chunks);
 
 			var concatenated = string.Concat(chunks);

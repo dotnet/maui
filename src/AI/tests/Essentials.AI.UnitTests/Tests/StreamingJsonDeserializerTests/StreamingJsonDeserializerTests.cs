@@ -1,7 +1,17 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
 
 public partial class StreamingJsonDeserializerTests
 {
+	private static JsonSerializerOptions DeserializationOptions =>
+		field ??= new JsonSerializerOptions
+		{
+			PropertyNameCaseInsensitive = true,
+			Converters = { new JsonStringEnumConverter() }
+		};
+
 	public class SimpleModel
 	{
 		public string? Text { get; set; }

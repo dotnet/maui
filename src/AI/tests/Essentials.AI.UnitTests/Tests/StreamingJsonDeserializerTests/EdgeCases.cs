@@ -13,7 +13,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_SingleCharacterChunks_BuildsCompleteObject()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 			var json = @"{""text"":""Hi"",""score"":5}";
 
 			SimpleModel? result = null;
@@ -30,7 +30,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_WhitespaceVariations_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Lots of extra whitespace
 			var chunk1 = @"{  ""text""  :  ""Test"" ";
@@ -47,7 +47,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_DeeplyNestedObjects_HandlesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+			var deserializer = new StreamingJsonDeserializer<NestedModel>(DeserializationOptions);
 
 			// Nested object split across chunks
 			var chunk1 = @"{""text"":""Root"",""meta"":{""score"":10";
@@ -66,7 +66,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_ArrayWithManyElements_StreamsCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<ComplexModel>();
+			var deserializer = new StreamingJsonDeserializer<ComplexModel>(DeserializationOptions);
 
 			// Start with title and array
 			var result = deserializer.ProcessChunk(@"{""title"":""Store"",""items"":[");
@@ -94,7 +94,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_EmptyArray_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<ComplexModel>();
+			var deserializer = new StreamingJsonDeserializer<ComplexModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""title"":""Empty"",""items"":[]}");
 
@@ -107,7 +107,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_EmptyObject_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{}");
 
@@ -119,7 +119,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_OnlyOpeningBrace_ReturnsLastGood()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{");
 
@@ -130,7 +130,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingCommas_HandlesGracefully()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Trailing comma before closing brace
 			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""score"":10,}");
@@ -143,7 +143,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NumbersWithoutDecimals_ParseAsIntegers()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			var chunk1 = @"{""integer"":100";
 			var chunk2 = @",""decimal"":3.14,""isActive"":true}";
@@ -159,7 +159,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_LargeNumbers_HandlesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""integer"":2147483647,""decimal"":1.7976931348623157E+308}");
 
@@ -171,7 +171,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeCharacters_PreservesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Unicode characters in string
 			var chunk1 = @"{""text"":""Hello 世界 ";
@@ -187,7 +187,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_MixedPropertyOrder_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Properties in different order than defined in class
 			var result = deserializer.ProcessChunk(@"{""score"":99,""text"":""Reversed""}");
@@ -200,7 +200,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_DuplicateProperties_UsesLastValue()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Same property appears twice (JSON spec says last wins)
 			var result = deserializer.ProcessChunk(@"{""text"":""First"",""text"":""Second"",""score"":1}");
@@ -212,7 +212,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeEscapeSequences_DecodesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Test common Unicode escape sequences
 			var result = deserializer.ProcessChunk(@"{""text"":""Copyright \u00A9 2024"",""score"":1}");
@@ -224,7 +224,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeEscapeSequences_MultipleInString()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Multiple Unicode escapes in one string
 			var result = deserializer.ProcessChunk(@"{""text"":""\u0048\u0065\u006C\u006C\u006F"",""score"":2}");
@@ -236,7 +236,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeEscapeSequences_MixedWithRegularText()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Mix of regular text and Unicode escapes
 			var result = deserializer.ProcessChunk(@"{""text"":""Price: \u20AC50"",""score"":3}");
@@ -248,7 +248,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeEscapeSequences_SplitAcrossChunks()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Unicode escape split across chunks
 			var chunk1 = @"{""text"":""Symbol: \u00";
@@ -264,7 +264,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeEscapeSequences_HighCodePoints()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Higher Unicode code points (emojis require surrogate pairs, but BMP chars work)
 			var result = deserializer.ProcessChunk(@"{""text"":""\u2764 \u2605 \u263A"",""score"":5}");
@@ -276,7 +276,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_UnicodeEscapeSequences_WithOtherEscapes()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Unicode escapes combined with other escape sequences
 			var result = deserializer.ProcessChunk(@"{""text"":""Line1\n\u00A9 Corp\tTab"",""score"":6}");
@@ -288,7 +288,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_EmptyStringValue_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Empty string as a value
 			var result = deserializer.ProcessChunk(@"{""text"":"""",""score"":5}");
@@ -301,7 +301,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_JustOpeningQuote_HandlesGracefully()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String property with just opening quote, no content yet
 			// This is a valid partial object with an empty string value
@@ -318,7 +318,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_OpeningQuoteWithEscapedQuote_ParsesQuoteAsValue()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String with escaped quote character: {"text":"\"
 			// This means the value is a single quote character "
@@ -335,7 +335,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingBackslash_HandlesIncompleteEscape()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String with trailing backslash (incomplete escape sequence)
 			var result1 = deserializer.ProcessChunk(@"{""text"":""Test\");
@@ -351,7 +351,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_IncompleteUnicodeEscape_HandlesGracefully()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Incomplete unicode escape sequence at end
 			var result1 = deserializer.ProcessChunk(@"{""text"":""Symbol \u00");
@@ -367,7 +367,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_PropertyNameWithoutValue_HandlesGracefully()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Property name without any value
 			var result1 = deserializer.ProcessChunk(@"{""text"":");
@@ -383,7 +383,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NestedEmptyObject_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+			var deserializer = new StreamingJsonDeserializer<NestedModel>(DeserializationOptions);
 
 			// Nested object that's empty
 			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""meta"":{}}");
@@ -396,7 +396,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_SingleCharacterString_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"":""X"",""score"":1}");
 
@@ -407,7 +407,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_OnlyWhitespaceInString_PreservesWhitespace()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"":""   "",""score"":1}");
 
@@ -418,7 +418,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NullValueForReferenceType_SetsNull()
 		{
-			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+			var deserializer = new StreamingJsonDeserializer<NestedModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""meta"":null}");
 
@@ -430,7 +430,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_ZeroValue_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""score"":0}");
 
@@ -442,7 +442,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NegativeNumber_ParsesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"":""Test"",""score"":-42}");
 
@@ -454,7 +454,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_OnlyBackslash_HandlesEmptyResult()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String that's literally just a backslash (incomplete escape)
 			// The backslash is stripped as it's incomplete, leaving empty string

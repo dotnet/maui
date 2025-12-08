@@ -10,7 +10,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_EmptyChunk_ReturnsNull()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk("");
 
@@ -21,7 +21,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_CompleteJsonInSingleChunk_DeserializesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"": ""Hello"", ""score"": 42}");
 
@@ -33,7 +33,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_IncrementalChunks_UpdatesModelProgressively()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Chunk 1: First complete property
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Hello""}");
@@ -53,7 +53,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void Reset_ClearsStateAndModel()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var before = deserializer.ProcessChunk(@"{""text"": ""Before"", ""score"": 100}");
 			Assert.NotNull(before);
@@ -68,7 +68,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void PartialJson_ReflectsCurrentBuffer()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			deserializer.ProcessChunk(@"{""text"": ""Test");
 			Assert.Contains(@"{""text"": ""Test", deserializer.PartialJson, StringComparison.Ordinal);

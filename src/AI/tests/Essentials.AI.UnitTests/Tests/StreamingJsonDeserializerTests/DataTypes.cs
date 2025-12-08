@@ -10,7 +10,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NestedObject_DeserializesIncrementally()
 		{
-			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+			var deserializer = new StreamingJsonDeserializer<NestedModel>(DeserializationOptions);
 
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Hello"", ""meta"": {""score"": 1, ""author"": ""John""}}");
 			Assert.NotNull(result1);
@@ -29,7 +29,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_ArrayIncrementalParsing_UpdatesCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<ComplexModel>();
+			var deserializer = new StreamingJsonDeserializer<ComplexModel>(DeserializationOptions);
 
 			var result1 = deserializer.ProcessChunk(@"{""title"": ""Store"", ""items"": [{""name"": ""Laptop"", ""price"": 999.99, ""category"": ""Electronics""}");
 			Assert.NotNull(result1);
@@ -51,7 +51,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_IncompleteArray_ReturnsPartialData()
 		{
-			var deserializer = new StreamingJsonDeserializer<ComplexModel>();
+			var deserializer = new StreamingJsonDeserializer<ComplexModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""title"": ""Inventory"", ""items"": [{""name"": ""Item1"", ""price"": 10, ""category"": ""Food""}");
 
@@ -66,7 +66,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NumbersAndBooleans_ParseCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			var result1 = deserializer.ProcessChunk(@"{""integer"": 42, ""decimal"": 3.14, ""isActive"": true, ""isComplete"": false}");
 			Assert.NotNull(result1);
@@ -79,7 +79,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NullValues_HandledCorrectly()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			var result = deserializer.ProcessChunk(@"{""text"": null, ""score"": 0}");
 

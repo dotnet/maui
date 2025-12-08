@@ -10,7 +10,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_LlmStreamingScenario_UpdatesInRealTime()
 		{
-			var deserializer = new StreamingJsonDeserializer<NestedModel>();
+			var deserializer = new StreamingJsonDeserializer<NestedModel>(DeserializationOptions);
 
 			// Simulate LLM token streaming where JSON grows token by token
 			var llmChunks = new[]

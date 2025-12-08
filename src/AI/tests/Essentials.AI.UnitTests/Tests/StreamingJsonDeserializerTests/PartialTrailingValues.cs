@@ -12,7 +12,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingNumber_StaysComplete()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: number 12 at end, no closing brace
 			var result1 = deserializer.ProcessChunk(@"{""integer"":12");
@@ -28,7 +28,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingNumber_GrowsToLargerNumber()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: number 12 at end, could become 1234
 			var result1 = deserializer.ProcessChunk(@"{""integer"":12");
@@ -44,7 +44,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingDecimal_StaysComplete()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: decimal 3.14 at end
 			var result1 = deserializer.ProcessChunk(@"{""decimal"":3.14");
@@ -60,7 +60,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingDecimal_GrowsMoreDigits()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: decimal 3.14 at end
 			var result1 = deserializer.ProcessChunk(@"{""decimal"":3.14");
@@ -76,7 +76,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingNegativeNumber_GrowsToLargerNumber()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: negative number -5 at end
 			var result1 = deserializer.ProcessChunk(@"{""integer"":-5");
@@ -94,7 +94,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingTrue_Complete()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: true is complete at end
 			var result1 = deserializer.ProcessChunk(@"{""isActive"":true");
@@ -110,7 +110,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingFalse_Complete()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: false is complete at end
 			var result1 = deserializer.ProcessChunk(@"{""isActive"":false");
@@ -126,7 +126,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_PartialTrue_BecomesComplete()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: "tru" at end - incomplete true
 			var result1 = deserializer.ProcessChunk(@"{""isActive"":tru");
@@ -143,7 +143,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_PartialFalse_BecomesComplete()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: "fal" at end - incomplete false
 			var result1 = deserializer.ProcessChunk(@"{""isActive"":fal");
@@ -162,7 +162,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_TrailingNull_Complete()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// First chunk: null is complete at end
 			var result1 = deserializer.ProcessChunk(@"{""text"":null");
@@ -178,7 +178,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_PartialNull_BecomesComplete()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// First chunk: "nul" at end - incomplete null
 			var result1 = deserializer.ProcessChunk(@"{""text"":nul");
@@ -196,7 +196,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_MultipleNumbersInProgression()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: first number
 			var result1 = deserializer.ProcessChunk(@"{""integer"":1");
@@ -219,7 +219,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NumberFollowedByBool()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: number at end
 			var result1 = deserializer.ProcessChunk(@"{""integer"":42");
@@ -236,7 +236,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_NumberWithExponent_Grows()
 		{
-			var deserializer = new StreamingJsonDeserializer<NumericModel>();
+			var deserializer = new StreamingJsonDeserializer<NumericModel>(DeserializationOptions);
 
 			// First chunk: number with exponent at end
 			var result1 = deserializer.ProcessChunk(@"{""decimal"":1.5e");

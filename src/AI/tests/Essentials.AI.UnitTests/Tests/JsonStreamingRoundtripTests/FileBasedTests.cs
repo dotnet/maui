@@ -33,13 +33,8 @@ public partial class JsonStreamingRoundtripTests
 			Assert.NotNull(finalModel);
 
 			// Parse final line directly for comparison
-			var serializerOptions = new JsonSerializerOptions
-			{
-				PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-				Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
-			};
 			var expectedDoc = JsonDocument.Parse(finalLine);
-			var actualJson = JsonSerializer.Serialize(finalModel, serializerOptions);
+			var actualJson = JsonSerializer.Serialize(finalModel, DeserializationOptions);
 			var actualDoc = JsonDocument.Parse(actualJson);
 
 			// Compare key properties - objects should be structurally equivalent

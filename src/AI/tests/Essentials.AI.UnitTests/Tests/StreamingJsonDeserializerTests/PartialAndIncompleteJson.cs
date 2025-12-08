@@ -10,7 +10,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_PartialString_HandlesGracefully()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// String value is cut in the middle
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Hel");
@@ -27,7 +27,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_VerySmallChunks_BuildsModelGradually()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// Simulate character-by-character streaming
 			var chunks = new[] { "{", "\"", "t", "e", "x", "t", "\"", ":", "\"", "H", "i", "\"", ",", "\"", "s", "c", "o", "r", "e", "\"", ":", "5", "}" };

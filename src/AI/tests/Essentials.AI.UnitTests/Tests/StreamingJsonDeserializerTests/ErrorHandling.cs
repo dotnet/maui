@@ -10,7 +10,7 @@ public partial class StreamingJsonDeserializerTests
 		[Fact]
 		public void ProcessChunk_MalformedJson_ReturnsLastGoodModel()
 		{
-			var deserializer = new StreamingJsonDeserializer<SimpleModel>();
+			var deserializer = new StreamingJsonDeserializer<SimpleModel>(DeserializationOptions);
 
 			// First, establish a good model
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Valid"", ""score"": 10}");
