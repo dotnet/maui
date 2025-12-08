@@ -18,6 +18,11 @@ on:
         required: true
         type: number
 
+# Ensure only one instance runs at a time per PR to prevent duplicate comments
+concurrency:
+  group: dogfood-comment-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+  cancel-in-progress: true
+
 jobs:
   add-dogfood-comment:
     # Only run on the dotnet org to avoid running on forks
