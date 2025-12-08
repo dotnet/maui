@@ -346,6 +346,9 @@ update_target_frameworks() {
     sed -i.tmp "s/net[0-9]\+\.0-/net$new_net_version.0-/g" "$project_path"
     rm -f "$project_path.tmp"
     
+    # Cleanup backup file on success
+    rm -f "$project_path.bak"
+    
     success "Updated target frameworks to .NET $new_net_version.0"
     warning "You may need to update other package dependencies to match .NET $new_net_version.0"
 }
@@ -402,10 +405,19 @@ update_package_reference() {
     
     # Replace the version in PackageReference
     sed -i.tmp "s|\(<PackageReference[[:space:]]\+Include=\"$PACKAGE_NAME\"[[:space:]]\+Version=\"\)[^\"]\+\(\"[[:space:]]*/*>\)|\1$version\2|g" "$project_path"
-    
     rm -f "$project_path.tmp"
     
-    success "Updated $PACKAGE_NAME to version $version"
+    # Check if content was actually modified
+    if ! diff -q "$project_path" "$project_path.bak" > /dev/null 2>&1; then
+        # Cleanup backup file on success
+        rm -f "$project_path.bak"
+        success "Updated $PACKAGE_NAME to version $version"
+    else
+        # Restore backup and report error
+        mv "$project_path.bak" "$project_path"
+        error "Could not find $PACKAGE_NAME package reference in project file"
+        exit 1
+    fi
 }
 
 # Main execution
