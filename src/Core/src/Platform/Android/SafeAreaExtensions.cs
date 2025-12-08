@@ -142,6 +142,20 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
+					// Detect if view is in a transitional state (e.g., during Shell tab animations)
+					// During fragment transitions, GetLocationOnScreen returns transient positions
+					// which would incorrectly zero out safe area padding. Skip position-based
+					// calculation for such views and keep full safe area insets.
+					var isFullWidthView = viewWidth >= screenWidth - left - right;
+					var isOffScreen = viewLeft >= screenWidth || viewRight <= 0 || viewTop >= screenHeight || viewBottom <= 0;
+					var isDisplaced = isFullWidthView && viewLeft != 0 && Math.Abs(viewLeft) > 1;
+					var extendsBeyondScreen = viewRight > screenWidth + 1 || viewBottom > screenHeight + 1;
+					var isTransitionalView = isOffScreen || isDisplaced || extendsBeyondScreen;
+
+					// Only run position-based calculations for non-transitional views
+					// Transitional views keep their full safe area insets
+					if (!isTransitionalView)
+					{
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
@@ -195,6 +209,7 @@ internal static class SafeAreaExtensions
 					{
 						if (viewWidth > 0 || hasTrackedViews)
 							right = 0;
+					}
 					}
 				}
 
