@@ -1,6 +1,5 @@
-using System;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -18,19 +17,20 @@ public partial class Issue1250 : ContentPage
 {
 	public Issue1250() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void AddCustomElementInCollection([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void AddCustomElementInCollection(XamlInflator inflator)
 		{
 			var page = new Issue1250(inflator);
 			var stack = page.stack;
 
-			Assert.AreEqual(3, stack.Children.Count);
-			Assert.That(stack.Children[0], Is.TypeOf<Label>());
-			Assert.That(stack.Children[1], Is.TypeOf<Issue1250AspectRatioContainer>());
-			Assert.That(stack.Children[2], Is.TypeOf<Label>());
+			Assert.Equal(3, stack.Children.Count);
+			Assert.IsType<Label>(stack.Children[0]);
+			Assert.IsType<Issue1250AspectRatioContainer>(stack.Children[1]);
+			Assert.IsType<Label>(stack.Children[2]);
 		}
 	}
 }

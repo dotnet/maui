@@ -805,6 +805,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						navBarVisible = _self._renderer.ShowNavBar;
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
+
+					// Update navigation bar visibility during the transition
+					// This ensures the correct nav bar state is applied as part of the navigation animation
+					bool animateVisibilityChange = animated && Shell.GetNavBarVisibilityAnimationEnabled(element);
+					navigationController.SetNavigationBarHidden(!navBarVisible, animateVisibilityChange);
 				}
 
 				var coordinator = viewController.GetTransitionCoordinator();
@@ -824,6 +829,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tracker is ShellPageRendererTracker shellRendererTracker)
 				{
 					shellRendererTracker.UpdateToolbarItemsInternal(false);
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+						// we cannot set the TitleView yet as it would not layout correctly.
+						// So we update it later when the ViewController is added to the NavigationController
+						shellRendererTracker.UpdateTitleViewInternal();
+					}
 				}
 			}
 

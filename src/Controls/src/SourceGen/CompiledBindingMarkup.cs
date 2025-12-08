@@ -178,7 +178,7 @@ internal struct CompiledBindingMarkup
 		// TypedBinding creation
 		code.WriteLine($"return new global::Microsoft.Maui.Controls.Internals.TypedBinding<{binding.SourceType}, {binding.PropertyType}>(");
 		code.Indent++;
-		var targetNullValueExpression = isTemplateBinding || !propertyFlags.HasFlag(BindingPropertyFlags.FallbackValue) ? null : "extension.TargetNullValue";
+		var targetNullValueExpression = isTemplateBinding || !propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue) ? null : "extension.TargetNullValue";
 		code.WriteLine($"getter: source => ({GenerateGetterExpression(binding, sourceVariableName: "source", targetNullValueExpression)}, true),");
 		code.WriteLine("setter,");
 		code.Write("handlers: ");
@@ -407,8 +407,20 @@ internal struct CompiledBindingMarkup
 			}
 		}
 
+		if (bindingPathParts.Count == 0)
+		{
+			// Handle self-binding case (path is "." or empty after splitting)
+			// For self-bindings, the property type is the source type itself
+			// and there's no property to set, so we mark it as not writable
+			setterOptions = new SetterOptions(
+				IsWritable: false,
+				AcceptsNullValue: sourceType.IsTypeNullable(enabledNullable: true));
+		}
+
+		// After the loop, update propertyType to the type of the last property in the path
+		// For self-bindings (empty path), propertyType remains as sourceType
 		propertyType = previousPartType;
-		
+
 		// Apply nullable annotation if any part of the path introduces nullability
 		// For reference types, mark as nullable so the TypedBinding signature is correct
 		// For value types, we don't mark as nullable here because GenerateGetterExpression
@@ -476,7 +488,27 @@ internal struct CompiledBindingMarkup
 		code.WriteLine("{");
 		code.Indent++;
 		
-		var setter = Setter.From(binding.Path, "source", "value");
+		var assignedValueExpression = "value";
+
+		// early return for nullable values if the setter doesn't accept them
+		if (binding.PropertyType.IsNullable && !binding.SetterOptions.AcceptsNullValue)
+		{
+			if (binding.PropertyType.IsValueType)
+			{
+				code.WriteLine("if (!value.HasValue)");
+				assignedValueExpression = "value.Value";
+			}
+			else
+			{
+				code.WriteLine("if (value is null)");
+			}
+			using (PrePost.NewBlock(code))
+			{
+				code.WriteLine("return;");
+			}
+		}
+
+		var setter = Setter.From(binding.Path, "source", assignedValueExpression);
 		if (setter.PatternMatchingExpressions.Length > 0)
 		{
 			code.Write("if (");

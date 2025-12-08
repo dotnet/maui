@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui32879">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<!-- Test: Style setter with attached property AbsoluteLayout.LayoutBounds using content property syntax -->
+			<Style x:Key="NetworkIndicator" TargetType="Image">
+				<Setter Property="AbsoluteLayout.LayoutBounds">10,10,20,20</Setter>
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<AbsoluteLayout>
+		<Image x:Name="testImage" Style="{StaticResource NetworkIndicator}" Source="dotnet_bot.png"/>
+	</AbsoluteLayout>
+</ContentPage>

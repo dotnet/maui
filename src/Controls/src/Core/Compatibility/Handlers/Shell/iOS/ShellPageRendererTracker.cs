@@ -271,11 +271,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
+		
+		internal void UpdateTitleViewInternal()
+		{
+			UpdateTitleView();
+		}
 
 		protected virtual void UpdateTitleView()
 		{
 			if (!ToolbarReady() || NavigationItem is null)
 			{
+				return;
+			}
+
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && ViewController?.NavigationController is null)
+			{
+				// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+				// we cannot set the TitleView yet as it would not layout correctly.
 				return;
 			}
 
@@ -306,7 +318,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (titleView.Parent != null)
 				{
-					var view = new TitleViewContainer(titleView);
+					var view = CreateTitleViewContainer(titleView);
 					NavigationItem.TitleView = view;
 				}
 				else
@@ -314,6 +326,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					titleView.ParentSet += OnTitleViewParentSet;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Creates a TitleViewContainer with the appropriate configuration for the current iOS version.
+		/// For iOS 26+, uses autoresizing masks and sets frame from navigation bar to prevent layout issues.
+		/// </summary>
+		TitleViewContainer CreateTitleViewContainer(View titleView)
+		{
+			// iOS 26+ requires autoresizing masks and explicit frame sizing to prevent TitleView from covering content
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				var navigationBarFrame = ViewController?.NavigationController?.NavigationBar.Frame;
+				if (navigationBarFrame.HasValue)
+				{
+					return new TitleViewContainer(titleView, navigationBarFrame.Value);
+				}
+				// Fallback: If navigation bar frame isn't available, use standard constructor
+				// The view will still use autoresizing masks (configured in constructor)
+			}
+
+			return new TitleViewContainer(titleView);
 		}
 
 		void OnTitleViewParentSet(object? sender, EventArgs e)
@@ -476,7 +509,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// We only check height because the navigation bar constrains vertical space (44pt height),
 					// but allows horizontal flexibility. Width can vary based on icon design and content,
 					// while height must fit within the fixed navigation bar bounds to avoid clipping.
-					
+
 					// if the image is bigger than the default available size, resize it
 
 					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
@@ -684,15 +717,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchHeight = true;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+				// iOS 26+ and MacCatalyst 26+ require autoresizing masks instead of constraints
+				// to prevent TitleView from expanding beyond navigation bar bounds and covering content.
+				// This is a workaround for layout behavior changes in iOS 26.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					TranslatesAutoresizingMaskIntoConstraints = true;
+					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
 				else
 				{
+					// Pre-iOS 11 also uses autoresizing masks
 					TranslatesAutoresizingMaskIntoConstraints = true;
 					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
 				}
+			}
+
+			/// <summary>
+			/// Creates a TitleViewContainer with an explicitly set frame from the navigation bar.
+			/// Used on iOS 26+ to ensure proper sizing when using autoresizing masks.
+			/// </summary>
+			/// <param name="view">The MAUI view to display in the title</param>
+			/// <param name="navigationBarFrame">The navigation bar frame to use for sizing</param>
+			internal TitleViewContainer(View view, CGRect navigationBarFrame) : this(view)
+			{
+				// Set frame to match navigation bar dimensions, starting at origin (0,0)
+				// The X and Y are set to 0 because this view will be positioned by the navigation bar
+				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				Height = navigationBarFrame.Height;  // Set Height for MatchHeight logic
 			}
 
 			public override CGRect Frame

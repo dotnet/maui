@@ -52,7 +52,7 @@ public static class MockSourceGenerator
 
 	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 	{
-		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.slnx")))
+		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
 			return searchDirectory;
 
 		if (maxSearchDepth <= 0)

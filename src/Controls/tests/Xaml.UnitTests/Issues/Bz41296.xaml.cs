@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,14 +13,15 @@ public partial class Bz41296 : ContentPage
 	}
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void MarkupExtensionInDefaultNamespace([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void MarkupExtensionInDefaultNamespace(XamlInflator inflator)
 		{
 			var layout = new Bz41296(inflator);
-			Assert.AreEqual("FooBar", layout.TestLabel.Text.ToString());
+			Assert.Equal("FooBar", layout.TestLabel.Text.ToString());
 		}
 	}
 }

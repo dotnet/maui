@@ -142,7 +142,6 @@ steps:
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
     timeoutInMinutes: 30
-    continueOnError: true
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
@@ -183,7 +182,6 @@ steps:
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
-      continueOnError: true
 
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:

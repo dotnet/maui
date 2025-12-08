@@ -1,6 +1,8 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
 using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
 
@@ -10,18 +12,20 @@ public partial class Unreported007 : ContentPage
 {
 	public Unreported007() => InitializeComponent();
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
+		public Tests() => DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 
-		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
+		public void Dispose() => DeviceInfo.SetCurrent(null);
 
-		[Test]
-		public void ConstraintsAreEvaluatedWithOnPlatform([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ConstraintsAreEvaluatedWithOnPlatform(XamlInflator inflator)
 		{
 			var page = new Unreported007(inflator);
-			Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());
-			Assert.AreEqual(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
+			Assert.IsType<Constraint>(RelativeLayout.GetXConstraint(page.label));
+			Assert.Equal(3, RelativeLayout.GetXConstraint(page.label).Compute(null));
 		}
 	}
 }

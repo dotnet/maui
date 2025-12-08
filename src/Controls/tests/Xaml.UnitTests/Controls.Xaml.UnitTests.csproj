@@ -16,7 +16,7 @@
     <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
     -->
     
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <EmitCompilerGeneratedFiles Condition="'$(Configuration)' == 'Debug'">true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
@@ -30,8 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="Microsoft.Build.Framework" />
@@ -62,7 +61,7 @@
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
-    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
@@ -86,6 +85,10 @@
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
 
     <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

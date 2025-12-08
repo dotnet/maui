@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -12,11 +12,12 @@ public partial class Gh11061 : ContentPage
 
 	public Gh11061() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BindingOnNonBP([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingOnNonBP(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh11061)));
@@ -36,7 +37,7 @@ public partial class Gh11061 : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(Gh11061));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh11061(inflator) { BindingContext = new { Date = DateTime.Today } });

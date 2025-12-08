@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
@@ -6,7 +7,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -24,33 +25,33 @@ public partial class Maui26369 : ContentPage
 
 	public Maui26369() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void CompilationDoesNotFail([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CompilationDoesNotFail(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(Maui26369), out var methodDef, out var hasLoggedErrors);
-				Assert.IsFalse(hasLoggedErrors);
+				Assert.False(hasLoggedErrors);
 				Assert.False(ContainsBoxToNullable(methodDef));
 			}
 
 			var page = new Maui26369(inflator);
-			Assert.That(page.NullableGridLength, Is.EqualTo(new GridLength(30)));
+			Assert.Equal(new GridLength(30), page.NullableGridLength);
 		}
 
 		private bool ContainsBoxToNullable(MethodDefinition methodDef)
