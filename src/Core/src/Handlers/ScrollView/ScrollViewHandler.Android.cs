@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateInsetView(IScrollView scrollView, IScrollViewHandler handler, ICrossPlatformLayout crossPlatformLayout)
 		{
-			if (handler.MauiContext == null)
+			if (handler.MauiContext is null)
 			{
 				return;
 			}
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Handlers
 			var currentPaddingLayer = FindInsetPanel(handler);
 
 			// If PresentedContent is null, clean up any existing content and return
-			if (scrollView.PresentedContent == null)
+			if (scrollView.PresentedContent is null)
 			{
 				currentPaddingLayer?.RemoveAllViews();
 				return;
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
-			if (currentPaddingLayer != null)
+			if (currentPaddingLayer is not null)
 			{
 				// Only update if content has changed or is missing
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
