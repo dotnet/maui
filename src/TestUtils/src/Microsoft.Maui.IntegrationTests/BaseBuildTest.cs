@@ -5,7 +5,8 @@ namespace Microsoft.Maui.IntegrationTests
 	public enum RuntimeVariant
 	{
 		Mono,
-		NativeAOT
+		NativeAOT,
+		CoreCLR
 	}
 
 	public abstract class BaseBuildTest

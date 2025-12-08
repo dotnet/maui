@@ -37,6 +37,10 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, null)]
+		[TestCase("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
+		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
 		public void RunOniOS(string id, string config, string framework, string runtimeIdentifier, RuntimeVariant runtimeVariant, string trimMode)
 		{
 			var projectDir = TestDirectory;
@@ -46,13 +50,17 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
+			buildProps.Add($"RuntimeIdentifier={runtimeIdentifier}");
 			if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 				buildProps.Add("_IsPublishing=true"); // using dotnet build with -p:_IsPublishing=true enables targeting simulators
-				buildProps.Add($"RuntimeIdentifier={runtimeIdentifier}");
 				buildProps.Add("IlcTreatWarningsAsErrors=false"); // TODO: Remove this once all warnings are fixed https://github.com/dotnet/maui/issues/19397
+			}
+			else if (runtimeVariant == RuntimeVariant.CoreCLR)
+			{
+				buildProps.Add("UseMonoRuntime=false");
 			}
 
 			if (!string.IsNullOrEmpty(trimMode))
