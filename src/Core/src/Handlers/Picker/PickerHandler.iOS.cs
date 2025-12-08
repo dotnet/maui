@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
+		UITapGestureRecognizer? _tapGestureRecognizer;
 
 #if MACCATALYST
 		UIAlertController? _pickerController;
@@ -111,6 +112,8 @@ namespace Microsoft.Maui.Handlers
 						.FireAndForget();
 				}
 			});
+
+			SetupTouchDismissGesture();
 		}
 
 		static UIViewController? GetCurrentViewController(UIViewController? viewController)
@@ -270,6 +273,34 @@ namespace Microsoft.Maui.Handlers
 			textField.ResignFirstResponder();
 		}
 
+		void SetupTouchDismissGesture()
+		{
+			if (_tapGestureRecognizer is not null && PlatformView?.Window is null)
+				return;
+ 
+			var weakPlatformView = new WeakReference<MauiPicker>(PlatformView);
+			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
+			{
+				if (weakPlatformView.TryGetTarget(out var platformView))
+					platformView?.EndEditing(true);
+			});
+			_tapGestureRecognizer.CancelsTouchesInView = false;
+			if (PlatformView?.Window is not null)
+			{
+				PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
+			}
+		}
+ 
+		void RemoveTouchDismissGesture()
+		{
+			if (_tapGestureRecognizer is not null && PlatformView?.Window is not null)
+			{
+				PlatformView.Window.RemoveGestureRecognizer(_tapGestureRecognizer);
+				_tapGestureRecognizer.Dispose();
+				_tapGestureRecognizer = null;
+			}
+		}
+
 		class MauiPickerProxy
 		{
 			WeakReference<PickerHandler>? _handler;
@@ -286,11 +317,13 @@ namespace Microsoft.Maui.Handlers
 
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
+				Handler?.SetupTouchDismissGesture();
 				platformView.EditingChanged += OnEditing;
 			}
 
 			public void Disconnect(MauiPicker platformView)
 			{
+				Handler?.RemoveTouchDismissGesture();
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
