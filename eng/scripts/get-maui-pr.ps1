@@ -487,8 +487,15 @@ try {
     Write-Host "Changes to be applied:" -ForegroundColor White
     Write-Host "  • Project: $projectName" -ForegroundColor Gray
     Write-Host "  • Package version: $version" -ForegroundColor Gray
+    
+    # Extract .NET version from package version (e.g., 10.0.20-ci.main.25607.5 -> 10)
+    $packageDotNetVersion = $null
+    if ($version -match '^(\d+)\.') {
+        $packageDotNetVersion = $Matches[1]
+    }
+    
     if ($willUpdateTfm) {
-        $targetVersionForDisplay = if ($packageDotNetVersion) { "$packageDotNetVersion.0" } else { "10.0" }
+        $targetVersionForDisplay = if ($packageDotNetVersion) { "$packageDotNetVersion.0" } else { "$packageNetVersion.0" }
         Write-Host "  • Target framework: Will be updated to .NET $targetVersionForDisplay" -ForegroundColor Gray
     }
     Write-Host ""
@@ -550,7 +557,7 @@ try {
     Write-Host "   To:   Version=`"X.Y.Z`"" -ForegroundColor Gray
     Write-Host "   (Check https://www.nuget.org/packages/$PackageName for latest)" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "2. In NuGet.config, remove or comment out the 'maui-pr-$PrNumber' source" -ForegroundColor White
+    Write-Host "2. In NuGet.config, remove or comment out the 'maui-pr-build' source" -ForegroundColor White
     Write-Host ""
     Write-Host "3. Run: dotnet restore --force" -ForegroundColor White
     Write-Host ""

@@ -115,11 +115,7 @@ Or manually revert:
 
 ### Getting Help
 
-Run the scripts with the help flag to see detailed usage information:
-
-```bash
-./get-maui-pr.sh --help
-```
+Run the PowerShell script with the help flag to see detailed usage information:
 
 ```powershell
 Get-Help .\get-maui-pr.ps1 -Detailed

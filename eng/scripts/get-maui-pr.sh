@@ -466,27 +466,16 @@ EOF
     success "Found package version: $version"
     
     # Extract .NET version from package version (e.g., 10.0.20-ci.main.25607.5 -> 10)
-    local package_dotnet_version=""
-    if [[ $version =~ ^([0-9]+)\. ]]; then
-        package_dotnet_version="${BASH_REMATCH[1]}"
-    fi
-    
-    # Get package .NET version
-    local package_net_version
-    package_net_version=$(get_package_dotnet_version "$version")
+    local package_dotnet_version
+    package_dotnet_version=$(get_package_dotnet_version "$version")
     
     # Check compatibility
     local will_update_tfm=false
-    local target_version="$package_net_version.0"
-    if ! test_version_compatibility "$version" "$target_net_version" "$package_net_version"; then
+    local target_version="$package_dotnet_version.0"
+    if ! test_version_compatibility "$version" "$target_net_version" "$package_dotnet_version"; then
         warning "This PR build may target a newer .NET version than your project"
         info "Your project targets: .NET $target_net_version.0"
-        if [[ -n "$package_dotnet_version" ]]; then
-            info "This PR build targets: .NET $package_dotnet_version.0"
-            target_version="$package_dotnet_version.0"
-        else
-            info "This PR build targets: .NET $package_net_version.0"
-        fi
+        info "This PR build targets: .NET $package_dotnet_version.0"
         
         read -p "Do you want to update your project to .NET $target_version? (y/N) " -n 1 -r
         echo
@@ -583,7 +572,7 @@ EOF
     echo -e "${GRAY}   To:   Version=\"X.Y.Z\"${NC}"
     echo -e "${DGRAY}   (Check https://www.nuget.org/packages/$PACKAGE_NAME for latest)${NC}"
     echo ""
-    echo -e "${WHITE}2. In NuGet.config, remove or comment out the 'maui-pr-$pr_number' source${NC}"
+    echo -e "${WHITE}2. In NuGet.config, remove or comment out the 'maui-pr-build' source${NC}"
     echo ""
     echo -e "${WHITE}3. Run: dotnet restore --force${NC}"
     echo ""

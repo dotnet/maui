@@ -32,7 +32,7 @@ jobs:
         with:
           script: |
             // Get PR number from either the PR event or manual input
-            const prNumber = context.payload.number || context.payload.inputs.pr_number;
+            const prNumber = context.payload.number || context.payload.inputs?.pr_number;
 
             const bashScript = 'https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.sh';
             const psScript = 'https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.ps1';
