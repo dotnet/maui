@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D9"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D9">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. Attempt to enter any text into the editor below." />
+            <Label Text="2. The test fails if the editor displays the input." />
+            <Editor IsReadOnly="True" />
+
+            <Label Text="3. Attempt to edit the text in the editor below." />
+            <Label Text="4. The test fails if the editor displays the input." />
+            <Editor IsReadOnly="True"
+                    Text="try to edit this." />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

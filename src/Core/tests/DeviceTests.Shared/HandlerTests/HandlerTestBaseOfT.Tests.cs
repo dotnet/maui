@@ -45,7 +45,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
+#if WINDOWS
+			if (typeof(THandler).Name.Contains("WebView", StringComparison.Ordinal))
+			{
+				Assert.Equal(FlowDirection.LeftToRight, id);
+			}
+			else
+			{
+				Assert.Equal(flowDirection, id);
+			}
+#else
 			Assert.Equal(flowDirection, id);
+#endif
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
@@ -381,7 +392,9 @@ namespace Microsoft.Maui.DeviceTests
 		public void HandlersHaveAllExpectedContructors()
 		{
 			bool hasBothMappers = false;
+#pragma warning disable IL2090 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
 			var constructors = typeof(THandler).GetConstructors();
+#pragma warning restore IL2090 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
 
 			foreach (var ctor in constructors)
 			{

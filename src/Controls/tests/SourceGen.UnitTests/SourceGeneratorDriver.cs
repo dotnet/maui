@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -16,9 +18,12 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo="enable");
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true)
+		where T : IIncrementalGenerator, new()
+		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors);
 
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, params AdditionalFile[] additionalFiles)
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile[] additionalFiles, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
@@ -29,12 +34,29 @@ public static class SourceGeneratorDriver
 			trackIncrementalGeneratorSteps: true);
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
-			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
+			.AddAdditionalTexts([.. additionalFiles.Select(f => f.Text)])
 			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
 
-		driver = driver.RunGenerators(compilation);
+		// Use RunGeneratorsAndUpdateCompilation to validate the generated code
+		// This will catch C# compilation errors in the generated code
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var diagnostics);
 
-		GeneratorDriverRunResult runResult = driver.GetRunResult();
+		// Assert that the generated code compiles without errors (if requested)
+		if (assertNoCompilationErrors)
+		{
+			var compilationErrors = updatedCompilation.GetDiagnostics()
+				.Where(d => d.Severity == DiagnosticSeverity.Error)
+				.Where(d => d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+				.ToArray();
+
+			if (compilationErrors.Length > 0)
+			{
+				var errorMessages = string.Join(Environment.NewLine, compilationErrors.Select(e => $"{e.Id}: {e.GetMessage()} at {e.Location}"));
+				throw new InvalidOperationException($"Generated code has compilation errors:{Environment.NewLine}{errorMessages}");
+			}
+		}
+
+		var runResult = driver.GetRunResult();
 		return runResult;
 	}
 
@@ -63,9 +85,8 @@ public static class SourceGeneratorDriver
 		return (runResult1, runResult2);
 	}
 
-	public static Compilation CreateMauiCompilation()
+	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated")
 	{
-		var name = $"{nameof(SourceGeneratorDriver)}.Generated";
 		var references = GetMauiReferences();
 
 		var compilation = CSharpCompilation.Create(name,
@@ -79,16 +100,30 @@ public static class SourceGeneratorDriver
 
 	private static MetadataReference[] GetMauiReferences()
 	{
-		if (MauiReferences == null)
-		{
-			MauiReferences = new[]
-			{
-				MetadataReference.CreateFromFile(typeof(InternalsVisibleToAttribute).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),
-			};
-		}
+		string dotNetAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+
+		MauiReferences ??=
+		[
+			MetadataReference.CreateFromFile(typeof(InternalsVisibleToAttribute).Assembly.Location),
+			// .NET assemblies are finicky and need to be loaded in a special way.
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "mscorlib.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Core.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
+			MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
+			MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),						//System.Private.Uri
+			MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
+			MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
+			MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
+			MetadataReference.CreateFromFile(typeof(Thickness).Assembly.Location),					//Core
+			MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView).Assembly.Location), //Xaml.dll
+			MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Private.Xml").Location),
+			MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Xml.ReaderWriter").Location),
+		MetadataReference.CreateFromFile(typeof(System.IServiceProvider).Assembly.Location),							//System.ComponentModel
+			MetadataReference.CreateFromFile(typeof(System.ComponentModel.TypeConverter).Assembly.Location),			//System.ComponentModel.TypeConverter
+		];
+
 		return MauiReferences;
 	}
 
@@ -140,7 +175,17 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.TargetPath" => _additionalFile.TargetPath,
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
-					"build_property.targetframework" => _additionalFile.TargetFramework,
+					"build_metadata.additionalfiles.Inflator" => "SourceGen",
+					"build_property.targetFramework" => _additionalFile.TargetFramework,
+#if RELEASE
+					"build_property.Configuration" => "Release",
+#else
+					"build_property.Configuration" => "Debug",
+#endif
+					"build_property.EnableMauiXamlDiagnostics" => "true",
+					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ?  _additionalFile.LineInfo : null,
+					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
+
 					_ => null
 				};
 

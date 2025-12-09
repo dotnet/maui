@@ -3,11 +3,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -39,8 +39,13 @@ namespace Microsoft.Maui.Handlers
 			config.DefaultWebpagePreferences!.AllowsContentJavaScript = true;
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(this), ScriptMessageHandlerName);
+
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+
+			// Invoke the WebViewInitializing event to allow custom configuration of the web view
+			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
+			VirtualView?.WebViewInitializationStarted(initializingArgs);
 
 			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{
@@ -59,6 +64,10 @@ namespace Microsoft.Maui.Handlers
 					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
 				}
 			}
+
+			// Invoke the WebViewInitialized event to signal that the web view has been initialized
+			var initializedArgs = new WebViewInitializationCompletedEventArgs(webview, config);
+			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return webview;
 		}
@@ -130,7 +139,6 @@ namespace Microsoft.Maui.Handlers
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
-			private readonly Lazy<byte[]> _404MessageBytes = new(() => Encoding.UTF8.GetBytes("Resource not found (404)"));
 
 			public SchemeHandler(HybridWebViewHandler webViewHandler)
 			{
@@ -151,53 +159,125 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
-
-				var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
-
-				using (var dic = new NSMutableDictionary<NSString, NSString>())
+				var url = urlSchemeTask.Request.Url.AbsoluteString;
+				if (string.IsNullOrEmpty(url))
 				{
-					dic.Add((NSString)"Content-Length", (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture));
-					dic.Add((NSString)"Content-Type", (NSString)contentType);
-					// Disable local caching. This will prevent user scripts from executing correctly.
-					dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
-
-					if (urlSchemeTask.Request.Url != null)
-					{
-						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-						urlSchemeTask.DidReceiveResponse(response);
-					}
+					return;
 				}
 
-				urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
-				urlSchemeTask.DidFinish();
+				var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
+
+				logger?.LogDebug("Intercepting request for {Url}.", url);
+
+				// 1. First check if the app wants to modify or override the request.
+				if (WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, webView, urlSchemeTask, url, logger))
+				{
+					return;
+				}
+
+				// 2. If this is an app request, then assume the request is for a local resource.
+				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+				{
+					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
+
+					// 2.a. Check if the request is for a local resource
+					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
+
+					// 2.b. Return the response header
+					using var dic = new NSMutableDictionary<NSString, NSString>();
+					if (contentType is not null)
+					{
+						dic[(NSString)"Content-Type"] = (NSString)contentType;
+					}
+					if (bytes?.Length > 0)
+					{
+						// Disable local caching which would otherwise prevent user scripts from executing correctly.
+						dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
+						dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
+					}
+
+					using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+					urlSchemeTask.DidReceiveResponse(response);
+
+					// 2.c. Return the body
+					if (bytes?.Length > 0)
+					{
+						urlSchemeTask.DidReceiveData(bytes);
+					}
+
+					// 2.d. Finish the task
+					urlSchemeTask.DidFinish();
+				}
+
+				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
+				//    handle the request as it would normally do. This means that it will try to load the resource
+				//    from the internet or from the local cache.
+
+				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytesAsync(string? url)
+			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
 			{
 				if (Handler is null)
 				{
-					return (_404MessageBytes.Value, ContentType: "text/plain", StatusCode: 404);
+					return (null, ContentType: null, StatusCode: 404);
 				}
 
-				var fullUrl = url;
-				url = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+				url = WebUtils.RemovePossibleQueryString(url);
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
-					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
+					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
 
-					// 1. Try special InvokeDotNet path
+					// 1.a. Try the special "_framework/hybridwebview.js" path
+					if (relativePath == HybridWebViewDotJsPath)
+					{
+						logger?.LogDebug("Request for {Url} will return the hybrid web view script.", url);
+						var jsStream = GetEmbeddedStream(HybridWebViewDotJsPath);
+						if (jsStream is not null)
+						{
+							return (NSData.FromStream(jsStream), ContentType: "application/javascript", StatusCode: 200);
+						}
+					}
+
+					// 1.b. Try special InvokeDotNet path
 					if (relativePath == InvokeDotNetPath)
 					{
-						var fullUri = new Uri(fullUrl!);
-						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-						var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
+						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
+
+						// Only accept requests that have the expected headers
+						if (!HasExpectedHeaders(request.Headers))
+						{
+							logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+							return (null, null, StatusCode: 400);
+						}
+
+						// Only accept POST requests
+						if (!string.Equals(request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase))
+						{
+							logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.HttpMethod);
+							return (null, null, StatusCode: 405);
+						}
+
+						// Read the request body
+						Stream requestBody;
+						if (request.Body is NSData bodyData && bodyData.Length > 0)
+						{
+							requestBody = bodyData.AsStream();
+						}
+						else
+						{
+							logger?.LogError("InvokeDotNet request body is empty");
+							return (null, null, StatusCode: 400);
+						}
+
+						// Invoke the method
+						var contentBytes = await Handler.InvokeDotNetAsync(streamBody: requestBody);
 						if (contentBytes is not null)
 						{
-							return (contentBytes, "application/json", StatusCode: 200);
+							return (NSData.FromArray(contentBytes), "application/json", StatusCode: 200);
 						}
 					}
 
@@ -206,27 +286,33 @@ namespace Microsoft.Maui.Handlers
 					// 2. If nothing found yet, try to get static content from the asset path
 					if (string.IsNullOrEmpty(relativePath))
 					{
-						relativePath = Handler.VirtualView.DefaultFile!.Replace('\\', '/');
+						relativePath = Handler.VirtualView.DefaultFile;
 						contentType = "text/html";
 					}
 					else
 					{
 						if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 						{
-							// TODO: Log this
 							contentType = "text/plain";
+							logger?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 						}
 					}
 
-					var assetPath = Path.Combine(bundleRootDir, relativePath);
+					var assetPath = Path.Combine(bundleRootDir, relativePath!);
+					assetPath = FileSystemUtils.NormalizePath(assetPath);
 
 					if (File.Exists(assetPath))
 					{
-						return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
+						// 2.a. If something was found, return the content
+						logger?.LogDebug("Request for {Url} will return an app package file.", url);
+
+						return (NSData.FromFile(assetPath), contentType, StatusCode: 200);
 					}
 				}
 
-				return (_404MessageBytes.Value, ContentType: "text/plain", StatusCode: 404);
+				// 2.b. Otherwise, return a 404
+				logger?.LogDebug("Request for {Url} could not be fulfilled.", url);
+				return (null, ContentType: null, StatusCode: 404);
 			}
 
 			[Export("webView:stopURLSchemeTask:")]

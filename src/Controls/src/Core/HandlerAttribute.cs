@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/HandlerAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.HandlerAttribute']/Docs/*" />
+	/// <summary>An abstract attribute whose subclasses specify the platform-specific renderers for Microsoft.Maui.Controls abstract controls.</summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public abstract class HandlerAttribute : Attribute
 	{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)]
 		internal Type TargetType { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/HandlerAttribute.xml" path="//Member[@MemberName='ShouldRegister']/Docs/*" />
+		/// <summary>Returns a Boolean value that indicates whether the runtime should automatically register the handler for the target.</summary>
 		public virtual bool ShouldRegister()
 		{
 			return true;

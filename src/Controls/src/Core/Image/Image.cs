@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="Type[@FullName='Microsoft.Maui.Controls.Image']/Docs/*" />
+	/// <summary><see cref="Microsoft.Maui.Controls.View"/> that holds an image.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
@@ -29,27 +29,31 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Image>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the Image class.</summary>
+		/// <remarks>The following example creates a new image from a file</remarks>
 		public Image()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Image>>(() => new PlatformConfigurationRegistry<Image>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='Aspect']/Docs/*" />
+		/// <summary>Gets or sets the scaling mode for the image. This is a bindable property.</summary>
 		public Aspect Aspect
 		{
 			get { return (Aspect)GetValue(AspectProperty); }
 			set { SetValue(AspectProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='IsLoading']/Docs/*" />
+		/// <summary>Gets the loading status of the image. This is a bindable property.</summary>
+		/// <remarks>The following example illustrates running a</remarks>
 		public bool IsLoading
 		{
 			get => (bool)GetValue(IsLoadingProperty);
 			private set => SetValue(IsLoadingPropertyKey, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='IsOpaque']/Docs/*" />
+		/// <summary>Gets or sets a Boolean value that, if <see langword="true"/> hints to the rendering engine that it may safely omit drawing visual elements behind the image.</summary>
+		/// <remarks>When this property is
+		/// Setting this property does not change the opacity of the image. Instead, it indicates whether the rendering engine may treat the image as opaque while rendering.</remarks>
 		public bool IsOpaque
 		{
 			get { return (bool)GetValue(IsOpaqueProperty); }
@@ -63,7 +67,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsAnimationPlayingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>Gets or sets the source of the image. This is a bindable property.</summary>
 		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{

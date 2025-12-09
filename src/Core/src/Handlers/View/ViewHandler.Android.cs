@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Views;
 using AndroidX.Core.View;
+using Microsoft.Maui.Platform;
 using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -251,10 +252,42 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
-			if (VirtualView != null)
+			VirtualView?.IsFocused = e.HasFocus;
+		}
+
+		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
+		{
+			if (handler.IsConnectingHandler())
 			{
-				VirtualView.IsFocused = e.HasFocus;
+				return;
 			}
+
+			if (handler.MauiContext?.Context is null || handler.PlatformView is not View platformView)
+			{
+				return;
+			}
+
+			// Use our static registry approach to find and reset the appropriate listener
+			var listener = MauiWindowInsetListener.FindListenerForView(platformView);
+
+			// Check for specific view group types that handle safe area
+			if (handler.PlatformView is ContentViewGroup cvg)
+			{
+				listener?.ResetAppliedSafeAreas(cvg);
+				cvg.MarkSafeAreaEdgeConfigurationChanged();
+			}
+			else if (handler.PlatformView is LayoutViewGroup lvg)
+			{
+				listener?.ResetAppliedSafeAreas(lvg);
+				lvg.MarkSafeAreaEdgeConfigurationChanged();
+			}
+			else if (handler.PlatformView is MauiScrollView msv)
+			{
+				listener?.ResetAppliedSafeAreas(msv);
+				msv.MarkSafeAreaEdgeConfigurationChanged();
+			}
+
+			view.InvalidateMeasure();
 		}
 	}
 }

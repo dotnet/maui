@@ -13,6 +13,10 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 | MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
+| MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
+| EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
+| EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
+| _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -76,3 +80,48 @@ XamlC skipped compilation of bindings with the `Source` property set to any valu
 ```
 
 This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`. For fully trimmed and NativeAOT apps, the feature is enabled.
+
+## MauiNamescopesSupported
+
+With (upcoming) sourcegen XAML inflation, the xaml infrastructure no longer need Namescopes. Some apps that want to keep XamlC or Runtime inflation, use FindByName in code, or have MarkupExtensions depending on `IReferenceProvider` will want to turn this back on.
+
+Having this off reduce method body size, making them faster to JIT, and release the pressure on the GC as there are way less allocations.
+
+As of NET10.0, the default is `true` so full compatibility is maintained, but might be changed in the future.
+
+## EnableDiagnostics
+
+Turn on various diagnostics at runtime and Maui level.
+
+Defaults to `false`
+
+## EnableMauiDiagnostics
+
+Enable VisualDiagnostics and BindingDiagnostics
+
+Defaults to `EnableDiagnostics`
+
+## _EnableMauiAspire
+
+Controls whether MAUI Aspire integration features are enabled at runtime.
+
+**Default Value**: `true`
+
+**Automatic Configuration**: This feature switch is automatically configured by the MAUI build system based on optimization settings:
+- **Non-optimized builds (Debug)**: Enabled (`true`)
+- **Optimized builds (Release)**: Disabled (`false`) 
+- **Regular builds (no AOT/Trimming)**: Uses runtime default (`true`)
+
+The automatic configuration only applies when `PublishAot=true` OR `TrimMode=full` is set.
+
+**Manual Override** (Not Recommended): While it's possible to manually override this setting, it's not recommended as it may introduce performance and security risks in production:
+
+```xml
+<PropertyGroup>
+  <_EnableMauiAspire>true</_EnableMauiAspire>
+</PropertyGroup>
+```
+
+**Warning**: Manually setting this property in optimized builds (where `Optimize=true`) will trigger build warning MA002.
+
+**Trimming Behavior**: When `_EnableMauiAspire=false` and trimming is enabled, the .NET trimmer can eliminate MAUI Aspire-related code paths, reducing the final application size and potentially improving performance in production scenarios.

@@ -1,0 +1,277 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+    - net*.0
+    - release/*
+    - inflight/*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - '**.md'
+    - eng/Version.Details.xml
+    - .github/**
+    - docs/*
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - net*.0
+    - release/*
+    - inflight/*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - '**.md'
+    - eng/Version.Details.xml
+    - .github/**
+    - docs/*
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - THIRD-PARTY-NOTICES.TXT
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
+
+parameters:
+
+- name: BuildConfigurations
+  type: object
+  default:
+  - Debug
+  - Release
+
+- name: BuildPlatforms
+  type: object
+  default:
+  - name: NetCore1ESPool-Internal
+    image: 1es-windows-2022
+    os: Windows
+    buildScript: $(_buildScript)
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
+  - name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+    buildScript: $(_buildScriptMacOS)
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
+
+- name: BuildPlatformsPublic
+  type: object
+  default:
+  - name: NetCore-Public
+    image: 1es-windows-2022
+    os: Windows
+    buildScript: $(_buildScript)
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
+  - name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+    buildScript: $(_buildScriptMacOS)
+    sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
+
+- name: WindowsPool
+  type: object
+  default:
+    internal:
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2022
+      os: windows
+    public:
+      name: NetCore-Public
+      image: 1es-windows-2022
+      os: windows
+
+- name: MacOSPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+
+stages:
+
+- template: /eng/pipelines/arcade/stage-helix-tests.yml@self
+  parameters:
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      helixPool: ${{ parameters.WindowsPool.public }}
+      runAsPublic: true
+      helixInternal: 'False'
+    ${{ else }}:
+      helixPool: ${{ parameters.WindowsPool.internal }}
+      runAsPublic: false
+      helixInternal: 'True'
+      HelixAccessToken: $(HelixApiAccessToken)
+    prepareSteps:
+    - template: /eng/pipelines/common/provision.yml@self
+      parameters:
+        checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+        skipJdk: false
+        skipAndroidCommonSdks: false
+        skipAndroidPlatformApis: false
+        onlyAndroidPlatformDefaultApis: true
+        skipAndroidEmulatorImages: true
+        skipAndroidCreateAvds: true
+        skipProvisioning: true
+        skipXcode: false
+
+- template: /eng/pipelines/arcade/stage-pack.yml@self
+  parameters:
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      pool: ${{ parameters.WindowsPool.public }}
+      runAsPublic: true
+    ${{ else }}:
+      pool: ${{ parameters.WindowsPool.internal }}
+      runAsPublic: false
+    prepareSteps:
+    - template: /eng/pipelines/common/provision.yml@self
+      parameters:
+        checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+        skipJdk: false
+        skipAndroidCommonSdks: false
+        skipAndroidPlatformApis: false
+        onlyAndroidPlatformDefaultApis: true
+        skipAndroidEmulatorImages: true
+        skipAndroidCreateAvds: true
+        skipProvisioning: true
+        skipXcode: true
+
+- template: /eng/pipelines/arcade/stage-build.yml@self
+  parameters:
+    buildConfigurations: ${{ parameters.BuildConfigurations }}
+    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+      buildPlatforms: ${{ parameters.BuildPlatformsPublic }}
+      runAsPublic: true
+    ${{ else }}:
+      buildPlatforms: ${{ parameters.BuildPlatforms }}
+      runAsPublic: false
+    prepareSteps:
+    - template: /eng/pipelines/common/provision.yml@self
+      parameters:
+        checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+        skipJdk: false
+        skipAndroidCommonSdks: false
+        skipAndroidPlatformApis: false
+        onlyAndroidPlatformDefaultApis: true
+        skipAndroidEmulatorImages: true
+        skipAndroidCreateAvds: true
+        skipProvisioning: true
+        skipXcode: false
+
+- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+  parameters:
+    jobMatrix:
+    - name: win_unit_tests
+      displayName: Windows Unit Tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 90
+      testOS: Windows
+      buildscript: $(_buildScript)
+    - name: mac_unit_tests
+      displayName: macOS Unit Tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 90
+      testOS: macOS
+      buildscript: $(_buildScriptMacOS)
+    publishTaskPrefix: ''
+
+- template: /eng/pipelines/arcade/stage-integration-tests.yml@self
+  parameters:
+    stageDependsOn: Pack
+    publishTaskPrefix: ''
+    jobMatrix:
+    - name: win_sample_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: Samples
+    - name: mac_sample_tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 240
+      testCategory: Samples
+
+    - name: win_wintemplate_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: WindowsTemplates
+
+    # - name: mac_wintemplate_tests
+    #   pool: ${{ parameters.MacOSPool }}
+    #   timeout: 120
+    #   testCategory: WindowsTemplates
+
+    - name: win_buildtemplate_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: Build
+    - name: mac_buildtemplate_tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 240
+      testCategory: Build
+
+    - name: win_blazortemplate_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: Blazor
+    - name: mac_blazortemplate_tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 240
+      testCategory: Blazor
+
+    - name: win_multitemplate_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: MultiProject
+    - name: mac_multitemplate_tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 120
+      testCategory: MultiProject
+
+    # TODO: macOSTemplates and AOT template categories
+
+    - name: mac_runandroid_tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 240
+      testCategory: RunOnAndroid
+
+    - name: mac_runios_tests
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 240
+      testCategory: RunOniOS

@@ -17,9 +17,9 @@ namespace Microsoft.Maui.Graphics.Platform
 	/// A Windows platform view that can be used to host drawings.
 	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	public sealed class W2DGraphicsView
+	public sealed partial class W2DGraphicsView
 #else
-	public class PlatformGraphicsView
+	public partial class PlatformGraphicsView
 #endif
 		: UserControl
 	{

@@ -71,14 +71,14 @@ public partial class DatePickerMainControlPage : ContentPage
 		{
 			if (e.PropertyName == nameof(DatePicker.Date))
 			{
-				DisplayCultureSpecificDate(datePickerControl.Date, _viewModel.Culture);
+				DisplayCultureSpecificDate(datePickerControl.Date ?? DateTime.Now, _viewModel.Culture);
 			}
 		};
 		_viewModel.PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == nameof(DatePickerViewModel.Culture))
 			{
-				DisplayCultureSpecificDate(datePickerControl.Date, _viewModel.Culture);
+				DisplayCultureSpecificDate(datePickerControl.Date ?? DateTime.Now, _viewModel.Culture);
 			}
 		};
 
@@ -103,7 +103,7 @@ public partial class DatePickerMainControlPage : ContentPage
 
 	public void OnDateSelected(object sender, DateChangedEventArgs e)
 	{
-		if (e.OldDate.Date != DateTime.Now.Date && e.NewDate != e.OldDate)
+		if (e.OldDate.Value.Date != DateTime.Now.Date && e.NewDate != e.OldDate)
 		{
 			OldDateSelectedLabel.Text = e.OldDate.ToString();
 			NewDateSelectedLabel.Text = e.NewDate.ToString();

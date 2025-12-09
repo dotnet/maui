@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ListViewSelectionMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListViewSelectionMode']/Docs/*" />
+	/// <summary>Enumerates values that control whether items in a list view can or cannot be selected.</summary>
 	public enum ListViewSelectionMode
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListViewSelectionMode.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Indicates that items cannot be selected.</summary>
 		None,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListViewSelectionMode.xml" path="//Member[@MemberName='Single']/Docs/*" />
+		/// <summary>Indicates that a single item can be selected.</summary>
 		Single
 	}
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
@@ -9,6 +8,35 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class TypeRefComparer : IEqualityComparer<TypeReference>
 	{
+		public bool Equals(TypeReference x, TypeReference y)
+		{
+			if (x == null && y == null)
+				return true;
+			if (x == null || y == null)
+				return false;
+
+			//strip the leading `&` as byref typeref fullnames have a `&`
+			var xname = x.FullName.EndsWith("&", StringComparison.InvariantCulture) ? x.FullName.Substring(0, x.FullName.Length - 1) : x.FullName;
+			var yname = y.FullName.EndsWith("&", StringComparison.InvariantCulture) ? y.FullName.Substring(0, y.FullName.Length - 1) : y.FullName;
+			if (xname != yname)
+				return false;
+			var xasm = GetAssemblyName(x);
+			var yasm = GetAssemblyName(y);
+
+			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
+			if (IsSystemAssembly(xasm) && IsSystemAssembly(yasm))
+				return true;
+			return xasm == yasm;
+		}
+
+		public int GetHashCode(TypeReference obj)
+		{
+			var assemblyName = GetAssemblyName(obj);
+			if (IsSystemAssembly(assemblyName))
+				return obj.FullName.GetHashCode();
+			return assemblyName.GetHashCode() ^ obj.FullName.GetHashCode();
+		}
+
 		static string GetAssemblyName(TypeReference typeRef)
 		{
 			if (typeRef.Scope is ModuleDefinition md)
@@ -18,43 +46,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			throw new ArgumentOutOfRangeException(nameof(typeRef));
 		}
 
-		public bool Equals(TypeReference x, TypeReference y)
+		bool IsSystemAssembly(string assemblyName)
 		{
-			if (x == null)
-				return y == null;
-			if (y == null)
-				return x == null;
-
-			//strip the leading `&` as byref typered fullnames have a `&`
-			var xname = x.FullName.EndsWith("&", StringComparison.InvariantCulture) ? x.FullName.Substring(0, x.FullName.Length - 1) : x.FullName;
-			var yname = y.FullName.EndsWith("&", StringComparison.InvariantCulture) ? y.FullName.Substring(0, y.FullName.Length - 1) : y.FullName;
-			if (xname != yname)
-				return false;
-			var xasm = GetAssemblyName(x);
-			var yasm = GetAssemblyName(y);
-
-			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
-			if ((xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
-					|| xasm.StartsWith("System", StringComparison.Ordinal)
-					|| xasm.StartsWith("mscorlib", StringComparison.Ordinal)
-					|| xasm.StartsWith("netstandard", StringComparison.Ordinal)
-					|| xasm.StartsWith("System.Xml", StringComparison.Ordinal))
-				&& (yasm.StartsWith("System.Runtime", StringComparison.Ordinal)
-					|| yasm.StartsWith("System", StringComparison.Ordinal)
-					|| yasm.StartsWith("mscorlib", StringComparison.Ordinal)
-					|| yasm.StartsWith("netstandard", StringComparison.Ordinal)
-					|| yasm.StartsWith("System.Xml", StringComparison.Ordinal)))
-				return true;
-			return xasm == yasm;
-		}
-
-		public int GetHashCode(TypeReference obj)
-		{
-			return $"{GetAssemblyName(obj)}//{obj.FullName}".GetHashCode();
+			return assemblyName.StartsWith("System", StringComparison.Ordinal)
+				|| assemblyName.StartsWith("mscorlib", StringComparison.Ordinal)
+				|| assemblyName.StartsWith("netstandard", StringComparison.Ordinal)
+				|| assemblyName.StartsWith("System.Runtime", StringComparison.Ordinal)
+				|| assemblyName.StartsWith("System.Xml", StringComparison.Ordinal)
+				|| assemblyName.StartsWith("System.Private.CoreLib", StringComparison.Ordinal);
 		}
 
 		static TypeRefComparer s_default;
-		public static TypeRefComparer Default => s_default ?? (s_default = new TypeRefComparer());
+		public static TypeRefComparer Default => s_default ??= new TypeRefComparer();
 	}
 
 	static class TypeReferenceExtensions

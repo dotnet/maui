@@ -1,0 +1,130 @@
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - net*.0
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/**
+    - docs/*
+    - src/Templates/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    - net*.0
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/**
+    - docs/*
+    - src/Templates/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
+
+parameters:
+
+  - name: BuildEverything
+    type: boolean
+    default: false
+
+  - name: BuildNativeAOT
+    displayName: 'Build NativeAOT artifacts'
+    type: boolean
+    default: false
+
+  - name: RunNativeAOT
+    displayName: 'Run NativeAOT UI Tests'
+    type: boolean
+    default: false
+
+  - name: androidPool
+    type: object
+    default:
+      name: MAUI
+      vmImage: MAUI
+  
+  - name: androidPoolLinux
+    type: object
+    default:
+      name: MAUI-DNCENG
+      demands:
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
+
+  - name: iosPool
+    type: object
+    default:
+      name: MAUI
+      vmImage: MAUI
+  
+  - name: windowsBuildPool
+    type: object
+    default:
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
+
+  - name: windowsPool
+    type: object
+    default:
+      name: $(windowsTestsVmPool)
+      vmImage: $(windowsTestsVmImage)
+
+  - name: macosPool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: macOS-14
+
+stages:
+
+  - template: common/ui-tests.yml
+    parameters:
+      androidPool: ${{ parameters.androidPool }}
+      androidLinuxPool: ${{ parameters.androidPoolLinux }}
+      iosPool: ${{ parameters.iosPool }}
+      windowsPool: ${{ parameters.windowsPool }}
+      windowsBuildPool: ${{ parameters.windowsBuildPool }}
+      macosPool: ${{ parameters.macosPool }}
+      # BuildNativeAOT is false by default, but true in devdiv environment
+      BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
+      RunNativeAOT: ${{ parameters.RunNativeAOT }}
+      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+        androidApiLevels: [ 30 ]
+        iosVersions: [ '18.4' ]
+      ${{ else }}:
+        androidApiLevels: [ 30 ]
+        iosVersions: [ '18.4' ]
+      projects:
+        - name: controls
+          desc: Controls
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
+          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
+          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
+          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
+
+

@@ -1,29 +1,19 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh5240 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh5240 : ContentPage
-	{
-		public Gh5240() => InitializeComponent();
-		public Gh5240(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh5240() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void FailOnUnresolvedDataType(XamlInflator inflator)
 		{
-			[Test]
-			public void FailOnUnresolvedDataType([Values(true)] bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5240)));
-			}
+			new Gh5240(inflator);
 		}
 	}
 }

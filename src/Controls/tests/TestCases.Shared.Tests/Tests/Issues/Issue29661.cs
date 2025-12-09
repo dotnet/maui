@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue29661 : _IssuesUITest
 {
 	public override string Issue => "[iOS, Mac] StrokeDashArray Property not Rendering";

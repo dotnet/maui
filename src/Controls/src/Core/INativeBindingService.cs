@@ -1,9 +1,11 @@
 #nullable disable
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Xaml.Internals
 {
 
+	[Obsolete("INativeBindingService is obsolete and will be removed in a future release.")]
 	public interface INativeBindingService
 	{
 		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]

@@ -140,13 +140,25 @@ namespace Microsoft.Maui.Media
 			{
 				SetDefaultLanguage();
 			}
+			// Set the voice if specified, otherwise use the voice that based on the selected/default language
+			if (!string.IsNullOrEmpty(options?.Locale?.Id) && tts?.Voices is not null)
+			{
+				var voice = tts.Voices.FirstOrDefault(v => v.Name == options.Locale.Id);
+				if (voice is not null)
+				{				
+					tts.SetVoice(voice);
+				}
+			}
 
 			if (options?.Pitch.HasValue ?? false)
 				tts.SetPitch(options.Pitch.Value);
 			else
 				tts.SetPitch(TextToSpeechImplementation.PitchDefault);
 
-			tts.SetSpeechRate(1.0f);
+			if (options?.Rate.HasValue ?? false)
+				tts.SetSpeechRate((float)options.Rate);
+			else
+				tts.SetSpeechRate(1.0f);
 
 			var parts = TextToSpeech.SplitSpeak(text, max);
 
@@ -188,8 +200,9 @@ namespace Microsoft.Maui.Media
 			await Initialize();
 
 			try
-			{
-				return tts.AvailableLanguages.Select(a => new Locale(a.Language, a.Country, a.DisplayName, string.Empty));
+			{	
+				// Attempt to use the new API to get the voices and their locales, a.Name is the voice's identifier
+				return tts.Voices.Select(a => new Locale( a.Locale.Language, a.Locale.Country, a.Locale.DisplayName, a.Name));
 			}
 			catch (Exception ex)
 			{
