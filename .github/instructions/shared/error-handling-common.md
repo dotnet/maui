@@ -53,7 +53,7 @@ dotnet format analyzers Microsoft.Maui.slnx
 ```bash
 # Revert and re-add
 git checkout -- **/PublicAPI.Unshipped.txt
-dotnet format analyzers Microsoft.Maui.slnx
+dotnet format analyzers Microsoft.Maui.sln
 ```
 
 **⚠️ NEVER**:

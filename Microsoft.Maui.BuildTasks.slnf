@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Microsoft.Maui.slnx",
+    "path": "Microsoft.Maui.sln",
     "projects": [
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",

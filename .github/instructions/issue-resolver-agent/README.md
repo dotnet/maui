@@ -81,7 +81,7 @@ This README helps you find the right guidance quickly. Files are organized by wh
 ### "I'm ready to submit PR"
 1. Use template: [quick-ref.md](quick-ref.md#pr-description-template)
 2. Complete checklist: [pr-submission.md](pr-submission.md#pr-checklist)
-3. Format code: `dotnet format Microsoft.Maui.slnx --no-restore`
+3. Format code: `dotnet format Microsoft.Maui.sln --no-restore`
 
 ### "I hit an error"
 1. Check [error-handling.md](error-handling.md)

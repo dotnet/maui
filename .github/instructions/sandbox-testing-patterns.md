@@ -119,7 +119,7 @@ cat /tmp/crash.log | grep -A 20 "Exception"
 
 ```bash
 # Use dotnet format to fix analyzer issues
-dotnet format analyzers Microsoft.Maui.slnx
+dotnet format analyzers Microsoft.Maui.sln
 
 # If that doesn't work, revert and manually add entries
 git checkout -- src/*/PublicAPI.Unshipped.txt
