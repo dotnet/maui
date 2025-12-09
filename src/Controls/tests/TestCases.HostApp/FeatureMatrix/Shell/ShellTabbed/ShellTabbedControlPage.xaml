@@ -98,10 +98,10 @@
               </Tab>
               <Tab Title="Tab3"
                    AutomationId="Tab3"
+                   IsEnabled="{Binding IsEnabled, Mode=TwoWay}"
                    Icon="coffee.png">
                      <ShellContent x:Name="tab3Item"
-                                   Shell.TabBarIsVisible="{Binding TabBarIsVisible, Mode=TwoWay}"
-                                   IsEnabled="{Binding IsEnabled, Mode=TwoWay}"
+                                   Shell.TabBarIsVisible="{Binding IsTabBarVisible, Mode=TwoWay}"
                                    Title="shellTab3">
                             <ContentPage Title="Tab3 Content">
                                    <VerticalStackLayout Padding="10">
@@ -301,4 +301,3 @@
               </Tab>
        </TabBar>
 </Shell>
- 
