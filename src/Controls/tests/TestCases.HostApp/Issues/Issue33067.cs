@@ -2,16 +2,16 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 99999, "[Windows, Android] ScrollView Content Not Removed When Set to Null", PlatformAffected.Android | PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 33067, "[Windows, Android] ScrollView Content Not Removed When Set to Null", PlatformAffected.Android | PlatformAffected.UWP)]
 
-public class Issue99999 : ContentPage
+public class Issue33067 : ContentPage
 {
 	ScrollView _scrollView = null!;
 	Label _originalContent = null!;
 	Button _setNullButton = null!;
 	Button _addContentButton = null!;
 
-	public Issue99999()
+	public Issue33067()
 	{
 		CreateUI();
 	}

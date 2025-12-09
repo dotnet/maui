@@ -3,9 +3,9 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-public class Issue99999 : _IssuesUITest
+public class Issue33067 : _IssuesUITest
 {
-	public Issue99999(TestDevice device) : base(device) { }
+	public Issue33067(TestDevice device) : base(device) { }
 
 	public override string Issue => "[Windows, Android] ScrollView Content Not Removed When Set to Null";
 	[Test]
