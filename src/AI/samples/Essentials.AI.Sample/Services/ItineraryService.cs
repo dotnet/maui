@@ -38,6 +38,7 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 			{string.Join(", ", Enum.GetNames<FindPointsOfInterestTool.Category>())}
 			
 			Here is a description of {landmark.Name} for your reference when considering what activities to generate:
+			
 			{landmark.Description}
 			""";
 
