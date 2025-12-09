@@ -120,7 +120,7 @@ namespace Tests
 		}
 
 		[Fact]
-		public void GetSecurePath_AbsolutePath_OutsideBase_ThrowsUnauthorizedAccessException()
+		public void GetSecurePath_AbsolutePath_ThrowsArgumentException()
 		{
 			// Arrange
 			var basePath = Path.Combine(Path.GetTempPath(), "app_data");
@@ -130,8 +130,58 @@ namespace Tests
 				? @"C:\Windows\System32\config.sys" 
 				: "/etc/passwd";
 
+			// Act & Assert - absolute paths are now rejected with ArgumentException
+			var ex = Assert.Throws<ArgumentException>(() => FileSystemUtils.GetSecurePath(basePath, absolutePath));
+			Assert.Equal("relativePath", ex.ParamName);
+			Assert.Contains("Absolute paths", ex.Message, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Theory]
+		[InlineData("/etc/passwd")]
+		[InlineData("/tmp/secrets")]
+		public void GetSecurePath_UnixAbsolutePath_ThrowsArgumentException(string absolutePath)
+		{
+			// Arrange
+			var basePath = Path.Combine(Path.GetTempPath(), "app_data");
+
 			// Act & Assert
-			Assert.Throws<UnauthorizedAccessException>(() => FileSystemUtils.GetSecurePath(basePath, absolutePath));
+			var ex = Assert.Throws<ArgumentException>(() => FileSystemUtils.GetSecurePath(basePath, absolutePath));
+			Assert.Equal("relativePath", ex.ParamName);
+		}
+
+		[Fact]
+		public void GetSecurePath_WindowsUncPath_ThrowsArgumentException()
+		{
+			// This test is only meaningful on Windows where UNC paths are recognized
+			// On Unix, these paths are not rooted and would just be treated as relative paths with backslashes
+			if (!OperatingSystem.IsWindows())
+				return; // Skip on non-Windows platforms
+			
+			// Arrange
+			var basePath = Path.Combine(Path.GetTempPath(), "app_data");
+			var uncPath = @"\\server\share\file.txt";
+
+			// Act & Assert
+			var ex = Assert.Throws<ArgumentException>(() => FileSystemUtils.GetSecurePath(basePath, uncPath));
+			Assert.Equal("relativePath", ex.ParamName);
+			Assert.Contains("UNC", ex.Message, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void GetSecurePath_WindowsUncPathForwardSlash_ThrowsArgumentException()
+		{
+			// This test is only meaningful on Windows
+			if (!OperatingSystem.IsWindows())
+				return; // Skip on non-Windows platforms
+			
+			// Arrange
+			var basePath = Path.Combine(Path.GetTempPath(), "app_data");
+			var uncPath = "//server/share/file.txt";
+
+			// Act & Assert
+			var ex = Assert.Throws<ArgumentException>(() => FileSystemUtils.GetSecurePath(basePath, uncPath));
+			Assert.Equal("relativePath", ex.ParamName);
+			Assert.Contains("UNC", ex.Message, StringComparison.OrdinalIgnoreCase);
 		}
 
 		[Theory]
