@@ -19,8 +19,7 @@ namespace Microsoft.Maui.Storage
 			if (filename is null)
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = NormalizePath(filename);
-			return Path.Combine(AppInfoUtils.PlatformGetFullAppPackageFilePath, filename);
+			return GetSecurePath(AppInfoUtils.PlatformGetFullAppPackageFilePath, filename);
 		}
 
 		public static bool TryGetAppPackageFileUri(string filename, [NotNullWhen(true)] out string? uri)

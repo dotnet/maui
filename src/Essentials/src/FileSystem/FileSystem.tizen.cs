@@ -31,13 +31,8 @@ namespace Microsoft.Maui.Storage
 			if (string.IsNullOrWhiteSpace(filename))
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = NormalizePath(filename);
-
-			return Path.Combine(Application.Current.DirectoryInfo.Resource, filename);
+			return FileSystemUtils.GetSecurePath(Application.Current.DirectoryInfo.Resource, filename);
 		}
-
-		static string NormalizePath(string filename) =>
-			filename.Replace('\\', Path.DirectorySeparatorChar);
 	}
 
 	public partial class FileBase

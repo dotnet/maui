@@ -33,13 +33,11 @@ namespace Microsoft.Maui.Storage
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = NormalizePath(filename);
-
 			var root = NSBundle.MainBundle.BundlePath;
 #if MACCATALYST || MACOS
 			root = Path.Combine(root, "Contents", "Resources");
 #endif
-			return Path.Combine(root, filename);
+			return FileSystemUtils.GetSecurePath(root, filename);
 		}
 
 		public static string GetDirectory(NSSearchPathDirectory directory)
