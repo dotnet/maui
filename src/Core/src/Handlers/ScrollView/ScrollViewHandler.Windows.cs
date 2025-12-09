@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
-			if (currentPaddingLayer != null)
+			if (currentPaddingLayer is not null)
 			{
 				// Only update if content has changed or is missing
 				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
