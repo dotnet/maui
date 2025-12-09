@@ -42,6 +42,30 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (e == null)
+				return base.OnTouchEvent(e);
+
+			switch (e.Action)
+			{
+				case MotionEventActions.Down:
+					Parent?.RequestDisallowInterceptTouchEvent(true);
+					break;
+
+				case MotionEventActions.Move:
+					Parent?.RequestDisallowInterceptTouchEvent(true);
+					break;
+
+				case MotionEventActions.Up:
+				case MotionEventActions.Cancel:
+					Parent?.RequestDisallowInterceptTouchEvent(false);
+					break;
+			}
+
+			return base.OnTouchEvent(e);
+		}
+
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
 			_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
