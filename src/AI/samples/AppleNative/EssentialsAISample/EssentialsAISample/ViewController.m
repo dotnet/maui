@@ -10,7 +10,7 @@
 #import "EssentialsAI/EssentialsAI-Swift.h"
 
 // Block typedefs for AI callbacks
-typedef void (^AIUpdateBlock)(StreamUpdateNative *_Nullable result);
+typedef void (^AIUpdateBlock)(ResponseUpdateNative *_Nullable result);
 typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
                                   NSError *_Nullable error);
 
@@ -205,7 +205,7 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
         };
 
     // Define reusable update block
-    AIUpdateBlock update = ^(StreamUpdateNative *_Nullable result) {
+    AIUpdateBlock update = ^(ResponseUpdateNative *_Nullable result) {
       NSLog(@"Stream update: text = %@", [result text]);
       NSLog(@"Stream update: tool = %@", [result toolCallName]);
       NSLog(@"Stream update: tool result = %@", [result toolCallResult]);
@@ -215,6 +215,7 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
     CancellationTokenNative *token =
         [client getResponseWithMessages:@[ message ]
                                 options:options
+                               onUpdate:update
                              onComplete:completion];
 
     // Use typedef blocks for streamResponse

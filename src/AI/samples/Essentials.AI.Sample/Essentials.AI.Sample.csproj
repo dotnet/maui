@@ -38,10 +38,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
-    <PackageReference Include="OpenAI" Version="2.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <!-- <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" /> -->
+    <!-- <PackageReference Include="OpenAI" Version="2.6.0" /> -->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">

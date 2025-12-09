@@ -52,8 +52,6 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 			{JsonSerializer.Serialize(Itinerary.GetExampleTripToJapan())}
 			""";
 
-		Debug.WriteLine($"[userPrompt]: {userPrompt.Length} characters");
-
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.System, systemInstructions),

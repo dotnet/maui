@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
@@ -14,19 +15,39 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("ios26.0")]
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
-public sealed class AppleIntelligenceChatClient : IChatClient
+public sealed class AppleIntelligenceChatClient : ChatClientBase
 {
-	/// <summary>
-	/// Lazily-initialized metadata describing the implementation.
-	/// </summary>
-	private ChatClientMetadata? _metadata;
-
 	/// <summary>
 	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance.
 	/// </summary>
 	public AppleIntelligenceChatClient()
+		: base(null)
 	{
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger.
+	/// </summary>
+	/// <param name="logger">An optional <see cref="ILogger"/> instance for logging chat operations.</param>
+	public AppleIntelligenceChatClient(ILogger logger)
+		: base(logger)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger factory.
+	/// </summary>
+	/// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> instance for logging chat operations.</param>
+	public AppleIntelligenceChatClient(ILoggerFactory loggerFactory)
+		: base(loggerFactory.CreateLogger<AppleIntelligenceChatClient>())
+	{
+	}
+
+	/// <inheritdoc />
+	internal override string ProviderName => "apple";
+
+	/// <inheritdoc />
+	internal override string DefaultModelId => "apple-intelligence";
 
 	internal static AIJsonSchemaTransformCache StrictSchemaTransformCache { get; } =
 		new(new()
@@ -52,12 +73,12 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		});
 
 	/// <inheritdoc />
-	public Task<ChatResponse> GetResponseAsync(
+	public override Task<ChatResponse> GetResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		CancellationToken cancellationToken = default)
 	{
-		Debug.WriteLine($"[AppleIntelligenceChatClient] GetResponseAsync called with {messages.Count()} messages.");
+		LogMethodInvoked(nameof(GetResponseAsync), messages, options);
 
 		var nativeMessages = messages.Select(ToNative).ToArray();
 		var nativeOptions = options is null ? null : ToNative(options);
@@ -68,45 +89,60 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		var nativeToken = native.GetResponse(
 			nativeMessages,
 			nativeOptions,
+			onUpdate: (update) =>
+			{
+				// Handle tool call notifications
+				if (update.ToolCallName is not null && update.ToolCallId is not null)
+				{
+					LogFunctionInvoking(nameof(GetResponseAsync), update.ToolCallName, update.ToolCallId, update.ToolCallArguments);
+
+					return;
+				}
+
+				// Handle tool result notifications
+				if (update.ToolCallId is not null && update.ToolCallResult is not null)
+				{
+					LogFunctionInvocationCompleted(nameof(GetResponseAsync), update.ToolCallId, update.ToolCallResult);
+
+					return;
+				}
+			},
 			onComplete: (response, error) =>
 			{
 				if (error is not null)
 				{
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetResponseAsync encountered an error: {error.Domain} - {error.Code}");
-
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
 					{
+						LogMethodCanceled(nameof(GetResponseAsync));
 						tcs.TrySetCanceled();
 					}
 					else
 					{
-						tcs.TrySetException(new NSErrorException(error));
+						var ex = new NSErrorException(error);
+						LogMethodFailed(nameof(GetResponseAsync), ex);
+						tcs.TrySetException(ex);
 					}
+
 					return;
 				}
 
-				Debug.WriteLine($"[AppleIntelligenceChatClient] GetResponseAsync completed successfully.");
-
-				tcs.TrySetResult(FromNativeChatResponse(response));
+				var chatResponse = FromNativeChatResponse(response);
+				LogMethodCompleted(nameof(GetResponseAsync), chatResponse);
+				tcs.TrySetResult(chatResponse);
 			});
 
-		cancellationToken.Register(() =>
-		{
-			Debug.WriteLine($"[AppleIntelligenceChatClient] GetResponseAsync cancellation requested.");
-
-			nativeToken?.Cancel();
-		});
+		cancellationToken.Register(() => nativeToken?.Cancel());
 
 		return tcs.Task;
 	}
 
 	/// <inheritdoc />
-	public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+	public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync called with {messages.Count()} messages.");
+		LogMethodInvoked(nameof(GetStreamingResponseAsync), messages, options);
 
 		if (options?.ResponseFormat is ChatResponseFormatJson jsonFormat &&
 			StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema)
@@ -115,25 +151,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				jsonSchema, jsonFormat.SchemaName, jsonFormat.SchemaDescription);
 		}
 
-		// TODO: Handle ResponseFormat via system prompt
-		// https://github.com/dotnet/maui/issues/32908
-		var actualMessages = messages.ToList();
-		// if (options?.ResponseFormat is ChatResponseFormatJson json)
-		// {
-		// 	actualMessages.Add(new ChatMessage(ChatRole.User,
-		// 		$"""
-		// 		ALWAYS format your response as a well-formed, complete JSON object according to
-		// 		the specified schema:
-		// 		{json.Schema}
-		// 		"""));
-		// }
-
-		var nativeMessages = actualMessages.Select(ToNative).ToArray();
+		var nativeMessages = messages.Select(ToNative).ToArray();
 		var nativeOptions = options is null ? null : ToNative(options);
-
-		// TODO: Handle ResponseFormat via system prompt
-		// https://github.com/dotnet/maui/issues/32908
-		// nativeOptions?.ResponseJsonSchema = null;
 
 		var native = new ChatClientNative();
 
@@ -152,12 +171,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				// Handle text updates
 				if (update.Text is not null)
 				{
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync received text update: {update.Text}");
-
 					// Use stream chunker to compute delta - handles both JSON and plain text
 					var delta = chunker.Process(update.Text);
-
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync computed delta: {delta}");
 
 					if (!string.IsNullOrEmpty(delta))
 					{
@@ -166,17 +181,23 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 							Role = ChatRole.Assistant,
 							Contents = { new TextContent(delta) }
 						};
+
+						LogStreamingUpdate(nameof(GetStreamingResponseAsync), chatUpdate);
 						channel.Writer.TryWrite(chatUpdate);
 					}
+
+					return;
 				}
 
 				// Handle tool call notifications
-				if (update.ToolCallName is not null && update.ToolCallId is not null && update.ToolCallArguments is not null)
+				if (update.ToolCallName is not null && update.ToolCallId is not null)
 				{
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync received tool call: {update.ToolCallName} with arguments: {update.ToolCallArguments}");
+					LogFunctionInvoking(nameof(GetStreamingResponseAsync), update.ToolCallName, update.ToolCallId, update.ToolCallArguments);
 
+					var args = update.ToolCallArguments is null
+						? null
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
-					var args = JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
+						: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
 #pragma warning restore IL3050, IL2026
 
 					var chatUpdate = new ChatResponseUpdate
@@ -185,12 +206,14 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 						Contents = { new FunctionCallContent(update.ToolCallId, update.ToolCallName, args) }
 					};
 					channel.Writer.TryWrite(chatUpdate);
+
+					return;
 				}
 
 				// Handle tool result notifications
 				if (update.ToolCallId is not null && update.ToolCallResult is not null)
 				{
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync received tool result for call ID: {update.ToolCallId}");
+					LogFunctionInvocationCompleted(nameof(GetStreamingResponseAsync), update.ToolCallId, update.ToolCallResult);
 
 					var chatUpdate = new ChatResponseUpdate
 					{
@@ -198,87 +221,56 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 						Contents = { new FunctionResultContent(update.ToolCallId, update.ToolCallResult) }
 					};
 					channel.Writer.TryWrite(chatUpdate);
+
+					return;
 				}
 			},
 			onComplete: (finalResult, error) =>
 			{
 				if (error is not null)
 				{
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync completed with error: {error.Domain} - {error.Code}");
-
-					Exception ex = error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled
-						? new OperationCanceledException()
-						: new NSErrorException(error);
+					Exception ex;
+					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
+					{
+						LogMethodCanceled(nameof(GetStreamingResponseAsync));
+						ex = new OperationCanceledException();
+					}
+					else
+					{
+						ex = new NSErrorException(error);
+						LogMethodFailed(nameof(GetStreamingResponseAsync), ex);
+					}
 
 					channel.Writer.Complete(ex);
 				}
 				else
 				{
-					Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync completed successfully.");
-
 					// Flush any remaining content from the chunker
 					var finalChunk = chunker.Flush();
 					if (!string.IsNullOrEmpty(finalChunk))
 					{
-						Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync flushing final chunk: {finalChunk}");
-
 						var finalUpdate = new ChatResponseUpdate
 						{
 							Role = ChatRole.Assistant,
 							Contents = { new TextContent(finalChunk) }
 						};
+
+						LogStreamingUpdate(nameof(GetStreamingResponseAsync), finalUpdate);
 						channel.Writer.TryWrite(finalUpdate);
 					}
 
+					var chatResponse = FromNativeChatResponse(finalResult);
+					LogMethodCompleted(nameof(GetStreamingResponseAsync), chatResponse);
 					channel.Writer.Complete();
 				}
 			});
 
-		cancellationToken.Register(() =>
-		{
-			Debug.WriteLine($"[AppleIntelligenceChatClient] GetStreamingResponseAsync cancellation requested.");
-
-			nativeToken?.Cancel();
-		});
+		cancellationToken.Register(() => nativeToken?.Cancel());
 
 		await foreach (var update in channel.Reader.ReadAllAsync(cancellationToken))
 		{
 			yield return update;
 		}
-	}
-
-	/// <inheritdoc />
-	object? IChatClient.GetService(Type serviceType, object? serviceKey)
-	{
-		ArgumentNullException.ThrowIfNull(serviceType);
-
-		// If there's a service key, we don't support keyed services.
-		if (serviceKey is not null)
-		{
-			return null;
-		}
-
-		// If there's a request for metadata, lazily-initialize it and return it. We don't need to worry about race conditions,
-		// as there's no requirement that the same instance be returned each time, and creation is idempotent.
-		if (serviceType == typeof(ChatClientMetadata))
-		{
-			return _metadata ??= new ChatClientMetadata(
-				providerName: "apple",
-				defaultModelId: "apple-intelligence");
-		}
-
-		if (serviceType.IsInstanceOfType(this))
-		{
-			return this;
-		}
-
-		return null;
-	}
-
-	/// <inheritdoc />
-	void IDisposable.Dispose()
-	{
-		// Nothing to dispose. Implementation required for the IChatClient interface.
 	}
 
 	private static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
@@ -440,8 +432,6 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
 		public override async void CallWithArguments(NSString arguments, Action<NSString> completion)
 		{
-			Debug.WriteLine($"[AppleIntelligenceChatClient] Tool {Name} called with arguments: {arguments}");
-
 			try
 			{
 				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>(arguments, AIJsonUtilities.DefaultOptions);
@@ -451,8 +441,6 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				var resultJson = result is not null
 					? JsonSerializer.Serialize(result)
 					: "{}";
-
-				Debug.WriteLine($"[AppleIntelligenceChatClient] Tool {Name} returned result: {resultJson}");
 
 				completion(new NSString(resultJson));
 			}
@@ -464,12 +452,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 					type = ex.GetType().Name
 				});
 
-				Debug.WriteLine($"[AppleIntelligenceChatClient] Tool {Name} encountered an error: {errorJson}");
-
 				completion(new NSString(errorJson));
 			}
-
-			Debug.WriteLine($"[AppleIntelligenceChatClient] Tool {Name} call completed.");
 		}
 #pragma warning restore IL3050, IL2026
 	}

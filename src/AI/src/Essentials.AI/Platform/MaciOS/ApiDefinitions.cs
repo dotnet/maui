@@ -76,11 +76,9 @@ interface CancellationTokenNative
 	bool IsCancelled { get; }
 }
 
-[Internal] delegate void OnGetResponseComplete([NullAllowed] ChatResponseNative response, [NullAllowed] NSError error);
+[Internal] delegate void OnResponseUpdate(ResponseUpdateNative update);
 
-[Internal] delegate void OnStreamUpdate(StreamUpdateNative update);
-
-[Internal] delegate void OnStreamComplete([NullAllowed] ChatResponseNative finalResult, [NullAllowed] NSError error);
+[Internal] delegate void OnResponseComplete([NullAllowed] ChatResponseNative response, [NullAllowed] NSError error);
 
 // @interface ChatClientNative : NSObject
 [Introduced(PlatformName.iOS, 26, 0)]
@@ -91,15 +89,15 @@ interface CancellationTokenNative
 [Internal]
 interface ChatClientNative
 {
-	// - (CancellationTokenNative * _Nullable)streamResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onUpdate:(void (^ _Nonnull)(StreamUpdateNative * _Nonnull))onUpdate onComplete:(void (^ _Nonnull)(ChatResponseNative * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
+	// - (CancellationTokenNative * _Nullable)streamResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onUpdate:(void (^ _Nonnull)(ResponseUpdateNative * _Nonnull))onUpdate onComplete:(void (^ _Nonnull)(ChatResponseNative * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
 	[Export("streamResponseWithMessages:options:onUpdate:onComplete:")]
 	[return: NullAllowed]
-	unsafe CancellationTokenNative StreamResponse(ChatMessageNative[] messages, [NullAllowed] ChatOptionsNative options, OnStreamUpdate onUpdate, OnStreamComplete onComplete);
+	unsafe CancellationTokenNative StreamResponse(ChatMessageNative[] messages, [NullAllowed] ChatOptionsNative options, OnResponseUpdate onUpdate, OnResponseComplete onComplete);
 
-	// - (CancellationTokenNative * _Nullable)getResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onComplete:(void (^ _Nonnull)(ChatResponseNative * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
-	[Export("getResponseWithMessages:options:onComplete:")]
+	// - (CancellationTokenNative * _Nullable)getResponseWithMessages:(NSArray<ChatMessageNative *> * _Nonnull)messages options:(ChatOptionsNative * _Nullable)options onUpdate:(void (^ _Nonnull)(ResponseUpdateNative * _Nonnull))onUpdate onComplete:(void (^ _Nonnull)(ChatResponseNative * _Nullable, NSError * _Nullable))onComplete SWIFT_WARN_UNUSED_RESULT;
+	[Export("getResponseWithMessages:options:onUpdate:onComplete:")]
 	[return: NullAllowed]
-	unsafe CancellationTokenNative GetResponse(ChatMessageNative[] messages, [NullAllowed] ChatOptionsNative options, OnGetResponseComplete onComplete);
+	unsafe CancellationTokenNative GetResponse(ChatMessageNative[] messages, [NullAllowed] ChatOptionsNative options, OnResponseUpdate onUpdate, OnResponseComplete onComplete);
 }
 
 // @interface ChatMessageNative : NSObject
@@ -234,7 +232,7 @@ interface TextContentNative
 	string Text { get; set; }
 }
 
-// @interface StreamUpdateNative : NSObject
+// @interface ResponseUpdateNative : NSObject
 [Introduced(PlatformName.iOS, 26, 0)]
 [Introduced(PlatformName.MacCatalyst, 26, 0)]
 [Introduced(PlatformName.MacOSX, 26, 0)]
@@ -242,7 +240,7 @@ interface TextContentNative
 [BaseType(typeof(NSObject))]
 [DisableDefaultCtor]
 [Internal]
-interface StreamUpdateNative
+interface ResponseUpdateNative
 {
 	// @property (nonatomic, readonly, copy) NSString * _Nullable text;
 	[NullAllowed, Export("text")]

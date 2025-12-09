@@ -74,7 +74,7 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
         catch (Exception ex)
         {
             // Silently fail tag generation - it's not critical
-            System.Diagnostics.Debug.WriteLine($"Tag generation failed: {ex.Message}");
+            Debug.WriteLine($"Tag generation failed: {ex.Message}");
         }
     }
 
@@ -148,8 +148,6 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
             // Handle partial itinerary updates
             if (update.PartialItinerary is not null)
             {
-                Debug.WriteLine($"[TripPlanningViewModel] Received partial itinerary update: {update.PartialItinerary}");
-
                 latestItinerary = update.PartialItinerary;
                 Itinerary = new ItineraryViewModel(latestItinerary, Landmark);
             }

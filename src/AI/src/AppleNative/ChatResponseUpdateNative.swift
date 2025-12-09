@@ -1,8 +1,8 @@
 import Foundation
 import FoundationModels
 
-@objc(StreamUpdateNative)
-public final class StreamUpdateNative: NSObject, Sendable {
+@objc(ResponseUpdateNative)
+public final class ResponseUpdateNative: NSObject, Sendable {
     @objc public let text: String?
     @objc public let toolCallId: String?
     @objc public let toolCallName: String?

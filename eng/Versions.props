@@ -54,6 +54,7 @@
     <MicrosoftExtensionsLoggingDebugVersion>10.0.0</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>10.0.0</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHttpVersion>10.0.0</MicrosoftExtensionsHttpVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>36.1.2</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>

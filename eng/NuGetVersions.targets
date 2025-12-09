@@ -121,6 +121,10 @@
         Version="$(MicrosoftExtensionsHostingAbstractionsVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Http"
+        Version="$(MicrosoftExtensionsHttpVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
         Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)"
     />

@@ -15,7 +15,7 @@ public class ChatClientNative: NSObject {
     @objc public func streamResponse(
         messages: [ChatMessageNative],
         options: ChatOptionsNative?,
-        onUpdate: @escaping (StreamUpdateNative) -> Void,
+        onUpdate: @escaping (ResponseUpdateNative) -> Void,
         onComplete: @escaping (ChatResponseNative?, NSError?) -> Void
     ) -> CancellationTokenNative? {
         let cq = OperationQueue.current?.underlyingQueue
@@ -25,7 +25,7 @@ public class ChatClientNative: NSObject {
             ? nil
             : ToolCallWatcher(
                 onToolCall: { id, name, arguments in
-                    let update = StreamUpdateNative(
+                    let update = ResponseUpdateNative(
                         toolCallId: id,
                         toolCallName: name,
                         toolCallArguments: arguments
@@ -33,7 +33,7 @@ public class ChatClientNative: NSObject {
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 },
                 onToolResult: { id, name, result in
-                    let update = StreamUpdateNative(
+                    let update = ResponseUpdateNative(
                         toolCallId: id,
                         toolCallName: name,
                         toolCallResult: result
@@ -54,7 +54,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content.jsonString
-                    let update = StreamUpdateNative(text: text)
+                    let update = ResponseUpdateNative(text: text)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
@@ -69,7 +69,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
-                    let update = StreamUpdateNative(text: text)
+                    let update = ResponseUpdateNative(text: text)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
@@ -83,9 +83,34 @@ public class ChatClientNative: NSObject {
     @objc public func getResponse(
         messages: [ChatMessageNative],
         options: ChatOptionsNative?,
+        onUpdate: @escaping (ResponseUpdateNative) -> Void,
         onComplete: @escaping (ChatResponseNative?, NSError?) -> Void
     ) -> CancellationTokenNative? {
-        return executeTask(messages, options, nil, onComplete) { session, prompt, schema, genOptions in
+        let cq = OperationQueue.current?.underlyingQueue
+
+        let toolWatcher =
+            options?.tools == nil
+            ? nil
+            : ToolCallWatcher(
+                onToolCall: { id, name, arguments in
+                    let update = ResponseUpdateNative(
+                        toolCallId: id,
+                        toolCallName: name,
+                        toolCallArguments: arguments
+                    )
+                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                },
+                onToolResult: { id, name, result in
+                    let update = ResponseUpdateNative(
+                        toolCallId: id,
+                        toolCallName: name,
+                        toolCallResult: result
+                    )
+                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                }
+            )
+
+        return executeTask(messages, options, toolWatcher, onComplete) { session, prompt, schema, genOptions in
             let response = try await {
                 if let jsonSchema = schema {
                     let inner = try await session.respond(

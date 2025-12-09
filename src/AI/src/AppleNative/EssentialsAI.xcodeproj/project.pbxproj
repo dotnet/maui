@@ -15,7 +15,7 @@
 		340019392EDF4D6800DAB0A3 /* ChatMessageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192A2EDF4D6800DAB0A3 /* ChatMessageContent.swift */; };
 		3400193A2EDF4D6800DAB0A3 /* ChatResponseNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192C2EDF4D6800DAB0A3 /* ChatResponseNative.swift */; };
 		3400193B2EDF4D6800DAB0A3 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019282EDF4D6800DAB0A3 /* ChatClient.swift */; };
-		3400193C2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192D2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift */; };
+		3400193C2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192D2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift */; };
 		3400193D2EDF4D6800DAB0A3 /* Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019272EDF4D6800DAB0A3 /* Cancellation.swift */; };
 		3400193E2EDF4D6800DAB0A3 /* ChatTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */; };
 /* End PBXBuildFile section */
@@ -27,7 +27,7 @@
 		3400192A2EDF4D6800DAB0A3 /* ChatMessageContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageContent.swift; sourceTree = "<group>"; };
 		3400192B2EDF4D6800DAB0A3 /* ChatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOptions.swift; sourceTree = "<group>"; };
 		3400192C2EDF4D6800DAB0A3 /* ChatResponseNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatResponseNative.swift; sourceTree = "<group>"; };
-		3400192D2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamUpdateNative.swift; sourceTree = "<group>"; };
+		3400192D2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatResponseUpdateNative.swift; sourceTree = "<group>"; };
 		3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTool.swift; sourceTree = "<group>"; };
 		340019302EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSchemaDecoder.swift; sourceTree = "<group>"; };
 		340019312EDF4D6800DAB0A3 /* ToolCallWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCallWatcher.swift; sourceTree = "<group>"; };
@@ -55,7 +55,7 @@
 				3400192A2EDF4D6800DAB0A3 /* ChatMessageContent.swift */,
 				3400192B2EDF4D6800DAB0A3 /* ChatOptions.swift */,
 				3400192C2EDF4D6800DAB0A3 /* ChatResponseNative.swift */,
-				3400192D2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift */,
+				3400192D2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift */,
 				3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */,
 				340019302EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift */,
 				340019312EDF4D6800DAB0A3 /* ToolCallWatcher.swift */,
@@ -163,7 +163,7 @@
 				340019392EDF4D6800DAB0A3 /* ChatMessageContent.swift in Sources */,
 				3400193A2EDF4D6800DAB0A3 /* ChatResponseNative.swift in Sources */,
 				3400193B2EDF4D6800DAB0A3 /* ChatClient.swift in Sources */,
-				3400193C2EDF4D6800DAB0A3 /* ChatStreamUpdateNative.swift in Sources */,
+				3400193C2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift in Sources */,
 				3400193D2EDF4D6800DAB0A3 /* Cancellation.swift in Sources */,
 				3400193E2EDF4D6800DAB0A3 /* ChatTool.swift in Sources */,
 			);

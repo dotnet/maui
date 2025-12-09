@@ -1,13 +1,13 @@
-﻿using System.ClientModel;
-using System.Reflection;
+﻿using System.Reflection;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Essentials.AI;
-using OpenAI;
-using OpenAI.Chat;
+// using OpenAI;
+// using OpenAI.Chat;
 
 namespace Maui.Controls.Sample;
 
@@ -35,21 +35,21 @@ public static class MauiProgram
 		});
 
 		// Register AI
-		if (UseCloudAI)
-		{
-			var aiSection = builder.Configuration.GetSection("AI");
-			var client = new ChatClient(
-				credential: new ApiKeyCredential(aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.")),
-				model: aiSection["DeploymentName"] ?? throw new InvalidOperationException("Deployment Name not found in user secrets."),
-				options: new OpenAIClientOptions()
-				{
-					Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
-				});
-			var ichatClient = client.AsIChatClient();
-			var realClient = new FunctionInvokingChatClient(ichatClient);
-			builder.Services.AddSingleton<IChatClient>(realClient);
-		}
-		else
+		// if (UseCloudAI)
+		// {
+		// 	var aiSection = builder.Configuration.GetSection("AI");
+		// 	var client = new ChatClient(
+		// 		credential: new ApiKeyCredential(aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.")),
+		// 		model: aiSection["DeploymentName"] ?? throw new InvalidOperationException("Deployment Name not found in user secrets."),
+		// 		options: new OpenAIClientOptions()
+		// 		{
+		// 			Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
+		// 		});
+		// 	var ichatClient = client.AsIChatClient();
+		// 	var realClient = new FunctionInvokingChatClient(ichatClient);
+		// 	builder.Services.AddSingleton<IChatClient>(realClient);
+		// }
+		// else
 		{
 			builder.Services.AddPlatformChatClient();
 		}
@@ -67,6 +67,13 @@ public static class MauiProgram
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
+
+#if DEBUG
+		builder.Logging.AddDebug()
+			.SetMinimumLevel(LogLevel.Debug);
+		builder.Logging.AddConsole()
+			.SetMinimumLevel(LogLevel.Debug);
+#endif
 
 		return builder.Build();
 	}

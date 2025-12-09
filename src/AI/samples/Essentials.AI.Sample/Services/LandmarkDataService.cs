@@ -43,9 +43,8 @@ public class LandmarkDataService
 
             _featuredLandmark = _landmarksById.GetValueOrDefault(1020);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading landmarks: {ex.Message}");
             _landmarks = [];
             _landmarksByContinent = new Dictionary<string, List<Landmark>>();
             _landmarksById = new Dictionary<int, Landmark>();
