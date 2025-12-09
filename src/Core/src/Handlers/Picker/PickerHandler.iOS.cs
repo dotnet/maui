@@ -96,15 +96,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var currentViewController = GetCurrentViewController(platformWindow.RootViewController);
-			platformWindow.BeginInvokeOnMainThread(async () =>
+			platformWindow.BeginInvokeOnMainThread(() =>
 			{
 				if (currentViewController is not null)
 				{
-					await currentViewController.PresentViewControllerAsync(pickerController, true);
-				
-					// Update state after alert is dismissed (user clicked Done or dismissed the alert)
-					if (VirtualView is IPicker virtualView)
-						virtualView.IsFocused = virtualView.IsOpen = false;
+					currentViewController.PresentViewControllerAsync(pickerController, true);
 				}
 			});
 		}
