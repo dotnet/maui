@@ -50,8 +50,17 @@ public static class MauiProgram
 					Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
 				});
 			var ichatClient = client.AsIChatClient();
-			var realClient = new FunctionInvokingChatClient(ichatClient);
-			builder.Services.AddSingleton<IChatClient>(realClient);
+
+			builder.Services.AddSingleton<IChatClient>(provider =>
+            {
+				var lf = provider.GetRequiredService<ILoggerFactory>();
+				var realClient = ichatClient
+					.AsBuilder()
+					.UseLogging(lf)
+					.UseFunctionInvocation()
+					.Build();
+				return realClient;
+            });
 		}
 		else
 		#endif
@@ -73,11 +82,14 @@ public static class MauiProgram
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
 
+		// Configure Logging
+		builder.Services.AddLogging();
+		builder.Logging.AddDebug();
+		builder.Logging.AddConsole();
 #if DEBUG
-		builder.Logging.AddDebug()
-			.SetMinimumLevel(LogLevel.Debug);
-		builder.Logging.AddConsole()
-			.SetMinimumLevel(LogLevel.Debug);
+		builder.Logging.SetMinimumLevel(LogLevel.Debug);
+#else
+		builder.Logging.SetMinimumLevel(LogLevel.Information);
 #endif
 
 		return builder.Build();

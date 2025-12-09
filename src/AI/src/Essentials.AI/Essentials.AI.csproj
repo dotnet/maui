@@ -13,8 +13,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
-    <!-- <IsPackable>true</IsPackable> -->
-    <!-- Do not pack this project as a NuGet package yet as it is still experimental -->
+    <IsPackable>true</IsPackable>
     <IsPackable>False</IsPackable>
     <PackageId>Microsoft.Maui.Essentials.AI</PackageId>
     <PackageTags>$(DefaultPackageTags);essentials;ai</PackageTags>

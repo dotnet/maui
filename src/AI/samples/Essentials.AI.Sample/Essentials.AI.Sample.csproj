@@ -44,10 +44,10 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(CI)' == '' and '$(TF_BUILD)' == '' ">
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);ENABLE_OPENAI_CLIENT</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(CI)' == '' and '$(TF_BUILD)' == '' ">
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" />
     <PackageReference Include="OpenAI" Version="2.6.0" />
   </ItemGroup>
