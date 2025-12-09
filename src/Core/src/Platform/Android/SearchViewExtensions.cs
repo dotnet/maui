@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 				editText.SetHintTextColor(color);
 
 				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-				searchMagIconImage?.Drawable?.SetTint(color);
+				SafeSetTint(searchMagIconImage, color);
 			}
 		}
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 					editText.SetTextColor(color);
 
 				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-				searchMagIconImage?.Drawable?.SetTint(color);
+				SafeSetTint(searchMagIconImage, color);
 			}
 		}
 
@@ -129,14 +129,10 @@ namespace Microsoft.Maui.Platform
 			if (searchCloseButtonIdentifier > 0)
 			{
 				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
-
-				if (image is not null && image.Drawable is Drawable drawable)
-				{
-					if (searchBar.CancelButtonColor is not null)
-						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
-						drawable.SetColorFilter(color, FilterMode.SrcIn);
-				}
+				if (searchBar.CancelButtonColor is not null)
+					SafeSetTint(image, searchBar.CancelButtonColor.ToPlatform());
+				else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					SafeSetTint(image, color);
 			}
 		}
 
@@ -154,9 +150,9 @@ namespace Microsoft.Maui.Platform
 				if (image?.Drawable is not null)
 				{
 					if (searchBar.SearchIconColor is not null)
-						image.Drawable.SetColorFilter(searchBar.SearchIconColor, FilterMode.SrcIn);
+						SafeSetTint(image, searchBar.SearchIconColor.ToPlatform());
 					else
-						image.Drawable.ClearColorFilter();
+						SafeSetTint(image, Color.Transparent);
 				}
 			}
 		}
@@ -239,6 +235,25 @@ namespace Microsoft.Maui.Platform
 			var state = searchView.Enabled ? s_enabledState : s_disabledState;
 			color = new Color(cs.GetColorForState(state, Color.Black));
 			return true;
+		}
+
+		/// <summary>
+		/// Safely applies tint to an ImageView's drawable by mutating it first.
+		/// This prevents crashes when the drawable is shared across multiple views.
+		/// </summary>
+		/// <remarks>
+		/// Android shares Drawable resources for memory efficiency. Modifying a shared
+		/// drawable without calling Mutate() first causes race conditions and crashes.
+		/// See: https://developer.android.com/reference/android/graphics/drawable/Drawable#mutate()
+		/// </remarks>
+		internal static void SafeSetTint(ImageView? imageView, Color color)
+		{
+			if (imageView?.Drawable is not Drawable drawable)
+				return;
+
+			var safe = drawable.Mutate();
+			safe.SetTint(color);
+			imageView?.SetImageDrawable(safe);
 		}
 	}
 }
