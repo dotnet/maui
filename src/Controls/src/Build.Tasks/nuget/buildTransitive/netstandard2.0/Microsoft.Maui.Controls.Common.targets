@@ -11,7 +11,6 @@
     '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen')">True</UseInterpreter>
   </PropertyGroup>
 
-  <!-- Material Design 3 Support - Phase 1 Foundation -->
 	<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
 	<PropertyGroup Condition=" '$(_MauiDoNotConfigureTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' != 'full' ">
 		<EnableTrimAnalyzer>false</EnableTrimAnalyzer>
@@ -33,5 +32,4 @@
     <CompilerVisibleProperty Include="Configuration" />
     <CompilerVisibleProperty Include="EnablePreviewFeatures" />
 	</ItemGroup>
-
 </Project>
