@@ -267,7 +267,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<EntryHandler>(entry);
 #if !ANDROID
-		    await InvokeOnMainThreadAsync(() =>
+		    	await InvokeOnMainThreadAsync(() =>
 			{
 				SetPlatformText(handler, "short");
 			});
