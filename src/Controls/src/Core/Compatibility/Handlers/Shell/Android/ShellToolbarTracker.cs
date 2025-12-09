@@ -473,16 +473,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				icon = _flyoutIconDrawerDrawable;
 			}
 
-			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
+			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack  && backButtonVisible))
 			{
 				_drawerArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
 				icon = _drawerArrowDrawable;
 				defaultDrawerArrowDrawable = true;
 			}
 
-			icon?.Progress = (CanNavigateBack) ? 1 : 0;
+			icon?.Progress = (CanNavigateBack  && backButtonVisible) ? 1 : 0;
 
-			if (command != null || CanNavigateBack)
+			if (command != null || CanNavigateBack  && backButtonVisible)
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				if (CanNavigateBack)
+				if (CanNavigateBack && _toolbar?.BackButtonVisible == true)
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 				else
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
