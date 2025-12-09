@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this UISearchBar uiSearchBar, SearchBar searchBar)
 		{
-			uiSearchBar.Text = TextTransformUtilites.GetTransformedText(searchBar.Text, searchBar.TextTransform);
+			uiSearchBar.Text = TextTransformUtilities.GetTransformedText(searchBar.Text, searchBar.TextTransform);
 		}
 	}
 }

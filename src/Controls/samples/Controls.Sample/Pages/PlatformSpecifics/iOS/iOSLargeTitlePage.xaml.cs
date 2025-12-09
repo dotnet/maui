@@ -8,12 +8,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class iOSLargeTitlePage : ContentPage
 	{
-		ICommand _returnToPlatformSpecificsPage;
-
-		public iOSLargeTitlePage(ICommand restore)
+		public iOSLargeTitlePage()
 		{
 			InitializeComponent();
-			_returnToPlatformSpecificsPage = restore;
 		}
 
 		void OnButtonClicked(object sender, EventArgs e)
@@ -34,7 +31,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnReturnButtonClicked(object sender, EventArgs e)
 		{
-			_returnToPlatformSpecificsPage.Execute(null);
+			Navigation.PopAsync();
 		}
 	}
 }

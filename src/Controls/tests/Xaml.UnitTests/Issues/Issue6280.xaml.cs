@@ -1,32 +1,27 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue6280 : ContentPage
 {
-	public partial class Issue6280 : ContentPage
-	{
-		public Issue6280() => InitializeComponent();
-		public Issue6280(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Issue6280() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingToNullable(XamlInflator inflator)
 		{
-			[Test]
-			public void BindingToNullable([Values(false, true)] bool useCompiledXaml)
-			{
-				var vm = new Issue6280ViewModel();
-				var page = new Issue6280(useCompiledXaml) { BindingContext = vm };
-				page._entry.SetValueFromRenderer(Entry.TextProperty, 1);
-				Assert.AreEqual(vm.NullableInt, 1);
-			}
+			var vm = new Issue6280ViewModel();
+			var page = new Issue6280(inflator) { BindingContext = vm };
+			page._entry.SetValueFromRenderer(Entry.TextProperty, 1);
+			Assert.Equal(1, vm.NullableInt);
 		}
 	}
+}
 
-	public class Issue6280ViewModel
-	{
-		public int? NullableInt { get; set; }
-	}
+public class Issue6280ViewModel
+{
+	public int? NullableInt { get; set; }
 }

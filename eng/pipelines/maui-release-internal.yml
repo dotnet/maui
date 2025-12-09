@@ -1,0 +1,294 @@
+trigger: none
+pr: none
+
+parameters:
+- name: ghRepo
+  displayName: GitHub repository name
+  type: string
+  default: maui
+
+- name: ghOwner
+  displayName: GitHub repository owner
+  type: string
+  default: dotnet
+
+- name: commitHash
+  displayName: Commit hash to download nupkgs from
+  type: string
+  default: skip
+
+- name: pushWorkloadSet
+  displayName: Push workload set channel stage
+  type: boolean
+  default: true
+
+- name: pushNugetOrg
+  displayName: Push to NuGet.org stage
+  type: boolean
+  default: true
+
+- name: pushPackages
+  displayName: "If false does dry run"
+  type: boolean
+  default: true
+
+- name: nugetIncludeFilters
+  displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to include"
+  type: string
+  default: skip
+
+- name: nugetExcludeFilters
+  displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to exclude"
+  type: string
+  default: skip
+
+- name: feedUrl
+  displayName: "[OPTIONAL] NuGet URL to push to defaults to nuget.org"
+  type: string
+  default: "https://api.nuget.org/v3/index.json"
+
+- name: VM_IMAGE_HOST
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    image: 1es-windows-2022
+    os: windows
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+
+- group: AzureDevOps-Artifact-Feeds-Pats
+- group: maui-nuget-release # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    settings:
+      networkIsolationPolicy: Permissive
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    sdl:
+      binskim:
+        scanOutputDirectoryOnly: true
+      codeql:
+        runSourceLanguagesInSourceAnalysis: true
+      policheck:
+        enabled: true
+      spotBugs:
+        enabled: false
+        justification: 'Failing with "Could not successfully find the java tool launcher"'
+      sourceRepositoriesToScan:
+        exclude:
+        - repository: yaml-templates
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+    stages:
+    - stage: publish_maestro
+      displayName: Publish to Workload Set channel
+      dependsOn: []
+      condition: eq(${{ parameters.pushWorkloadSet }}, true)
+      jobs:
+      - job: publish_maestro
+        displayName: Publish to Workload Set channel
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        timeoutInMinutes: 240
+        workspace:
+          clean: all
+        steps:
+        - ${{ if eq(parameters.commitHash, 'skip') }}:
+          - script: echo parameters.commitHash was not set, skipping...
+            displayName: Skip push
+        - ${{ else }}:
+          - script: |
+              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
+            displayName: Set COMMIT
+
+          - task: AzureCLI@2
+            displayName: Add build to workload set channel
+            inputs:
+              azureSubscription: "Darc: Maestro Production"
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                . $(Build.SourcesDirectory)\eng\common\tools.ps1
+                $darc = Get-Darc
+                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
+                Write-Host "`n$buildJson`n"
+                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
+                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                if ($barId -eq $null) {
+                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                  exit 1
+                }
+                Write-Host "Getting drop for Bar ID: $barId"
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose
+                Write-Host "List downloaded artifacts"
+                Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
+                $manifestPack = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs\shipping\packages\" -Filter "*.Manifest-*.nupkg" | Select-Object -First 1
+                $workloadSetsChannel = ""
+                $workloadSetsFeed = ""
+                if ($manifestPack -like "*.Manifest-8.0*") {
+                    $workloadSetsChannel = ".NET 8 Workload Release"
+                    $workloadSetsFeed = "dotnet8-workloads"
+                }
+                if ($manifestPack -like "*.Manifest-9.0*") {
+                  $workloadSetsChannel = ".NET 9 Workload Release"
+                  $workloadSetsFeed = "dotnet9-workloads"
+                }
+                if ($manifestPack -like "*.Manifest-10.0*") {
+                  $workloadSetsChannel = ".NET 10 Workload Release"
+                  $workloadSetsFeed = "dotnet10-workloads"
+                }
+                if (!$workloadSetsChannel -or !$workloadSetsFeed) {
+                  Write-Error "Could not determine the workload sets channel or feed for the manifest pack '$manifestPack'"
+                  exit 1
+                }
+                Write-Host "##vso[task.setvariable variable=WorkloadSetsFeedName;]$workloadSetsFeed"
+                Write-Host "Adding build ID '$barId' to channel '$workloadSetsChannel' and feed '$workloadSetsFeed'"
+                & $darc add-build-to-channel --ci --channel "$workloadSetsChannel" --id "$barId" --skip-assets-publishing --azdev-pat $(System.AccessToken) --verbose
+
+    - stage: stage_push_packs
+      displayName: Release packs
+      dependsOn: []
+      condition: eq(${{ parameters.pushNugetOrg }}, true)
+      jobs:
+      # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
+      - job: push_packs_approval
+        displayName: Wait to push packs
+        timeoutInMinutes: 240
+        pool: server
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 120
+          inputs:
+            instructions: 'Press "Resume" to push workload packs to NuGet.org.'
+            onTimeout: reject
+
+      - job: push_packs
+        displayName: Push packs to NuGet.org
+        timeoutInMinutes: 90
+        dependsOn: push_packs_approval
+        condition: eq(dependencies.push_packs_approval.result, 'Succeeded')
+        workspace:
+          clean: all
+        steps:
+        - checkout: self
+          clean: true
+
+        - ${{ if eq(parameters.commitHash, 'skip') }}:
+          - script: echo parameters.commitHash was not set, skipping...
+            displayName: skip push
+
+        - ${{ else }}:
+          - script: |
+              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
+            displayName: set COMMIT
+
+          - task: AzureCLI@2
+            displayName: Get build for commit
+            continueOnError: true
+            inputs:
+              azureSubscription: "Darc: Maestro Production"
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                . $(Build.SourcesDirectory)\eng\common\tools.ps1
+                $darc = Get-Darc
+                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
+                Write-Host "`n$buildJson`n"
+                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
+                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                if ($barId -eq $null) {
+                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                  exit 1
+                }
+                Write-Host "Getting drop for Bar ID: $barId"
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
+
+          - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
+            displayName: list downloaded artifacts
+
+          - powershell: >-
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}" -NuGetOrgApiKey2 "$(pat--nuget--xamarinc--push--wildcard-1)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard-2)" 
+            displayName: Push workload packs to NuGet.org
+            env:
+              PUSH_PACKAGES: ${{ parameters.pushPackages }}
+
+    - stage: stage_push_manifests
+      displayName: Release manifests
+      dependsOn: []
+      condition: eq(${{ parameters.pushNugetOrg }}, true)
+      jobs:
+      # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
+      - job: push_manifests_approval
+        displayName: Wait to push manifests
+        timeoutInMinutes: 240
+        pool: server
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 120
+          inputs:
+            instructions: 'Press "Resume" to push workload manifests to NuGet.org.'
+            onTimeout: reject
+
+      - job: push_manifests
+        displayName: Push manifests to NuGet.org
+        timeoutInMinutes: 90
+        dependsOn: push_manifests_approval
+        condition: eq(dependencies.push_manifests_approval.result, 'Succeeded')
+        workspace:
+          clean: all
+        steps:
+        - checkout: self
+          clean: true
+
+        - ${{ if eq(parameters.commitHash, 'skip') }}:
+          - script: echo parameters.commitHash was not set, skipping...
+            displayName: skip push
+
+        - ${{ else }}:
+          - script: |
+              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
+            displayName: set COMMIT
+
+          - task: AzureCLI@2
+            displayName: Get build for commit
+            continueOnError: true
+            inputs:
+              azureSubscription: "Darc: Maestro Production"
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                . $(Build.SourcesDirectory)\eng\common\tools.ps1
+                $darc = Get-Darc
+                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
+                Write-Host "`n$buildJson`n"
+                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
+                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                if ($barId -eq $null) {
+                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                  exit 1
+                }
+                Write-Host "Getting drop for Bar ID: $barId"
+                & $darc gather-drop --ci --id $barId --asset-filter "^Microsoft.*Manifest" -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
+
+          - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
+            displayName: list downloaded artifacts
+
+          - powershell: >-
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"
+            displayName: Push workload manifests to NuGet.org
+            env:
+              PUSH_PACKAGES: ${{ parameters.pushPackages }}

@@ -16,6 +16,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty CornerRadiusProperty =
 			BindableProperty.Create(nameof(CornerRadius), typeof(CornerRadius), typeof(RoundRectangle), new CornerRadius());
 
+		/// <summary>
+		/// Gets or sets the corner radius for the round rectangle.
+		/// </summary>
+		/// <value>A <see cref="CornerRadius"/> value that specifies the radius for each corner of the round rectangle.</value>
+		/// <remarks>When specifying corner radii, the order of values is top left, top right, bottom left, and bottom right.</remarks>
 		public CornerRadius CornerRadius
 		{
 			set { SetValue(CornerRadiusProperty, value); }
@@ -99,6 +104,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
 			return path;
+		}
+
+		PathF IRoundRectangle.InnerPath()
+		{
+			return GetInnerPath((float)StrokeThickness);		 
 		}
 
 		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeThickness)

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,72 +12,74 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz24910(bool useCompiledXaml)
+		[Collection("Issue")]
+		public class Tests
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void AllowNullableIntProperties(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNullableIntProperties(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control0;
-				Assert.AreEqual(1, control.NullableInt);
+				Assert.Equal(1, control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowNullableDoubleProperties(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNullableDoubleProperties(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control0;
-				Assert.AreEqual(2.2d, control.NullableDouble);
+				Assert.Equal(2.2d, control.NullableDouble);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void ConversionForNullable(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void ConversionForNullable(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control1;
-				Assert.AreEqual(2d, control.NullableDouble);
+				Assert.Equal(2d, control.NullableDouble);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowNull(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNull(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control2;
 				Assert.Null(control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowBindingToNullable(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowBindingToNullable(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control3;
 				Assert.Null(control.NullableInt);
 
 				page.BindingContext = 2;
-				Assert.AreEqual(2, control.NullableInt);
+				Assert.Equal(2, control.NullableInt);
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void NullableAttachedBPs(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void NullableAttachedBPs(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control4;
-				Assert.AreEqual(3, Bz24910Control.GetAttachedNullableInt(control));
+				Assert.Equal(3, Bz24910Control.GetAttachedNullableInt(control));
 			}
 
-			[TestCase(true), TestCase(false)]
-			public void AllowNonBindableNullable(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNonBindableNullable(XamlInflator inflator)
 			{
-				var page = new Bz24910(useCompiledXaml);
+				var page = new Bz24910(inflator);
 				var control = page.control5;
 
-				Assert.AreEqual(5, control.NullableIntProp);
+				Assert.Equal(5, control.NullableIntProp);
 			}
 		}
 	}
@@ -85,7 +87,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class Bz24910Control : Button
 	{
 		public static readonly BindableProperty NullableIntProperty =
-			BindableProperty.Create("NullableInt", typeof(int?), typeof(Bz24910Control), default(int?));
+			BindableProperty.Create(nameof(NullableInt), typeof(int?), typeof(Bz24910Control), default(int?));
 
 		public int? NullableInt
 		{
@@ -94,7 +96,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty NullableDoubleProperty =
-			BindableProperty.Create("NullableDouble", typeof(double?), typeof(Bz24910Control), default(double?));
+			BindableProperty.Create(nameof(NullableDouble), typeof(double?), typeof(Bz24910Control), default(double?));
 
 		public double? NullableDouble
 		{

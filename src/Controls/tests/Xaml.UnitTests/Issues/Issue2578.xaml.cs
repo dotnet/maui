@@ -1,40 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue2578 : ContentPage
 {
-	public partial class Issue2578 : ContentPage
+	public Issue2578() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Issue2578()
+		[Theory(Skip = "[Bug] NamedSizes don't work in triggers: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13831")]
+		[XamlInflatorData]
+		internal void MultipleTriggers(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			Issue2578 layout = new Issue2578(inflator);
 
-		public Issue2578(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[Ignore("[Bug] NamedSizes don't work in triggers: https://github.com/xamarin/Microsoft.Maui.Controls/issues/13831")]
-			[TestCase(false)]
-			[TestCase(true)]
-			public void MultipleTriggers(bool useCompiledXaml)
-			{
-				Issue2578 layout = new Issue2578(useCompiledXaml);
-
-				Assert.AreEqual(null, layout.label.Text);
-				Assert.AreEqual(null, layout.label.BackgroundColor);
-				Assert.AreEqual(Colors.Olive, layout.label.TextColor);
-				layout.label.Text = "Foo";
-				Assert.AreEqual(Colors.Red, layout.label.BackgroundColor);
-			}
+			Assert.Null(layout.label.Text);
+			Assert.Null(layout.label.BackgroundColor);
+			Assert.Equal(Colors.Olive, layout.label.TextColor);
+			layout.label.Text = "Foo";
+			Assert.Equal(Colors.Red, layout.label.BackgroundColor);
 		}
 	}
 }

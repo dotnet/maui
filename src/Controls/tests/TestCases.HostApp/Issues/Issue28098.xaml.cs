@@ -8,6 +8,7 @@ public partial class Issue28098 : ContentPage
 	public Issue28098()
 	{
 		InitializeComponent();
+		carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
 	}
 
 	protected override void OnAppearing()

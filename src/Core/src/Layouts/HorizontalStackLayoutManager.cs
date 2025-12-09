@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Layouts
 
 			double top = padding.Top + bounds.Top;
 
-			var height = bounds.Height - padding.VerticalThickness;
+			var height = Math.Max(0, bounds.Height - padding.VerticalThickness);
 
 			// Figure out where we're starting from 
 			double xPosition = padding.Left + bounds.Left;
@@ -73,9 +73,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			var actual = new Size(xPosition, height);
-
-			return actual.AdjustForFill(bounds, Stack);
+			return new Size(bounds.Width, bounds.Height);
 		}
 
 		static double ArrangeChild(IView child, double height, double top, double x)

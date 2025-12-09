@@ -25,10 +25,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static int s_dividerHorizontalDarkId = int.MinValue;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static readonly BindableProperty IsSelectedProperty = BindableProperty.CreateAttached("IsSelected", typeof(bool), typeof(Cell), false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		readonly Context _context;
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected readonly ListView _listView;
+#pragma warning restore CS0618 // Type or member is obsolete
 		readonly AListView _realListView;
 		readonly Dictionary<DataTemplate, int> _templateToId = new Dictionary<DataTemplate, int>();
 		readonly Dictionary<int, ConditionalFocusLayout> _layoutsCreated = new Dictionary<int, ConditionalFocusLayout>();
@@ -39,26 +43,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		// To prevent a conflict in the event that a ListView supports both templates and non-templates, we will start the DataTemplate key at 2.
 
 		int _listCount = -1; // -1 we need to get count from the list
+#pragma warning disable CS0618 // Type or member is obsolete
 		Dictionary<object, Cell> _prototypicalCellByTypeOrDataTemplate;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		bool _fromNative;
 		AView _lastSelected;
+#pragma warning disable CS0618 // Type or member is obsolete
 		WeakReference<Cell> _selectedCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		IListViewController Controller => _listView;
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected ITemplatedItemsView<Cell> TemplatedItemsView => _listView;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public ListViewAdapter(Context context, AListView realListView, ListView listView) : base(context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			_context = context;
 			_realListView = realListView;
 			_listView = listView;
+#pragma warning disable CS0618 // Type or member is obsolete
 			_prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (listView.SelectedItem != null)
 				SelectItem(listView.SelectedItem);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var templatedItems = ((ITemplatedItemsView<Cell>)listView).TemplatedItems;
+#pragma warning restore CS0618 // Type or member is obsolete
 			templatedItems.CollectionChanged += OnCollectionChanged;
 			templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
 			listView.ItemSelected += OnItemSelected;
@@ -111,7 +127,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_listView.IsGroupingEnabled)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					Cell cell = GetCellForPosition(index);
+#pragma warning restore CS0618 // Type or member is obsolete
 					return cell.BindingContext;
 				}
 
@@ -217,9 +235,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell cell = null;
-
-			Performance.Start(out string reference);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
@@ -227,12 +245,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_listView.IsGroupingEnabled)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					List<Cell> cells = GetCellsFromPosition(position, 2);
+#pragma warning restore CS0618 // Type or member is obsolete
 					if (cells.Count > 0)
 						cell = cells[0];
 
 					if (cells.Count == 2)
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						nextCellIsHeader = cells[1].GetIsGroupHeader<ItemsView<Cell>, Cell>();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 
 				if (cell == null)
@@ -241,8 +265,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (cell == null)
 					{
-						Performance.Stop(reference);
-
 						return new AView(_context);
 					}
 				}
@@ -287,7 +309,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					throw new InvalidOperationException($"View for cell must implement {nameof(INativeElementView)} to enable recycling.");
 				}
+#pragma warning disable CS0618 // Type or member is obsolete
 				cell = (Cell)boxedCell.Element;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				ICellController cellController = cell;
 				cellController.SendDisappearing();
@@ -325,13 +349,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					UnsetSelectedBackground(layout);
 
-				Performance.Stop(reference);
 				return layout;
 			}
 
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
-
-			Performance.Start(reference, "AddView");
 
 			if (cellIsBeingReused)
 			{
@@ -349,9 +370,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			Performance.Stop(reference, "AddView");
-
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			AView bline;
 
@@ -375,8 +398,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
 
-			Performance.Stop(reference);
-
 			return layout;
 		}
 
@@ -385,11 +406,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_prototypicalCellByTypeOrDataTemplate.Clear();
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(int indexPath)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (_listView.IsGroupingEnabled)
+#pragma warning disable CS0618 // Type or member is obsolete
 				templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath];
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return templatedItems;
 		}
@@ -408,14 +433,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return item.GetType();
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal Cell GetCellForPath(int indexPath)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var templatedItemsList = GetTemplatedItemsListForPath(indexPath);
 			var cell = templatedItemsList[indexPath];
 			return cell;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal Cell GetPrototypicalCell(int indexPath)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var itemTypeOrDataTemplate = default(object);
 
@@ -432,7 +461,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (itemTypeOrDataTemplate == null)
 				itemTypeOrDataTemplate = DefaultItemTypeOrDataTemplate;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell protoCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
 			{
 				// cache prototypical cell by item type; Items of the same Type share
@@ -447,9 +478,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override bool IsEnabled(int position)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			ListView list = _listView;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			ITemplatedItemsView<Cell> templatedItemsView = list;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (list.IsGroupingEnabled)
 			{
 				int leftOver;
@@ -457,7 +492,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return leftOver > 0;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell item = GetPrototypicalCell(position);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return item?.IsEnabled ?? false;
 		}
 
@@ -485,11 +522,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				_listView.ItemSelected -= OnItemSelected;
 
-				if (_lastSelected != null)
-				{
-					_lastSelected.Dispose();
-					_lastSelected = null;
-				}
+				_lastSelected?.Dispose();
+				_lastSelected = null;
 
 				DisposeCells();
 			}
@@ -497,14 +531,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.Dispose(disposing);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override Cell GetCellForPosition(int position)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return GetCellsFromPosition(position, 1).FirstOrDefault();
 		}
 
 		protected override void HandleItemClick(AdapterView parent, AView view, int position, long id)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell cell = null;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if ((Controller.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
@@ -512,7 +550,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var layout = cellOwner as ConditionalFocusLayout;
 				if (layout != null)
 					cellOwner = layout.GetChildAt(0);
+#pragma warning disable CS0618 // Type or member is obsolete
 				cell = (Cell)(cellOwner as INativeElementView)?.Element;
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			// All our ListView's have called AddHeaderView. This effectively becomes index 0, so our index 0 is index 1 to the listView.
@@ -548,7 +588,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var renderedView = layout?.GetChildAt(0);
 
 			var element = (renderedView as INativeElementView)?.Element;
+#pragma warning disable CS0618 // Type or member is obsolete
 			var view = (element as ViewCell)?.View;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (renderedView is ViewGroup vg && view?.Handler?.PlatformView is AView aView)
 				vg.RemoveView(aView);
@@ -558,9 +600,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		// TODO: We can optimize this by storing the last position, group index and global index
 		// and increment/decrement from that starting place.	
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal List<Cell> GetCellsFromPosition(int position, int take)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cells = new List<Cell>(take);
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (position < 0)
 				return cells;
 
@@ -672,7 +718,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_lastSelected != null)
 			{
 				UnsetSelectedBackground(_lastSelected);
+#pragma warning disable CS0618 // Type or member is obsolete
 				Cell previousCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (_selectedCell.TryGetTarget(out previousCell))
 					previousCell.SetValue(IsSelectedProperty, false);
 			}
@@ -682,9 +730,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (index == -1)
 				return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell cell = GetCellForPosition(index);
+#pragma warning restore CS0618 // Type or member is obsolete
 			cell.SetValue(IsSelectedProperty, true);
+#pragma warning disable CS0618 // Type or member is obsolete
 			_selectedCell = new WeakReference<Cell>(cell);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (view != null)
 				SetSelectedBackground(view);
@@ -703,7 +755,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Select(position, view);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		void UpdateSeparatorVisibility(Cell cell, bool cellIsBeingReused, bool isHeader, bool nextCellIsHeader, bool isSeparatorVisible, ConditionalFocusLayout layout, out AView bline)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			bline = null;
 			if (cellIsBeingReused && layout.ChildCount > 1)
@@ -752,6 +806,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell GetNewGroupHeaderCell(ITemplatedItemsList<Cell> group)
 		{
 			var groupHeaderCell = _listView.TemplatedItems.GroupHeaderTemplate?.CreateContent(group.ItemsSource, _listView) as Cell;
@@ -769,8 +824,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			groupHeaderCell.Parent = _listView;
 			groupHeaderCell.SetIsGroupHeader<ItemsView<Cell>, Cell>(true);
+
 			return groupHeaderCell;
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		enum CellType
 		{

@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.Element)]
 	public partial class ElementTests : CoreHandlerTestBase
 	{
 		[Fact]

@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -11,6 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue17453(TestDevice device) : base(device) { }
 
 		public override string Issue => "Clear Entry text tapping the clear button not working";
+		protected override bool ResetAfterEachTest => true;
 
 		[Test]
 		[Category(UITestCategories.Entry)]
@@ -19,12 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// https://github.com/dotnet/maui/issues/17453
 
 			App.WaitForElement("WaitForStubControl");
-			string? rtlEntryText = App.FindElement("RtlEntry").GetText();
+			string? rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
 			if (String.IsNullOrWhiteSpace(rtlEntryText))
 				App.EnterText("RtlEntry", "Simple Text");
 
-			var rtlEntryRect = App.FindElement("RtlEntry").GetRect();
+			var rtlEntryRect = App.WaitForElement("RtlEntry").GetRect();
 			App.EnterText("RtlEntry", "Simple Text");
 
 			// Set focus
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Tap on the entry but not on the clear button
 			App.TapCoordinates(rtlEntryRect.CenterX(), rtlEntryRect.CenterY());
 
-			rtlEntryText = App.FindElement("RtlEntry").GetText();
+			rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
 			ClassicAssert.IsNotEmpty(rtlEntryText);
 		}
@@ -46,50 +46,57 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("WaitForStubControl");
 
-			string? rtlEntryText = App.FindElement("RtlEntry").GetText();
+			string? rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
 			if (String.IsNullOrWhiteSpace(rtlEntryText))
 				App.EnterText("RtlEntry", "Simple Text");
 
-			var rtlEntryRect = App.FindElement("RtlEntry").GetRect();
+			var rtlEntryRect = App.WaitForElement("RtlEntry").GetRect();
 
 			// Set focus
-			App.TapCoordinates(rtlEntryRect.X, rtlEntryRect.Y);
+			App.TapCoordinates(rtlEntryRect.CenterX(), rtlEntryRect.CenterY());
 
+			App.WaitForElement("RtlEntry");
 			// Tap Clear Button
-			var margin = 30;
-			App.TapCoordinates(rtlEntryRect.X + margin, rtlEntryRect.Y + margin);
+			var margin = 10;
+			App.TapCoordinates(rtlEntryRect.X + margin, rtlEntryRect.CenterY());
 
-			rtlEntryText = App.FindElement("RtlEntry").GetText();
+			rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
 			ClassicAssert.IsEmpty(rtlEntryText);
 		}
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public async Task EntryWithMarginClearButtonWorks()
+		public void EntryWithMarginClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/25225
 
 			App.WaitForElement("WaitForStubControl");
 
-			string? entryText = App.FindElement("EntryWithMargin").GetText();
+			string? entryText = App.WaitForElement("EntryWithMargin").GetText();
 			if (String.IsNullOrWhiteSpace(entryText))
 				App.EnterText("EntryWithMargin", "Simple Text");
 
-			var entryRect = App.FindElement("EntryWithMargin").GetRect();
+			var entryRect = App.WaitForElement("EntryWithMargin").GetRect();
 
 			// Set focus
-			App.TapCoordinates(entryRect.Width, entryRect.Y);
-			await Task.Delay(500);
+			App.TapCoordinates(entryRect.CenterX(), entryRect.CenterY());
 
+			App.WaitForElement("EntryWithMargin");
+
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// Tap Clear Button
-			App.TapCoordinates(entryRect.Width, entryRect.Y);
+			App.TapCoordinates(entryRect.X + entryRect.Width - 17, entryRect.CenterY());
 
-			entryText = App.FindElement("EntryWithMargin").GetText();
+			entryText = App.WaitForElement("EntryWithMargin").GetText();
 
 			ClassicAssert.IsEmpty(entryText);
 		}
 	}
 }
-#endif

@@ -18,9 +18,10 @@
 				{
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalTextAlignment = TextAlignment.Center,
-					Text = "Page 1"
+					Text = "Page 1",
+					AutomationId = "MauiLabel"
 				});
-
+				SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 				Content = stack;
 
 			}
@@ -48,8 +49,7 @@
 			{
 				while (true)
 				{
-					((Label)((StackLayout)Content).Children[0]).Text =
-							string.Format("Page1. But Page2 IsAlive = {0}", _page2Tracker.IsAlive);
+					((Label)((StackLayout)Content).Children[0]).Text = _page2Tracker.IsAlive ? "Failed" : "Success";
 					await Task.Delay(1000);
 					GarbageCollectionHelper.Collect();
 				}
@@ -60,12 +60,12 @@
 			{
 				public Page2()
 				{
-					Flyout = new Page()
+					Flyout = new ContentPage
 					{
 						Title = "Flyout",
 						IconImageSource = "Icon.png"
 					};
-					Detail = new Page() { Title = "Detail" };
+					Detail = new ContentPage() { Title = "Detail" };
 				}
 
 				protected override async void OnAppearing()
@@ -74,6 +74,10 @@
 
 					await Task.Delay(1000);
 					await Navigation.PopModalAsync();
+				}
+				protected override void OnDisappearing()
+				{
+					base.OnDisappearing();
 				}
 			}
 		}

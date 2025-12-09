@@ -50,9 +50,10 @@ namespace Microsoft.Maui.Platform
 
 		public NSDate Date => Picker.Date;
 
-		public void UpdateTime(TimeSpan time)
+		public void UpdateTime(TimeSpan? time)
 		{
-			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+			_picker.Date = new DateTime(1, 1, 1, time?.Hours ?? 0,
+				time?.Minutes ?? 0, time?.Seconds ?? 0).ToNSDate();
 		}
 
 #if !MACCATALYST

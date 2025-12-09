@@ -183,7 +183,6 @@ namespace Microsoft.Maui.DeviceTests
 					var nextPage = tabbedPage.Children[pageIndex];
 					tabbedPage.CurrentPage = nextPage;
 					await OnNavigatedToAsync(nextPage);
-					previousPage.Handler.DisconnectHandler();
 				}
 			});
 		}
@@ -296,7 +295,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Title = title
 				};
-			};
+			}
+			;
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, pages);
 

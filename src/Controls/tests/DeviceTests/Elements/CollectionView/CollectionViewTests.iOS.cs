@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -50,6 +56,61 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				GroupHeader = header;
 			}
+		}
+
+		[Fact]
+		public async Task CollectionViewItemsArrangeCorrectly()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = Enumerable.Range(1, 50).Select(i => $"Item {i}").ToArray();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				MaximumHeightRequest = 300,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+					};
+					label.SetBinding(Label.TextProperty, ".");
+
+					return new Border
+					{
+						WidthRequest = 200,
+						StrokeShape = new RoundRectangle() { CornerRadius = 12 },
+						Content = label
+					};
+				}),
+				ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Horizontal)
+				{
+					HorizontalItemSpacing = 50
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				// Get the first cell's content
+				var firstCellContent = collectionView.GetVisualTreeDescendants().OfType<Border>().FirstOrDefault();
+
+				Assert.NotNull(firstCellContent);
+
+				var frame = firstCellContent.Frame;
+
+				Assert.True(frame.Width == 200 && frame.Height == 300);
+
+			});
 		}
 
 		[Fact]
@@ -99,30 +160,136 @@ namespace Microsoft.Maui.DeviceTests
 			var labels = new List<WeakReference>();
 			VerticalCell cell = null;
 
+			var bindingContext = "foo";
+			var collectionView = new MyUserControl
 			{
-				var bindingContext = "foo";
-				var collectionView = new MyUserControl
-				{
-					Labels = labels
-				};
-				collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
+				Labels = labels
+			};
+			collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
 
-				var handler = await CreateHandlerAsync(collectionView);
+			var handler = await CreateHandlerAsync(collectionView);
 
-				await InvokeOnMainThreadAsync(() =>
-				{
-					cell = new VerticalCell(CGRect.Empty);
-					cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-				});
+			await InvokeOnMainThreadAsync(() =>
+			{
+				cell = new VerticalCell(CGRect.Empty);
+				cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
+			});
 
-				Assert.NotNull(cell);
-			}
+			Assert.NotNull(cell);
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
-			await AssertionExtensions.WaitForGC(labels.ToArray());
+			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
+		}
+
+		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
+		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]
+		public void GenerateIndexPathRange()
+		{
+			SetupBuilder();
+
+			var result = IndexPathHelpers.GenerateIndexPathRange(0, 0, 5);
+
+			Assert.Equal(5, result.Length);
+
+			Assert.Equal(0, result[0].Section);
+			Assert.Equal(0, (int)result[0].Item);
+
+			Assert.Equal(0, result[4].Section);
+			Assert.Equal(4, (int)result[4].Item);
+		}
+
+		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
+		[Fact(DisplayName = "IndexPath Range Generation For Loops Is Correct")]
+		public void GenerateIndexPathRangeForLoop()
+		{
+			SetupBuilder();
+
+			var result = IndexPathHelpers.GenerateLoopedIndexPathRange(0, 15, 3, 2, 3);
+
+			Assert.Equal(9, result.Length);
+
+			for (int i = 0; i < result.Length; i++)
+			{
+				Assert.Equal(0, result[i].Section);
+			}
+
+			Assert.Equal(2, (int)result[0].Item);
+			Assert.Equal(3, (int)result[1].Item);
+			Assert.Equal(4, (int)result[2].Item);
+
+			Assert.Equal(7, (int)result[3].Item);
+			Assert.Equal(8, (int)result[4].Item);
+			Assert.Equal(9, (int)result[5].Item);
+
+			Assert.Equal(12, (int)result[6].Item);
+			Assert.Equal(13, (int)result[7].Item);
+			Assert.Equal(14, (int)result[8].Item);
+		}
+
+		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
+		[Fact(DisplayName = "IndexPath Validity Check Is Correct")]
+		public void IndexPathValidTest()
+		{
+			var list = new List<string>
+			{
+				"one",
+				"two",
+				"three"
+			};
+
+			var source = new ListSource((IEnumerable<object>)list);
+
+			var valid = NSIndexPath.FromItemSection(2, 0);
+			var invalidItem = NSIndexPath.FromItemSection(7, 0);
+			var invalidSection = NSIndexPath.FromItemSection(1, 9);
+
+			Assert.True(source.IsIndexPathValid(valid));
+			Assert.False(source.IsIndexPathValid(invalidItem));
+			Assert.False(source.IsIndexPathValid(invalidSection));
+		}
+
+		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
+		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
+		{
+			SetupBuilder();
+
+			WeakReference weakCollectionView = null;
+			WeakReference weakHandler = null;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var collectionView = new CollectionView
+				{
+					ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
+					ItemTemplate = new DataTemplate(() => new Label())
+					// Note: Not setting ItemsLayout - using the default
+				};
+
+				weakCollectionView = new WeakReference(collectionView);
+
+				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+
+				// Verify handler is created
+				Assert.NotNull(handler);
+
+				// Store weak reference to the handler
+				weakHandler = new WeakReference(handler);
+
+				// Disconnect the handler
+				((IElementHandler)handler).DisconnectHandler();
+			});
+
+			// Force garbage collection
+			await AssertionExtensions.WaitForGC(weakCollectionView, weakHandler);
+
+			// Verify the CollectionView was collected
+			Assert.False(weakCollectionView.IsAlive, "CollectionView should have been garbage collected");
+
+			// Verify the handler was collected
+			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
 		}
 
 		/// <summary>

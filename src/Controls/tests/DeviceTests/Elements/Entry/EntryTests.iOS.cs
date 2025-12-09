@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.TestCases;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -44,17 +46,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
-		
+
 		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(entryHandler);
-				return (float)nativeView.Alpha; 
+				return (float)nativeView.Alpha;
+			});
+		}
+
+		Task<bool> GetPlatformIsVisible(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return !nativeView.Hidden;
 			});
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class ScrollTests : ControlsHandlerTestBase
 		{
 			[Fact]
@@ -115,6 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class NextKeyboardTests : ControlsHandlerTestBase
 		{
 			void SetupNextBuilder()
@@ -123,11 +136,15 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					builder.ConfigureMauiHandlers(handlers =>
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<ListView, ListViewRenderer>();
 						handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 						handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 						handlers.AddHandler<Entry, EntryHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<EntryCell, EntryCellRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 					});
 				});
 			}
@@ -143,12 +160,14 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var listView = new ListView()
 				{
 					ItemTemplate = new DataTemplate(() =>
 					{
 						var cell = new EntryCell();
 						cell.SetBinding(EntryCell.TextProperty, ".");
+#pragma warning restore CS0618 // Type or member is obsolete
 						return cell;
 					}),
 					ItemsSource = Enumerable.Range(0, 10).Select(i => $"EntryCell {i}").ToList()
@@ -188,6 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var tableView = new TableView()
 				{
 					Root = new TableRoot("Table Title") {
@@ -204,6 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var layout = new VerticalStackLayout()
 				{
@@ -322,6 +343,36 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(expectedFontFamily, placeholderLabel?.Font?.FamilyName);
 				});
 			}
+		}
+
+		//src/Compatibility/Core/tests/iOS/FlowDirectionTests.cs
+		[Theory]
+		[InlineData(true, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[InlineData(true, FlowDirection.RightToLeft, UITextAlignment.Right)]
+		[InlineData(false, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[Description("The Entry's text alignment should match the expected alignment when FlowDirection is applied explicitly or implicitly")]
+		public async Task EntryAlignmentMatchesFlowDirection(bool isExplicit, FlowDirection flowDirection, UITextAlignment expectedAlignment)
+		{
+			var entry = new Entry { Text = "Checking flow direction", HorizontalTextAlignment = TextAlignment.Start };
+			var contentPage = new ContentPage { Title = "Flow Direction", Content = entry };
+
+			if (isExplicit)
+			{
+				entry.FlowDirection = flowDirection;
+			}
+			else
+			{
+				contentPage.FlowDirection = flowDirection;
+			}
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
+			{
+				var textField = GetPlatformControl(handler);
+				return textField.TextAlignment;
+			});
+
+			Assert.Equal(expectedAlignment, nativeAlignment);
 		}
 	}
 }

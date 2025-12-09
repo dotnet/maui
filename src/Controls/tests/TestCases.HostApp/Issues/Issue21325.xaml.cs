@@ -7,6 +7,8 @@ namespace Maui.Controls.Sample.Issues
 		public Issue21325()
 		{
 			InitializeComponent();
+
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
 		}
 	}
 }

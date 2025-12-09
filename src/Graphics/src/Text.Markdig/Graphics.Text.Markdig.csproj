@@ -6,7 +6,8 @@
     <AssemblyName>Microsoft.Maui.Graphics.Text.Markdig</AssemblyName>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 

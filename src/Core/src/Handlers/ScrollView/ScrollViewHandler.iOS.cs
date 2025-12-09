@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout
 	{
-		const nint ContentTag = 0x845fed;
-
 		readonly ScrollEventProxy _eventProxy = new();
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
@@ -18,6 +16,15 @@ namespace Microsoft.Maui.Handlers
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();
+		}
+
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			
+			if (PlatformView is MauiScrollView mauiScrollView)
+				mauiScrollView.View = view;
+				
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -83,6 +90,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			platformView.UpdateIsEnabled(scrollView);
 			platformView.InvalidateMeasure(scrollView);
 		}
 
@@ -113,34 +121,29 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static UIView? GetContentView(UIScrollView scrollView)
-		{
-			for (int i = 0; i < scrollView.Subviews.Length; i++)
-			{
-				if (scrollView.Subviews[i] is { Tag: ContentTag } contentView)
-				{
-					return contentView;
-				}
-			}
-
-			return null;
-		}
-
 		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler)
 		{
+			bool changed = false;
 			var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			var mauiContext = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (GetContentView(platformView) is { } currentContentPlatformView)
+			if (platformView.GetContentView() is { } currentContentPlatformView)
 			{
 				currentContentPlatformView.RemoveFromSuperview();
+				changed = true;
 			}
 
 			if (scrollView.PresentedContent is { } content)
 			{
 				var platformContent = content.ToPlatform(mauiContext);
-				platformContent.Tag = ContentTag;
+				platformContent.Tag = MauiScrollView.ContentTag;
 				platformView.AddSubview(platformContent);
+				changed = true;
+			}
+
+			if (changed)
+			{
+				platformView.InvalidateMeasure();
 			}
 		}
 

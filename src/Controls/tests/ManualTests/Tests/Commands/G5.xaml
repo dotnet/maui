@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.Commands.G5"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="G5">
+
+    <VerticalStackLayout>
+        <Label Text="1. Press the 'On' button." />
+        <Label Text="2. The test fails if the 'On' button is still enabled or the 'Off' button is not enabled." />
+        <Label Text="3. Press the 'Off' button." />
+        <Label Text="4. The test fails if the 'Off' button is still enabled or the 'On' button is not enabled." />
+        <Label Text="5. Repeat the steps above 2 more times." />
+
+        <Button Command="{Binding OnCommand}"
+                Text="On" />
+        <Button Command="{Binding OffCommand}"
+                Text="Off" />
+    </VerticalStackLayout>
+</ContentPage>

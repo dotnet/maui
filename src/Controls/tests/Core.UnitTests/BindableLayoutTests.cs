@@ -625,17 +625,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				proxyRef = new WeakReference(proxy);
 			}
 
-			// First GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			Assert.False(controllerRef.IsAlive, "BindableLayoutController should not be alive!");
-
-			// Second GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
+			Assert.False(await controllerRef.WaitForCollect(), "BindableLayoutController should not be alive!");
+			Assert.False(await proxyRef.WaitForCollect(), "WeakCollectionChangedProxy should not be alive!");
 		}
 
 		[Fact("BindableLayout Still Updates after a GC")]
@@ -648,9 +639,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, layout.Children.Count);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			list.Add("Baz");
 			Assert.Equal(3, layout.Children.Count);
@@ -741,7 +730,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			if (itemsSource == null)
 			{
-				return layout.Children.Count() == 0;
+				return layout.InternalChildren.Count() == 0;
 			}
 
 			int i = 0;
@@ -750,14 +739,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (BindableLayout.GetItemTemplate(layout) is DataTemplate dataTemplate ||
 					BindableLayout.GetItemTemplateSelector(layout) is DataTemplateSelector dataTemplateSelector)
 				{
-					if (!Equals(item, layout.Children[i].BindingContext))
+					if (!Equals(item, layout.InternalChildren[i].BindingContext))
 					{
 						return false;
 					}
 				}
 				else
 				{
-					if (!Equals(item?.ToString(), ((Label)layout.Children[i]).Text))
+					if (!Equals(item?.ToString(), ((Label)layout.InternalChildren[i]).Text))
 					{
 						return false;
 					}
@@ -766,7 +755,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				++i;
 			}
 
-			return layout.Children.Count == i;
+			return layout.InternalChildren.Count == i;
 		}
 
 		class DataTemplateBoxView : DataTemplate

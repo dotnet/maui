@@ -19,11 +19,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("entry");
 			App.Tap("button");
 #if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
-			Thread.Sleep(500); // Wait for the keyboard to appear
-			if (App.IsKeyboardShown())
+			if (App.WaitForKeyboardToShow(timeout: TimeSpan.FromSeconds(1)))
 				App.DismissKeyboard();
 #endif
+
+#if IOS
+			// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+			// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+			VerifyScreenshot(cropBottom: 1200);  
+#else
 			VerifyScreenshot();
+#endif
 		}
 	}
 }

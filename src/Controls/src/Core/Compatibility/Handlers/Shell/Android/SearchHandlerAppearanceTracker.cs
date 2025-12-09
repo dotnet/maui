@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler = searchView.SearchHandler;
 			_control = searchView.View;
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
+			_searchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
+			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
 			_editText.FocusChange += EditTextFocusChange;
 			UpdateSearchBarColors();
@@ -53,6 +55,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(SearchHandler.TextTransformProperty))
 			{
 				UpdateTextTransform();
+			}
+			else if (e.Is(SearchHandler.PlaceholderProperty))
+			{
+				UpdatePlaceholder();
 			}
 			else if (e.Is(SearchHandler.PlaceholderColorProperty))
 			{
@@ -113,6 +119,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_editText.Typeface = fontManager.GetTypeface(font);
 			_editText.SetTextSize(ComplexUnitType.Sp, (float)_searchHandler.FontSize);
+		}
+
+		void UpdatePlaceholder()
+		{
+			_editText.Hint = _searchHandler.Placeholder;
 		}
 
 		void UpdatePlaceholderColor()
@@ -180,6 +191,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		void OnShowSoftInputRequested(object sender, EventArgs e)
+		{
+			_editText?.RequestFocus();
+			_control?.ShowSoftInput();
+		}
+
+		void OnHideSoftInputRequested(object sender, EventArgs e)
+		{
+			_control?.HideSoftInput();
+		}
+
 		void UpdateInputType()
 		{
 			var keyboard = _searchHandler.Keyboard;
@@ -228,6 +250,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					_searchHandler.PropertyChanged -= SearchHandlerPropertyChanged;
 					_editText.FocusChange -= EditTextFocusChange;
+					_searchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+					_searchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 				}
 				_searchHandler = null;
 				_control = null;

@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Platform
 		// verify we're using the correct subview for masking (and any other purposes)
 		internal const nint ContentTag = 0x63D2A0;
 
-		internal bool IsPage { get; set; }
-
 		public ContentView()
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))

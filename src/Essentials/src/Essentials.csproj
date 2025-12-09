@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludePreviousTfmsEssentials)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
@@ -36,16 +36,18 @@
     <Compile Include="**\*.netstandard.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
-    <Compile Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Include="**\*.uwp.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Include="**\*.windows.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <Compile Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.android.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <AndroidResource Include="Resources\xml\*.xml" />
-    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.8" />
-    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.2-alpha06" />
-    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" Version="1.16.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Activity" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
+    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <Compile Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

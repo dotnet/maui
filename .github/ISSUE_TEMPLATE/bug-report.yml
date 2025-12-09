@@ -42,7 +42,31 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
+        - 10.0.20
+        - 10.0.11
+        - 10.0.10
+        - 10.0.1
+        - 10.0.0
+        - 10.0.0-rc.2
+        - 10.0.0-rc.1
+        - 10.0.0-preview.7
+        - 10.0.0-preview.6
+        - 10.0.0-preview.5
+        - 10.0.0-preview.4
+        - 10.0.0-preview.3
+        - 10.0.0-preview.2
         - 10.0.0-preview.1
+        - 9.0.110 SR12
+        - 9.0.111 SR11.1
+        - 9.0.110 SR11
+        - 9.0.100 SR10
+        - 9.0.90 SR9
+        - 9.0.82 SR8.2
+        - 9.0.81 SR8.1
+        - 9.0.80 SR8
+        - 9.0.70 SR7
+        - 9.0.61 SR6.1
+        - 9.0.60 SR6
         - 9.0.50 SR5
         - 9.0.40 SR4
         - 9.0.30 SR3
@@ -61,26 +85,7 @@ body:
         - 9.0.0-preview.3.10457
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.1.9973
-        - 8.0.100 SR10
-        - 8.0.93 SR9.3
-        - 8.0.92 SR9.2
-        - 8.0.91 SR9.1
-        - 8.0.90 SR9
-        - 8.0.83 SR8.3
-        - 8.0.82 SR8.2
-        - 8.0.80 SR8
-        - 8.0.71 SR7.1
-        - 8.0.70 SR7
-        - 8.0.61 SR6.1
-        - 8.0.60 SR6
-        - 8.0.40 SR5
-        - 8.0.21 SR4.1
-        - 8.0.20 SR4
-        - 8.0.14 SR3.1
-        - 8.0.10 SR3
-        - 8.0.7 SR2
-        - 8.0.6 SR1
-        - 8.0.3 GA
+        - .NET 8 (Out of support, please specify exact version)
         - Nightly / CI build (Please specify exact version)
         - Unknown/Other
     validations:
@@ -106,47 +111,9 @@ body:
       options:
         - 
         - Unknown/Other
-        - 6.0
-        - 7.0.49
-        - 7.0.52
-        - 7.0.58
-        - 7.0.59
-        - 7.0.81
-        - 7.0.86
-        - 7.0.92
-        - 7.0.96
-        - 7.0.100
-        - 7.0.101
-        - 8.0.0-preview.1.7762
-        - 8.0.0-preview.2.7871
-        - 8.0.0-preview.3.8149
-        - 8.0.0-preview.4.8333
-        - 8.0.0-preview.5.8529
-        - 8.0.0-preview.6.8686
-        - 8.0.0-preview.7.8842
-        - 8.0.0-rc.1.9171
-        - 8.0.0-rc.2.9373
-        - 8.0.0-rc.2.9511
-        - 8.0.3 GA
-        - 8.0.6 SR1
-        - 8.0.7 SR2        
-        - 8.0.10 SR3
-        - 8.0.14 SR3.1
-        - 8.0.20 SR4
-        - 8.0.21 SR4.1
-        - 8.0.40 SR5
-        - 8.0.60 SR6
-        - 8.0.61 SR6.1
-        - 8.0.70 SR7
-        - 8.0.71 SR7.1
-        - 8.0.80 SR8
-        - 8.0.82 SR8.2
-        - 8.0.83 SR8.3
-        - 8.0.90 SR9
-        - 8.0.91 SR9.1
-        - 8.0.92 SR9.2
-        - 8.0.93 SR9.3
-        - 8.0.100 SR10
+        - .NET 6  (Please specify exact version)
+        - .NET 7  (Please specify exact version)
+        - .NET 8  (Please specify exact version)
         - 9.0.0-preview.1.9973
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.3.10457
@@ -165,7 +132,31 @@ body:
         - 9.0.30 SR3
         - 9.0.40 SR4
         - 9.0.50 SR5
+        - 9.0.60 SR6
+        - 9.0.61 SR6.1
+        - 9.0.70 SR7
+        - 9.0.80 SR8
+        - 9.0.81 SR8.1
+        - 9.0.82 SR8.2
+        - 9.0.90 SR9
+        - 9.0.100 SR10
+        - 9.0.110 SR11
+        - 9.0.111 SR11.1
+        - 9.0.120 SR12
         - 10.0.0-preview.1
+        - 10.0.0-preview.2
+        - 10.0.0-preview.3
+        - 10.0.0-preview.4
+        - 10.0.0-preview.5
+        - 10.0.0-preview.6
+        - 10.0.0-preview.7
+        - 10.0.0-rc.1
+        - 10.0.0-rc.2
+        - 10.0.0
+        - 10.0.1
+        - 10.0.10
+        - 10.0.11
+        - 10.0.20
     validations:
       required: true
   - type: dropdown

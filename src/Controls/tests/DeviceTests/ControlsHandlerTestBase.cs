@@ -29,6 +29,8 @@ namespace Microsoft.Maui.DeviceTests
 		// There's definitely a chance that the code written to manage this process could be improved		
 		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
 
+		public const string WebViewsCollection = "Webviews sometimes don't allow configuration to vary in the same process";
+
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
@@ -140,6 +142,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null, TimeSpan? timeOut = null)
 			where THandler : class, IElementHandler
 		{
+			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 			mauiContext ??= MauiContext;
 
 			if (System.Diagnostics.Debugger.IsAttached)
@@ -275,7 +278,11 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
-					TestRunnerLogger.LogDebug($"Finished Running Test");
+					stopwatch.Stop();
+					TestRunnerLogger.LogDebug($"Finished Running Test: {stopwatch.Elapsed}");
+
+					if (stopwatch.ElapsedMilliseconds > 15000)
+						TestRunnerLogger.LogError($"Test took longer than 15 seconds to complete.");
 				}
 			});
 		}

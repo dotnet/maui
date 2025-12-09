@@ -1437,16 +1437,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			Assert.False(await bindingRef.WaitForCollect(), "Binding should not be alive!");
+			Assert.False(await buttonRef.WaitForCollect(), "Button should not be alive!");
 
 			viewmodel.OnPropertyChanged("Foo");
 
 			Assert.Equal(0, viewmodel.InvocationListSize());
-
-			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
-			Assert.False(buttonRef.IsAlive, "Button should not be alive!");
 		}
 
 		[Fact]
@@ -1491,18 +1487,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
-			Assert.False(buttonRef.IsAlive, "Button should not be alive!");
+			Assert.False(await bindingRef.WaitForCollect(), "Binding should not be alive!");
+			Assert.False(await buttonRef.WaitForCollect(), "Button should not be alive!");
 
 			// WeakPropertyChangedProxy won't go away until the second GC, PropertyChangedProxy unsubscribes in its finalizer
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			Assert.False(proxyRef.IsAlive, "WeakPropertyChangedProxy should not be alive!");
+			Assert.False(await proxyRef.WaitForCollect(), "WeakPropertyChangedProxy should not be alive!");
 		}
 
 		[Fact]

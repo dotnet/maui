@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using CoreGraphics;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -12,7 +14,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IReadOnlyDictionary<Color, (UIImage Image, int Count)> Cache => _cache;
 
-		public UIImage Get(Color color)
+
+		public async Task<UIImage> Get(Color color)
 		{
 			if (_cache.TryGetValue(color, out var cacheItem))
 			{
@@ -22,21 +25,25 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			var rect = new CGRect(0, 0, 100, 100);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 1);
-			var context = UIGraphics.GetCurrentContext();
+			return await MainThread.InvokeOnMainThreadAsync(() =>
+			{
 
-			color.ToPlatform().SetFill();
-			context.FillRect(rect);
+				var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
+				{
+					Opaque = false,
+					Scale = 1,
+				});
 
-			var image = UIGraphics.GetImageFromCurrentImageContext();
+				var image = renderer.CreateImage((context) =>
+					{
+						color.ToPlatform().SetFill();
+						context.FillRect(rect);
+					}).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
-			UIGraphics.EndImageContext();
+				_cache[color] = (image, 1);
 
-			image = image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-
-			_cache[color] = (image, 1);
-
-			return image;
+				return image;
+			});
 		}
 
 		public void Return(Color color)

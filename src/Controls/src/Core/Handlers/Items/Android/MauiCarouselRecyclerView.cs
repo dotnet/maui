@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CarouselViewLoopManager _carouselViewLoopManager;
 		int _oldPosition;
 		int _gotoPosition = -1;
+		int _scrollToCounter = 0;
 		bool _noNeedForScroll;
 		bool _initialized;
 		bool _isVisible;
@@ -74,11 +75,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_carouselViewLoopManager?.SetItemsSource(null);
 				_carouselViewLoopManager = null;
 
-				if (_itemDecoration != null)
-				{
-					_itemDecoration.Dispose();
-					_itemDecoration = null;
-				}
+				_itemDecoration?.Dispose();
+				_itemDecoration = null;
 
 				ClearLayoutListener();
 			}
@@ -168,10 +166,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var adapter = GetAdapter();
 
-			if (adapter != null)
-			{
-				adapter.NotifyItemChanged(_oldPosition);
-			}
+			adapter?.NotifyItemChanged(_oldPosition);
 
 			base.UpdateItemSpacing();
 		}
@@ -182,6 +177,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_carouselViewLoopManager == null)
 				return;
+
+			_scrollToCounter++;
 
 			// Special case here
 			// We could have a race condition where we are scrolling our collection to center the first item
@@ -224,6 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
+			var savedScrollToCounter = _scrollToCounter;
 
 			bool removingCurrentElement = currentItemPosition == -1;
 			bool removingLastElement = e.OldStartingIndex == count;
@@ -267,15 +265,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
+			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				if (count == 0)
+				{
+					carouselPosition = 0;
+				}
+				else
+				{
+					carouselPosition = count - 1;
+				}
+
+			}
+			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				carouselPosition = 0;
+			}
+
 			Carousel.
 				Handler.
 				MauiContext.
 				GetDispatcher()
 					.Dispatch(() =>
 					{
-
-						SetCurrentItem(carouselPosition);
-						UpdatePosition(carouselPosition);
+						// If someone called explicit ScrollTo before the dispatched
+						// callback was delivered then don't override it.
+						if (_scrollToCounter == savedScrollToCounter)
+						{
+							SetCurrentItem(carouselPosition);
+							UpdatePosition(carouselPosition);
+						}
 
 						//If we are adding or removing the last item we need to update
 						//the inset that we give to items so they are centered

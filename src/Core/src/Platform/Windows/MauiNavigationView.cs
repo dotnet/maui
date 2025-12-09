@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
@@ -64,6 +65,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ScrollViewer))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(Grid))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(StackPanel))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(SplitView))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ItemsRepeater))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(Button))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ColumnDefinition))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(RowDefinition))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicFields, typeof(ContentControl))]
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
@@ -124,6 +134,12 @@ namespace Microsoft.Maui.Platform
 			// It causes the content to not be flush up against the title bar
 			PaneContentGrid.Margin = new WThickness(0, 0, 0, 0);
 			UpdateMenuItemsContainerHeight();
+			RootSplitView.CornerRadius = new UI.Xaml.CornerRadius(0);
+			CornerRadius = new UI.Xaml.CornerRadius(0);
+
+			// On WinAppSDK 1.7, it seems that if the PaneContentGrid width is not explicitly set,
+			// it takes on the desired width of its child.
+			PaneContentGrid.Width = OpenPaneLength;
 		}
 
 
@@ -166,10 +182,14 @@ namespace Microsoft.Maui.Platform
 			{
 				case FlyoutBehavior.Flyout:
 					IsPaneToggleButtonVisible = true;
-					// Workaround for
-					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
-					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					// WinUI bug: Setting PaneDisplayMode to the same value and updating SelectedItem during navigation
+					// causes the selection and selected item indicator to not update correctly.
+					// Workaround: Only set PaneDisplayMode when the value actually changes.
+					// Related: https://github.com/microsoft/microsoft-ui-xaml/issues/9812
+					if (PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
+					{
+						PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					}
 					break;
 				case FlyoutBehavior.Locked:
 					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;

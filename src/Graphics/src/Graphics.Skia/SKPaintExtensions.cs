@@ -2,8 +2,16 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Provides extension methods for SkiaSharp paint objects.
+	/// </summary>
 	public static class SKPaintExtensions
 	{
+		/// <summary>
+		/// Creates a deep copy of a SkiaSharp paint object.
+		/// </summary>
+		/// <param name="paint">The paint object to copy.</param>
+		/// <returns>A new paint object with the same properties as the original, or null if the input is null.</returns>
 		public static SKPaint CreateCopy(this SKPaint paint)
 		{
 			if (paint == null)

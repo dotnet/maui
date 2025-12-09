@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using System.Xml.Resolvers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
@@ -31,8 +32,18 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this TextBlock platformControl, ITextStyle text) =>
 			platformControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
-		public static void UpdatePadding(this TextBlock platformControl, ILabel label) =>
-			platformControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToPlatform());
+		public static void UpdatePadding(this TextBlock platformControl, ILabel label)
+		{
+			// Label padding values do not support negative values; if specified, negative values will be replaced with zero
+			var padding = new WThickness(
+				Math.Max(0, label.Padding.Left),
+				Math.Max(0, label.Padding.Top),
+				Math.Max(0, label.Padding.Right),
+				Math.Max(0, label.Padding.Bottom)
+			);
+
+			platformControl.UpdateProperty(TextBlock.PaddingProperty, padding);
+		}
 
 		public static void UpdateCharacterSpacing(this TextBlock platformControl, ITextStyle label)
 		{
@@ -74,10 +85,8 @@ namespace Microsoft.Maui.Platform
 			platformControl.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
-		internal static void UpdateTextHtml(this TextBlock platformControl, ILabel label)
+		internal static void UpdateTextHtml(this TextBlock platformControl, ILabel label, string text)
 		{
-			var text = label.Text ?? string.Empty;
-
 			// Just in case we are not given text with elements.
 			var modifiedText = string.Format("<div>{0}</div>", text);
 			modifiedText = Regex.Replace(modifiedText, "<br>", "<br></br>", RegexOptions.IgnoreCase);

@@ -19,11 +19,6 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public static class BuildWarningsUtilities
 	{
-		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
-		{
-			get => expectedNativeAOTWarnings;
-		}
-
 		// We rely on the fact that expected file paths are stored as relative to the repo root (e.g., src/Core/...).
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
 		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
@@ -126,25 +121,21 @@ namespace Microsoft.Maui.IntegrationTests
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new()
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
+
+		// Windows-specific expected warnings (if any)
+		// These might be different from iOS/Mac warnings due to platform-specific implementations
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsWindows = new();
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
 		{
-			// NOTE: this one is only expected when rooting all assemblies
-			new WarningsPerFile
-			{
-				File = "/_/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/EnumConverterFactory.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"System.Text.Json.Serialization.Converters.EnumConverterFactory.CreateConverter(Type,JsonSerializerOptions): Using member 'System.Text.Json.Serialization.Converters.EnumConverterFactory.Create(Type,EnumConverterOptions,JsonNamingPolicy,JsonSerializerOptions)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.",
-						}
-					},
-				}
-			},
-		};
+			get => expectedNativeAOTWarnings;
+		}
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarningsWindows
+		{
+			get => expectedNativeAOTWarningsWindows;
+		}
 
 		#region Utility methods for generating the list of expected warnings
 

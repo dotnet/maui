@@ -2,18 +2,43 @@ using System;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides extension methods for adding SVG-compatible arcs to a <see cref="PathF"/>.
+	/// </summary>
 	public static class PathArcExtensions
 	{
+		/// <summary>
+		/// Adds an SVG arc segment to the path.
+		/// </summary>
+		/// <param name="aTarget">The path to which the arc segment is added.</param>
+		/// <param name="rx">The x-radius of the ellipse.</param>
+		/// <param name="ry">The y-radius of the ellipse.</param>
+		/// <param name="angle">The rotation angle of the ellipse in degrees.</param>
+		/// <param name="largeArcFlag">Determines whether the arc should be greater than or less than 180 degrees.</param>
+		/// <param name="sweepFlag">Determines whether the arc should be swept in a positive or negative angle direction.</param>
+		/// <param name="x">The x-coordinate of the end point of the arc.</param>
+		/// <param name="y">The y-coordinate of the end point of the arc.</param>
+		/// <param name="lastPointX">The x-coordinate of the start point of the arc (the current point in the path).</param>
+		/// <param name="lastPointY">The y-coordinate of the start point of the arc (the current point in the path).</param>
 		public static void SVGArcTo(this PathF aTarget, float rx, float ry, float angle, bool largeArcFlag, bool sweepFlag, float x, float y, float lastPointX, float lastPointY)
 		{
 			float[] vValues = ComputeSvgArc(rx, ry, angle, largeArcFlag, sweepFlag, x, y, lastPointX, lastPointY);
 			aTarget.DrawArc(vValues[0], vValues[1], vValues[2], vValues[3], vValues[4], vValues[5], vValues[6]);
 		}
 
-		/**
-		* Converts a svg arc specification to a Degrafa arc.
-		**/
-
+		/// <summary>
+		/// Converts an SVG arc specification to a Degrafa arc.
+		/// </summary>
+		/// <param name="rx">The x-radius of the ellipse.</param>
+		/// <param name="ry">The y-radius of the ellipse.</param>
+		/// <param name="angle">The rotation angle of the ellipse in degrees.</param>
+		/// <param name="largeArcFlag">Determines whether the arc should be greater than or less than 180 degrees.</param>
+		/// <param name="sweepFlag">Determines whether the arc should be swept in a positive or negative angle direction.</param>
+		/// <param name="x">The x-coordinate of the end point of the arc.</param>
+		/// <param name="y">The y-coordinate of the end point of the arc.</param>
+		/// <param name="lastPointX">The x-coordinate of the start point of the arc (the current point in the path).</param>
+		/// <param name="lastPointY">The y-coordinate of the start point of the arc (the current point in the path).</param>
+		/// <returns>An array containing the computed arc parameters: [centerX, centerY, startAngle, sweepAngle, radiusX, radiusY, rotationAngle].</returns>
 		static float[] ComputeSvgArc(float rx, float ry, float angle, bool largeArcFlag, bool sweepFlag, float x, float y, float lastPointX, float lastPointY)
 		{
 			//store before we do anything with it
