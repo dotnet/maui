@@ -26,7 +26,7 @@
 						AutomationId = "DisplayActionSheetButton",
 						Command = new Command(async () =>
 						{
-							await DisplayActionSheet("ActionSheet: Send to?", "Cancel", null, "Email", "Twitter", "Facebook");
+							await DisplayActionSheetAsync("ActionSheet: Send to?", "Cancel", null, "Email", "Twitter", "Facebook");
 						}),
 						Text = "Click to Display Action Sheet"
 					}

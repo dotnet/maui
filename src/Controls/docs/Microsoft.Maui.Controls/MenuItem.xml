@@ -41,24 +41,7 @@
         <summary>Intitializes a new <see cref="T:Microsoft.Maui.Controls.MenuItem" /> instance.</summary>
       </Docs>
     </Member>
-    <Member MemberName="AcceleratorProperty">
-      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty AcceleratorProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty AcceleratorProperty" />
-      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.MenuItem.AcceleratorProperty" />
-      <MemberSignature Language="F#" Value=" staticval mutable AcceleratorProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.MenuItem.AcceleratorProperty" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Backing store for the accelerator attached property.</summary>
-      </Docs>
-    </Member>
+
     <Member MemberName="class">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;string&gt; class { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;string&gt; class" />
@@ -185,28 +168,7 @@
         <summary>Identifies the command bound property.</summary>
       </Docs>
     </Member>
-    <Member MemberName="GetAccelerator">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Accelerator GetAccelerator (Microsoft.Maui.Controls.BindableObject bindable);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.Accelerator GetAccelerator(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.MenuItem.GetAccelerator(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetAccelerator : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Accelerator" Usage="Microsoft.Maui.Controls.MenuItem.GetAccelerator bindable" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Accelerator</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
-      </Parameters>
-      <Docs>
-        <param name="bindable">The bindable object for which to retrieve the accelerator keys.</param>
-        <summary>Gets the accelerator for the specified bindable object.</summary>
-      </Docs>
-    </Member>
+
     <Member MemberName="Icon">
       <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FileImageSource Icon { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.FileImageSource Icon" />
@@ -440,30 +402,7 @@
         <summary>When overridden by an app dev, implements behavior when the menu item is clicked.</summary>
       </Docs>
     </Member>
-    <Member MemberName="SetAccelerator">
-      <MemberSignature Language="C#" Value="public static void SetAccelerator (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Accelerator value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetAccelerator(class Microsoft.Maui.Controls.BindableObject bindable, class Microsoft.Maui.Controls.Accelerator value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.MenuItem.SetAccelerator(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Accelerator)" />
-      <MemberSignature Language="F#" Value="static member SetAccelerator : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Accelerator -&gt; unit" Usage="Microsoft.Maui.Controls.MenuItem.SetAccelerator (bindable, value)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Accelerator" />
-      </Parameters>
-      <Docs>
-        <param name="bindable">The bindable object for which to set the accelerator keys.</param>
-        <param name="value">The new accelerator for the object.</param>
-        <summary>Sets the accelerator for the specified bindable object.</summary>
-      </Docs>
-    </Member>
+
     <Member MemberName="StyleClass">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;string&gt; StyleClass { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;string&gt; StyleClass" />

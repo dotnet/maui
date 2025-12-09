@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A page for displaying content using C#.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Страница для отображения содержимого на C#.]]></Val>
+            <Val><![CDATA[Страница для отображения содержимого с использованием C#.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI ContentPage (C#)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -53,7 +53,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Namespace for the generated code.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Пространство имен для созданного кода.]]></Val>
+            <Val><![CDATA[Пространство имен для сформированного кода.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

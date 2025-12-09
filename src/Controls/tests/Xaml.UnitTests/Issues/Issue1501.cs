@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	[TestFixture]
+	[Collection("Issue")]
 	public class Issue1501
 	{
-		[Test]
+		[Fact]
 		public void ConnectEventsInGestureRecognizers()
 		{
 			var xaml = @"
@@ -30,7 +30,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</BoxView>";
 
 			BoxView1501 layout = null;
-			Assert.DoesNotThrow(() => { layout = new BoxView1501().LoadFromXaml(xaml); });
+			var ex = Record.Exception(() => { layout = new BoxView1501().LoadFromXaml(xaml); });
+			Assert.Null(ex);
 
 			Assert.False(layout.Fired);
 			var tgr = layout.GestureRecognizers[0] as TapGestureRecognizer;

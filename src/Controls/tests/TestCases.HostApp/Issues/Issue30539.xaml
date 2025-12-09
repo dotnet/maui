@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue30539">
+    <VerticalStackLayout Spacing="10" Padding="10">
+        <Label 
+            Text="target=&quot;_blank&quot; link should trigger Navigating event"
+            AutomationId="TestInstructions"
+            FontAttributes="Bold"
+            Margin="0,0,0,10"/>
+        
+        <Button
+            Text="Click to trigger target=_blank link"
+            AutomationId="TriggerLinkButton"
+            Clicked="OnTriggerLinkClicked"/>
+        
+        <Label 
+            x:Name="navigatingLabel"
+            Text="Navigating event not triggered"
+            AutomationId="NavigatingLabel"
+            TextColor="Red"/>
+        
+        <Label 
+            x:Name="urlLabel"
+            Text="URL: None"
+            AutomationId="UrlLabel"/>
+        
+        <Label 
+            x:Name="cancelLabel"
+            Text="Can cancel: Not tested"
+            AutomationId="CancelLabel"/>
+        
+        <WebView 
+            x:Name="webView"
+            HeightRequest="400"
+            AutomationId="TestWebView">
+            <WebView.Source>
+                <HtmlWebViewSource>
+                    <HtmlWebViewSource.Html>
+                        <![CDATA[
+                        <html>
+                        <head>
+                            <style>
+                                body { font-family: Arial, sans-serif; padding: 20px; }
+                                a { display: block; margin: 10px 0; padding: 10px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+                                a:hover { background: #0056b3; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>Test Target Blank Links</h1>
+                            <a href="https://www.microsoft.com" target="_blank" id="testLink">Click me (opens in new window)</a>
+                        </body>
+                        </html>
+                        ]]>
+                    </HtmlWebViewSource.Html>
+                </HtmlWebViewSource>
+            </WebView.Source>
+        </WebView>
+    </VerticalStackLayout>
+</ContentPage>

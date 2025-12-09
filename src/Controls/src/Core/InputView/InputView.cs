@@ -76,16 +76,20 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangingCore(args);
 
 			if (Application.Current is null)
+			{
 				return;
+			}
 
 			if (args.NewHandler is null || args.OldHandler is not null)
 				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 
 			if (args.NewHandler is not null && args.OldHandler is null)
+			{
 				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+			}
 		}
 
-		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(PlaceholderColor));
 			OnPropertyChanged(nameof(TextColor));
@@ -191,7 +195,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public string UpdateFormsText(string original, TextTransform transform)
 		{
-			return TextTransformUtilites.GetTransformedText(original, transform);
+			return TextTransformUtilities.GetTransformedText(original, transform);
 		}
 
 		/// <summary>

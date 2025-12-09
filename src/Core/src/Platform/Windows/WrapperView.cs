@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Platform
 
 			if (clipGeometry is null)
 			{
+				DisposeClip();
 				return;
 			}
 
@@ -167,13 +168,20 @@ namespace Microsoft.Maui.Platform
 
 		partial void ShadowChanged()
 		{
-			if (HasShadow)
+			if (Shadow?.Paint is { })
 			{
-				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				if (HasShadow)
+				{
+					UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				}
+				else
+				{
+					CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				}
 			}
 			else
 			{
-				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+				DisposeShadow();
 			}
 		}
 
@@ -213,17 +221,11 @@ namespace Microsoft.Maui.Platform
 				_shadowCanvasCachedChildren.RemoveAt(0);
 			}
 
-			if (_shadowVisual != null)
-			{
-				_shadowVisual.Dispose();
-				_shadowVisual = null;
-			}
+			_shadowVisual?.Dispose();
+			_shadowVisual = null;
 
-			if (_dropShadow != null)
-			{
-				_dropShadow.Dispose();
-				_dropShadow = null;
-			}
+			_dropShadow?.Dispose();
+			_dropShadow = null;
 
 			_shadowCanvasCachedChildren = null;
 			_shadowCanvas = null;
@@ -238,7 +240,7 @@ namespace Microsoft.Maui.Platform
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 
-			if (Clip != null && visual.Clip == null)
+			if (Clip is not null && visual.Clip is null)
 			{
 				return;
 			}
@@ -325,8 +327,9 @@ namespace Microsoft.Maui.Platform
 					_shadowHost.Width = width;
 					_shadowHost.Height = height;
 
-					Canvas.SetLeft(_shadowHost, Child.ActualOffset.X);
-					Canvas.SetTop(_shadowHost, Child.ActualOffset.Y);
+					Vector3 actualOffset = Child.ActualOffset;
+					Canvas.SetLeft(_shadowHost, actualOffset.X);
+					Canvas.SetTop(_shadowHost, actualOffset.Y);
 				}
 			}
 		}
@@ -338,7 +341,7 @@ namespace Microsoft.Maui.Platform
 			Graphics.Color? shadowColor = Colors.Black;
 			Graphics.Point offset = Graphics.Point.Zero;
 
-			if (mauiShadow != null)
+			if (mauiShadow is not null)
 			{
 				blurRadius = mauiShadow.Radius * 2;
 				opacity = mauiShadow.Opacity;
@@ -349,7 +352,7 @@ namespace Microsoft.Maui.Platform
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
 
-			if (shadowColor != null)
+			if (shadowColor is not null)
 			{
 				dropShadow.Color = shadowColor.ToWindowsColor();
 			}

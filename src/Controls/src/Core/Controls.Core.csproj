@@ -44,6 +44,10 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\Essentials\src\Types\Shared\WebUtils.shared.cs" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' and '$(TargetFramework)' == '$(_MauiDotNetTfm)'">
     <ProjectReference Include="..\..\..\Controls\src\Core.Design\Controls.Core.Design.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
@@ -66,6 +70,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
   </ItemGroup>

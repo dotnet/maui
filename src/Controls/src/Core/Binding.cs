@@ -155,7 +155,14 @@ namespace Microsoft.Maui.Controls
 		async void ApplyRelativeSourceBinding(RelativeBindingSource relativeSource, Element relativeSourceTarget, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
-			await relativeSource.Apply(_expression, relativeSourceTarget, targetObject, targetProperty, specificity);
+			try
+			{
+				await relativeSource.Apply(_expression, relativeSourceTarget, targetObject, targetProperty, specificity);
+			}
+			catch (Exception ex)
+			{
+				BindingDiagnostics.SendBindingFailure(this, relativeSource, targetObject, targetProperty, "Binding", BindingExpression.ApplyingRelativeSourceBindingErrorMessage, relativeSource.Mode, ex.Message);
+			}
 		}
 
 		internal override BindingBase Clone()

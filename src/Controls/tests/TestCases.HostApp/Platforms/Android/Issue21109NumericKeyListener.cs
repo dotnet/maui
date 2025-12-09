@@ -20,7 +20,7 @@ public class Issue21109NumericKeyListener : NumberKeyListener
 
 	public override bool OnKeyDown(AView view, IEditable content, Keycode keyCode, KeyEvent e)
 	{
-		((Microsoft.Maui.Controls.Window)view.Context.GetWindow()).Page.DisplayAlert("OnKeyDown", string.Empty, "Ok");
+		((Microsoft.Maui.Controls.Window)view.Context.GetWindow()).Page.DisplayAlertAsync("OnKeyDown", string.Empty, "Ok");
 		return base.OnKeyDown(view, content, keyCode, e);
 	}
 }

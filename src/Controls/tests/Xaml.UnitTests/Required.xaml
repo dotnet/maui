@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Required"
+             Title="Required">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="template1"><Label/></DataTemplate>
+    </ContentPage.Resources>
+    <local:Required.Selector>
+        <local:RequiredRandomSelector Template1="{StaticResource template1}">
+            <local:RequiredRandomSelector.Template2>
+                <DataTemplate>
+                    <Label Text="Template 2"/>
+                </DataTemplate>
+            </local:RequiredRandomSelector.Template2>                                    
+        </local:RequiredRandomSelector>
+    </local:Required.Selector>
+    <local:Required.Person>
+        <local:RequiredPerson Name="John Doe" />
+    </local:Required.Person>
+</ContentPage>

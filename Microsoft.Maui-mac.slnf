@@ -5,7 +5,7 @@
       "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
       "src\\BlazorWebView\\samples\\WebViewAppShared\\WebViewAppShared.csproj",
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
-      "src\\BlazorWebView\\tests\\MauiDeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
+      "src\\BlazorWebView\\tests\\DeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
       "src\\Controls\\Foldable\\src\\Controls.Foldable.csproj",
       "src\\Controls\\Maps\\src\\Controls.Maps.csproj",
       "src\\Controls\\samples\\Controls.Sample.Profiling\\Maui.Controls.Sample.Profiling.csproj",
@@ -59,6 +59,8 @@
       "src\\TestUtils\\src\\UITest.Core\\UITest.Core.csproj",
       "src\\TestUtils\\src\\UITest.Appium\\UITest.Appium.csproj",
       "src\\TestUtils\\src\\UITest.NUnit\\UITest.NUnit.csproj",
+      "src\\TestUtils\\src\\VisualTestUtils\\VisualTestUtils.csproj",
+      "src\\TestUtils\\src\\VisualTestUtils.MagickNet\\VisualTestUtils.MagickNet.csproj",
       "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
       "src\\Workload\\Microsoft.NET.Sdk.Maui.Manifest\\Microsoft.NET.Sdk.Maui.Manifest.csproj"

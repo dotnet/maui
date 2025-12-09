@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <Import Condition="'$(SampleProject)' != 'true'" Project="eng\Versions.targets" />
-  <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(MauiTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\NuGetVersions.targets" />
 
@@ -26,27 +26,22 @@
   <PropertyGroup>
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
-    <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1206;NU1702</NoWarn>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB4011;MSB3277;NETSDK1206;NU1702</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
-    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
-    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
-    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
@@ -127,5 +122,7 @@
 
   <!-- Tell typescript to stop deleting everything before building the next TFM -->
   <Target Name="TypeScriptDeleteOutputFromOtherConfigs" />
+  <!-- Don't include any JS files in the Content, we will embed it -->
+  <Target Name="GetTypeScriptOutputForPublishing" />
 
 </Project>

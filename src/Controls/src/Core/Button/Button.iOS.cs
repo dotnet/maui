@@ -6,6 +6,7 @@ using CoreGraphics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Layouts;
 using UIKit;
@@ -393,7 +394,7 @@ namespace Microsoft.Maui.Controls
 				// if the image is too large then we will size it smaller
 				if (currentImageHeight - availableHeight > buffer || currentImageWidth - availableWidth > buffer)
 				{
-					image = ResizeImageSource(image, availableWidth, availableHeight, _originalImageSize);
+					image = image.ResizeImageSource(availableWidth, availableHeight, _originalImageSize);
 				}
 				// if the image is already sized down but now has more space, we will size it up no more than the original image size
 				else if (availableHeight - additionalVerticalSpace - currentImageHeight > buffer
@@ -401,7 +402,7 @@ namespace Microsoft.Maui.Controls
 					&& currentImageHeight != _originalImageSize.Height
 					&& currentImageWidth != _originalImageSize.Width)
 				{
-					image = ResizeImageSource(image, (nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, _originalImageSize, true);
+					image = image.ResizeImageSource((nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, _originalImageSize, true);
 				}
 				else
 				{
@@ -420,33 +421,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return false;
-		}
-
-		/// <summary>
-		/// Resize the image to fit within the constraints.
-		/// </summary>
-		/// <param name="sourceImage"></param>
-		/// <param name="maxWidth"></param>
-		/// <param name="maxHeight"></param>
-		/// <param name="originalImageSize"></param>
-		/// <param name="shouldScaleUp"></param>
-		/// <returns></returns>
-		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
-		{
-			if (sourceImage is null || sourceImage.CGImage is null)
-				return null;
-
-			maxWidth = (nfloat)Math.Min(maxWidth, originalImageSize.Width);
-			maxHeight = (nfloat)Math.Min(maxHeight, originalImageSize.Height);
-
-			var sourceSize = sourceImage.Size;
-
-			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
-			if (maxResizeFactor > 1 && !shouldScaleUp)
-				return sourceImage;
-
-			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
 
 		public static void MapText(ButtonHandler handler, Button button) =>

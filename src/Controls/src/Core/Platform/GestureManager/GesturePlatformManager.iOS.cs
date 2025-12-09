@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
 using CoreGraphics;
@@ -88,6 +89,12 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 				}
 
+				if (TryGetSwipeGestureRecognizer(kvp.Key, out SwipeGestureRecognizer? swipeGestureRecognizer) &&
+					swipeGestureRecognizer != null)
+				{
+					swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
+				}
+
 				foreach (var uiGestureRecognizer in kvp.Value)
 				{
 					if (uiGestureRecognizer is null)
@@ -168,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
-					if (item == childTapGestureRecognizer && view != null)
+				if (item == childTapGestureRecognizer && view != null)
 						childTapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
 		}
@@ -223,7 +230,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			return new Point((int)result.Value.X, (int)result.Value.Y);
-
 		}
 
 		protected virtual List<UIGestureRecognizer?>? GetPlatformRecognizer(IGestureRecognizer recognizer)
@@ -274,11 +280,12 @@ namespace Microsoft.Maui.Controls.Platform
 					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
 						weakEventTracker.Target is GesturePlatformManager eventTracker &&
 						eventTracker._handler?.VirtualView is View view &&
-						eventTracker.PlatformView is { } platformView)
+						eventTracker.PlatformView is { } platformView &&
+						platformView.Window is UIWindow window)
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
-						originPoint = platformView.Window.ConvertPointToView(originPoint, platformView);
+						originPoint = window.ConvertPointToView(originPoint, platformView);
 
 						var scaledPoint = new Point(originPoint.X / view.Width, originPoint.Y / view.Height);
 
@@ -401,6 +408,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
+		void UpdateSwipeGestureDirection(UISwipeGestureRecognizer recognizer, SwipeDirection direction)
+		{
+			recognizer.Direction = (UISwipeGestureRecognizerDirection)direction;
+		}
+
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("maccatalyst13.0")]
 		List<UIGestureRecognizer?> CreatePointerRecognizer(WeakReference weakRecognizer, WeakReference weakEventTracker)
@@ -413,6 +425,30 @@ namespace Microsoft.Maui.Controls.Platform
 					weakEventTracker.Target is GesturePlatformManager eventTracker &&
 					eventTracker._handler?.VirtualView is View view)
 				{
+					ButtonsMask button = ButtonsMask.Primary;
+					
+					// Try to get actual button information from the CustomPressGestureRecognizer
+					if (pointerGesture is CustomPressGestureRecognizer customPress)
+					{
+						button = customPress.DetectedButton;
+					}
+					else if (OperatingSystem.IsMacCatalyst() &&
+						(pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary &&
+						(pointerGestureRecognizer.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
+					{
+						// Fallback for Mac Catalyst when not using CustomPressGestureRecognizer
+						button = ButtonsMask.Secondary;
+					}
+
+					// If the gesture is for a press (not a pure hover) ensure the current button matches the recognizer mask.
+					// This prevents a recognizer configured for Secondary from firing on Primary presses.
+					if (pointerGesture is not UIHoverGestureRecognizer)
+					{
+						// Only proceed if the recognizer mask contains the current button.
+						if ((pointerGestureRecognizer.Buttons & button) != button)
+							return;
+					}
+
 					var originPoint = pointerGesture.LocationInView(eventTracker?.PlatformView);
 					var platformPointerArgs = new PlatformPointerEventArgs(pointerGesture.View, pointerGesture);
 
@@ -421,24 +457,24 @@ namespace Microsoft.Maui.Controls.Platform
 						case UIGestureRecognizerState.Began:
 							exited = false;
 							if (pointerGesture is UIHoverGestureRecognizer)
-								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							else
-								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							break;
 						case UIGestureRecognizerState.Changed:
 							if (exited)
 								break;
 
 							if (pointerGesture is UIHoverGestureRecognizer)
-								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							else
 							{
 								var bounds = eventTracker?.PlatformView?.Bounds;
 								if (bounds is not null && bounds.Value.Contains(originPoint))
-									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 								else
 								{
-									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 									exited = true;
 									pointerGesture.State = UIGestureRecognizerState.Ended;
 									break;
@@ -452,9 +488,9 @@ namespace Microsoft.Maui.Controls.Platform
 								break;
 
 							if (pointerGesture is UIHoverGestureRecognizer)
-								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							else
-								pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs, button);
 							break;
 					}
 				}
@@ -466,6 +502,18 @@ namespace Microsoft.Maui.Controls.Platform
 				new CustomPressGestureRecognizer((gesture) => action.Invoke(gesture)) { ShouldRecognizeSimultaneously = (g, o) => true }
 
 			};
+
+			// For Mac Catalyst, add context menu interaction to detect right-clicks for PointerGestureRecognizer
+			// since right-click events don't come through the normal Presses* events
+			if (OperatingSystem.IsMacCatalyst() && 
+				weakRecognizer.Target is PointerGestureRecognizer pgr &&
+				(pgr.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+			{
+				var fakeInteraction = new FakeRightClickPointerInteraction(pgr, this);
+				_interactions.Add(fakeInteraction);
+				PlatformView?.AddInteraction(fakeInteraction);
+			}
+
 			return result;
 		}
 
@@ -557,6 +605,15 @@ namespace Microsoft.Maui.Controls.Platform
 			return tapGestureRecognizer != null;
 		}
 
+		bool TryGetSwipeGestureRecognizer(IGestureRecognizer? recognizer, out SwipeGestureRecognizer? swipeGestureRecognizer)
+		{
+			swipeGestureRecognizer =
+					recognizer as SwipeGestureRecognizer ??
+					(recognizer as ChildGestureRecognizer)?.GestureRecognizer as SwipeGestureRecognizer;
+
+			return swipeGestureRecognizer != null;
+		}
+
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -616,6 +673,11 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged += OnTapGestureRecognizerPropertyChanged;
 				}
 
+				if (TryGetSwipeGestureRecognizer(recognizer, out SwipeGestureRecognizer? swipeGestureRecognizer) && swipeGestureRecognizer != null)
+				{
+					swipeGestureRecognizer.PropertyChanged += OnSwipeGestureRecognizerPropertyChanged;
+				}
+
 				// AddFakeRightClickForMacCatalyst returns the button mask for the processed tap gesture
 				// If a fake gesture wasn't added then it just returns 0
 				// If a fake gesture was added then we return the button mask fromm the tap gesture
@@ -663,6 +725,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						_proxy ??= new ShouldReceiveTouchProxy(this);
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
+
 						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
 					}
@@ -705,6 +768,12 @@ namespace Microsoft.Maui.Controls.Platform
 						gestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 					}
 
+					if (TryGetSwipeGestureRecognizer(gestureRecognizer, out SwipeGestureRecognizer? swipeGestureRecognizer) &&
+						swipeGestureRecognizer != null)
+					{
+						swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
+					}
+
 					uiRecognizer.Dispose();
 				}
 			}
@@ -726,6 +795,23 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (e.Is(TapGestureRecognizer.ButtonsProperty))
 				LoadRecognizers();
+		}
+
+		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.Is(SwipeGestureRecognizer.DirectionProperty) && 
+				sender is SwipeGestureRecognizer swipeGesture &&
+				_gestureRecognizers.TryGetValue(swipeGesture, out var uiRecognizers))
+			{
+				foreach (var uiRecognizer in uiRecognizers)
+				{
+					if (uiRecognizer is UISwipeGestureRecognizer uiSwipe)
+					{
+						UpdateSwipeGestureDirection(uiSwipe, swipeGesture.Direction);
+						break;
+					}
+				}
+			}
 		}
 
 		class ShouldReceiveTouchProxy
@@ -887,6 +973,83 @@ namespace Microsoft.Maui.Controls.Platform
 					if (TapGestureRecognizer?.NumberOfTapsRequired == 1)
 						ProcessRecognizerHandlerTap(_gestureManager, _recognizer, location, 1);
 
+					return null;
+				}
+			}
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0.0")]
+		[UnsupportedOSPlatform("tvos")]
+		internal class FakeRightClickPointerInteraction : UIContextMenuInteraction
+		{
+			// Store a reference to the platform delegate so that it is not garbage collected
+			FakeRightClickPointerDelegate? _dontCollectMePlease;
+			bool _disposed;
+
+			public FakeRightClickPointerInteraction(PointerGestureRecognizer pointerGestureRecognizer, GesturePlatformManager gestureManager)
+				: base(new FakeRightClickPointerDelegate(pointerGestureRecognizer, gestureManager))
+			{
+				_dontCollectMePlease = Delegate as FakeRightClickPointerDelegate;
+			}
+
+			public PointerGestureRecognizer? PointerGestureRecognizer => _dontCollectMePlease?.PointerGestureRecognizer;
+
+			protected override void Dispose(bool disposing)
+			{
+				if (_disposed)
+					return;
+				if (disposing)
+				{
+					_dontCollectMePlease = null; // release strong reference
+				}
+				_disposed = true;
+				base.Dispose(disposing);
+			}
+
+			class FakeRightClickPointerDelegate : UIContextMenuInteractionDelegate
+			{
+				WeakReference _recognizer;
+				WeakReference _gestureManager;
+
+				public PointerGestureRecognizer? PointerGestureRecognizer => _recognizer.Target as PointerGestureRecognizer;
+				public FakeRightClickPointerDelegate(PointerGestureRecognizer pointerGestureRecognizer, GesturePlatformManager gestureManager)
+				{
+					_recognizer = new WeakReference(pointerGestureRecognizer);
+					_gestureManager = new WeakReference(gestureManager);
+				}
+
+				public override UIContextMenuConfiguration? GetConfigurationForMenu(UIContextMenuInteraction interaction, CGPoint location)
+				{
+					// This method is called when a right-click occurs on Mac Catalyst
+					// We simulate a right-click pointer press event
+					if (_gestureManager.Target is GesturePlatformManager eventTracker &&
+						_recognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+						eventTracker._handler?.VirtualView is View view)
+					{
+						// Check if this recognizer should respond to secondary button
+						if ((pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+						{
+								pointerGestureRecognizer.SendPointerPressed(view,
+									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
+									null,
+									ButtonsMask.Secondary);
+
+								// Immediately send pointer released event
+								if (_gestureManager.Target is GesturePlatformManager gt
+									&& _recognizer.Target is PointerGestureRecognizer pgr2
+									&& gt._handler?.VirtualView is View view2)
+								{
+									view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
+										(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
+										null,
+										ButtonsMask.Secondary));
+								}
+						}
+					}
+					
+					// Return null to prevent actual context menu from appearing
+					// We only want to detect the right-click, not show a menu
 					return null;
 				}
 			}
