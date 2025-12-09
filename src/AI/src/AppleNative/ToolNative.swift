@@ -12,9 +12,9 @@ final class ToolNative: Tool {
     let output: GenerationSchema
 
     init(
-        tool: AIToolNative,
-        onToolCall: (@Sendable (String, String, String) -> Void)?,
-        onToolResult: (@Sendable (String, String, String) -> Void)?
+        _ tool: AIToolNative,
+        _ onToolCall: (@Sendable (String, String, String) -> Void)?,
+        _ onToolResult: (@Sendable (String, String, String) -> Void)?
     ) {
         self.tool = tool
         self.onToolCall = onToolCall

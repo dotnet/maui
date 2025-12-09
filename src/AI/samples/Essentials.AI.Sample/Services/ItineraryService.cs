@@ -22,53 +22,46 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 		int dayCount,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
+		var jsonOptions = new JsonSerializerOptions
+		{
+			PropertyNameCaseInsensitive = true,
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			Converters = { new JsonStringEnumConverter() },
+		};
+
 		var findPointsOfInterestTool = new FindPointsOfInterestTool(landmark);
 		var findPointsOfInterestFunction = AIFunctionFactory.Create(findPointsOfInterestTool.Call);
 
-		var systemInstructions =
+		string[] systemInstructions = [
+			"Your job is to create an itinerary for the person.",
+			"Each day needs an activity, hotel and restaurant.",
 			$"""
-			Your job is to create an itinerary for the person.
-			
-			Each day needs an activity, hotel and restaurant.
-			
-			ALWAYS use the findPointsOfInterest tool to find businesses and activities in {landmark.Name}, especially hotels and restaurants.
+			Always use the findPointsOfInterest tool to find businesses and activities in {landmark.Name}, especially hotels and restaurants.
 			
 			The point of interest categories may include:
+			""",
+			string.Join(", ", Enum.GetNames<FindPointsOfInterestTool.Category>()),
+			$"Here is a description of {landmark.Name} for your reference when considering what activities to generate:",
+			landmark.Description
+		];
 
-			{string.Join(", ", Enum.GetNames<FindPointsOfInterestTool.Category>())}
-			
-			Here is a description of {landmark.Name} for your reference when considering what activities to generate:
-			
-			{landmark.Description}
-			""";
-
-		var userPrompt =
-			$"""
-			Generate a {dayCount}-day itinerary to {landmark.Name}.
-			
-			Give it a fun title and description.
-
-			Here is an example, but don't copy it:
-			
-			{JsonSerializer.Serialize(Itinerary.GetExampleTripToJapan())}
-			""";
+		string[] userPrompt = [
+			$"Generate a {dayCount}-day itinerary to {landmark.Name}.",
+			"Give it a fun title and description.",
+			"Here is an example, but don't copy it:",
+			JsonSerializer.Serialize(Itinerary.GetExampleTripToJapan(), jsonOptions)
+		];
 
 		var messages = new List<ChatMessage>
 		{
-			new(ChatRole.System, systemInstructions),
-			new(ChatRole.User, userPrompt)
+			new(ChatRole.System, [.. systemInstructions.Select(s => new TextContent(s))]),
+			new(ChatRole.User, [.. userPrompt.Select(s => new TextContent(s))])
 		};
 
 		var options = new ChatOptions
 		{
 			Tools = [findPointsOfInterestFunction],
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>()
-		};
-
-		var jsonOptions = new JsonSerializerOptions
-		{
-			PropertyNameCaseInsensitive = true,
-			Converters = { new JsonStringEnumConverter() }
+			ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(jsonOptions)
 		};
 
 		var deserializer = new StreamingJsonDeserializer<Itinerary>(jsonOptions);

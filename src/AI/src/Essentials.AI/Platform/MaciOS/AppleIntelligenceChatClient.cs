@@ -4,7 +4,6 @@ using System.Threading.Channels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.Maui.Essentials.AI;
@@ -15,13 +14,21 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("ios26.0")]
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
-public sealed class AppleIntelligenceChatClient : ChatClientBase
+public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 {
+#if DEBUG
+	static AppleIntelligenceChatClient()
+	{
+		// AppleIntelligenceLogger.Log = (message) => System.Diagnostics.Debug.WriteLine("[Native] " + message);
+	}
+#endif
+
+
 	/// <summary>
 	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance.
 	/// </summary>
 	public AppleIntelligenceChatClient()
-		: base(null)
+		: this(null)
 	{
 	}
 
@@ -29,17 +36,17 @@ public sealed class AppleIntelligenceChatClient : ChatClientBase
 	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger.
 	/// </summary>
 	/// <param name="logger">An optional <see cref="ILogger"/> instance for logging chat operations.</param>
-	public AppleIntelligenceChatClient(ILogger logger)
+	public AppleIntelligenceChatClient(ILogger? logger)
 		: base(logger)
 	{
 	}
 
 	/// <summary>
-	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger factory.
+	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger.
 	/// </summary>
-	/// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> instance for logging chat operations.</param>
-	public AppleIntelligenceChatClient(ILoggerFactory loggerFactory)
-		: base(loggerFactory.CreateLogger<AppleIntelligenceChatClient>())
+	/// <param name="logger">An optional <see cref="ILogger"/> instance for logging chat operations.</param>
+	public AppleIntelligenceChatClient(ILogger<AppleIntelligenceChatClient>? logger)
+		: base(logger)
 	{
 	}
 
@@ -59,7 +66,7 @@ public sealed class AppleIntelligenceChatClient : ChatClientBase
 			TransformSchemaNode = (ctx, node) =>
 			{
 				// Handle objects
-				if (node is JsonObject obj)
+				if (node is JsonObject obj && obj.TryGetPropertyValue("type", out var typeNode) && typeNode?.GetValue<string>() == "object")
 				{
 					// All objects need a title
 					if (!obj.ContainsKey("title"))
@@ -403,7 +410,7 @@ public sealed class AppleIntelligenceChatClient : ChatClientBase
 		content switch
 		{
 			// Apple Intelligence performs better when each text content chunk is separated
-			TextContent textContent when textContent.Text is not null => textContent.Text.Split("\n\n").Select(t => new TextContentNative(t)),
+			TextContent textContent when textContent.Text is not null => [new TextContentNative(textContent.Text)],
 			TextContent => Array.Empty<AIContentNative>(),
 
 			// Throw for unsupported content types

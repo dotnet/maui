@@ -1,8 +1,8 @@
 ﻿#nullable enable
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient() -> void
-Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger! logger) -> void
-Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger<Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient!>? logger) -> void
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger? logger) -> void
 Microsoft.Maui.Essentials.AI.ChatClientBase
 Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
 Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.set -> void

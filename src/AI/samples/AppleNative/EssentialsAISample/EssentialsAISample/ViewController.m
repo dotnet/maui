@@ -14,167 +14,127 @@ typedef void (^AIUpdateBlock)(ResponseUpdateNative *_Nullable result);
 typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
                                   NSError *_Nullable error);
 
-// Simple test tool that returns the current time
-@interface GetCurrentTimeTool : NSObject <AIToolNative>
+#pragma mark - Tools
+
+// Find points of interest tool for Maui itinerary
+@interface FindPointsOfInterestTool : NSObject <AIToolNative>
 @end
 
-@implementation GetCurrentTimeTool
+@implementation FindPointsOfInterestTool
 
 - (NSString *)name {
-    return @"getCurrentTime";
+    return @"findPointsOfInterest";
 }
 
 - (NSString *)desc {
-    return @"Gets the current date and time. No parameters needed.";
-}
-
-- (NSString *)argumentsSchema {
-    return @"{\"type\":\"object\",\"properties\":{}}";
-}
-
-- (NSString *)outputSchema {
-    return @"{"
-        "\"type\":\"object\","
-        "\"properties\":{"
-            "\"currentTime\":{"
-                "\"type\":\"string\","
-                "\"description\":\"The current date and time in YYYY-MM-DD HH:mm:ss format\""
-            "}"
-        "},"
-        "\"required\":[\"currentTime\"]"
-    "}";
-}
-
-- (void)callWithArguments:(NSString *)arguments
-               completion:(void (^)(NSString *))completion {
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss";
-    NSString *currentTime = [formatter stringFromDate:[NSDate date]];
-
-    NSString *result =
-        [NSString stringWithFormat:@"{\"currentTime\":\"%@\"}", currentTime];
-    completion(result);
-}
-
-@end
-
-// Weather tool that returns dummy weather for a specific date
-@interface GetWeatherTool : NSObject <AIToolNative>
-@end
-
-@implementation GetWeatherTool
-
-- (NSString *)name {
-    return @"getWeather";
-}
-
-- (NSString *)desc {
-    return @"Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.";
+    return @"Finds points of interest for a landmark.";
 }
 
 - (NSString *)argumentsSchema {
     return @"{"
         "\"type\":\"object\","
         "\"properties\":{"
-            "\"date\":{"
+            "\"pointOfInterest\":{"
+                "\"description\":\"This is the type of destination to look up for.\","
                 "\"type\":\"string\","
-                "\"description\":\"The date to get weather for in YYYY-MM-DD format\""
+                "\"enum\":[\"Cafe\",\"Campground\",\"Hotel\",\"Marina\",\"Museum\",\"NationalMonument\",\"Restaurant\"]"
+            "},"
+            "\"naturalLanguageQuery\":{"
+                "\"description\":\"The natural language query of what to search for.\","
+                "\"type\":\"string\""
             "}"
         "},"
-        "\"required\":[\"date\"]"
+        "\"required\":[\"pointOfInterest\",\"naturalLanguageQuery\"]"
     "}";
 }
 
 - (NSString *)outputSchema {
-    return @"{"
-        "\"type\":\"object\","
-        "\"properties\":{"
-            "\"date\":{"
-                "\"type\":\"string\","
-                "\"description\":\"The date for this weather forecast\""
-            "},"
-            "\"condition\":{"
-                "\"type\":\"string\","
-                "\"description\":\"Weather condition (sunny, cloudy, rainy, etc)\""
-            "},"
-            "\"temperature\":{"
-                "\"type\":\"integer\","
-                "\"description\":\"Temperature in Fahrenheit\""
-            "},"
-            "\"humidity\":{"
-                "\"type\":\"integer\","
-                "\"description\":\"Humidity percentage\""
-            "}"
-        "},"
-        "\"required\":[\"date\",\"condition\",\"temperature\",\"humidity\"]"
-    "}";
+    return @"{\"type\":\"string\"}";
 }
 
 - (void)callWithArguments:(NSString *)arguments
                completion:(void (^)(NSString *))completion {
-    // Parse the arguments to extract the date
+    // Parse the arguments
     NSError *error = nil;
     NSDictionary *argsDict = [NSJSONSerialization JSONObjectWithData:[arguments dataUsingEncoding:NSUTF8StringEncoding]
                                                              options:0
                                                                error:&error];
     
-    NSString *dateString = argsDict[@"date"];
-    if (!dateString) {
-        dateString = @"unknown";
+    NSString *poiType = argsDict[@"pointOfInterest"] ?: @"unknown";
+    
+    // Generate results matching the C# implementation format
+    NSString *result;
+    if ([poiType isEqualToString:@"Cafe"]) {
+        result = @"There are these Cafe in Maui: Cafe 1, Cafe 2, Cafe 3";
+    } else if ([poiType isEqualToString:@"Campground"]) {
+        result = @"There are these Campground in Maui: Campground 1, Campground 2, Campground 3";
+    } else if ([poiType isEqualToString:@"Hotel"]) {
+        result = @"There are these Hotel in Maui: Hotel 1, Hotel 2, Hotel 3";
+    } else if ([poiType isEqualToString:@"Marina"]) {
+        result = @"There are these Marina in Maui: Marina 1, Marina 2, Marina 3";
+    } else if ([poiType isEqualToString:@"Museum"]) {
+        result = @"There are these Museum in Maui: Museum 1, Museum 2, Museum 3";
+    } else if ([poiType isEqualToString:@"NationalMonument"]) {
+        result = @"There are these NationalMonument in Maui: The National Rock 1, The National Rock 2, The National Rock 3";
+    } else if ([poiType isEqualToString:@"Restaurant"]) {
+        result = @"There are these Restaurant in Maui: Restaurant 1, Restaurant 2, Restaurant 3";
+    } else {
+        result = [NSString stringWithFormat:@"There are no %@ in Maui", poiType];
     }
-    
-    // Generate dummy weather data
-    NSArray *conditions = @[@"sunny", @"cloudy", @"rainy", @"partly cloudy", @"windy"];
-    NSString *condition = conditions[arc4random_uniform((uint32_t)conditions.count)];
-    NSInteger temperature = 60 + (arc4random_uniform(30)); // 60-89°F
-    NSInteger humidity = 30 + (arc4random_uniform(50)); // 30-79%
-    
-    NSString *result = [NSString stringWithFormat:
-        @"{\"date\":\"%@\",\"condition\":\"%@\",\"temperature\":%ld,\"humidity\":%ld}",
-        dateString, condition, (long)temperature, (long)humidity];
     
     completion(result);
 }
 
 @end
 
-@interface ViewController ()
-
-@end
+#pragma mark - View Controller
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-
+    
+    // Set up logging using simple block
+    AppleIntelligenceLogger.log = ^(NSString *message) {
+        NSLog(@"[Native] %@", message);
+    };
+    
     // 1. Create the client
     ChatClientNative *client = [[ChatClientNative alloc] init];
 
-    // 2. Create a text content
-    TextContentNative *textContent =
-        [[TextContentNative alloc] initWithText:@"What's the weather like today?"];
+    // 2. Create system message with Maui description
+    ChatMessageNative *systemMessage = [[ChatMessageNative alloc] init];
+    systemMessage.role = ChatRoleNativeSystem;
+    systemMessage.contents = @[
+        [[TextContentNative alloc] initWithText:@"Your job is to create an itinerary for the person."],
+        [[TextContentNative alloc] initWithText:@"Each day needs an activity, hotel and restaurant."],
+        [[TextContentNative alloc] initWithText:@"Always use the findPointsOfInterest tool to find businesses and activities in Maui, especially hotels and restaurants.\n\nThe point of interest categories may include:"],
+        [[TextContentNative alloc] initWithText:@"Cafe, Campground, Hotel, Marina, Museum, NationalMonument, Restaurant"],
+        [[TextContentNative alloc] initWithText:@"Here is a description of Maui for your reference when considering what activities to generate:"],
+        [[TextContentNative alloc] initWithText:@"The second-largest island in Hawaii, Maui offers a stunning tapestry of volcanic landscapes, lush rainforests, pristine beaches, and dramatic coastal cliffs. Known as the \"Valley Isle,\" Maui is dominated by two massive volcanoes: the dormant Haleakalā in the east and the older, eroded West Maui Mountains. Haleakalā National Park features a massive volcanic crater that reaches over 10,000 feet in elevation, offering breathtaking sunrise views and unique high-altitude ecosystems.\n\nThe island's diverse geography creates distinct climate zones, from arid leeward coasts to verdant windward rainforests receiving over 400 inches of annual rainfall. The famous Road to Hana winds through tropical paradise, passing countless waterfalls, bamboo forests, and dramatic ocean vistas. Maui's volcanic soil supports rich agriculture, including sugarcane, pineapple, coffee, and exotic tropical fruits.\n\nMarine life thrives in Maui's warm Pacific waters. Humpback whales migrate to the shallow channels between the Hawaiian islands from December to May, making Maui one of the world's premier whale-watching destinations. Hawaiian green sea turtles, spinner dolphins, and vibrant coral reefs attract snorkelers and divers year-round. The island's beaches range from golden sand to unique red and black volcanic shores. Native Hawaiian plants such as the silversword, which grows only on Haleakalā's slopes, and endemic bird species like the nēnē (Hawaiian goose) highlight the island's ecological significance and ongoing conservation efforts."]
+    ];
+    
+    // 3. Create user message
+    ChatMessageNative *userMessage = [[ChatMessageNative alloc] init];
+    userMessage.role = ChatRoleNativeUser;
+    userMessage.contents = @[
+        [[TextContentNative alloc] initWithText:@"Generate a 3-day itinerary to Maui."],
+        [[TextContentNative alloc] initWithText:@"Give it a fun title and description."],
+        [[TextContentNative alloc] initWithText:@"Here is an example, but don't copy it:"],
+        [[TextContentNative alloc] initWithText:@"{\"title\":\"Onsen Trip to Japan\",\"destinationName\":\"Mt. Fuji\",\"description\":\"Sushi, hot springs, and ryokan with a toddler!\",\"rationale\":\"You are traveling with a child, so climbing Mt. Fuji is probably not an option,\nbut there is lots to do around Kawaguchiko Lake, including Fujikyu.\nI recommend staying in a ryokan because you love hotsprings.\",\"days\":[{\"title\":\"Sushi and Shopping Near Kawaguchiko\",\"subtitle\":\"Spend your final day enjoying sushi and souvenir shopping.\",\"destination\":\"Kawaguchiko Lake\",\"activities\":[{\"type\":\"FoodAndDining\",\"title\":\"The Restaurant serving Sushi\",\"description\":\"Visit an authentic sushi restaurant for lunch.\"},{\"type\":\"Shopping\",\"title\":\"The Plaza\",\"description\":\"Enjoy souvenir shopping at various shops.\"},{\"type\":\"Sightseeing\",\"title\":\"The Beautiful Cherry Blossom Park\",\"description\":\"Admire the beautiful cherry blossom trees in the park.\"},{\"type\":\"HotelAndLodging\",\"title\":\"The Hotel\",\"description\":\"Spend one final evening in the hotspring before heading home.\"}]}]}"]
+    ];
 
-    // 3. Create the message and attach the content
-    ChatMessageNative *message = [[ChatMessageNative alloc] init];
-    message.role = ChatRoleNativeUser;
-    message.contents = @[ textContent ];
-
-    // 4. (Optional) create options
+    // 4. Create options with JSON schema and tool
     ChatOptionsNative *options = [[ChatOptionsNative alloc] init];
-    options.temperature = @(0.7);
-    options.maxOutputTokens = @(512);
-    // Remove JSON schema to allow natural language responses
-    options.responseJsonSchema = nil;
+    
+    // JSON schema for structured itinerary output
+    options.responseJsonSchema = @"{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"description\":\"A travel itinerary with days and activities.\",\"type\":\"object\",\"properties\":{\"title\":{\"description\":\"An exciting name for the trip.\",\"type\":\"string\"},\"destinationName\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"rationale\":{\"description\":\"An explanation of how the itinerary meets the person's special requests.\",\"type\":\"string\"},\"days\":{\"description\":\"A list of day-by-day plans.\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"title\":{\"description\":\"A unique and exciting title for this day plan.\",\"type\":\"string\"},\"subtitle\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"activities\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"Sightseeing\",\"FoodAndDining\",\"Shopping\",\"HotelAndLodging\"]},\"title\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}},\"required\":[\"type\",\"title\",\"description\"],\"title\":\"Activity\",\"additionalProperties\":false},\"minItems\":3,\"maxItems\":3}},\"required\":[\"title\",\"subtitle\",\"destination\",\"activities\"],\"title\":\"DayPlan\",\"additionalProperties\":false},\"minItems\":3,\"maxItems\":3}},\"required\":[\"title\",\"destinationName\",\"description\",\"rationale\",\"days\"],\"title\":\"Itinerary\",\"additionalProperties\":false}";
 
-    // Create tool instances - the AI should call getCurrentTime first, 
-    // then use that date to call getWeather
-    GetCurrentTimeTool *timeTool = [[GetCurrentTimeTool alloc] init];
-    GetWeatherTool *weatherTool = [[GetWeatherTool alloc] init];
-    options.tools = @[ timeTool, weatherTool ];
+    // Create tool instance
+    FindPointsOfInterestTool *poiTool = [[FindPointsOfInterestTool alloc] init];
+    options.tools = @[ poiTool ];
 
-    // 5. Call getResponse
-
+    // 5. Define callbacks
     AICompletionBlock completion =
         ^(ChatResponseNative *_Nullable result, NSError *_Nullable error) {
           if (error) {
@@ -182,16 +142,15 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
               return;
           }
           
-          // Log the response with all messages
           NSLog(@"AI Response received with %lu messages", (unsigned long)result.messages.count);
           
-          for (ChatMessageNative *message in result.messages) {
-              NSLog(@"Message role: %ld", (long)message.role);
+          for (ChatMessageNative *msg in result.messages) {
+              NSLog(@"Message role: %ld", (long)msg.role);
               
-              for (AIContentNative *content in message.contents) {
+              for (AIContentNative *content in msg.contents) {
                   if ([content isKindOfClass:[TextContentNative class]]) {
-                      TextContentNative *textContent = (TextContentNative *)content;
-                      NSLog(@"  Text: %@", textContent.text);
+                      TextContentNative *text = (TextContentNative *)content;
+                      NSLog(@"  Text: %@", text.text);
                   } else if ([content isKindOfClass:[FunctionCallContentNative class]]) {
                       FunctionCallContentNative *funcCall = (FunctionCallContentNative *)content;
                       NSLog(@"  Function Call: %@ (%@)", funcCall.name, funcCall.callId);
@@ -204,28 +163,32 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
           }
         };
 
-    // Define reusable update block
     AIUpdateBlock update = ^(ResponseUpdateNative *_Nullable result) {
-      NSLog(@"Stream update: text = %@", [result text]);
-      NSLog(@"Stream update: tool = %@", [result toolCallName]);
-      NSLog(@"Stream update: tool result = %@", [result toolCallResult]);
+      if (result.text) {
+          NSLog(@"Stream update: text = %@", result.text);
+      }
+      if (result.toolCallName) {
+          NSLog(@"Stream update: tool = %@ (id=%@)", result.toolCallName, result.toolCallId);
+          if (result.toolCallArguments) {
+              NSLog(@"  arguments = %@", result.toolCallArguments);
+          }
+          if (result.toolCallResult) {
+              NSLog(@"  result = %@", result.toolCallResult);
+          }
+      }
     };
 
-    // Use typedef blocks for getResponse
-    CancellationTokenNative *token =
-        [client getResponseWithMessages:@[ message ]
-                                options:options
-                               onUpdate:update
-                             onComplete:completion];
-
-    // Use typedef blocks for streamResponse
+    // 6. Call streamResponse with system and user messages
+    NSArray *messages = @[ systemMessage, userMessage ];
+    
     CancellationTokenNative *streamToken =
-        [client streamResponseWithMessages:@[ message ]
+        [client streamResponseWithMessages:messages
                                    options:options
                                   onUpdate:update
                                 onComplete:completion];
-
-    //    [token cancel];
+    
+    // Keep reference to prevent deallocation
+    (void)streamToken;
 }
 
 @end

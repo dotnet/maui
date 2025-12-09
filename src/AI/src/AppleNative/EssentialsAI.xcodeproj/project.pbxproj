@@ -18,6 +18,7 @@
 		3400193C2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192D2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift */; };
 		3400193D2EDF4D6800DAB0A3 /* Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019272EDF4D6800DAB0A3 /* Cancellation.swift */; };
 		3400193E2EDF4D6800DAB0A3 /* ChatTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3400192E2EDF4D6800DAB0A3 /* ChatTool.swift */; };
+		340019BC2EE86CE300DAB0A3 /* AppleIntelligenceLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340019BB2EE86CE300DAB0A3 /* AppleIntelligenceLogger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		340019302EDF4D6800DAB0A3 /* JsonSchemaDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSchemaDecoder.swift; sourceTree = "<group>"; };
 		340019312EDF4D6800DAB0A3 /* ToolCallWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCallWatcher.swift; sourceTree = "<group>"; };
 		340019322EDF4D6800DAB0A3 /* ToolNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolNative.swift; sourceTree = "<group>"; };
+		340019BB2EE86CE300DAB0A3 /* AppleIntelligenceLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleIntelligenceLogger.swift; sourceTree = "<group>"; };
 		34279C902EC421CC00583050 /* EssentialsAI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EssentialsAI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -49,6 +51,7 @@
 		34279C862EC421CC00583050 = {
 			isa = PBXGroup;
 			children = (
+				340019BB2EE86CE300DAB0A3 /* AppleIntelligenceLogger.swift */,
 				340019272EDF4D6800DAB0A3 /* Cancellation.swift */,
 				340019282EDF4D6800DAB0A3 /* ChatClient.swift */,
 				340019292EDF4D6800DAB0A3 /* ChatMessage.swift */,
@@ -166,6 +169,7 @@
 				3400193C2EDF4D6800DAB0A3 /* ChatResponseUpdateNative.swift in Sources */,
 				3400193D2EDF4D6800DAB0A3 /* Cancellation.swift in Sources */,
 				3400193E2EDF4D6800DAB0A3 /* ChatTool.swift in Sources */,
+				340019BC2EE86CE300DAB0A3 /* AppleIntelligenceLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
