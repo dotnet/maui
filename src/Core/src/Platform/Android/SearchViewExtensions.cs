@@ -133,14 +133,20 @@ namespace Microsoft.Maui.Platform
 			var cancelButton = searchView.GetCancelButton();
 			if (cancelButton?.Drawable is Drawable drawable)
 			{
-				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
-
-				if (image is not null && image.Drawable is Drawable drawable)
+				if (cancelButton.Enabled)
 				{
 					if (searchBar.CancelButtonColor is not null)
+					{
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
+					}
 					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					{
 						drawable.SetColorFilter(color, FilterMode.SrcIn);
+					}
+				}
+				else
+				{
+					drawable.ClearColorFilter();
 				}
 			}
 		}
@@ -166,8 +172,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static readonly int closeButtonId = Resource.Id.search_close_btn;
-
 		static ImageView? GetCancelButton(this SearchView searchView)
 		{
 			if (searchView.Resources is null)
@@ -175,12 +179,13 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
+			var closeButtonId = Resource.Id.search_close_btn;
 			if (closeButtonId <= 0)
 			{
 				return null;
 			}
 
-			return searchView.FindViewById(closeButtonId) as ImageView;
+			return searchView.FindViewById<ImageView>(closeButtonId);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
