@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    x:Class="Maui.Controls.Sample.Views.Landmarks.LandmarkFeaturedItemView"
+    x:Name="FeaturedControl">
+    
+    <Border 
+        Padding="0"
+        StrokeShape="RoundRectangle 16"
+        StrokeThickness="0"
+        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.3}">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnFeaturedLandmarkTapped" />
+        </Border.GestureRecognizers>
+        
+        <Grid HeightRequest="250">
+            <Image
+                Aspect="AspectFill"
+                Source="{Binding Source={x:Reference FeaturedControl}, Path=Landmark.BackgroundImageName, StringFormat='images/backgrounds/{0}.jpg'}" />
+            <BoxView 
+                Color="Black"
+                Opacity="0.3" />
+            <Label
+                Text="{Binding Source={x:Reference FeaturedControl}, Path=Landmark.Name}"
+                FontSize="28"
+                FontAttributes="Bold"
+                TextColor="White"
+                VerticalOptions="End"
+                Margin="20" />
+        </Grid>
+    </Border>
+    
+</ContentView>

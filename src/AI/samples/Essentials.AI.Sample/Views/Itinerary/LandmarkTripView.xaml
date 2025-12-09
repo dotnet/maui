@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.LandmarkTripView"
+    x:DataType="viewModels:TripPlanningViewModel">
+
+    <Grid>
+        <!-- Background Header Image -->
+        <Image
+            VerticalOptions="Start" HeightRequest="420" Aspect="AspectFill"
+            Source="{Binding Landmark.BackgroundImageName, StringFormat='images/backgrounds/{0}.jpg'}" />
+        
+        <!-- Gradient overlay -->
+        <BoxView VerticalOptions="Start" HeightRequest="420">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{AppThemeBinding Light=#00FFFFFF, Dark=#001C1C1E}" Offset="0.3" />
+                    <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="1.0" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <!-- Main Content -->
+        <ScrollView>
+            <VerticalStackLayout Spacing="20" Padding="0,180,0,20">
+
+                <!-- LandmarkDescriptionView - initial state -->
+                <views:LandmarkDescriptionView 
+                    IsVisible="{Binding IsInitialState}" />
+
+                <!-- ItineraryPlanningView - generating state -->
+                <views:ItineraryPlanningView 
+                    IsVisible="{Binding IsGeneratingState}" />
+
+                <!-- ItineraryView - complete state -->
+                <views:ItineraryView 
+                    IsVisible="{Binding HasItinerary}" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Generate Itinerary Button (floating) -->
+        <Grid IsVisible="{Binding IsInitialState}" VerticalOptions="End" Padding="20,10,20,20">
+            <Button
+                Text="✨ Generate Itinerary" Command="{Binding GenerateItineraryCommand}"
+                FontSize="18" FontAttributes="Bold" Padding="30,20" CornerRadius="12" HorizontalOptions="Center"
+                Background="{StaticResource PrimaryBrush}" TextColor="White" />
+        </Grid>
+    </Grid>
+
+</ContentView>

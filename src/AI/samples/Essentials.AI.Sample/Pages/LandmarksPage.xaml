@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
+    x:Class="Maui.Controls.Sample.Pages.LandmarksPage"
+    x:DataType="viewModels:LandmarksViewModel"
+    Title=".NET MAUI Trip Planner">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <!-- Featured Section -->
+            <Label 
+                Text="Featured"
+                FontSize="18"
+                FontAttributes="Bold"
+                TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+
+            <views:LandmarkFeaturedItemView
+                Landmark="{Binding FeaturedLandmark}"
+                IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
+                LandmarkTapped="OnLandmarkTapped" />
+
+            <!-- Continents -->
+            <VerticalStackLayout 
+                BindableLayout.ItemsSource="{Binding ContinentGroups}"
+                Spacing="25">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ContinentGroup">
+                        <VerticalStackLayout Spacing="12">
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="24"
+                                FontAttributes="Bold" />
+                            
+                            <views:LandmarkHorizontalListView
+                                Landmarks="{Binding Landmarks}"
+                                LandmarkTapped="OnLandmarkTapped" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <ActivityIndicator 
+                IsVisible="{Binding IsLoading}"
+                IsRunning="{Binding IsLoading}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Margin="0,50,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

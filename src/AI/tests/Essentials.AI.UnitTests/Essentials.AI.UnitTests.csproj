@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Essentials.AI.UnitTests</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Essentials.AI.UnitTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AI\src\Essentials.AI\Essentials.AI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Models\**" Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\StreamingJsonDeserializer.cs" Link="Services\StreamingJsonDeserializer.cs" />
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\BufferedChatClient.cs" Link="Services\BufferedChatClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestData\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
