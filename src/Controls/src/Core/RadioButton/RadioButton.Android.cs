@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 				var platformRadioButton = RadioButtonHandler.GetPlatformRadioButton(handler);
 				if (platformRadioButton is not null)
 				{
-					var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
+					var transformedText = TextTransformUtilities.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
 					platformRadioButton.Text = transformedText;
 				}
 			}
