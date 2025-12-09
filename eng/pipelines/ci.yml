@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
     - main
-    - net10.0
+    - net*.0
     - release/*
     - inflight/*
   paths:
@@ -12,7 +12,7 @@ trigger:
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/*
+    - .github/**
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT
@@ -22,7 +22,7 @@ pr:
   branches:
     include:
     - main
-    - net10.0
+    - net*.0
     - release/*
     - inflight/*
   paths:
@@ -31,7 +31,7 @@ pr:
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/*
+    - .github/**
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT

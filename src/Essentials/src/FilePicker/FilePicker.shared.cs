@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Storage
 		/// Opens the default file picker to allow the user to pick one or more files.
 		/// </summary>
 		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
-		/// <returns>An IEnumerable of file picking result objects, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <returns>An IEnumerable of file picking result objects. When the operation was cancelled by the user, this will return an empty collection.</returns>
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Storage
 		/// Opens the default file picker to allow the user to pick one or more files.
 		/// </summary>
 		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
-		/// <returns>An IEnumerable of file picking result objects, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <returns>An IEnumerable of file picking result objects. When the operation was cancelled by the user, this will return an empty collection.</returns>
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that

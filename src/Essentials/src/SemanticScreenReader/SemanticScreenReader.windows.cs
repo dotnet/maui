@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.ApplicationModel;
+﻿using System.Diagnostics;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Media;
@@ -12,6 +13,13 @@ namespace Microsoft.Maui.Accessibility
 			if (WindowStateManager.Default.GetActiveWindow() is not Window window)
 				return;
 
+			if (window.Content is null)
+			{
+				// If the window content is null, we can't announce anything yet.
+				// This can happen if the app is still starting up.
+				Debug.WriteLine("SemanticScreenReader.Announce() was called too early. The window content is not yet initialized, announcement skipped.");
+				return;
+			}
 			var peer = FindAutomationPeer(window.Content);
 
 			// This GUID correlates to the internal messages used by UIA to perform an announce

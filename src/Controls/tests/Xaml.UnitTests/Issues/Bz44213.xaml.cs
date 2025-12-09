@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,26 +13,27 @@ public partial class Bz44213 : ContentPage
 	}
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp] public void Setup() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		public Tests() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 
-		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
+		public void Dispose() => DeviceInfo.SetCurrent(null);
 
-		[Test]
-		public void BindingInOnPlatform([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingInOnPlatform(XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var p = new Bz44213(inflator);
 			p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
-			Assert.AreEqual("Foo", p.label.Text);
+			Assert.Equal("Foo", p.label.Text);
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			p = new Bz44213(inflator);
 			p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
-			Assert.AreEqual("Bar", p.label.Text);
+			Assert.Equal("Bar", p.label.Text);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -12,12 +12,15 @@ public partial class xKeyLiteral : ContentPage
 {
 	public xKeyLiteral() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : BaseTestFixture
 	{
 		//this requirement might change, see https://github.com/xamarin/Xamarin.Forms/issues/12425
-		[Test]
-		public void xKeyRequireStringLiteral([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void xKeyRequireStringLiteral(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(xKeyLiteral)));
@@ -37,10 +40,8 @@ public partial class xKeyLiteral : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(xKeyLiteral));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
-			else
-				Assert.Ignore("Untested inflator");
 		}
 	}
 }

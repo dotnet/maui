@@ -150,6 +150,15 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 
+  <!-- TypeScript compilation -->
+  <PropertyGroup>
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
+    <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptCompileBlocked Condition=" '$(TypeScriptCompileBlocked)' == '' and '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
+  </PropertyGroup>
+
   <!-- Windows specific settings -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>

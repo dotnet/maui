@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -13,11 +13,12 @@ public partial class Gh3082 : ContentPage
 
 	static async Task OnClicked(object sender, EventArgs e) => await Task.Delay(1000);
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void ThrowsOnWrongEventHandlerSignature([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ThrowsOnWrongEventHandlerSignature(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh3082)));
@@ -37,10 +38,8 @@ public partial class Gh3082 : ContentPage
 			}
 """)
 					.RunMauiSourceGenerator(typeof(Gh3082));
-				Assert.AreEqual(1, result.Diagnostics.Length);
+				Assert.Single(result.Diagnostics);
 			}
-			else
-				Assert.Ignore($"Test not supported for {inflator}");
 
 		}
 	}

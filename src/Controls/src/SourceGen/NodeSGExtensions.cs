@@ -92,11 +92,13 @@ static class NodeSGExtensions
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
 		=> context.knownSGEarlyMarkupExtensions ??= new(SymbolEqualityComparer.Default)
 	{
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.NullExtension")!, KnownMarkups.ProvideValueForNullExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DataTemplateExtension")!, KnownMarkups.ProvideValueForDataTemplateExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RelativeSourceExtension")!, KnownMarkups.ProvideValueForRelativeSourceExtension},
 	};
 
 	// These markup extensions can only provide values late once the properties have their final values

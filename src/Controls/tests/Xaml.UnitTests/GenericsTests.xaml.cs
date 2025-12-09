@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,10 +10,10 @@ public partial class GenericsTests : ContentPage
 
 	public GenericsTests() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
+		[Fact]
 		public void NoGenericsOnXaml2006()
 		{
 			var xaml = @"
@@ -27,36 +27,40 @@ public partial class GenericsTests : ContentPage
 						</ResourceDictionary>
 					</ContentPage.Resources>
 				</ContentPage>";
-			Assert.Throws(new XamlParseExceptionConstraint(8, 9), () => new ContentPage().LoadFromXaml(xaml));
+			var ex = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+			Assert.Contains("8", ex.XmlInfo.LineNumber.ToString(), StringComparison.Ordinal);
 		}
 
-		[Test]
-		public void GenericSupportOnXaml2009([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void GenericSupportOnXaml2009(XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 			Assert.True(layout.Resources.ContainsKey("genericButtonList"));
 			var list = layout.Resources["genericButtonList"];
-			Assert.That(list, Is.TypeOf<List<Button>>());
-			Assert.AreEqual(2, ((List<Button>)list).Count);
+			Assert.IsType<List<Button>>(list);
+			Assert.Equal(2, ((List<Button>)list).Count);
 		}
 
-		[Test]
-		public void FindGenericByName([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FindGenericByName(XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 			var list = layout.FindByName<List<Button>>("myList");
-			Assert.That(list, Is.Not.Null);
-			Assert.That(list, Is.TypeOf<List<Button>>());
+			Assert.NotNull(list);
+			Assert.IsType<List<Button>>(list);
 
 			var nestedGenericList = layout.TestListMember;
-			Assert.That(nestedGenericList, Is.Not.Null);
-			Assert.That(nestedGenericList, Is.TypeOf<List<KeyValuePair<string, string>>>());
+			Assert.NotNull(nestedGenericList);
+			Assert.IsType<List<KeyValuePair<string, string>>>(nestedGenericList);
 
-			Assert.That(nestedGenericList.Count, Is.EqualTo(1));
+			Assert.Single(nestedGenericList);
 		}
 
-		[Test]
-		public void TestGenericParsing([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestGenericParsing(XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 
@@ -64,24 +68,25 @@ public partial class GenericsTests : ContentPage
 
 			var list = layout.Resources["list"];
 			Assert.NotNull(list);
-			Assert.That(list, Is.TypeOf<List<String>>());
+			Assert.IsType<List<String>>(list);
 
 			var dict = layout.Resources["dict"];
 			Assert.NotNull(dict);
-			Assert.That(dict, Is.TypeOf<Dictionary<string, string>>());
+			Assert.IsType<Dictionary<string, string>>(dict);
 
 			var queue = layout.Resources["genericsquaredlist"];
 			Assert.NotNull(dict);
-			Assert.That(queue, Is.TypeOf<List<KeyValuePair<string, string>>>());
+			Assert.IsType<List<KeyValuePair<string, string>>>(queue);
 		}
 
-		[Test]
-		public void TestXamlPrimitives([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestXamlPrimitives(XamlInflator inflator)
 		{
 			var layout = new GenericsTests(inflator);
 			var list = layout.Resources["stringList"];
 			Assert.NotNull(list);
-			Assert.That(list, Is.TypeOf<List<String>>());
+			Assert.IsType<List<String>>(list);
 		}
 	}
 }
