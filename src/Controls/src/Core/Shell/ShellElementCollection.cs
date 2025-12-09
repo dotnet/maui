@@ -280,6 +280,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
 		void OnShellElementControllerItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			foreach (BaseShellItem bsi in (e.NewItems ?? e.OldItems ?? Inner))
