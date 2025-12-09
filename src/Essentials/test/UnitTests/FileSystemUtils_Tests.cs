@@ -61,6 +61,21 @@ namespace Tests
 		}
 
 		[Theory]
+		[InlineData("")]
+		[InlineData(" ")]
+		[InlineData("\t")]
+		[InlineData("   ")]
+		public void GetSecurePath_EmptyOrWhitespaceRelativePath_ThrowsArgumentException(string relativePath)
+		{
+			// Arrange
+			var basePath = Path.GetTempPath();
+
+			// Act & Assert
+			var ex = Assert.Throws<ArgumentException>(() => FileSystemUtils.GetSecurePath(basePath, relativePath));
+			Assert.Equal("relativePath", ex.ParamName);
+		}
+
+		[Theory]
 		[InlineData("test.txt")]
 		[InlineData("test/file.txt")]
 		[InlineData("test\\file.txt")]
@@ -104,6 +119,38 @@ namespace Tests
 			Assert.Equal(expectedPath, result);
 		}
 
+		[Fact]
+		public void GetSecurePath_AbsolutePath_OutsideBase_ThrowsUnauthorizedAccessException()
+		{
+			// Arrange
+			var basePath = Path.Combine(Path.GetTempPath(), "app_data");
+			
+			// On Windows, use a different drive or root; on Unix, use root
+			var absolutePath = OperatingSystem.IsWindows() 
+				? @"C:\Windows\System32\config.sys" 
+				: "/etc/passwd";
+
+			// Act & Assert
+			Assert.Throws<UnauthorizedAccessException>(() => FileSystemUtils.GetSecurePath(basePath, absolutePath));
+		}
+
+		[Theory]
+		[InlineData("folder with spaces/file.txt")]
+		[InlineData("folder/./file.txt")]
+		[InlineData("folder/../folder/file.txt")]
+		[InlineData("folder//file.txt")]
+		public void GetSecurePath_SpecialPathCases_HandlesCorrectly(string relativePath)
+		{
+			// Arrange
+			var basePath = Path.GetTempPath();
+
+			// Act
+			var result = FileSystemUtils.GetSecurePath(basePath, relativePath);
+
+			// Assert
+			Assert.StartsWith(Path.GetFullPath(basePath), result, StringComparison.OrdinalIgnoreCase);
+		}
+
 		[Theory]
 		[InlineData("path/to/file.txt")]
 		[InlineData("path\\to\\file.txt")]
@@ -115,6 +162,42 @@ namespace Tests
 
 			// Assert
 			Assert.DoesNotContain(Path.DirectorySeparatorChar == '/' ? "\\" : "/", result, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void GetSecurePath_UsesPlatformAppropriateCaseSensitivity()
+		{
+			// Arrange
+			var basePath = Path.GetTempPath();
+			var subPath = "TestFolder/file.txt";
+			
+			// Act
+			var result = FileSystemUtils.GetSecurePath(basePath, subPath);
+
+			// Assert
+			// On Windows, paths are case-insensitive; on Unix, they are case-sensitive
+			// The result should always be within the base path using platform-appropriate comparison
+			var expectedComparison = OperatingSystem.IsWindows()
+				? StringComparison.OrdinalIgnoreCase
+				: StringComparison.Ordinal;
+			
+			Assert.StartsWith(Path.GetFullPath(basePath), result, expectedComparison);
+		}
+
+		[Fact]
+		public void GetSecurePath_CaseVariations_WorksWithinSameDirectory()
+		{
+			// This test verifies that case variations in the path are handled correctly
+			// On Windows, "Folder" and "folder" are the same; on Unix, they're different
+			var basePath = Path.GetTempPath();
+			
+			// Act - both should succeed as they stay within base directory
+			var result1 = FileSystemUtils.GetSecurePath(basePath, "folder/file.txt");
+			var result2 = FileSystemUtils.GetSecurePath(basePath, "Folder/file.txt");
+
+			// Assert - both paths should be valid and within base
+			Assert.StartsWith(Path.GetFullPath(basePath), result1, StringComparison.OrdinalIgnoreCase);
+			Assert.StartsWith(Path.GetFullPath(basePath), result2, StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }
