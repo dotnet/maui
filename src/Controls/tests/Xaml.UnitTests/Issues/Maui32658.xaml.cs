@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -70,11 +70,12 @@ public partial class Maui32658 : ContentPage
 {
 	public Maui32658() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void MarkupExtensionWithGenericBaseClassAndEnumProperty([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void MarkupExtensionWithGenericBaseClassAndEnumProperty(XamlInflator inflator)
 		{
 			// This test reproduces issue #32658
 			// The bug was an IndexOutOfRangeException when parsing markup extensions
@@ -84,8 +85,8 @@ public partial class Maui32658 : ContentPage
 			// Just verifying the page loads without throwing is sufficient
 			// The original bug would throw "Index was outside the bounds of the array"
 			// during XAML parsing when using generic markup extensions
-			Assert.That(page, Is.Not.Null);
-			Assert.That(page.imageButton, Is.Not.Null);
+			Assert.NotNull(page);
+			Assert.NotNull(page.imageButton);
 		}
 	}
 }

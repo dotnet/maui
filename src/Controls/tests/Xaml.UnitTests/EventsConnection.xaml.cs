@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -51,65 +51,71 @@ public partial class EventsConnection : BaseForEvents
 	// See: https://github.com/xamarin/Microsoft.Maui.Controls/issues/5100
 	static void HandleStaticClicked(object sender, EventArgs e) => staticClicked++;
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void TestClicked([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestClicked(XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
-			Assert.AreEqual(0, layout.clicked);
+			Assert.Equal(0, layout.clicked);
 			layout.elementWithEvent.SendClicked();
-			Assert.AreEqual(1, layout.clicked);
+			Assert.Equal(1, layout.clicked);
 		}
 
-		[Test]
-		public void TestGenericClicked([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestGenericClicked(XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
-			Assert.AreEqual(0, layout.genericClicked);
+			Assert.Equal(0, layout.genericClicked);
 			layout.elementWithGenericEvent.SendClicked();
-			Assert.AreEqual(1, layout.genericClicked);
+			Assert.Equal(1, layout.genericClicked);
 		}
 
-		[Test]
-		public void TestHandlerOnBase([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestHandlerOnBase(XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
-			Assert.AreEqual(0, layout.baseClicked);
+			Assert.Equal(0, layout.baseClicked);
 			layout.eventHandlerOnBase.SendClicked();
-			Assert.AreEqual(1, layout.baseClicked);
+			Assert.Equal(1, layout.baseClicked);
 		}
 
-		[Test]
-		public void TestAsyncPrivateHandler([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestAsyncPrivateHandler(XamlInflator inflator)
 		{
 			var layout = new EventsConnection(inflator);
-			Assert.AreEqual(0, layout.asyncPrivateClicked);
+			Assert.Equal(0, layout.asyncPrivateClicked);
 			layout.elementwithAsyncprivateHandler.SendClicked();
-			Assert.AreEqual(1, layout.asyncPrivateClicked);
+			Assert.Equal(1, layout.asyncPrivateClicked);
 		}
 
-		[Test]
-		public void TestVirtualHandler([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestVirtualHandler(XamlInflator inflator)
 		{
 			var layout = new SubForEvents(inflator);
-			Assert.AreEqual(0, layout.baseForVirtualClicked);
-			Assert.AreEqual(0, layout.overrideClicked);
+			Assert.Equal(0, layout.baseForVirtualClicked);
+			Assert.Equal(0, layout.overrideClicked);
 			layout.elementWithVirtualHandler.SendClicked();
-			Assert.AreEqual(0, layout.baseForVirtualClicked);
-			Assert.AreEqual(1, layout.overrideClicked);
+			Assert.Equal(0, layout.baseForVirtualClicked);
+			Assert.Equal(1, layout.overrideClicked);
 		}
 
-		[Test]
-		public void TestStaticHandler([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestStaticHandler(XamlInflator inflator)
 		{
 			try
 			{
 				var layout = new SubForEvents(inflator);
-				Assert.AreEqual(0, staticClicked);
+				Assert.Equal(0, staticClicked);
 				layout.elementWithStaticHandler.SendClicked();
-				Assert.AreEqual(1, staticClicked);
+				Assert.Equal(1, staticClicked);
 			}
 			finally
 			{

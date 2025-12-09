@@ -129,6 +129,107 @@ internal class KnownMarkups
 		return false;
 	}
 
+	public static bool ProvideValueForRelativeSourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RelativeBindingSource")!;
+
+		// Get the Mode property value
+		string? modeStr = null;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "Mode"), out INode? modeNode)
+			|| markupNode.Properties.TryGetValue(new XmlName(null, "Mode"), out modeNode))
+		{
+			modeStr = (modeNode as ValueNode)?.Value as string;
+		}
+		else if (markupNode.CollectionItems.Count == 1)
+		{
+			// ContentProperty is Mode
+			modeStr = (markupNode.CollectionItems[0] as ValueNode)?.Value as string;
+		}
+
+		// Get the AncestorType property (which is an x:Type extension)
+		ITypeSymbol? ancestorTypeSymbol = null;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode? ancestorTypeNode)
+			|| markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+		{
+			if (ancestorTypeNode is ElementNode typeExtNode && context.Types.TryGetValue(typeExtNode, out ancestorTypeSymbol))
+			{
+				// Type was already resolved by ProvideValueForTypeExtension
+			}
+			else if (ancestorTypeNode is ValueNode vnType)
+			{
+				// Try to parse as a type name
+				var typeName = vnType.Value as string;
+				if (!IsNullOrEmpty(typeName))
+				{
+					XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+					xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var resolvedType);
+					ancestorTypeSymbol = resolvedType;
+				}
+			}
+		}
+
+		// Get the AncestorLevel property (default is 1)
+		int ancestorLevel = 1;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorLevel"), out INode? ancestorLevelNode)
+			|| markupNode.Properties.TryGetValue(new XmlName(null, "AncestorLevel"), out ancestorLevelNode))
+		{
+			if (ancestorLevelNode is ValueNode vnLevel && int.TryParse(vnLevel.Value as string, out int level))
+			{
+				ancestorLevel = level;
+			}
+		}
+
+		// Determine the actual mode
+		if (ancestorTypeSymbol is not null)
+		{
+			string actualMode;
+			if (modeStr == "FindAncestor" || modeStr == "FindAncestorBindingContext")
+			{
+				actualMode = $"global::Microsoft.Maui.Controls.RelativeBindingSourceMode.{modeStr}";
+			}
+			else
+			{
+				// When Mode is not explicitly FindAncestor or FindAncestorBindingContext,
+				// determine based on whether the type is an Element
+				var elementType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element");
+				if (elementType is not null && context.Compilation.HasImplicitConversion(ancestorTypeSymbol, elementType))
+				{
+					actualMode = "global::Microsoft.Maui.Controls.RelativeBindingSourceMode.FindAncestor";
+				}
+				else
+				{
+					actualMode = "global::Microsoft.Maui.Controls.RelativeBindingSourceMode.FindAncestorBindingContext";
+				}
+			}
+
+			value = $"new global::Microsoft.Maui.Controls.RelativeBindingSource({actualMode}, typeof({ancestorTypeSymbol.ToFQDisplayString()}), {ancestorLevel})";
+			return true;
+		}
+		else if (modeStr == "Self")
+		{
+			value = "global::Microsoft.Maui.Controls.RelativeBindingSource.Self";
+			return true;
+		}
+		else if (modeStr == "TemplatedParent")
+		{
+			value = "global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent";
+			return true;
+		}
+		else if (modeStr == "FindAncestor" || modeStr == "FindAncestorBindingContext")
+		{
+			// These modes require AncestorType
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"RelativeSource Mode '{modeStr}' requires AncestorType"));
+			value = "default";
+			return false;
+		}
+		else
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Invalid RelativeSource Mode '{modeStr ?? "(none)"}'"));
+			value = "default";
+			return false;
+		}
+	}
+
 	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
