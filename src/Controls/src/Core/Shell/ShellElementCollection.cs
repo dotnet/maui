@@ -254,12 +254,10 @@ namespace Microsoft.Maui.Controls
 			{
 				CheckVisibility((BaseShellItem)sender);
 			}
-			// When dynamically updating TabBarIsVisible through ShellContent
+			//When dynamically updating TabBarIsVisible through ShellContent
 			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
-				var shellContent = sender as ShellContent;
-
-				if (shellContent is not null)
+				if (sender is ShellContent shellContent)
 				{
 					var shell = shellContent.FindParentOfType<Shell>();
 					if (shell is not null)
@@ -267,7 +265,7 @@ namespace Microsoft.Maui.Controls
 						var displayedPage = shell.GetCurrentShellPage();
 
 						// Check whether the displayed page is in the current ShellContent
-						if (displayedPage is not null && (shellContent as IShellContentController)?.Page == displayedPage)
+						if (displayedPage is not null && shellContent is IShellContentController contentController && contentController.Page == displayedPage)
 						{
 							var shellContentValue = (bool)shellContent.GetValue(Shell.TabBarIsVisibleProperty);
 							var pageValue = (bool)displayedPage.GetValue(Shell.TabBarIsVisibleProperty);
