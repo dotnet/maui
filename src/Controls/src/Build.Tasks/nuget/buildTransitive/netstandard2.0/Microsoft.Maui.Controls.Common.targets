@@ -12,28 +12,6 @@
   </PropertyGroup>
 
   <!-- Material Design 3 Support - Phase 1 Foundation -->
-  <PropertyGroup>
-    <!-- 
-      UseMaterial3: Opt-in property to enable Material Design 3 on Android
-      Default: false (Material Design 2 - current behavior, no breaking changes)
-      
-      To enable Material Design 3, add to your .csproj:
-      <UseMaterial3>true</UseMaterial3>
-    -->
-    <UseMaterial3 Condition="'$(UseMaterial3)' == ''">false</UseMaterial3>
-  </PropertyGroup>
-
-  <!-- Android-specific Material Design 3 properties -->
-  <PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
-    <!-- Track whether Material 3 resources should be used for Android -->
-    <_MauiAndroidMaterial3Enabled Condition="'$(UseMaterial3)' == 'true'">true</_MauiAndroidMaterial3Enabled>
-    <_MauiAndroidMaterial3Enabled Condition="'$(UseMaterial3)' != 'true'">false</_MauiAndroidMaterial3Enabled>
-    
-    <!-- Internal property to track Material Design version -->
-    <_MauiMaterialDesignVersion Condition="'$(UseMaterial3)' == 'true'">3</_MauiMaterialDesignVersion>
-    <_MauiMaterialDesignVersion Condition="'$(UseMaterial3)' != 'true'">2</_MauiMaterialDesignVersion>
-  </PropertyGroup>
-
 	<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
 	<PropertyGroup Condition=" '$(_MauiDoNotConfigureTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' != 'full' ">
 		<EnableTrimAnalyzer>false</EnableTrimAnalyzer>
@@ -54,24 +32,5 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
     <CompilerVisibleProperty Include="Configuration" />
 	</ItemGroup>
-
-  <!-- 
-    Material Design configuration logging target
-    
-    This target provides visibility into which Material Design version is being used.
-    It runs early in the build process to inform developers of the configuration.
-  -->
-  <Target Name="_LogMaterialDesignConfiguration" 
-          BeforeTargets="BeforeBuild"
-          Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
-    
-    <PropertyGroup>
-      <_MauiMaterialMessage Condition="'$(UseMaterial3)' == 'true'">Material Design 3 enabled (UseMaterial3=true)</_MauiMaterialMessage>
-      <_MauiMaterialMessage Condition="'$(UseMaterial3)' != 'true'">Material Design 2 (default) - Set UseMaterial3=true to enable Material Design 3</_MauiMaterialMessage>
-    </PropertyGroup>
-
-    <Message Text="MAUI Android: $(_MauiMaterialMessage)" Importance="normal" />
-    
-  </Target>
 
 </Project>
