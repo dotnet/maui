@@ -42,8 +42,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Extensions.Http" />
-    <!-- <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" /> -->
-    <!-- <PackageReference Include="OpenAI" Version="2.6.0" /> -->
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(CI)' == '' and '$(TF_BUILD)' == '' ">
+    <DefineConstants>$(DefineConstants);ENABLE_OPENAI_CLIENT</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(CI)' == '' and '$(TF_BUILD)' == '' ">
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" />
+    <PackageReference Include="OpenAI" Version="2.6.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
