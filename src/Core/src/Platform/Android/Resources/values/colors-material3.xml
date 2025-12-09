@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+     <!-- Material 3 Light Theme Color Tokens -->
+
+    <!-- Primary Colors -->
+    <color name="md_theme_light_primary">#6750A4</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#EADDFF</color>
+    <color name="md_theme_light_onPrimaryContainer">#21005D</color>
+
+    <!-- Secondary Colors -->
+    <color name="md_theme_light_secondary">#625B71</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#E8DEF8</color>
+    <color name="md_theme_light_onSecondaryContainer">#1D192B</color>
+
+    <!-- Tertiary Colors -->
+    <color name="md_theme_light_tertiary">#7D5260</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FFD8E4</color>
+    <color name="md_theme_light_onTertiaryContainer">#31111D</color>
+
+    <!-- Error Colors -->
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+
+    <!-- Background Colors -->
+    <color name="md_theme_light_background">#FFFBFE</color>
+    <color name="md_theme_light_onBackground">#1C1B1F</color>
+
+    <!-- Surface Colors -->
+    <color name="md_theme_light_surface">#FFFBFE</color>
+    <color name="md_theme_light_onSurface">#1C1B1F</color>
+    <color name="md_theme_light_surfaceVariant">#E7E0EC</color>
+    <color name="md_theme_light_onSurfaceVariant">#49454F</color>
+
+    <!-- Surface Container Colors -->
+    <color name="md_theme_light_surfaceContainer">#F3EDF7</color>
+    <color name="md_theme_light_surfaceContainerHigh">#ECE6F0</color>
+    <color name="md_theme_light_surfaceContainerHighest">#E6E0E9</color>
+    <color name="md_theme_light_surfaceContainerLow">#F7F2FA</color>
+    <color name="md_theme_light_surfaceContainerLowest">#FFFFFF</color>
+    <color name="md_theme_light_surfaceBright">#FFFBFE</color>
+    <color name="md_theme_light_surfaceDim">#DDD8E1</color>
+
+    <!-- Outline Colors -->
+    <color name="md_theme_light_outline">#79747E</color>
+    <color name="md_theme_light_outlineVariant">#CAC4D0</color>
+
+    <!-- Inverse Colors -->
+    <color name="md_theme_light_inverseSurface">#313033</color>
+    <color name="md_theme_light_inverseOnSurface">#F4EFF4</color>
+    <color name="md_theme_light_inversePrimary">#D0BCFF</color>
+
+    <!-- Surface Tint -->
+    <color name="md_theme_light_surfaceTint">#6750A4</color>
+    <color name="md_theme_light_scrim">#000000</color>
+
+    <!-- Additional Material 3 semantic colors -->
+    <color name="md_theme_light_shadow">#000000</color>
+
+    <!-- State overlay colors for interactive elements -->
+    <color name="md_theme_light_primary_8">#1A6750A4</color>
+    <color name="md_theme_light_primary_12">#1F6750A4</color>
+    <color name="md_theme_light_primary_16">#296750A4</color>
+
+    <color name="md_theme_light_on_surface_8">#141C1B1F</color>
+    <color name="md_theme_light_on_surface_12">#1F1C1B1F</color>
+    <color name="md_theme_light_on_surface_16">#291C1B1F</color>
+
+    <!-- Material 3 fixed colors (do not change based on user wallpaper) -->
+    <color name="md_theme_light_primaryFixed">#EADDFF</color>
+    <color name="md_theme_light_onPrimaryFixed">#21005D</color>
+    <color name="md_theme_light_primaryFixedDim">#D0BCFF</color>
+    <color name="md_theme_light_onPrimaryFixedVariant">#4F378B</color>
+
+    <color name="md_theme_light_secondaryFixed">#E8DEF8</color>
+    <color name="md_theme_light_onSecondaryFixed">#1D192B</color>
+    <color name="md_theme_light_secondaryFixedDim">#CCC2DC</color>
+    <color name="md_theme_light_onSecondaryFixedVariant">#4A4458</color>
+
+    <color name="md_theme_light_tertiaryFixed">#FFD8E4</color>
+    <color name="md_theme_light_onTertiaryFixed">#31111D</color>
+    <color name="md_theme_light_tertiaryFixedDim">#EFB8C8</color>
+    <color name="md_theme_light_onTertiaryFixedVariant">#633B48</color>
+
+    <!-- Material 3 Dark Theme Color Tokens -->
+
+    <!-- Primary Colors -->
+    <color name="md_theme_dark_primary">#D0BCFF</color>
+    <color name="md_theme_dark_onPrimary">#371E73</color>
+    <color name="md_theme_dark_primaryContainer">#4F378B</color>
+    <color name="md_theme_dark_onPrimaryContainer">#EADDFF</color>
+
+    <!-- Secondary Colors -->
+    <color name="md_theme_dark_secondary">#CCC2DC</color>
+    <color name="md_theme_dark_onSecondary">#332D41</color>
+    <color name="md_theme_dark_secondaryContainer">#4A4458</color>
+    <color name="md_theme_dark_onSecondaryContainer">#E8DEF8</color>
+
+    <!-- Tertiary Colors -->
+    <color name="md_theme_dark_tertiary">#EFB8C8</color>
+    <color name="md_theme_dark_onTertiary">#492532</color>
+    <color name="md_theme_dark_tertiaryContainer">#633B48</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFD8E4</color>
+
+    <!-- Error Colors -->
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+
+    <!-- Background Colors -->
+    <color name="md_theme_dark_background">#10090D</color>
+    <color name="md_theme_dark_onBackground">#E6E1E5</color>
+
+    <!-- Surface Colors -->
+    <color name="md_theme_dark_surface">#10090D</color>
+    <color name="md_theme_dark_onSurface">#E6E1E5</color>
+    <color name="md_theme_dark_surfaceVariant">#49454F</color>
+    <color name="md_theme_dark_onSurfaceVariant">#CAC4D0</color>
+
+    <!-- Surface Container Colors -->
+    <color name="md_theme_dark_surfaceContainer">#211F26</color>
+    <color name="md_theme_dark_surfaceContainerHigh">#2B2930</color>
+    <color name="md_theme_dark_surfaceContainerHighest">#36343B</color>
+    <color name="md_theme_dark_surfaceContainerLow">#1D1B20</color>
+    <color name="md_theme_dark_surfaceContainerLowest">#0B0F14</color>
+    <color name="md_theme_dark_surfaceBright">#3B383E</color>
+    <color name="md_theme_dark_surfaceDim">#141218</color>
+
+    <!-- Outline Colors -->
+    <color name="md_theme_dark_outline">#938F99</color>
+    <color name="md_theme_dark_outlineVariant">#49454F</color>
+
+    <!-- Inverse Colors -->
+    <color name="md_theme_dark_inverseSurface">#E6E1E5</color>
+    <color name="md_theme_dark_inverseOnSurface">#322F35</color>
+    <color name="md_theme_dark_inversePrimary">#6750A4</color>
+
+    <!-- Surface Tint -->
+    <color name="md_theme_dark_surfaceTint">#D0BCFF</color>
+    <color name="md_theme_dark_scrim">#000000</color>
+
+    <!-- Additional Material 3 semantic colors -->
+    <color name="md_theme_dark_shadow">#000000</color>
+
+    <!-- State overlay colors for interactive elements -->
+    <color name="md_theme_dark_primary_8">#1AD0BCFF</color>
+    <color name="md_theme_dark_primary_12">#1FD0BCFF</color>
+    <color name="md_theme_dark_primary_16">#29D0BCFF</color>
+
+    <color name="md_theme_dark_on_surface_8">#14E6E1E5</color>
+    <color name="md_theme_dark_on_surface_12">#1FE6E1E5</color>
+    <color name="md_theme_dark_on_surface_16">#29E6E1E5</color>
+
+    <!-- Material 3 fixed colors (do not change based on user wallpaper) -->
+    <color name="md_theme_dark_primaryFixed">#EADDFF</color>
+    <color name="md_theme_dark_onPrimaryFixed">#21005D</color>
+    <color name="md_theme_dark_primaryFixedDim">#D0BCFF</color>
+    <color name="md_theme_dark_onPrimaryFixedVariant">#4F378B</color>
+
+    <color name="md_theme_dark_secondaryFixed">#E8DEF8</color>
+    <color name="md_theme_dark_onSecondaryFixed">#1D192B</color>
+    <color name="md_theme_dark_secondaryFixedDim">#CCC2DC</color>
+    <color name="md_theme_dark_onSecondaryFixedVariant">#4A4458</color>
+
+    <color name="md_theme_dark_tertiaryFixed">#FFD8E4</color>
+    <color name="md_theme_dark_onTertiaryFixed">#31111D</color>
+    <color name="md_theme_dark_tertiaryFixedDim">#EFB8C8</color>
+    <color name="md_theme_dark_onTertiaryFixedVariant">#633B48</color>
+
+    <!-- Compatibility colors for legacy MAUI components -->
+    <color name="maui_material3_splash_color">@color/md_theme_light_surface</color>
+    <color name="maui_material3_splash_color_dark">@color/md_theme_dark_surface</color>
+</resources>

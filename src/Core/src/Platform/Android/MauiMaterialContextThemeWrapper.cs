@@ -5,7 +5,10 @@ namespace Microsoft.Maui.Platform;
 
 internal class MauiMaterialContextThemeWrapper : ContextThemeWrapper
 {
-    public MauiMaterialContextThemeWrapper(Context context) : this(context, Resource.Style.Maui_MainTheme_Base)
+    public MauiMaterialContextThemeWrapper(Context context)
+        : this(context, MaterialDesignHelper.IsMaterial3Enabled(context)
+            ? Resource.Style.Maui_Material3_Theme_Base
+            : Resource.Style.Maui_MainTheme_Base)
     {
     }
 

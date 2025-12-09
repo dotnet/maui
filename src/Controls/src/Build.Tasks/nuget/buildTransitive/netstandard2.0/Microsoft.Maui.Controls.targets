@@ -351,6 +351,10 @@
                                       Condition="'$(_EnableMauiAspire)' != ''"
                                       Value="$(_EnableMauiAspire)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled"
+                                      Condition="'$(UseMaterial3)' != ''"
+                                      Value="$(UseMaterial3)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 
