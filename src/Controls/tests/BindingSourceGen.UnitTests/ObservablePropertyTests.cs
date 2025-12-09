@@ -54,8 +54,8 @@ public class ObservablePropertyTests
 
 		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
-		// Check that the method signature has the getter parameter with correct type
-		Assert.Contains("global::System.Func<global::TestApp.MyViewModel, string?> getter", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that the handler contains the property access
+		Assert.Contains("new(static source => source, \"Name\")", allGeneratedCode, System.StringComparison.Ordinal);
 		// Check that setter assigns to .Name
 		Assert.Contains("source.Name = value;", allGeneratedCode, System.StringComparison.Ordinal);
 
@@ -104,8 +104,8 @@ public class ObservablePropertyTests
 
 		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
-		// Check that the method signature has the getter parameter with correct type
-		Assert.Contains("global::System.Func<global::TestApp.MyViewModel, string?> getter", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that the handler contains the property access
+		Assert.Contains("new(static source => source, \"Title\")", allGeneratedCode, System.StringComparison.Ordinal);
 		// Check that setter assigns to .Title
 		Assert.Contains("source.Title = value;", allGeneratedCode, System.StringComparison.Ordinal);
 	}
@@ -152,9 +152,8 @@ public class ObservablePropertyTests
 
 		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
-		// Check that the method signature has the getter parameter (Type may vary based on nullable context)
-		Assert.Contains("Func<global::TestApp.MyViewModel", allGeneratedCode, System.StringComparison.Ordinal);
-		Assert.Contains("ObservableCollection<global::TestApp.Tag>", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that the handler contains the property access
+		Assert.Contains("new(static source => source, \"Tags\")", allGeneratedCode, System.StringComparison.Ordinal);
 		// Check that setter assigns to .Tags
 		Assert.Contains("source.Tags = value;", allGeneratedCode, System.StringComparison.Ordinal);
 	}
