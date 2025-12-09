@@ -26,6 +26,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 
 	#region Default Values and Initial State Tests
 
+#if TEST_FAILS_ON_CATALYST // On MacCatalyst, when the test case is executed directly, the cursor automatically stays centered on the screen. Because of this, the cursor interacts with the GraphicsView and triggers the StartHoverInteraction event in CI. To avoid this false interaction, the test case is restricted.
 	[Test, Order(1)]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
@@ -43,7 +44,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		var interactionLabel = App.FindElement("InteractionEventLabel");
 		Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
 	}
-
+#endif
 	#endregion
 
 	#region Drawable Type Tests
