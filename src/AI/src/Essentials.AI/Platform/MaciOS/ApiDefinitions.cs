@@ -260,6 +260,10 @@ interface TextContentNative
 [Internal]
 interface ResponseUpdateNative
 {
+	// @property (nonatomic, readonly) enum ResponseUpdateTypeNative updateType;
+	[Export("updateType")]
+	ResponseUpdateTypeNative UpdateType { get; }
+
 	// @property (nonatomic, readonly, copy) NSString * _Nullable text;
 	[NullAllowed, Export("text")]
 	string Text { get; }

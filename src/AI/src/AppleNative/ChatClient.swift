@@ -41,7 +41,7 @@ public class ChatClientNative: NSObject {
                         log("[\(methodName)] Tool invoking: \(name) (id=\(id)) with arguments: \(arguments)")
                     }
 
-                    let update = ResponseUpdateNative(toolCallId: id, toolCallName: name, toolCallArguments: arguments)
+                    let update = ResponseUpdateNative(updateType: .toolCall, toolCallId: id, toolCallName: name, toolCallArguments: arguments)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 },
                 onToolResult: { id, name, result in
@@ -49,7 +49,7 @@ public class ChatClientNative: NSObject {
                         log("[\(methodName)] Tool completed: \(name) (id=\(id)) with result: \(result)")
                     }
 
-                    let update = ResponseUpdateNative(toolCallId: id, toolCallName: name, toolCallResult: result)
+                    let update = ResponseUpdateNative(updateType: .toolResult, toolCallId: id, toolCallName: name, toolCallResult: result)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
             )
@@ -69,7 +69,7 @@ public class ChatClientNative: NSObject {
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
                     }
-                    let update = ResponseUpdateNative(text: text)
+                    let update = ResponseUpdateNative(updateType: .content, text: text)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
@@ -91,7 +91,7 @@ public class ChatClientNative: NSObject {
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
                     }
-                    let update = ResponseUpdateNative(text: text)
+                    let update = ResponseUpdateNative(updateType: .content, text: text)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
@@ -134,7 +134,7 @@ public class ChatClientNative: NSObject {
                         log("[\(methodName)] Tool invoking: \(name) (id=\(id)) with arguments: \(arguments)")
                     }
 
-                    let update = ResponseUpdateNative(toolCallId: id, toolCallName: name, toolCallArguments: arguments)
+                    let update = ResponseUpdateNative(updateType: .toolCall, toolCallId: id, toolCallName: name, toolCallArguments: arguments)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 },
                 onToolResult: { id, name, result in
@@ -142,7 +142,7 @@ public class ChatClientNative: NSObject {
                         log("[\(methodName)] Tool completed: \(name) (id=\(id)) with result: \(result)")
                     }
 
-                    let update = ResponseUpdateNative(toolCallId: id, toolCallName: name, toolCallResult: result)
+                    let update = ResponseUpdateNative(updateType: .toolResult, toolCallId: id, toolCallName: name, toolCallResult: result)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
             )

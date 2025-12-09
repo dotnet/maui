@@ -15,3 +15,10 @@ internal enum ChatRoleNative : long
 	System = 3,
 	Tool = 4,
 }
+
+internal enum ResponseUpdateTypeNative : long
+{
+	Content = 0,
+	ToolCall = 1,
+	ToolResult = 2
+}

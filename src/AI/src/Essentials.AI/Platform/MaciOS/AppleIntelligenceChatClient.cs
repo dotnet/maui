@@ -19,6 +19,7 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 #if DEBUG
 	static AppleIntelligenceChatClient()
 	{
+		// Enable native logging for debugging purposes, this is quite verbose.
 		// AppleIntelligenceLogger.Log = (message) => System.Diagnostics.Debug.WriteLine("[Native] " + message);
 	}
 #endif
@@ -98,20 +99,20 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			nativeOptions,
 			onUpdate: (update) =>
 			{
-				// Handle tool call notifications
-				if (update.ToolCallName is not null && update.ToolCallId is not null)
+				switch (update.UpdateType)
 				{
-					LogFunctionInvoking(nameof(GetResponseAsync), update.ToolCallName, update.ToolCallId, update.ToolCallArguments);
+					case ResponseUpdateTypeNative.ToolCall:
+						LogFunctionInvoking(nameof(GetResponseAsync), update.ToolCallName!, update.ToolCallId!, update.ToolCallArguments);
+						break;
 
-					return;
-				}
+					case ResponseUpdateTypeNative.ToolResult:
+						LogFunctionInvocationCompleted(nameof(GetResponseAsync), update.ToolCallId!, update.ToolCallResult!);
+						break;
 
-				// Handle tool result notifications
-				if (update.ToolCallId is not null && update.ToolCallResult is not null)
-				{
-					LogFunctionInvocationCompleted(nameof(GetResponseAsync), update.ToolCallId, update.ToolCallResult);
-
-					return;
+					case ResponseUpdateTypeNative.Content:
+					default:
+						// Content updates are not used in non-streaming mode
+						break;
 				}
 			},
 			onComplete: (response, error) =>
@@ -175,61 +176,56 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			nativeOptions,
 			onUpdate: (update) =>
 			{
-				// Handle text updates
-				if (update.Text is not null)
+				switch (update.UpdateType)
 				{
-					// Use stream chunker to compute delta - handles both JSON and plain text
-					var delta = chunker.Process(update.Text);
-
-					if (!string.IsNullOrEmpty(delta))
-					{
-						var chatUpdate = new ChatResponseUpdate
+					case ResponseUpdateTypeNative.Content:
+						// Handle text updates
+						if (update.Text is not null)
 						{
-							Role = ChatRole.Assistant,
-							Contents = { new TextContent(delta) }
-						};
+							// Use stream chunker to compute delta - handles both JSON and plain text
+							var delta = chunker.Process(update.Text);
 
-						LogStreamingUpdate(nameof(GetStreamingResponseAsync), chatUpdate);
-						channel.Writer.TryWrite(chatUpdate);
-					}
+							if (!string.IsNullOrEmpty(delta))
+							{
+								var chatUpdate = new ChatResponseUpdate
+								{
+									Role = ChatRole.Assistant,
+									Contents = { new TextContent(delta) }
+								};
 
-					return;
-				}
+								LogStreamingUpdate(nameof(GetStreamingResponseAsync), chatUpdate);
+								channel.Writer.TryWrite(chatUpdate);
+							}
+						}
+						break;
 
-				// Handle tool call notifications
-				if (update.ToolCallName is not null && update.ToolCallId is not null)
-				{
-					LogFunctionInvoking(nameof(GetStreamingResponseAsync), update.ToolCallName, update.ToolCallId, update.ToolCallArguments);
+					case ResponseUpdateTypeNative.ToolCall:
+						LogFunctionInvoking(nameof(GetStreamingResponseAsync), update.ToolCallName!, update.ToolCallId!, update.ToolCallArguments);
 
-					var args = update.ToolCallArguments is null
-						? null
+						var args = update.ToolCallArguments is null
+							? null
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
-						: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
+							: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
 #pragma warning restore IL3050, IL2026
 
-					var chatUpdate = new ChatResponseUpdate
-					{
-						Role = ChatRole.Assistant,
-						Contents = { new FunctionCallContent(update.ToolCallId, update.ToolCallName, args) }
-					};
-					channel.Writer.TryWrite(chatUpdate);
+						var toolCallUpdate = new ChatResponseUpdate
+						{
+							Role = ChatRole.Assistant,
+							Contents = { new FunctionCallContent(update.ToolCallId!, update.ToolCallName!, args) }
+						};
+						channel.Writer.TryWrite(toolCallUpdate);
+						break;
 
-					return;
-				}
+					case ResponseUpdateTypeNative.ToolResult:
+						LogFunctionInvocationCompleted(nameof(GetStreamingResponseAsync), update.ToolCallId!, update.ToolCallResult!);
 
-				// Handle tool result notifications
-				if (update.ToolCallId is not null && update.ToolCallResult is not null)
-				{
-					LogFunctionInvocationCompleted(nameof(GetStreamingResponseAsync), update.ToolCallId, update.ToolCallResult);
-
-					var chatUpdate = new ChatResponseUpdate
-					{
-						Role = ChatRole.Assistant,
-						Contents = { new FunctionResultContent(update.ToolCallId, update.ToolCallResult) }
-					};
-					channel.Writer.TryWrite(chatUpdate);
-
-					return;
+						var toolResultUpdate = new ChatResponseUpdate
+						{
+							Role = ChatRole.Assistant,
+							Contents = { new FunctionResultContent(update.ToolCallId!, update.ToolCallResult!) }
+						};
+						channel.Writer.TryWrite(toolResultUpdate);
+						break;
 				}
 			},
 			onComplete: (finalResult, error) =>
