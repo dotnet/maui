@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui;
@@ -17,6 +18,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	{
 		CarouselItemsGalleryViewModel _viewModel;
 		bool _setPositionOnAppering;
+
+		[RequiresUnreferencedCode("CarouselItemsGallery may require unreferenced code for data binding")]
 		public CarouselItemsGallery(bool startEmptyCollection = false, bool setCollectionWithAsync = false,
 									bool useNativeIndicators = false, bool setPositionOnConstructor = false,
 									bool setPositionOnAppearing = false, bool useScrollAnimated = true)

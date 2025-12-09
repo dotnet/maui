@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		bool SearchView.IOnQueryTextListener.OnQueryTextChange(string newText)
 		{
-			Internals.TextTransformUtilites.SetPlainText(Element, newText);
+			Internals.TextTransformUtilities.SetPlainText(Element, newText);
 
 			return true;
 		}

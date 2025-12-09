@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Bugzilla45125 : _IssuesUITest
 {
 	const string AppearingLabelId = "appearing";

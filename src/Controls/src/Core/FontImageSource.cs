@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontImageSource']/Docs/*" />
+	[ContentProperty(nameof(Glyph))]
 	public partial class FontImageSource : ImageSource
 	{
 		/// <summary>Indicates whether the <see cref="Microsoft.Maui.Controls.FontImageSource"/> property is null or empty.</summary>

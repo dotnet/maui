@@ -47,7 +47,7 @@ public class ContactsPage : ContentPage
 
 	void ListViewOnItemTapped(object sender, ItemTappedEventArgs itemTappedEventArgs)
 	{
-		DisplayActionSheet("Tapped a List item", "Cancel", "Destruction");
+		DisplayActionSheetAsync("Tapped a List item", "Cancel", "Destruction");
 	}
 }
 

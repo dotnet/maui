@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateTime()
 		{
-			_picker.Date = new DateTime(1, 1, 1).Add(Element.Time).ToNSDate();
+			_picker.Date = new DateTime(1, 1, 1).Add(Element.Time ?? TimeSpan.Zero).ToNSDate();
 			string iOSLocale = NSLocale.CurrentLocale.CountryCode;
 			var cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures)
 							  .Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
@@ -228,12 +228,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				string timeformat = cultureInfos.DateTimeFormat.ShortTimePattern;
 				NSLocale locale = new NSLocale(cultureInfos.TwoLetterISOLanguageName);
-				Control.Text = DateTime.Today.Add(Element.Time).ToString(timeformat, cultureInfos);
+				Control.Text = DateTime.Today.Add(Element.Time ?? TimeSpan.Zero).ToString(timeformat, cultureInfos);
 				_picker.Locale = locale;
 			}
 			else
 			{
-				Control.Text = DateTime.Today.Add(Element.Time).ToString(Element.Format, cultureInfos);
+				Control.Text = DateTime.Today.Add(Element.Time ?? TimeSpan.Zero).ToString(Element.Format, cultureInfos);
 			}
 
 			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)

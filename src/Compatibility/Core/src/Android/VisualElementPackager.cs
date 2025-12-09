@@ -89,11 +89,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					SetElement(_element, null);
 
-					if (_childViews != null)
-					{
-						_childViews.Clear();
-						_childViews = null;
-					}
+					_childViews?.Clear();
+					_childViews = null;
 
 					if (_childPackagers != null)
 					{

@@ -17,22 +17,27 @@ parameters:
     # we might want to improve this somehow depending on how much the categories change over time
     - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
     - 'Border,BoxView,Brush,Button'
-    - 'Cells,CheckBox,ContextActions,CustomRenderers'
     - 'CarouselView'
+    - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
     - 'CollectionView'
-    - 'DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
     - 'Entry'
     - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
-    - 'Label,Layout,Lifecycle,ListView'
-    - 'ManualReview,Maps'
+    - 'Label'
+    - 'Layout'
+    - 'Lifecycle,ManualReview,Maps'
+    - 'ListView'
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
-    - 'ScrollView,SearchBar,Shape,Slider,SoftInput,Stepper,Switch,SwipeView'
+    - 'SafeAreaEdges,Shadow'
+    - 'ScrollView'
+    - 'SearchBar,Shape,Slider'
+    - 'SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'Shadow,ViewBaseTests,Visual,WebView,Window'
+    - 'ViewBaseTests,Window'
+    - 'WebView'
 
   projects:
     - name: name
@@ -59,11 +64,27 @@ stages:
             parameters:
                 runtimeVariant: "Mono"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  - stage: build_ui_tests_coreclr
+    displayName: Build UITests CoreCLR Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "CoreCLR"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   
   # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
   - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
-      displayName: Build UITests Sample App NativeAOT
+      displayName: Build UITests NativeAOT Sample App
       dependsOn: []
       jobs:
         - job: build_ui_tests
@@ -130,6 +151,59 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Android snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
+
+
+  - stage: android_ui_tests_coreclr
+    displayName: Android UITests CoreClr
+    dependsOn: build_ui_tests_coreclr
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: android_ui_tests_${{ project.name }}_${{ api }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                      runtimeVariant: "CoreCLR"
+                  
+                  # Collect and publish Android snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -158,7 +232,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 16.4
+                        version: 18.5
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -170,7 +244,14 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -194,7 +275,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 16.4
+                        version: 18.5
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -206,8 +287,15 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
+                      headless: ${{ parameters.headless }}
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS CV2'
+                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_carv2
     displayName: iOS UITests Mono CarouselView2
@@ -231,7 +319,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 16.4
+                        version: 18.5
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -245,6 +333,12 @@ stages:
                       testFilter: "CarouselView"
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS CARV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS CARV2'
+                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.JobName)-$(System.JobAttempt)'
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
@@ -275,7 +369,7 @@ stages:
                       parameters:
                         platform: ios
                         ${{ if eq(version, 'latest') }}:
-                          version: 17.2
+                          version: 18.5
                         ${{ if ne(version, 'latest') }}:
                           version: ${{ version }}
                         path: ${{ project.ios }}
@@ -287,6 +381,7 @@ stages:
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
+                        headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
@@ -319,6 +414,12 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Windows snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Windows'
+                      artifactName: 'uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -344,10 +445,16 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
-                      version: "13.1"
+                      version: "15.3"
                       device: mac
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Mac snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Mac'
+                      artifactName: 'uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)'

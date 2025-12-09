@@ -3,8 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   tags:
     include:
     - '*'
@@ -12,7 +11,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -27,13 +26,12 @@ pr:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   paths:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -54,11 +52,6 @@ parameters:
   type: boolean
   default: false
 
-- name: provisionatorChannel
-  displayName: 'Provisionator channel'
-  type: string
-  default: 'latest'
-
 - name: BuildEverything
   type: boolean
   default: false
@@ -78,6 +71,7 @@ parameters:
     vmImage: $(iosDeviceTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
+    - Agent.OSVersion -equals 15.6
 
 - name: catalystPool
   type: object
@@ -86,6 +80,7 @@ parameters:
     vmImage: $(iosDeviceTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
+    - Agent.OSVersion -equals 15.6
 
 - name: windowsPool
   type: object
@@ -99,10 +94,16 @@ parameters:
     name: Azure Pipelines
     vmImage: macOS-15
 
+- name: macOSHelixPool
+  type: object
+  default:
+    name: MAUI
+    vmImage: MAUI
+
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net9.0
+  - tfm: net10.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -113,8 +114,10 @@ stages:
     # Use Helix for iOS / Android and MacCatalyst Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.macOSPool }}
+        buildPool: ${{ parameters.macOSHelixPool }}
+        testPool: ${{ parameters.macOSPool }}
         runAsPublic: true
+        TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
           parameters:
@@ -126,7 +129,8 @@ stages:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
+            skipSimulatorSetup: false
 
     # Just use the old way for Windows Device Tests
     - template: common/device-tests.yml
@@ -173,26 +177,24 @@ stages:
         iosPool: ${{ parameters.iosPool }}
         catalystPool: ${{ parameters.catalystPool }}
         windowsPool: ${{ parameters.windowsPool }}
-        agentPoolAccessToken: $(AgentPoolAccessToken)
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-          androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-          iosVersions: [ 'simulator-18.0' ]
+          androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
+          iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
-          provisionatorChannel: ${{ parameters.provisionatorChannel }}
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
         ${{ else }}:
           androidApiLevels: [ 33, 23 ]
-          iosVersions: [ 'simulator-18.0' ]
+          iosVersions: [ 'simulator-18.4' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
-          provisionatorChannel: ${{ parameters.provisionatorChannel }}
           skipProvisioning: ${{ not(parameters.UseProvisionator) }}
         projects:
         - name: essentials
           desc: Essentials
           androidApiLevelsExclude: [ 25, 27 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -203,7 +205,8 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: graphics
           desc: Graphics
-          androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -215,6 +218,7 @@ stages:
         - name: core
           desc: Core
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -226,6 +230,7 @@ stages:
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Debug'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
@@ -237,6 +242,7 @@ stages:
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          androidApiLevelsCoreClrExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21]
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'

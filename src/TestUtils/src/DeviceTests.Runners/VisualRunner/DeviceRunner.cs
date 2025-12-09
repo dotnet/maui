@@ -117,7 +117,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 #elif ANDROID
 					// this is required to exist, but is not used
 					var assemblyFileName = assm.GetName().Name + ".dll";
-					assemblyFileName = Path.Combine(Android.App.Application.Context.CacheDir.AbsolutePath, assemblyFileName);
+					assemblyFileName = Path.Combine(global::Android.App.Application.Context.CacheDir.AbsolutePath, assemblyFileName);
 					if (!File.Exists(assemblyFileName))
 						File.Create(assemblyFileName).Close();
 #else
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		static Stream GetConfigurationStreamForAssembly(string assemblyName)
 		{
 #if __ANDROID__
-			var assets = Android.App.Application.Context.Assets;
+			var assets = global::Android.App.Application.Context.Assets;
 			var allAssets = assets.List(string.Empty);
 
 			if (allAssets.Contains($"{assemblyName}.xunit.runner.json"))

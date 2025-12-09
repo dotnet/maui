@@ -56,7 +56,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Focus = "Focus";
 		public const string ManualReview = "ManualReview";
 		public const string Performance = "Performance";
-		public const string Visual = "Visual";
+
 		public const string AppLinks = "AppLinks";
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
@@ -74,5 +74,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Compatibility = "MovedFromCompatibility";
 		public const string GraphicsView = "GraphicsView";
 		public const string Fonts = "Fonts";
+		public const string SafeAreaEdges = "SafeAreaEdges";
 	}
 }

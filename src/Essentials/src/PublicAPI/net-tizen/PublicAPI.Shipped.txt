@@ -435,6 +435,7 @@ Microsoft.Maui.Authentication.IAppleSignInAuthenticator
 Microsoft.Maui.Authentication.IAppleSignInAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback
 Microsoft.Maui.Authentication.IWebAuthenticator
+Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>?
@@ -668,6 +669,7 @@ Microsoft.Maui.Devices.Sensors.IGeocoding.GetPlacemarksAsync(double latitude, do
 Microsoft.Maui.Devices.Sensors.IGeolocation
 Microsoft.Maui.Devices.Sensors.IGeolocation.GetLastKnownLocationAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 Microsoft.Maui.Devices.Sensors.IGeolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request, System.Threading.CancellationToken cancelToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsListeningForeground.get -> bool
 Microsoft.Maui.Devices.Sensors.IGeolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>?
 Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>?
@@ -800,6 +802,8 @@ Microsoft.Maui.Media.SpeechOptions.Locale.get -> Microsoft.Maui.Media.Locale?
 Microsoft.Maui.Media.SpeechOptions.Locale.set -> void
 Microsoft.Maui.Media.SpeechOptions.Pitch.get -> float?
 Microsoft.Maui.Media.SpeechOptions.Pitch.set -> void
+Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
+Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
 Microsoft.Maui.Media.SpeechOptions.SpeechOptions() -> void
 Microsoft.Maui.Media.SpeechOptions.Volume.get -> float?
 Microsoft.Maui.Media.SpeechOptions.Volume.set -> void
@@ -849,7 +853,7 @@ Microsoft.Maui.Storage.FileSystemImplementation.FileSystemImplementation() -> vo
 Microsoft.Maui.Storage.FileSystemImplementation.OpenAppPackageFileAsync(string! filename) -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.Storage.IFilePicker
 Microsoft.Maui.Storage.IFilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 Microsoft.Maui.Storage.IFileSystem
 Microsoft.Maui.Storage.IFileSystem.AppDataDirectory.get -> string!
 Microsoft.Maui.Storage.IFileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
@@ -1019,9 +1023,12 @@ static Microsoft.Maui.ApplicationModel.VersionTracking.Track() -> void
 static Microsoft.Maui.ApplicationModel.VersionTracking.VersionHistory.get -> System.Collections.Generic.IEnumerable<string!>!
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.Default.get -> Microsoft.Maui.Authentication.IAppleSignInAuthenticator!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.Default.get -> Microsoft.Maui.Authentication.IWebAuthenticator!
+static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Devices.Battery.BatteryInfoChanged -> System.EventHandler<Microsoft.Maui.Devices.BatteryInfoChangedEventArgs!>!
 static Microsoft.Maui.Devices.Battery.ChargeLevel.get -> double
@@ -1071,6 +1078,7 @@ static Microsoft.Maui.Devices.Flashlight.IsSupportedAsync() -> System.Threading.
 static Microsoft.Maui.Devices.Flashlight.TurnOffAsync() -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Devices.Flashlight.TurnOnAsync() -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Devices.HapticFeedback.Default.get -> Microsoft.Maui.Devices.IHapticFeedback!
+static Microsoft.Maui.Devices.HapticFeedback.IsSupported.get -> bool
 static Microsoft.Maui.Devices.HapticFeedback.Perform(Microsoft.Maui.Devices.HapticFeedbackType type = Microsoft.Maui.Devices.HapticFeedbackType.Click) -> void
 static Microsoft.Maui.Devices.Sensors.Accelerometer.Default.get -> Microsoft.Maui.Devices.Sensors.IAccelerometer!
 static Microsoft.Maui.Devices.Sensors.Accelerometer.IsMonitoring.get -> bool
@@ -1110,6 +1118,7 @@ static Microsoft.Maui.Devices.Sensors.Geolocation.GetLastKnownLocationAsync() ->
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request, System.Threading.CancellationToken cancelToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
 static Microsoft.Maui.Devices.Sensors.Geolocation.IsListeningForeground.get -> bool
 static Microsoft.Maui.Devices.Sensors.Geolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>!
@@ -1144,6 +1153,7 @@ static Microsoft.Maui.Devices.Sensors.OrientationSensorData.operator !=(Microsof
 static Microsoft.Maui.Devices.Sensors.OrientationSensorData.operator ==(Microsoft.Maui.Devices.Sensors.OrientationSensorData left, Microsoft.Maui.Devices.Sensors.OrientationSensorData right) -> bool
 static Microsoft.Maui.Devices.Vibration.Cancel() -> void
 static Microsoft.Maui.Devices.Vibration.Default.get -> Microsoft.Maui.Devices.IVibration!
+static Microsoft.Maui.Devices.Vibration.IsSupported.get -> bool
 static Microsoft.Maui.Devices.Vibration.Vibrate() -> void
 static Microsoft.Maui.Devices.Vibration.Vibrate(double duration) -> void
 static Microsoft.Maui.Devices.Vibration.Vibrate(System.TimeSpan duration) -> void
@@ -1200,7 +1210,7 @@ static Microsoft.Maui.Networking.Connectivity.Current.get -> Microsoft.Maui.Netw
 static Microsoft.Maui.Networking.Connectivity.NetworkAccess.get -> Microsoft.Maui.Networking.NetworkAccess
 static Microsoft.Maui.Storage.FilePicker.Default.get -> Microsoft.Maui.Storage.IFilePicker!
 static Microsoft.Maui.Storage.FilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>!>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 static Microsoft.Maui.Storage.FileSystem.AppDataDirectory.get -> string!
 static Microsoft.Maui.Storage.FileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Storage.FileSystem.CacheDirectory.get -> string!

@@ -156,7 +156,7 @@
     <comment>0 is BindableProperty name, 1 is the declaring type</comment>
   </data>
   <data name="BPName" xml:space="preserve">
-    <value>Il nome dell'elemento BindableProperty {0} non termina con "Property".</value>
+    <value>Il nome di BindableProperty {0} non termina con "Property".</value>
     <comment>0 is BindableProperty name</comment>
   </data>
   <data name="ConstructorDefaultMissing" xml:space="preserve">
@@ -198,7 +198,7 @@
     <comment>0 is type name, 1 is methodname, 2 is type arg list</comment>
   </data>
   <data name="MissingEventHandler" xml:space="preserve">
-    <value>Nel tipo "{1}" non è stato trovato alcun elemento EventHandler "{0}" con la firma corretta.</value>
+    <value>Non è stato trovato alcun elemento EventHandler "{0}" con la firma corretta nel tipo "{1}".</value>
     <comment>0 is the handler name, 1 is the declaring type</comment>
   </data>
   <data name="NamescopeDuplicate" xml:space="preserve">
@@ -209,7 +209,7 @@
     <value>Property, Property Setter o BindableProperty "{0}" è deprecato.</value>
   </data>
   <data name="PropertyMissing" xml:space="preserve">
-    <value>In "{1}" manca la proprietà obbligatoria "{0}".</value>
+    <value>Proprietà obbligatoria "{0}" mancante in "{1}".</value>
     <comment>0 is a property name, 1 is a type</comment>
   </data>
   <data name="PropertyResolution" xml:space="preserve">
@@ -224,7 +224,7 @@
     <value>Per le risorse in ResourceDictionary è richiesto un attributo x:Key.</value>
   </data>
   <data name="ResourceMissing" xml:space="preserve">
-    <value>La risorsa "{0}" non è stata trovata.</value>
+    <value>Risorsa "{0}" non trovata.</value>
     <comment>0 is a resourceId</comment>
   </data>
   <data name="SByteEnums" xml:space="preserve">
@@ -254,7 +254,7 @@
     <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
-    <value>Il prefisso xmlns "{0}" non è dichiarato.</value>
+    <value>Prefisso xmlns non dichiarato "{0}".</value>
     <comment>0 is the xmlns prefix</comment>
   </data>
   <data name="XStaticResolution" xml:space="preserve">

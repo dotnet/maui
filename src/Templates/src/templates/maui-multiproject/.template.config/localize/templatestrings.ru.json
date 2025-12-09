@@ -1,17 +1,17 @@
 {
   "author": "Майкрософт",
-  "name": ".NET MAUI многопроектного приложения",
+  "name": "Многопроектное приложение .NET MAUI",
   "description": "Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst и WinUI с несколькими отдельными проектами приложений.",
   "postActions/openInEditor/description": "Открывает MainPage.xaml в редакторе.",
   "symbols/applicationId/description": "Переопределяет $(ApplicationId) в проекте",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Целевое значение DOTNET_TFM_VALUE",
   "symbols/android/displayName": "Android",
-  "symbols/android/description": "Включить головной проект приложения Android",
+  "symbols/android/description": "Включить главный проект приложения Android",
   "symbols/ios/displayName": "iOS",
-  "symbols/ios/description": "Включить проект head приложения iOS",
-  "symbols/maccatalyst/displayName": "macOS, использующий MacАйт",
-  "symbols/maccatalyst/description": "Включить головной проект приложения macOS (с использованием Mac Desktop)",
-  "symbols/winui/displayName": "Windows, использующая WinUI 3",
-  "symbols/winui/description": "Включить проект заголовка приложения Windows (с помощью WinUI 3)"
+  "symbols/ios/description": "Включить главный проект приложения iOS",
+  "symbols/maccatalyst/displayName": "macOS с использованием Mac Catalyst",
+  "symbols/maccatalyst/description": "Включить главный проект приложения macOS (с использованием Mac Catalyst)",
+  "symbols/winui/displayName": "Windows с использованием WinUI 3",
+  "symbols/winui/description": "Включить главный проект приложения Windows (с использованием WinUI 3)"
 }

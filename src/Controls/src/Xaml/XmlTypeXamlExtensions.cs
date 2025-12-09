@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -37,9 +38,17 @@ namespace Microsoft.Maui.Controls.Xaml
 			this XmlType xmlType,
 			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
 			string defaultAssemblyName,
+			Func<(string typeName, string clrNamespace, string assemblyName), T?> refFromTypeInfo,
+			bool expandToExtension = true)
+			where T : class => GetTypeReferences(xmlType, xmlnsDefinitions, defaultAssemblyName, refFromTypeInfo, expandToExtension).FirstOrDefault();
+
+		public static IEnumerable<T> GetTypeReferences<T>(
+			this XmlType xmlType,
+			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
+			string defaultAssemblyName,
 			Func<(string typeName, string clrNamespace, string assemblyName), T> refFromTypeInfo,
 			bool expandToExtension = true)
-			where T : class
+			where T : class?
 		{
 			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
 			var namespaceURI = xmlType.NamespaceUri;
@@ -57,7 +66,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
 				asmstring ??= defaultAssemblyName;
-				if (namespaceURI != null && ns != null)
+				if (namespaceURI != null && ns != null && !ns.StartsWith("http", StringComparison.Ordinal))
 					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
 			}
 
@@ -82,23 +91,26 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
 				{
-					potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, xmlnsDefinitionAttribute.AssemblyName));
+					potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.Target, xmlnsDefinitionAttribute.AssemblyName));
 
 					// As a fallback, for assembly=mscorlib try assembly=System.Private.CoreLib
 					if (xmlnsDefinitionAttribute.AssemblyName is string assemblyName &&
 						(assemblyName == "mscorlib" || assemblyName.StartsWith("mscorlib,", StringComparison.Ordinal)))
 					{
-						potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, "System.Private.CoreLib"));
+						potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.Target, "System.Private.CoreLib"));
 					}
 				}
 			}
 
 			T? type = null;
+			string? returnTypeName = null;
 			foreach (var typeInfo in potentialTypes)
-				if ((type = refFromTypeInfo(typeInfo)) != null)
-					break;
-
-			return type;
+				if ((returnTypeName == null || returnTypeName == typeInfo.typeName) //only return multiple types if they share the same name. avoid returning both BindingExtension and Binding
+					&& (type = refFromTypeInfo(typeInfo)) != null)
+				{
+					returnTypeName = typeInfo.typeName;
+					yield return type;
+				}
 		}
 	}
 }

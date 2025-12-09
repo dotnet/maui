@@ -62,7 +62,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cílová architektura pro projekt]]></Val>
+            <Val><![CDATA[Cílová architektura pro projekt.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

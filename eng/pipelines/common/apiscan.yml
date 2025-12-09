@@ -24,4 +24,3 @@ stages:
       apiScanSoftwareVersionNum: ${{ parameters.softwareVersion }}
       apiScanAuthConnectionString: 'runAs=App;AppId=$(ApiScanClientId)'
       tsaUploadEnabled: ${{ parameters.tsaUploadEnabled }}
-

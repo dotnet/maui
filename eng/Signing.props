@@ -26,13 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
-    <FileExtensionSignInfo Update=".zip" CertificateName="None" />
-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
-    <FileExtensionSignInfo Include=".ttf" CertificateName="Microsoft400" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)\**\*.msi" Condition="'$(PostBuildSign)' != 'true'" />
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
     <ItemsToSignPostBuild Include="$(ArtifactsShippingPackagesDir)\**\*.msi" Condition="'$(PostBuildSign)' == 'true'" />

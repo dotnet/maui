@@ -26,9 +26,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='UncheckedButton']/Docs/*" />
 		public const string UncheckedButton = "Button";
 
-		internal const string GroupNameChangedMessage = "RadioButtonGroupNameChanged";
-		internal const string ValueChangedMessage = "RadioButtonValueChanged";
-
 		// App Theme string constants for Light/Dark modes
 		internal const string RadioButtonOuterEllipseStrokeLight = "RadioButtonOuterEllipseStrokeLight";
 		internal const string RadioButtonOuterEllipseStrokeDark = "RadioButtonOuterEllipseStrokeDark";
@@ -59,8 +56,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
-			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged(),
-			coerceValue: (b,  o) => o ?? b);
+			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged());
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
@@ -213,9 +209,6 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() =>
 				new PlatformConfigurationRegistry<RadioButton>(this));
-
-			//initialize Value to prevent null value
-			Value = this;
 		}
 
 		/// <inheritdoc/>
@@ -271,7 +264,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		int IBorderElement.CornerRadiusDefaultValue => (int)BorderElement.CornerRadiusProperty.DefaultValue;
 
@@ -369,13 +362,17 @@ namespace Microsoft.Maui.Controls
 		void SelectRadioButton(object sender, EventArgs e)
 		{
 			if (IsEnabled)
+			{
 				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			}
 		}
 
 		void OnIsCheckedPropertyChanged(bool isChecked)
 		{
 			if (isChecked)
+			{
 				RadioButtonGroup.UpdateRadioButtonGroup(this);
+			}
 
 			ChangeVisualState();
 			CheckedChanged?.Invoke(this, new CheckedChangedEventArgs(isChecked));
@@ -387,67 +384,24 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Send(this, ValueChangedMessage,
-						new RadioButtonValueChanged(RadioButtonGroup.GetVisualRoot(this)));
-#pragma warning restore CS0618 // Type or member is obsolete
+
+			var controller = RadioButtonGroupController.GetGroupController(this);
+			controller?.HandleRadioButtonValueChanged(this);
 		}
 
 		void OnGroupNamePropertyChanged(string oldGroupName, string newGroupName)
 		{
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			if (!string.IsNullOrEmpty(newGroupName))
+			if (!string.IsNullOrEmpty(oldGroupName) && !string.IsNullOrEmpty(newGroupName) && newGroupName != oldGroupName)
 			{
-				if (string.IsNullOrEmpty(oldGroupName))
-				{
-					MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
-						RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-					MessagingCenter.Subscribe<Element, RadioButtonGroupValueChanged>(this,
-						RadioButtonGroup.GroupValueChangedMessage, HandleRadioButtonGroupValueChanged);
-				}
-
-				MessagingCenter.Send(this, GroupNameChangedMessage,
-					new RadioButtonGroupNameChanged(RadioButtonGroup.GetVisualRoot(this), oldGroupName));
+				var controller = RadioButtonGroupController.GetGroupController(this);
+				controller?.HandleRadioButtonGroupNameChanged(oldGroupName);
 			}
-			else
-			{
-				if (!string.IsNullOrEmpty(oldGroupName))
-				{
-					MessagingCenter.Unsubscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, RadioButtonGroup.GroupSelectionChangedMessage);
-					MessagingCenter.Unsubscribe<Element, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
-				}
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		bool MatchesScope(RadioButtonScopeMessage message)
+		internal void OnGroupSelectionChanged(RadioButton radioButton)
 		{
-			return RadioButtonGroup.GetVisualRoot(this) == message.Scope;
-		}
-
-		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
-		{
-			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || (Value is not null && object.Equals(Value, args.Value)) || !MatchesScope(args))
-			{
-				return;
-			}
-
-			SetValue(IsCheckedProperty, false, specificity: SetterSpecificity.FromHandler);
-		}
-
-		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
-		{
-			if (string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !MatchesScope(args))
-			{
-				return;
-			}
-
-			var isValueMatching = object.Equals(Value, args.Value);
-
-			if (IsChecked != isValueMatching)
-			{
-				SetValue(IsCheckedProperty, isValueMatching, specificity: SetterSpecificity.FromHandler);
-			}
+			var controller = RadioButtonGroupController.GetGroupController(this);
+			controller?.HandleRadioButtonGroupSelectionChanged(radioButton);
 		}
 
 		static View BuildDefaultTemplate()
