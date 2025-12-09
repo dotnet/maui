@@ -49,6 +49,16 @@ public class Issue32041 : _IssuesUITest
 		var bottomMarker = App.FindElement("BottomMarker");
 		Assert.That(bottomMarker, Is.Not.Null, 
 			"Bottom marker should remain visible and accessible after keyboard appears");
+
+		// Verify the entry field is still interactive after closing the keyboard
+		App.DismissKeyboard();
+		Thread.Sleep(500); // Wait for keyboard to dismiss
+
+		var bottomMarkerAfterKeyboardClose = App.FindElement("BottomMarker").GetRect();
+		var afterKeyboardCloseBottom = bottomMarkerAfterKeyboardClose.Y + bottomMarkerAfterKeyboardClose.Height;
+
+		Assert.That(afterKeyboardCloseBottom, Is.EqualTo(initialBottom),
+			"Bottom marker should return to initial position after keyboard is dismissed");
 	}
 }
 

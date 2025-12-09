@@ -158,6 +158,9 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
+					// Check if this view was previously tracked (had padding)
+					var wasTracked = globalWindowInsetsListener?.IsViewTracked(view) == true;
+
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
@@ -174,7 +177,8 @@ internal static class SafeAreaExtensions
 					}
 
 					// Bottom: how much the view extends into the bottom safe area
-					if (bottom > 0 && viewBottom > (screenHeight - bottom))
+					// Use inclusive comparison so we keep padding when the view exactly meets the safe area boundary
+					if (bottom > 0 && viewBottom >= (screenHeight - bottom))
 					{
 						// Calculate the actual overlap amount
 						var bottomEdge = screenHeight - bottom;
@@ -184,8 +188,17 @@ internal static class SafeAreaExtensions
 					{
 						// if the view height is zero because it hasn't done the first pass
 						// and we don't have any tracked views yet then we will apply the bottom inset
+						// IMPORTANT: If this view was previously tracked (had padding) and keyboard just closed,
+						// keep the bottom padding even if view hasn't re-expanded yet
 						if (viewHeight > 0 || hasTrackedViews)
-							bottom = 0;
+						{
+							// Special case: if view was tracked and keyboard just closed, maintain bottom padding
+							// because the view is compressed and will re-expand, but during transition we need padding
+							if (!(wasTracked && !isKeyboardShowing && bottom > 0))
+							{
+								bottom = 0;
+							}
+						}
 					}
 
 					// Left: how much the view extends into the left safe area
