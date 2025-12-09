@@ -52,9 +52,12 @@ public class ObservablePropertyTests
 		// The binding should be generated successfully with ObservableProperty inference
 		Assert.NotNull(result.Binding);
 
-		// Verify the generated interceptor code contains the Name property access
+		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
-		Assert.Contains("Name", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that the method signature has the getter parameter with correct type
+		Assert.Contains("global::System.Func<global::TestApp.MyViewModel, string?> getter", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that setter assigns to .Name
+		Assert.Contains("source.Name = value;", allGeneratedCode, System.StringComparison.Ordinal);
 
 		// Note: There will be compilation errors because Name doesn't actually exist,
 		// but the interceptor code itself is generated correctly. In real usage with
@@ -99,9 +102,12 @@ public class ObservablePropertyTests
 		// The binding should be generated successfully with ObservableProperty inference
 		Assert.NotNull(result.Binding);
 
-		// Verify the generated interceptor code contains the Title property access
+		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
-		Assert.Contains("Title", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that the method signature has the getter parameter with correct type
+		Assert.Contains("global::System.Func<global::TestApp.MyViewModel, string?> getter", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that setter assigns to .Title
+		Assert.Contains("source.Title = value;", allGeneratedCode, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -144,9 +150,13 @@ public class ObservablePropertyTests
 		// The binding should be generated successfully with ObservableProperty inference
 		Assert.NotNull(result.Binding);
 
-		// Verify the generated interceptor code contains the Tags property access
+		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
-		Assert.Contains("Tags", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that the method signature has the getter parameter (Type may vary based on nullable context)
+		Assert.Contains("Func<global::TestApp.MyViewModel", allGeneratedCode, System.StringComparison.Ordinal);
+		Assert.Contains("ObservableCollection<global::TestApp.Tag>", allGeneratedCode, System.StringComparison.Ordinal);
+		// Check that setter assigns to .Tags
+		Assert.Contains("source.Tags = value;", allGeneratedCode, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -288,5 +298,43 @@ public class ObservablePropertyTests
 		Assert.True(canInfer, "Should be able to infer IsActive from _isActive field");
 		Assert.NotNull(propertyType);
 		Assert.Equal("bool", propertyType!.ToDisplayString());
+	}
+
+	[Fact]
+	public void DetectsObservablePropertyFromMUnderscorePrefixedField()
+	{
+		// Test that we can detect fields with m_ prefix
+		var source = """
+			using System.Collections.ObjectModel;
+
+			namespace CommunityToolkit.Mvvm.ComponentModel
+			{
+				[System.AttributeUsage(System.AttributeTargets.Field)]
+				public class ObservablePropertyAttribute : System.Attribute { }
+			}
+
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+					private int m_count;
+				}
+			}
+			""";
+
+		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+
+		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
+		Assert.NotNull(myViewModelType);
+
+		// Test that TryGetObservablePropertyType can detect the Count property from m_count field
+		var canInfer = myViewModelType.TryGetObservablePropertyType("Count", compilation, out var propertyType);
+
+		Assert.True(canInfer, "Should be able to infer Count from m_count field with [ObservableProperty]");
+		Assert.NotNull(propertyType);
+		Assert.Equal("int", propertyType!.ToDisplayString());
 	}
 }

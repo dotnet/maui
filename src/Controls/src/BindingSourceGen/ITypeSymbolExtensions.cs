@@ -106,15 +106,16 @@ public static class ITypeSymbolExtensions
 	{
 		propertyType = null;
 
-		if (compilation == null)
+		if (compilation == null || string.IsNullOrEmpty(propertyName))
 			return false;
 
-		// ObservableProperty generates a PascalCase property from a camelCase or _camelCase field
+		// ObservableProperty generates a PascalCase property from a camelCase, _camelCase, or m_camelCase field
 		// Try common field naming patterns
 		var possibleFieldNames = new[]
 		{
 			char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1), // name from Name
-			"_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1) // _name from Name
+			"_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1), // _name from Name
+			"m_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1) // m_name from Name
 		};
 
 		// Look for a field with one of the possible names - search in the type and base types
@@ -162,25 +163,16 @@ public static class ITypeSymbolExtensions
 		}
 	}
 
-	private static System.Collections.Generic.IEnumerable<IFieldSymbol> GetAllFields(ITypeSymbol symbol, string name)
+	private static System.Collections.Generic.IEnumerable<IFieldSymbol> GetAllFields(ITypeSymbol? symbol, string name)
 	{
-		// Search in current type
-		foreach (var member in symbol.GetMembers(name))
+		while (symbol != null)
 		{
-			if (member is IFieldSymbol field)
-				yield return field;
-		}
-
-		// Search in base types
-		var baseType = symbol.BaseType;
-		while (baseType != null)
-		{
-			foreach (var member in baseType.GetMembers(name))
+			foreach (var member in symbol.GetMembers(name))
 			{
 				if (member is IFieldSymbol field)
 					yield return field;
 			}
-			baseType = baseType.BaseType;
+			symbol = symbol.BaseType;
 		}
 	}
 }
