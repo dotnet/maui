@@ -255,7 +255,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		[Fact(DisplayName = "Entry with text longer text and short text updates correctly")]
+		[Fact(DisplayName = "Entry with longer text and short text updates correctly")]
 		[Category(TestCategory.Entry)]
 		public async Task EntryWithLongTextAndShortText_UpdatesTextCorrectly()
 		{
