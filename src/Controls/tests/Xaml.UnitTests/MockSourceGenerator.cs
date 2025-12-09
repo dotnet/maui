@@ -50,6 +50,7 @@ public static class MockSourceGenerator
 		return RunMauiSourceGenerator(compilation, new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd(), TargetFramework: targetFramework));
 	}
 
+	static string? _topDir;
 	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 	{
 		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
@@ -61,6 +62,17 @@ public static class MockSourceGenerator
 		return GetTopDirRecursive(Directory.GetParent(searchDirectory)?.FullName ?? "", --maxSearchDepth);
 	}
 
+	static string GetTopDir()
+	{
+		if (_topDir != null)
+			return _topDir;
+
+		// Use the assembly location instead of current directory to find the root
+		// This is necessary for Helix where tests run from a different working directory
+		var assemblyLocation = Path.GetDirectoryName(typeof(MockSourceGenerator).Assembly.Location) ?? "";
+		return _topDir = GetTopDirRecursive(Path.GetFullPath(assemblyLocation));
+	}
+
 	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, params AdditionalFile[] additionalFiles)
 	{
 #if DEBUG
@@ -69,7 +81,7 @@ public static class MockSourceGenerator
 		var config = "Release";
 #endif
 
-		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
+		var top = GetTopDir();
 		var path = System.IO.Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
 		var analyzerAssembly = Assembly.LoadFrom(path);
 
