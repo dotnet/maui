@@ -21,7 +21,7 @@
         <Button
             Text="←" Clicked="OnBackButtonClicked"
             VerticalOptions="Start" HorizontalOptions="Start"  Margin="20,20,0,0" 
-            HeightRequest="44" WidthRequest="44" CornerRadius="22"
+            HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
             FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
             TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
 

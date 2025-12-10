@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
-	public static bool UseCloudAI = false;
+	public static bool UseCloudAI = true;
 
 	public static MauiApp CreateMauiApp()
 	{
@@ -37,36 +37,56 @@ public static class MauiProgram
 			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 		});
 
-		// Register AI
+		// Register Language Preference Service
+		builder.Services.AddSingleton<LanguagePreferenceService>();
+
+		// Register AI Chat Clients
 		#if ENABLE_OPENAI_CLIENT
 		if (UseCloudAI)
 		{
 			var aiSection = builder.Configuration.GetSection("AI");
-			var client = new ChatClient(
+			var chatClient = new ChatClient(
 				credential: new ApiKeyCredential(aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.")),
 				model: aiSection["DeploymentName"] ?? throw new InvalidOperationException("Deployment Name not found in user secrets."),
 				options: new OpenAIClientOptions()
 				{
 					Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
 				});
-			var ichatClient = client.AsIChatClient();
 
-			builder.Services.AddSingleton<IChatClient>(provider =>
-            {
-				var lf = provider.GetRequiredService<ILoggerFactory>();
-				var realClient = ichatClient
+			builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
+			{
+				var lf = sp.GetRequiredService<ILoggerFactory>();
+				return chatClient.AsIChatClient()
 					.AsBuilder()
 					.UseLogging(lf)
 					.UseFunctionInvocation()
 					.Build();
-				return realClient;
-            });
+			});
 		}
-		else
 		#endif
+
+#if IOS || MACCATALYST
+#pragma warning disable CA1416 // Validate platform compatibility - this sample requires iOS/macCatalyst 26.0+
+		// Register the base Apple Intelligence client
+		builder.Services.AddSingleton<AppleIntelligenceChatClient>();
+		
+		// Register the Apple Intelligence client as IChatClient to allow direct use
+		builder.Services.AddSingleton<IChatClient>(sp => sp.GetRequiredService<AppleIntelligenceChatClient>());
+
+		// Register the Agent Framework wrapper as the default IChatClient
+		// This prevents double tool invocation when using Microsoft Agent Framework
+		// TODO: workaround for https://github.com/dotnet/extensions/pull/7126
+		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
 		{
-			builder.Services.AddPlatformChatClient();
-		}
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return new NonFunctionInvokingChatClient(appleClient, loggerFactory, sp);
+		});
+#pragma warning restore CA1416
+#endif
+
+		// Register AI agents and workflow
+		builder.AddItineraryWorkflow();
 
 		// Register Pages
 		builder.Services.AddTransient<LandmarksPage>();
@@ -87,7 +107,7 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 		builder.Logging.AddConsole();
 #if DEBUG
-		builder.Logging.SetMinimumLevel(LogLevel.Debug);
+		builder.Logging.SetMinimumLevel(LogLevel.Trace);
 #else
 		builder.Logging.SetMinimumLevel(LogLevel.Information);
 #endif
