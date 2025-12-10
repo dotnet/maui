@@ -165,7 +165,7 @@ Currently, .NET MAUI uses a combination of:
 │                                                                              │
 │  • Parses arguments                                                          │
 │  • Invokes MSBuild with test targets                                         │
-│  • Communicates with test host via IPC/Named Pipes                          │
+│  • Communicates with test host (protocol TBD - see section 4.2)             │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
@@ -182,7 +182,8 @@ Currently, .NET MAUI uses a combination of:
               ┌───────────────────────┼───────────────────────┐
               ▼                       ▼                       ▼
     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-    │ iOS Simulator   │     │ Android Emulator│     │ Windows         │
+    │ iOS Simulator   │     │ Android Emulator│     │ Windows/Mac     │
+    │ / Device        │     │ / Device        │     │ (Local Exe)     │
     │                 │     │                 │     │                 │
     │ ┌─────────────┐ │     │ ┌─────────────┐ │     │ ┌─────────────┐ │
     │ │ Test App    │ │     │ │ Test App    │ │     │ │ Test App    │ │
@@ -193,8 +194,14 @@ Currently, .NET MAUI uses a combination of:
              │                       │                       │
              └───────────────────────┼───────────────────────┘
                                      │
-                              Push-Only Protocol
-                             (Named Pipe or HTTP)
+                        Communication Protocol (TBD)
+                      ┌──────────────────────────────────┐
+                      │  Options under consideration:    │
+                      │  • HTTP (cross-platform)         │
+                      │  • Named Pipes/IPC (local only)  │
+                      │  • TCP Sockets                   │
+                      │  See section 4.2 for details     │
+                      └──────────────────────────────────┘
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -211,16 +218,49 @@ Currently, .NET MAUI uses a combination of:
 
 The key challenge is streaming test results from the device/simulator back to the host machine. We propose using the **IPushOnlyProtocol** interface from MTP, which is already designed for this scenario.
 
-#### 4.2.1 Protocol Options Analysis
+#### 4.2.1 Communication Requirements
 
-| Protocol | Pros | Cons | Recommendation |
-|----------|------|------|----------------|
-| **Named Pipes** | Low latency, already used by MTP for `dotnet test`, bidirectional | Not available across device/host boundary (iOS/Android) | Use for Windows |
-| **HTTP/HTTPS** | Works across network boundaries, well-supported on all platforms | Higher latency, requires server on host | Use for iOS/Android |
-| **USB/ADB Forward** | Low latency for Android | Platform-specific, complex setup | Not recommended |
-| **TCP Sockets** | Cross-platform, lower overhead than HTTP | Firewall issues, less tooling | Consider as HTTP alternative |
+The communication protocol must support three distinct execution scenarios:
 
-#### 4.2.2 Recommended Approach: Hybrid Protocol
+1. **Physical Devices** (iOS devices, Android devices): Test app runs on hardware connected via USB/network
+2. **Simulators/Emulators** (iOS Simulator, Android Emulator): Test app runs in virtualized environment on same machine
+3. **Local Executables** (Windows, macOS Catalyst): Test app runs as native executable on the same machine as `dotnet test`
+
+Each scenario has different constraints for how the test host can communicate with the running test application.
+
+#### 4.2.2 Protocol Options Analysis
+
+> **Note:** The final protocol choice is not yet determined. The implementation should prioritize a unified approach that works across all three scenarios where possible, falling back to platform-specific solutions only when necessary.
+
+| Protocol | Pros | Cons | Scenario Compatibility |
+|----------|------|------|------------------------|
+| **Named Pipes** | Low latency, already used by MTP for `dotnet test`, bidirectional, simple setup | Not available across device/host boundary (iOS/Android devices) | ✅ Local exe, ⚠️ Simulators (varies), ❌ Physical devices |
+| **HTTP/HTTPS** | Works across all boundaries, well-supported on all platforms, firewall-friendly | Higher latency, requires server on host, more overhead | ✅ All scenarios |
+| **Unix Domain Sockets** | Low latency, works for local processes, cross-platform (macOS/Linux) | Not available for physical devices, Windows uses different mechanism | ✅ Local exe, ✅ Simulators, ❌ Physical devices |
+| **TCP Sockets** | Cross-platform, lower overhead than HTTP | Firewall issues, port management complexity | ✅ All scenarios (with port forwarding) |
+| **USB/ADB Forward** | Low latency for Android | Platform-specific, complex setup | ❌ iOS, ✅ Android only |
+
+#### 4.2.3 Implementation Considerations
+
+**Option A: Unified HTTP-based Protocol**
+- Use HTTP for all scenarios (devices, simulators, local executables)
+- Simplest to implement and maintain
+- Trade-off: slightly higher overhead for local execution
+
+**Option B: Hybrid Protocol (IPC + HTTP)**
+- Use Named Pipes/IPC for local executables (Windows, macOS Catalyst running on same machine)
+- Use HTTP for devices and simulators
+- Trade-off: more complex implementation, but optimal performance for each scenario
+
+**Option C: Abstracted Transport Layer**
+- Define abstract transport interface
+- Implement multiple backends (Named Pipes, HTTP, TCP)
+- Auto-select based on target platform and execution scenario
+- Trade-off: most flexible but highest implementation complexity
+
+**Current Recommendation:** Start with **Option A (HTTP-based)** for V1 to ensure consistent behavior across all platforms. Evaluate adding IPC optimizations for local execution in V2 if performance becomes a concern.
+
+#### 4.2.4 Recommended Interface
 
 ```csharp
 public interface IMauiTestProtocol : IPushOnlyProtocol
@@ -241,15 +281,25 @@ public interface IMauiTestProtocol : IPushOnlyProtocol
 }
 ```
 
-**For iOS/Android:**
-- Test app starts an HTTP client
-- Host machine runs HTTP server (integrated into MTP)
-- App pushes results via HTTP POST
-- Use server-sent events (SSE) or WebSocket for real-time streaming
+#### 4.2.5 Platform-Specific Considerations
 
-**For Windows:**
-- Use existing Named Pipe infrastructure from MTP
-- Same as current `dotnet test` with `--server` mode
+> **Note:** The following are potential implementation patterns. Final implementation will depend on which protocol option is chosen.
+
+**Physical Devices (iOS/Android):**
+- Test app initiates connection to host (HTTP or TCP with port forwarding)
+- Host machine runs server (integrated into MTP or standalone)
+- App pushes results via HTTP POST or socket write
+- Consider server-sent events (SSE) or WebSocket for real-time streaming
+
+**Simulators/Emulators:**
+- May use localhost networking (Android emulator, iOS Simulator)
+- Could potentially use Named Pipes or Unix Domain Sockets if running on same machine
+- HTTP remains simplest cross-platform option
+
+**Local Executables (Windows/macOS):**
+- Can use existing Named Pipe infrastructure from MTP (`--server` mode)
+- Or use HTTP for consistency with device scenarios
+- Trade-off between performance (IPC) and simplicity (unified HTTP)
 
 ### 4.3 Transport Phasing Strategy
 
