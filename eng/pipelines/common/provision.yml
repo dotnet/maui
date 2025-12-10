@@ -35,6 +35,15 @@ parameters:
 
 steps:
 
+# Debug: Print provision.yml parameters
+- script: |
+    echo "=== DEBUG: provision.yml parameters ==="
+    echo "skipXcode: '${{ parameters.skipXcode }}'"
+    echo "skipProvisionator: '${{ parameters.skipProvisionator }}'"
+    echo "skipXcode condition (ne skipXcode 'true'): '${{ ne(parameters.skipXcode, 'true') }}'"
+    echo "skipProvisionator condition (ne skipProvisionator true): '${{ ne(parameters.skipProvisionator, true) }}'"
+  displayName: 'DEBUG: Print provision.yml parameters'
+
 ##################################################
 #               Provisioning Feeds               #
 ##################################################
