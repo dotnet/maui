@@ -1,0 +1,15 @@
+﻿#nullable enable
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient() -> void
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger<Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient!>? logger) -> void
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger? logger) -> void
+Microsoft.Maui.Essentials.AI.ChatClientBase
+Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
+Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.set -> void
+Microsoft.Maui.Essentials.AI.Extensions
+abstract Microsoft.Maui.Essentials.AI.ChatClientBase.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
+abstract Microsoft.Maui.Essentials.AI.ChatClientBase.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
+override Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
+override Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
+static Microsoft.Maui.Essentials.AI.Extensions.AddAppleIntelligenceChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Maui.Essentials.AI.Extensions.AddPlatformChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
