@@ -72,10 +72,11 @@ steps:
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
     skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
-    ${{ if parameters.skipProvisioning }}:
-      skipProvisionator: true
-    ${{ else }}:
+    # Must explicitly check for false/False since string 'False' is truthy in ${{ if }} conditions
+    ${{ if or(eq(parameters.skipProvisioning, false), eq(parameters.skipProvisioning, 'false'), eq(parameters.skipProvisioning, 'False')) }}:
       skipProvisionator: false
+    ${{ else }}:
+      skipProvisionator: true
     ${{ if eq(parameters.platform, 'catalyst') }}:
       openSslArgs: '' # Do not use legacy openssl for Catalyst builds
 
