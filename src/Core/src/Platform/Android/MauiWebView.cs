@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics;
+using Android.Views;
 using Android.Webkit;
 
 namespace Microsoft.Maui.Platform
