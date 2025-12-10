@@ -311,12 +311,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
 			double contentYOffset = 0;
+			var safeAreaInsets = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
 			if (ShouldHonorSafeArea(HeaderView?.View) ||
 				(HeaderView is null && ShouldHonorSafeArea(Content)))
 			{
 				// We add the safe area if margin is not explicitly set. This matches the header behavior.
-				contentYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+				contentYOffset += safeAreaInsets.Top;
 			}
 
 			if (HeaderView is not null)
@@ -334,7 +335,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight);
+			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight - safeAreaInsets.Bottom);
 			if (Content is null)
 			{
 				ContentView.Frame = contentFrame.AsCGRect();
