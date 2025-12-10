@@ -29,14 +29,12 @@ namespace Microsoft.Maui.Controls.Platform
 		private class ThicknessDrawable : Drawable
 		{
 			private readonly Thickness _thickness;
-			private readonly Color _color;
 			private readonly Paint _paint;
 			private readonly global::Android.Graphics.Rect _paddingRect;
 
 			public ThicknessDrawable(Thickness thickness, Color color)
 			{
 				_thickness = thickness;
-				_color = color;
 				_paint = new Paint
 				{
 					Color = color,
