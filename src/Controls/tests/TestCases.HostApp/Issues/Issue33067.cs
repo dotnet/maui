@@ -32,7 +32,7 @@ public class Issue33067 : ContentPage
 		{
 			BackgroundColor = Colors.LightGray,
 			HeightRequest = 300,
-			Content = _originalContent
+			Content = null
 		};
 
 		// Create the "Set Content to Null" button
