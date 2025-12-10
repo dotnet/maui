@@ -1,1 +1,11 @@
-#nullable enable
+﻿#nullable enable
+~Microsoft.Maui.Controls.Picker.BorderColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Picker.BorderColor.set -> void
+Microsoft.Maui.Controls.Picker.BorderThickness.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.Picker.BorderThickness.set -> void
+Microsoft.Maui.Controls.Platform.PickerExtensions
+static Microsoft.Maui.Controls.Picker.MapBorderColor(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
+static Microsoft.Maui.Controls.Picker.MapBorderThickness(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
+static Microsoft.Maui.Controls.Platform.PickerExtensions.CreateBorder(this Android.Views.View! platformView, Microsoft.Maui.Controls.Picker! picker) -> void
+~static readonly Microsoft.Maui.Controls.Picker.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Picker.BorderThicknessProperty -> Microsoft.Maui.Controls.BindableProperty
