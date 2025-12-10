@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+#if NET11_0_OR_GREATER
 
 public class AppThemeBinding : SourceGenXamlInitializeComponentTestBase
 {
@@ -328,3 +329,4 @@ public partial class TestPage
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
 }
+#endif
