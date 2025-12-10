@@ -83,6 +83,8 @@ namespace Microsoft.Maui.IntegrationTests
 			"TreatWarningsAsErrors=true",
 			// Detailed trimmer warnings, if present
 			"TrimmerSingleWarn=false",
+			// Suppress Xcode version check
+			"ValidateXcodeVersion=false"
 		};
 
 
