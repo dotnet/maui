@@ -14,7 +14,7 @@ public class Issue32476 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellRTLFlowDirectionShouldNotCauseOverlap()
 	{
-		App.WaitForElement("ToggleButton")
+		App.WaitForElement("ToggleButton");
 		App.Tap("ToggleButton");
 		VerifyScreenshot();
 	}
