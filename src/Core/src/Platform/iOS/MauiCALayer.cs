@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiCALayer : CALayer, IAutoSizableCALayer
 	{
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
-		readonly CALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in MauiCALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
+		readonly MauiCALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
 
 		CGRect _bounds;
 		WeakReference<IShape?> _shape;
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 
 		void IAutoSizableCALayer.AutoSizeToSuperLayer()
 		{
-			_autosizeToSuperLayerBehavior.Attach(this);
+			_autosizeToSuperLayerBehavior.AttachOrThrow(this);
 		}
 
 		public override void AddAnimation(CAAnimation animation, string? key)

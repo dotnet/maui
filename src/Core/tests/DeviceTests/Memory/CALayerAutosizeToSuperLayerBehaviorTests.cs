@@ -12,14 +12,14 @@ namespace Microsoft.Maui.DeviceTests.Memory
 {
 	// Set of tests to verify auto-sizing layers do not leak
 	[Category(TestCategory.Memory)]
-	public class CALayerAutosizeToSuperLayerBehaviorTests : TestBase
+	public class MauiCALayerAutosizeToSuperLayerBehaviorTests : TestBase
 	{
 		[Theory]
 		[InlineData(typeof(MauiCALayer))]
 		[InlineData(typeof(StaticCALayer))]
 		[InlineData(typeof(StaticCAGradientLayer))]
 		[InlineData(typeof(StaticCAShapeLayer))]
-		public async Task CALayerAutosizeToSuperLayerBehavior_DoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type sublayerType)
+		public async Task MauiCALayerAutosizeToSuperLayerBehavior_DoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type sublayerType)
 		{
 			WeakReference viewReference = null;
 			WeakReference layerReference = null;

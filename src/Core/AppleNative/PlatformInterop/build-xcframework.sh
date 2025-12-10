@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-PROJECT="PlatformInterop"
-SCHEME="PlatformInterop"
+PROJECT="MauiPlatformInterop"
 CONFIGURATION="Release"
-FRAMEWORK_NAME="PlatformInterop"
+SCHEME=$PROJECT
+FRAMEWORK_NAME=$PROJECT
 OUTPUT_DIR="Framework"
 XCFRAMEWORK_DIR="${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework"
 

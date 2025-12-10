@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AB0B2BC72E3529AE00B2B77C"
-               BuildableName = "PlatformInterop.framework"
-               BlueprintName = "PlatformInterop"
-               ReferencedContainer = "container:PlatformInterop.xcodeproj">
+               BuildableName = "MauiPlatformInterop.framework"
+               BlueprintName = "MauiPlatformInterop"
+               ReferencedContainer = "container:MauiPlatformInterop.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -51,9 +51,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AB0B2BC72E3529AE00B2B77C"
-            BuildableName = "PlatformInterop.framework"
-            BlueprintName = "PlatformInterop"
-            ReferencedContainer = "container:PlatformInterop.xcodeproj">
+            BuildableName = "MauiPlatformInterop.framework"
+            BlueprintName = "MauiPlatformInterop"
+            ReferencedContainer = "container:MauiPlatformInterop.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
