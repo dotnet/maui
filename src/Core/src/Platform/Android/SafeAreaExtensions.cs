@@ -119,11 +119,19 @@ internal static class SafeAreaExtensions
 			var viewWidth = view.Width > 0 ? view.Width : view.MeasuredWidth;
 			var viewHeight = view.Height > 0 ? view.Height : view.MeasuredHeight;
 
+			// Check if this view was previously tracked (had padding)
+			var wasTracked = globalWindowInsetsListener?.IsViewTracked(view) == true;
+
 			if ((viewHeight > 0 && viewWidth > 0) || !hasTrackedViews)
 			{
 				if (left == 0 && right == 0 && top == 0 && bottom == 0)
 				{
 					view.SetPadding(0, 0, 0, 0);
+					if (wasTracked)
+					{
+						// If padding is now zero but view was previously tracked, untrack it
+						globalWindowInsetsListener?.ResetView(view);
+					}
 					return windowInsets;
 				}
 
@@ -158,9 +166,6 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Check if this view was previously tracked (had padding)
-					var wasTracked = globalWindowInsetsListener?.IsViewTracked(view) == true;
-
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
@@ -188,13 +193,20 @@ internal static class SafeAreaExtensions
 					{
 						// if the view height is zero because it hasn't done the first pass
 						// and we don't have any tracked views yet then we will apply the bottom inset
-						// IMPORTANT: If this view was previously tracked (had padding) and keyboard just closed,
-						// keep the bottom padding even if view hasn't re-expanded yet
 						if (viewHeight > 0 || hasTrackedViews)
 						{
-							// Special case: if view was tracked and keyboard just closed, maintain bottom padding
-							// because the view is compressed and will re-expand, but during transition we need padding
-							if (!(wasTracked && !isKeyboardShowing && bottom > 0))
+							// SPECIAL CASE: Preserve bottom padding ONLY during keyboard dismissal transitions in AdjustResize mode.
+							// When AdjustResize is active and keyboard dismisses, the view is temporarily compressed and 
+							// doesn't reach the bottom edge. We preserve the padding to prevent content jumping during transition.
+							// Key conditions:
+							// 1. Must be in AdjustResize mode (not AdjustPan/AdjustNothing)
+							// 2. View was previously tracked with padding
+							// 3. Keyboard is not showing (just dismissed)
+							// 4. Gap is large (> 500px, indicating keyboard-sized compression)
+							bool isAdjustResize = (softInputMode & AdjustMask) == SoftInput.AdjustResize;
+							bool isKeyboardDismissalTransition = wasTracked && !isKeyboardShowing && bottom > 0 && (screenHeight - viewBottom) > 500;
+
+							if (!isKeyboardDismissalTransition || !isAdjustResize)
 							{
 								bottom = 0;
 							}
@@ -274,6 +286,11 @@ internal static class SafeAreaExtensions
 				if (left > 0 || right > 0 || top > 0 || bottom > 0)
 				{
 					globalWindowInsetsListener?.TrackView(view);
+				}
+				else if (wasTracked)
+				{
+					// If padding is now zero but view was previously tracked, untrack it
+					globalWindowInsetsListener?.ResetView(view);
 				}
 			}
 			else
