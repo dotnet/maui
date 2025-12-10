@@ -27,12 +27,17 @@ namespace Microsoft.Maui.Platform
 		{
 			var htmlText = WebUtility.HtmlDecode(text);
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
-			else
+			void SetTextHtml()
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+					textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact, imageGetter: new ImageGetter(SetTextHtml), null), BufferType.Spannable);
+				else
 #pragma warning disable CS0618 // Type or member is obsolete
 				textView.SetText(Html.FromHtml(htmlText), BufferType.Spannable);
 #pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			SetTextHtml();
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
