@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapBorderColor(IPickerHandler handler, Picker picker)
 		{
-			if(picker.BorderColor is null)
+			if (picker.BorderColor is null)
 			{
 				return;
 			}

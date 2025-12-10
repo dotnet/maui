@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
-using Color = Android.Graphics.Color;
-using Graphics = Android.Graphics;
-using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -17,9 +10,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void CreateBorder(this AView platformView, Picker picker)
 		{
-			Color? color = null;
-			color = picker.BorderColor != null ? picker.BorderColor.ToPlatform() : Colors.Transparent.ToPlatform();
-
+			Color? color = picker.BorderColor != null ? picker.BorderColor.ToPlatform() : Colors.Transparent.ToPlatform();
 			var thickness = picker.BorderThickness;
 
 			// If thickness is zero, just tint underline (native Spinner background)
