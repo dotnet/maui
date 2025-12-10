@@ -127,9 +127,10 @@ stages:
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.4' ]
-      # skipProvisioning is false when UseProvisionator=true OR internalProvisioning=true (DevDiv)
-      # Using 'or' with 'not' to handle both cases: skip only when NEITHER is true
-      skipProvisioning: ${{ and(not(parameters.UseProvisionator), ne(variables.internalProvisioning, true)) }}
+      # Simple approach: just negate UseProvisionator (same as device-tests.yml)
+      # When UseProvisionator=true, not(true)=false, so skipProvisioning=false (provisioning runs)
+      # When UseProvisionator=false, not(false)=true, so skipProvisioning=true (provisioning skipped)
+      skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       projects:
         - name: controls
           desc: Controls
