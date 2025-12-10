@@ -32,6 +32,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleColorProperty =
 			BindableProperty.Create(nameof(TitleColor), typeof(Color), typeof(Picker), default(Color));
 
+		/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
+		public static readonly BindableProperty BorderColorProperty = 
+			BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(Picker), default(Color));
+
+		/// <summary>Bindable property for <see cref="BorderThickness"/>.</summary>
+		public static readonly BindableProperty BorderThicknessProperty =
+			BindableProperty.Create(nameof(BorderThickness), typeof(Thickness), typeof(Picker), new Thickness(0));
+
 		/// <summary>Bindable property for <see cref="SelectedIndex"/>.</summary>
 		public static readonly BindableProperty SelectedIndexProperty =
 			BindableProperty.Create(nameof(SelectedIndex), typeof(int), typeof(Picker), -1, BindingMode.TwoWay,
@@ -194,6 +202,20 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(TitleColorProperty); }
 			set { SetValue(TitleColorProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='BorderColor']/Docs/*" />
+		public Color BorderColor
+		{
+			get { return (Color)GetValue(BorderColorProperty); }
+			set { SetValue(BorderColorProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='BorderThickness']/Docs/*" />
+		public Thickness BorderThickness
+		{
+			get { return (Thickness)GetValue(BorderThicknessProperty); }
+			set { SetValue(BorderThicknessProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />

@@ -41,6 +41,16 @@ namespace Microsoft.Maui
 		Color TitleColor { get; }
 
 		/// <summary>
+		/// Gets the color for the Picker Border
+		/// </summary>
+		Color BorderColor { get; }
+
+		/// <summary>
+		/// Gets the thickness for the Picker Border
+		/// </summary>
+		Thickness BorderThickness { get; }
+
+		/// <summary>
 		/// Gets the index of the selected item of the picker.
 		/// </summary>
 		int SelectedIndex { get; set; }

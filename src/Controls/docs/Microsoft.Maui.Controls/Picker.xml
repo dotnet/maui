@@ -95,6 +95,76 @@
       <Docs>
       </Docs>
     </Member>
+    <Member MemberName="BorderColor">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BorderColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BorderColor" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Picker.BorderColor" />
+      <MemberSignature Language="F#" Value="member this.BorderColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Picker.BorderColor" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the border color.</summary>
+        <remarks>This property allows you to customize the color of the picker border. On Android, when BorderThickness is not set, this affects the underline color.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="BorderColorProperty">
+      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty BorderColorProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty BorderColorProperty" />
+      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.Picker.BorderColorProperty" />
+      <MemberSignature Language="F#" Value=" staticval mutable BorderColorProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.Picker.BorderColorProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.BorderColor" /> property.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="BorderThickness">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Thickness BorderThickness { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Thickness BorderThickness" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Picker.BorderThickness" />
+      <MemberSignature Language="F#" Value="member this.BorderThickness : Microsoft.Maui.Thickness with get, set" Usage="Microsoft.Maui.Controls.Picker.BorderThickness" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the border thickness.</summary>
+        <remarks>This property allows you to specify different thickness values for each side of the border (Left, Top, Right, Bottom). Default value is 0.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="BorderThicknessProperty">
+      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty BorderThicknessProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty BorderThicknessProperty" />
+      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.Picker.BorderThicknessProperty" />
+      <MemberSignature Language="F#" Value=" staticval mutable BorderThicknessProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.Picker.BorderThicknessProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.BorderThickness" /> property.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="FontAttributes">
       <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FontAttributes FontAttributes { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FontAttributes FontAttributes" />
