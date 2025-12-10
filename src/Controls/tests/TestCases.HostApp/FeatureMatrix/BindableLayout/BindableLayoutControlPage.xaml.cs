@@ -38,7 +38,7 @@ public partial class BindableLayoutControlMainPage : ContentPage
 			_oddTemplate = new DataTemplate(() =>
 			{
 				var label = new Label { TextColor = oddColor, FontAttributes = FontAttributes.Italic, FontSize = 12 };
-				label.SetBinding(Label.TextProperty, new Binding("Caption", stringFormat: "Sel {0}"));
+				label.SetBinding(Label.TextProperty, new Binding("Caption", stringFormat: "Set {0}"));
 				return label;
 			});
 		}
@@ -56,13 +56,13 @@ public partial class BindableLayoutControlMainPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
-		InitializeDirectApiState();
 
 	}
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new BindableLayoutViewModel();
+		ReinitializeBindableLayouts();
 		await Navigation.PushAsync(new BindableLayoutOptionsPage(_viewModel));
 	}
 
@@ -145,31 +145,50 @@ public partial class BindableLayoutControlMainPage : ContentPage
 		IndexEntry.Text = string.Empty;
 	}
 
-	private bool _setItemsSource;
-	private void InitializeDirectApiState()
+	private void OnResetClicked(object sender, EventArgs e)
 	{
-		_setItemsSource = false;
+		ReinitializeBindableLayouts();
 	}
+
+	private void ReinitializeBindableLayouts()
+	{
+		MainStackBindableLayout.Children.Clear();
+		MainFlexBindableLayout.Children.Clear();
+		MainGridBindableLayout.Children.Clear();
+
+		MainStackBindableLayout.SetBinding(BindableLayout.ItemsSourceProperty, new Binding(nameof(BindableLayoutViewModel.ItemsSource)));
+		MainFlexBindableLayout.SetBinding(BindableLayout.ItemsSourceProperty, new Binding(nameof(BindableLayoutViewModel.ItemsSource)));
+		MainGridBindableLayout.SetBinding(BindableLayout.ItemsSourceProperty, new Binding(nameof(BindableLayoutViewModel.ItemsSource)));
+
+		MainStackBindableLayout.SetBinding(BindableLayout.ItemTemplateProperty, new Binding(nameof(BindableLayoutViewModel.ItemTemplate)));
+		MainFlexBindableLayout.SetBinding(BindableLayout.ItemTemplateProperty, new Binding(nameof(BindableLayoutViewModel.ItemTemplate)));
+		MainGridBindableLayout.SetBinding(BindableLayout.ItemTemplateProperty, new Binding(nameof(BindableLayoutViewModel.ItemTemplate)));
+
+		MainStackBindableLayout.SetBinding(BindableLayout.ItemTemplateSelectorProperty, new Binding(nameof(BindableLayoutViewModel.ItemTemplateSelector)));
+		MainFlexBindableLayout.SetBinding(BindableLayout.ItemTemplateSelectorProperty, new Binding(nameof(BindableLayoutViewModel.ItemTemplateSelector)));
+		MainGridBindableLayout.SetBinding(BindableLayout.ItemTemplateSelectorProperty, new Binding(nameof(BindableLayoutViewModel.ItemTemplateSelector)));
+
+		MainStackBindableLayout.SetBinding(BindableLayout.EmptyViewProperty, new Binding(nameof(BindableLayoutViewModel.StackEmptyView)));
+		MainFlexBindableLayout.SetBinding(BindableLayout.EmptyViewProperty, new Binding(nameof(BindableLayoutViewModel.FlexEmptyView)));
+		MainGridBindableLayout.SetBinding(BindableLayout.EmptyViewProperty, new Binding(nameof(BindableLayoutViewModel.GridEmptyView)));
+
+		MainStackBindableLayout.SetBinding(BindableLayout.EmptyViewTemplateProperty, new Binding(nameof(BindableLayoutViewModel.EmptyViewTemplate)));
+		MainFlexBindableLayout.SetBinding(BindableLayout.EmptyViewTemplateProperty, new Binding(nameof(BindableLayoutViewModel.EmptyViewTemplate)));
+		MainGridBindableLayout.SetBinding(BindableLayout.EmptyViewTemplateProperty, new Binding(nameof(BindableLayoutViewModel.EmptyViewTemplate)));
+
+		ArrangeIfGrid(MainGridBindableLayout);
+
+		UpdateDirectSummary("Reinitialize BindableLayouts");
+	}
+
 
 	private void OnSetItemsSourceClicked(object sender, EventArgs e)
 	{
-		var updatedItems = new ObservableCollection<Label>();
 
-		foreach (var item in _viewModel.ItemsSource as IEnumerable)
-		{
-			updatedItems.Add(new Label
-			{
-				Text = $"{item} A",
-				FontSize = 11,
-				TextColor = Colors.Red,
-			});
-		}
-
-		BindableLayout.SetItemsSource(MainStackBindableLayout, updatedItems);
-		BindableLayout.SetItemsSource(MainFlexBindableLayout, updatedItems);
-		BindableLayout.SetItemsSource(MainGridBindableLayout, updatedItems);
-
-		_setItemsSource = !_setItemsSource;
+		ApplySetItemsSource(MainStackBindableLayout);
+		ApplySetItemsSource(MainFlexBindableLayout);
+		ApplySetItemsSource(MainGridBindableLayout);
+		ArrangeIfGrid(MainGridBindableLayout);
 		UpdateDirectSummary("Set ItemsSource");
 	}
 
@@ -182,7 +201,7 @@ public partial class BindableLayoutControlMainPage : ContentPage
 		var template = new DataTemplate(() =>
 		{
 			var grid = new Grid { Padding = 4, BackgroundColor = Colors.LightGray };
-			var label = new Label { TextColor = Colors.Blue, FontAttributes = FontAttributes.Bold };
+			var label = new Label { TextColor = Colors.Green, FontAttributes = FontAttributes.Bold };
 			label.SetBinding(Label.TextProperty, "Caption");
 			grid.Children.Add(label);
 			return grid;
@@ -195,20 +214,29 @@ public partial class BindableLayoutControlMainPage : ContentPage
 
 	private void OnSetItemTemplateSelectorClicked(object sender, EventArgs e)
 	{
-		BindableLayout.SetItemTemplateSelector(MainStackBindableLayout, null);
-		BindableLayout.SetItemTemplateSelector(MainFlexBindableLayout, null);
-		BindableLayout.SetItemTemplateSelector(MainGridBindableLayout, null);
+		BindableLayout.SetItemTemplate(MainStackBindableLayout, null);
+		BindableLayout.SetItemTemplate(MainFlexBindableLayout, null);
+		BindableLayout.SetItemTemplate(MainGridBindableLayout, null);
+
 		var selector = new SimpleAlternatingSelector(Colors.Purple, Colors.Green);
-		BindableLayout.SetItemTemplateSelector(MainStackBindableLayout, selector);
-		BindableLayout.SetItemTemplateSelector(MainFlexBindableLayout, selector);
-		BindableLayout.SetItemTemplateSelector(MainGridBindableLayout, selector);
+		_viewModel.ItemTemplateSelector = selector;
+
+		ApplySetItemTemplateSelector(MainStackBindableLayout);
+		ApplySetItemTemplateSelector(MainFlexBindableLayout);
+		ApplySetItemTemplateSelector(MainGridBindableLayout);
+
+		ArrangeIfGrid(MainGridBindableLayout);
 		UpdateDirectSummary("Set ItemTemplateSelector");
 	}
 
 	private void OnSetEmptyViewClicked(object sender, EventArgs e)
 	{
 		BindableLayout.SetEmptyViewTemplate(MainStackBindableLayout, null);
+		BindableLayout.SetEmptyViewTemplate(MainFlexBindableLayout, null);
+		BindableLayout.SetEmptyViewTemplate(MainGridBindableLayout, null);
 		BindableLayout.SetEmptyView(MainStackBindableLayout, new Label { Text = "(Set EmptyView)", HorizontalOptions = LayoutOptions.Center, TextColor = Colors.Gray });
+		BindableLayout.SetEmptyView(MainFlexBindableLayout, new Label { Text = "(Set EmptyView)", HorizontalOptions = LayoutOptions.Center, TextColor = Colors.Gray });
+		BindableLayout.SetEmptyView(MainGridBindableLayout, new Label { Text = "(Set EmptyView)", HorizontalOptions = LayoutOptions.Center, TextColor = Colors.Gray });
 		UpdateDirectSummary("Set EmptyView");
 	}
 
@@ -222,27 +250,6 @@ public partial class BindableLayoutControlMainPage : ContentPage
 		BindableLayout.SetEmptyViewTemplate(MainFlexBindableLayout, tmpl);
 		BindableLayout.SetEmptyViewTemplate(MainGridBindableLayout, tmpl);
 		UpdateDirectSummary("Set EmptyViewTemplate");
-	}
-
-	private void OnClearAllClicked(object sender, EventArgs e)
-	{
-		BindableLayout.SetItemsSource(MainStackBindableLayout, null);
-		BindableLayout.SetItemTemplate(MainStackBindableLayout, null);
-		BindableLayout.SetItemTemplateSelector(MainStackBindableLayout, null);
-		BindableLayout.SetEmptyView(MainStackBindableLayout, null);
-		BindableLayout.SetEmptyViewTemplate(MainStackBindableLayout, null);
-		BindableLayout.SetItemsSource(MainFlexBindableLayout, null);
-		BindableLayout.SetItemTemplate(MainFlexBindableLayout, null);
-		BindableLayout.SetItemTemplateSelector(MainFlexBindableLayout, null);
-		BindableLayout.SetEmptyView(MainFlexBindableLayout, null);
-		BindableLayout.SetEmptyViewTemplate(MainFlexBindableLayout, null);
-		BindableLayout.SetItemsSource(MainGridBindableLayout, null);
-		BindableLayout.SetItemTemplate(MainGridBindableLayout, null);
-		BindableLayout.SetItemTemplateSelector(MainGridBindableLayout, null);
-		BindableLayout.SetEmptyView(MainGridBindableLayout, null);
-		BindableLayout.SetEmptyViewTemplate(MainGridBindableLayout, null);
-		InitializeDirectApiState();
-		UpdateDirectSummary("Clear All");
 	}
 
 	private void OnGetEmptyViewClicked(object sender, EventArgs e)
@@ -281,6 +288,46 @@ public partial class BindableLayoutControlMainPage : ContentPage
 	{
 		var sel = BindableLayout.GetItemTemplateSelector(MainStackBindableLayout);
 		UpdateDirectSummary("Get ItemTemplateSelector", extra: $"HasSelector={(sel != null)}");
+	}
+
+	public void ApplySetItemsSource(Layout layout)
+	{
+		if (layout == null) return;
+		BindableLayout.SetItemsSource(layout, _viewModel.ItemsSource as IEnumerable);
+	}
+
+	public void ApplySetItemTemplateSelector(Layout layout)
+	{
+		if (layout == null) return;
+		BindableLayout.SetItemTemplate(layout, null);
+		BindableLayout.SetItemTemplateSelector(layout, _viewModel.ItemTemplateSelector);
+	}
+
+	public void ApplySetEmptyView(Layout layout)
+	{
+		if (layout == null) return;
+		object emptyView = layout switch
+		{
+			VerticalStackLayout => _viewModel.StackEmptyView,
+			FlexLayout => _viewModel.FlexEmptyView,
+			Grid => _viewModel.GridEmptyView,
+			_ => _viewModel.StackEmptyView ?? _viewModel.FlexEmptyView ?? _viewModel.GridEmptyView
+		};
+		BindableLayout.SetEmptyView(layout, emptyView);
+	}
+
+	public void ApplySetEmptyViewTemplate(Layout layout)
+	{
+		if (layout == null) return;
+		BindableLayout.SetEmptyViewTemplate(layout, _viewModel.EmptyViewTemplate);
+	}
+
+	public void ArrangeIfGrid(Layout layout)
+	{
+		if (layout is Grid grid)
+		{
+			OnGridLoaded(grid, EventArgs.Empty);
+		}
 	}
 
 	private void UpdateDirectSummary(string action, string extra = null)

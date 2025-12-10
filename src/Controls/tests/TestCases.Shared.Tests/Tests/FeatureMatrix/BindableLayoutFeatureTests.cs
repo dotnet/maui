@@ -228,10 +228,10 @@ public class BindableLayoutFeatureTests : UITest
 		App.Tap("ItemsSourceObservableCollection");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Spinach");
+		App.WaitForElement("Broccoli");
 		App.WaitForElement("RemoveItems");
 		App.Tap("RemoveItems");
-		App.WaitForNoElement("Spinach");
+		App.WaitForNoElement("Broccoli");
 	}
 
 	[Test, Order(15)]
@@ -287,5 +287,95 @@ public class BindableLayoutFeatureTests : UITest
 		App.Tap("ReplaceItems");
 		App.WaitForNoElement("Carrot");
 		App.WaitForElement("Monkey");
+	}
+
+	[Test, Order(18)]
+	public void VerifyBindableLayoutWithGetAndSetEmptyView()
+    {
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ItemsSourceEmptyCollection");
+		App.Tap("ItemsSourceEmptyCollection");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SetEmptyView");
+		App.Tap("SetEmptyView");
+		App.WaitForElement("(Set EmptyView)");
+		App.WaitForElement("GetEmptyView");
+		App.Tap("GetEmptyView");
+		App.WaitForElement("DirectApiSummaryLabel");
+		Assert.That(App.FindElement("DirectApiSummaryLabel").GetText(),Is.EqualTo("[Get EmptyView] EmptyView=True EmptyViewTemplate=False ItemsSourceCount=0 ItemTemplate=True ItemTemplateSelector=False HasEmptyView=True"));
+    }
+
+	[Test, Order(19)]
+	public void VerifyBindableLayoutWithGetAndSetEmptyViewTemplate()
+    {
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ItemsSourceEmptyCollection");
+		App.Tap("ItemsSourceEmptyCollection");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SetEmptyViewTemplate");
+		App.Tap("SetEmptyViewTemplate");
+		App.WaitForElement("(Set EmptyViewTemplate)");
+		App.WaitForElement("GetEmptyViewTemplate");
+		App.Tap("GetEmptyViewTemplate");
+		App.WaitForElement("DirectApiSummaryLabel");
+		Assert.That(App.FindElement("DirectApiSummaryLabel").GetText(), Is.EqualTo("[Get EmptyViewTemplate] EmptyView=False EmptyViewTemplate=True ItemsSourceCount=0 ItemTemplate=True ItemTemplateSelector=False HasEmptyViewTemplate=True"));
+    }
+
+	[Test, Order(20)]
+	public void VerifyBindableLayoutWithGetAndSetItemSource()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ItemsSourceObservableCollection");
+		App.Tap("ItemsSourceObservableCollection");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SetItemsSource");
+		App.Tap("SetItemsSource");
+		App.WaitForElement("Apple");
+		App.WaitForElement("GetItemsSource");
+		App.Tap("GetItemsSource");
+		App.WaitForElement("DirectApiSummaryLabel");
+		Assert.That(App.FindElement("DirectApiSummaryLabel").GetText(), Is.EqualTo("[Get ItemsSource] EmptyView=False EmptyViewTemplate=False ItemsSourceCount=4 ItemTemplate=True ItemTemplateSelector=False Count=4"));
+	}
+
+	[Test, Order(21)]
+	public void VerifyBindableLayoutWithGetAndSetItemTemplate()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ItemsSourceObservableCollection");
+		App.Tap("ItemsSourceObservableCollection");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SetItemTemplate");
+		App.Tap("SetItemTemplate");
+		App.WaitForElement("Apple");
+		App.WaitForElement("GetItemTemplate");
+		App.Tap("GetItemTemplate");
+		App.WaitForElement("DirectApiSummaryLabel");
+		Assert.That(App.FindElement("DirectApiSummaryLabel").GetText(), Is.EqualTo("[Get ItemTemplate] EmptyView=False EmptyViewTemplate=False ItemsSourceCount=4 ItemTemplate=True ItemTemplateSelector=False HasItemTemplate=True"));
+	}
+
+	[Test, Order(22)]
+	public void VerifyBindableLayoutWithGetAndSetItemTemplateSelector()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ItemsSourceObservableCollection");
+		App.Tap("ItemsSourceObservableCollection");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SetItemTemplateSelector");
+		App.Tap("SetItemTemplateSelector");
+		App.WaitForElement("Apple");
+		App.WaitForElement("GetItemTemplateSelector");
+		App.Tap("GetItemTemplateSelector");
+		App.WaitForElement("DirectApiSummaryLabel");
+		Assert.That(App.FindElement("DirectApiSummaryLabel").GetText(), Is.EqualTo("[Get ItemTemplateSelector] EmptyView=False EmptyViewTemplate=False ItemsSourceCount=4 ItemTemplate=False ItemTemplateSelector=True HasSelector=True"));
 	}
 }
