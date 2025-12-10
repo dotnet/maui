@@ -124,13 +124,13 @@ stages:
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.4' ]
+        # Match device-tests.yml pattern exactly - just negate UseProvisionator
+        skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.4' ]
-      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
-        skipProvisioning: false
-      ${{ else }}:  
-        skipProvisioning: true
+        # Match device-tests.yml pattern exactly - just negate UseProvisionator
+        skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       projects:
         - name: controls
           desc: Controls
