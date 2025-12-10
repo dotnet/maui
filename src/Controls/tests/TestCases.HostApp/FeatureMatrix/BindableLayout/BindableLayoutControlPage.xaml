@@ -94,7 +94,7 @@
                 </HorizontalStackLayout>
                 <VerticalStackLayout Spacing="2">
                         <HorizontalStackLayout Spacing="6">
-                                <Label Text="Emty View:"
+                                    <Label Text="Empty View:"
                                        FontAttributes="Bold"
                                        FontSize="10"
                                        VerticalTextAlignment="Center"/>
