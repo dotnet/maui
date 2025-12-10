@@ -1611,6 +1611,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 			}
+
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)
 			{
 				NavigationRenderer n;
