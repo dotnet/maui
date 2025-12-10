@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if (parentNode is ElementNode && ((ElementNode)parentNode).SkipProperties.Contains(propertyName))
 				return;
-			if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
+			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
@@ -670,7 +670,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var lbIndex = p.IndexOf('[');
 				if (lbIndex != -1)
 				{
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 					var rbIndex = p.LastIndexOf(']');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 					if (rbIndex == -1)
 						throw new BuildException(BindingIndexerNotClosed, lineInfo, null);
 
@@ -1705,6 +1707,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, ElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
+			if (parent is null)
+				return false;
+
 			if (collectionType.FullName != "Microsoft.Maui.Controls.ResourceDictionary"
 				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;

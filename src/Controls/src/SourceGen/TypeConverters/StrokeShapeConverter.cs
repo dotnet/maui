@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
@@ -8,7 +9,7 @@ using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class StrokeShapeConverter : ISGTypeConverter
+class StrokeShapeConverter : ISGTypeConverter
 {
 	private const string Ellipse = nameof(Ellipse);
 	private const string Line = nameof(Line);
@@ -19,9 +20,9 @@ internal class StrokeShapeConverter : ISGTypeConverter
 	private const string RoundRectangle = nameof(RoundRectangle);
 	private static readonly char[] Delimiter = [' '];
 
-	public IEnumerable<string> SupportedTypes => new[] { "Shape", "Microsoft.Maui.Controls.Shapes.Shape" };
+	public IEnumerable<string> SupportedTypes => ["Shape", "Microsoft.Maui.Controls.Shapes.Shape"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
 		if (!string.IsNullOrEmpty(value))
@@ -84,7 +85,7 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				}
 
 				var pointCollectionConverter = new PointCollectionConverter();
-				var pointCollection = pointCollectionConverter.Convert(parts[1], node, toType, context);
+				var pointCollection = pointCollectionConverter.Convert(parts[1], node, toType, writer, context);
 
 				// If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
 				if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
@@ -107,7 +108,7 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				}
 
 				var pointCollectionConverter = new PointCollectionConverter();
-				var pointCollection = pointCollectionConverter.Convert(parts[1], node, toType, context);
+				var pointCollection = pointCollectionConverter.Convert(parts[1], node, toType, writer, context);
 
 				// If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
 				if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
@@ -136,7 +137,7 @@ internal class StrokeShapeConverter : ISGTypeConverter
 				if (parts.Length > 1)
 				{
 					var cornerRadiusConverter = new CornerRadiusConverter();
-					cornerRadius = cornerRadiusConverter.Convert(parts[1], node, toType, context);
+					cornerRadius = cornerRadiusConverter.Convert(parts[1], node, toType, writer, context);
 				}
 
 				var roundRectangleType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.RoundRectangle")!;

@@ -16,10 +16,12 @@ var testResultsPath = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS"
 var platform = testDevice.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("IOS_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier(testDevice));
 var deviceCleanupEnabled = Argument("cleanup", true);
+var useCoreClr = Argument("coreclr", false);
 
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -37,6 +39,7 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
+Information("Use CoreCLR: {0}", useCoreClr);
 Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
@@ -84,7 +87,7 @@ Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
+		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath, useCoreClr);
 	});
 
 Task("testOnly")
@@ -117,7 +120,7 @@ Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
-		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath, headless);
 	});
 
 Task("uitest")
@@ -129,10 +132,11 @@ Task("uitest")
 
 RunTarget(TARGET);
 
-void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath)
+void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+	var monoRuntime = useCoreClr ? "coreclr" : "mono";
+	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-ios.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -150,6 +154,11 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
+
+			if (isUsingCoreClr)
+			{
+				args.Append("/p:UseMonoRuntime=false");
+			}
 
 			return args;
 		}
@@ -209,7 +218,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 	});
 }
 
-void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
+void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, bool headless)
 {
 	Information("Preparing UI Tests...");
 	Information($"Testing Device: {device}");
@@ -225,7 +234,7 @@ void ExecutePrepareUITests(string project, string app, string device, string res
 		throw new Exception("UI Test application path not specified.");
 	}
 
-	InstallIpa(testApp, "", device, resultsDir, ver, toolPath);
+	InstallIpa(testApp, "", device, resultsDir, ver, toolPath, headless);
 }
 
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
@@ -380,7 +389,7 @@ string GetDefaultRuntimeIdentifier(string testDeviceIdentifier)
    : $"ios-arm64";
 }
 
-void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath)
+void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath, bool headless)
 {
 	Information("Install with xharness: {0} testDevice:{1}", testApp, testDevice);
 	var settings = new DotNetToolSettings
@@ -451,6 +460,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
+        SetEnvironmentVariable("HEADLESS", headless.ToString());
 	}
 }
 

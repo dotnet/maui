@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (IsNullOrEmpty(member) || !member.Contains("."))
 				throw new BuildException(BuildExceptionCode.XStaticSyntax, node as IXmlLineInfo, null);
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 			var dotIdx = member.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 
@@ -68,7 +70,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						return [Instruction.Create(OpCodes.Ldc_I8, (ulong)fieldDef.Constant)];
 					if (fieldDef.Constant is uint)
 						return [Instruction.Create(OpCodes.Ldc_I4, (uint)fieldDef.Constant)];
-					//everything else will cast just fine to an int
+					if (fieldDef.Constant is byte)
+						return [Instruction.Create(OpCodes.Ldc_I4, (int)(byte)fieldDef.Constant)];
+						if (fieldDef.Constant is sbyte)
+						return [Instruction.Create(OpCodes.Ldc_I4, (int)(sbyte)fieldDef.Constant)];
+					if (fieldDef.Constant is short)
+						return [Instruction.Create(OpCodes.Ldc_I4, (int)(short)fieldDef.Constant)];
+					if (fieldDef.Constant is ushort)
+						return [Instruction.Create(OpCodes.Ldc_I4, (int)(ushort)fieldDef.Constant)];
+
+					//fallback
 					return [Instruction.Create(OpCodes.Ldc_I4, (int)fieldDef.Constant)];
 				}
 			}

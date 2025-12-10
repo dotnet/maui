@@ -9,8 +9,8 @@
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
@@ -23,14 +23,14 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
     <!-- TODO: remove these obsolete nowarns and fix it in code -->
-    <NoWarn>$(NoWarn);CS0618;CS0672;XC0618;XC0022;XC0023;IL2026;IL2091;IL2067;IL2072;IL2087;IL3050</NoWarn>
+    <NoWarn>$(NoWarn);CS0618;CS0672;XC0618;IL2026;IL2091;IL2067;IL2072;IL2087;IL3050</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">
     <PublishAot>true</PublishAot>
     <_IsPublishing>true</_IsPublishing>
     <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
-    <WarningsNotAsErrors>IL3050;XC0022</WarningsNotAsErrors>
+    <WarningsNotAsErrors>IL3050</WarningsNotAsErrors>
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
@@ -78,4 +78,7 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
+  <ItemGroup>
+    <MauiXaml Update="**\*.xaml" Inflator="SourceGen"  NoWarn="0612"/>
+  </ItemGroup>
 </Project>

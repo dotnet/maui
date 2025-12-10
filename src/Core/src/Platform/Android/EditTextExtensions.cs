@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 			{
 				editText.SetTextColor(c);
 			}
-			else
+			else if (textColor is null)
 			{
 				// Fallback to system default color
 				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (placeholderTextColor is not null && PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
 				editText.SetHintTextColor(c);
-			else
+			else if (placeholderTextColor is null)
 			{
 				// Fallback to system default color
 				var typedValue = new TypedValue();
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Platform
 		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
 		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
 		// bounds of the EditText.
-		static bool RectContainsMotionEvent(global::Android.Graphics.Rect  rect, MotionEvent motionEvent)
+		static bool RectContainsMotionEvent(global::Android.Graphics.Rect rect, MotionEvent motionEvent)
 		{
 			var x = motionEvent.GetX();
 

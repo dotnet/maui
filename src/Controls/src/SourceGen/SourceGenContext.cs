@@ -9,27 +9,41 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches assemblyCaches, IDictionary<XmlType, ITypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
 {
+	internal static SourceGenContext CreateNewForTests() => new SourceGenContext(
+		null!,
+		null!,
+		default,
+		null!,
+		new Dictionary<XmlType, INamedTypeSymbol>(),
+		null!,
+		null,
+		null!);
+
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
-	public IList<TextWriter> AddtitionalWriters { get; } = [];
+	
+	public IndentedTextWriter? RefStructWriter { get; set; }
+
 	public Compilation Compilation => compilation;
-	public AssemblyCaches XmlnsCache => assemblyCaches;
+	public AssemblyAttributes XmlnsCache => assemblyCaches;
 	public ITypeSymbol RootType => rootType;
-	public IDictionary<XmlType, ITypeSymbol> TypeCache => typeCache;
+	public IDictionary<XmlType, INamedTypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
-	public IDictionary<INode, LocalVariable> Variables { get; } = new Dictionary<INode, LocalVariable>();
+	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
 	public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);
-	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
-	public IDictionary<INode, (LocalVariable namescope, IDictionary<string, LocalVariable> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IDictionary<string, LocalVariable>)>();
+	public IDictionary<INode, ILocalValue> ServiceProviders { get; } = new Dictionary<INode, ILocalValue>();
+	public IDictionary<INode, (ILocalValue namescope, IDictionary<string, ILocalValue> namesInScope)> Scopes = new Dictionary<INode, (ILocalValue, IDictionary<string, ILocalValue>)>();
 	public SourceGenContext? ParentContext { get; set; }
 	public ITypeSymbol? BaseType { get; } = baseType;
 	public IDictionary<INode, ITypeSymbol> Types { get; } = new Dictionary<INode, ITypeSymbol>();
-	public IDictionary<LocalVariable, HashSet<string>> KeysInRD { get; } = new Dictionary<LocalVariable, HashSet<string>>();
-	public IDictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable> VariablesProperties { get; } = new Dictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable>();
+	public IDictionary<ILocalValue, HashSet<string>> KeysInRD { get; } = new Dictionary<ILocalValue, HashSet<string>>();
+	public IDictionary<(ILocalValue, IFieldSymbol?, IPropertySymbol?), ILocalValue> VariablesProperties { get; } = new Dictionary<(ILocalValue, IFieldSymbol?, IPropertySymbol?), ILocalValue>();
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public ProjectItem ProjectItem { get; } = projectItem;
+
+	public Dictionary<string, int> lastIdForName = [];
 
 	public void AddLocalMethod(string code)
 	{
@@ -44,7 +58,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	}
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
-	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGValueProviders;
+	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGEarlyMarkupExtensions;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGLateMarkupExtensions;
 }

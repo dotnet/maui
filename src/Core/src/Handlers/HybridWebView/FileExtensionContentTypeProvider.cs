@@ -457,8 +457,9 @@ internal sealed class FileExtensionContentTypeProvider
 		{
 			return null;
 		}
-
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		int index = path.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		if (index < 0)
 		{
 			return null;

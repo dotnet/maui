@@ -164,36 +164,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected bool IsIndexPathValid(NSIndexPath indexPath)
 		{
-			if (indexPath.Item < 0 || indexPath.Section < 0)
-			{
-				return false;
-			}
-
-			var collectionView = Controller.CollectionView;
-			if (indexPath.Section >= collectionView.NumberOfSections())
-			{
-				return false;
-			}
-
-			if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
-			{
-				return false;
-			}
-
-			return true;
+			return LayoutFactory2.IsIndexPathValid(indexPath, Controller.CollectionView);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var contentSize = Controller.GetSize();
-
-			// If contentSize comes back null, it means none of the content has been realized yet;
-			// we need to return the expansive size the collection view wants by default to get
-			// it to start measuring its content
-			if (contentSize.Height == 0 || contentSize.Width == 0)
-			{
-				return base.GetDesiredSize(widthConstraint, heightConstraint);
-			}
+			contentSize = EnsureContentSizeForScrollDirection(widthConstraint, heightConstraint, contentSize);
 
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
@@ -205,6 +182,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			return new Size(width, height);
+		}
+
+		Size EnsureContentSizeForScrollDirection(double widthConstraint, double heightConstraint, Size contentSize)
+		{
+			// Get the CollectionView orientation
+			var scrollDirection = Controller.GetScrollDirection();
+
+			// If contentSize is zero in the relevant dimension (height for vertical, width for horizontal),
+			// it means none of the content has been realized yet; we need to return the expansive size
+			// the collection view wants by default to get it to start measuring its content
+			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
+				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
+			{
+				var desiredSize = base.GetDesiredSize(widthConstraint, heightConstraint);
+				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					contentSize.Height = desiredSize.Height;
+				}
+				else
+				{
+					contentSize.Width = desiredSize.Width;
+				}
+			}
+
+			return contentSize;
 		}
 	}
 }

@@ -191,6 +191,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
                   
@@ -239,6 +240,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish iOS snapshot diffs
@@ -281,6 +283,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
+                      headless: ${{ parameters.headless }}
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
@@ -374,6 +377,7 @@ stages:
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
+                        headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests

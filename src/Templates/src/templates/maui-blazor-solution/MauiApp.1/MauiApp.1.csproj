@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>DOTNET_TFM-android;DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>DOTNET_TFM-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);DOTNET_TFM-windows10.0.19041.0</TargetFrameworks>
 
     <!-- Note for MacCatalyst:
@@ -18,6 +19,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableDefaultCssItems>false</EnableDefaultCssItems>
     <Nullable>enable</Nullable>
+
+    <!-- Enable XAML source generation for faster build times and improved performance.
+         This generates C# code from XAML at compile time instead of runtime inflation.
+         To disable, remove this line.
+         For individual files, you can override by setting Inflator metadata:
+           <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
+           <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
+    <MauiXamlInflator>SourceGen</MauiXamlInflator>
 
     <!-- Display name -->
     <ApplicationTitle>XmlEncodedAppName</ApplicationTitle>

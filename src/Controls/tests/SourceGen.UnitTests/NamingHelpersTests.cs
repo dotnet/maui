@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
@@ -26,20 +27,20 @@ public class TestClass<T>
 
 """;
 
-	[Test]
+	[Fact]
 	public void CreateVariableName()
 	{
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
-		var context = new object();
-		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!), Is.EqualTo("testClass"));
-		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!), Is.EqualTo("testClass1"));
+		var context = SourceGenContext.CreateNewForTests();
+		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!));
+		Assert.Equal("testClass1", NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!));
 
-		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass`1")!), Is.EqualTo("testClass"));
-		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass`1")!.Construct(compilation.GetTypeByMetadataName("Test.TestClass")!)), Is.EqualTo("testClass"));
+		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.GetTypeByMetadataName("Test.TestClass`1")!));
+		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.GetTypeByMetadataName("Test.TestClass`1")!.Construct(compilation.GetTypeByMetadataName("Test.TestClass")!)));
 
-		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.CreateArrayTypeSymbol(compilation.GetTypeByMetadataName("Test.TestClass")!)!), Is.EqualTo("testClassArray"));
+		Assert.Equal("testClassArray", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.CreateArrayTypeSymbol(compilation.GetTypeByMetadataName("Test.TestClass")!)!));
 
-		Assert.That(NamingHelpers.CreateUniqueVariableNameImpl(new object(), compilation.GetTypeByMetadataName("Test.TestClass+Nested")!), Is.EqualTo("nested"));
+		Assert.Equal("nested", NamingHelpers.CreateUniqueVariableNameImpl(SourceGenContext.CreateNewForTests(), compilation.GetTypeByMetadataName("Test.TestClass+Nested")!));
 	}
 }

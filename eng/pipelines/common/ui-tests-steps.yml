@@ -9,6 +9,7 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   testFilter: ''
+  headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -69,6 +70,7 @@ steps:
     skipAndroidCreateAvds: true
     androidEmulatorApiLevel: ${{ parameters.version }}
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
@@ -99,12 +101,10 @@ steps:
   displayName: 'Add .NET to PATH'
 
 # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
-- task: ScreenResolutionUtility@1
+- pwsh: |
+    $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+    & $scriptPath -Width 1920 -Height 1080
   condition: eq('${{ parameters.platform }}' , 'windows')
-  inputs:
-    displaySettings: 'specific'
-    width: '1920'
-    height: '1080'
   displayName: "Set screen resolution"
 
 - task: UseNode@1
@@ -144,6 +144,11 @@ steps:
     }
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
+    }
+    
+    $headless = ${{ parameters.headless }}
+    if ($headless) {
+      $command += " --headless ""$headless"""
     }
 
     Write-Host "Running command: $command"

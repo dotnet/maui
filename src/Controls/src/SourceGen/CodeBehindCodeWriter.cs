@@ -20,7 +20,7 @@ static class CodeBehindCodeWriter
 
 	internal static readonly string[] accessModifiers = ["private", "public", "internal", "protected"];
 
-	public static string GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, Action<Diagnostic>? reportDiagnostic, CancellationToken ct, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	public static string GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, Action<Diagnostic>? reportDiagnostic, CancellationToken ct, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		var projItem = xamlItem?.ProjectItem;
 
@@ -33,8 +33,33 @@ static class CodeBehindCodeWriter
 		{
 			if (xamlItem.Exception != null)
 			{
-				var location = projItem!.RelativePath is not null ? Location.Create(projItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
+				IXmlLineInfo lineInfo;
+				string errorMessage;
+
+				if (xamlItem.Exception is XamlParseException xpe)
+				{
+					lineInfo = xpe.XmlInfo;
+					errorMessage = xpe.UnformattedMessage;
+				}
+				else if (xamlItem.Exception is XmlException xmlEx)
+				{
+					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
+				}
+				else if (xamlItem.Exception.InnerException is XmlException innerXmlEx)
+				{
+					lineInfo = new XmlLineInfo(innerXmlEx.LineNumber, innerXmlEx.LinePosition);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(innerXmlEx.Message);
+				}
+				else
+				{
+					// Try to extract line info from message if present
+					lineInfo = ExtractLineInfoFromMessage(xamlItem.Exception.Message);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(xamlItem.Exception.Message);
+				}
+
+				var location = projItem!.RelativePath is not null ? LocationHelpers.LocationCreate(projItem.RelativePath, lineInfo, string.Empty) : null;
+				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 			}
 			return "";
 		}
@@ -149,12 +174,16 @@ static class CodeBehindCodeWriter
 				InitComp("InitializeComponent");
 			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponent");
-			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen) {
 				InitComp("InitializeComponent", partialsignature: true);
+				//generate InitCompRuntime for HotReload fallback
+				if (projItem.EnableDiagnostics)
+					InitComp("InitializeComponentRuntime");
+			}
 		}
 		else
 		{
-			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime)
+			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime || projItem.EnableDiagnostics)
 				InitComp("InitializeComponentRuntime");
 			if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponentXamlC", empty: true);
@@ -273,7 +302,7 @@ static class CodeBehindCodeWriter
 		return sb.ToString();
 	}
 
-	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out ITypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
+	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out INamedTypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -322,7 +351,7 @@ static class CodeBehindCodeWriter
 			var typeArgs = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 			try
 			{
-				var basetype = new XmlType(root.NamespaceURI, root.LocalName, typeArgs != null ? TypeArgumentsParser.ParseExpression(typeArgs, nsmgr, null) : null).GetTypeSymbol(null, compilation, xmlnsCache);
+				var basetype = new XmlType(root.NamespaceURI, root.LocalName, typeArgs != null ? TypeArgumentsParser.ParseExpression(typeArgs, nsmgr, null) : null).GetTypeSymbol(null, compilation, xmlnsCache, typeCache);
 			}
 			catch
 			{
@@ -348,7 +377,7 @@ static class CodeBehindCodeWriter
 
 		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, reportDiagnostic);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
+		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache);
 
 		// x:ClassModifier attribute
 		var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -389,7 +418,7 @@ static class CodeBehindCodeWriter
 		return string.Join(", ", warnings);
 	}
 
-	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic)
+	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic)
 	{
 		var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 		if (xPrefix == null)
@@ -419,7 +448,7 @@ static class CodeBehindCodeWriter
 			if (!accessModifiers.Contains(accessModifier)) //quick validation
 				accessModifier = "private";
 
-			yield return (name ?? "", xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)?.ToFQDisplayString() ?? "", accessModifier);
+			yield return (name ?? "", xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache)?.ToFQDisplayString() ?? "", accessModifier);
 		}
 	}
 
@@ -445,5 +474,46 @@ static class CodeBehindCodeWriter
 			return attr.Value;
 		}
 		return null;
+	}
+
+	static string StripLineInfoFromXmlExceptionMessage(string message)
+	{
+		// XmlException messages typically end with " Line X, position Y."
+		// We want to strip that since we're reporting location separately
+		var lineIndex = message.LastIndexOf(" Line ");
+		if (lineIndex > 0)
+		{
+			// Strip both the trailing period after the line info and any double periods
+			return message.Substring(0, lineIndex).TrimEnd('.', ' ');
+		}
+		return message;
+	}
+
+	static IXmlLineInfo ExtractLineInfoFromMessage(string message)
+	{
+		// Try to extract "Line X, position Y" from the message
+		var lineIndex = message.LastIndexOf(" Line ");
+		if (lineIndex > 0)
+		{
+			try
+			{
+				var lineInfoPart = message.Substring(lineIndex + 6); // Skip " Line "
+				var parts = lineInfoPart.Split(new[] { ", position " }, StringSplitOptions.None);
+				if (parts.Length == 2)
+				{
+					var lineStr = parts[0].Trim();
+					var posStr = parts[1].TrimEnd('.', ' ');
+					if (int.TryParse(lineStr, out int lineNumber) && int.TryParse(posStr, out int linePosition))
+					{
+						return new XmlLineInfo(lineNumber, linePosition);
+					}
+				}
+			}
+			catch
+			{
+				// Ignore parsing errors
+			}
+		}
+		return new XmlLineInfo();
 	}
 }

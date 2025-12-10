@@ -36,7 +36,7 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 			if (propertyName.LocalName == "Resources"
 				|| propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal))
 			{
-				SetPropertiesVisitor.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
+				SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 				return;
 			}
 		}

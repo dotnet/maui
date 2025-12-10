@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -5,13 +6,14 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
-internal class RowDefinitionCollectionConverter : ISGTypeConverter
+class RowDefinitionCollectionConverter : ISGTypeConverter
 {
-	public IEnumerable<string> SupportedTypes => new[] { "RowDefinitionCollection", "Microsoft.Maui.Controls.RowDefinitionCollection" };
+	public IEnumerable<string> SupportedTypes => ["RowDefinitionCollection", "Microsoft.Maui.Controls.RowDefinitionCollection"];
 
-	public string Convert(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
+		var rowDefinitionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinition")!;
 		if (!string.IsNullOrEmpty(value))
 		{
 			var lengths = value.Split([',']);
@@ -20,8 +22,8 @@ internal class RowDefinitionCollectionConverter : ISGTypeConverter
 			var rowDefinitions = new List<string>();
 			foreach (var length in lengths)
 			{
-				var gridLength = gridLengthConverter.Convert(length, node, toType, context);
-				rowDefinitions.Add($"new RowDefinition({gridLength})");
+				var gridLength = gridLengthConverter.Convert(length, node, toType, writer, context);
+				rowDefinitions.Add($"new {rowDefinitionType.ToFQDisplayString()}({gridLength})");
 			}
 
 			var rowDefinitionCollectionType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RowDefinitionCollection")!;

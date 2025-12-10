@@ -35,6 +35,7 @@ var androidAvd = "";
 var androidAvdImage = "";
 var deviceArch = "";
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -127,7 +128,7 @@ Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
-		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation, headless);
 	});
 
 Task("uitest")
@@ -231,7 +232,7 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 	Information("Testing completed.");
 }
 
-void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation, bool headless)
 {
 	string platform = "android";
 	Information("Preparing UI Tests...");
@@ -261,7 +262,7 @@ void ExecutePrepareUITests(string project, string app, string appPackageName, st
 	Information($"Testing App: {testApp}");
 	Information($"Results Directory: {resultsDir}");
 
-	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+	InstallApk(testApp, appPackageName, resultsDir, deviceSkin, headless);
 }
 
 void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
@@ -453,11 +454,39 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					// delete the AVD first, if it exists
 					Information("Deleting AVD if exists: {0}...", avdName);
 					try { AndroidAvdDelete(avdName, avdSettings); }
-					catch { }
+					catch (Exception ex) { Warning("Failed to delete AVD: {0}", ex.Message); }
 
 					// create the new AVD
 					Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 					AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+				}
+
+				// Pre-authorize ADB keys before starting emulator to avoid "device unauthorized" errors
+				Information("Pre-authorizing ADB keys for emulator...");
+				try
+				{
+					// Ensure ADB keys exist
+					EnsureAdbKeys(adbSettings);
+
+					// Copy the public key to the AVD directory so it's trusted from boot
+					var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+					var adbKeyPubSource = System.IO.Path.Combine(homeDir, ".android", "adbkey.pub");
+					var avdPath = System.IO.Path.Combine(homeDir, ".android", "avd", $"{avdName}.avd");
+					var avdAdbKeysDest = System.IO.Path.Combine(avdPath, "adbkey.pub");
+
+					if (System.IO.File.Exists(adbKeyPubSource) && System.IO.Directory.Exists(avdPath))
+					{
+						System.IO.File.Copy(adbKeyPubSource, avdAdbKeysDest, overwrite: true);
+						Information($"Pre-authorized ADB key copied to: {avdAdbKeysDest}");
+					}
+					else
+					{
+						Warning($"Could not pre-authorize ADB key. Source exists: {System.IO.File.Exists(adbKeyPubSource)}, AVD path exists: {System.IO.Directory.Exists(avdPath)}");
+					}
+				}
+				catch (Exception ex)
+				{
+					Warning($"Failed to pre-authorize ADB keys (will retry during boot): {ex.Message}");
 				}
 
 				// start the emulator
@@ -538,7 +567,7 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 		Information("AndroidAvdDelete");
 		// delete the AVD
 		try { AndroidAvdDelete(androidAvd, avdSettings); }
-		catch { }
+		catch (Exception ex) { Warning("Failed to delete AVD during cleanup: {0}", ex.Message); }
 	}
 }
 
@@ -578,7 +607,7 @@ void WriteLogCat(string filename = null)
 	Information("Logcat written to {0}", location);
 }
 
-void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin)
+void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin, bool headless)
 {
 	PrepareDevice(deviceBootWait);
 
@@ -604,6 +633,9 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 			return args;
 		}
 	};
+
+    Information("Use the Android emulators in a headless mode:");
+    SetEnvironmentVariable("HEADLESS", headless.ToString());
 
 	Information("The platform version to run tests:");
 	SetEnvironmentVariable("DEVICE_SKIN", skin);

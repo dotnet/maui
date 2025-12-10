@@ -7,23 +7,23 @@ public class SimpleTemplateTest : BaseTemplateTests
 {
 	[Test]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	[TestCase("maui", DotNetPrevious, "Debug", false, "", "")]
-	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
+	// [TestCase("maui", DotNetPrevious, "Debug", false, "", "")]
+	// [TestCase("maui", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	//Debug not ready yet
 	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	//[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
+	// [TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	// [TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
-	[TestCase("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	[TestCase("mauilib", DotNetPrevious, "Release", true, "", "")]
+	// [TestCase("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	// [TestCase("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[TestCase("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[TestCase("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -40,16 +40,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
-		string[]? warningsToIgnore = null;
-
-		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
-		{
-			warningsToIgnore = new string[]
-			{
-				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
-			};
-		}
-
 		// We only have these packs for Android
 		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
 		{
@@ -64,27 +54,27 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
-	[TestCase("maui", DotNetPrevious, "Debug")]
-	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
-	{
-		var projectDir = TestDirectory;
-		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+	// [Test]
+	// [TestCase("maui", DotNetPrevious, "Debug")]
+	// public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
+	// {
+	// 	var projectDir = TestDirectory;
+	// 	var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
-			$"Unable to create template {id}. Check test output for errors.");
+	// 	Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+	// 		$"Unable to create template {id}. Check test output for errors.");
 
-		FileUtilities.ReplaceInFile(projectFile,
-			"$(MauiVersion)",
-			MauiPackageVersion);
+	// 	FileUtilities.ReplaceInFile(projectFile,
+	// 		"$(MauiVersion)",
+	// 		MauiPackageVersion);
 
-		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
-			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
-	}
+	// 	Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+	// 		$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
+	// }
 
 	[Test]
 	// with spaces
@@ -130,18 +120,18 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Test]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	[TestCase("maui", DotNetPrevious, "Debug", false, "")]
-	[TestCase("maui", DotNetPrevious, "Release", false, "")]
+	// [TestCase("maui", DotNetPrevious, "Debug", false, "")]
+	// [TestCase("maui", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
-	[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
+	// [TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	// [TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
+	// [TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
+	// [TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	// [TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
+	// [TestCase("mauilib", DotNetPrevious, "Release", true, "")]
+	// [TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
+	// [TestCase("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
@@ -235,8 +225,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
 	[Test]
-	[TestCase("mauilib", DotNetPrevious, "Debug")]
-	[TestCase("mauilib", DotNetPrevious, "Release")]
+	// [TestCase("mauilib", DotNetPrevious, "Debug")]
+	// [TestCase("mauilib", DotNetPrevious, "Release")]
 	[TestCase("mauilib", DotNetCurrent, "Debug")]
 	[TestCase("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)

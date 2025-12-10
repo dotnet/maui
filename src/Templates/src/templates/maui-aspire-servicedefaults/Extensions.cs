@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Extensions.Hosting;
 
-// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
+// Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
 // This project should be referenced by each service project in your solution.
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
@@ -53,16 +53,16 @@ public static class Extensions
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
-                // Enable reporting metrics coming from the .NET MAUI SDK
-                metrics.AddMeter("Microsoft.Maui");
+                // Uncomment the following line to enable reporting metrics coming from the .NET MAUI SDK, this might cause a lot of added telemetry
+                //metrics.AddMeter("Microsoft.Maui");
                 
                 metrics.AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
-                // Enable reporting tracing coming from the .NET MAUI SDK
-                tracing.AddSource("Microsoft.Maui");
+                // Uncomment the following line to enable reporting tracing coming from the .NET MAUI SDK, this might cause a lot of added telemetry
+                //tracing.AddSource("Microsoft.Maui");
                 
                 tracing.AddSource(builder.Environment.ApplicationName)
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)

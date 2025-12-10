@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Controls
 
 			if (strValue == "VerticalList")
 			{
-				return LinearItemsLayout.Vertical;
+				return LinearItemsLayout.CreateVerticalDefault();
 			}
 			else if (strValue == "HorizontalList")
 			{
-				return LinearItemsLayout.Horizontal;
+				return LinearItemsLayout.CreateHorizontalDefault();
 			}
 			else if (strValue.StartsWith("VerticalGrid", StringComparison.Ordinal))
 			{

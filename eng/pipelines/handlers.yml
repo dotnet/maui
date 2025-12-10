@@ -5,6 +5,7 @@ trigger:
     - release/*
     - net9.0
     - net10.0
+    - net11.0
   tags:
     include:
     - '*'
@@ -28,6 +29,7 @@ pr:
     - release/*
     - net9.0
     - net10.0
+    - net11.0
   paths:
     include:
     - '*'
@@ -79,8 +81,6 @@ parameters:
     vmImage: $(macOSXVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - macOS.Architecture -equals x64
-    - Agent.OSVersion -equals 15.6
     artifact: build-macos
 
 - name: PackPlatforms
@@ -107,8 +107,6 @@ parameters:
     vmImage: $(macOSXVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - macOS.Architecture -equals x64
-    - Agent.OSVersion -equals 15.6
     artifact: build-macos
 
 - name: RunTemplatePlatforms
@@ -118,16 +116,12 @@ parameters:
     vmImage: $(androidTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - macOS.Architecture -equals x64
-    - Agent.OSVersion -equals 15.6
     testName: RunOnAndroid
     artifact: templates-run-android
   - name: $(iosTestsVmPool)
     vmImage: $(iosTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - macOS.Architecture -equals x64
-    - Agent.OSVersion -equals 15.6
     testName: RunOniOS
     artifact: templates-run-ios
 
@@ -138,8 +132,6 @@ parameters:
     vmImage: $(androidTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - macOS.Architecture -equals arm64
-    - Agent.OSVersion -equals 15.6
 
 resources:
   repositories:

@@ -223,6 +223,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (end == 0)
 				throw new XamlParseException("Empty value string in markup expression", serviceProvider);
 
+			if (end >= remaining.Length)
+				throw new XamlParseException("Unexpected end of markup expression", serviceProvider);
+
 			next = remaining[end];
 			remaining = remaining.Substring(end + 1);
 

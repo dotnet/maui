@@ -64,11 +64,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_SKIN") ?? "");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
@@ -243,7 +245,8 @@ namespace Microsoft.Maui.TestCases.Tests
 							environmentName = "android-notch-36";
 						}
 
-						if (!((deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420) || (deviceApiLevel == 36 && deviceScreenSize == "1080x2424" && deviceScreenDensity == 420)))
+						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}

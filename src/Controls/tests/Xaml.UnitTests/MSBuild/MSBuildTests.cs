@@ -262,6 +262,34 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
+		[Test]
+		public void HotReloadSupportForXSG([Values("Debug", "Release")] string configuration)
+		{
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
+
+			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.XamlGenerator");
+			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
+			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"), nonEmpty: true);
+			
+			var sg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"));
+			var xsg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"));
+			if (configuration == "Debug")
+			{
+				StringAssert.Contains("InitializeComponentRuntime", sg);
+				StringAssert.Contains("InitializeComponentRuntime", xsg);
+			}
+			else
+            {
+				StringAssert.DoesNotContain("InitializeComponentRuntime", sg);
+				StringAssert.DoesNotContain("InitializeComponentRuntime", xsg);
+            }
+
+		}
+
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Test]
 		public void ValidateOnly([Values("Debug", "Release", "ReleaseProd")] string configuration)
