@@ -7,9 +7,9 @@ namespace Maui.Controls.Sample.Issues
     [Issue(IssueTracker.Github, 31106, "[MacCatalyst] Picker dialog closes automatically with VoiceOver/Keyboard", PlatformAffected.macOS)]
     public class Issue31106 : ContentPage
     {
-        private readonly Picker _testPicker;
-        private readonly Label _statusLabel;
-        private readonly Label _pickerStateLabel;
+        readonly Picker _testPicker;
+        readonly Label _statusLabel;
+        readonly Label _pickerStateLabel;
 
         public Issue31106()
         {
@@ -68,19 +68,19 @@ namespace Maui.Controls.Sample.Issues
             _testPicker.Unfocused += OnPickerUnfocused;
         }
 
-        private void OnPickerFocused(object sender, FocusEventArgs e)
+        void OnPickerFocused(object sender, FocusEventArgs e)
         {
             _pickerStateLabel.Text = "Picker State: Open";
             _pickerStateLabel.TextColor = Colors.Green;
         }
 
-        private void OnPickerUnfocused(object sender, FocusEventArgs e)
+        void OnPickerUnfocused(object sender, FocusEventArgs e)
         {
             _pickerStateLabel.Text = "Picker State: Closed";
             _pickerStateLabel.TextColor = Colors.Red;
         }
 
-        private void OnPickerSelectedIndexChanged(object sender, EventArgs e)
+        void OnPickerSelectedIndexChanged(object sender, EventArgs e)
         {
             if (_testPicker.SelectedIndex >= 0)
             {
