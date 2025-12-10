@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Platform
 
 			_contentView?.RemoveFromSuperview();
 
+			if(_contentView is not null)
+			{
+				_refreshControl = new UIRefreshControl();
+			}
+
 			if (content is not null && mauiContext is not null)
 			{
 				_contentView = content.ToPlatform(mauiContext);
