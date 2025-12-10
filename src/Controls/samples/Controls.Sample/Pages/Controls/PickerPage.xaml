@@ -27,6 +27,12 @@
                 <Label Text="FontAttributes=Italic + BackgroundColor=Yellow" Style="{StaticResource Headline}" />
                 <Picker Title="Select an item" ItemsSource="{Binding PickerItems}" FontAttributes="Italic" BackgroundColor="Yellow" />
 
+                <Label Text="BorderColor=Blue" Style="{StaticResource Headline}"/>
+                <Picker Title="Select an item" ItemsSource="{Binding PickerItems}" BorderColor="Blue" />
+
+                <Label Text="BorderThickness=5" Style="{StaticResource Headline}"/>
+                <Picker Title="Select an item" ItemsSource="{Binding PickerItems}" BorderThickness="5" />
+
                 <Label Text="HorizontalTextAlignment=End + WidthRequest=300" Style="{StaticResource Headline}"/>
                 <Picker Title="Select an item" ItemsSource="{Binding PickerItems}" HorizontalTextAlignment="End" WidthRequest="300" />
 
