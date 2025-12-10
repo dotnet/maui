@@ -53,5 +53,5 @@ public class LandmarkDataService
 
     public Landmark? GetLandmarkById(int id) => _landmarksById?.GetValueOrDefault(id);
 
-    public IEnumerable<string> GetLandmarkNames() => _landmarks?.Select(l => l.Name) ?? [];
+    public IEnumerable<string> GetDestinationNames() => _landmarks?.Select(l => l.Name) ?? [];
 }

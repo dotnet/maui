@@ -1,3 +1,3 @@
 ﻿#nullable enable
 Microsoft.Maui.Essentials.AI.Extensions
-static Microsoft.Maui.Essentials.AI.Extensions.AddPlatformChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Maui.Essentials.AI.Extensions.AddPlatformChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton, bool useAgentFrameworkWrapper = false) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

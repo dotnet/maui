@@ -59,8 +59,8 @@
         <Button
             Text="🌐" Clicked="OnLanguageButtonClicked"
             VerticalOptions="Start" HorizontalOptions="End" Margin="0,20,20,0"
-            HeightRequest="44" WidthRequest="44" CornerRadius="22"
-            FontSize="20" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+            HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
+            FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
             TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
 
     </Grid>
