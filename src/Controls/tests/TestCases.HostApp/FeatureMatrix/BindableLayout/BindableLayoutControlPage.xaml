@@ -5,149 +5,169 @@
              x:Class="Maui.Controls.Sample.BindableLayoutControlMainPage"
              x:DataType="local:BindableLayoutViewModel"
              Title="BindableLayoutControlPage">
-       <ContentPage.ToolbarItems>
-              <ToolbarItem Text="Options"
-                           Clicked="NavigateToOptionsPage_Clicked"
-                           AutomationId="Options"/>
-       </ContentPage.ToolbarItems>
-       <VerticalStackLayout Spacing="3"
-                            Padding="3">
-              <Label Text="StackLayout with BindableLayout"
-                     FontAttributes="Bold"
-                     FontSize="16"
-                     HorizontalOptions="Center"
-                     AutomationId="StackLayoutWithBindableLayout"/>
-              <StackLayout x:Name="MainStackBindableLayout"
-                           BindableLayout.ItemsSource="{Binding ItemsSource}"
-                           BindableLayout.ItemTemplate="{Binding ItemTemplate}"
-                           BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}"
-                           BindableLayout.EmptyView="{Binding StackEmptyView}"
-                           BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}">
-              </StackLayout>
-              <Label Text="FlexLayout with BindableLayout"
-                     FontAttributes="Bold"
-                     FontSize="16"
-                     HorizontalOptions="Center"/>
-              <FlexLayout x:Name="MainFlexBindableLayout"
-                          Direction="Row"
-                          Wrap="Wrap"
-                          BindableLayout.ItemsSource="{Binding ItemsSource}"
-                          BindableLayout.ItemTemplate="{Binding ItemTemplate}"
-                          BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}"
-                          BindableLayout.EmptyView="{Binding FlexEmptyView}"
-                          BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}">
-              </FlexLayout>
-              <!-- 🆕 Grid BindableLayout -->
-              <Label Text="Grid with BindableLayout"
-                     FontAttributes="Bold"
-                     FontSize="16"
-                     HorizontalOptions="Center"
-                     AutomationId="GridWithBindableLayout"/>
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Options"
+                             Clicked="NavigateToOptionsPage_Clicked"
+                             AutomationId="Options"/>
+        </ContentPage.ToolbarItems>
+        <VerticalStackLayout Spacing="3"
+                             Padding="3">
+                <Label Text="StackLayout with BindableLayout"
+                       FontAttributes="Bold"
+                       FontSize="12"
+                       HorizontalOptions="Center"
+                       AutomationId="StackLayoutWithBindableLayout"/>
+                <StackLayout x:Name="MainStackBindableLayout"
+                             BindableLayout.ItemsSource="{Binding ItemsSource}"
+                             BindableLayout.ItemTemplate="{Binding ItemTemplate}"
+                             BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}"
+                             BindableLayout.EmptyView="{Binding StackEmptyView}"
+                             BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}">
+                </StackLayout>
+                <Label Text="FlexLayout with BindableLayout"
+                       FontAttributes="Bold"
+                       FontSize="12"
+                       HorizontalOptions="Center"/>
+                <FlexLayout x:Name="MainFlexBindableLayout"
+                            Direction="Row"
+                            Wrap="Wrap"
+                            BindableLayout.ItemsSource="{Binding ItemsSource}"
+                            BindableLayout.ItemTemplate="{Binding ItemTemplate}"
+                            BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}"
+                            BindableLayout.EmptyView="{Binding FlexEmptyView}"
+                            BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}">
+                </FlexLayout>
+                <!-- 🆕 Grid BindableLayout -->
+                <Label Text="Grid with BindableLayout"
+                       FontAttributes="Bold"
+                       FontSize="12"
+                       HorizontalOptions="Center"
+                       AutomationId="GridWithBindableLayout"/>
 
-              <ScrollView Orientation="Both">
-                     <Grid x:Name="MainGridBindableLayout"
-                           Padding="10"
-                           RowSpacing="10"
-                           ColumnSpacing="10"
-                           BackgroundColor="#f0f0f0"
-                           Loaded="OnGridLoaded"
-                           BindableLayout.ItemsSource="{Binding ItemsSource}"
-                           BindableLayout.ItemTemplate="{Binding ItemTemplate}"
-                           BindableLayout.EmptyView="{Binding GridEmptyView}"
-                           BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}"
-                           BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}">
-                     </Grid>
-              </ScrollView>
+                <ScrollView Orientation="Both">
+                        <Grid x:Name="MainGridBindableLayout"
+                              Padding="10"
+                              RowSpacing="10"
+                              ColumnSpacing="10"
+                              BackgroundColor="#f0f0f0"
+                              Loaded="OnGridLoaded"
+                              BindableLayout.ItemsSource="{Binding ItemsSource}"
+                              BindableLayout.ItemTemplate="{Binding ItemTemplate}"
+                              BindableLayout.EmptyView="{Binding GridEmptyView}"
+                              BindableLayout.EmptyViewTemplate="{Binding EmptyViewTemplate}"
+                              BindableLayout.ItemTemplateSelector="{Binding ItemTemplateSelector}">
+                        </Grid>
+                </ScrollView>
 
-              <BoxView HeightRequest="20"/>
-              <!--Add or Remove item based on Index-->
-              <HorizontalStackLayout Spacing="5">
-                     <Label Text="Enter Item Index:"
-                            FontAttributes="Bold"
-                            FontSize="10"
-                            VerticalTextAlignment="Center"/>
-                     <local:UITestEntry  x:Name="IndexEntry"
-                                         Placeholder="Enter item index"
-                                         FontSize="10"
-                                         AutomationId="IndexEntry"
-                                         IsCursorVisible="false"/>
-              </HorizontalStackLayout>
-              <!--Add or Remove Buttons -->
-              <HorizontalStackLayout Spacing="5">
-                     <Button Text="Add Item"
-                             Clicked="AddItems_Clicked"
-                             FontSize="10"
-                             AutomationId="AddItems"/>
-                     <Button Text="Remove Item"
-                             Clicked="RemoveItems_Clicked"
-                             FontSize="10"
-                             AutomationId="RemoveItems"/>
-                     <Button Text="Replace"
-                             Clicked="ReplaceItems_Clicked"
-                             FontSize="10"
-                             AutomationId="ReplaceItems"/>
-              </HorizontalStackLayout>
-              <Label x:Name="DirectApiSummaryLabel"
-                     AutomationId="DirectApiSummaryLabel"
-                     FontSize="12"
-                     LineBreakMode="WordWrap"
-                     Text="(Set/Get Methods)"/>
-              <!-- Set API Buttons (code-behind handlers) -->
-              <VerticalStackLayout Spacing="6">
-                     <HorizontalStackLayout Spacing="6">
-                            <Button Text="Set EmptyView"
-                                    Clicked="OnSetEmptyViewClicked"
-                                    AutomationId="SetEmptyView"
-                                    FontSize="10"/>
-                            <Button Text="Set EmptyViewTemplate"
-                                    Clicked="OnSetEmptyViewTemplateClicked"
-                                    AutomationId="SetEmptyViewTemplate"
-                                    FontSize="10"/>
-                     </HorizontalStackLayout>
-                     <HorizontalStackLayout Spacing="6">
-                            <Button Text="Set ItemsSource"
-                                    Clicked="OnSetItemsSourceClicked"
-                                    AutomationId="SetItemsSource"
-                                    FontSize="10"/>
-                            <Button Text="Set ItemTemplate"
-                                    Clicked="OnSetItemTemplateClicked"
-                                    AutomationId="SetItemTemplate"
-                                    FontSize="10"/>
-                            <Button Text="Set ItemTemplateSelector"
-                                    Clicked="OnSetItemTemplateSelectorClicked"
-                                    AutomationId="SetItemTemplateSelector"
-                                    FontSize="10"/>
-                     </HorizontalStackLayout>
-                     <!-- Get API Buttons (each updates summary label) -->
-                     <HorizontalStackLayout Spacing="6">
-                            <Button Text="Get EmptyView"
-                                    Clicked="OnGetEmptyViewClicked"
-                                    AutomationId="GetEmptyView"
-                                    FontSize="10"/>
-                            <Button Text="Get EmptyViewTemplate"
-                                    Clicked="OnGetEmptyViewTemplateClicked"
-                                    AutomationId="GetEmptyViewTemplate"
-                                    FontSize="10"/>
-                     </HorizontalStackLayout>
-                     <HorizontalStackLayout Spacing="6">
-                            <Button Text="Get ItemsSource"
-                                    Clicked="OnGetItemsSourceClicked"
-                                    AutomationId="GetItemsSource"
-                                    FontSize="10"/>
-                            <Button Text="Get ItemTemplate"
-                                    Clicked="OnGetItemTemplateClicked"
-                                    AutomationId="GetItemTemplate"
-                                    FontSize="10"/>
-                            <Button Text="Get ItemTemplateSelector"
-                                    Clicked="OnGetItemTemplateSelectorClicked"
-                                    AutomationId="GetItemTemplateSelector"
-                                    FontSize="10"/>
-                     </HorizontalStackLayout>
-                     <Button Text="Reset"
-                             Clicked="OnClearAllClicked"
-                             AutomationId="ResetButton"
-                             FontSize="10"/>
-              </VerticalStackLayout>
+                <Label x:Name="DirectApiSummaryLabel"
+                       AutomationId="DirectApiSummaryLabel"
+                       FontSize="12"
+                       FontAttributes="Bold"
+                       LineBreakMode="WordWrap"
+                       Text="(Set/Get Methods)"/>
+                <!--Add or Remove item based on Index-->
+                <HorizontalStackLayout Spacing="5">
+                        <Label Text="Enter Item Index:"
+                               FontAttributes="Bold"
+                               FontSize="10"
+                               VerticalTextAlignment="Center"/>
+                        <local:UITestEntry  x:Name="IndexEntry"
+                                            Placeholder="Enter item index"
+                                            FontSize="10"
+                                            AutomationId="IndexEntry"
+                                            IsCursorVisible="false"/>
+                </HorizontalStackLayout>
+                <!--Add or Remove Buttons -->
+                <HorizontalStackLayout Spacing="5">
+                        <Button Text="Add Item"
+                                Clicked="AddItems_Clicked"
+                                FontSize="10"
+                                AutomationId="AddItems"/>
+                        <Button Text="Remove Item"
+                                Clicked="RemoveItems_Clicked"
+                                FontSize="10"
+                                AutomationId="RemoveItems"/>
+                        <Button Text="Replace"
+                                Clicked="ReplaceItems_Clicked"
+                                FontSize="10"
+                                AutomationId="ReplaceItems"/>
+                </HorizontalStackLayout>
+                <VerticalStackLayout Spacing="2">
+                        <HorizontalStackLayout Spacing="6">
+                                <Label Text="Emty View:"
+                                       FontAttributes="Bold"
+                                       FontSize="10"
+                                       VerticalTextAlignment="Center"/>
+                                <Button Text="Set"
+                                        Clicked="OnSetEmptyViewClicked"
+                                        AutomationId="SetEmptyView"
+                                        FontSize="10"/>
+                                <Button Text="Get"
+                                        Clicked="OnGetEmptyViewClicked"
+                                        AutomationId="GetEmptyView"
+                                        FontSize="10"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="6">
+                                <Label Text="Empty View Template:"
+                                       FontAttributes="Bold"
+                                       FontSize="10"
+                                       VerticalTextAlignment="Center"/>
+                                <Button Text="Set"
+                                        Clicked="OnSetEmptyViewTemplateClicked"
+                                        AutomationId="SetEmptyViewTemplate"
+                                        FontSize="10"/>
+                                <Button Text="Get"
+                                        Clicked="OnGetEmptyViewTemplateClicked"
+                                        AutomationId="GetEmptyViewTemplate"
+                                        FontSize="10"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="6">
+                                <Label Text="Item Source:"
+                                       FontAttributes="Bold"
+                                       FontSize="10"
+                                       VerticalTextAlignment="Center"/>
+                                <Button Text="Set"
+                                        Clicked="OnSetItemsSourceClicked"
+                                        AutomationId="SetItemsSource"
+                                        FontSize="10"/>
+                                <Button Text="Get"
+                                        Clicked="OnGetItemsSourceClicked"
+                                        AutomationId="GetItemsSource"
+                                        FontSize="10"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="6">
+                                <Label Text="Item Template:"
+                                       FontAttributes="Bold"
+                                       FontSize="10"
+                                       VerticalTextAlignment="Center"/>
+                                <Button Text="Set"
+                                        Clicked="OnSetItemTemplateClicked"
+                                        AutomationId="SetItemTemplate"
+                                        FontSize="10"/>
+                                <Button Text="Get"
+                                        Clicked="OnGetItemTemplateClicked"
+                                        AutomationId="GetItemTemplate"
+                                        FontSize="10"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="6">
+                                <Label Text="Item Template Selector:"
+                                       FontAttributes="Bold"
+                                       FontSize="10"
+                                       VerticalTextAlignment="Center"/>
+                                <Button Text="Set"
+                                        Clicked="OnSetItemTemplateSelectorClicked"
+                                        AutomationId="SetItemTemplateSelector"
+                                        FontSize="10"/>
+                                <Button Text="Get"
+                                        Clicked="OnGetItemTemplateSelectorClicked"
+                                        AutomationId="GetItemTemplateSelector"
+                                        FontSize="10"/>
+                        </HorizontalStackLayout>
+                        <Button Text="Reset"
+                                Clicked="OnResetClicked"
+                                AutomationId="ResetButton"
+                                FontSize="10"/>
+                </VerticalStackLayout>
 
-       </VerticalStackLayout>
+        </VerticalStackLayout>
 </ContentPage>

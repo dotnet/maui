@@ -57,6 +57,9 @@ public class BindableLayoutViewModel : INotifyPropertyChanged
 		AddItemCommand = new Command(AddItem);
 	}
 
+	
+
+
 	public void OnGridLoaded(object sender, EventArgs e)
 	{
 		if (sender is not Grid grid)
@@ -177,7 +180,7 @@ public class BindableLayoutViewModel : INotifyPropertyChanged
 	{
 		_observableCollection = new ObservableCollection<BindableLayoutTestItem>();
 		AddItems(_observableCollection, 2, "Fruits");
-		AddItems(_observableCollection, 3, "Vegetables");
+		AddItems(_observableCollection, 2, "Vegetables");
 
 		_emptyObservableCollection = new ObservableCollection<BindableLayoutTestItem>();
 	}
