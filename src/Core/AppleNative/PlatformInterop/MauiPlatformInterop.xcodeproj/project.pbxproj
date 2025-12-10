@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		AB0B2BC82E3529AF00B2B77C /* PlatformInterop.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PlatformInterop.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0B2BC82E3529AF00B2B77C /* MauiPlatformInterop.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MauiPlatformInterop.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AB0B2BCA2E3529AF00B2B77C /* PlatformInterop */ = {
+		AB0B2BCA2E3529AF00B2B77C /* MauiPlatformInterop */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PlatformInterop;
+			path = MauiPlatformInterop;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		AB0B2BBE2E3529AE00B2B77C = {
 			isa = PBXGroup;
 			children = (
-				AB0B2BCA2E3529AF00B2B77C /* PlatformInterop */,
+				AB0B2BCA2E3529AF00B2B77C /* MauiPlatformInterop */,
 				AB0B2BC92E3529AF00B2B77C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		AB0B2BC92E3529AF00B2B77C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AB0B2BC82E3529AF00B2B77C /* PlatformInterop.framework */,
+				AB0B2BC82E3529AF00B2B77C /* MauiPlatformInterop.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -58,9 +58,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		AB0B2BC72E3529AE00B2B77C /* PlatformInterop */ = {
+		AB0B2BC72E3529AE00B2B77C /* MauiPlatformInterop */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AB0B2BCE2E3529AF00B2B77C /* Build configuration list for PBXNativeTarget "PlatformInterop" */;
+			buildConfigurationList = AB0B2BCE2E3529AF00B2B77C /* Build configuration list for PBXNativeTarget "MauiPlatformInterop" */;
 			buildPhases = (
 				AB0B2BC32E3529AE00B2B77C /* Headers */,
 				AB0B2BC42E3529AE00B2B77C /* Sources */,
@@ -72,13 +72,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AB0B2BCA2E3529AF00B2B77C /* PlatformInterop */,
+				AB0B2BCA2E3529AF00B2B77C /* MauiPlatformInterop */,
 			);
-			name = PlatformInterop;
+			name = MauiPlatformInterop;
 			packageProductDependencies = (
 			);
-			productName = PlatformInterop;
-			productReference = AB0B2BC82E3529AF00B2B77C /* PlatformInterop.framework */;
+			productName = MauiPlatformInterop;
+			productReference = AB0B2BC82E3529AF00B2B77C /* MauiPlatformInterop.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -95,7 +95,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AB0B2BC22E3529AE00B2B77C /* Build configuration list for PBXProject "PlatformInterop" */;
+			buildConfigurationList = AB0B2BC22E3529AE00B2B77C /* Build configuration list for PBXProject "MauiPlatformInterop" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -109,7 +109,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AB0B2BC72E3529AE00B2B77C /* PlatformInterop */,
+				AB0B2BC72E3529AE00B2B77C /* MauiPlatformInterop */,
 			);
 		};
 /* End PBXProject section */
@@ -159,7 +159,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.microsoft.maui.PlatformInterop;
+				PRODUCT_BUNDLE_IDENTIFIER = com.microsoft.maui.MauiPlatformInterop;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -196,7 +196,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.microsoft.maui.PlatformInterop;
+				PRODUCT_BUNDLE_IDENTIFIER = com.microsoft.maui.MauiPlatformInterop;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -334,7 +334,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AB0B2BC22E3529AE00B2B77C /* Build configuration list for PBXProject "PlatformInterop" */ = {
+		AB0B2BC22E3529AE00B2B77C /* Build configuration list for PBXProject "MauiPlatformInterop" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AB0B2BD12E3529AF00B2B77C /* Debug */,
@@ -343,7 +343,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AB0B2BCE2E3529AF00B2B77C /* Build configuration list for PBXNativeTarget "PlatformInterop" */ = {
+		AB0B2BCE2E3529AF00B2B77C /* Build configuration list for PBXNativeTarget "MauiPlatformInterop" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AB0B2BCF2E3529AF00B2B77C /* Debug */,

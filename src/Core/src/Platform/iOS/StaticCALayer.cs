@@ -5,8 +5,8 @@ namespace Microsoft.Maui.Platform;
 
 class StaticCALayer : CALayer, IAutoSizableCALayer
 {
-	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
-    readonly CALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in MauiCALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
+    readonly MauiCALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
 
 	protected override void Dispose(bool disposing)
 	{
@@ -22,7 +22,7 @@ class StaticCALayer : CALayer, IAutoSizableCALayer
 
 	void IAutoSizableCALayer.AutoSizeToSuperLayer()
 	{
-		_autosizeToSuperLayerBehavior.Attach(this);
+		_autosizeToSuperLayerBehavior.AttachOrThrow(this);
 	}
 
 	public override void AddAnimation(CAAnimation animation, string? key)

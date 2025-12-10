@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Platform
 	/// <summary>
 	/// Behavior that automatically resizes a CALayer to match its superlayer's bounds
 	/// </summary>
-	[BaseType(typeof(NSObject), Name = "CALayerAutosizeToSuperLayerBehavior")]
+	[BaseType(typeof(NSObject), Name = "MauiCALayerAutosizeToSuperLayerBehavior")]
 	[Internal]
-	interface CALayerAutosizeToSuperLayerBehavior
+	interface MauiCALayerAutosizeToSuperLayerBehavior
 	{
 		/// <summary>
 		/// Attaches this behavior to the given layer.
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="layer">The layer that needs to be resized to match the superlayer's bounds.</param>
 		[Export("attachWithLayer:")]
-		void Attach(CALayer layer);
+		MauiCALayerAutosizeToSuperLayerResult Attach(CALayer layer);
 
 		/// <summary>
 		/// Detaches this behavior from the current layer and stops observing

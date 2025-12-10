@@ -66,9 +66,8 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-    <NativeReference Include="../AppleNative/PlatformInterop/PlatformInterop.xcframework.zip">
+    <NativeReference Include="../AppleNative/PlatformInterop/MauiPlatformInterop.xcframework.zip">
       <Kind>Static</Kind>
-      <ForceLoad>True</ForceLoad>
     </NativeReference>
     <ObjcBindingApiDefinition Include="../AppleNative/ApiDefinition.cs" />
     <ObjcBindingCoreSource Include="../AppleNative/StructsAndEnums.cs" />
