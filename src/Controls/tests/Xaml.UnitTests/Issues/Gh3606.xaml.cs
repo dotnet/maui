@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,19 +10,20 @@ public partial class Gh3606 : ContentPage
 {
 	public Gh3606() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void BindingsWithSourceAndInvalidPathAreNotCompiled([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingsWithSourceAndInvalidPathAreNotCompiled(XamlInflator inflator)
 		{
 			var view = new Gh3606(inflator);
 
 			var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
-			Assert.That(binding, Is.TypeOf<Binding>());
+			Assert.IsType<Binding>(binding);
 		}
 	}
 }

@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
     - main
-    - net10.0
+    - net*.0
     - release/*
     - internal/release/*
   tags:
@@ -12,7 +12,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -27,7 +27,7 @@ schedules:
   branches:
     include:
     - main
-    - net10.0
+    - net*.0
     - inflight/current
   always: true
 
@@ -69,9 +69,6 @@ extends:
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
-      sourceRepositoriesToScan:
-        exclude:
-        - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
@@ -101,7 +98,7 @@ extends:
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
-    - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/net10.0'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+    - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
       - template: /eng/pipelines/arcade/stage-api-scan.yml@self
         parameters:
           pool: ${{ parameters.VM_IMAGE_HOST }}

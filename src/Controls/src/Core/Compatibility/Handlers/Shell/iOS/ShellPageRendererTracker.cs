@@ -271,11 +271,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
+		
+		internal void UpdateTitleViewInternal()
+		{
+			UpdateTitleView();
+		}
 
 		protected virtual void UpdateTitleView()
 		{
 			if (!ToolbarReady() || NavigationItem is null)
 			{
+				return;
+			}
+
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && ViewController?.NavigationController is null)
+			{
+				// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+				// we cannot set the TitleView yet as it would not layout correctly.
 				return;
 			}
 
@@ -497,7 +509,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// We only check height because the navigation bar constrains vertical space (44pt height),
 					// but allows horizontal flexibility. Width can vary based on icon design and content,
 					// while height must fit within the fixed navigation bar bounds to avoid clipping.
-					
+
 					// if the image is bigger than the default available size, resize it
 
 					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
@@ -736,7 +748,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// Set frame to match navigation bar dimensions, starting at origin (0,0)
 				// The X and Y are set to 0 because this view will be positioned by the navigation bar
 				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
-         		Height = navigationBarFrame.Height;  // Set Height for MatchHeight logic
+				Height = navigationBarFrame.Height;  // Set Height for MatchHeight logic
 			}
 
 			public override CGRect Frame
@@ -952,6 +964,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
+			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
 			UpdateSearchIsEnabled(_searchController);
@@ -985,6 +998,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateAutomationId();
 		}
 
+		void OnSearchBarEditingStopped(object? sender, EventArgs e)
+		{
+			if (_searchController is not null)
+			{
+				_searchController.Active = false;
+			}
+		}
+
 		void BookmarkButtonClicked(object? sender, EventArgs e)
 		{
 			(SearchHandler as ISearchHandlerController)?.ClearPlaceholderClicked();
@@ -995,6 +1016,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_searchHandlerAppearanceTracker?.Dispose();
 			_searchHandlerAppearanceTracker = null;
+			if (_searchController?.SearchBar is UISearchBar searchBar)
+			{
+				searchBar.BookmarkButtonClicked -= BookmarkButtonClicked;
+				searchBar.OnEditingStopped -= OnSearchBarEditingStopped;
+			}
 
 			if (NavigationItem is not null)
 			{

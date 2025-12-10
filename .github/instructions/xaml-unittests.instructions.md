@@ -1,5 +1,6 @@
 ---
 description: "Guidelines for writing XAML unit tests in the Controls.Xaml.UnitTests project"
+applyTo: "src/Controls/tests/Xaml.UnitTests/**"
 ---
 
 # XAML Unit Testing Guidelines

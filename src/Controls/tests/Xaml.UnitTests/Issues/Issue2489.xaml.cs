@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,11 +8,12 @@ public partial class Issue2489 : ContentPage
 	public Issue2489() => InitializeComponent();
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void DataTriggerTargetType([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DataTriggerTargetType(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -22,9 +23,9 @@ public partial class Issue2489 : ContentPage
 			Assert.NotNull(layout.wimage);
 			Assert.NotNull(layout.wimage.Triggers);
 			Assert.True(layout.wimage.Triggers.Any());
-			Assert.That(layout.wimage.Triggers[0], Is.TypeOf<DataTrigger>());
+			Assert.IsType<DataTrigger>(layout.wimage.Triggers[0]);
 			var trigger = (DataTrigger)layout.wimage.Triggers[0];
-			Assert.AreEqual(typeof(WImage), trigger.TargetType);
+			Assert.Equal(typeof(WImage), trigger.TargetType);
 		}
 	}
 }

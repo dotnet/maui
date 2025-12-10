@@ -1,20 +1,22 @@
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[Collection("Xaml Inflation feature")]
 public partial class MultipleDataTemplateChildElements : BindableObject
 {
-	static class Tests
+	public class Tests : BaseTestFixture
 	{
-		[Test]
-		public static void ThrowXamlParseException([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ThrowXamlParseException(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(MultipleDataTemplateChildElements), out var md, out var hasLoggedErrors);
-				Assert.That(hasLoggedErrors);
+				Assert.True(hasLoggedErrors);
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new MultipleDataTemplateChildElements(inflator));
@@ -32,10 +34,9 @@ public partial class MultipleDataTemplateChildElements : BindableObject
 }
 """)
 					.RunMauiSourceGenerator(typeof(MultipleDataTemplateChildElements));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
-			else
-				Assert.Ignore("This test is not yet implemented");
+			// else - nothing to test for other inflators
 		}
 	}
 }

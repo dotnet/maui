@@ -3,8 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   tags:
     include:
     - '*'
@@ -12,7 +11,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -26,13 +25,12 @@ pr:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   paths:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -130,14 +128,6 @@ parameters:
     vmImage: $(androidTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-
-resources:
-  repositories:
-  - repository: yaml-templates
-    type: github
-    name: xamarin/yaml-templates
-    endpoint: xamarin
-    ref: refs/heads/main
 
 stages:
 

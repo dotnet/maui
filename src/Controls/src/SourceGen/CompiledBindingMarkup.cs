@@ -488,7 +488,27 @@ internal struct CompiledBindingMarkup
 		code.WriteLine("{");
 		code.Indent++;
 		
-		var setter = Setter.From(binding.Path, "source", "value");
+		var assignedValueExpression = "value";
+
+		// early return for nullable values if the setter doesn't accept them
+		if (binding.PropertyType.IsNullable && !binding.SetterOptions.AcceptsNullValue)
+		{
+			if (binding.PropertyType.IsValueType)
+			{
+				code.WriteLine("if (!value.HasValue)");
+				assignedValueExpression = "value.Value";
+			}
+			else
+			{
+				code.WriteLine("if (value is null)");
+			}
+			using (PrePost.NewBlock(code))
+			{
+				code.WriteLine("return;");
+			}
+		}
+
+		var setter = Setter.From(binding.Path, "source", assignedValueExpression);
 		if (setter.PatternMatchingExpressions.Length > 0)
 		{
 			code.Write("if (");

@@ -1,4 +1,5 @@
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,14 +16,16 @@ public partial class Unreported006 : ContentPage
 	public static readonly BindableProperty GenericPropertyProperty =
 		BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CanAssignGenericBP([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CanAssignGenericBP(XamlInflator inflator)
 		{
 			var page = new Unreported006(inflator);
 			Assert.NotNull(page.GenericProperty);
-			Assert.That(page.GenericProperty, Is.TypeOf<Compatibility.StackLayout>());
+			Assert.IsType<Compatibility.StackLayout>(page.GenericProperty);
 		}
 	}
 }
