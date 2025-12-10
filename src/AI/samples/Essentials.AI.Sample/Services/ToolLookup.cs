@@ -1,4 +1,4 @@
-namespace Maui.Controls.Sample.Services.Tools;
+namespace Maui.Controls.Sample.Services;
 
 public class ToolLookup
 {

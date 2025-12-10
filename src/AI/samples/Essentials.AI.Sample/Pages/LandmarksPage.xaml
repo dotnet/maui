@@ -9,49 +9,60 @@
     x:DataType="viewModels:LandmarksViewModel"
     Title=".NET MAUI Trip Planner">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="20">
 
-            <!-- Featured Section -->
-            <Label 
-                Text="Featured"
-                FontSize="18"
-                FontAttributes="Bold"
-                TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                <!-- Featured Section -->
+                <Label 
+                    Text="Featured"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
 
-            <views:LandmarkFeaturedItemView
-                Landmark="{Binding FeaturedLandmark}"
-                IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
-                LandmarkTapped="OnLandmarkTapped" />
+                <views:LandmarkFeaturedItemView
+                    Landmark="{Binding FeaturedLandmark}"
+                    IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
+                    LandmarkTapped="OnLandmarkTapped" />
 
-            <!-- Continents -->
-            <VerticalStackLayout 
-                BindableLayout.ItemsSource="{Binding ContinentGroups}"
-                Spacing="25">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:ContinentGroup">
-                        <VerticalStackLayout Spacing="12">
-                            <Label
-                                Text="{Binding Name}"
-                                FontSize="24"
-                                FontAttributes="Bold" />
-                            
-                            <views:LandmarkHorizontalListView
-                                Landmarks="{Binding Landmarks}"
-                                LandmarkTapped="OnLandmarkTapped" />
-                        </VerticalStackLayout>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
+                <!-- Continents -->
+                <VerticalStackLayout 
+                    BindableLayout.ItemsSource="{Binding ContinentGroups}"
+                    Spacing="25">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:ContinentGroup">
+                            <VerticalStackLayout Spacing="12">
+                                <Label
+                                    Text="{Binding Name}"
+                                    FontSize="24"
+                                    FontAttributes="Bold" />
+                                
+                                <views:LandmarkHorizontalListView
+                                    Landmarks="{Binding Landmarks}"
+                                    LandmarkTapped="OnLandmarkTapped" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <ActivityIndicator 
+                    IsVisible="{Binding IsLoading}"
+                    IsRunning="{Binding IsLoading}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Margin="0,50,0,0" />
+
             </VerticalStackLayout>
+        </ScrollView>
 
-            <ActivityIndicator 
-                IsVisible="{Binding IsLoading}"
-                IsRunning="{Binding IsLoading}"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                Margin="0,50,0,0" />
+        <!-- Floating Language Button (top right) -->
+        <Button
+            Text="🌐" Clicked="OnLanguageButtonClicked"
+            VerticalOptions="Start" HorizontalOptions="End" Margin="0,20,20,0"
+            HeightRequest="44" WidthRequest="44" CornerRadius="22"
+            FontSize="20" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
 
-        </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 
 </ContentPage>

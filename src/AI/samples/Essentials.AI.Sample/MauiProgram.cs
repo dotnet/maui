@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
-	public static bool UseCloudAI = false;
+	public static bool UseCloudAI = true;
 
 	public static MauiApp CreateMauiApp()
 	{
@@ -37,36 +37,61 @@ public static class MauiProgram
 			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 		});
 
-		// Register AI
-		#if ENABLE_OPENAI_CLIENT
-		if (UseCloudAI)
+		// Register Language Preference Service
+		builder.Services.AddSingleton<LanguagePreferenceService>();
+
+		// // Register AI Chat Clients
+		// #if ENABLE_OPENAI_CLIENT
+		// if (UseCloudAI)
+		// {
+		// 	var aiSection = builder.Configuration.GetSection("AI");
+		// 	var chatClient = new ChatClient(
+		// 		credential: new ApiKeyCredential(aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.")),
+		// 		model: aiSection["DeploymentName"] ?? throw new InvalidOperationException("Deployment Name not found in user secrets."),
+		// 		options: new OpenAIClientOptions()
+		// 		{
+		// 			Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
+		// 		});
+
+		// 	builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
+		// 	{
+		// 		var lf = sp.GetRequiredService<ILoggerFactory>();
+		// 		return chatClient.AsIChatClient()
+		// 			.AsBuilder()
+		// 			.UseLogging(lf)
+		// 			.UseFunctionInvocation()
+		// 			.Build();
+		// 	});
+		// }
+		// #endif
+
+		// // Register platform chat client
+		// builder.Services.AddPlatformChatClient();
+
+		// Register AI Chat Clients
 		{
 			var aiSection = builder.Configuration.GetSection("AI");
-			var client = new ChatClient(
+			var chatClient = new ChatClient(
 				credential: new ApiKeyCredential(aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.")),
 				model: aiSection["DeploymentName"] ?? throw new InvalidOperationException("Deployment Name not found in user secrets."),
 				options: new OpenAIClientOptions()
 				{
 					Endpoint = new(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets.")),
 				});
-			var ichatClient = client.AsIChatClient();
 
-			builder.Services.AddSingleton<IChatClient>(provider =>
-            {
-				var lf = provider.GetRequiredService<ILoggerFactory>();
-				var realClient = ichatClient
+			builder.Services.AddSingleton<IChatClient>(sp =>
+			{
+				var lf = sp.GetRequiredService<ILoggerFactory>();
+				return chatClient.AsIChatClient()
 					.AsBuilder()
 					.UseLogging(lf)
 					.UseFunctionInvocation()
 					.Build();
-				return realClient;
-            });
+			});
 		}
-		else
-		#endif
-		{
-			builder.Services.AddPlatformChatClient();
-		}
+
+		// Register AI agents and workflow
+		builder.AddItineraryWorkflow();
 
 		// Register Pages
 		builder.Services.AddTransient<LandmarksPage>();

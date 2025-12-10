@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.ViewModels;
 
 public record ContinentGroup(string Name, List<Landmark> Landmarks);
 
-public partial class LandmarksViewModel(LandmarkDataService dataService) : ObservableObject
+public partial class LandmarksViewModel(LandmarkDataService dataService, LanguagePreferenceService languagePreference) : ObservableObject
 {
     [ObservableProperty]
     public partial Landmark? FeaturedLandmark { get; private set; }
@@ -15,13 +15,24 @@ public partial class LandmarksViewModel(LandmarkDataService dataService) : Obser
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
 
+    [ObservableProperty]
+    public partial string SelectedLanguage { get; set; } = "English";
+
     public ObservableCollection<ContinentGroup> ContinentGroups => field ??= [];
+
+    public string[] AvailableLanguages => LanguagePreferenceService.SupportedLanguages.Keys.ToArray();
+
+    partial void OnSelectedLanguageChanged(string value)
+    {
+        languagePreference.SelectedLanguage = value;
+    }
 
     public async Task InitializeAsync()
     {
         if (IsLoading || ContinentGroups.Count > 0)
             return;
 
+        SelectedLanguage = languagePreference.SelectedLanguage;
         await LoadLandmarksAsync();
     }
 
