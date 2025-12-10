@@ -7,15 +7,16 @@ public class LanguagePreferenceService
 {
 	public static readonly Dictionary<string, string> SupportedLanguages = new()
 	{
+		{ "Chinese", "zh" },
 		{ "English", "en" },
-		{ "Spanish", "es" },
 		{ "French", "fr" },
 		{ "German", "de" },
 		{ "Indonesian", "id" },
 		{ "Italian", "it" },
-		{ "Portuguese", "pt" },
 		{ "Japanese", "ja" },
-		{ "Chinese", "zh" }
+		{ "Korean", "ko" },
+		{ "Portuguese", "pt" },
+		{ "Spanish", "es" },
 	};
 
 	public string SelectedLanguage { get; set; } = "English";

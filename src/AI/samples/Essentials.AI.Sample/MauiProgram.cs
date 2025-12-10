@@ -75,6 +75,7 @@ public static class MauiProgram
 
 		// Register the Agent Framework wrapper as the default IChatClient
 		// This prevents double tool invocation when using Microsoft Agent Framework
+		// TODO: workaround for https://github.com/dotnet/extensions/pull/7126
 		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
 		{
 			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
