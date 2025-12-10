@@ -139,7 +139,68 @@ Currently, .NET MAUI uses a combination of:
    - xUnit for unit tests
    - NUnit for UI tests (via Appium)
 
-### 3.2 Pain Points
+### 3.2 Prior Art: UWP Test Host Manager (Visual Studio)
+
+Visual Studio has an existing mechanism for running tests on UWP apps via the [`UwpTestHostManager`](https://devdiv.visualstudio.com/DevDiv/_git/VS?path=/src/vsproject/PackageAndDeploy/UwpTestHostRuntimeProvider/Hosting/UwpTestHostManager.cs) class, which implements `ITestRuntimeProvider`. This serves as a reference for our MAUI implementation, though with important differences.
+
+#### How UwpTestHostManager Works
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                     Visual Studio Test Explorer                   │
+│                              (VSTest)                             │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              UwpTestHostManager : ITestRuntimeProvider            │
+│                                                                   │
+│  • GetTestHostConnectionInfo() → Sockets on port 8020            │
+│  • LaunchTestHostAsync() → Deploy + Activate app                 │
+│  • GetTestPlatformExtensions() → Discovers test adapters         │
+│  • CleanTestHostAsync() → Closes app after tests                 │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │
+                     Uses IDeployer abstraction
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      UWP App (Test Host)                          │
+│                                                                   │
+│  Receives args: --port, --endpoint, --role, --parentprocessid    │
+│  Communicates back via TCP Sockets                               │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+#### Key Implementation Details
+
+| Aspect | UwpTestHostManager Approach |
+|--------|----------------------------|
+| **Communication** | TCP Sockets (`Transport.Sockets`) on port 8020 |
+| **Connection Model** | Role-based (client/host) with endpoint negotiation |
+| **Deployment** | `IDeployer` abstraction with platform-specific implementations |
+| **Test Discovery** | Scans for `*TestAdapter.dll` in app directory |
+| **Lifecycle** | Launch → Run Tests → Clean (close app) |
+
+#### Limitations for MAUI
+
+The UWP approach has several limitations that make it unsuitable for direct reuse:
+
+1. **Visual Studio Dependency**: Requires VS Universal workload and `VsSetupInstance`
+2. **Windows-Only**: No support for iOS, Android, or macOS
+3. **VSTest Coupling**: Tightly coupled to VSTest infrastructure, not MTP
+4. **No CLI Support**: Designed exclusively for Test Explorer, not `dotnet test`
+
+#### Lessons for MAUI Implementation
+
+Despite these limitations, several patterns are valuable:
+
+1. **Deployer Abstraction**: The `IDeployer` pattern for platform-specific deployment is reusable
+2. **Connection Info Model**: `TestHostConnectionInfo` with endpoint/role/transport is a good pattern
+3. **Argument Passing**: Passing connection details via command-line args to the test app
+4. **Lifecycle Management**: Clear launch → execute → cleanup flow
+
+### 3.3 Pain Points
 
 1. **Complex Setup**: Running device tests requires understanding XHarness, Cake scripts, and platform-specific tooling
 2. **No Code Coverage**: Platform-specific code has no coverage metrics
