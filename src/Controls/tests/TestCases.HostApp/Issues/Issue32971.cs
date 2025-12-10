@@ -8,7 +8,8 @@ public class Issue32971 : ContentPage
         var webView = new WebView
         {
             Source = "https://learn.microsoft.com/en-us/dotnet/communitytoolkit/maui/",
-            HeightRequest = 1000,
+            HeightRequest = 600,
+            VerticalOptions = LayoutOptions.Start,
         };
 
         var scrollView = new ScrollView
