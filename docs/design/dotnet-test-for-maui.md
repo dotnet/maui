@@ -617,7 +617,7 @@ dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
 
 ## 7. Implementation Phases
 
-### Phase 1: Foundation (4-6 weeks)
+### Phase 1: Foundation (2-3 weeks)
 
 **MAUI Team:**
 1. Create HTTP-based push protocol for iOS/Android
@@ -634,7 +634,7 @@ dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
 - `dotnet test` runs and reports results for iOS simulator
 - Basic pass/fail output in console
 
-### Phase 2: Cross-Platform (4-6 weeks)
+### Phase 2: Cross-Platform (2-3 weeks)
 
 **MAUI Team:**
 1. Android emulator/device support
@@ -651,7 +651,7 @@ dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
 - Device selection via `--device` flag
 - TRX and JSON result output
 
-### Phase 3: Code Coverage (4-6 weeks)
+### Phase 3: Code Coverage (2-3 weeks)
 
 **MAUI Team:**
 1. Integrate coverage instrumentation in build
@@ -667,7 +667,7 @@ dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
 - Cobertura XML output for CI integration
 - Coverage summary in console output
 
-### Phase 4: Polish & XHarness Migration (6-8 weeks)
+### Phase 4: Polish & XHarness Migration (3-4 weeks)
 
 **MAUI Team:**
 1. Migrate existing tests from XHarness
@@ -684,7 +684,7 @@ dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
 - Migration guide for external users
 - Comprehensive documentation
 
-### Phase 5: AI Enablement (4-6 weeks)
+### Phase 5: AI Enablement (2-3 weeks)
 
 **MAUI Team:**
 1. Device list capability (structured output for AI parsing)
@@ -911,12 +911,12 @@ Integrate with `Microsoft.CodeCoverage`:
 
 | Phase | MAUI Team | MTP Team | Total |
 |-------|-----------|----------|-------|
-| Phase 1: Foundation | 4-6 weeks | 2-3 weeks | 4-6 weeks |
-| Phase 2: Cross-Platform | 4-6 weeks | 1-2 weeks | 4-6 weeks |
-| Phase 3: Code Coverage | 4-6 weeks | 2-3 weeks | 4-6 weeks |
-| Phase 4: Polish & Migration | 6-8 weeks | 2-3 weeks | 6-8 weeks |
-| Phase 5: AI Enablement | 4-6 weeks | 2-3 weeks | 4-6 weeks |
-| **Total** | **22-32 weeks** | **9-14 weeks** | **22-32 weeks** |
+| Phase 1: Foundation | 2-3 weeks | 1-2 weeks | 2-3 weeks |
+| Phase 2: Cross-Platform | 2-3 weeks | 0.5-1 weeks | 2-3 weeks |
+| Phase 3: Code Coverage | 2-3 weeks | 1-2 weeks | 2-3 weeks |
+| Phase 4: Polish & Migration | 3-4 weeks | 1-2 weeks | 3-4 weeks |
+| Phase 5: AI Enablement | 2-3 weeks | 1-2 weeks | 2-3 weeks |
+| **Total** | **11-16 weeks** | **4.5-9 weeks** | **11-16 weeks** |
 
 **Note**: Phases can overlap. MTP team work is mostly enabling/advisory after Phase 1.
 
