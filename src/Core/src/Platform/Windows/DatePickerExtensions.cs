@@ -65,8 +65,20 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Wait for the control to load, then apply character spacing
-				platformDatePicker.OnLoaded(() => ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing));
+				// Clean up any existing handler to prevent memory leaks
+				platformDatePicker.Loaded -= OnDatePickerLoaded;
+				
+				void OnDatePickerLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+				{
+					if (sender is CalendarDatePicker picker)
+					{
+						// Clean up handler immediately
+						picker.Loaded -= OnDatePickerLoaded;
+						ApplyCharacterSpacingToTextBlocks(picker, characterSpacing);
+					}
+				}
+				
+				platformDatePicker.Loaded += OnDatePickerLoaded;
 			}
 		}
 
