@@ -16,12 +16,6 @@ namespace Microsoft.Maui.IntegrationTests
 
 			TestSimulator.Shutdown();
 			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
-			
-			// Disable watchdogs before running the test to work around an mlaunch bug
-			// where it shuts down the simulator to disable watchdogs but then incorrectly
-			// tries to launch on the shutdown simulator.
-			TestSimulator.DisableWatchdogs();
-			
 			TestSimulator.ShowWindow();
 		}
 
