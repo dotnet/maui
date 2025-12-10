@@ -21,6 +21,15 @@ steps:
     continueOnError: true
     timeoutInMinutes: 60
 
+# Debug: Print parameter values to understand what's being passed
+- script: |
+    echo "=== DEBUG: ui-tests-build-sample.yml parameters ==="
+    echo "platform: '${{ parameters.platform }}'"
+    echo "skipProvisioning: '${{ parameters.skipProvisioning }}'"
+    echo "skipXcode will be: '${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}'"
+    echo "skipProvisionator will be: '${{ parameters.skipProvisioning }}'"
+  displayName: 'DEBUG: Print build sample parameters'
+
 - template: provision.yml
   parameters:
     # FIXME: 'Build the MSBuild Tasks' step fails for net9.0-android35 without API 35
