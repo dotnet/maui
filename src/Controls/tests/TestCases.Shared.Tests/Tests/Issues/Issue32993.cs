@@ -1,3 +1,4 @@
+#if ANDROID || WINDOWS //Existing PR for iOS and mac which resolve the FlowDirection issue on TabBar https://github.com/dotnet/maui/pull/32701
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,3 +22,4 @@ public class Issue32993 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
