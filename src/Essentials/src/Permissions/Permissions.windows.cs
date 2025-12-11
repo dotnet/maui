@@ -180,6 +180,10 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
+				// For unpackaged apps, use workaround that doesn't require manifest declaration
+				if (!AppInfoUtils.IsPackagedApp)
+					return UnpackagedPermissions.CheckMicrophoneStatusAsync();
+
 				EnsureDeclared();
 				return Task.FromResult(CheckStatus() switch
 				{
@@ -193,13 +197,22 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
-				EnsureDeclared();
-
-				// If already explicitly allowed, return that
+				// Check status first - if already allowed, return early
 				var status = CheckStatus();
 				if (status == DeviceAccessStatus.Allowed)
 					return PermissionStatus.Granted;
 
+				// For packaged apps, ensure manifest declaration is present
+				if (AppInfoUtils.IsPackagedApp)
+				{
+					EnsureDeclared();
+				}
+
+				return await TryRequestPermissionAsync();
+			}
+
+			async Task<PermissionStatus> TryRequestPermissionAsync()
+			{
 				try
 				{
 					var settings = new MediaCaptureInitializationSettings
@@ -291,6 +304,29 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Vibrate : BasePlatformPermission
 		{
+		}
+	}
+
+	static class UnpackagedPermissions
+	{
+		internal static Task<PermissionStatus> CheckMicrophoneStatusAsync()
+		{
+			try
+			{
+				var status = DeviceAccessInformation.CreateFromDeviceClass(DeviceClass.AudioCapture).CurrentStatus;
+				
+				return Task.FromResult(status switch
+				{
+					DeviceAccessStatus.Allowed => PermissionStatus.Granted,
+					DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
+					DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
+					_ => PermissionStatus.Unknown,
+				});
+			}
+			catch
+			{
+				return Task.FromResult(PermissionStatus.Unknown);
+			}
 		}
 	}
 }
