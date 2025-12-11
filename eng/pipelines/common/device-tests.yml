@@ -3,6 +3,11 @@ parameters:
   iosPool: {}
   catalystPool: {}
   windowsPool: {}
+  platformDependsOn:
+    android: ''
+    ios: ''
+    catalyst: ''
+    windows: ''
   androidApiLevels: [ 33 ]
   iosVersions: [ 'latest' ]
   iosDeviceVersions: [ '15' ]
@@ -34,7 +39,9 @@ stages:
 - ${{ each platform in parameters.platforms }}:
   - stage: ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} ${{ platform }}
-    ${{ if eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
+    ${{ if ne(parameters.platformDependsOn[platform], '') }}:
+      dependsOn: ${{ parameters.platformDependsOn[platform] }}
+    ${{ else if eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn: []
     ${{ else }}:
       dependsOn:

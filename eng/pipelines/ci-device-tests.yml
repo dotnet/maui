@@ -72,6 +72,11 @@ stages:
   - template: common/device-tests.yml
     parameters:
       windowsPool: ${{ parameters.windowsPool }}
+      platformDependsOn:
+        windows:
+        - devicetests_android
+        - devicetests_ios
+        - devicetests_catalyst
       targetFrameworkVersion: ${{ targetFrameworkVersion }}
       windowsVersions: [ 'packaged', 'unpackaged' ]
       skipProvisioning: true
