@@ -49,13 +49,22 @@ $runAll = $true
 Push-Location $WorkingDirectory
 try {
     git fetch --no-tags origin $BaseRef --depth=1 1>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "git fetch failed for $BaseRef"
+    }
     $mergeBase = git merge-base HEAD $BaseRef
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mergeBase)) {
+        throw "Unable to determine merge-base with $BaseRef"
+    }
 
     if (-not $mergeBase) {
         Write-Host "Unable to determine merge-base with $BaseRef. Falling back to running all categories."
     }
     else {
         $diff = git diff --unified=0 --diff-filter=AM $mergeBase..HEAD -- $TestPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "git diff failed for $TestPath against $BaseRef"
+        }
 
         if (-not [string]::IsNullOrWhiteSpace($diff)) {
             $pattern = $CategoryAttributePattern

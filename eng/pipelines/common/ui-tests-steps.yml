@@ -135,6 +135,10 @@ steps:
     $groupCategories = "${{ parameters.testFilter }}".Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
     $selectedCategories = $env:UITestSelectedCategories
     $runAllSelected = $env:UITestRunAll
+    $groupCategorySet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($category in $groupCategories) {
+      [void]$groupCategorySet.Add($category)
+    }
 
     $runAllFlag = $false
     if (-not [string]::IsNullOrWhiteSpace($runAllSelected)) {
@@ -149,7 +153,7 @@ steps:
       $filteredCategories = @()
 
       foreach ($category in $selectedSet) {
-        if ($groupCategories -contains $category) {
+        if ($groupCategorySet.Contains($category)) {
           $filteredCategories += $category
         }
       }
