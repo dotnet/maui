@@ -177,24 +177,23 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			protected override Func<IEnumerable<string>> RequiredDeclarations => () => ["microphone"];
 
-			/// <inheritdoc/>
-			public override Task<PermissionStatus> CheckStatusAsync()
+		/// <inheritdoc/>
+		public override Task<PermissionStatus> CheckStatusAsync()
+		{
+			// For packaged apps, ensure manifest declaration is present
+			if (AppInfoUtils.IsPackagedApp)
 			{
-				// For unpackaged apps, use workaround that doesn't require manifest declaration
-				if (!AppInfoUtils.IsPackagedApp)
-					return UnpackagedPermissions.CheckMicrophoneStatusAsync();
-
 				EnsureDeclared();
-				return Task.FromResult(CheckStatus() switch
-				{
-					DeviceAccessStatus.Allowed => PermissionStatus.Granted,
-					DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
-					DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
-					_ => PermissionStatus.Unknown,
-				});
 			}
 
-			/// <inheritdoc/>
+			return Task.FromResult(CheckStatus() switch
+			{
+				DeviceAccessStatus.Allowed => PermissionStatus.Granted,
+				DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
+				DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
+				_ => PermissionStatus.Unknown,
+			});
+		}			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				// Check status first - if already allowed, return early
@@ -304,29 +303,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Vibrate : BasePlatformPermission
 		{
-		}
-	}
-
-	static class UnpackagedPermissions
-	{
-		internal static Task<PermissionStatus> CheckMicrophoneStatusAsync()
-		{
-			try
-			{
-				var status = DeviceAccessInformation.CreateFromDeviceClass(DeviceClass.AudioCapture).CurrentStatus;
-				
-				return Task.FromResult(status switch
-				{
-					DeviceAccessStatus.Allowed => PermissionStatus.Granted,
-					DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
-					DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
-					_ => PermissionStatus.Unknown,
-				});
-			}
-			catch
-			{
-				return Task.FromResult(PermissionStatus.Unknown);
-			}
 		}
 	}
 }
