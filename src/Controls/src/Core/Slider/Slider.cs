@@ -14,7 +14,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Slider), 0d, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
-			slider.Value = slider.Value.Clamp((double)value, slider.Maximum);
+			//Only clamp when control is initialized
+			if (slider.Handler is not null && !slider.Handler.IsConnectingHandler())
+			{
+				slider.Value = slider.Value.Clamp((double)value, slider.Maximum);
+			}
 			return value;
 		});
 
@@ -22,7 +26,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Slider), 1d, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
-			slider.Value = slider.Value.Clamp(slider.Minimum, (double)value);
+			//Only clamp when control is initialized
+			if (slider.Handler is not null && !slider.Handler.IsConnectingHandler())
+			{
+				slider.Value = slider.Value.Clamp(slider.Minimum, (double)value);
+			}
 			return value;
 		});
 
@@ -30,7 +38,16 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Slider), 0d, BindingMode.TwoWay, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
-			return ((double)value).Clamp(slider.Minimum, slider.Maximum);
+			//Only clamp when control is initialized
+			if (slider.Handler is not null && !slider.Handler.IsConnectingHandler())
+			{
+				return ((double)value).Clamp(slider.Minimum, slider.Maximum);
+			}
+			else
+			{
+				return value;
+			}
+			
 		}, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var slider = (Slider)bindable;
