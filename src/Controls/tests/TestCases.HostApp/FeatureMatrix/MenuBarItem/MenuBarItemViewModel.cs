@@ -75,7 +75,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _exitEnabled, value);
 	}
 
-	private string _exitIcon = "exit.png";
+	private string _exitIcon = "dotnet_bot.png";
 	public string ExitIcon
 	{
 		get => _exitIcon;
@@ -157,7 +157,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _refreshEnabled, value);
 	}
 
-	private string _refreshIcon = "refresh.png";
+	private string _refreshIcon = "dotnet_bot.png";
 	public string RefreshIcon
 	{
 		get => _refreshIcon;
@@ -179,7 +179,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _changeThemeEnabled, value);
 	}
 
-	private string _changeThemeIcon = "theme.png";
+	private string _changeThemeIcon = "dotnet_bot.png";
 	public string ChangeThemeIcon
 	{
 		get => _changeThemeIcon;
@@ -217,7 +217,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	public ICommand RemoveLocationCommand { get; }
 	public ICommand RefreshCommand { get; }
 	public ICommand ChangeThemeCommand { get; }
-	public ICommand UpdateMenuTextsCommand { get; }
+	public ICommand ResetCommand { get; }
 
 	#endregion
 
@@ -239,7 +239,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		RemoveLocationCommand = new Command(OnRemoveLocation, () => LocationsMenuEnabled);
 		RefreshCommand = new Command(OnRefresh, () => ViewMenuEnabled);
 		ChangeThemeCommand = new Command(OnChangeTheme, () => ViewMenuEnabled);
-		UpdateMenuTextsCommand = new Command(OnUpdateMenuTexts);
+		ResetCommand = new Command(OnReset);
 
 		// Listen to property changes to update CanExecute
 		PropertyChanged += (s, e) =>
@@ -269,9 +269,8 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	{
 		StatusMessage = "Exit command executed - Application closing...";
 		// Delay to show message before exit
-		Task.Run(async () =>
+		Application.Current?.Dispatcher.Dispatch(() =>
 		{
-			await Task.Delay(1000);
 			Application.Current?.Quit();
 		});
 	}
@@ -290,37 +289,98 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 	private void OnAddLocation()
 	{
-		var newLocation = $"New Location {Locations.Count + 1}";
-		Locations.Add(newLocation);
-		StatusMessage = $"Added location: {newLocation}";
+		Application.Current?.Dispatcher.Dispatch(async () =>
+		{
+			var locationName = await Application.Current.MainPage.DisplayPromptAsync(
+				"Add Location",
+				"Enter location name:",
+				"Add",
+				"Cancel",
+				placeholder: "e.g., Tokyo, Japan");
+
+			if (!string.IsNullOrWhiteSpace(locationName))
+			{
+				Locations.Add(locationName);
+				StatusMessage = $"Added location: {locationName}";
+			}
+			else if (locationName != null)
+			{
+				StatusMessage = "Location name cannot be empty";
+			}
+		});
 	}
 
 	private void OnEditLocation()
 	{
-		if (Locations.Count > 0)
-		{
-			var oldLocation = Locations[0];
-			Locations[0] = $"Updated Location ({DateTime.Now:HH:mm:ss})";
-			StatusMessage = $"Updated '{oldLocation}' to '{Locations[0]}'";
-		}
-		else
+		if (Locations.Count == 0)
 		{
 			StatusMessage = "No locations available to edit";
+			return;
 		}
+
+		Application.Current?.Dispatcher.Dispatch(async () =>
+		{
+			// Show list of locations to choose from
+			var locationToEdit = await Application.Current.MainPage.DisplayActionSheet(
+				"Select Location to Edit",
+				"Cancel",
+				null,
+				Locations.ToArray());
+
+			if (locationToEdit != null && locationToEdit != "Cancel")
+			{
+				var index = Locations.IndexOf(locationToEdit);
+				if (index >= 0)
+				{
+					// Prompt for new name
+					var newName = await Application.Current.MainPage.DisplayPromptAsync(
+						"Edit Location",
+						$"Edit location name:",
+						"Update",
+						"Cancel",
+						initialValue: locationToEdit);
+
+					if (!string.IsNullOrWhiteSpace(newName))
+					{
+						Locations[index] = newName;
+						StatusMessage = $"Updated '{locationToEdit}' to '{newName}'";
+					}
+					else if (newName != null)
+					{
+						StatusMessage = "Location name cannot be empty";
+					}
+				}
+			}
+		});
 	}
 
 	private void OnRemoveLocation()
 	{
-		if (Locations.Count > 0)
-		{
-			var removed = Locations[Locations.Count - 1];
-			Locations.RemoveAt(Locations.Count - 1);
-			StatusMessage = $"Removed location: {removed}";
-		}
-		else
+		if (Locations.Count == 0)
 		{
 			StatusMessage = "No locations available to remove";
+			return;
 		}
+
+		Application.Current?.Dispatcher.Dispatch(async () =>
+		{
+			// Show list of locations to choose from
+			var locationToRemove = await Application.Current.MainPage.DisplayActionSheet(
+				"Select Location to Remove",
+				"Cancel",
+				"Remove",
+				Locations.ToArray());
+
+			if (locationToRemove != null && locationToRemove != "Cancel")
+			{
+				var index = Locations.IndexOf(locationToRemove);
+				if (index >= 0)
+				{
+					Locations.RemoveAt(index);
+					StatusMessage = $"Removed location: {locationToRemove}";
+				}
+			}
+		});
 	}
 
 	private void OnRefresh()
@@ -330,15 +390,19 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 	private void OnChangeTheme()
 	{
-		StatusMessage = $"Theme change requested at {DateTime.Now:HH:mm:ss}";
+		if (Application.Current is not null)
+		{ Application.Current.UserAppTheme = Application.Current.UserAppTheme != AppTheme.Dark ? AppTheme.Dark : AppTheme.Light; }
 	}
 
-	private void OnUpdateMenuTexts()
+	private void OnReset()
 	{
-		FileMenuText = $"File ({DateTime.Now:ss}s)";
-		LocationsMenuText = $"Locations ({Locations.Count})";
-		ViewMenuText = $"View (Updated)";
-		StatusMessage = "Menu texts updated dynamically!";
+		CurrentLocation = "Not set";
+		StatusMessage = "Application state has been reset.";
+
+		// Reset menu enabled states
+		FileMenuEnabled = true;
+		LocationsMenuEnabled = true;
+		ViewMenuEnabled = true;
 	}
 
 	#endregion
