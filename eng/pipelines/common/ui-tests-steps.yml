@@ -140,13 +140,7 @@ steps:
       [void]$groupCategorySet.Add($category)
     }
 
-    $runAllFlag = $false
-    if (-not [string]::IsNullOrWhiteSpace($runAllSelected)) {
-      $parsedRunAll = $false
-      if ([bool]::TryParse($runAllSelected, [ref]$parsedRunAll)) {
-        $runAllFlag = $parsedRunAll
-      }
-    }
+    $runAllFlag = $runAllSelected -ieq 'true'
 
     if (-not $runAllFlag -and -not [string]::IsNullOrWhiteSpace($selectedCategories)) {
       $selectedSet = $selectedCategories.Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }

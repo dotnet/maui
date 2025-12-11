@@ -314,13 +314,14 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', 'CollectionView', ';'))))
+                condition: ${{ parameters.categoryGroupCondition }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
+                  CATEGORYGROUP: CollectionView
                   UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
                   UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
                   UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
@@ -365,13 +366,14 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', 'CarouselView', ';'))))
+                condition: ${{ parameters.categoryGroupCondition }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
+                  CATEGORYGROUP: CarouselView
                   UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
                   UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
                   UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]

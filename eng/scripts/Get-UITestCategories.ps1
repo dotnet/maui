@@ -4,7 +4,7 @@ param(
     [string] $WorkingDirectory = ".",
     [string] $RemoteName = "origin",
     [string] $TestPath = "src/Controls/tests/TestCases.Shared.Tests/Tests",
-    [string] $CategoryAttributePattern = '^\+\s*\[Category\(UITestCategories\.([A-Za-z0-9_]+)\)\]'
+    [string] $CategoryAttributePattern = '^\+\s*\[Category\s*\(\s*UITestCategories\.([A-Za-z0-9_]+)\s*\)\s*\]'
 )
 
 function Write-PipelineVariable {
@@ -49,7 +49,7 @@ $runAll = $true
 
 Push-Location $WorkingDirectory
 try {
-    git fetch --no-tags $RemoteName $BaseRef --depth=1 1>$null
+    git fetch --no-tags $RemoteName $BaseRef 1>$null
     if ($LASTEXITCODE -ne 0) {
         throw "git fetch failed for $BaseRef"
     }
@@ -58,7 +58,7 @@ try {
         throw "Unable to determine merge-base with $BaseRef"
     }
 
-    $diff = git diff --unified=0 --diff-filter=AM $mergeBase..HEAD -- $TestPath
+    $diff = git diff --unified=0 --diff-filter=AMRC $mergeBase..HEAD -- $TestPath
     if ($LASTEXITCODE -ne 0) {
         throw "git diff failed for $TestPath against $BaseRef"
     }
