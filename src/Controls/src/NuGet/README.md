@@ -24,11 +24,11 @@ The **Microsoft.Maui.Controls** package provides the UI controls and XAML infras
 
 | Platform | Minimum Version |
 |----------|----------------|
-| Android | API 24 (Android 7.0) |
+| Android | API 21 (Android 5.0) |
 | iOS | iOS 13.0+ |
 | iPadOS | iPadOS 13.0+ |
-| macOS | macOS 11.0+ (via Mac Catalyst) |
-| Windows | Windows 11, Windows 10 (Version 1809+) |
+| macOS | macOS 12.0+ (via Mac Catalyst) |
+| Windows | Windows 11, Windows 10 (Version 1809+) using Windows UI Library (WinUI) |
 
 ## 📦 Getting Started
 
