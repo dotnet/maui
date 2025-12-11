@@ -432,23 +432,27 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static Bitmap Downsize(this Bitmap target, int maxSize, bool dispose = true)
 		{
-			if (target.Width > maxSize || target.Height > maxSize)
+			return Downsize(target, maxSize, maxSize, dispose);
+		}
+
+		public static Bitmap Downsize(this Bitmap target, int maxWidth, int maxHeight, bool dispose = true)
+		{
+			if (maxWidth <= 0 || maxHeight <= 0)
 			{
-				float factor;
+				return target;
+			}
 
-				if (target.Width > target.Height)
-				{
-					factor = maxSize / (float)target.Width;
-				}
-				else
-				{
-					factor = maxSize / (float)target.Height;
-				}
+			if (target.Width > maxWidth || target.Height > maxHeight)
+			{
+				float factorX = maxWidth / (float)target.Width;
+				float factorY = maxHeight / (float)target.Height;
 
-				var w = (int)Math.Round(factor * target.Width);
-				var h = (int)Math.Round(factor * target.Height);
+				float factor = Math.Min(factorX, factorY);
 
-				var newImage = Bitmap.CreateScaledBitmap(target, w, h, true);
+				maxWidth = (int)Math.Round(factor * target.Width);
+				maxHeight = (int)Math.Round(factor * target.Height);
+
+				var newImage = Bitmap.CreateScaledBitmap(target, maxWidth, maxHeight, true);
 				if (dispose)
 				{
 					target.Recycle();
@@ -459,18 +463,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			return target;
-		}
-
-		public static Bitmap Downsize(this Bitmap target, int maxWidth, int maxHeight, bool dispose = true)
-		{
-			var newImage = Bitmap.CreateScaledBitmap(target, maxWidth, maxHeight, true);
-			if (dispose)
-			{
-				target.Recycle();
-				target.Dispose();
-			}
-
-			return newImage;
 		}
 	}
 }
