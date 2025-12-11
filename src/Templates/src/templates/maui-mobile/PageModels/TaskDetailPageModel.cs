@@ -34,6 +34,9 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private bool _isExistingProject;
 
+	[ObservableProperty]
+	private bool _isProjectPickerExpanded;
+
 	public TaskDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, ModalErrorHandler errorHandler)
 	{
 		_projectRepository = projectRepository;
@@ -115,6 +118,18 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 		{
 			_canDelete = value;
 			DeleteCommand.NotifyCanExecuteChanged();
+		}
+	}
+
+	partial void OnIsProjectPickerExpandedChanged(bool value)
+	{
+		if (value)
+		{
+			SemanticScreenReader.Announce("Project ComboBox, State Expanded");
+		}
+		else
+		{
+			SemanticScreenReader.Announce("Project ComboBox, State Collapsed");
 		}
 	}
 
