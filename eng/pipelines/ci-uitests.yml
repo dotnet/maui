@@ -11,6 +11,8 @@ resources:
       - main
       - release/*
       - net*.0
+      tags:
+      - '*'
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -97,4 +99,3 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-

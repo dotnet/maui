@@ -12,6 +12,8 @@ resources:
       - release/*
       - net*.0
       - inflight/*
+      tags:
+      - '*'
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
