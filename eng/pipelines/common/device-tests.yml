@@ -41,7 +41,7 @@ stages:
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} ${{ platform }}
     ${{ if ne(parameters.platformDependsOn[platform], '') }}:
       dependsOn: ${{ parameters.platformDependsOn[platform] }}
-    ${{ else if eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
+    ${{ elseif eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn: []
     ${{ else }}:
       dependsOn:
