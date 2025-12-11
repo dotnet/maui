@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -129,7 +130,42 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(UIAccessibilityTrait.Button, trait);
 		}
+		
+#if MACCATALYST
+		[Fact(DisplayName = "UIButtonConfiguration Sizing Does Not Truncate Text")]
+		public async Task UiButtonConfigurationSizingDoesNotTruncateText()
+		{
+			var buttonText = "Button 1";
+			var button = new ButtonStub()
+			{
+				Text = buttonText
+			};
 
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = await CreateHandlerAsync(button);
+				var platformButton = handler.PlatformView;
+
+				// This test verifies that buttons with UIButtonConfiguration size correctly
+				if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is not null)
+				{
+					platformButton.SizeToFit();
+					
+					var currentTitle = platformButton.CurrentTitle;
+					Assert.Equal(buttonText, currentTitle);
+					Assert.True(platformButton.Bounds.Width > 0, "Button width should be greater than 0");
+					Assert.True(platformButton.Bounds.Height > 0, "Button height should be greater than 0");
+					
+					var font = platformButton.TitleLabel.Font;
+					var textSize = new Foundation.NSString(buttonText).GetSizeUsingAttributes(new UIKit.UIStringAttributes { Font = font });
+
+					// Button width should be at least as wide as the text
+					Assert.True(platformButton.Bounds.Width >= textSize.Width, 
+						$"Button width ({platformButton.Bounds.Width}) should be at least text width ({textSize.Width})");
+				}
+			});
+		}
+#endif
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView.ImageView.Image != null;
 
