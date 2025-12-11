@@ -112,17 +112,21 @@ steps:
       XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
       if [[ ! -d "$XCODE_PATH" ]]; then
         echo "Xcode version ${XCODE_VERSION} not found at ${XCODE_PATH}"
-        # Extract fallback version by removing the last part after the final dot (e.g., 26.0.1 -> 26.0.0)
+        # Extract major.minor prefix (e.g., 26.1 from 26.1.0) and search for any matching version
         if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
-          FALLBACK_VERSION="${BASH_REMATCH[1]}.0"
-          FALLBACK_PATH="/Applications/Xcode_${FALLBACK_VERSION}.app"
-          echo "Trying fallback Xcode version: ${FALLBACK_VERSION}"
-          if [[ -d "$FALLBACK_PATH" ]]; then
-            echo "Found fallback Xcode version at ${FALLBACK_PATH}"
+          MAJOR_MINOR="${BASH_REMATCH[1]}"
+          echo "Searching for any Xcode version matching ${MAJOR_MINOR}.x ..."
+          # Find all matching Xcode versions and sort them (newest first)
+          AVAILABLE_VERSIONS=$(ls -d /Applications/Xcode_${MAJOR_MINOR}.*.app 2>/dev/null | sort -V -r)
+          if [[ -n "$AVAILABLE_VERSIONS" ]]; then
+            # Take the first (newest) available version
+            FALLBACK_PATH=$(echo "$AVAILABLE_VERSIONS" | head -n 1)
+            FALLBACK_VERSION=$(basename "$FALLBACK_PATH" | sed 's/Xcode_//' | sed 's/.app//')
+            echo "Found fallback Xcode version: ${FALLBACK_VERSION} at ${FALLBACK_PATH}"
             XCODE_VERSION="$FALLBACK_VERSION"
             XCODE_PATH="$FALLBACK_PATH"
           else
-            echo "Warning: Fallback Xcode version ${FALLBACK_VERSION} also not found at ${FALLBACK_PATH}"
+            echo "Warning: No Xcode versions matching ${MAJOR_MINOR}.x found"
             echo "Proceeding with original version ${XCODE_VERSION} - this may fail"
           fi
         else
