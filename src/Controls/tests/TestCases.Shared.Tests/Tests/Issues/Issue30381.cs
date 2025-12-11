@@ -16,8 +16,6 @@ public class Issue30381 : _IssuesUITest
     [Category(UITestCategories.WebView)]
     public void WebViewCanGoForwardShouldHaveValueAfterNavigation()
     {
-        // Wait for WebView to load
-        App.WaitForElement("TestWebView");
         App.WaitForElement("ClickLinkButton");
 
         // Click the link via JavaScript to navigate to external URL
@@ -34,7 +32,7 @@ public class Issue30381 : _IssuesUITest
 
         // Wait for back navigation to complete
         Thread.Sleep(2000);
-
+        App.Tap("UpdateStatusButton");
         Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: False"));
         Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: True"));
     }
