@@ -2,6 +2,7 @@ param(
     [string] $BaseRef,
     [string[]] $CategoryGroups,
     [string] $WorkingDirectory = ".",
+    [string] $RemoteName = "origin",
     [string] $TestPath = "src/Controls/tests/TestCases.Shared.Tests/Tests",
     [string] $CategoryAttributePattern = '^\+\s*\[Category\(UITestCategories\.([A-Za-z0-9_]+)\)\]'
 )
@@ -40,7 +41,7 @@ if ($BaseRef.StartsWith("refs/heads/")) {
     $BaseRef = $BaseRef.Substring("refs/heads/".Length)
 }
 
-$BaseRef = "origin/$BaseRef"
+$BaseRef = "$RemoteName/$BaseRef"
 
 $categories = New-Object System.Collections.Generic.HashSet[string] ([StringComparer]::OrdinalIgnoreCase)
 $categoryGroupsToRun = New-Object System.Collections.Generic.List[string]
@@ -48,7 +49,7 @@ $runAll = $true
 
 Push-Location $WorkingDirectory
 try {
-    git fetch --no-tags origin $BaseRef --depth=1 1>$null
+    git fetch --no-tags $RemoteName $BaseRef --depth=1 1>$null
     if ($LASTEXITCODE -ne 0) {
         throw "git fetch failed for $BaseRef"
     }
@@ -57,36 +58,31 @@ try {
         throw "Unable to determine merge-base with $BaseRef"
     }
 
-    if (-not $mergeBase) {
-        Write-Host "Unable to determine merge-base with $BaseRef. Falling back to running all categories."
+    $diff = git diff --unified=0 --diff-filter=AM $mergeBase..HEAD -- $TestPath
+    if ($LASTEXITCODE -ne 0) {
+        throw "git diff failed for $TestPath against $BaseRef"
     }
-    else {
-        $diff = git diff --unified=0 --diff-filter=AM $mergeBase..HEAD -- $TestPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "git diff failed for $TestPath against $BaseRef"
-        }
 
-        if (-not [string]::IsNullOrWhiteSpace($diff)) {
-            $pattern = $CategoryAttributePattern
-            foreach ($line in $diff -split "`n") {
-                if ($line -match $pattern) {
-                    [void]$categories.Add($matches[1])
-                }
+    if (-not [string]::IsNullOrWhiteSpace($diff)) {
+        $pattern = $CategoryAttributePattern
+        foreach ($line in $diff -split "`n") {
+            if ($line -match $pattern) {
+                [void]$categories.Add($matches[1])
             }
         }
+    }
 
-        if ($categories.Count -gt 0) {
-            $runAll = $false
+    if ($categories.Count -gt 0) {
+        $runAll = $false
 
-            foreach ($group in $CategoryGroups) {
-                if ([string]::IsNullOrWhiteSpace($group)) {
-                    continue
-                }
+        foreach ($group in $CategoryGroups) {
+            if ([string]::IsNullOrWhiteSpace($group)) {
+                continue
+            }
 
-                $groupCategories = $group.Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
-                if ($groupCategories | Where-Object { $categories.Contains($_) }) {
-                    $categoryGroupsToRun.Add($group.Trim())
-                }
+            $groupCategories = $group.Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
+            if ($groupCategories | Where-Object { $categories.Contains($_) }) {
+                $categoryGroupsToRun.Add($group.Trim())
             }
         }
     }

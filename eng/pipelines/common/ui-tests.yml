@@ -12,6 +12,7 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
+  categoryGroupCondition: "and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))"
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -154,7 +155,7 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
-                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                condition: ${{ parameters.categoryGroupCondition }}
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -205,7 +206,7 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
-                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                condition: ${{ parameters.categoryGroupCondition }}
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -258,7 +259,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                 condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                 condition: ${{ parameters.categoryGroupCondition }}
                  strategy:
                    matrix:
                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -416,7 +417,7 @@ stages:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                  - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
-                   condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                   condition: ${{ parameters.categoryGroupCondition }}
                    strategy:
                     matrix:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -463,7 +464,7 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
-                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                condition: ${{ parameters.categoryGroupCondition }}
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -507,7 +508,7 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
-                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                condition: ${{ parameters.categoryGroupCondition }}
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
