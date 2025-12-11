@@ -7,7 +7,6 @@ public partial class Maui13872 : ContentPage
 {
 	public Maui13872() => InitializeComponent();
 
-	[Collection("Issue")]
 	public class Tests
 	{
 		[Theory]
@@ -18,13 +17,13 @@ public partial class Maui13872 : ContentPage
 			page.BindingContext = new Maui13872ViewModel();
 
 			// Uncompiled bindings (no x:DataType) - should work with all inflators
-			Assert.Equal("3", page.label0.Text);
-			Assert.Equal("3", page.label1.Text);
+			Assert.Equal("3", page.label0.Text); // Uncompiled binding to List.Count
+			Assert.Equal("3", page.label1.Text); // Uncompiled binding to ListCount
 
 			// Compiled bindings (with x:DataType) - IReadOnlyList<T>.Count should resolve correctly.
 			// Count is defined on IReadOnlyCollection<T> which IReadOnlyList<T> inherits.
-			Assert.Equal("3", page.label2.Text);
-			Assert.Equal("3", page.label3.Text);
+			Assert.Equal("3", page.label2.Text); // Compiled binding to List.Count
+			Assert.Equal("3", page.label3.Text); // Compiled binding to ListCount
 		}
 	}
 }

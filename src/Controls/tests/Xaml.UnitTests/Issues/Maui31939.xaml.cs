@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
+using System.Collections.Generic;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
@@ -15,11 +17,19 @@ public partial class Maui31939 : ContentPage
 {
 	public Maui31939() => InitializeComponent();
 
-	[Collection("Issue")]
 	public class Tests : IDisposable
 	{
-		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		public void Dispose() => DispatcherProvider.SetCurrent(null);
+		public Tests()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
+
+		public void Dispose()
+		{
+			DispatcherProvider.SetCurrent(null);
+		}
+
 		[Theory]
 		[XamlInflatorData]
 		internal void CommandParameterTemplateBindingShouldNotBeNullWhenCanExecuteIsCalled(XamlInflator inflator)
