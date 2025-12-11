@@ -792,6 +792,85 @@ For physical devices:
 - Consider mDNS/Bonjour for discovery
 - Fallback to USB tunneling
 
+### 9.4 Security Considerations
+
+> **⚠️ Important:** Security modeling for the communication channel should be prioritized early in the design process, as it may significantly affect the overall architecture.
+
+Any new communication channel (TCP, HTTP, or WebSocket) from the device back to the host introduces security risks that must be addressed:
+
+#### 9.4.1 Threat Model
+
+| Threat | Description | Severity |
+|--------|-------------|----------|
+| **Unauthorized Connection** | Malicious process connects to the test results server | Medium |
+| **Data Interception** | Test results/coverage data intercepted in transit | Low-Medium |
+| **Injection Attacks** | Malicious data sent to host via test results channel | Medium |
+| **Denial of Service** | Flooding the results server with fake connections | Low |
+| **Information Disclosure** | Test output may contain sensitive data (connection strings, tokens) | Medium |
+
+#### 9.4.2 Mitigation Strategies
+
+**Authentication Token:**
+- Generate a unique, cryptographically random token per test session
+- Pass token to device app via command-line arguments or environment variable
+- Require token in all requests from device to host
+- Reject connections without valid token
+
+**Network Binding:**
+- Bind HTTP/TCP server to `localhost` only (127.0.0.1/::1)
+- For simulators/emulators, use loopback interfaces
+- For physical devices, consider USB tunneling over network exposure
+
+**Ephemeral Ports:**
+- Use dynamically assigned ports (port 0) rather than fixed ports
+- Reduces predictability for attackers
+- Pass actual port to device app at runtime
+
+**Transport Security:**
+- Consider HTTPS for physical device scenarios
+- For localhost scenarios, encryption may be optional (defense in depth)
+- Validate certificate chain if using HTTPS
+
+**Input Validation:**
+- Validate and sanitize all data received from device
+- Limit payload sizes to prevent memory exhaustion
+- Use structured formats (JSON) with schema validation
+
+#### 9.4.3 Prior Art: .NET Aspire
+
+.NET Aspire has implemented similar device-to-host communication patterns with security considerations. Key learnings to evaluate:
+
+- **Resource tokens**: Aspire uses bearer tokens for service-to-service auth
+- **mTLS**: Mutual TLS for service mesh communication
+- **OTLP endpoints**: Secure telemetry collection patterns
+- **Dashboard security**: Authentication for the Aspire dashboard
+
+**Action Item:** Engage with Aspire team to understand their security model and evaluate reuse opportunities.
+
+#### 9.4.4 Recommended Security Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            dotnet test (Host)                                │
+│                                                                              │
+│  1. Generate session token: SecureRandom(32 bytes) → Base64                │
+│  2. Start HTTP server on localhost:0 (ephemeral port)                       │
+│  3. Pass token + port to device app via launch args                        │
+│  4. Validate Authorization: Bearer <token> on all requests                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     │ Token + Port passed at app launch
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          Device/Simulator App                                │
+│                                                                              │
+│  1. Read token from launch args: --test-session-token <token>              │
+│  2. Read server endpoint: --test-server http://localhost:<port>            │
+│  3. Include header: Authorization: Bearer <token>                           │
+│  4. Send test results via HTTP POST                                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 10. Integration Points
@@ -830,6 +909,7 @@ Integrate with `Microsoft.CodeCoverage`:
 | **Simulator reset between runs** | Document expected behavior; provide cleanup options |
 | **App sandboxing impacting coverage file export** | Test artifact extraction on all platforms early in development |
 | **Parallel test execution support** | Defer to future phase; document as non-goal for v1 |
+| **Security vulnerabilities in communication channel** | Prioritize security modeling early; use auth tokens, localhost binding, ephemeral ports; engage with Aspire team for prior art |
 
 ---
 
@@ -866,6 +946,10 @@ Integrate with `Microsoft.CodeCoverage`:
 5. **Test Filtering**: Should we support filtering (category/trait) on-device or host-side?
 
 6. **MAUI Test Runner Packaging**: Template or auto-generated?
+
+7. **Security Model Review**: When should we conduct a formal security review of the communication channel? Should this block V1 streaming features?
+
+8. **Aspire Reuse**: What components from .NET Aspire's security model can we directly reuse vs. adapt?
 
 ### 12.4 .NET SDK / CLI Team
 
