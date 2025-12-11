@@ -265,7 +265,6 @@ namespace Microsoft.Maui.Controls
 				oldPresenter.Content = null;
 
 			CurrentPage = page;
-
 			FrameNavigationOptions navOptions = new FrameNavigationOptions();
 			navOptions.IsNavigationStackEnabled = false;
 			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
