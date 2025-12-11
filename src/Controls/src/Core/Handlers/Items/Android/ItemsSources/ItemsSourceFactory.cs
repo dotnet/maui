@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (itemsSource)
 			{
 				case IList list when itemsSource is INotifyCollectionChanged:
-					return new ObservableItemsSource(new MarshalingObservableCollection(list), container, notifier);
+					return new ObservableItemsSource(new MarshalingObservableCollection(list), container, notifier, disposeItemsSource: true);
 				case IEnumerable _ when itemsSource is INotifyCollectionChanged:
 					return new ObservableItemsSource(itemsSource, container, notifier);
 				case IList list:
