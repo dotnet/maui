@@ -156,32 +156,85 @@ steps:
         else
           XCODE_VERSION=$(XCODE)
         fi
-        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
-        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
-          RC=0
-          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0 || RC=$?
-          if [[ "$RC" == "70" ]]; then
-            echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
-          elif [[ "$RC" == "0" ]]; then
-            echo "Successfully installed the requested iOS simulator"
-          else
-            echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
-            sudo xcrun simctl runtime delete all
-            # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
-            for i in $(seq 1 60); do
-              sleep 1
-              C=$(xcrun simctl runtime list -j | jq '. | length')
-              if [[ $C == 0 ]]; then
-                echo "    still $C simulators left..."
-                break
-              fi
-            done
-            echo "Re-trying simulator runtime installation, if this doesn't work, a reboot might be required"
-            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
+        
+        # Apply the same fallback logic as Select Xcode Version step
+        XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
+        if [[ ! -d "$XCODE_PATH" ]]; then
+          echo "Xcode version ${XCODE_VERSION} not found, searching for fallback..."
+          if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
+            MAJOR_MINOR="${BASH_REMATCH[1]}"
+            AVAILABLE_VERSIONS=$(ls -d /Applications/Xcode_${MAJOR_MINOR}.*.app 2>/dev/null | sort -V -r)
+            if [[ -n "$AVAILABLE_VERSIONS" ]]; then
+              FALLBACK_PATH=$(echo "$AVAILABLE_VERSIONS" | head -n 1)
+              XCODE_VERSION=$(basename "$FALLBACK_PATH" | sed 's/Xcode_//' | sed 's/.app//')
+              echo "Using fallback Xcode version: ${XCODE_VERSION}"
+            fi
           fi
+        fi
+        
+        # Extract major.minor for simulator version matching (e.g., 26.1 from 26.1.2)
+        if [[ "$XCODE_VERSION" =~ ^([0-9]+)\.([0-9]+)\..*$ ]]; then
+          SIMULATOR_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
         else
-          sudo xcodebuild -downloadPlatform iOS
+          SIMULATOR_VERSION="$XCODE_VERSION"
+        fi
+        echo "Using simulator version: ${SIMULATOR_VERSION} (based on Xcode ${XCODE_VERSION})"
+        
+        # Function to install simulator with retries
+        install_simulator() {
+          local BUILD_VERSION="$1"
+          local MAX_RETRIES=3
+          local RETRY_DELAY=10
+          
+          for attempt in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $attempt of $MAX_RETRIES to install iOS simulator (buildVersion: ${BUILD_VERSION})..."
+            RC=0
+            if [[ -n "$BUILD_VERSION" ]]; then
+              sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion "$BUILD_VERSION" || RC=$?
+            else
+              sudo xcodebuild -downloadPlatform iOS || RC=$?
+            fi
+            
+            if [[ "$RC" == "0" ]]; then
+              echo "Successfully installed the requested iOS simulator"
+              return 0
+            elif [[ "$RC" == "70" ]]; then
+              echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
+              return 0
+            else
+              echo "Installation failed with exit code $RC"
+              if [[ $attempt -lt $MAX_RETRIES ]]; then
+                echo "Waiting ${RETRY_DELAY} seconds before retry..."
+                sleep $RETRY_DELAY
+                RETRY_DELAY=$((RETRY_DELAY * 2))
+              fi
+            fi
+          done
+          
+          echo "All retries failed. Attempting cleanup and final retry..."
+          sudo xcrun simctl runtime delete all 2>/dev/null || true
+          # Wait for async deletion
+          for i in $(seq 1 60); do
+            sleep 1
+            C=$(xcrun simctl runtime list -j 2>/dev/null | jq '. | length' 2>/dev/null || echo "0")
+            if [[ "$C" == "0" ]]; then
+              break
+            fi
+          done
+          
+          echo "Final attempt after cleanup..."
+          if [[ -n "$BUILD_VERSION" ]]; then
+            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion "$BUILD_VERSION"
+          else
+            sudo xcodebuild -downloadPlatform iOS
+          fi
+        }
+        
+        # For Xcode 26.x, use the major.minor version for simulator
+        if [[ "${XCODE_VERSION}" =~ ^26\.[0-9]+.*$ ]]; then
+          install_simulator "${SIMULATOR_VERSION}"
+        else
+          install_simulator ""
         fi
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
