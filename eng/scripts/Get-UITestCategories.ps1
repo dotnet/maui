@@ -48,7 +48,7 @@ $runAll = $true
 
 Push-Location $WorkingDirectory
 try {
-    git fetch --no-tags origin $BaseRef --depth=1 2>$null | Out-Null
+    git fetch --no-tags origin $BaseRef --depth=1 1>$null
     $mergeBase = git merge-base HEAD $BaseRef
 
     if (-not $mergeBase) {
@@ -98,7 +98,7 @@ if ($runAll -or $categories.Count -eq 0) {
     return
 }
 
-$selectedCategories = ($categories.ToArray() | Sort-Object -Unique)
+$selectedCategories = ($categories.ToArray() | Sort-Object)
 $selectedCategoriesValue = [string]::Join(",", $selectedCategories)
 $categoryGroupsValue = [string]::Join(",", $categoryGroupsToRun)
 $categoryGroupsDelimitedValue = if ($categoryGroupsToRun.Count -gt 0) { ";" + ([string]::Join(";", $categoryGroupsToRun)) + ";" } else { "" }

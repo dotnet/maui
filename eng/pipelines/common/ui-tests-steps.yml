@@ -138,7 +138,10 @@ steps:
 
     $runAllFlag = $false
     if (-not [string]::IsNullOrWhiteSpace($runAllSelected)) {
-      $runAllFlag = [System.Convert]::ToBoolean($runAllSelected)
+      $parsedRunAll = $false
+      if ([bool]::TryParse($runAllSelected, [ref]$parsedRunAll)) {
+        $runAllFlag = $parsedRunAll
+      }
     }
 
     if (-not $runAllFlag -and -not [string]::IsNullOrWhiteSpace($selectedCategories)) {
