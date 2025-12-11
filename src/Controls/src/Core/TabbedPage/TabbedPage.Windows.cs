@@ -280,10 +280,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateCurrentPageContent(WPage page)
 		{
-			if (MauiContext == null)
-				return;
-
-			if (_displayedPage == CurrentPage)
+			if (MauiContext == null || _displayedPage == CurrentPage)
 				return;
 
 			WContentPresenter? presenter;
