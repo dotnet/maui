@@ -49,9 +49,37 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
+  - stage: determine_ui_test_categories
+    displayName: Determine UI Test Categories
+    dependsOn: []
+    jobs:
+      - job: detect_ui_test_categories
+        displayName: Detect UI Test Categories
+        pool: ${{ parameters.androidLinuxPool }}
+        steps:
+          - checkout: self
+          - pwsh: |
+              $categoryGroups = @(
+              ${{ each group in parameters.categoryGroupsToTest }}
+                '${{ group }}'
+              ${{ end }}
+              )
+
+              $baseRef = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+              if (-not $baseRef) {
+                  $baseRef = "main"
+              }
+
+              $scriptPath = "$(System.DefaultWorkingDirectory)/eng/scripts/Get-UITestCategories.ps1"
+              & $scriptPath -BaseRef $baseRef -CategoryGroups $categoryGroups -WorkingDirectory "$(System.DefaultWorkingDirectory)"
+            name: detect
+            env:
+              BUILD_REASON: $(Build.Reason)
+              SYSTEM_PULLREQUEST_TARGETBRANCH: $(System.PullRequest.TargetBranch)
+
   - stage: build_ui_tests
     displayName: Build UITests Sample App
-    dependsOn: []
+    dependsOn: determine_ui_test_categories
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -67,7 +95,7 @@ stages:
 
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
-    dependsOn: []
+    dependsOn: determine_ui_test_categories
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -85,7 +113,7 @@ stages:
   - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
-      dependsOn: []
+      dependsOn: determine_ui_test_categories
       jobs:
         - job: build_ui_tests
           displayName: Build Sample App
@@ -102,7 +130,7 @@ stages:
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
-    dependsOn: []
+    dependsOn: determine_ui_test_categories
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
@@ -117,13 +145,16 @@ stages:
 
   - stage: android_ui_tests
     displayName: Android UITests
-    dependsOn: build_ui_tests
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
+                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -135,6 +166,10 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidLinuxPool }}
                 variables:
+                  UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                  UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                  UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                  UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
@@ -161,13 +196,16 @@ stages:
 
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
-    dependsOn: build_ui_tests_coreclr
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
+                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -179,6 +217,10 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidLinuxPool }}
                 variables:
+                  UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                  UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                  UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                  UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
@@ -207,27 +249,34 @@ stages:
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
-    dependsOn: build_ui_tests
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+               - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+                 condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                 strategy:
+                   matrix:
+                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                       ${{ categoryGroup }}:
+                         CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
-                workspace:
-                  clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
-                pool: ${{ parameters.iosPool }}
-                variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                steps:
+                 workspace:
+                   clean: all
+                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                 pool: ${{ parameters.iosPool }}
+                 variables:
+                   UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                   UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                   UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                   UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
+                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: ios
@@ -255,19 +304,26 @@ stages:
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
-    dependsOn: build_ui_tests
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', 'CollectionView', ';'))))
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
+                  UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                  UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                  UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                  UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
@@ -299,19 +355,26 @@ stages:
 
   - stage: ios_ui_tests_mono_carv2
     displayName: iOS UITests Mono CarouselView2
-    dependsOn: build_ui_tests
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', 'CarouselView', ';'))))
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
+                  UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                  UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                  UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                  UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
@@ -343,15 +406,18 @@ stages:
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
-      displayName: iOS UITests NativeAOT
-      dependsOn: build_ui_tests_nativeaot
+        displayName: iOS UITests NativeAOT
+        dependsOn:
+          - determine_ui_test_categories
+          - build_ui_tests_nativeaot
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-                - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
-                  strategy:
+                 - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
+                   condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
+                   strategy:
                     matrix:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                         ${{ categoryGroup }}:
@@ -362,6 +428,10 @@ stages:
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                   pool: ${{ parameters.iosPool }}
                   variables:
+                    UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                    UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                    UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                    UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
@@ -386,11 +456,14 @@ stages:
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
-    dependsOn: build_ui_tests_windows
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests_windows
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
+                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -402,6 +475,10 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.windowsPool }}
                 variables:
+                  UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                  UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                  UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                  UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
                 steps:
                   - template: ui-tests-steps.yml
@@ -423,11 +500,14 @@ stages:
 
   - stage: mac_ui_tests
     displayName: macOS UITests
-    dependsOn: build_ui_tests
+    dependsOn:
+      - determine_ui_test_categories
+      - build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
+                condition: and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -439,6 +519,10 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.macosPool }}
                 variables:
+                  UITestRunAll: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'] ]
+                  UITestSelectedCategories: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestSelectedCategories'] ]
+                  UITestCategoryGroups: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroups'] ]
+                  UITestCategoryGroupsDelimited: $[ stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'] ]
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
