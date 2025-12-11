@@ -325,42 +325,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
-			double contentYOffset = 0;
 			var safeAreaInsets = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
+			var contentY = parentBounds.Y + safeAreaInsets.Top;
 
-			if (ShouldHonorSafeArea(HeaderView?.View) ||
-				(HeaderView is null && ShouldHonorSafeArea(Content)))
-			{
-				// We add the safe area if margin is not explicitly set. This matches the header behavior.
-				contentYOffset += safeAreaInsets.Top;
-			}
-
+			var contentHeight = parentBounds.Height - safeAreaInsets.Top - safeAreaInsets.Bottom - footerHeight;
 			if (HeaderView is not null)
 			{
 				if (ScrollView is null)
 				{
-					// The margin is already managed by MAUI's layout system, so we don't need to add it here and we just offset the content by the header's height.				
-					contentYOffset += HeaderView.Frame.Height;
+					// The margin is already managed by MAUI's layout system, so we don't need to add it here
+					// and we just offset the content by the header's height.
+					contentY += HeaderView.Frame.Height;
+					contentHeight -= HeaderView.Frame.Height;
 				}
 				else
 				{
-					var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
-					if (headerBehavior == FlyoutHeaderBehavior.Default || headerBehavior == FlyoutHeaderBehavior.Fixed)
-					{
-						// For Default/Fixed, position the scroll view below the header so items
-						// cannot scroll behind it. No content inset is needed in this case.
-						contentYOffset += HeaderView.Frame.Height;
-					}
-					else
-					{
-						// For Scroll/CollapseOnScroll, the scroll view overlaps the header so the header
-						// can scroll away or shrink. The content inset is managed by SetHeaderContentInset.
-						contentYOffset += HeaderView.View.Margin.VerticalThickness;
-					}
+					// For ScrollView, we should not offset by the full header height since the scroll view
+					// overlaps with the header (FlyoutHeaderBehavior.Scroll / CollapseOnScroll parallax).
+					// The top content inset is managed by SetHeaderContentInset; only account for margin here.
+					var marginOffset = (nfloat)HeaderView.View.Margin.VerticalThickness;
+					contentY += marginOffset;
+					contentHeight -= marginOffset;
 				}
+				contentY += HeaderView.Frame.Height;
+				contentHeight -= HeaderView.Frame.Height;
 			}
 
-			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight - safeAreaInsets.Bottom);
+			var contentFrame = new Rect(parentBounds.X, contentY, parentBounds.Width, contentHeight);
 			if (Content is null)
 			{
 				ContentView.Frame = contentFrame.AsCGRect();
