@@ -57,10 +57,10 @@
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet100_261PackageVersion>26.1.10514</MicrosoftMacCatalystSdknet100_261PackageVersion>
-    <MicrosoftmacOSSdknet100_261PackageVersion>26.1.10514</MicrosoftmacOSSdknet100_261PackageVersion>
-    <MicrosoftiOSSdknet100_261PackageVersion>26.1.10514</MicrosoftiOSSdknet100_261PackageVersion>
-    <MicrosofttvOSSdknet100_261PackageVersion>26.1.10514</MicrosofttvOSSdknet100_261PackageVersion>
+    <MicrosoftMacCatalystSdknet100_261PackageVersion>26.1.10515</MicrosoftMacCatalystSdknet100_261PackageVersion>
+    <MicrosoftmacOSSdknet100_261PackageVersion>26.1.10515</MicrosoftmacOSSdknet100_261PackageVersion>
+    <MicrosoftiOSSdknet100_261PackageVersion>26.1.10515</MicrosoftiOSSdknet100_261PackageVersion>
+    <MicrosofttvOSSdknet100_261PackageVersion>26.1.10515</MicrosofttvOSSdknet100_261PackageVersion>
     <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
     <MicrosoftMacCatalystSdknet90_260PackageVersion>26.0.9783</MicrosoftMacCatalystSdknet90_260PackageVersion>
     <MicrosoftmacOSSdknet90_260PackageVersion>26.0.9783</MicrosoftmacOSSdknet90_260PackageVersion>
