@@ -92,7 +92,7 @@ A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **ap
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-windows10.0.19041.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
 
-    <!-- MTP expects an EXE-style entrypoint -->
+    <!-- Exe is recommended for self-hosted MTP apps (MTP itself is host-agnostic) -->
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
 
@@ -112,6 +112,8 @@ A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **ap
 
 </Project>
 ```
+
+> **Note:** Using `MSTest.Sdk` as the project SDK (instead of `Microsoft.NET.Sdk`) automatically brings in the MSTest framework, adapter, MTP runner, and common extensions (TrxReport, CodeCoverage). This is the recommended approach for MTP-based test projects. For other test frameworks like xUnit or NUnit, you'll need to add the extensions explicitly.
 
 **MTP extensions provide:**
 - TRX reporting via `Microsoft.Testing.Extensions.TrxReport` (`--report-trx`, `--report-trx-filename`)
@@ -141,64 +143,15 @@ Currently, .NET MAUI uses a combination of:
 
 ### 3.2 Prior Art: UWP Test Host Manager (Visual Studio)
 
-Visual Studio has an existing mechanism for running tests on UWP apps via the [`UwpTestHostManager`](https://devdiv.visualstudio.com/DevDiv/_git/VS?path=/src/vsproject/PackageAndDeploy/UwpTestHostRuntimeProvider/Hosting/UwpTestHostManager.cs) class, which implements `ITestRuntimeProvider`. This serves as a reference for our MAUI implementation, though with important differences.
+Visual Studio has an internal mechanism for running tests on UWP apps via `UwpTestHostManager`, which implements `ITestRuntimeProvider`. This is a **private VS-only implementation** that uses VSTest and Test Explorer—it does not work with `dotnet test` CLI.
 
-#### How UwpTestHostManager Works
+While not directly reusable, a few patterns from this approach are worth considering:
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                     Visual Studio Test Explorer                   │
-│                              (VSTest)                             │
-└───────────────────────────────┬──────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────┐
-│              UwpTestHostManager : ITestRuntimeProvider            │
-│                                                                   │
-│  • GetTestHostConnectionInfo() → Sockets on port 8020            │
-│  • LaunchTestHostAsync() → Deploy + Activate app                 │
-│  • GetTestPlatformExtensions() → Discovers test adapters         │
-│  • CleanTestHostAsync() → Closes app after tests                 │
-└───────────────────────────────┬──────────────────────────────────┘
-                                │
-                     Uses IDeployer abstraction
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                      UWP App (Test Host)                          │
-│                                                                   │
-│  Receives args: --port, --endpoint, --role, --parentprocessid    │
-│  Communicates back via TCP Sockets                               │
-└──────────────────────────────────────────────────────────────────┘
-```
+- **Deployer Abstraction**: Platform-specific deployment via an `IDeployer` interface
+- **Connection Info Model**: Encapsulating endpoint/role/transport in a structured object
+- **Lifecycle Management**: Clear launch → execute → cleanup flow
 
-#### Key Implementation Details
-
-| Aspect | UwpTestHostManager Approach |
-|--------|----------------------------|
-| **Communication** | TCP Sockets (`Transport.Sockets`) on port 8020 |
-| **Connection Model** | Role-based (client/host) with endpoint negotiation |
-| **Deployment** | `IDeployer` abstraction with platform-specific implementations |
-| **Test Discovery** | Scans for `*TestAdapter.dll` in app directory |
-| **Lifecycle** | Launch → Run Tests → Clean (close app) |
-
-#### Limitations for MAUI
-
-The UWP approach has several limitations that make it unsuitable for direct reuse:
-
-1. **Visual Studio Dependency**: Requires VS Universal workload and `VsSetupInstance`
-2. **Windows-Only**: No support for iOS, Android, or macOS
-3. **VSTest Coupling**: Tightly coupled to VSTest infrastructure, not MTP
-4. **No CLI Support**: Designed exclusively for Test Explorer, not `dotnet test`
-
-#### Lessons for MAUI Implementation
-
-Despite these limitations, several patterns are valuable:
-
-1. **Deployer Abstraction**: The `IDeployer` pattern for platform-specific deployment is reusable
-2. **Connection Info Model**: `TestHostConnectionInfo` with endpoint/role/transport is a good pattern
-3. **Argument Passing**: Passing connection details via command-line args to the test app
-4. **Lifecycle Management**: Clear launch → execute → cleanup flow
+The key limitations (VS-only, Windows-only, VSTest-coupled, no CLI support) mean we need a fresh implementation for MAUI's cross-platform `dotnet test` scenario.
 
 ### 3.3 Pain Points
 
@@ -538,26 +491,31 @@ The MAUI test target chain (invoked from `dotnet test`):
 
 ## 6. Command-Line Interface
 
+> **Important:** In MTP mode, `dotnet test` aligns with `dotnet run` and does **not** support the `dotnet test x.csproj` positional syntax. Use `dotnet test` (in project directory), `dotnet test --project x.csproj`, or `dotnet test --solution a.sln` instead.
+
 ### 6.1 Basic Usage
 
 ```bash
-# Run all tests on default device (interactive mode)
-dotnet test MyMauiTests.csproj -f net10.0-ios
+# Run all tests on default device (interactive mode, from project directory)
+dotnet test -f net10.0-ios
+
+# Run tests with explicit project
+dotnet test --project MyMauiTests.csproj -f net10.0-ios
 
 # Run tests on specific device
-dotnet test MyMauiTests.csproj -f net10.0-android --device "Pixel 7 - API 35"
+dotnet test --project MyMauiTests.csproj -f net10.0-android --device "Pixel 7 - API 35"
 
 # Run tests with coverage
-dotnet test MyMauiTests.csproj -f net10.0-ios --collect "Code Coverage"
+dotnet test --project MyMauiTests.csproj -f net10.0-ios --collect "Code Coverage"
 
 # List available devices (reuses dotnet run --list-devices)
-dotnet test MyMauiTests.csproj -f net10.0-android --list-devices
+dotnet test --project MyMauiTests.csproj -f net10.0-android --list-devices
 
 # Filter tests
-dotnet test MyMauiTests.csproj -f net10.0-ios --filter "FullyQualifiedName~Button"
+dotnet test --project MyMauiTests.csproj -f net10.0-ios --filter "FullyQualifiedName~Button"
 
 # Output formats
-dotnet test MyMauiTests.csproj -f net10.0-ios --logger trx --logger html
+dotnet test --project MyMauiTests.csproj -f net10.0-ios --logger trx --logger html
 ```
 
 ### 6.2 Non-Interactive Mode (CI/AI)
@@ -566,14 +524,14 @@ For CI pipelines and AI agents, non-interactive mode is essential:
 
 ```bash
 # Non-interactive with explicit device
-dotnet test MyMauiTests.csproj \
+dotnet test --project MyMauiTests.csproj \
   -f net10.0-ios \
   --device "iossimulator-arm64:iPhone 15" \
   --no-restore \
   --logger "console;verbosity=detailed"
 
 # With coverage for AI agent analysis
-dotnet test MyMauiTests.csproj \
+dotnet test --project MyMauiTests.csproj \
   -f net10.0-android \
   --device "emulator-5554" \
   --collect "Code Coverage" \
@@ -595,7 +553,7 @@ dotnet test MyMauiTests.csproj \
 Add first-class MAUI test knobs as MSBuild properties (no new CLI parsing required initially):
 
 ```bash
-dotnet test MyMauiDeviceTests.csproj -f net10.0-android \
+dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android \
   -p:MauiTestTarget=Android \
   -p:MauiTestDevice=emulator-5554
 ```
@@ -603,7 +561,7 @@ dotnet test MyMauiDeviceTests.csproj -f net10.0-android \
 ### 6.5 Full TRX + Coverage Example
 
 ```bash
-dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
+dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
   --results-directory TestResults \
   -- --report-trx --report-trx-filename maui_android.trx \
      --coverage --coverage-output TestResults/maui_android.cobertura.xml --coverage-output-format cobertura
