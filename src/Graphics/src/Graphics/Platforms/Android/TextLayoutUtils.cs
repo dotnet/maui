@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using Android.Text;
 
@@ -11,20 +12,33 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				return StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth)
+					.SetAlignment(alignment)
+					.SetLineSpacing(0f, 1f)
+					.SetIncludePad(false)
+					.SetTextDirection(TextDirectionHeuristics.Ltr)
+					.Build();
+			}
+			else
+			{
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
-			var layout = new StaticLayout(
-				text, // Text to layout
-				textPaint, // Text paint (font, size, etc...) to use
-				finalWidth, // The maximum width the text can be
-				alignment, // The horizontal alignment of the text
-				1.0f, // Spacing multiplier
-				0.0f, // Additional spacing
-				false); // Include padding
+				// The Unicode character \u200E is the Left-to-Right Mark (LRM). It is used to explicitly set the text direction to left-to-right
+				text = "\u200E" + text;
+				return new StaticLayout(
+				   text, // Text to layout
+				   textPaint, // Text paint (font, size, etc...) to use
+				   finalWidth, // The maximum width the text can be
+				   alignment, // The horizontal alignment of the text
+				   1.0f, // Spacing multiplier
+				   0.0f, // Additional spacing
+				   false); // Include padding
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
+			}
 
-			return layout;
 		}
 
 		public static StaticLayout CreateLayoutForSpannedString(SpannableString spannedString, TextPaint textPaint, int? boundedWidth, Layout.Alignment alignment)
