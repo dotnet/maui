@@ -900,9 +900,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, items, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
-		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
+		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color color)
 		{
-			Element.FindMauiContext().UpdateMenuItemIcon(menuItem, toolBarItem, null);
+			Element.FindMauiContext().UpdateMenuItemIcon(menuItem, toolBarItem, color);
 		}
 
 		void UpdateToolbar()

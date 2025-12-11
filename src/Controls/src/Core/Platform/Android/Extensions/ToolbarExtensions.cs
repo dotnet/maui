@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem, Color?>? updateMenuItemIcon = null)
 		{
 			if (sortedToolbarItems == null || previousMenuItems == null)
 				return;
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem, Color?>? updateMenuItemIcon = null)
 		{
 			var context = mauiContext?.Context ??
 					throw new ArgumentNullException($"{nameof(mauiContext.Context)}");
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Platform
 			menuitem.SetTitleOrContentDescription(item);
 
 			if (updateMenuItemIcon != null)
-				updateMenuItemIcon(context, menuitem, item);
+				updateMenuItemIcon(context, menuitem, item, tintColor);
 			else
 				UpdateMenuItemIcon(mauiContext, menuitem, item, tintColor);
 
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> currentMenuItems,
 			List<ToolbarItem> currentToolbarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem, Color?>? updateMenuItemIcon = null)
 		{
 			if (toolbarItems == null)
 				return;
