@@ -82,7 +82,17 @@ namespace Microsoft.Maui.Controls
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
 
-			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+			if (shell != null)
+			{
+				// Notify about the property change
+				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+				
+				// Explicitly propagate the property change to all children
+				if (shell is IPropertyPropagationController controller)
+				{
+					controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+				}
+			}
 		}
 
 		/// <summary>
