@@ -101,6 +101,7 @@ stages:
 
 - template: /eng/pipelines/arcade/stage-helix-tests.yml@self
   parameters:
+    extraHelixArguments: '/p:DotNetCliVersion=10.0.102-servicing.25611.101'
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       helixPool: ${{ parameters.WindowsPool.public }}
       runAsPublic: true
