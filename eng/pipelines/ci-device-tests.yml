@@ -1,47 +1,17 @@
-trigger:
-  branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-    - inflight/*
-  tags:
-    include:
-    - '*'
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+trigger: none
 
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-    - inflight/*
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+pr: none
+
+resources:
+  pipelines:
+  - pipeline: ci_build
+    source: ci
+    trigger:
+      branches:
+      - main
+      - release/*
+      - net*.0
+      - inflight/*
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self

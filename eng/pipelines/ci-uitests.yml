@@ -1,45 +1,16 @@
-trigger:
-  branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-  tags:
-    include:
-    - '*'
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+trigger: none
 
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+pr: none
+
+resources:
+  pipelines:
+  - pipeline: device_tests
+    source: ci-device-tests
+    trigger:
+      branches:
+      - main
+      - release/*
+      - net*.0
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -126,5 +97,4 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
 
