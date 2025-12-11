@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
-		
+
 		internal void UpdateTitleViewInternal()
 		{
 			UpdateTitleView();
@@ -1046,7 +1046,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController.Active = false;
-			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
+			if (SearchHandler is ISearchHandlerController controller)
+			{
+				controller.ItemSelected(e);
+				controller.QueryConfirmed();
+			}
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)
