@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   dotnet-format:
+    if: github.repository_owner == 'dotnet'
     runs-on: windows-latest
     strategy:
       matrix:

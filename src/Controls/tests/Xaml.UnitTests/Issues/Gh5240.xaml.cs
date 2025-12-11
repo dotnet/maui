@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,11 +6,12 @@ public partial class Gh5240 : ContentPage
 {
 	public Gh5240() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void FailOnUnresolvedDataType([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FailOnUnresolvedDataType(XamlInflator inflator)
 		{
 			new Gh5240(inflator);
 		}

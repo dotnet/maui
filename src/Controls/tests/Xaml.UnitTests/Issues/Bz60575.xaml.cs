@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public class Bz60575Helpers
@@ -42,11 +42,12 @@ public partial class Bz60575 : ContentPage
 		set { SetValue(Collection2Property, value); }
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CollectionProperties([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CollectionProperties(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -56,17 +57,17 @@ public partial class Bz60575 : ContentPage
 
 			//attached BP
 			var col = layout.GetValue(Bz60575Helpers.CollectionProperty) as IList<string>;
-			Assert.That(col.Count, Is.EqualTo(2));
+			Assert.Equal(2, col.Count);
 
 			//attached BP with a single element
 			col = layout.GetValue(Bz60575Helpers.Collection2Property) as IList<string>;
-			Assert.That(col.Count, Is.EqualTo(1));
+			Assert.Single(col);
 
 			//normal BP
-			Assert.That(layout.Collection.Count, Is.EqualTo(3));
+			Assert.Equal(3, layout.Collection.Count);
 
 			//normal BP with a single element
-			Assert.That(layout.Collection2.Count, Is.EqualTo(1));
+			Assert.Single(layout.Collection2);
 		}
 	}
 }

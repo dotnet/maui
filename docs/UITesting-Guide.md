@@ -17,6 +17,8 @@ Comprehensive guidance for creating automated UI tests for .NET MAUI using Appiu
 
 ### All Platforms
 
+**Appium Package**: All UI tests use `Appium.WebDriver@8.0.1` (latest stable version)
+
 ```bash
 # Restore tools (required)
 
@@ -325,11 +327,8 @@ For rapid development and debugging, you can run specific tests directly:
 
 1. **Find iPhone Xs with highest API level:**
    ```bash
-   # View all iPhone Xs devices with their iOS versions
-   xcrun simctl list devices available | awk '/^--.*iOS/ {version=$0} /iPhone Xs/ {print version " -> " $0}'
-
-   # Extract UDID of iPhone Xs with highest iOS version (last in list)
-   UDID=$(xcrun simctl list devices available | grep "iPhone Xs" | tail -1 | sed -n 's/.*(\([A-F0-9-]*\)).*/\1/p')
+   # Extract UDID of iPhone Xs with highest iOS version
+   UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
 
    # Verify UDID was found
    if [ -z "$UDID" ]; then
@@ -525,25 +524,28 @@ If you encounter navigation fragment errors or resource ID issues when launching
 java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
 ```
 
-**Solution:** Build with `--no-incremental` to force a clean build and regenerate Android resource IDs:
+**Solution:** Read the crash logs to find the full exception and investigate the root cause:
 
 ```bash
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+# Monitor logcat for the full crash details
+adb logcat -c  # Clear logcat buffer
+adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
 ```
 
 **Debugging Steps:**
 
-1. Monitor logcat for crash details:
-   ```bash
-   adb logcat -c  # Clear logcat buffer
-   adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)" &
-   ```
+1. **Find the full exception** in logcat - look for the complete stack trace
 
-2. Try clean build if incremental builds fail:
-   ```bash
-   dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-   ```
+2. **Investigate the root cause**:
+   - Does the resource ID (`0x7f0800f8`) actually exist in the APK?
+   - Is the fragment being created before the resource is available?
+   - Are there initialization order issues?
+   - Check for null references or missing dependencies
+
+3. **If you can't determine the fix**, ask for guidance with:
+   - The full exception stack trace
+   - What you've tried so far
+   - Any patterns you've noticed
 
 3. Check Android emulator is running:
    ```bash
@@ -620,6 +622,7 @@ If migrating from Xamarin.UITest:
 ## Additional Resources
 
 - [UITesting-Architecture.md](design/UITesting-Architecture.md) - CI/CD integration, advanced patterns, and architecture decisions
+- [Appium Control Scripts](../.github/instructions/appium-control.instructions.md) - Create standalone scripts for manual Appium-based debugging and exploration
 - [Appium Documentation](http://appium.io/docs/en/about-appium/intro/)
 - [NUnit Documentation](https://docs.nunit.org/)
 - [.NET MAUI Testing Wiki](https://github.com/dotnet/maui/wiki/UITests)

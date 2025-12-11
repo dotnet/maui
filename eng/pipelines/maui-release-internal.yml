@@ -57,7 +57,6 @@ parameters:
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 
-- group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
 - group: maui-nuget-release # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
 
@@ -87,9 +86,6 @@ extends:
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
-      sourceRepositoriesToScan:
-        exclude:
-        - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:

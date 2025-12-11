@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] Entire words omitted & letters truncated from Label display";
 
 		[Test]
-		[Category(UITestCategories.Visual)]
+		[Category(UITestCategories.Label)]
 		public void VerifyTextIsNotMissing()
 		{
 			App.WaitForElement("StubLabel");

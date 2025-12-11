@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 using AbsoluteLayoutCompat = Microsoft.Maui.Controls.Compatibility.AbsoluteLayout;
 
@@ -9,14 +9,16 @@ public partial class Unreported002 : ContentPage
 {
 	public Unreported002() => InitializeComponent();
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void TypeConvertersOnAttachedBP([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TypeConvertersOnAttachedBP(XamlInflator inflator)
 		{
 			var p = new Unreported002(inflator);
-			Assert.AreEqual(new Rect(0.5, 0.5, 1, -1), AbsoluteLayoutCompat.GetLayoutBounds(p.label));
-			Assert.AreEqual(new Rect(0.7, 0.7, 0.9, -1), Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(p.label2));
+			Assert.Equal(new Rect(0.5, 0.5, 1, -1), AbsoluteLayoutCompat.GetLayoutBounds(p.label));
+			Assert.Equal(new Rect(0.7, 0.7, 0.9, -1), Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(p.label2));
 		}
 	}
 }

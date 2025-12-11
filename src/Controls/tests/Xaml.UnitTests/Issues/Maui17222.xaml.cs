@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,66 +17,63 @@ public partial class Maui17222 : ContentPage
 	public Maui17222() => InitializeComponent();
 
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Test
 	{
 #if DEBUG
-		bool enableDiagnosticsInitialState;
-
-		[SetUp]
-		public void Setup()
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void GetsourceInfo(XamlInflator inflator)
 		{
 			AppInfo.SetCurrent(new MockAppInfo());
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			bool enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
-		}
 
-		[TearDown]
-		public void TearDown()
-		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
-			AppInfo.SetCurrent(null);
-		}
+			try
+			{
+				var app = new MockApplication();
+				app.Resources.Add(new Maui17222BaseStyle(inflator));
+				app.Resources.Add(new Maui17222Style(inflator));
+				Application.SetCurrentApplication(app);
 
-		[Test]
-		public void GetsourceInfo([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
-		{
-			var app = new MockApplication();
-			app.Resources.Add(new Maui17222BaseStyle(inflator));
-			app.Resources.Add(new Maui17222Style(inflator));
-			Application.SetCurrentApplication(app);
+				var page = new Maui17222(inflator);
+				SourceInfo info = VisualDiagnostics.GetSourceInfo(page);
+				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal(2, info.LineNumber);
+				Assert.Equal(2, info.LinePosition);
 
-			var page = new Maui17222(inflator);
-			SourceInfo info = VisualDiagnostics.GetSourceInfo(page);
-			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
-			Assert.AreEqual(2, info.LineNumber);
-			Assert.AreEqual(2, info.LinePosition);
+				var button = page.button;
+				info = VisualDiagnostics.GetSourceInfo(button);
+				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal(6, info.LineNumber);
+				Assert.Equal(6, info.LinePosition);
 
-			var button = page.button;
-			info = VisualDiagnostics.GetSourceInfo(button);
-			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
-			Assert.AreEqual(6, info.LineNumber);
-			Assert.AreEqual(6, info.LinePosition);
+				Style style = button.Style;
+				info = VisualDiagnostics.GetSourceInfo(style);
+				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal(5, info.LineNumber);
+				Assert.Equal(6, info.LinePosition);
 
-			Style style = button.Style;
-			info = VisualDiagnostics.GetSourceInfo(style);
-			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
-			Assert.AreEqual(5, info.LineNumber);
-			Assert.AreEqual(6, info.LinePosition);
+				var setter = style.Setters[0];
+				Assert.Equal(setter.Property, Button.TextColorProperty);
+				Assert.Equal(setter.Value, Colors.Red);
+				info = VisualDiagnostics.GetSourceInfo(setter);
+				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal(6, info.LineNumber);
+				Assert.Equal(10, info.LinePosition);
 
-			var setter = style.Setters[0];
-			Assert.AreEqual(setter.Property, Button.TextColorProperty);
-			Assert.AreEqual(setter.Value, Colors.Red);
-			info = VisualDiagnostics.GetSourceInfo(setter);
-			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
-			Assert.AreEqual(6, info.LineNumber);
-			Assert.AreEqual(10, info.LinePosition);
-
-			style = style.BasedOn;
-			info = VisualDiagnostics.GetSourceInfo(style);
-			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
-			Assert.AreEqual(5, info.LineNumber);
-			Assert.AreEqual(6, info.LinePosition);
+				style = style.BasedOn;
+				info = VisualDiagnostics.GetSourceInfo(style);
+				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal(5, info.LineNumber);
+				Assert.Equal(6, info.LinePosition);
+			}
+			finally
+			{
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+				AppInfo.SetCurrent(null);
+			}
 		}
 #endif
 	}

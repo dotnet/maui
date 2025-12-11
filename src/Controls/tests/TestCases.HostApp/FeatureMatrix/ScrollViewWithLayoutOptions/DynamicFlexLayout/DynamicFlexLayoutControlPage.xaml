@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.DynamicFlexLayoutControlPage"
+             x:DataType="local:LayoutViewModel"
+             Title="DynamicFlexLayoutControlPage">
+
+    <VerticalStackLayout Padding="10" Spacing="10">
+        <ScrollView x:Name="MyScrollView"
+                    BackgroundColor="Lavender"
+                    AutomationId="ScrollViewWithDynamicFlexLayout">
+            <FlexLayout x:Name="DynamicFlex"
+                        Wrap="Wrap"
+                        JustifyContent="Start"
+                        AlignItems="Start"
+                        Direction="{Binding FlexDirection}">
+            </FlexLayout>
+        </ScrollView>
+
+        <Label Text="Flex Direction:"
+               FontAttributes="Bold" />
+
+        <HorizontalStackLayout Spacing="10">
+            <RadioButton x:Name="ColumnFlex"
+                         Content="Column"
+                         IsChecked="True"
+                         CheckedChanged="OnFlexDirectionChanged"
+                         AutomationId="ColumnButton"/>
+            <RadioButton x:Name="RowFlex"
+                         Content="Row"
+                         CheckedChanged="OnFlexDirectionChanged"
+                         AutomationId="RowButton"/>
+        </HorizontalStackLayout>
+
+        <StackLayout Orientation="Horizontal"
+                     Spacing="10"
+                     HorizontalOptions="Center">
+            <Button Text="Add Child"
+                    Clicked="OnAddChildClicked"
+                    AutomationId="AddButton"/>
+            <Button Text="Remove Child"
+                    Clicked="OnRemoveChildClicked"
+                    AutomationId="RemoveButton"/>
+        </StackLayout>
+    </VerticalStackLayout>
+</ContentPage>

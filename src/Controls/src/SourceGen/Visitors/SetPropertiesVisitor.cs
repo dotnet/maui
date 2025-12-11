@@ -120,7 +120,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		}
 
 		//IMarkupExtension or IValueProvider => ProvideValue()
-		node.TryProvideValue(Writer, context);
+		node.TryProvideValue(Writer, context, getNodeValue);
 
 		if (propertyName != XmlName.Empty)
 		{

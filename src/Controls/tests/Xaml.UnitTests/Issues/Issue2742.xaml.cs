@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,19 +11,20 @@ public partial class Issue2742 : Issue2742BasePage
 {
 	public Issue2742() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void ToolBarItemsOnContentPageInheritors([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ToolBarItemsOnContentPageInheritors(XamlInflator inflator)
 		{
 			var layout = new Issue2742(inflator);
-			Assert.That(layout.Content, Is.TypeOf<Label>());
-			Assert.AreEqual("test", ((Label)layout.Content).Text);
+			Assert.IsType<Label>(layout.Content);
+			Assert.Equal("test", ((Label)layout.Content).Text);
 
 			Assert.NotNull(layout.ToolbarItems);
-			Assert.AreEqual(2, layout.ToolbarItems.Count);
-			Assert.AreEqual("One", layout.ToolbarItems[0].Text);
+			Assert.Equal(2, layout.ToolbarItems.Count);
+			Assert.Equal("One", layout.ToolbarItems[0].Text);
 		}
 	}
 }

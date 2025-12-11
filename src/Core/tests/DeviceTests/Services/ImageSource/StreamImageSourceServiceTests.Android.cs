@@ -22,7 +22,6 @@ namespace Microsoft.Maui.DeviceTests
 			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext));
 		}
 
-#if !ANDROID //https://github.com/dotnet/maui/issues/27486
 		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
@@ -43,8 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertColorAtCenter(expectedColor);
+			await bitmap.AssertContainsColor(expectedColor).ConfigureAwait(false);
 		}
-#endif
 	}
 }

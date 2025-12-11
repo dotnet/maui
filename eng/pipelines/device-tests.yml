@@ -3,8 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   tags:
     include:
     - '*'
@@ -12,7 +11,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -27,13 +26,12 @@ pr:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   paths:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -116,7 +114,8 @@ stages:
     # Use Helix for iOS / Android and MacCatalyst Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        pool: ${{ parameters.macOSHelixPool }}
+        buildPool: ${{ parameters.macOSHelixPool }}
+        testPool: ${{ parameters.macOSPool }}
         runAsPublic: true
         TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
         prepareSteps:

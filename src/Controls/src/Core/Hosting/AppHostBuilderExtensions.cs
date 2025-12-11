@@ -289,6 +289,7 @@ public static partial class AppHostBuilderExtensions
 		ContentPage.RemapForControls();
 		ImageButton.RemapForControls();
 
+		Slider.RemapForControls();
 		return builder;
 	}
 }

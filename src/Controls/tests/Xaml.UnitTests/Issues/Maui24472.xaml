@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui24472">
+    <!-- 
+        This test reproduces issue #24472 where XamlC throws 
+        "Value cannot be null. (Parameter 'key')" when compiling XAML 
+        with x:Array containing custom objects and a DataTemplate with a nested view.
+        
+        The issue is triggered by the combination of:
+        1. x:Array with items in CollectionView.ItemsSource
+        2. DataTemplate in ItemTemplate
+        3. CollectionView.Header with nested content
+    -->
+    <CollectionView>
+        <CollectionView.ItemsSource>
+            <x:Array Type="{x:Type local:Maui24472Item}">
+                <local:Maui24472Item Name="Test1" />
+                <local:Maui24472Item Name="Test2" />
+                <local:Maui24472Item />
+                <local:Maui24472Item />
+            </x:Array>
+        </CollectionView.ItemsSource>
+        <CollectionView.Header>
+            <Grid RowDefinitions="Auto,*">
+                <Label Text="Header" />
+                <Border Grid.Row="1" StrokeShape="RoundRectangle 30">
+                    <Grid>
+                        <Image Source="dotnet_bot.png" />
+                        <Button Text="Test" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </CollectionView.Header>
+        <CollectionView.ItemTemplate>
+            <DataTemplate >
+                <Border StrokeThickness="1">
+                    <Grid ColumnDefinitions="Auto,*,*">
+                        <Border Background="#AA333333" WidthRequest="40" HeightRequest="40" Grid.RowSpan="2" />
+                        <Label Text="{Binding Name}" Grid.Column="1" />
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
