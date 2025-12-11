@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -119,23 +119,34 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
+		internal static void UpdateCancelButtonState(this SearchView searchView, ISearchBar searchBar)
+		{
+			var cancelButton = searchView.GetCancelButton();
+			if (cancelButton is not null)
+			{
+				cancelButton.Enabled = !searchBar.IsReadOnly;
+			}
+		}
+
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
-			if (searchView.Resources == null)
-				return;
-
-			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
-
-			if (searchCloseButtonIdentifier > 0)
+			var cancelButton = searchView.GetCancelButton();
+			if (cancelButton?.Drawable is Drawable drawable)
 			{
-				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
-
-				if (image is not null && image.Drawable is Drawable drawable)
+				if (cancelButton.Enabled)
 				{
 					if (searchBar.CancelButtonColor is not null)
+					{
 						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
+					}
 					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					{
 						drawable.SetColorFilter(color, FilterMode.SrcIn);
+					}
+				}
+				else
+				{
+					drawable.ClearColorFilter();
 				}
 			}
 		}
@@ -159,6 +170,22 @@ namespace Microsoft.Maui.Platform
 						image.Drawable.ClearColorFilter();
 				}
 			}
+		}
+
+		static ImageView? GetCancelButton(this SearchView searchView)
+		{
+			if (searchView.Resources is null)
+			{
+				return null;
+			}
+
+			var closeButtonId = Resource.Id.search_close_btn;
+			if (closeButtonId <= 0)
+			{
+				return null;
+			}
+
+			return searchView.FindViewById<ImageView>(closeButtonId);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
