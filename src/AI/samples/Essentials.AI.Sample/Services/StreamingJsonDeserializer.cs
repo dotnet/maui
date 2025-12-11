@@ -63,9 +63,32 @@ internal sealed class StreamingJsonDeserializer<T>
 	public ReadOnlySpan<byte> PartialJsonUtf8 => _byteBuffer.WrittenSpan;
 
 	/// <summary>
+	/// Gets the current accumulated JSON as UTF-8 bytes (zero-allocation view).
+	/// </summary>
+	public ReadOnlyMemory<byte> PartialJsonMemory => _byteBuffer.WrittenMemory;
+
+	/// <summary>
 	/// Gets the current accumulated JSON as a string (allocates for string conversion).
 	/// </summary>
 	public string PartialJson => Encoding.UTF8.GetString(_byteBuffer.WrittenSpan);
+
+	/// <summary>
+	/// Gets the last reconstructed valid JSON as UTF-8 bytes (zero-allocation view).
+	/// This is the completed/repaired JSON that was successfully parsed.
+	/// </summary>
+	public ReadOnlySpan<byte> ReconstructedJsonUtf8 => _reconstructionBuffer.WrittenSpan;
+
+	/// <summary>
+	/// Gets the last reconstructed valid JSON as UTF-8 bytes (zero-allocation view).
+	/// This is the completed/repaired JSON that was successfully parsed.
+	/// </summary>
+	public ReadOnlyMemory<byte> ReconstructedJsonMemory => _reconstructionBuffer.WrittenMemory;
+
+	/// <summary>
+	/// Gets the last reconstructed valid JSON as a string (allocates for string conversion).
+	/// This is the completed/repaired JSON that was successfully parsed.
+	/// </summary>
+	public string ReconstructedJson => Encoding.UTF8.GetString(_reconstructionBuffer.WrittenSpan);
 
 	/// <summary>
 	/// Gets the last successfully deserialized model, or null if none have succeeded yet.

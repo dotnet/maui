@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Maui.Controls.Sample.Models;
@@ -179,19 +180,26 @@ public static class ItineraryWorkflowExtensions
 			logger.LogDebug("[TravelPlannerExecutor] Starting - parsing user intent");
 			logger.LogTrace("[TravelPlannerExecutor] Input: {Input}", input);
 
+			await context.AddEventAsync(new ExecutorStatusEvent("Analyzing your request..."));
+
 			var runOptions = new ChatClientAgentRunOptions(new ChatOptions
 			{
 				ResponseFormat = ChatResponseFormat.ForJsonSchema<TravelPlanResult>(s_jsonOptions)
 			});
 
 			var response = await agent.RunAsync(input, options: runOptions, cancellationToken: cancellationToken);
-			
+
 			logger.LogTrace("[TravelPlannerExecutor] Raw response: {Response}", response.Text);
 
 			var result = JsonSerializer.Deserialize<TravelPlanResult>(response.Text, s_jsonOptions)!;
-			
-			logger.LogDebug("[TravelPlannerExecutor] Completed - extracted: destination={Destination}, days={Days}, language={Language}", 
+
+			logger.LogDebug("[TravelPlannerExecutor] Completed - extracted: destination={Destination}, days={Days}, language={Language}",
 				result.DestinationName, result.DayCount, result.Language);
+
+			var summary = result.Language != "English"
+				? $"Planning {result.DayCount}-day trip to {result.DestinationName} in {result.Language}"
+				: $"Planning {result.DayCount}-day trip to {result.DestinationName}";
+			await context.AddEventAsync(new ExecutorStatusEvent(summary));
 
 			return result;
 		}
@@ -204,13 +212,19 @@ public static class ItineraryWorkflowExtensions
 	/// </summary>
 	internal sealed class ResearcherExecutor(AIAgent agent, LandmarkDataService landmarkService, ILogger logger) : Executor<TravelPlanResult, ResearchResult>("ResearcherExecutor")
 	{
+		private IWorkflowContext? _context;
+
 		public override async ValueTask<ResearchResult> HandleAsync(
 			TravelPlanResult input,
 			IWorkflowContext context,
 			CancellationToken cancellationToken = default)
 		{
+			_context = context;
+
 			logger.LogDebug("[ResearcherExecutor] Starting - finding best matching destination for '{DestinationName}'", input.DestinationName);
 			logger.LogTrace("[ResearcherExecutor] Input: {@Input}", input);
+
+			await context.AddEventAsync(new ExecutorStatusEvent("Searching destinations..."));
 
 			// Ask AI to find the best match from available destinations
 			var prompt = $"""
@@ -225,8 +239,7 @@ public static class ItineraryWorkflowExtensions
 
 			var runOptions = new ChatClientAgentRunOptions(new ChatOptions
 			{
-				ToolMode = ChatToolMode.None,
-				Tools = [AIFunctionFactory.Create(GetDestinations)],
+				Tools = [AIFunctionFactory.Create(GetDestinationsAsync, name: "getDestinations")],
 				ResponseFormat = ChatResponseFormat.ForJsonSchema<DestinationMatchResult>(s_jsonOptions)
 			});
 
@@ -246,38 +259,45 @@ public static class ItineraryWorkflowExtensions
 				.FirstOrDefault(l => l.Name.Equals(matchedName, StringComparison.OrdinalIgnoreCase));
 
 			var result = new ResearchResult(landmark, input.DayCount, input.Language);
-			
+
 			logger.LogDebug("[ResearcherExecutor] Completed - destination found: {Found}", landmark is not null);
 			logger.LogTrace("[ResearcherExecutor] Output: {@Result}", result);
+
+			var statusMsg = landmark is not null ? $"Found destination: {landmark.Name}" : "No matching destination found";
+			await context.AddEventAsync(new ExecutorStatusEvent(statusMsg));
 
 			return result;
 		}
 
-		[DisplayName("getDestinations")]
 		[Description("Get a list of all available destination names that can be used for travel itineraries.")]
-		private string[] GetDestinations()
+		private async Task<string[]> GetDestinationsAsync()
 		{
+			if (_context is not null)
+			{
+				await _context.AddEventAsync(new ExecutorStatusEvent("Fetching available destinations..."));
+			}
+
 			var destinations = landmarkService.GetDestinationNames().ToArray();
-			logger.LogTrace("[ResearcherExecutor] getDestinations tool called - returning {Count} destinations: {Destinations}", 
+			logger.LogTrace("[ResearcherExecutor] getDestinations tool called - returning {Count} destinations: {Destinations}",
 				destinations.Length, string.Join(", ", destinations));
+
+			if (_context is not null)
+			{
+				await _context.AddEventAsync(new ExecutorStatusEvent($"Found {destinations.Length} destinations"));
+			}
+
 			return destinations;
 		}
 	}
 
 	/// <summary>
-	/// Agent 3: Itinerary Planner - Builds the travel itinerary.
+	/// Agent 3: Itinerary Planner - Builds the travel itinerary with streaming output.
 	/// Tools: findPointsOfInterest(destinationName, category, query)
+	/// Uses RunStreamingAsync to emit partial JSON as it's generated.
 	/// </summary>
-	internal sealed class ItineraryPlannerExecutor : Executor<ResearchResult, ItineraryResult>
+	internal sealed class ItineraryPlannerExecutor(AIAgent agent, ILogger logger) : Executor<ResearchResult, ItineraryResult>("ItineraryPlannerExecutor")
 	{
-		private readonly AIAgent _agent;
-		private readonly ILogger _logger;
-
-		public ItineraryPlannerExecutor(AIAgent agent, ILogger logger) : base("ItineraryPlannerExecutor")
-		{
-			_agent = agent;
-			_logger = logger;
-		}
+		private IWorkflowContext? _context;
 
 		enum PointOfInterestCategory
 		{
@@ -295,36 +315,56 @@ public static class ItineraryWorkflowExtensions
 			IWorkflowContext context,
 			CancellationToken cancellationToken = default)
 		{
-			_logger.LogDebug("[ItineraryPlannerExecutor] Starting - building {Days}-day itinerary for '{Landmark}'", 
+			_context = context;
+
+			logger.LogDebug("[ItineraryPlannerExecutor] Starting - building {Days}-day itinerary for '{Landmark}'",
 				input.DayCount, input.Landmark?.Name ?? "unknown");
-			_logger.LogTrace("[ItineraryPlannerExecutor] Input: {@Input}", input);
+			logger.LogTrace("[ItineraryPlannerExecutor] Input: {@Input}", input);
+
+			await context.AddEventAsync(new ExecutorStatusEvent("Building your itinerary..."));
 
 			if (input.Landmark is null)
 			{
-				_logger.LogDebug("[ItineraryPlannerExecutor] No landmark found - returning error");
+				logger.LogDebug("[ItineraryPlannerExecutor] No landmark found - returning error");
+				await context.AddEventAsync(new ExecutorStatusEvent("Error: No destination found"));
 				return new ItineraryResult(JsonSerializer.Serialize(new { error = "Landmark not found" }), input.Language);
 			}
 
 			var prompt = BuildItineraryPrompt(input);
-			_logger.LogTrace("[ItineraryPlannerExecutor] Prompt: {Prompt}", prompt);
+			logger.LogTrace("[ItineraryPlannerExecutor] Prompt: {Prompt}", prompt);
 
 			var runOptions = new ChatClientAgentRunOptions(new ChatOptions
 			{
-				Tools = [AIFunctionFactory.Create(FindPointsOfInterest)],
+				Tools = [AIFunctionFactory.Create(FindPointsOfInterestAsync, name: "findPointsOfInterest")],
 				ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(s_jsonOptions)
 			});
 
-			var response = await _agent.RunAsync(prompt, options: runOptions, cancellationToken: cancellationToken);
+			// Use streaming to emit partial JSON as it's generated
+			var fullResponse = new StringBuilder();
+			await foreach (var update in agent.RunStreamingAsync(prompt, options: runOptions, cancellationToken: cancellationToken))
+			{
+				foreach (var content in update.Contents)
+				{
+					if (content is not TextContent textContent)
+						continue;
 
-			_logger.LogTrace("[ItineraryPlannerExecutor] Raw response: {Response}", response.Text);
-			_logger.LogDebug("[ItineraryPlannerExecutor] Completed - itinerary generated, language: {Language}", input.Language);
+					fullResponse.Append(textContent.Text);
 
-			return new ItineraryResult(response.Text, input.Language);
+					await context.AddEventAsync(new ItineraryTextChunkEvent(Id, textContent.Text), cancellationToken);
+				}
+			}
+			var responseText = fullResponse.ToString();
+
+			logger.LogTrace("[ItineraryPlannerExecutor] Raw response: {Response}", responseText);
+			logger.LogDebug("[ItineraryPlannerExecutor] Completed - itinerary generated, language: {Language}", input.Language);
+
+			await context.AddEventAsync(new ExecutorStatusEvent($"Created {input.DayCount}-day itinerary for {input.Landmark.Name}"));
+
+			return new ItineraryResult(responseText, input.Language);
 		}
 
-		[DisplayName("findPointsOfInterest")]
 		[Description("Finds points of interest (hotels, restaurants, activities) near a destination.")]
-		private string FindPointsOfInterest(
+		private async Task<string> FindPointsOfInterestAsync(
 			[Description("The name of the destination to search near.")]
 			string destinationName,
 			[Description("The category of place to find (Hotel, Restaurant, Cafe, Museum, etc.).")]
@@ -332,10 +372,22 @@ public static class ItineraryWorkflowExtensions
 			[Description("Optional natural language query to refine the search.")]
 			string? query = null)
 		{
+			if (_context is not null)
+			{
+				await _context.AddEventAsync(new ExecutorStatusEvent($"Finding {category}s near {destinationName}..."));
+			}
+
 			var suggestions = GetSuggestions(category);
 			var result = $"Near {destinationName}, these {category} options are available: {string.Join(", ", suggestions)}";
-			_logger.LogTrace("[ItineraryPlannerExecutor] findPointsOfInterest tool called - destination={Destination}, category={Category}, query={Query}, result={Result}",
+			
+			logger.LogTrace("[ItineraryPlannerExecutor] findPointsOfInterest tool called - destination={Destination}, category={Category}, query={Query}, result={Result}",
 				destinationName, category, query ?? "(none)", result);
+
+			if (_context is not null)
+			{
+				await _context.AddEventAsync(new ExecutorStatusEvent($"Found {suggestions.Length} {category} options"));
+			}
+
 			return result;
 		}
 
@@ -374,8 +426,8 @@ public static class ItineraryWorkflowExtensions
 	}
 
 	/// <summary>
-	/// Agent 4: Translator - Translates the itinerary to target language (conditional).
-	/// No tools - just translation.
+	/// Agent 4: Translator - Translates the itinerary to target language (conditional) with streaming.
+	/// No tools - just translation. Uses RunStreamingAsync to emit partial translated JSON.
 	/// </summary>
 	internal sealed class TranslatorExecutor(AIAgent agent, ILogger logger) : Executor<ItineraryResult, ItineraryResult>("TranslatorExecutor")
 	{
@@ -387,6 +439,8 @@ public static class ItineraryWorkflowExtensions
 			logger.LogDebug("[TranslatorExecutor] Starting - translating to '{Language}'", input.TargetLanguage);
 			logger.LogTrace("[TranslatorExecutor] Input JSON: {Json}", input.ItineraryJson);
 
+			await context.AddEventAsync(new ExecutorStatusEvent($"Translating to {input.TargetLanguage}..."));
+
 			var runOptions = new ChatClientAgentRunOptions(new ChatOptions
 			{
 				ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(s_jsonOptions)
@@ -395,17 +449,34 @@ public static class ItineraryWorkflowExtensions
 			var prompt = $"Translate to {input.TargetLanguage}. Preserve JSON structure exactly:\n\n{input.ItineraryJson}";
 			logger.LogTrace("[TranslatorExecutor] Prompt: {Prompt}", prompt);
 
-			var response = await agent.RunAsync(prompt, options: runOptions, cancellationToken: cancellationToken);
+			// Use streaming to emit partial JSON as it's generated
+			var fullResponse = new StringBuilder();
+			await foreach (var update in agent.RunStreamingAsync(prompt, options: runOptions, cancellationToken: cancellationToken))
+			{
+				foreach (var content in update.Contents)
+				{
+					if (content is not TextContent textContent)
+						continue;
 
-			logger.LogTrace("[TranslatorExecutor] Raw response: {Response}", response.Text);
+					fullResponse.Append(textContent.Text);
+
+					await context.AddEventAsync(new ItineraryTextChunkEvent(Id, textContent.Text), cancellationToken);
+				}
+			}
+			var responseText = fullResponse.ToString();
+
+			logger.LogTrace("[TranslatorExecutor] Raw response: {Response}", responseText);
 			logger.LogDebug("[TranslatorExecutor] Completed - translation to '{Language}' finished", input.TargetLanguage);
 
-			return new ItineraryResult(response.Text, input.TargetLanguage);
+			await context.AddEventAsync(new ExecutorStatusEvent($"Translated to {input.TargetLanguage}"));
+
+			return new ItineraryResult(responseText, input.TargetLanguage);
 		}
 	}
 
 	/// <summary>
-	/// Final executor that outputs the itinerary JSON.
+	/// Final executor that marks the workflow as complete.
+	/// The itinerary JSON has already been streamed by ItineraryPlannerExecutor or TranslatorExecutor.
 	/// </summary>
 	internal sealed class OutputExecutor(ILogger logger) : Executor<ItineraryResult>("OutputExecutor")
 	{
@@ -414,12 +485,34 @@ public static class ItineraryWorkflowExtensions
 			IWorkflowContext context,
 			CancellationToken cancellationToken = default)
 		{
-			logger.LogDebug("[OutputExecutor] Starting - outputting final itinerary (language: {Language})", input.TargetLanguage);
+			logger.LogDebug("[OutputExecutor] Starting - finalizing itinerary (language: {Language})", input.TargetLanguage);
 			logger.LogTrace("[OutputExecutor] Final JSON: {Json}", input.ItineraryJson);
 
-			await context.YieldOutputAsync(input.ItineraryJson, cancellationToken);
+			// Don't re-emit the JSON - it was already streamed by ItineraryPlannerExecutor or TranslatorExecutor
+			await context.AddEventAsync(new ExecutorStatusEvent("Your itinerary is ready!"));
 
 			logger.LogDebug("[OutputExecutor] Completed - workflow finished");
 		}
 	}
+}
+
+/// <summary>
+/// Custom workflow event for status updates from executors.
+/// Emits a single message for display in a fading status trail.
+/// </summary>
+public sealed class ExecutorStatusEvent(string message) : WorkflowEvent(message)
+{
+	public string StatusMessage { get; } = message;
+}
+
+/// <summary>
+/// Custom workflow event for streaming text content from an executor.
+/// Only emits text content, not function calls or other content types.
+/// </summary>
+public sealed class ItineraryTextChunkEvent(string executorId, string textChunk) : ExecutorEvent(executorId, textChunk)
+{
+	/// <summary>
+	/// The text chunk to stream.
+	/// </summary>
+	public string TextChunk { get; } = textChunk;
 }

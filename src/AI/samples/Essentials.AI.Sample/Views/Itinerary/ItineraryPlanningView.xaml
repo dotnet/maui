@@ -7,28 +7,36 @@
     x:DataType="viewModels:TripPlanningViewModel">
 
     <VerticalStackLayout Padding="20" Spacing="20">
-        <VerticalStackLayout Spacing="10">
-            <Label Text="✨" FontSize="32" />
-            <Label Text="{Binding Landmark.Name, StringFormat='Planning itinerary for {0}...'}" 
-                   FontSize="28" FontAttributes="Bold" />
-        </VerticalStackLayout>
+        <Label Text="✨" FontSize="32" />
+        <Label Text="{Binding Landmark.Name, StringFormat='Planning itinerary for {0}...'}" 
+               FontSize="28" FontAttributes="Bold" />
         
-        <VerticalStackLayout BindableLayout.ItemsSource="{Binding ToolLookupHistory}" Spacing="12">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="{x:Type x:String}">
-                    <Border Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
-                        <HorizontalStackLayout Spacing="10">
-                            <Label Text="🔍" FontSize="16" />
-                            <Label FontSize="14" Text="{Binding ., StringFormat='Searching {0}...'}"
-                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
-                        </HorizontalStackLayout>
-                    </Border>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
+        <!-- Fading status trail - 3 stacked labels with decreasing opacity -->
+        <VerticalStackLayout Spacing="4" MinimumHeightRequest="80">
+            <!-- Oldest message (most faded) -->
+            <Label Text="{Binding Status1}" 
+                   FontSize="14" FontAttributes="Italic"
+                   TextColor="{StaticResource Primary}"
+                   Opacity="0.3"
+                   IsVisible="{Binding Status1, Converter={StaticResource IsNotNullConverter}}" />
+            
+            <!-- Middle message -->
+            <Label Text="{Binding Status2}" 
+                   FontSize="14" FontAttributes="Italic"
+                   TextColor="{StaticResource Primary}"
+                   Opacity="0.6"
+                   IsVisible="{Binding Status2, Converter={StaticResource IsNotNullConverter}}" />
+            
+            <!-- Newest message (solid) -->
+            <Label Text="{Binding Status3}" 
+                   FontSize="16" FontAttributes="Italic"
+                   TextColor="{StaticResource Primary}"
+                   Opacity="1.0"
+                   IsVisible="{Binding Status3, Converter={StaticResource IsNotNullConverter}}" />
         </VerticalStackLayout>
         
         <ActivityIndicator IsRunning="True" HorizontalOptions="Center" Margin="0,20,0,0" />
+
     </VerticalStackLayout>
 
 </ContentView>

@@ -60,6 +60,7 @@ public static class MauiProgram
 					.AsBuilder()
 					.UseLogging(lf)
 					.UseFunctionInvocation()
+					.Use(cc => new BufferedChatClient(cc))
 					.Build();
 			});
 		}
@@ -107,7 +108,7 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 		builder.Logging.AddConsole();
 #if DEBUG
-		builder.Logging.SetMinimumLevel(LogLevel.Trace);
+		builder.Logging.SetMinimumLevel(LogLevel.Debug);
 #else
 		builder.Logging.SetMinimumLevel(LogLevel.Information);
 #endif

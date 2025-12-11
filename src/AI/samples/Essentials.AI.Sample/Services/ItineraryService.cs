@@ -53,27 +53,55 @@ public class ItineraryService(
 		await using var run = await InProcessExecution.StreamAsync(workflow, input);
 		await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
-		await foreach (var evt in run.WatchStreamAsync().WithCancellation(cancellationToken))
+		var deserializer = new StreamingJsonDeserializer<Itinerary>(s_jsonOptions);
+		JsonMerger? merger = null;
+		var lastExecutorId = string.Empty;
+
+		await foreach (var evt in run.WatchStreamAsync(cancellationToken))
 		{
-			if (evt is WorkflowOutputEvent outputEvent && outputEvent.Data is string json)
+			// Handle our custom status events from executors
+			if (evt is ExecutorStatusEvent statusEvent)
 			{
-				// Parse the JSON output into an Itinerary
-				Itinerary? itinerary = null;
-				try
+				yield return new ItineraryStreamUpdate
 				{
-					itinerary = JsonSerializer.Deserialize<Itinerary>(json, s_jsonOptions);
-				}
-				catch
+					StatusMessage = statusEvent.StatusMessage
+				};
+			}
+			// Handle streaming itinerary text chunks from ItineraryPlannerExecutor/TranslatorExecutor
+			else if (evt is ItineraryTextChunkEvent textChunk)
+			{
+				// Initialize last executor ID
+				if (string.IsNullOrEmpty(lastExecutorId))
+                {
+					lastExecutorId = textChunk.ExecutorId;
+                }
+
+				// Detect executor switch (e.g., from ItineraryPlanner to Translator)
+				if (lastExecutorId != textChunk.ExecutorId)
 				{
-					// Skip if JSON is invalid
+					// Save the complete reconstructed JSON from the previous executor as the base for merging
+					merger = new JsonMerger(deserializer.ReconstructedJsonUtf8.ToArray());
+					lastExecutorId = textChunk.ExecutorId;
+					deserializer.Reset();
 				}
 
-				if (itinerary is not null)
+				var partialItinerary = deserializer.ProcessChunk(textChunk.TextChunk);
+				if (partialItinerary is not null)
 				{
+					// If we have a merger (translation phase), merge with base itinerary
+					if (merger is not null)
+					{
+						merger.MergeOverlayUtf8(deserializer.ReconstructedJsonMemory.Span);
+						var mergedItinerary = merger.Deserialize<Itinerary>(s_jsonOptions);
+						if (mergedItinerary is not null)
+						{
+							partialItinerary = mergedItinerary;
+						}
+					}
+
 					yield return new ItineraryStreamUpdate
 					{
-						PartialItinerary = itinerary,
-						IsTranslated = !languagePreference.SelectedLanguage.Equals("English", StringComparison.OrdinalIgnoreCase)
+						PartialItinerary = partialItinerary
 					};
 				}
 			}
@@ -86,8 +114,13 @@ public class ItineraryService(
 /// </summary>
 public record ItineraryStreamUpdate
 {
-	public ToolLookup? ToolLookup { get; init; }
-	public ToolLookup? ToolLookupResult { get; init; }
+	/// <summary>
+	/// Status message to display in the fading status trail.
+	/// </summary>
+	public string? StatusMessage { get; init; }
+
+	/// <summary>
+	/// The partial or complete itinerary.
+	/// </summary>
 	public Itinerary? PartialItinerary { get; init; }
-	public bool IsTranslated { get; init; }
 }
