@@ -1,7 +1,9 @@
 param(
     [string] $BaseRef,
     [string[]] $CategoryGroups,
-    [string] $WorkingDirectory = "."
+    [string] $WorkingDirectory = ".",
+    [string] $TestPath = "src/Controls/tests/TestCases.Shared.Tests/Tests",
+    [string] $CategoryAttributePattern = '^\+\s*\[Category\(UITestCategories\.([A-Za-z0-9_]+)\)\]'
 )
 
 function Write-PipelineVariable {
@@ -53,10 +55,10 @@ try {
         Write-Host "Unable to determine merge-base with $BaseRef. Falling back to running all categories."
     }
     else {
-        $diff = git diff --unified=0 --diff-filter=AM $mergeBase..HEAD -- src/Controls/tests/TestCases.Shared.Tests/Tests
+        $diff = git diff --unified=0 --diff-filter=AM $mergeBase..HEAD -- $TestPath
 
         if (-not [string]::IsNullOrWhiteSpace($diff)) {
-            $pattern = '^\+\s*\[Category\(UITestCategories\.([A-Za-z0-9_]+)\)\]'
+            $pattern = $CategoryAttributePattern
             foreach ($line in $diff -split "`n") {
                 if ($line -match $pattern) {
                     [void]$categories.Add($matches[1])

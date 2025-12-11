@@ -136,7 +136,12 @@ steps:
     $selectedCategories = $env:UITestSelectedCategories
     $runAllSelected = $env:UITestRunAll
 
-    if ($runAllSelected -eq "false" -and -not [string]::IsNullOrWhiteSpace($selectedCategories)) {
+    $runAllFlag = $false
+    if (-not [string]::IsNullOrWhiteSpace($runAllSelected)) {
+      $runAllFlag = [System.Convert]::ToBoolean($runAllSelected)
+    }
+
+    if (-not $runAllFlag -and -not [string]::IsNullOrWhiteSpace($selectedCategories)) {
       $selectedSet = $selectedCategories.Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
       $filteredCategories = @()
 
